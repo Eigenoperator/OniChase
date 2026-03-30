@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chase Planner</title>
+  <style>
+    :root {
+      --bg: #f6f2e7;
+      --panel: #fffdf7;
+      --ink: #1f2933;
+      --muted: #64748b;
+      --line: #ddd6c6;
+      --accent: #80c241;
+      --runner: #d9485f;
+      --hunter: #2563eb;
+      --soft-green: #edf7de;
+      --soft-red: #fcecef;
+      --soft-blue: #eaf1ff;
+      --shadow: 0 14px 36px rgba(31, 41, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(128, 194, 65, 0.16), transparent 28%),
+        linear-gradient(180deg, #fcfbf7 0%, var(--bg) 100%);
+    }
+
+    .page {
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+    }
+
+    .hero h1 {
+      font-size: 34px;
+      letter-spacing: 0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 920px;
+      line-height: 1.55;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .setup {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+      gap: 14px;
+      align-items: end;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    select, input, textarea, button {
+      font: inherit;
+    }
+
+    select, input, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--ink);
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--accent);
+      color: #163013;
+    }
+
+    button.secondary {
+      background: #f0ebdd;
+      color: var(--ink);
+    }
+
+    button.runner-btn {
+      background: var(--runner);
+      color: white;
+    }
+
+    button.hunter-btn {
+      background: var(--hunter);
+      color: white;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr 420px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .player-panel {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .player-panel.runner {
+      background: linear-gradient(180deg, rgba(252, 236, 239, 0.9), rgba(255, 253, 247, 0.98));
+    }
+
+    .player-panel.hunter {
+      background: linear-gradient(180deg, rgba(234, 241, 255, 0.9), rgba(255, 253, 247, 0.98));
+    }
+
+    .player-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .player-badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: white;
+    }
+
+    .runner .player-badge { background: var(--runner); }
+    .hunter .player-badge { background: var(--hunter); }
+
+    .status-card {
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.72);
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .status-grid,
+    .row-grid {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 6px 12px;
+      font-size: 14px;
+    }
+
+    .key {
+      color: var(--muted);
+    }
+
+    .action-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .action-item {
+      background: rgba(255,255,255,0.86);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .action-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .action-title {
+      font-weight: 700;
+    }
+
+    .tiny-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tiny-actions button {
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .advisor {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .advisor-block {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fbfaf4;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .suggest-list {
+      display: grid;
+      gap: 8px;
+      max-height: 300px;
+      overflow: auto;
+    }
+
+    .suggest-item {
+      display: grid;
+      gap: 4px;
+      padding: 10px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: white;
+    }
+
+    .suggest-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .suggest-title {
+      font-weight: 700;
+    }
+
+    .suggest-sub {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .station-strip {
+      display: grid;
+      gap: 12px;
+      overflow-x: auto;
+      padding-top: 6px;
+    }
+
+    .stations {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(90px, 1fr);
+      gap: 8px;
+      min-width: 1400px;
+      position: relative;
+      padding-top: 22px;
+    }
+
+    .track {
+      position: absolute;
+      top: 28px;
+      left: 10px;
+      right: 10px;
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(128, 194, 65, 0.45), rgba(128, 194, 65, 1));
+    }
+
+    .station {
+      display: grid;
+      gap: 8px;
+      justify-items: center;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 4px solid var(--accent);
+      background: white;
+      position: relative;
+    }
+
+    .dot.runner::after,
+    .dot.hunter::before {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .dot.runner::after {
+      background: var(--runner);
+      right: -12px;
+    }
+
+    .dot.hunter::before {
+      background: var(--hunter);
+      left: -12px;
+    }
+
+    .dot.both {
+      box-shadow: 0 0 0 6px rgba(217,72,95,0.11), 0 0 0 12px rgba(37,99,235,0.11);
+    }
+
+    .station-name {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+
+    textarea {
+      min-height: 260px;
+      resize: vertical;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      background: #f8f5eb;
+    }
+
+    .empty {
+      padding: 14px;
+      border-radius: 14px;
+      background: #f7f3e7;
+      border: 1px dashed var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 1280px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .advisor {
+        position: static;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .setup {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <h1>Chase Planning Board</h1>
+      <p>
+        This is a planning-first prototype for the actual game loop. Instead of only inspecting finished replays,
+        you can choose start stations, build runner and hunter plans against the real weekday Yamanote timetable,
+        preview current local state, and export a scenario JSON that is ready for the simulator.
+      </p>
+    </div>
+
+    <div class="setup panel">
+      <div class="field">
+        <label for="scenario-id">Scenario ID</label>
+        <input id="scenario-id" value="planner_scenario_v0_1" />
+      </div>
+      <div class="field">
+        <label for="start-time">Start Time</label>
+        <input id="start-time" value="08:00" />
+      </div>
+      <div class="field">
+        <label for="end-time">End Time</label>
+        <input id="end-time" value="08:30" />
+      </div>
+      <div class="field">
+        <label for="focus-player">Planning Focus</label>
+        <select id="focus-player">
+          <option value="runner">Runner</option>
+          <option value="hunter">Hunter</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Toolkit</label>
+        <button id="refresh-button">Refresh Plan View</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div id="runner-panel" class="player-panel panel runner"></div>
+      <div id="hunter-panel" class="player-panel panel hunter"></div>
+      <div class="advisor panel" id="advisor-panel"></div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      stations: [],
+      stationMap: new Map(),
+      stationIndex: new Map(),
+      dataset: null,
+      trainMap: new Map(),
+      ui: {
+        scenarioId: null,
+        startTime: null,
+        endTime: null,
+        focusPlayer: null,
+      },
+      players: {
+        runner: {
+          startStationId: "TOKYO",
+          inputMode: "plan",
+          steps: [
+            { type: "WAIT_UNTIL", until_hhmm: "08:04" },
+            {
+              type: "BOARD_ANY_OF",
+              candidates: [{ train_number: "774G" }, { train_number: "720G" }],
+            },
+            { type: "RIDE_TO_STATION", station_id: "UENO" },
+          ],
+        },
+        hunter: {
+          startStationId: "SHINJUKU",
+          inputMode: "actions",
+          steps: [{ type: "WAIT_UNTIL", until_hhmm: "08:30" }],
+        },
+      },
+      previews: {
+        runner: null,
+        hunter: null,
+      },
+    };
+
+    async function init() {
+      bindSetupUi();
+      await Promise.all([loadStations(), loadDataset()]);
+      renderAll();
+    }
+
+    function bindSetupUi() {
+      state.ui.scenarioId = document.getElementById("scenario-id");
+      state.ui.startTime = document.getElementById("start-time");
+      state.ui.endTime = document.getElementById("end-time");
+      state.ui.focusPlayer = document.getElementById("focus-player");
+      document.getElementById("refresh-button").addEventListener("click", renderAll);
+      state.ui.focusPlayer.addEventListener("change", renderAdvisor);
+    }
+
+    async function loadStations() {
+      const response = await fetch("data/yamanote_stations.json");
+      const data = await response.json();
+      state.stations = [...data.stations].sort((a, b) => a.order - b.order);
+      state.stations.forEach((station, index) => {
+        state.stationMap.set(station.id, station);
+        state.stationIndex.set(station.id, index);
+      });
+    }
+
+    async function loadDataset() {
+      const response = await fetch("data/yamanote_weekday_train_instances_merged.json");
+      const data = await response.json();
+      state.dataset = data;
+      data.train_instances.forEach((train) => state.trainMap.set(train.train_number, train));
+    }
+
+    function hhmmToMinutes(value) {
+      const [hour, minute] = value.split(":").map(Number);
+      return hour * 60 + minute;
+    }
+
+    function minutesToHhmm(value) {
+      const hour = Math.floor(value / 60);
+      const minute = value % 60;
+      return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    }
+
+    function stationLabel(stationId) {
+      const station = state.stationMap.get(stationId);
+      return station ? `${station.names.en} / ${station.names.ja}` : stationId;
+    }
+
+    function stopDepartureMinutes(stop) {
+      return stop.departure_hhmm ? hhmmToMinutes(stop.departure_hhmm) : hhmmToMinutes(stop.arrival_hhmm);
+    }
+
+    function stopArrivalMinutes(stop) {
+      return stop.arrival_hhmm ? hhmmToMinutes(stop.arrival_hhmm) : hhmmToMinutes(stop.departure_hhmm);
+    }
+
+    function getTrain(trainNumber) {
+      return state.trainMap.get(trainNumber);
+    }
+
+    function findBoardingStop(train, stationId, earliestMinute) {
+      const candidates = train.stop_times
+        .filter((stop) => stop.station_id === stationId)
+        .map((stop) => ({ stop, departMinute: stopDepartureMinutes(stop) }))
+        .filter((entry) => entry.departMinute >= earliestMinute)
+        .sort((a, b) => a.departMinute - b.departMinute);
+      return candidates[0]?.stop || null;
+    }
+
+    function findAlightStop(train, boardedSequence, stationId, loopPassIndex) {
+      return (
+        train.stop_times.find((stop) => {
+          if (stop.sequence <= boardedSequence) return false;
+          if (stop.station_id !== stationId) return false;
+          if (loopPassIndex != null && stop.loop_pass_index !== loopPassIndex) return false;
+          return true;
+        }) || null
+      );
+    }
+
+    function selectBoardCandidate(stationId, earliestMinute, candidates) {
+      const rejected = [];
+      for (const candidate of candidates) {
+        const train = getTrain(candidate.train_number);
+        if (!train) {
+          rejected.push({ train_number: candidate.train_number, reason: "unknown_train" });
+          continue;
+        }
+        const boardStop = findBoardingStop(train, stationId, earliestMinute);
+        if (!boardStop) {
+          rejected.push({ train_number: candidate.train_number, reason: "not_catchable_from_current_state" });
+          continue;
+        }
+        return { train, boardStop, rejected };
+      }
+      return { train: null, boardStop: null, rejected };
+    }
+
+    function previewPlayer(playerId) {
+      const startMinute = hhmmToMinutes(state.ui.startTime.value);
+      const endMinute = hhmmToMinutes(state.ui.endTime.value);
+      const player = state.players[playerId];
+      let currentMinute = startMinute;
+      let currentStationId = player.startStationId;
+      let currentTrain = null;
+      let currentBoardStop = null;
+      const intervals = [];
+      const events = [];
+      const resolvedSteps = [];
+      let error = null;
+
+      const pushEvent = (type, payload = {}) => {
+        events.push({
+          time_hhmm: minutesToHhmm(currentMinute),
+          type,
+          player_id: playerId,
+          ...payload,
+        });
+      };
+
+      pushEvent("START_AT_STATION", { station_id: currentStationId });
+
+      for (let index = 0; index < player.steps.length; index += 1) {
+        const step = player.steps[index];
+        try {
+          if (step.type === "WAIT_UNTIL") {
+            const targetMinute = hhmmToMinutes(step.until_hhmm);
+            if (currentStationId == null) throw new Error("Cannot wait while on a train.");
+            if (targetMinute < currentMinute) throw new Error("Cannot wait backwards in time.");
+            intervals.push({ kind: "NODE", station_id: currentStationId, start: currentMinute, end: targetMinute });
+            currentMinute = targetMinute;
+            resolvedSteps.push({ step_index: index + 1, ...step });
+            pushEvent("WAIT_UNTIL", { station_id: currentStationId });
+            continue;
+          }
+
+          if (step.type === "BOARD_TRAIN") {
+            if (currentStationId == null) throw new Error("Already on a train.");
+            const train = getTrain(step.train_number);
+            if (!train) throw new Error(`Unknown train ${step.train_number}.`);
+            const boardStop = findBoardingStop(train, currentStationId, currentMinute);
+            if (!boardStop) throw new Error(`Cannot board ${step.train_number} from ${currentStationId}.`);
+            const boardMinute = stopDepartureMinutes(boardStop);
+            if (boardMinute > currentMinute) {
+              intervals.push({ kind: "NODE", station_id: currentStationId, start: currentMinute, end: boardMinute });
+            }
+            currentMinute = boardMinute;
+            currentTrain = train;
+            currentBoardStop = boardStop;
+            resolvedSteps.push({ step_index: index + 1, ...step });
+            pushEvent("BOARD_TRAIN", {
+              station_id: currentStationId,
+              train_number: train.train_number,
+              sequence: boardStop.sequence,
+            });
+            currentStationId = null;
+            continue;
+          }
+
+          if (step.type === "BOARD_ANY_OF") {
+            if (currentStationId == null) throw new Error("Already on a train.");
+            const { train, boardStop, rejected } = selectBoardCandidate(currentStationId, currentMinute, step.candidates);
+            if (!train || !boardStop) throw new Error("No candidate train is catchable.");
+            const boardMinute = stopDepartureMinutes(boardStop);
+            if (boardMinute > currentMinute) {
+              intervals.push({ kind: "NODE", station_id: currentStationId, start: currentMinute, end: boardMinute });
+            }
+            resolvedSteps.push({
+              step_index: index + 1,
+              type: "BOARD_TRAIN",
+              source_plan_type: "BOARD_ANY_OF",
+              train_number: train.train_number,
+              rejected_candidates: rejected,
+            });
+            pushEvent("PLAN_RESOLUTION", {
+              chosen_train_number: train.train_number,
+              rejected_candidates: rejected,
+            });
+            currentMinute = boardMinute;
+            currentTrain = train;
+            currentBoardStop = boardStop;
+            pushEvent("BOARD_TRAIN", {
+              station_id: currentStationId,
+              train_number: train.train_number,
+              sequence: boardStop.sequence,
+            });
+            currentStationId = null;
+            continue;
+          }
+
+          if (step.type === "RIDE_TO_STATION") {
+            if (!currentTrain || !currentBoardStop) throw new Error("Not on a train.");
+            const alightStop = findAlightStop(
+              currentTrain,
+              currentBoardStop.sequence,
+              step.station_id,
+              step.loop_pass_index
+            );
+            if (!alightStop) throw new Error(`Train ${currentTrain.train_number} does not reach ${step.station_id} later.`);
+            const arrivalMinute = stopArrivalMinutes(alightStop);
+            intervals.push({ kind: "TRAIN", train_number: currentTrain.train_number, start: currentMinute, end: arrivalMinute });
+            currentMinute = arrivalMinute;
+            currentStationId = alightStop.station_id;
+            resolvedSteps.push({ step_index: index + 1, ...step });
+            pushEvent("ALIGHT_TRAIN", {
+              station_id: alightStop.station_id,
+              train_number: currentTrain.train_number,
+              sequence: alightStop.sequence,
+              loop_pass_index: alightStop.loop_pass_index,
+            });
+            currentTrain = null;
+            currentBoardStop = null;
+            continue;
+          }
+
+          throw new Error(`Unsupported step type ${step.type}.`);
+        } catch (err) {
+          error = `Step ${index + 1}: ${err.message}`;
+          break;
+        }
+      }
+
+      if (!error && currentStationId != null && currentMinute < endMinute) {
+        intervals.push({ kind: "NODE", station_id: currentStationId, start: currentMinute, end: endMinute });
+      }
+
+      const currentState =
+        currentTrain
+          ? { kind: "TRAIN", train_number: currentTrain.train_number }
+          : { kind: "NODE", station_id: currentStationId };
+
+      return {
+        playerId,
+        inputMode: player.inputMode,
+        startStationId: player.startStationId,
+        currentMinute,
+        currentTime: minutesToHhmm(currentMinute),
+        currentState,
+        intervals,
+        events,
+        resolvedSteps,
+        error,
+      };
+    }
+
+    function buildScenarioJson() {
+      const makePlayer = (playerId) => {
+        const player = state.players[playerId];
+        if (player.inputMode === "plan") {
+          return {
+            start_station_id: player.startStationId,
+            plan: {
+              id: `${playerId}_plan_v0_1`,
+              steps: player.steps,
+            },
+          };
+        }
+        return {
+          start_station_id: player.startStationId,
+          actions: player.steps,
+        };
+      };
+
+      return {
+        id: state.ui.scenarioId.value,
+        label: "Planner generated scenario",
+        dataset_id: state.dataset.id,
+        start_time_hhmm: state.ui.startTime.value,
+        end_time_hhmm: state.ui.endTime.value,
+        players: {
+          runner: makePlayer("runner"),
+          hunter: makePlayer("hunter"),
+        },
+      };
+    }
+
+    function renderAll() {
+      state.previews.runner = previewPlayer("runner");
+      state.previews.hunter = previewPlayer("hunter");
+      renderPlayer("runner");
+      renderPlayer("hunter");
+      renderAdvisor();
+    }
+
+    function renderPlayer(playerId) {
+      const player = state.players[playerId];
+      const preview = state.previews[playerId];
+      const panel = document.getElementById(`${playerId}-panel`);
+      panel.innerHTML = "";
+
+      const top = document.createElement("div");
+      top.className = "player-top";
+      top.innerHTML = `
+        <h2>${playerId === "runner" ? "Runner Planner" : "Hunter Planner"}</h2>
+        <span class="player-badge">${player.inputMode === "plan" ? "Plan Mode" : "Action Mode"}</span>
+      `;
+
+      const startField = document.createElement("div");
+      startField.className = "field";
+      startField.innerHTML = `<label>Start Station</label>`;
+      const startSelect = buildStationSelect(player.startStationId, (value) => {
+        player.startStationId = value;
+        renderAll();
+      });
+      startField.appendChild(startSelect);
+
+      const modeField = document.createElement("div");
+      modeField.className = "field";
+      modeField.innerHTML = `<label>Input Mode</label>`;
+      const modeSelect = document.createElement("select");
+      modeSelect.innerHTML = `
+        <option value="actions">actions</option>
+        <option value="plan">plan</option>
+      `;
+      modeSelect.value = player.inputMode;
+      modeSelect.addEventListener("change", (event) => {
+        player.inputMode = event.target.value;
+        renderAll();
+      });
+      modeField.appendChild(modeSelect);
+
+      const status = document.createElement("div");
+      status.className = "status-card";
+      status.innerHTML = `
+        <div class="status-grid">
+          <div class="key">Current Time</div><div>${preview.currentTime}</div>
+          <div class="key">Current State</div><div>${formatState(preview.currentState)}</div>
+          <div class="key">Resolved Steps</div><div>${preview.resolvedSteps.length}</div>
+          <div class="key">Status</div><div>${preview.error ? `<span style="color:${playerId === "runner" ? "var(--runner)" : "var(--hunter)"};">${preview.error}</span>` : "Ready"}</div>
+        </div>
+      `;
+
+      const actionHeader = document.createElement("div");
+      actionHeader.className = "player-top";
+      const actionTitle = document.createElement("h3");
+      actionTitle.textContent = player.inputMode === "plan" ? "Plan Steps" : "Actions";
+      const addBar = document.createElement("div");
+      addBar.className = "tiny-actions";
+      addBar.appendChild(makeTinyButton("Add Wait", playerId === "runner" ? "runner-btn" : "hunter-btn", () => {
+        player.steps.push({ type: "WAIT_UNTIL", until_hhmm: preview.currentTime });
+        renderAll();
+      }));
+      addBar.appendChild(makeTinyButton("Add Ride", playerId === "runner" ? "runner-btn" : "hunter-btn", () => {
+        player.steps.push({ type: "RIDE_TO_STATION", station_id: player.startStationId });
+        renderAll();
+      }));
+      actionHeader.appendChild(actionTitle);
+      actionHeader.appendChild(addBar);
+
+      const list = document.createElement("div");
+      list.className = "action-list";
+      if (!player.steps.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No steps yet. Use the planner suggestions on the right to build a route.";
+        list.appendChild(empty);
+      } else {
+        player.steps.forEach((step, index) => {
+          list.appendChild(renderStepItem(playerId, step, index));
+        });
+      }
+
+      const strip = document.createElement("div");
+      strip.className = "advisor-block";
+      strip.innerHTML = `<h3>Current Node Preview</h3>`;
+      strip.appendChild(renderStationStrip(preview));
+
+      panel.appendChild(top);
+      panel.appendChild(startField);
+      panel.appendChild(modeField);
+      panel.appendChild(status);
+      panel.appendChild(actionHeader);
+      panel.appendChild(list);
+      panel.appendChild(strip);
+    }
+
+    function renderStepItem(playerId, step, index) {
+      const player = state.players[playerId];
+      const item = document.createElement("div");
+      item.className = "action-item";
+
+      const head = document.createElement("div");
+      head.className = "action-head";
+      head.innerHTML = `
+        <div class="action-title">Step ${index + 1} · ${step.type}</div>
+        <div class="tiny-actions"></div>
+      `;
+
+      const controls = head.querySelector(".tiny-actions");
+      controls.appendChild(makeTinyButton("Up", "secondary", () => {
+        if (index === 0) return;
+        [player.steps[index - 1], player.steps[index]] = [player.steps[index], player.steps[index - 1]];
+        renderAll();
+      }));
+      controls.appendChild(makeTinyButton("Down", "secondary", () => {
+        if (index >= player.steps.length - 1) return;
+        [player.steps[index + 1], player.steps[index]] = [player.steps[index], player.steps[index + 1]];
+        renderAll();
+      }));
+      controls.appendChild(makeTinyButton("Delete", "secondary", () => {
+        player.steps.splice(index, 1);
+        renderAll();
+      }));
+
+      const body = document.createElement("div");
+      body.className = "row-grid";
+      body.appendChild(renderStepEditor(playerId, step));
+
+      item.appendChild(head);
+      item.appendChild(body);
+      return item;
+    }
+
+    function renderStepEditor(playerId, step) {
+      const wrapper = document.createElement("div");
+      wrapper.style.gridColumn = "1 / -1";
+      wrapper.style.display = "grid";
+      wrapper.style.gap = "10px";
+
+      const typeSelect = document.createElement("select");
+      typeSelect.innerHTML = `
+        <option value="WAIT_UNTIL">WAIT_UNTIL</option>
+        <option value="BOARD_TRAIN">BOARD_TRAIN</option>
+        <option value="BOARD_ANY_OF">BOARD_ANY_OF</option>
+        <option value="RIDE_TO_STATION">RIDE_TO_STATION</option>
+      `;
+      typeSelect.value = step.type;
+      typeSelect.addEventListener("change", (event) => {
+        const nextType = event.target.value;
+        if (nextType === "WAIT_UNTIL") Object.assign(step, { type: nextType, until_hhmm: state.ui.startTime.value });
+        if (nextType === "BOARD_TRAIN") Object.assign(step, { type: nextType, train_number: "720G" });
+        if (nextType === "BOARD_ANY_OF") Object.assign(step, { type: nextType, candidates: [{ train_number: "720G" }, { train_number: "774G" }] });
+        if (nextType === "RIDE_TO_STATION") Object.assign(step, { type: nextType, station_id: state.players[playerId].startStationId });
+        for (const key of Object.keys(step)) {
+          if (!["type", "until_hhmm", "train_number", "station_id", "loop_pass_index", "candidates"].includes(key)) {
+            delete step[key];
+          }
+        }
+        renderAll();
+      });
+      wrapper.appendChild(typeSelect);
+
+      if (step.type === "WAIT_UNTIL") {
+        const input = document.createElement("input");
+        input.value = step.until_hhmm || state.ui.startTime.value;
+        input.addEventListener("input", (event) => {
+          step.until_hhmm = event.target.value;
+          renderAll();
+        });
+        wrapper.appendChild(input);
+      }
+
+      if (step.type === "BOARD_TRAIN") {
+        const input = document.createElement("input");
+        input.value = step.train_number || "";
+        input.placeholder = "Train number";
+        input.addEventListener("input", (event) => {
+          step.train_number = event.target.value.toUpperCase();
+          renderAll();
+        });
+        wrapper.appendChild(input);
+      }
+
+      if (step.type === "BOARD_ANY_OF") {
+        const textarea = document.createElement("textarea");
+        textarea.style.minHeight = "110px";
+        textarea.value = (step.candidates || []).map((candidate) => candidate.train_number).join("\n");
+        textarea.placeholder = "One train number per line";
+        textarea.addEventListener("input", (event) => {
+          step.candidates = event.target.value
+            .split("\n")
+            .map((value) => value.trim())
+            .filter(Boolean)
+            .map((trainNumber) => ({ train_number: trainNumber.toUpperCase() }));
+          renderAll();
+        });
+        wrapper.appendChild(textarea);
+      }
+
+      if (step.type === "RIDE_TO_STATION") {
+        const select = buildStationSelect(step.station_id || state.players[playerId].startStationId, (value) => {
+          step.station_id = value;
+          renderAll();
+        });
+        wrapper.appendChild(select);
+      }
+
+      return wrapper;
+    }
+
+    function renderAdvisor() {
+      const focus = state.ui.focusPlayer.value;
+      const preview = state.previews[focus];
+      const panel = document.getElementById("advisor-panel");
+      panel.innerHTML = "";
+
+      const title = document.createElement("div");
+      title.innerHTML = `<h2>Planning Assistant</h2><div class="empty" style="padding:10px;">Focus player: ${focus}</div>`;
+
+      const departureBlock = document.createElement("div");
+      departureBlock.className = "advisor-block";
+      departureBlock.innerHTML = `<h3>Catchable Departures</h3>`;
+      departureBlock.appendChild(renderDepartureSuggestions(focus, preview));
+
+      const rideBlock = document.createElement("div");
+      rideBlock.className = "advisor-block";
+      rideBlock.innerHTML = `<h3>Ride Targets</h3>`;
+      rideBlock.appendChild(renderRideSuggestions(focus, preview));
+
+      const scenarioBlock = document.createElement("div");
+      scenarioBlock.className = "advisor-block";
+      scenarioBlock.innerHTML = `<h3>Scenario JSON</h3>`;
+      const textarea = document.createElement("textarea");
+      textarea.value = JSON.stringify(buildScenarioJson(), null, 2);
+      scenarioBlock.appendChild(textarea);
+      const command = document.createElement("div");
+      command.className = "empty";
+      command.textContent =
+        `cd /home/xincheng/toy/Chase && python3 scripts/simulate_match_from_train_instances.py --dataset data/yamanote_weekday_train_instances_merged.json --scenario <your-scenario-file>.json`;
+      scenarioBlock.appendChild(command);
+
+      panel.appendChild(title);
+      panel.appendChild(departureBlock);
+      panel.appendChild(rideBlock);
+      panel.appendChild(scenarioBlock);
+    }
+
+    function renderDepartureSuggestions(playerId, preview) {
+      const wrap = document.createElement("div");
+      wrap.className = "suggest-list";
+      if (preview.error) {
+        wrap.innerHTML = `<div class="empty">${preview.error}</div>`;
+        return wrap;
+      }
+      if (preview.currentState.kind !== "NODE") {
+        wrap.innerHTML = `<div class="empty">Current state is on a train. Use Ride Targets to choose where to get off.</div>`;
+        return wrap;
+      }
+
+      const stationId = preview.currentState.station_id;
+      const minute = preview.currentMinute;
+      const suggestions = state.dataset.train_instances
+        .map((train) => {
+          const boardStop = findBoardingStop(train, stationId, minute);
+          if (!boardStop) return null;
+          return {
+            train,
+            boardStop,
+            boardMinute: stopDepartureMinutes(boardStop),
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.boardMinute - b.boardMinute)
+        .slice(0, 12);
+
+      suggestions.forEach((entry) => {
+        const item = document.createElement("div");
+        item.className = "suggest-item";
+        item.innerHTML = `
+          <div class="suggest-top">
+            <div class="suggest-title">${entry.train.train_number}</div>
+            <div>${minutesToHhmm(entry.boardMinute)}</div>
+          </div>
+          <div class="suggest-sub">${stationLabel(stationId)} · ${entry.train.direction_label || "unknown direction"} · seq ${entry.boardStop.sequence}</div>
+        `;
+        const buttons = document.createElement("div");
+        buttons.className = "tiny-actions";
+        buttons.appendChild(makeTinyButton("Add BOARD_TRAIN", playerId === "runner" ? "runner-btn" : "hunter-btn", () => {
+          state.players[playerId].steps.push({ type: "BOARD_TRAIN", train_number: entry.train.train_number });
+          renderAll();
+        }));
+        buttons.appendChild(makeTinyButton("Add BOARD_ANY_OF", "secondary", () => {
+          state.players[playerId].steps.push({
+            type: "BOARD_ANY_OF",
+            candidates: [{ train_number: entry.train.train_number }],
+          });
+          renderAll();
+        }));
+        item.appendChild(buttons);
+        wrap.appendChild(item);
+      });
+
+      if (!suggestions.length) {
+        wrap.innerHTML = `<div class="empty">No catchable departures from ${stationLabel(stationId)} after ${minutesToHhmm(minute)}.</div>`;
+      }
+
+      return wrap;
+    }
+
+    function renderRideSuggestions(playerId, preview) {
+      const wrap = document.createElement("div");
+      wrap.className = "suggest-list";
+      if (preview.error) {
+        wrap.innerHTML = `<div class="empty">${preview.error}</div>`;
+        return wrap;
+      }
+      if (preview.currentState.kind !== "TRAIN") {
+        wrap.innerHTML = `<div class="empty">Current state is not on a train. Add a boarding step first.</div>`;
+        return wrap;
+      }
+
+      const train = getTrain(preview.currentState.train_number);
+      const alightCandidates = [];
+      const currentMinute = preview.currentMinute;
+      for (const stop of train.stop_times) {
+        const arrivalMinute = stopArrivalMinutes(stop);
+        if (arrivalMinute <= currentMinute) continue;
+        alightCandidates.push({ stop, arrivalMinute });
+      }
+
+      alightCandidates.slice(0, 12).forEach((entry) => {
+        const item = document.createElement("div");
+        item.className = "suggest-item";
+        item.innerHTML = `
+          <div class="suggest-top">
+            <div class="suggest-title">${stationLabel(entry.stop.station_id)}</div>
+            <div>${minutesToHhmm(entry.arrivalMinute)}</div>
+          </div>
+          <div class="suggest-sub">Train ${train.train_number} · loop ${entry.stop.loop_pass_index || 1} · seq ${entry.stop.sequence}</div>
+        `;
+        const buttons = document.createElement("div");
+        buttons.className = "tiny-actions";
+        buttons.appendChild(makeTinyButton("Add RIDE_TO_STATION", playerId === "runner" ? "runner-btn" : "hunter-btn", () => {
+          state.players[playerId].steps.push({
+            type: "RIDE_TO_STATION",
+            station_id: entry.stop.station_id,
+            ...(entry.stop.loop_pass_index > 1 ? { loop_pass_index: entry.stop.loop_pass_index } : {}),
+          });
+          renderAll();
+        }));
+        item.appendChild(buttons);
+        wrap.appendChild(item);
+      });
+
+      return wrap;
+    }
+
+    function renderStationStrip(preview) {
+      const container = document.createElement("div");
+      container.className = "station-strip";
+      const stationsEl = document.createElement("div");
+      stationsEl.className = "stations";
+      const track = document.createElement("div");
+      track.className = "track";
+      stationsEl.appendChild(track);
+
+      const runnerState = state.previews.runner?.currentState;
+      const hunterState = state.previews.hunter?.currentState;
+      const runnerStation = runnerState?.kind === "NODE" ? runnerState.station_id : null;
+      const hunterStation = hunterState?.kind === "NODE" ? hunterState.station_id : null;
+
+      state.stations.forEach((station) => {
+        const node = document.createElement("div");
+        node.className = "station";
+        const dot = document.createElement("div");
+        dot.className = "dot";
+        const runnerHere = runnerStation === station.id;
+        const hunterHere = hunterStation === station.id;
+        if (runnerHere) dot.classList.add("runner");
+        if (hunterHere) dot.classList.add("hunter");
+        if (runnerHere && hunterHere) dot.classList.add("both");
+        const label = document.createElement("div");
+        label.className = "station-name";
+        label.innerHTML = `${station.names.en}<br>${station.names.ja}`;
+        node.appendChild(dot);
+        node.appendChild(label);
+        stationsEl.appendChild(node);
+      });
+
+      container.appendChild(stationsEl);
+      return container;
+    }
+
+    function buildStationSelect(value, onChange) {
+      const select = document.createElement("select");
+      state.stations.forEach((station) => {
+        const option = document.createElement("option");
+        option.value = station.id;
+        option.textContent = `${station.names.en} / ${station.names.ja}`;
+        select.appendChild(option);
+      });
+      select.value = value;
+      select.addEventListener("change", (event) => onChange(event.target.value));
+      return select;
+    }
+
+    function makeTinyButton(label, className, onClick) {
+      const button = document.createElement("button");
+      button.textContent = label;
+      button.className = className;
+      button.type = "button";
+      button.addEventListener("click", onClick);
+      return button;
+    }
+
+    function formatState(stateValue) {
+      if (!stateValue) return "Unknown";
+      if (stateValue.kind === "NODE") return `NODE @ ${stationLabel(stateValue.station_id)}`;
+      if (stateValue.kind === "TRAIN") return `TRAIN @ ${stateValue.train_number}`;
+      return stateValue.kind;
+    }
+
+    init().catch((error) => {
+      document.body.innerHTML = `<div class="page"><div class="panel" style="padding:24px;">Failed to load planner data. Start a local server from <code>/home/xincheng/toy/Chase</code> with <code>python3 -m http.server 8000</code>, then open <code>http://localhost:8000/planner.html</code>.</div></div>`;
+      console.error(error);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+{
+  "id": "yamanote_weekday_same_train_capture_v0_1",
+  "label": "Runner and Hunter converge onto the same real Yamanote train",
+  "dataset_id": "yamanote_weekday_train_instances_merged_v0_1",
+  "start_time_hhmm": "08:00",
+  "end_time_hhmm": "08:20",
+  "players": {
+    "runner": {
+      "start_station_id": "TOKYO",
+      "actions": [
+        {
+          "type": "WAIT_UNTIL",
+          "until_hhmm": "08:04"
+        },
+        {
+          "type": "BOARD_TRAIN",
+          "train_number": "720G"
+        },
+        {
+          "type": "RIDE_TO_STATION",
+          "station_id": "NISHI_NIPPORI"
+        },
+        {
+          "type": "WAIT_UNTIL",
+          "until_hhmm": "08:20"
+        }
+      ]
+    },
+    "hunter": {
+      "start_station_id": "UENO",
+      "actions": [
+        {
+          "type": "WAIT_UNTIL",
+          "until_hhmm": "08:11"
+        },
+        {
+          "type": "BOARD_TRAIN",
+          "train_number": "720G"
+        },
+        {
+          "type": "RIDE_TO_STATION",
+          "station_id": "NIPPORI"
+        },
+        {
+          "type": "WAIT_UNTIL",
+          "until_hhmm": "08:20"
+        }
+      ]
+    }
+  }
+}

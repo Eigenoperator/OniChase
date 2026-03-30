@@ -1,0 +1,41 @@
+{
+  "id": "yamanote_weekday_plan_fallback_v0_1",
+  "label": "Planning-mode fallback resolves to the first catchable train candidate",
+  "dataset_id": "yamanote_weekday_train_instances_merged_v0_1",
+  "start_time_hhmm": "08:00",
+  "end_time_hhmm": "08:20",
+  "players": {
+    "runner": {
+      "start_station_id": "TOKYO",
+      "plan": {
+        "id": "runner_fallback_plan_v0_1",
+        "steps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "08:04"
+          },
+          {
+            "type": "BOARD_ANY_OF",
+            "candidates": [
+              { "train_number": "774G" },
+              { "train_number": "720G" }
+            ]
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "UENO"
+          }
+        ]
+      }
+    },
+    "hunter": {
+      "start_station_id": "SHINJUKU",
+      "actions": [
+        {
+          "type": "WAIT_UNTIL",
+          "until_hhmm": "08:20"
+        }
+      ]
+    }
+  }
+}

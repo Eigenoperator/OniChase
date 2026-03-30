@@ -1,0 +1,39 @@
+{
+  "id": "yamanote_weekday_same_minute_cross_same_train_v0_1",
+  "label": "Same-minute alight and board on the same train instance should capture",
+  "dataset_id": "yamanote_weekday_train_instances_merged_v0_1",
+  "start_time_hhmm": "08:08",
+  "end_time_hhmm": "08:20",
+  "players": {
+    "runner": {
+      "start_station_id": "YURAKUCHO",
+      "actions": [
+        {
+          "type": "BOARD_TRAIN",
+          "train_number": "764G"
+        },
+        {
+          "type": "RIDE_TO_STATION",
+          "station_id": "AKIHABARA"
+        }
+      ]
+    },
+    "hunter": {
+      "start_station_id": "AKIHABARA",
+      "actions": [
+        {
+          "type": "WAIT_UNTIL",
+          "until_hhmm": "08:14"
+        },
+        {
+          "type": "BOARD_TRAIN",
+          "train_number": "764G"
+        },
+        {
+          "type": "RIDE_TO_STATION",
+          "station_id": "UENO"
+        }
+      ]
+    }
+  }
+}

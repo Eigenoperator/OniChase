@@ -1,0 +1,50 @@
+## 2026-03-30
+
+- Initialized project control files and memory structure.
+- Loaded `AXIOMS.md` as the canonical workflow rules for future sessions.
+- Loaded rule draft v0.5 from `rule/RULES_v0.5.md` as the current gameplay baseline and added an English working translation in `rule/RULES_v0.5-EN.md`.
+- Created the first technical schema draft in `SCHEMA.md` to map gameplay rules into runtime data structures.
+- Created `STATE_MACHINE.md` to define the minimal phase-based and event-driven flow of one match.
+- Created `PROTOTYPE_SCOPE.md` plus three schematic Tokyo candidate maps to start selecting the first playable mini-network.
+- Selected `Candidate B: East Core` as prototype v0.1 and created `MAP_CANDIDATE_B.md` as the first node-level map draft.
+- Created `MAP_CANDIDATE_B_GRAPH.md` and a graph-ready East Core visualization to define prototype v0.1 adjacency and interchange structure.
+- Locked the 10-node `Candidate B` East Core map as the first system test map.
+- Created `data/candidate_b_bundle.json` as the first static map bundle for prototype v0.1.
+- Created and ran `scripts/validate_candidate_b_bundle.py` to verify the first map bundle structure.
+- Added multilingual node names to the schema and Candidate B bundle for English, Japanese, and Chinese display support.
+- Created the first timetable stub and minimal simulation script, and ran the first executable movement/capture test on the Candidate B map.
+- Shifted the main prototype direction from the coarse Candidate B map to a real-data Yamanote Line test map and created `YAMANOTE_IMPLEMENTATION_PLAN.md`.
+- Deleted Candidate B implementation artifacts after the direction change and created `data/yamanote_stations.json` as the first real Yamanote dataset.
+- Created `visuals/yamanote_line.svg` to visualize the full 30-station Yamanote loop with multilingual station labels.
+- Refreshed `MEMORY.md` so long-term continuity now reflects the current Yamanote-first project direction.
+- Researched the JR East official timetable structure and documented the extraction path in `YAMANOTE_TIMETABLE_EXTRACTION.md`.
+- Updated the train data model so train instances are not bound to a single line, and added the first Yamanote station validator plus JR East timetable discovery script.
+- Parsed the first real JR East Yamanote train-detail pages and saved a seed train-instance timetable dataset.
+- Normalized the first real Yamanote train-instance seed dataset onto canonical station IDs.
+- Built the first station-wide real timetable pull from Hamamatsucho and obtained 246 weekday counterclockwise Yamanote train instances.
+- Built the matching clockwise Hamamatsucho station-wide pull and obtained 265 weekday Yamanote train instances.
+- Strengthened the train model for loop-line behavior so repeated stations can remain inside one continuous service record.
+- Refactored script naming so reusable tooling is named by responsibility or JR East page format rather than the temporary Yamanote dataset name.
+- Created `scripts/validate_train_instances_dataset.py` to validate train-instance datasets for duplicate train numbers, time ordering, canonical station IDs, and loop-aware stop sequencing.
+- Extracted shared normalization logic into `scripts/train_instance_normalization.py`, updated the builder and normalization scripts to reuse it, and re-normalized both Hamamatsucho station-wide weekday datasets.
+- Revalidated the normalized counterclockwise (`246`) and clockwise (`265`) Hamamatsucho datasets successfully after adding `service_instance_id` and `loop_pass_index` to station-wide outputs.
+- Created `scripts/merge_train_instance_datasets.py`, merged the clockwise and counterclockwise Hamamatsucho pulls into `data/yamanote_weekday_train_instances_merged.json`, and confirmed there were no duplicate train numbers across the two directions.
+- Produced the first merged weekday Yamanote database with `511` train instances and validated it successfully.
+- Created `scripts/render_train_timetable_svg.py` and rendered `visuals/yamanote_weekday_timetable.svg` as a time-space overview of the full weekday merged Yamanote timetable.
+- Created `SIMULATION_INPUT.md` to define the first reusable player action schema for the real timetable simulator.
+- Implemented `scripts/simulate_match_from_train_instances.py` as the first minimal two-player simulator over real train-instance data.
+- Added `data/scenarios/yamanote_weekday_same_train_capture_v0_1.json` and successfully reproduced a real same-train capture on train `720G` at `08:11`.
+- Upgraded the simulator result format to include a full `match_event_log` and precise `state_before` / `state_after` snapshots for each event.
+- Added `data/results/yamanote_weekday_same_train_capture_v0_1.result.json` as the first checked-in replay-style simulation result for inspection.
+- Switched capture resolution from interval-overlap scanning to event-driven immediate checks, and now record the triggering event on each `CAPTURE`.
+- Added `data/scenarios/yamanote_weekday_arrival_into_waiting_hunter_v0_1.json` and validated the rule "arrival into waiting hunter" with a real Yamanote example at `UENO` `08:11`.
+- Created `rule/RULES_v0.6.md` and `rule/RULES_v0.6-EN.md` to formalize the newly confirmed boundary rule for same-minute alight/board crossing.
+- Added two real Yamanote validation scenarios for that boundary: same-train crossing captures successfully, while different-train crossing does not capture.
+- Added a rule-document convention to `AXIOMS.md`: every new rule version file must state its main change at the top, and updated `RULES_v0.6` / `RULES_v0.6-EN.md` accordingly.
+- Created `PLANNING_FORMAT.md` to define the first planning-friendly layer above primitive actions, including `BOARD_ANY_OF`.
+- Extended the simulator to accept `plan` input, emit `resolved_actions`, and log `PLAN_RESOLUTION` events.
+- Enriched replay output with `event_scope`, `timeline_lane`, and `event_family`, and validated the fallback-plan behavior with `data/scenarios/yamanote_weekday_plan_fallback_v0_1.json`.
+- Created `debug_gui.html` as a local replay-inspection GUI with preset loading, file upload, event scrubber, state cards, raw event JSON, and a simplified Yamanote position strip.
+- Added `DEBUG_GUI.md` with the local launch instructions (`python3 -m http.server 8000`) and usage notes for debugging.
+- Created `planner.html` as a planning-first local GUI for assembling runner and hunter routes against the real Yamanote timetable.
+- Added `PLANNER_GUI.md` documenting how to launch the planning GUI and what it currently supports.
