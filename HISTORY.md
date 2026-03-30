@@ -48,3 +48,4 @@
 - Added `DEBUG_GUI.md` with the local launch instructions (`python3 -m http.server 8000`) and usage notes for debugging.
 - Created `planner.html` as a planning-first local GUI for assembling runner and hunter routes against the real Yamanote timetable.
 - Added `PLANNER_GUI.md` documenting how to launch the planning GUI and what it currently supports.
+- Initialized local git in the workspace, connected the project to `Eigenoperator/OniChase`, rebased onto the remote bootstrap commit, and pushed the first full project import to GitHub.

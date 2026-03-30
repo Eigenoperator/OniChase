@@ -59,6 +59,7 @@
 - 新建 `DEBUG_GUI.md`，写明 GUI 的用途、加载方式与本地启动命令。
 - 新建 `planner.html`，把网页工具方向转成 planning-first：可选起点、组行动链、浏览真实可上车班次、生成 scenario JSON。
 - 新建 `PLANNER_GUI.md`，说明 planning GUI 的用途、启动方式与当前支持的步骤类型。
+- 初始化本地 git 仓库，连接 `git@github.com:Eigenoperator/OniChase.git`，并完成首轮项目同步到 GitHub。
 
 ## In Progress
 - 正在把第一版真实时刻表模拟器和网页工具从“可运行”推进到“可实际规划玩法与高效迭代”的开发底座。
