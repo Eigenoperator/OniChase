@@ -59,6 +59,7 @@
 
 - Keep the project under git version control.
 - Use English commit messages.
+- After each substantive project change, commit and push the current state to GitHub.
 - When writing or backfilling a diary, also check whether the current project state should be committed and synced.
 - If diary-time sync does not happen, record the reason immediately in `STATUS.md` or the daily `memory` file as an explicit blocker.
 - Prefer syncing stable control files, scripts, docs, and selected experiment artifacts, not caches or third-party dependencies.

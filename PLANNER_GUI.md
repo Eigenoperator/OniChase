@@ -6,6 +6,14 @@ This document explains the planning-first local GUI.
 
 Unlike the replay-oriented debug GUI, this page is meant to help design and assemble playable route plans against the real Yamanote timetable.
 
+The current UI is intentionally shaped like a lightweight client prototype:
+
+- runner mode / hunter mode switch
+- map as the primary screen
+- top-left HUD for current time and current location
+- current-train next-stop list when the player is on a train
+- right-side decision box showing the current plan
+
 ## File
 
 - [planner.html](/home/xincheng/toy/Chase/planner.html)
@@ -23,16 +31,24 @@ Unlike the replay-oriented debug GUI, this page is meant to help design and asse
 
 ## Recommended Launch
 
+Double-click:
+
+- [START_ONICHASE_LOCAL.desktop](/home/xincheng/toy/Chase/START_ONICHASE_LOCAL.desktop)
+
+Or run:
+
 ```bash
 cd /home/xincheng/toy/Chase
-python3 -m http.server 8000
+./START_ONICHASE_LOCAL.sh
 ```
 
 Then open:
 
 ```text
-http://localhost:8000/planner.html
+http://127.0.0.1:8000/planner.html
 ```
+
+If port `8000` is occupied, the launcher automatically moves to the next available nearby port and prints the final URL.
 
 ## Current Scope
 

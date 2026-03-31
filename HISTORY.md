@@ -49,3 +49,8 @@
 - Created `planner.html` as a planning-first local GUI for assembling runner and hunter routes against the real Yamanote timetable.
 - Added `PLANNER_GUI.md` documenting how to launch the planning GUI and what it currently supports.
 - Initialized local git in the workspace, connected the project to `Eigenoperator/OniChase`, rebased onto the remote bootstrap commit, and pushed the first full project import to GitHub.
+- Added a double-click local launch path via `scripts/run_local_site.py`, `START_ONICHASE_LOCAL.sh`, and `START_ONICHASE_LOCAL.desktop`.
+- Verified that the local launcher successfully starts the planning site and automatically selects an open localhost port.
+- Reworked `planner.html` from a utility-style planning board into a more client-like gameplay-planning prototype with runner/hunter modes, a map-first layout, HUD cards, train next-stop display, and a right-side current-plan panel.
+- Replaced the odd freeform Yamanote map layout in `planner.html` with a typical closed circular loop: stations are now spaced evenly around the ring in route order and labels are pushed outward radially for a clearer player-facing mental model.
+- Added a git-backup workflow rule to `AXIOMS.md`: after each substantive project change, commit and push the current state to GitHub by default.

@@ -60,6 +60,11 @@
 - 新建 `planner.html`，把网页工具方向转成 planning-first：可选起点、组行动链、浏览真实可上车班次、生成 scenario JSON。
 - 新建 `PLANNER_GUI.md`，说明 planning GUI 的用途、启动方式与当前支持的步骤类型。
 - 初始化本地 git 仓库，连接 `git@github.com:Eigenoperator/OniChase.git`，并完成首轮项目同步到 GitHub。
+- 新建 `scripts/run_local_site.py`、`START_ONICHASE_LOCAL.sh`、`START_ONICHASE_LOCAL.desktop`，提供可双击启动的本地网站入口。
+- 实测本地启动器可成功拉起 `planner.html`，并会自动选择空闲端口。
+- 将 `planner.html` 重构为更接近客户端的玩法原型：支持 Runner / Hunter 模式切换，主屏为山手线地图，左上 HUD 显示时间与当前位置，在列车上时展示后续站点，右侧显示当前 plan。
+- 将 `planner.html` 的山手线地图改为典型圆环布局：按真实站序均分圆周、闭合主环路径，并将站名沿径向向外排布，避免原先不自然的折线感。
+- 将“每次有实质变更后都要 commit 并 push 到 GitHub”写入 `AXIOMS.md`，作为项目默认同步规则。
 
 ## In Progress
 - 正在把第一版真实时刻表模拟器和网页工具从“可运行”推进到“可实际规划玩法与高效迭代”的开发底座。
@@ -78,8 +83,10 @@
 - [2026-03-30] 编写脚本时应面向真实游戏架构与真实生产数据流，而不是一次性测试图逻辑。
 - [2026-03-30] 第一版 weekday 山手线数据库采用“按列车实例合并”而不是“按站点页继续分裂存储”，并在 train-instance 层保留 `direction_label`。
 - [2026-03-30] 若同一分钟内一人到站进入 `node`、另一人从该 `node` 上车离开，则仅在双方属于同一趟车实例时抓捕成功；异车交错不抓捕。
+- [2026-03-30] `planner.html` 的山手线主地图视觉采用标准圆环表达，优先服务于玩家对环线空间的直觉理解。
+- [2026-03-30] 每次有实质项目变更后，默认都要将当前状态 commit 并 push 到 GitHub。
 
 ## Next
-1. 扩展 planning 步骤种类，例如 transfer preference、wait-for-one-of、多段候选链。
-2. 让 `planner.html` 能直接触发本地模拟并展示结果，而不是只导出 scenario JSON。
+1. 让 `planner.html` 能直接触发本地模拟并展示结果，而不是只导出 scenario JSON。
+2. 扩展 planning 步骤种类，例如 transfer preference、wait-for-one-of、多段候选链。
 3. 开始补 walking / transfer / more exact node-state boundary 的后续判定框架。
