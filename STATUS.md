@@ -65,6 +65,8 @@
 - 将 `planner.html` 重构为更接近客户端的玩法原型：支持 Runner / Hunter 模式切换，主屏为山手线地图，左上 HUD 显示时间与当前位置，在列车上时展示后续站点，右侧显示当前 plan。
 - 将 `planner.html` 的山手线地图改为典型圆环布局：按真实站序均分圆周、闭合主环路径，并将站名沿径向向外排布，避免原先不自然的折线感。
 - 将“每次有实质变更后都要 commit 并 push 到 GitHub”写入 `AXIOMS.md`，作为项目默认同步规则。
+- 为 `planner.html` 增加 runner-plan 测试预设：默认 `06:00` 开局、Runner 使用 `plan` 模式、Hunter 默认原地等待到结束，并在界面中明确显示当前测试假设。
+- 为 `planner.html` 增加 `Cut Future` 与 Hunter 被动等待解除逻辑，方便测试“执行中修改后续计划”的玩法感受。
 
 ## In Progress
 - 正在把第一版真实时刻表模拟器和网页工具从“可运行”推进到“可实际规划玩法与高效迭代”的开发底座。
@@ -85,8 +87,9 @@
 - [2026-03-30] 若同一分钟内一人到站进入 `node`、另一人从该 `node` 上车离开，则仅在双方属于同一趟车实例时抓捕成功；异车交错不抓捕。
 - [2026-03-30] `planner.html` 的山手线主地图视觉采用标准圆环表达，优先服务于玩家对环线空间的直觉理解。
 - [2026-03-30] 每次有实质项目变更后，默认都要将当前状态 commit 并 push 到 GitHub。
+- [2026-03-30] 当前本地 plan 测试默认使用 `06:00` 开局、Runner 赛外 1 分钟预规划、Hunter 默认原地等待的快速验证模式。
 
 ## Next
 1. 让 `planner.html` 能直接触发本地模拟并展示结果，而不是只导出 scenario JSON。
-2. 扩展 planning 步骤种类，例如 transfer preference、wait-for-one-of、多段候选链。
-3. 开始补 walking / transfer / more exact node-state boundary 的后续判定框架。
+2. 围绕新的 runner-plan 测试预设，跑一轮真实玩法问题验证，例如首班车选择、临时下车、Hunter 静止时的人队优势。
+3. 扩展 planning 步骤种类，例如 transfer preference、wait-for-one-of、多段候选链。

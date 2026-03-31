@@ -11,6 +11,7 @@ The current UI is intentionally shaped like a lightweight client prototype:
 - runner mode / hunter mode switch
 - map as the primary screen
 - top-left HUD for current time and current location
+- a dedicated plan-test card for the current local planning assumptions
 - current-train next-stop list when the player is on a train
 - right-side decision box showing the current plan
 
@@ -28,6 +29,7 @@ The current UI is intentionally shaped like a lightweight client prototype:
 - browse future alight targets from the current train
 - append steps directly from planner suggestions
 - export a ready-to-use scenario JSON
+- load the default runner-plan test preset with one click
 
 ## Recommended Launch
 
@@ -60,6 +62,16 @@ It already supports:
 - `BOARD_TRAIN`
 - `BOARD_ANY_OF`
 - `RIDE_TO_STATION`
+
+## Default Local Plan Test
+
+The current default local test mode is aimed at quickly iterating on runner planning:
+
+- match start time defaults to `06:00`
+- runner uses `plan` mode
+- runner gets `1 minute` of out-of-game planning time before the match begins
+- hunter defaults to staying at the start station until match end
+- runner can revise future steps at any time by editing or cutting later plan items in the client
 
 ## Intended Next Step
 

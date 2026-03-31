@@ -54,3 +54,4 @@
 - Reworked `planner.html` from a utility-style planning board into a more client-like gameplay-planning prototype with runner/hunter modes, a map-first layout, HUD cards, train next-stop display, and a right-side current-plan panel.
 - Replaced the odd freeform Yamanote map layout in `planner.html` with a typical closed circular loop: stations are now spaced evenly around the ring in route order and labels are pushed outward radially for a clearer player-facing mental model.
 - Added a git-backup workflow rule to `AXIOMS.md`: after each substantive project change, commit and push the current state to GitHub by default.
+- Added a dedicated local runner-plan test preset to `planner.html`: match start defaults to `06:00`, runner starts in `plan` mode with pre-match planning assumptions shown in the UI, hunter defaults to holding position until match end, and future steps can now be trimmed quickly with `Cut Future` during plan iteration.

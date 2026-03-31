@@ -518,6 +518,7 @@
           <button id="runner-mode-button" class="active runner" type="button">Runner Mode</button>
           <button id="hunter-mode-button" class="hunter" type="button">Hunter Mode</button>
         </div>
+        <button id="load-plan-test-button" class="small-button secondary" type="button">Load Plan Test</button>
         <button id="refresh-button" class="small-button secondary" type="button">Refresh View</button>
       </div>
     </div>
@@ -526,6 +527,7 @@
       <div class="main-panel panel">
         <div class="hud">
           <div id="hud-card" class="hud-card"></div>
+          <div id="test-mode-card" class="mini-card"></div>
           <div id="train-card" class="mini-card"></div>
         </div>
 
@@ -554,14 +556,14 @@
 
           <div class="field">
             <label for="scenario-id">Scenario ID</label>
-            <input id="scenario-id" value="planner_client_scenario_v0_1" />
+            <input id="scenario-id" value="runner_plan_test_v0_1" />
           </div>
 
           <div class="row-grid">
             <div class="key">Start Time</div>
-            <div><input id="start-time" value="08:00" /></div>
+            <div><input id="start-time" value="06:00" /></div>
             <div class="key">End Time</div>
-            <div><input id="end-time" value="08:30" /></div>
+            <div><input id="end-time" value="07:00" /></div>
             <div class="key">Input Mode</div>
             <div>
               <select id="input-mode-select">
@@ -622,20 +624,14 @@
         runner: {
           startStationId: "TOKYO",
           inputMode: "plan",
-          steps: [
-            { type: "WAIT_UNTIL", until_hhmm: "08:04" },
-            {
-              type: "BOARD_ANY_OF",
-              candidates: [{ train_number: "774G" }, { train_number: "720G" }]
-            },
-            { type: "RIDE_TO_STATION", station_id: "UENO" }
-          ]
+          steps: []
         },
         hunter: {
           startStationId: "SHINJUKU",
           inputMode: "actions",
+          passiveHold: true,
           steps: [
-            { type: "WAIT_UNTIL", until_hhmm: "08:30" }
+            { type: "WAIT_UNTIL", until_hhmm: "07:00" }
           ]
         }
       },
@@ -654,8 +650,10 @@
     function bindUi() {
       state.ui.runnerModeButton = document.getElementById("runner-mode-button");
       state.ui.hunterModeButton = document.getElementById("hunter-mode-button");
+      state.ui.loadPlanTestButton = document.getElementById("load-plan-test-button");
       state.ui.refreshButton = document.getElementById("refresh-button");
       state.ui.hudCard = document.getElementById("hud-card");
+      state.ui.testModeCard = document.getElementById("test-mode-card");
       state.ui.trainCard = document.getElementById("train-card");
       state.ui.mapSvg = document.getElementById("map-svg");
       state.ui.planTitle = document.getElementById("plan-title");
@@ -674,8 +672,13 @@
 
       state.ui.runnerModeButton.addEventListener("click", () => setActiveMode("runner"));
       state.ui.hunterModeButton.addEventListener("click", () => setActiveMode("hunter"));
+      state.ui.loadPlanTestButton.addEventListener("click", () => {
+        applyRunnerPlanTestPreset();
+        renderAll();
+      });
       state.ui.refreshButton.addEventListener("click", renderAll);
       state.ui.inputModeSelect.addEventListener("change", (event) => {
+        disablePassiveHold(state.activeMode);
         state.players[state.activeMode].inputMode = event.target.value;
         renderAll();
       });
@@ -687,13 +690,48 @@
       state.ui.endTime.addEventListener("input", renderAll);
       state.ui.scenarioId.addEventListener("input", renderAll);
       state.ui.addWaitButton.addEventListener("click", () => {
+        disablePassiveHold(state.activeMode);
         state.players[state.activeMode].steps.push({ type: "WAIT_UNTIL", until_hhmm: state.ui.startTime.value });
         renderAll();
       });
       state.ui.addRideButton.addEventListener("click", () => {
+        disablePassiveHold(state.activeMode);
         state.players[state.activeMode].steps.push({ type: "RIDE_TO_STATION", station_id: state.players[state.activeMode].startStationId });
         renderAll();
       });
+    }
+
+    function applyRunnerPlanTestPreset() {
+      state.activeMode = "runner";
+      state.ui.scenarioId.value = "runner_plan_test_v0_1";
+      state.ui.startTime.value = "06:00";
+      state.ui.endTime.value = "07:00";
+      state.players.runner = {
+        startStationId: "TOKYO",
+        inputMode: "plan",
+        steps: []
+      };
+      state.players.hunter = {
+        startStationId: "SHINJUKU",
+        inputMode: "actions",
+        passiveHold: true,
+        steps: [{ type: "WAIT_UNTIL", until_hhmm: state.ui.endTime.value }]
+      };
+    }
+
+    function disablePassiveHold(playerId) {
+      if (playerId === "hunter") {
+        state.players.hunter.passiveHold = false;
+      }
+    }
+
+    function syncPassiveHunterStep() {
+      const hunter = state.players.hunter;
+      if (!hunter.passiveHold) {
+        return;
+      }
+      hunter.inputMode = "actions";
+      hunter.steps = [{ type: "WAIT_UNTIL", until_hhmm: state.ui.endTime.value }];
     }
 
     async function loadStations() {
@@ -944,6 +982,7 @@
     }
 
     function buildScenarioJson() {
+      syncPassiveHunterStep();
       const makePlayer = (playerId) => {
         const player = state.players[playerId];
         if (player.inputMode === "plan") {
@@ -975,10 +1014,12 @@
     }
 
     function renderAll() {
+      syncPassiveHunterStep();
       state.previews.runner = previewPlayer("runner");
       state.previews.hunter = previewPlayer("hunter");
       syncActiveControls();
       renderHud();
+      renderTestModeCard();
       renderTrainCard();
       renderMap();
       renderPlanPanel();
@@ -1022,6 +1063,28 @@
           <div class="key">Plan Status</div><div>${preview.error ? `<span style="color:${state.activeMode === "runner" ? "var(--runner)" : "var(--hunter)"};">${preview.error}</span>` : "Ready"}</div>
           <div class="key">Opponent</div><div>${opponentStateLabel}</div>
           <div class="key">Resolved Steps</div><div>${preview.resolvedSteps.length}</div>
+        </div>
+      `;
+    }
+
+    function renderTestModeCard() {
+      const runner = state.players.runner;
+      const hunter = state.players.hunter;
+      const hunterMode = hunter.passiveHold ? "Hold position until match end" : "Editable plan";
+      state.ui.testModeCard.innerHTML = `
+        <div class="section-head">
+          <div>
+            <h3>Plan Test Mode</h3>
+            <p>Current assumptions for this local test</p>
+          </div>
+        </div>
+        <div class="row-grid" style="padding: 0 16px 16px;">
+          <div class="key">Match Start</div><div>${state.ui.startTime.value}</div>
+          <div class="key">Runner Prep</div><div>1 minute outside game time</div>
+          <div class="key">Runner Start</div><div>${stationLabel(runner.startStationId)}</div>
+          <div class="key">Hunter Start</div><div>${stationLabel(hunter.startStationId)}</div>
+          <div class="key">Hunter Default</div><div>${hunterMode}</div>
+          <div class="key">Live Replan</div><div>Edit later steps whenever you want</div>
         </div>
       `;
     }
@@ -1129,18 +1192,28 @@
         const actions = item.querySelector(".tiny-actions");
         actions.appendChild(makeTinyButton("Up", "tiny-button", () => {
           if (index === 0) return;
+          disablePassiveHold(state.activeMode);
           [player.steps[index - 1], player.steps[index]] = [player.steps[index], player.steps[index - 1]];
           renderAll();
         }));
         actions.appendChild(makeTinyButton("Down", "tiny-button", () => {
           if (index >= player.steps.length - 1) return;
+          disablePassiveHold(state.activeMode);
           [player.steps[index + 1], player.steps[index]] = [player.steps[index], player.steps[index + 1]];
           renderAll();
         }));
         actions.appendChild(makeTinyButton("Delete", "tiny-button", () => {
+          disablePassiveHold(state.activeMode);
           player.steps.splice(index, 1);
           renderAll();
         }));
+        if (index < player.steps.length - 1) {
+          actions.appendChild(makeTinyButton("Cut Future", "tiny-button", () => {
+            disablePassiveHold(state.activeMode);
+            player.steps.splice(index + 1);
+            renderAll();
+          }));
+        }
 
         const editor = document.createElement("div");
         editor.style.display = "grid";
@@ -1171,6 +1244,7 @@
       `;
       typeSelect.value = step.type;
       typeSelect.addEventListener("change", (event) => {
+        disablePassiveHold(state.activeMode);
         const nextType = event.target.value;
         if (nextType === "WAIT_UNTIL") {
           step.type = nextType;
@@ -1208,6 +1282,7 @@
         const input = document.createElement("input");
         input.value = step.until_hhmm || state.ui.startTime.value;
         input.addEventListener("input", (event) => {
+          disablePassiveHold(state.activeMode);
           step.until_hhmm = event.target.value;
           renderAll();
         });
@@ -1217,6 +1292,7 @@
         input.value = step.train_number || "";
         input.placeholder = "Train number";
         input.addEventListener("input", (event) => {
+          disablePassiveHold(state.activeMode);
           step.train_number = event.target.value.toUpperCase();
           renderAll();
         });
@@ -1227,6 +1303,7 @@
         textarea.value = (step.candidates || []).map((candidate) => candidate.train_number).join("\n");
         textarea.placeholder = "One train number per line";
         textarea.addEventListener("input", (event) => {
+          disablePassiveHold(state.activeMode);
           step.candidates = event.target.value
             .split("\n")
             .map((line) => line.trim())
@@ -1238,6 +1315,7 @@
       } else if (step.type === "RIDE_TO_STATION") {
         const select = document.createElement("select");
         populateStationSelect(select, step.station_id || state.players[state.activeMode].startStationId, (value) => {
+          disablePassiveHold(state.activeMode);
           step.station_id = value;
           renderAll();
         });
@@ -1297,10 +1375,12 @@
         const actions = document.createElement("div");
         actions.className = "tiny-actions";
         actions.appendChild(makeTinyButton("Add BOARD_TRAIN", `tiny-button ${state.activeMode}`, () => {
+          disablePassiveHold(state.activeMode);
           state.players[state.activeMode].steps.push({ type: "BOARD_TRAIN", train_number: entry.train.train_number });
           renderAll();
         }));
         actions.appendChild(makeTinyButton("Add BOARD_ANY_OF", "tiny-button", () => {
+          disablePassiveHold(state.activeMode);
           state.players[state.activeMode].steps.push({
             type: "BOARD_ANY_OF",
             candidates: [{ train_number: entry.train.train_number }]
@@ -1340,6 +1420,7 @@
         const actions = document.createElement("div");
         actions.className = "tiny-actions";
         actions.appendChild(makeTinyButton("Add RIDE_TO_STATION", `tiny-button ${state.activeMode}`, () => {
+          disablePassiveHold(state.activeMode);
           state.players[state.activeMode].steps.push({ type: "RIDE_TO_STATION", station_id: stop.stationId });
           renderAll();
         }));
