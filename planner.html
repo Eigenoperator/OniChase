@@ -290,6 +290,45 @@
       stroke-linejoin: round;
     }
 
+    .plan-trace {
+      fill: none;
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 16 14;
+      opacity: 0.9;
+    }
+
+    .plan-trace.runner {
+      stroke: rgba(220, 77, 98, 0.82);
+    }
+
+    .plan-trace.hunter {
+      stroke: rgba(45, 108, 223, 0.75);
+    }
+
+    .plan-waypoint {
+      stroke: white;
+      stroke-width: 4;
+    }
+
+    .plan-waypoint.runner {
+      fill: var(--runner);
+    }
+
+    .plan-waypoint.hunter {
+      fill: var(--hunter);
+    }
+
+    .plan-waypoint-label {
+      fill: white;
+      font-size: 11px;
+      font-weight: 800;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      pointer-events: none;
+    }
+
     .station-ring {
       fill: white;
       stroke: #80c241;
@@ -1079,13 +1118,68 @@
           </div>
         </div>
         <div class="row-grid" style="padding: 0 16px 16px;">
-          <div class="key">Match Start</div><div>${state.ui.startTime.value}</div>
-          <div class="key">Runner Prep</div><div>1 minute outside game time</div>
+          <div class="key">Game Clock</div><div>Starts at ${state.ui.startTime.value}</div>
+          <div class="key">Pre-Match Plan</div><div>Runner gets 1 minute before ${state.ui.startTime.value}</div>
           <div class="key">Runner Start</div><div>${stationLabel(runner.startStationId)}</div>
           <div class="key">Hunter Start</div><div>${stationLabel(hunter.startStationId)}</div>
           <div class="key">Hunter Default</div><div>${hunterMode}</div>
-          <div class="key">Live Replan</div><div>Edit later steps whenever you want</div>
+          <div class="key">Live Replan</div><div>Edit later steps while the match is already running</div>
         </div>
+      `;
+    }
+
+    function plannedStationsFromPreview(preview) {
+      const stationIds = [];
+      const pushStation = (stationId) => {
+        if (!stationId) return;
+        if (stationIds[stationIds.length - 1] === stationId) return;
+        stationIds.push(stationId);
+      };
+
+      pushStation(preview.startStationId);
+      preview.events.forEach((event) => {
+        if (event.station_id) {
+          pushStation(event.station_id);
+        }
+      });
+
+      if (preview.currentState.kind === "NODE") {
+        pushStation(preview.currentState.station_id);
+      }
+
+      return stationIds;
+    }
+
+    function renderPlanTrace(preview, playerId) {
+      const stationIds = plannedStationsFromPreview(preview);
+      if (stationIds.length < 2) {
+        return "";
+      }
+
+      const points = stationIds
+        .map((stationId) => state.mapCoords.get(stationId))
+        .filter(Boolean)
+        .map((coord) => `${coord.x},${coord.y}`)
+        .join(" ");
+
+      const waypointNodes = stationIds
+        .map((stationId, index) => {
+          const coord = state.mapCoords.get(stationId);
+          if (!coord) {
+            return "";
+          }
+          return `
+            <g>
+              <circle class="plan-waypoint ${playerId}" cx="${coord.x}" cy="${coord.y}" r="12"></circle>
+              <text class="plan-waypoint-label" x="${coord.x}" y="${coord.y + 1}">${index + 1}</text>
+            </g>
+          `;
+        })
+        .join("");
+
+      return `
+        <polyline class="plan-trace ${playerId}" points="${points}" />
+        ${waypointNodes}
       `;
     }
 
@@ -1133,6 +1227,10 @@
         return `${x},${y}`;
       });
       const points = [...coords, coords[0]].join(" ");
+      const activePlanTrace = renderPlanTrace(
+        state.previews[state.activeMode],
+        state.activeMode
+      );
 
       const stationNodes = state.stations.map((station) => {
         const stationId = station.id;
@@ -1165,6 +1263,7 @@
       state.ui.mapSvg.innerHTML = `
         <polyline class="rail-glow" points="${points}" />
         <polyline class="rail-line" points="${points}" />
+        ${activePlanTrace}
         ${stationNodes}
       `;
     }

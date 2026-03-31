@@ -10,6 +10,7 @@ The current UI is intentionally shaped like a lightweight client prototype:
 
 - runner mode / hunter mode switch
 - map as the primary screen
+- the active player's current plan is drawn directly on the map as a dashed route trace with numbered waypoints
 - top-left HUD for current time and current location
 - a dedicated plan-test card for the current local planning assumptions
 - current-train next-stop list when the player is on a train
@@ -67,9 +68,9 @@ It already supports:
 
 The current default local test mode is aimed at quickly iterating on runner planning:
 
-- match start time defaults to `06:00`
+- the in-game clock starts at `06:00`
 - runner uses `plan` mode
-- runner gets `1 minute` of out-of-game planning time before the match begins
+- runner gets `1 minute` of out-of-game planning time before `06:00`
 - hunter defaults to staying at the start station until match end
 - runner can revise future steps at any time by editing or cutting later plan items in the client
 
