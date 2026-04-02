@@ -31,6 +31,10 @@ The first local client prototype already provides:
 - the current runner-plan test preset
 - action buttons for `Set Start Here`, `Board Earliest`, `Ride To Selected`, `Wait +5m`, `Undo Step`, and `Clear Plan`
 - in-window simulation via `Run Simulation`
+- state-driven planning controls:
+  - while at a station, the right panel lists upcoming departures from the current station
+  - after boarding, the right panel lists downstream stations for the current train
+  - clicking a reachable station on the map while on a train can directly add the ride step
 
 ## Launch
 
