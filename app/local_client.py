@@ -91,6 +91,7 @@ class OniChaseLocalClient:
         self.root.configure(bg=BG)
         self.root.geometry("1500x920")
         self.root.minsize(1280, 820)
+        self._right_panel_hover = False
 
         self.hud_var = tk.StringVar()
         self.test_var = tk.StringVar()
@@ -195,17 +196,34 @@ class OniChaseLocalClient:
         right.grid(row=0, column=1, sticky="ns")
         right.grid_propagate(False)
         right.columnconfigure(0, weight=1)
+        right.rowconfigure(0, weight=1)
 
-        self.duel_label = self.make_card(right, self.duel_var, width=48)
+        self.right_canvas = tk.Canvas(right, bg=BG, highlightthickness=0, width=420)
+        self.right_canvas.grid(row=0, column=0, sticky="nsew")
+        right_scrollbar = ttk.Scrollbar(right, orient="vertical", command=self.right_canvas.yview)
+        right_scrollbar.grid(row=0, column=1, sticky="ns")
+        self.right_canvas.configure(yscrollcommand=right_scrollbar.set)
+
+        self.right_scroll_frame = tk.Frame(self.right_canvas, bg=BG)
+        self.right_canvas_window = self.right_canvas.create_window((0, 0), window=self.right_scroll_frame, anchor="nw")
+        self.right_scroll_frame.bind("<Configure>", self.on_right_frame_configure)
+        self.right_canvas.bind("<Configure>", self.on_right_canvas_configure)
+        self.bind_right_panel_hover(self.right_canvas)
+        self.bind_right_panel_hover(self.right_scroll_frame)
+        self.root.bind_all("<MouseWheel>", self.on_right_panel_mouse_wheel)
+        self.root.bind_all("<Button-4>", self.on_right_panel_mouse_wheel)
+        self.root.bind_all("<Button-5>", self.on_right_panel_mouse_wheel)
+
+        self.duel_label = self.make_card(self.right_scroll_frame, self.duel_var, width=48)
         self.duel_label.grid(row=0, column=0, sticky="ew", pady=(0, 10))
-        self.plan_label = self.make_card(right, self.plan_var, width=48)
+        self.plan_label = self.make_card(self.right_scroll_frame, self.plan_var, width=48)
         self.plan_label.grid(row=1, column=0, sticky="ew", pady=(0, 10))
-        self.options_label = self.make_card(right, self.options_var, width=48)
+        self.options_label = self.make_card(self.right_scroll_frame, self.options_var, width=48)
         self.options_label.grid(row=2, column=0, sticky="ew", pady=(0, 10))
-        self.action_card = tk.Frame(right, bg=PANEL, highlightbackground=LINE, highlightthickness=1, padx=12, pady=12)
+        self.action_card = tk.Frame(self.right_scroll_frame, bg=PANEL, highlightbackground=LINE, highlightthickness=1, padx=12, pady=12)
         self.action_card.grid(row=3, column=0, sticky="ew", pady=(0, 10))
         self.action_card.columnconfigure(0, weight=1)
-        self.result_label = self.make_card(right, self.result_var, width=48)
+        self.result_label = self.make_card(self.right_scroll_frame, self.result_var, width=48)
         self.result_label.grid(row=4, column=0, sticky="ew")
 
     def make_card(self, parent: tk.Widget, variable: tk.StringVar, width: int | None = None) -> tk.Label:
@@ -223,6 +241,42 @@ class OniChaseLocalClient:
             highlightbackground=LINE,
             highlightthickness=1,
         )
+
+    def on_right_frame_configure(self, _event: tk.Event) -> None:
+        self.right_canvas.configure(scrollregion=self.right_canvas.bbox("all"))
+
+    def on_right_canvas_configure(self, event: tk.Event) -> None:
+        self.right_canvas.itemconfigure(self.right_canvas_window, width=event.width)
+
+    def bind_right_panel_hover(self, widget: tk.Widget) -> None:
+        widget.bind("<Enter>", self.on_right_panel_enter, add="+")
+        widget.bind("<Leave>", self.on_right_panel_leave, add="+")
+
+    def on_right_panel_enter(self, _event: tk.Event) -> None:
+        self._right_panel_hover = True
+
+    def on_right_panel_leave(self, _event: tk.Event) -> None:
+        pointer_widget = self.root.winfo_containing(self.root.winfo_pointerx(), self.root.winfo_pointery())
+        self._right_panel_hover = self.is_widget_in_right_panel(pointer_widget)
+
+    def is_widget_in_right_panel(self, widget: tk.Widget | None) -> bool:
+        current = widget
+        while current is not None:
+            if current == self.right_canvas or current == self.right_scroll_frame:
+                return True
+            current = current.master
+        return False
+
+    def on_right_panel_mouse_wheel(self, event: tk.Event) -> None:
+        if not self._right_panel_hover:
+            return
+        if getattr(event, "num", None) == 4:
+            delta = -1
+        elif getattr(event, "num", None) == 5:
+            delta = 1
+        else:
+            delta = -1 if event.delta > 0 else 1
+        self.right_canvas.yview_scroll(delta, "units")
 
     def apply_test_preset(self) -> None:
         self.active_mode = "runner"
@@ -885,10 +939,13 @@ class OniChaseLocalClient:
             wraplength=360,
         )
         helper.grid(row=1, column=0, sticky="ew", pady=(4, 10))
+        self.bind_right_panel_hover(helper)
 
         row = 2
         if self.selected_station_id:
-            ttk.Button(self.action_card, text="Set Start To Selected Station", command=self.set_start_to_selected).grid(row=row, column=0, sticky="ew")
+            set_start_button = ttk.Button(self.action_card, text="Set Start To Selected Station", command=self.set_start_to_selected)
+            set_start_button.grid(row=row, column=0, sticky="ew")
+            self.bind_right_panel_hover(set_start_button)
             row += 1
 
         if preview["current_state"]["kind"] == "NODE":
@@ -897,14 +954,18 @@ class OniChaseLocalClient:
                 row = self.add_section_header(row, "Departures From Current Station")
                 for departure in departures:
                     label = f"{departure['departure_hhmm']}  {departure['train_number']}  {departure['direction_label']}"
-                    ttk.Button(
+                    departure_button = ttk.Button(
                         self.action_card,
                         text=label,
                         command=lambda train_number=departure["train_number"]: self.add_board_train_step(train_number),
-                    ).grid(row=row, column=0, sticky="ew", pady=(0, 4))
+                    )
+                    departure_button.grid(row=row, column=0, sticky="ew", pady=(0, 4))
+                    self.bind_right_panel_hover(departure_button)
                     row += 1
             wait_label = f"Wait 5 minutes from {preview['current_time']}"
-            ttk.Button(self.action_card, text=wait_label, command=self.add_wait_step).grid(row=row, column=0, sticky="ew", pady=(8, 0))
+            wait_button = ttk.Button(self.action_card, text=wait_label, command=self.add_wait_step)
+            wait_button.grid(row=row, column=0, sticky="ew", pady=(8, 0))
+            self.bind_right_panel_hover(wait_button)
             row += 1
 
         if preview["current_state"]["kind"] == "TRAIN":
@@ -916,11 +977,13 @@ class OniChaseLocalClient:
                     label = f"{destination['arrival_hhmm']}  {destination['label']}"
                     if is_selected:
                         label += "  [selected]"
-                    ttk.Button(
+                    destination_button = ttk.Button(
                         self.action_card,
                         text=label,
                         command=lambda station_id=destination["station_id"]: self.add_ride_to_station_step(station_id),
-                    ).grid(row=row, column=0, sticky="ew", pady=(0, 4))
+                    )
+                    destination_button.grid(row=row, column=0, sticky="ew", pady=(0, 4))
+                    self.bind_right_panel_hover(destination_button)
                     row += 1
 
         row = self.add_section_header(row, "Plan Controls")
@@ -928,9 +991,16 @@ class OniChaseLocalClient:
         controls.grid(row=row, column=0, sticky="ew")
         controls.columnconfigure(0, weight=1)
         controls.columnconfigure(1, weight=1)
-        ttk.Button(controls, text="Undo Step", command=self.undo_last_step).grid(row=0, column=0, sticky="ew", padx=(0, 4))
-        ttk.Button(controls, text="Clear Plan", command=self.clear_active_plan).grid(row=0, column=1, sticky="ew", padx=(4, 0))
-        ttk.Button(self.action_card, text="Run Simulation", command=self.run_simulation).grid(row=row + 1, column=0, sticky="ew", pady=(8, 0))
+        self.bind_right_panel_hover(controls)
+        undo_button = ttk.Button(controls, text="Undo Step", command=self.undo_last_step)
+        undo_button.grid(row=0, column=0, sticky="ew", padx=(0, 4))
+        clear_button = ttk.Button(controls, text="Clear Plan", command=self.clear_active_plan)
+        clear_button.grid(row=0, column=1, sticky="ew", padx=(4, 0))
+        self.bind_right_panel_hover(undo_button)
+        self.bind_right_panel_hover(clear_button)
+        run_button = ttk.Button(self.action_card, text="Run Simulation", command=self.run_simulation)
+        run_button.grid(row=row + 1, column=0, sticky="ew", pady=(8, 0))
+        self.bind_right_panel_hover(run_button)
 
     def add_section_header(self, row: int, text: str) -> int:
         label = tk.Label(
@@ -943,6 +1013,7 @@ class OniChaseLocalClient:
             font=("Helvetica", 10, "bold"),
         )
         label.grid(row=row, column=0, sticky="ew", pady=(10, 6))
+        self.bind_right_panel_hover(label)
         return row + 1
 
     def action_card_helper_text(self, preview: dict[str, Any]) -> str:
