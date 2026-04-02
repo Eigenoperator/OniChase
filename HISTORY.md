@@ -76,3 +76,4 @@
 - Added a first real settings surface to the native client: a top-bar `Settings` button now opens a small preferences window where the user can change the global UI font size, and the client now uses a shared font system so labels, cards, map text, and button styles all scale together.
 - Increased the default native-client font baseline so the very first launch is more readable without requiring the user to open `Settings` before playtesting.
 - Raised the default font baseline much more aggressively and expanded the settings slider ceiling, so the local client now opens at a clearly larger reading size and still leaves extra room for even bigger text if needed.
+- Switched the local client's main split layout to a draggable horizontal `PanedWindow`, so the user can resize the left map and right planning column directly; also aligned the new default launch font size to the user's requested `10` level.

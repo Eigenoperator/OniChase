@@ -94,7 +94,7 @@ class OniChaseLocalClient:
         self.root.minsize(1280, 820)
         self._right_panel_hover = False
         self.settings_window: tk.Toplevel | None = None
-        self.font_size_offset = 5
+        self.font_size_offset = 10
         self.font_size_var = tk.IntVar(value=self.font_size_offset)
         self.setup_fonts()
         self.setup_styles()
@@ -246,14 +246,18 @@ class OniChaseLocalClient:
         ttk.Button(button_bar, text="Refresh", command=self.render).grid(row=0, column=3, padx=4)
         ttk.Button(button_bar, text="Settings", command=self.open_settings).grid(row=0, column=4, padx=4)
 
-        shell = tk.Frame(self.root, bg=BG)
+        shell = tk.PanedWindow(
+            self.root,
+            orient=tk.HORIZONTAL,
+            bg=BG,
+            sashrelief=tk.RAISED,
+            sashwidth=10,
+            bd=0,
+            highlightthickness=0,
+        )
         shell.grid(row=1, column=0, sticky="nsew", padx=18, pady=(0, 18))
-        shell.columnconfigure(0, weight=1)
-        shell.columnconfigure(1, weight=0)
-        shell.rowconfigure(0, weight=1)
 
         left = tk.Frame(shell, bg=PANEL, highlightbackground=LINE, highlightthickness=1)
-        left.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         left.rowconfigure(1, weight=1)
         left.columnconfigure(0, weight=1)
 
@@ -297,7 +301,6 @@ class OniChaseLocalClient:
         self.quick_label.grid(row=2, column=0, sticky="ew", padx=16, pady=(0, 16))
 
         right = tk.Frame(shell, bg=BG, width=420)
-        right.grid(row=0, column=1, sticky="ns")
         right.grid_propagate(False)
         right.columnconfigure(0, weight=1)
         right.rowconfigure(0, weight=1)
@@ -329,6 +332,9 @@ class OniChaseLocalClient:
         self.action_card.columnconfigure(0, weight=1)
         self.result_label = self.make_card(self.right_scroll_frame, self.result_var, width=48)
         self.result_label.grid(row=4, column=0, sticky="ew")
+
+        shell.add(left, minsize=760, stretch="always")
+        shell.add(right, minsize=320)
 
     def make_card(self, parent: tk.Widget, variable: tk.StringVar, width: int | None = None) -> tk.Label:
         return tk.Label(

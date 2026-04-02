@@ -38,6 +38,7 @@ The first local client prototype already provides:
 - the train outlook now shows the full remaining stop list for the current service; for loop services it shows one full loop ahead
 - the entire right-side panel is now scrollable, so in smaller window sizes the player can use the mouse wheel to browse long action/result lists
 - a `Settings` window is available from the top bar; for now it supports changing the UI font size
+- the main layout now uses a draggable left-right divider, so the player can widen the right planning panel when needed
 
 ## Launch
 
