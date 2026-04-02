@@ -10,6 +10,7 @@
 - 已完成本地 `planner.html` 客户端原型：双击启动、圆环地图、Runner/Hunter 模式、plan 可视化轨迹、Runner plan test preset。
 - 已将 `planner.html` 进一步提升为更像可试玩客户端的 UI：更强的地图主体感、双方 match table、底部 quickbar、地图 legend、主动/被动路线分层显示。
 - 已完成 `ENGINE_ARCHITECTURE.md`，明确 `data / rules / engine / interface / frontend` 五层边界。
+- 已修正本地启动器：`START_ONICHASE_LOCAL.desktop` 现在直接调用脚本本体，`START_ONICHASE_LOCAL.sh` 会写入 `.onichase-launch.log` 便于排查启动失败。
 
 ## In Progress
 - 正在把 `planner.html` 接到本地模拟执行链上，让它不只生成 JSON，也能直接跑出结果。

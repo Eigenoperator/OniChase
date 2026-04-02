@@ -4,4 +4,10 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT_DIR"
 
-python3 scripts/run_local_site.py --page planner.html
+LOG_FILE="${ROOT_DIR}/.onichase-launch.log"
+
+{
+  echo "[$(date '+%Y-%m-%d %H:%M:%S %Z')] Launching OniChase local client..."
+  echo "Root: $ROOT_DIR"
+  python3 scripts/run_local_site.py --page planner.html
+} >>"$LOG_FILE" 2>&1
