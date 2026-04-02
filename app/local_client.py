@@ -253,7 +253,6 @@ class OniChaseLocalClient:
             sashrelief=tk.RAISED,
             sashwidth=10,
             bd=0,
-            highlightthickness=0,
         )
         shell.grid(row=1, column=0, sticky="nsew", padx=18, pady=(0, 18))
 
@@ -328,7 +327,6 @@ class OniChaseLocalClient:
             sashrelief=tk.RAISED,
             sashwidth=8,
             bd=0,
-            highlightthickness=0,
         )
         self.right_pane.grid(row=0, column=0, sticky="nsew")
         self.right_scroll_frame.columnconfigure(0, weight=1)
