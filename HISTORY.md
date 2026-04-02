@@ -56,3 +56,8 @@
 - Added a git-backup workflow rule to `AXIOMS.md`: after each substantive project change, commit and push the current state to GitHub by default.
 - Added a dedicated local runner-plan test preset to `planner.html`: match start defaults to `06:00`, runner starts in `plan` mode with pre-match planning assumptions shown in the UI, hunter defaults to holding position until match end, and future steps can now be trimmed quickly with `Cut Future` during plan iteration.
 - Made planning more legible inside `planner.html` by drawing the active player's current plan directly on the Yamanote map as a dashed route trace with numbered waypoints, and clarified that the one-minute runner planning window happens before the in-game clock begins at `06:00`.
+
+## 2026-04-02
+
+- Created `ENGINE_ARCHITECTURE.md` to lock in a clean five-layer boundary strategy: data, rules, engine, interface, and frontend.
+- Formally decided that current optimization strategy should prioritize stable schemas and JSON engine boundaries first, rather than prematurely rewriting the core away from Python.

@@ -71,6 +71,7 @@
 - 修正 `Plan Test Mode` 文案：明确“06:00 才开始游戏内时间”，Runner 的 1 分钟准备发生在赛外。
 - 按自然日首条消息规则检查并回补缺失的 `diary/DIARY-2026-03-30.md`。
 - 按自然日首条消息规则检查并回补缺失的 `diary/DIARY-2026-03-31.md` 与 `diary/DIARY-2026-04-01.md`。
+- 新建 `ENGINE_ARCHITECTURE.md`，正式定义 `data / rules / engine / interface / frontend` 五层边界，并把未来 Python -> Rust 迁移路径写清楚。
 
 ## In Progress
 - 正在把第一版真实时刻表模拟器和网页工具从“可运行”推进到“可实际规划玩法与高效迭代”的开发底座。
@@ -93,8 +94,9 @@
 - [2026-03-30] 每次有实质项目变更后，默认都要将当前状态 commit 并 push 到 GitHub。
 - [2026-03-30] 当前本地 plan 测试默认使用 `06:00` 开局、Runner 赛外 1 分钟预规划、Hunter 默认原地等待的快速验证模式。
 - [2026-03-30] 当前玩家的 plan 应尽量在地图上可视化，而不是只显示为右侧步骤列表。
+- [2026-04-02] 当前阶段不因为优化焦虑提前换语言；优先保证 `data schema / rules / simulation input-output / frontend-engine JSON boundary` 清晰独立。
 
 ## Next
 1. 让 `planner.html` 能直接触发本地模拟并展示结果，而不是只导出 scenario JSON。
-2. 围绕新的 runner-plan 测试预设，跑一轮真实玩法问题验证，例如首班车选择、临时下车、Hunter 静止时的人队优势。
-3. 扩展 planning 步骤种类，例如 transfer preference、wait-for-one-of、多段候选链。
+2. 把 `RESULT_SCHEMA` / `REPLAY_SCHEMA` / `DATASET_SCHEMA` 继续补齐，让 engine-interface 边界更稳定。
+3. 围绕新的 runner-plan 测试预设，跑一轮真实玩法问题验证，例如首班车选择、临时下车、Hunter 静止时的人队优势。
