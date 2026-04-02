@@ -38,6 +38,7 @@
 - `SCHEMA.md` defines the first implementation-oriented data model
 - `STATE_MACHINE.md` defines the first minimal match state machine
 - `YAMANOTE_IMPLEMENTATION_PLAN.md` defines the real-data implementation plan for the Yamanote Line
+- Workspace responsibilities are now separated: `app/` for the native client, `ui/` for browser prototypes, `scripts/engine/` for simulation entry points, `scripts/ingest/` for timetable/data tooling, and `scripts/dev/` for local utilities
 
 ## Current Data Direction
 

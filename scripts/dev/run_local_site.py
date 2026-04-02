@@ -14,7 +14,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def find_open_port(preferred_port: int, host: str) -> int:
@@ -32,7 +32,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run the OniChase local website and optionally open a page.")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind. Default: 127.0.0.1")
     parser.add_argument("--port", type=int, default=8000, help="Preferred port. Default: 8000")
-    parser.add_argument("--page", default="planner.html", help="Page to open. Default: planner.html")
+    parser.add_argument("--page", default="ui/planner.html", help="Page to open. Default: ui/planner.html")
     parser.add_argument("--no-browser", action="store_true", help="Do not auto-open a browser.")
     args = parser.parse_args()
 

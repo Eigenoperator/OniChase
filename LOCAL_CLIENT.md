@@ -14,7 +14,7 @@ This choice is intentional:
 
 ## Files
 
-- [local_client.py](/home/xincheng/toy/Chase/local_client.py)
+- [app/local_client.py](/home/xincheng/toy/Chase/app/local_client.py)
 - [START_ONICHASE_CLIENT.sh](/home/xincheng/toy/Chase/START_ONICHASE_CLIENT.sh)
 - [START_ONICHASE_CLIENT.desktop](/home/xincheng/toy/Chase/START_ONICHASE_CLIENT.desktop)
 

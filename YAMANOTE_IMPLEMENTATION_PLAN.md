@@ -262,9 +262,9 @@ Tasks:
 
 ## Scripts
 
-- `scripts/validate_station_dataset.py`
-- `scripts/build_jreast_train_instances_from_station_timetable.py`
-- `scripts/parse_jreast_train_detail.py`
+- `scripts/ingest/validate_station_dataset.py`
+- `scripts/ingest/build_jreast_train_instances_from_station_timetable.py`
+- `scripts/ingest/parse_jreast_train_detail.py`
 
 ## Suggested Build Order
 

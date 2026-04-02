@@ -15,6 +15,7 @@
 - 已修正 `START_ONICHASE_CLIENT.desktop` 与 `START_ONICHASE_CLIENT.sh` 的执行权限，避免桌面环境把新的客户端启动器当成普通文本打开。
 - 已为 `local_client.py` 增加鼠标左键拖拽地图，允许本地试玩时平移查看不同区域。
 - 已为 `local_client.py` 增加滚轮缩放和站点点击选中，支持更自然的本地地图浏览。
+- 已按职责整理工作区：本地客户端归入 `app/`，网页原型归入 `ui/`，`scripts/` 拆分为 `engine / ingest / dev`，并补充了 `WORKSPACE.md`。
 
 ## In Progress
 - 正在决定是否把主试玩入口从 `planner.html` 彻底切到新的 `local_client.py` 本地桌面客户端。

@@ -9,5 +9,5 @@ LOG_FILE="${ROOT_DIR}/.onichase-client-launch.log"
 {
   echo "[$(date '+%Y-%m-%d %H:%M:%S %Z')] Launching OniChase local client..."
   echo "Root: $ROOT_DIR"
-  python3 local_client.py
+  python3 app/local_client.py
 } >>"$LOG_FILE" 2>&1

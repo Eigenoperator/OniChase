@@ -20,7 +20,7 @@ The current UI is intentionally shaped like a lightweight client prototype:
 
 ## File
 
-- [planner.html](/home/xincheng/toy/Chase/planner.html)
+- [ui/planner.html](/home/xincheng/toy/Chase/ui/planner.html)
 
 ## What It Does
 
@@ -50,7 +50,7 @@ cd /home/xincheng/toy/Chase
 Then open:
 
 ```text
-http://127.0.0.1:8000/planner.html
+http://127.0.0.1:8000/ui/planner.html
 ```
 
 If port `8000` is occupied, the launcher automatically moves to the next available nearby port and prints the final URL.

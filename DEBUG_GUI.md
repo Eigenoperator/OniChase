@@ -13,7 +13,7 @@ The GUI is intended to help with:
 
 ## File
 
-- [debug_gui.html](/home/xincheng/toy/Chase/debug_gui.html)
+- [ui/debug_gui.html](/home/xincheng/toy/Chase/ui/debug_gui.html)
 
 ## What It Shows
 
@@ -37,7 +37,7 @@ python3 -m http.server 8000
 Then open:
 
 ```text
-http://localhost:8000/debug_gui.html
+http://localhost:8000/ui/debug_gui.html
 ```
 
 ## Notes

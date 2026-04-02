@@ -68,3 +68,4 @@
 - Fixed the new desktop client launcher permissions after Scorp reported that double-clicking still opened the `.desktop` file as text; both `START_ONICHASE_CLIENT.desktop` and `START_ONICHASE_CLIENT.sh` are now executable.
 - Added first map-navigation interaction to `local_client.py`: the Yamanote board can now be dragged with the left mouse button, making it possible to inspect different parts of the map during local playtesting.
 - Added mouse-wheel zoom and station-click selection to `local_client.py`, so the local map can now be panned, zoomed, and inspected directly instead of only being a static board.
+- Reorganized the workspace by responsibility: native client code now lives in `app/`, browser prototypes in `ui/`, and scripts are split into `scripts/engine`, `scripts/ingest`, and `scripts/dev`; launchers and docs were relinked to the new structure and the layout was documented in `WORKSPACE.md`.

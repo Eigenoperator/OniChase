@@ -16,4 +16,13 @@ Key entry points:
 - `STATE_MACHINE.md`
 - `SIMULATION_INPUT.md`
 - `PLANNING_FORMAT.md`
-- `planner.html`
+- `ui/planner.html`
+
+Workspace layout:
+
+- `app/` native local client and future desktop-facing app code
+- `ui/` browser prototypes and planning/debug pages
+- `scripts/engine/` simulation and game-engine entry scripts
+- `scripts/ingest/` timetable ingestion, normalization, validation, and rendering tools
+- `scripts/dev/` local developer utilities such as the local site launcher
+- `data/` real timetable datasets, scenarios, and simulation results

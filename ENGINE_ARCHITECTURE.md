@@ -128,8 +128,8 @@ Important constraint:
 
 Current related files:
 
-- [scripts/simulate_match_from_train_instances.py](/home/xincheng/toy/Chase/scripts/simulate_match_from_train_instances.py)
-- [scripts/validate_train_instances_dataset.py](/home/xincheng/toy/Chase/scripts/validate_train_instances_dataset.py)
+- [scripts/engine/simulate_match_from_train_instances.py](/home/xincheng/toy/Chase/scripts/engine/simulate_match_from_train_instances.py)
+- [scripts/ingest/validate_train_instances_dataset.py](/home/xincheng/toy/Chase/scripts/ingest/validate_train_instances_dataset.py)
 
 ## 4. Interface Layer
 
@@ -194,7 +194,7 @@ The frontend should not:
 
 Current related files:
 
-- [planner.html](/home/xincheng/toy/Chase/planner.html)
+- [ui/planner.html](/home/xincheng/toy/Chase/ui/planner.html)
 - [PLANNER_GUI.md](/home/xincheng/toy/Chase/PLANNER_GUI.md)
 
 ## Recommended JSON Boundaries
