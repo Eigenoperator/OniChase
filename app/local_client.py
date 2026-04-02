@@ -688,14 +688,8 @@ class OniChaseLocalClient:
     def available_destinations(self, preview: dict[str, Any]) -> list[dict[str, Any]]:
         if preview["error"] or preview["current_state"]["kind"] != "TRAIN":
             return []
-        train = preview["current_train"]
-        board_stop = preview["current_board_stop"]
-        if not train or not board_stop:
-            return []
         destinations: list[dict[str, Any]] = []
-        for stop in train["stop_times"]:
-            if stop["sequence"] <= board_stop["sequence"]:
-                continue
+        for stop in self.future_train_stops(preview):
             destinations.append(
                 {
                     "station_id": stop["station_id"],
@@ -704,7 +698,7 @@ class OniChaseLocalClient:
                     "sequence": stop["sequence"],
                 }
             )
-        return destinations[:12]
+        return destinations
 
     def planned_station_ids(self, preview: dict[str, Any]) -> list[str]:
         station_ids: list[str] = []
@@ -724,20 +718,28 @@ class OniChaseLocalClient:
         return station_ids
 
     def current_train_upcoming(self, preview: dict[str, Any]) -> list[str]:
+        lines = []
+        for stop in self.future_train_stops(preview):
+            station = self.station_map[stop["station_id"]]["names"]["en"]
+            hhmm = stop.get("arrival_hhmm") or stop.get("departure_hhmm")
+            lines.append(f"{hhmm}  {station}")
+        return lines
+
+    def future_train_stops(self, preview: dict[str, Any]) -> list[dict[str, Any]]:
         train = preview["current_train"]
         board_stop = preview["current_board_stop"]
         if not train or not board_stop:
             return []
-        lines = []
+
+        boarded_station_id = board_stop["station_id"]
+        future_stops: list[dict[str, Any]] = []
         for stop in train["stop_times"]:
             if stop["sequence"] <= board_stop["sequence"]:
                 continue
-            station = self.station_map[stop["station_id"]]["names"]["en"]
-            hhmm = stop.get("arrival_hhmm") or stop.get("departure_hhmm")
-            lines.append(f"{hhmm}  {station}")
-            if len(lines) >= 8:
+            future_stops.append(stop)
+            if stop["station_id"] == boarded_station_id:
                 break
-        return lines
+        return future_stops
 
     def format_state(self, preview: dict[str, Any]) -> str:
         state = preview["current_state"]
