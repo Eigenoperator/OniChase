@@ -62,3 +62,4 @@
 - Created `ENGINE_ARCHITECTURE.md` to lock in a clean five-layer boundary strategy: data, rules, engine, interface, and frontend.
 - Formally decided that current optimization strategy should prioritize stable schemas and JSON engine boundaries first, rather than prematurely rewriting the core away from Python.
 - Archived the former verbose milestone list out of `STATUS.md` and reduced `STATUS.md` back to a short handoff document under the intended 50-line limit.
+- Upgraded `planner.html` from a plain planning tool into a more game-like local playtest UI with stronger map emphasis, live runner/hunter match cards, a bottom quickbar, a clearer legend, and layered active/passive route presentation.

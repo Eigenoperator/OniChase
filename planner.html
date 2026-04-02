@@ -6,8 +6,8 @@
   <title>OniChase Planner Client</title>
   <style>
     :root {
-      --bg: #f5f0e4;
-      --panel: rgba(255, 252, 244, 0.92);
+      --bg: #efe5d2;
+      --panel: rgba(255, 251, 243, 0.94);
       --ink: #1f2933;
       --muted: #697586;
       --line: #dcd4c3;
@@ -15,7 +15,9 @@
       --runner: #dc4d62;
       --hunter: #2d6cdf;
       --warm: #fff7eb;
+      --gold: #c48a29;
       --shadow: 0 18px 44px rgba(31, 41, 51, 0.10);
+      --shadow-heavy: 0 28px 70px rgba(31, 41, 51, 0.16);
     }
 
     * {
@@ -26,6 +28,7 @@
       margin: 0;
       background:
         radial-gradient(circle at top left, rgba(128, 194, 65, 0.18), transparent 26%),
+        radial-gradient(circle at top right, rgba(45, 108, 223, 0.12), transparent 24%),
         linear-gradient(180deg, #fcfaf5 0%, var(--bg) 100%);
       color: var(--ink);
       font-family: "Avenir Next", "Segoe UI", sans-serif;
@@ -58,14 +61,15 @@
 
     .brand h1 {
       margin: 0;
-      font-size: 30px;
+      font-size: 34px;
       letter-spacing: 0.04em;
     }
 
     .brand p {
       margin: 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
+      max-width: 560px;
     }
 
     .top-actions {
@@ -127,9 +131,9 @@
 
     .shell {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 400px;
-      gap: 18px;
-      padding: 18px 24px 24px;
+      grid-template-columns: minmax(0, 1fr) 430px;
+      gap: 20px;
+      padding: 20px 24px 24px;
       min-height: 0;
     }
 
@@ -137,7 +141,7 @@
       background: var(--panel);
       border: 1px solid rgba(220, 212, 195, 0.92);
       border-radius: 28px;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-heavy);
     }
 
     .main-panel {
@@ -145,15 +149,16 @@
       overflow: hidden;
       min-height: 760px;
       background:
-        radial-gradient(circle at top right, rgba(128, 194, 65, 0.14), transparent 24%),
-        linear-gradient(180deg, rgba(255, 252, 244, 0.94), rgba(248, 244, 234, 0.98));
+        radial-gradient(circle at 25% 12%, rgba(128, 194, 65, 0.14), transparent 24%),
+        radial-gradient(circle at 82% 16%, rgba(45, 108, 223, 0.12), transparent 20%),
+        linear-gradient(180deg, rgba(255, 252, 244, 0.96), rgba(246, 239, 225, 0.99));
     }
 
     .hud {
       position: absolute;
       top: 18px;
       left: 18px;
-      width: min(360px, calc(100% - 36px));
+      width: min(380px, calc(100% - 36px));
       z-index: 5;
       display: grid;
       gap: 12px;
@@ -165,7 +170,7 @@
     .suggest-card {
       border-radius: 20px;
       border: 1px solid rgba(220, 212, 195, 0.95);
-      background: rgba(255, 255, 255, 0.84);
+      background: rgba(255, 255, 255, 0.86);
       box-shadow: var(--shadow);
     }
 
@@ -263,17 +268,58 @@
       top: 22px;
       text-align: right;
       z-index: 4;
+      max-width: 280px;
     }
 
     .map-title h2 {
       margin: 0;
-      font-size: 22px;
+      font-size: 26px;
     }
 
     .map-title p {
       margin: 4px 0 0;
       color: var(--muted);
       font-size: 13px;
+    }
+
+    .map-legend {
+      position: absolute;
+      right: 24px;
+      bottom: 24px;
+      width: 250px;
+      z-index: 5;
+    }
+
+    .legend-list {
+      display: grid;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .legend-row {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .legend-chip {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+    }
+
+    .legend-chip.runner {
+      background: var(--runner);
+    }
+
+    .legend-chip.hunter {
+      background: var(--hunter);
+    }
+
+    .legend-chip.yamanote {
+      background: var(--accent);
     }
 
     .rail-glow {
@@ -305,6 +351,12 @@
 
     .plan-trace.hunter {
       stroke: rgba(45, 108, 223, 0.75);
+    }
+
+    .plan-trace.faint {
+      stroke-dasharray: 10 18;
+      opacity: 0.35;
+      stroke-width: 8;
     }
 
     .plan-waypoint {
@@ -374,6 +426,108 @@
       gap: 16px;
       align-content: start;
       min-height: 760px;
+    }
+
+    .setup-card {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .duel-cards {
+      display: grid;
+      gap: 10px;
+    }
+
+    .duel-card {
+      border-radius: 18px;
+      border: 1px solid rgba(220, 212, 195, 0.95);
+      background: rgba(255, 255, 255, 0.88);
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .duel-card.runner {
+      box-shadow: inset 0 0 0 2px rgba(220, 77, 98, 0.18);
+    }
+
+    .duel-card.hunter {
+      box-shadow: inset 0 0 0 2px rgba(45, 108, 223, 0.18);
+    }
+
+    .duel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .duel-title {
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .duel-meta {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #f3ecdd;
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .quickbar {
+      position: absolute;
+      left: 50%;
+      bottom: 26px;
+      transform: translateX(-50%);
+      z-index: 6;
+      width: min(720px, calc(100% - 56px));
+      border-radius: 22px;
+      padding: 12px 14px;
+      background: rgba(29, 33, 41, 0.82);
+      color: white;
+      box-shadow: var(--shadow-heavy);
+      backdrop-filter: blur(14px);
+    }
+
+    .quickbar-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .quick-stat {
+      border-radius: 16px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.08);
+      display: grid;
+      gap: 4px;
+    }
+
+    .quick-stat .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .quick-stat .value {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.35;
     }
 
     .plan-card,
@@ -466,6 +620,14 @@
       font-weight: 700;
     }
 
+    .plan-card.active-runner .plan-item {
+      box-shadow: inset 4px 0 0 rgba(220, 77, 98, 0.6);
+    }
+
+    .plan-card.active-hunter .plan-item {
+      box-shadow: inset 4px 0 0 rgba(45, 108, 223, 0.6);
+    }
+
     .tiny-actions {
       display: flex;
       gap: 8px;
@@ -522,6 +684,10 @@
       .main-panel {
         min-height: 680px;
       }
+
+      .quickbar-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 920px) {
@@ -535,11 +701,23 @@
       }
 
       .map-wrap {
-        padding-top: 240px;
+        padding-top: 270px;
       }
 
       .hud {
         width: calc(100% - 36px);
+      }
+
+      .map-legend,
+      .quickbar {
+        position: static;
+        transform: none;
+        width: auto;
+        margin: 12px 18px 0;
+      }
+
+      .quickbar-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -578,9 +756,20 @@
         <div class="map-wrap">
           <svg id="map-svg" class="map-svg" viewBox="0 0 1000 880" aria-label="Yamanote map"></svg>
         </div>
+        <div id="map-legend" class="mini-card map-legend"></div>
+        <div id="quickbar" class="quickbar"></div>
       </div>
 
       <div class="side-panel">
+        <div class="panel setup-card">
+          <div class="section-head">
+            <div>
+              <h3>Match Table</h3>
+              <p>Live player readout for the current local playtest.</p>
+            </div>
+          </div>
+          <div id="duel-cards" class="duel-cards"></div>
+        </div>
         <div class="plan-card">
           <div class="section-head">
             <div>
@@ -694,6 +883,9 @@
       state.ui.hudCard = document.getElementById("hud-card");
       state.ui.testModeCard = document.getElementById("test-mode-card");
       state.ui.trainCard = document.getElementById("train-card");
+      state.ui.mapLegend = document.getElementById("map-legend");
+      state.ui.quickbar = document.getElementById("quickbar");
+      state.ui.duelCards = document.getElementById("duel-cards");
       state.ui.mapSvg = document.getElementById("map-svg");
       state.ui.planTitle = document.getElementById("plan-title");
       state.ui.planSubtitle = document.getElementById("plan-subtitle");
@@ -1060,6 +1252,9 @@
       renderHud();
       renderTestModeCard();
       renderTrainCard();
+      renderMapLegend();
+      renderQuickbar();
+      renderDuelCards();
       renderMap();
       renderPlanPanel();
       renderSuggestions();
@@ -1081,6 +1276,9 @@
       state.ui.planSubtitle.textContent = `Currently editing the ${state.activeMode} side.`;
       state.ui.addWaitButton.className = `tiny-button ${state.activeMode}`;
       state.ui.addRideButton.className = `tiny-button ${state.activeMode}`;
+      const planCard = state.ui.planList.closest(".plan-card");
+      planCard.classList.toggle("active-runner", state.activeMode === "runner");
+      planCard.classList.toggle("active-hunter", state.activeMode === "hunter");
     }
 
     function renderHud() {
@@ -1125,6 +1323,89 @@
           <div class="key">Hunter Default</div><div>${hunterMode}</div>
           <div class="key">Live Replan</div><div>Edit later steps while the match is already running</div>
         </div>
+      `;
+    }
+
+    function renderMapLegend() {
+      state.ui.mapLegend.innerHTML = `
+        <div class="section-head">
+          <div>
+            <h3>Map Legend</h3>
+            <p>How to read the current playtest board.</p>
+          </div>
+        </div>
+        <div class="legend-list">
+          <div class="legend-row">
+            <div class="legend-chip yamanote"></div>
+            <div>Live rail loop for the current Yamanote weekday dataset.</div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-chip runner"></div>
+            <div>Runner position and active runner route trace.</div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-chip hunter"></div>
+            <div>Hunter position and active hunter route trace.</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQuickbar() {
+      const activePreview = state.previews[state.activeMode];
+      const activePlayer = state.players[state.activeMode];
+      const upcoming = currentTrainUpcomingStops(activePreview);
+      const nextDecision = activePlayer.steps[0] ? describeStep(activePlayer.steps[0]) : "No step yet. Add one from the right panel.";
+      const routeSummary = plannedStationsFromPreview(activePreview)
+        .map((stationId) => state.stationMap.get(stationId)?.names.en || stationId)
+        .join(" -> ");
+
+      state.ui.quickbar.innerHTML = `
+        <div class="quickbar-grid">
+          <div class="quick-stat">
+            <div class="label">Active Side</div>
+            <div class="value">${state.activeMode === "runner" ? "Runner" : "Hunter"} · ${activePreview.currentTime}</div>
+          </div>
+          <div class="quick-stat">
+            <div class="label">Current Position</div>
+            <div class="value">${formatState(activePreview.currentState)}</div>
+          </div>
+          <div class="quick-stat">
+            <div class="label">Route Preview</div>
+            <div class="value">${routeSummary || "Stay at start station"}</div>
+          </div>
+          <div class="quick-stat">
+            <div class="label">Next Important Thing</div>
+            <div class="value">${activePreview.currentState.kind === "TRAIN" && upcoming[0] ? `Next stop ${state.stationMap.get(upcoming[0].stationId)?.names.en} at ${upcoming[0].hhmm}` : nextDecision}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDuelCards() {
+      const buildCard = (playerId) => {
+        const preview = state.previews[playerId];
+        const player = state.players[playerId];
+        const isActive = state.activeMode === playerId;
+        const routeLength = plannedStationsFromPreview(preview).length;
+        return `
+          <div class="duel-card ${playerId}">
+            <div class="duel-head">
+              <div class="duel-title">${playerId === "runner" ? "Runner" : "Hunter"}</div>
+              <div class="status-pill">${isActive ? "editing now" : "standby"}</div>
+            </div>
+            <div class="duel-meta">
+              Start: ${stationLabel(player.startStationId)}<br />
+              Live state: ${formatState(preview.currentState)}<br />
+              Steps: ${player.steps.length} · Route nodes: ${routeLength}
+            </div>
+          </div>
+        `;
+      };
+
+      state.ui.duelCards.innerHTML = `
+        ${buildCard("runner")}
+        ${buildCard("hunter")}
       `;
     }
 
@@ -1231,6 +1512,11 @@
         state.previews[state.activeMode],
         state.activeMode
       );
+      const passiveMode = state.activeMode === "runner" ? "hunter" : "runner";
+      const passivePlanTrace = renderPlanTrace(
+        state.previews[passiveMode],
+        passiveMode
+      ).replace(/plan-trace /g, "plan-trace faint ");
 
       const stationNodes = state.stations.map((station) => {
         const stationId = station.id;
@@ -1263,6 +1549,7 @@
       state.ui.mapSvg.innerHTML = `
         <polyline class="rail-glow" points="${points}" />
         <polyline class="rail-line" points="${points}" />
+        ${passivePlanTrace}
         ${activePlanTrace}
         ${stationNodes}
       `;

@@ -8,10 +8,12 @@
 - 已完成真实山手线站点、weekday 时刻表抓取、规范化、合并与可视化。
 - 已完成第一版真实列车实例模拟器，支持 `actions` / `plan`、事件日志、`same_node` / `same_train` 抓捕，以及 `RULES_v0.6` 的边界判定。
 - 已完成本地 `planner.html` 客户端原型：双击启动、圆环地图、Runner/Hunter 模式、plan 可视化轨迹、Runner plan test preset。
+- 已将 `planner.html` 进一步提升为更像可试玩客户端的 UI：更强的地图主体感、双方 match table、底部 quickbar、地图 legend、主动/被动路线分层显示。
 - 已完成 `ENGINE_ARCHITECTURE.md`，明确 `data / rules / engine / interface / frontend` 五层边界。
 
 ## In Progress
 - 正在把 `planner.html` 接到本地模拟执行链上，让它不只生成 JSON，也能直接跑出结果。
+- 正在把 `planner.html` 从“好看的本地客户端”继续推进到“可直接跑局”的本地玩法工作台。
 - 正在把 engine 边界继续收紧，准备补 `RESULT_SCHEMA` / `REPLAY_SCHEMA` / `DATASET_SCHEMA`。
 
 ## Blockers
