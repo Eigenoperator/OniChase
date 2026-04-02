@@ -77,3 +77,4 @@
 - Increased the default native-client font baseline so the very first launch is more readable without requiring the user to open `Settings` before playtesting.
 - Raised the default font baseline much more aggressively and expanded the settings slider ceiling, so the local client now opens at a clearly larger reading size and still leaves extra room for even bigger text if needed.
 - Switched the local client's main split layout to a draggable horizontal `PanedWindow`, so the user can resize the left map and right planning column directly; also aligned the new default launch font size to the user's requested `10` level.
+- Added a second level of resizable layout inside the right column by turning `Info / Actions / Result` into a vertical `PanedWindow`, so the user can independently decide how much height each right-side section should receive.

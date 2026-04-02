@@ -321,17 +321,40 @@ class OniChaseLocalClient:
         self.root.bind_all("<Button-4>", self.on_right_panel_mouse_wheel)
         self.root.bind_all("<Button-5>", self.on_right_panel_mouse_wheel)
 
-        self.duel_label = self.make_card(self.right_scroll_frame, self.duel_var, width=48)
+        self.right_pane = tk.PanedWindow(
+            self.right_scroll_frame,
+            orient=tk.VERTICAL,
+            bg=BG,
+            sashrelief=tk.RAISED,
+            sashwidth=8,
+            bd=0,
+            highlightthickness=0,
+        )
+        self.right_pane.grid(row=0, column=0, sticky="nsew")
+        self.right_scroll_frame.columnconfigure(0, weight=1)
+        self.right_scroll_frame.rowconfigure(0, weight=1)
+        self.bind_right_panel_hover(self.right_pane)
+
+        self.info_stack = tk.Frame(self.right_pane, bg=BG)
+        self.info_stack.columnconfigure(0, weight=1)
+        self.duel_label = self.make_card(self.info_stack, self.duel_var, width=48)
         self.duel_label.grid(row=0, column=0, sticky="ew", pady=(0, 10))
-        self.plan_label = self.make_card(self.right_scroll_frame, self.plan_var, width=48)
+        self.plan_label = self.make_card(self.info_stack, self.plan_var, width=48)
         self.plan_label.grid(row=1, column=0, sticky="ew", pady=(0, 10))
-        self.options_label = self.make_card(self.right_scroll_frame, self.options_var, width=48)
-        self.options_label.grid(row=2, column=0, sticky="ew", pady=(0, 10))
-        self.action_card = tk.Frame(self.right_scroll_frame, bg=PANEL, highlightbackground=LINE, highlightthickness=1, padx=12, pady=12)
-        self.action_card.grid(row=3, column=0, sticky="ew", pady=(0, 10))
+        self.options_label = self.make_card(self.info_stack, self.options_var, width=48)
+        self.options_label.grid(row=2, column=0, sticky="ew")
+
+        self.action_card = tk.Frame(self.right_pane, bg=PANEL, highlightbackground=LINE, highlightthickness=1, padx=12, pady=12)
         self.action_card.columnconfigure(0, weight=1)
-        self.result_label = self.make_card(self.right_scroll_frame, self.result_var, width=48)
-        self.result_label.grid(row=4, column=0, sticky="ew")
+
+        self.result_container = tk.Frame(self.right_pane, bg=BG)
+        self.result_container.columnconfigure(0, weight=1)
+        self.result_label = self.make_card(self.result_container, self.result_var, width=48)
+        self.result_label.grid(row=0, column=0, sticky="ew")
+
+        self.right_pane.add(self.info_stack, minsize=220, stretch="always")
+        self.right_pane.add(self.action_card, minsize=180)
+        self.right_pane.add(self.result_container, minsize=160)
 
         shell.add(left, minsize=760, stretch="always")
         shell.add(right, minsize=320)

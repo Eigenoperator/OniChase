@@ -39,6 +39,7 @@ The first local client prototype already provides:
 - the entire right-side panel is now scrollable, so in smaller window sizes the player can use the mouse wheel to browse long action/result lists
 - a `Settings` window is available from the top bar; for now it supports changing the UI font size
 - the main layout now uses a draggable left-right divider, so the player can widen the right planning panel when needed
+- the right column itself now also has draggable internal dividers, so `Info / Actions / Result` can be resized vertically
 
 ## Launch
 
