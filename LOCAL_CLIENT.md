@@ -29,6 +29,8 @@ The first local client prototype already provides:
 - a quick summary bar
 - a right-side plan and option panel
 - the current runner-plan test preset
+- action buttons for `Set Start Here`, `Board Earliest`, `Ride To Selected`, `Wait +5m`, `Undo Step`, and `Clear Plan`
+- in-window simulation via `Run Simulation`
 
 ## Launch
 
@@ -53,11 +55,10 @@ If launch fails, inspect:
 
 This is still a shell, not the final playable client.
 
-It does not yet:
+It still does not yet:
 
-- execute local simulation from inside the window
-- edit steps directly in the native UI
-- replay a finished match
+- support full free-form step editing from structured forms
+- replay a finished match on a dedicated timeline
 - replace the engine
 
 The current goal is to establish the local native client structure first.

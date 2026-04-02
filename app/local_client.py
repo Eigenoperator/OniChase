@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import sys
 import tkinter as tk
 from pathlib import Path
 from tkinter import ttk
@@ -11,6 +12,11 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.engine.simulate_match_from_train_instances import build_result
+
 STATIONS_PATH = ROOT / "data" / "yamanote_stations.json"
 TRAINS_PATH = ROOT / "data" / "yamanote_weekday_train_instances_merged.json"
 
@@ -93,6 +99,7 @@ class OniChaseLocalClient:
         self.duel_var = tk.StringVar()
         self.plan_var = tk.StringVar()
         self.options_var = tk.StringVar()
+        self.result_var = tk.StringVar()
 
         self.build_ui()
         self.render()
@@ -193,8 +200,21 @@ class OniChaseLocalClient:
         self.duel_label.grid(row=0, column=0, sticky="ew", pady=(0, 10))
         self.plan_label = self.make_card(right, self.plan_var, width=48)
         self.plan_label.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+        actions_panel = tk.Frame(right, bg=BG)
+        actions_panel.grid(row=2, column=0, sticky="ew", pady=(0, 10))
+        for idx in range(2):
+            actions_panel.columnconfigure(idx, weight=1)
+        ttk.Button(actions_panel, text="Set Start Here", command=self.set_start_to_selected).grid(row=0, column=0, sticky="ew", padx=(0, 6), pady=(0, 8))
+        ttk.Button(actions_panel, text="Board Earliest", command=self.add_board_earliest_step).grid(row=0, column=1, sticky="ew", padx=(6, 0), pady=(0, 8))
+        ttk.Button(actions_panel, text="Ride To Selected", command=self.add_ride_to_selected_step).grid(row=1, column=0, sticky="ew", padx=(0, 6), pady=(0, 8))
+        ttk.Button(actions_panel, text="Wait +5m", command=self.add_wait_step).grid(row=1, column=1, sticky="ew", padx=(6, 0), pady=(0, 8))
+        ttk.Button(actions_panel, text="Undo Step", command=self.undo_last_step).grid(row=2, column=0, sticky="ew", padx=(0, 6))
+        ttk.Button(actions_panel, text="Clear Plan", command=self.clear_active_plan).grid(row=2, column=1, sticky="ew", padx=(6, 0))
+        ttk.Button(actions_panel, text="Run Simulation", command=self.run_simulation).grid(row=3, column=0, columnspan=2, sticky="ew", pady=(10, 0))
         self.options_label = self.make_card(right, self.options_var, width=48)
-        self.options_label.grid(row=2, column=0, sticky="ew")
+        self.options_label.grid(row=3, column=0, sticky="ew", pady=(0, 10))
+        self.result_label = self.make_card(right, self.result_var, width=48)
+        self.result_label.grid(row=4, column=0, sticky="ew")
 
     def make_card(self, parent: tk.Widget, variable: tk.StringVar, width: int | None = None) -> tk.Label:
         return tk.Label(
@@ -231,6 +251,210 @@ class OniChaseLocalClient:
 
     def set_active_mode(self, mode: str) -> None:
         self.active_mode = mode
+        self.render()
+
+    def active_player(self) -> dict[str, Any]:
+        return self.players[self.active_mode]
+
+    def active_preview(self) -> dict[str, Any]:
+        return self.preview_player(self.active_mode)
+
+    def reset_passive_hold_if_needed(self) -> None:
+        active_player = self.active_player()
+        if active_player.get("passive_hold"):
+            active_player["passive_hold"] = False
+
+    def set_result_message(self, title: str, lines: list[str]) -> None:
+        self.result_var.set(title + "\n\n" + "\n".join(lines))
+
+    def set_start_to_selected(self) -> None:
+        if not self.selected_station_id:
+            self.set_result_message("ACTION", ["Select a station first."])
+            return
+        active_player = self.active_player()
+        active_player["start_station_id"] = self.selected_station_id
+        active_player["steps"] = []
+        self.reset_passive_hold_if_needed()
+        self.set_result_message(
+            "ACTION",
+            [
+                f"{self.active_mode.title()} start moved to {self.station_map[self.selected_station_id]['names']['en']}.",
+                "Existing steps were cleared so the plan stays consistent.",
+            ],
+        )
+        self.render()
+
+    def add_board_earliest_step(self) -> None:
+        preview = self.active_preview()
+        if preview["error"]:
+            self.set_result_message("ACTION", [preview["error"]])
+            self.render()
+            return
+        if preview["current_state"]["kind"] != "NODE":
+            self.set_result_message("ACTION", ["You can only board while currently at a station."])
+            self.render()
+            return
+        station_id = preview["current_state"]["station_id"]
+        minute = preview["current_minute"]
+        best_train = None
+        best_stop = None
+        for train in self.train_data["train_instances"]:
+            board_stop = self.find_boarding_stop(train, station_id, minute)
+            if not board_stop:
+                continue
+            if best_stop is None or stop_departure_minutes(board_stop) < stop_departure_minutes(best_stop):
+                best_train = train
+                best_stop = board_stop
+        if not best_train or not best_stop:
+            self.set_result_message("ACTION", ["No catchable train from the current station and time."])
+            self.render()
+            return
+        self.active_player()["steps"].append({"type": "BOARD_TRAIN", "train_number": best_train["train_number"]})
+        self.reset_passive_hold_if_needed()
+        self.set_result_message(
+            "ACTION",
+            [
+                f"Added BOARD_TRAIN {best_train['train_number']}.",
+                f"Departure: {minutes_to_hhmm(stop_departure_minutes(best_stop))} from {self.station_map[station_id]['names']['en']}.",
+            ],
+        )
+        self.render()
+
+    def add_ride_to_selected_step(self) -> None:
+        if not self.selected_station_id:
+            self.set_result_message("ACTION", ["Select a station to ride to."])
+            self.render()
+            return
+        preview = self.active_preview()
+        if preview["error"]:
+            self.set_result_message("ACTION", [preview["error"]])
+            self.render()
+            return
+        if preview["current_state"]["kind"] != "TRAIN":
+            self.set_result_message("ACTION", ["You can only add RIDE_TO_STATION while currently on a train."])
+            self.render()
+            return
+        if preview["current_board_stop"] is None or preview["current_train"] is None:
+            self.set_result_message("ACTION", ["Current train context is incomplete."])
+            self.render()
+            return
+        alight_stop = self.find_alight_stop(
+            preview["current_train"],
+            preview["current_board_stop"]["sequence"],
+            self.selected_station_id,
+            None,
+        )
+        if not alight_stop:
+            self.set_result_message("ACTION", ["That train does not reach the selected station later."])
+            self.render()
+            return
+        self.active_player()["steps"].append({"type": "RIDE_TO_STATION", "station_id": self.selected_station_id})
+        self.reset_passive_hold_if_needed()
+        self.set_result_message(
+            "ACTION",
+            [
+                f"Added RIDE_TO_STATION {self.station_map[self.selected_station_id]['names']['en']}.",
+                f"Arrival: {alight_stop.get('arrival_hhmm') or alight_stop.get('departure_hhmm')}.",
+            ],
+        )
+        self.render()
+
+    def add_wait_step(self) -> None:
+        preview = self.active_preview()
+        if preview["error"]:
+            self.set_result_message("ACTION", [preview["error"]])
+            self.render()
+            return
+        if preview["current_state"]["kind"] != "NODE":
+            self.set_result_message("ACTION", ["You can only wait while currently at a station."])
+            self.render()
+            return
+        target_minute = min(preview["current_minute"] + 5, hhmm_to_minutes(self.end_time))
+        if target_minute <= preview["current_minute"]:
+            self.set_result_message("ACTION", ["No room left in the match clock for an extra wait step."])
+            self.render()
+            return
+        self.active_player()["steps"].append({"type": "WAIT_UNTIL", "until_hhmm": minutes_to_hhmm(target_minute)})
+        self.reset_passive_hold_if_needed()
+        self.set_result_message(
+            "ACTION",
+            [
+                f"Added WAIT_UNTIL {minutes_to_hhmm(target_minute)}.",
+                f"Current station: {self.station_map[preview['current_state']['station_id']]['names']['en']}.",
+            ],
+        )
+        self.render()
+
+    def undo_last_step(self) -> None:
+        steps = self.active_player()["steps"]
+        if not steps:
+            self.set_result_message("ACTION", ["No step to undo."])
+            self.render()
+            return
+        removed = steps.pop()
+        self.reset_passive_hold_if_needed()
+        self.set_result_message("ACTION", [f"Removed last step: {removed['type']}."])
+        self.render()
+
+    def clear_active_plan(self) -> None:
+        self.active_player()["steps"] = []
+        self.reset_passive_hold_if_needed()
+        self.set_result_message("ACTION", [f"Cleared all steps for {self.active_mode}."])
+        self.render()
+
+    def build_scenario(self) -> dict[str, Any]:
+        players_payload: dict[str, Any] = {}
+        for player_id, player in self.players.items():
+            input_mode = player.get("input_mode", "actions")
+            payload: dict[str, Any] = {
+                "start_station_id": player["start_station_id"],
+            }
+            if input_mode == "plan":
+                payload["plan"] = {"steps": list(player["steps"])}
+            else:
+                payload["actions"] = list(player["steps"])
+            players_payload[player_id] = payload
+        return {
+            "id": "local-client-live",
+            "start_time_hhmm": self.start_time,
+            "end_time_hhmm": self.end_time,
+            "players": players_payload,
+        }
+
+    def run_simulation(self) -> None:
+        try:
+            scenario = self.build_scenario()
+            result = build_result(scenario, self.train_data)
+        except Exception as exc:
+            self.set_result_message("SIMULATION", [f"Failed to simulate: {exc}"])
+            self.render()
+            return
+
+        capture = result["capture"]
+        lines = [
+            f"Scenario: {result['scenario_id']}",
+            f"Events: {len(result['match_event_log'])}",
+        ]
+        if capture is None:
+            lines.append("Capture: none")
+        elif capture["type"] == "same_node":
+            lines.append(f"Capture: same_node at {capture['station_id']} {capture['time_hhmm']}")
+        else:
+            lines.append(f"Capture: same_train on {capture['train_number']} {capture['time_hhmm']}")
+        lines.append("")
+        lines.append("Recent events:")
+        for event in result["match_event_log"][-6:]:
+            parts = [event["time_hhmm"], event["type"]]
+            if event.get("player_id"):
+                parts.append(event["player_id"])
+            if event.get("station_id"):
+                parts.append(event["station_id"])
+            if event.get("train_number"):
+                parts.append(event["train_number"])
+            if event.get("capture_type"):
+                parts.append(event["capture_type"])
+            lines.append("- " + " ".join(parts))
+        self.set_result_message("SIMULATION", lines)
         self.render()
 
     def on_map_drag_start(self, event: tk.Event) -> None:
@@ -508,7 +732,7 @@ class OniChaseLocalClient:
         self.quick_var.set(
             f"ACTIVE SIDE: {self.active_mode.upper()}   |   CURRENT: {self.format_state(active_preview)}   |   OPPONENT: {self.format_state(passive_preview)}\n"
             f"ROUTE PREVIEW: {' -> '.join(self.station_map[s]['names']['en'] for s in self.planned_station_ids(active_preview)) or 'No route yet'}\n"
-            f"MAP: drag with left mouse button, zoom with wheel, click a station to inspect it"
+            f"MAP: drag to move, wheel to zoom, click station to inspect, then use the right-side action buttons"
         )
         self.duel_var.set(
             "MATCH TABLE\n\n"
@@ -562,7 +786,11 @@ class OniChaseLocalClient:
             f"ID: {station['id']}\n"
             f"Order: {station['order']}\n"
             f"Active side start: {active_player['start_station_id']}\n"
-            + (f"Departures here:\n- " + "\n- ".join(upcoming) if upcoming else "Clicking a station now highlights it for inspection.")
+            + (
+                f"Departures here:\n- " + "\n- ".join(upcoming)
+                if upcoming
+                else "Use Set Start Here, Board Earliest, or Ride To Selected from the action buttons."
+            )
         )
 
     def available_options(self, preview: dict[str, Any]) -> list[str]:
