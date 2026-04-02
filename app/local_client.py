@@ -94,7 +94,7 @@ class OniChaseLocalClient:
         self.root.minsize(1280, 820)
         self._right_panel_hover = False
         self.settings_window: tk.Toplevel | None = None
-        self.font_size_offset = 0
+        self.font_size_offset = 2
         self.font_size_var = tk.IntVar(value=self.font_size_offset)
         self.setup_fonts()
         self.setup_styles()
