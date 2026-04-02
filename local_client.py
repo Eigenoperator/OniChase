@@ -22,6 +22,7 @@ INK = "#1f2933"
 MUTED = "#697586"
 PANEL = "#fffaf2"
 LINE = "#dcd4c3"
+SELECTED = "#c48a29"
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -74,6 +75,9 @@ class OniChaseLocalClient:
         self.map_pan_y = 0.0
         self.map_scale = 1.12
         self._drag_last: tuple[int, int] | None = None
+        self._drag_start: tuple[int, int] | None = None
+        self._drag_distance = 0.0
+        self.selected_station_id: str | None = self.players["runner"]["start_station_id"]
         self.compute_map_coords()
 
         self.root = tk.Tk()
@@ -163,6 +167,9 @@ class OniChaseLocalClient:
         self.canvas.bind("<ButtonPress-1>", self.on_map_drag_start)
         self.canvas.bind("<B1-Motion>", self.on_map_drag_move)
         self.canvas.bind("<ButtonRelease-1>", self.on_map_drag_end)
+        self.canvas.bind("<MouseWheel>", self.on_mouse_wheel)
+        self.canvas.bind("<Button-4>", self.on_mouse_wheel)
+        self.canvas.bind("<Button-5>", self.on_mouse_wheel)
 
         self.quick_label = tk.Label(
             left,
@@ -228,6 +235,8 @@ class OniChaseLocalClient:
 
     def on_map_drag_start(self, event: tk.Event) -> None:
         self._drag_last = (event.x, event.y)
+        self._drag_start = (event.x, event.y)
+        self._drag_distance = 0.0
 
     def on_map_drag_move(self, event: tk.Event) -> None:
         if self._drag_last is None:
@@ -236,13 +245,53 @@ class OniChaseLocalClient:
         last_x, last_y = self._drag_last
         dx = event.x - last_x
         dy = event.y - last_y
+        self._drag_distance += abs(dx) + abs(dy)
         self.map_pan_x += dx
         self.map_pan_y += dy
         self.canvas.move("board", dx, dy)
         self._drag_last = (event.x, event.y)
 
-    def on_map_drag_end(self, _event: tk.Event) -> None:
+    def on_map_drag_end(self, event: tk.Event) -> None:
+        if self._drag_distance < 6:
+            self.select_station_at_canvas_point(event.x, event.y)
         self._drag_last = None
+        self._drag_start = None
+        self._drag_distance = 0.0
+
+    def on_mouse_wheel(self, event: tk.Event) -> None:
+        if getattr(event, "num", None) == 4:
+            factor = 1.1
+        elif getattr(event, "num", None) == 5:
+            factor = 1 / 1.1
+        else:
+            factor = 1.1 if event.delta > 0 else 1 / 1.1
+
+        next_scale = max(0.65, min(2.6, self.map_scale * factor))
+        factor = next_scale / self.map_scale
+        if abs(factor - 1.0) < 1e-6:
+            return
+
+        cursor_x = event.x
+        cursor_y = event.y
+        self.map_pan_x = cursor_x - factor * (cursor_x - self.map_pan_x)
+        self.map_pan_y = cursor_y - factor * (cursor_y - self.map_pan_y)
+        self.map_scale = next_scale
+        self.render()
+
+    def select_station_at_canvas_point(self, canvas_x: float, canvas_y: float) -> None:
+        raw_x = (canvas_x - self.map_pan_x) / self.map_scale
+        raw_y = (canvas_y - self.map_pan_y) / self.map_scale
+        best_station = None
+        best_distance = None
+        for station in self.stations:
+            x, y, _ = self.map_coords[station["id"]]
+            distance = math.hypot(raw_x - x, raw_y - y)
+            if best_distance is None or distance < best_distance:
+                best_station = station["id"]
+                best_distance = distance
+        if best_station and best_distance is not None and best_distance <= 20:
+            self.selected_station_id = best_station
+            self.render()
 
     def preview_player(self, player_id: str) -> dict[str, Any]:
         player = self.players[player_id]
@@ -458,7 +507,8 @@ class OniChaseLocalClient:
         )
         self.quick_var.set(
             f"ACTIVE SIDE: {self.active_mode.upper()}   |   CURRENT: {self.format_state(active_preview)}   |   OPPONENT: {self.format_state(passive_preview)}\n"
-            f"ROUTE PREVIEW: {' -> '.join(self.station_map[s]['names']['en'] for s in self.planned_station_ids(active_preview)) or 'No route yet'}"
+            f"ROUTE PREVIEW: {' -> '.join(self.station_map[s]['names']['en'] for s in self.planned_station_ids(active_preview)) or 'No route yet'}\n"
+            f"MAP: drag with left mouse button, zoom with wheel, click a station to inspect it"
         )
         self.duel_var.set(
             "MATCH TABLE\n\n"
@@ -486,10 +536,34 @@ class OniChaseLocalClient:
         self.plan_var.set(f"{self.active_mode.upper()} PLAN\n\n{plan_text}")
 
         options = self.available_options(active_preview)
+        selected_station_text = self.render_selected_station_text()
         self.options_var.set(
-            "IMMEDIATE OPTIONS\n\n" + ("\n".join(options) if options else "No suggestion from the current state.")
+            "IMMEDIATE OPTIONS\n\n"
+            + ("\n".join(options) if options else "No suggestion from the current state.")
+            + "\n\n"
+            + selected_station_text
         )
         self.draw_map(runner_preview, hunter_preview)
+
+    def render_selected_station_text(self) -> str:
+        if not self.selected_station_id:
+            return "SELECTED STATION\n\nNo station selected."
+
+        station = self.station_map[self.selected_station_id]
+        active_player = self.players[self.active_mode]
+        upcoming = []
+        active_preview = self.preview_player(self.active_mode)
+        if active_preview["current_state"]["kind"] == "NODE" and active_preview["current_state"]["station_id"] == self.selected_station_id:
+            upcoming = self.available_options(active_preview)[:4]
+
+        return (
+            "SELECTED STATION\n\n"
+            f"{station['names']['en']} / {station['names']['ja']}\n"
+            f"ID: {station['id']}\n"
+            f"Order: {station['order']}\n"
+            f"Active side start: {active_player['start_station_id']}\n"
+            + (f"Departures here:\n- " + "\n- ".join(upcoming) if upcoming else "Clicking a station now highlights it for inspection.")
+        )
 
     def available_options(self, preview: dict[str, Any]) -> list[str]:
         if preview["error"]:
@@ -531,10 +605,14 @@ class OniChaseLocalClient:
         for station in self.stations:
             station_id = station["id"]
             x, y, angle = self.map_coords[station_id]
-            self.canvas.create_oval(x - 12, y - 12, x + 12, y + 12, fill="white", outline=YAMANOTE_COLOR, width=4, tags=("board",))
+            outline = SELECTED if station_id == self.selected_station_id else YAMANOTE_COLOR
+            width = 5 if station_id == self.selected_station_id else 4
+            self.canvas.create_oval(x - 12, y - 12, x + 12, y + 12, fill="white", outline=outline, width=width, tags=("board",))
             label_x = x + math.cos(angle) * 34
             label_y = y + math.sin(angle) * 34
-            self.canvas.create_text(label_x, label_y, text=station["names"]["en"], fill=INK, font=("Helvetica", 9), tags=("board",))
+            label_fill = SELECTED if station_id == self.selected_station_id else INK
+            label_font = ("Helvetica", 10, "bold") if station_id == self.selected_station_id else ("Helvetica", 9)
+            self.canvas.create_text(label_x, label_y, text=station["names"]["en"], fill=label_fill, font=label_font, tags=("board",))
 
             if station_id == runner_station:
                 self.canvas.create_oval(x + 8, y - 26, x + 26, y - 8, fill=RUNNER_COLOR, outline="white", width=3, tags=("board",))
