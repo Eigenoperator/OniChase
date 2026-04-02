@@ -75,3 +75,4 @@
 - Added a scrollable right-side panel to the native client so smaller window sizes remain usable: the action list, departure list, destination list, and simulation summary can now all be browsed with the mouse wheel when the pointer is over the right column.
 - Added a first real settings surface to the native client: a top-bar `Settings` button now opens a small preferences window where the user can change the global UI font size, and the client now uses a shared font system so labels, cards, map text, and button styles all scale together.
 - Increased the default native-client font baseline so the very first launch is more readable without requiring the user to open `Settings` before playtesting.
+- Raised the default font baseline much more aggressively and expanded the settings slider ceiling, so the local client now opens at a clearly larger reading size and still leaves extra room for even bigger text if needed.
