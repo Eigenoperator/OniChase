@@ -35,8 +35,9 @@ The first local client prototype already provides:
   - while at a station, the right panel lists upcoming departures from the current station
   - after boarding, the right panel lists downstream stations for the current train
   - clicking a reachable station on the map while on a train can directly add the ride step
-  - the train outlook now shows the full remaining stop list for the current service; for loop services it shows one full loop ahead
+- the train outlook now shows the full remaining stop list for the current service; for loop services it shows one full loop ahead
 - the entire right-side panel is now scrollable, so in smaller window sizes the player can use the mouse wheel to browse long action/result lists
+- a `Settings` window is available from the top bar; for now it supports changing the UI font size
 
 ## Launch
 

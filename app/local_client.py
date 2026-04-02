@@ -7,6 +7,7 @@ import math
 import sys
 import tkinter as tk
 from pathlib import Path
+from tkinter import font as tkfont
 from tkinter import ttk
 from typing import Any
 
@@ -92,6 +93,11 @@ class OniChaseLocalClient:
         self.root.geometry("1500x920")
         self.root.minsize(1280, 820)
         self._right_panel_hover = False
+        self.settings_window: tk.Toplevel | None = None
+        self.font_size_offset = 0
+        self.font_size_var = tk.IntVar(value=self.font_size_offset)
+        self.setup_fonts()
+        self.setup_styles()
 
         self.hud_var = tk.StringVar()
         self.test_var = tk.StringVar()
@@ -116,6 +122,103 @@ class OniChaseLocalClient:
             y = center_y + math.sin(angle) * radius
             self.map_coords[station["id"]] = (x, y, angle)
 
+    def setup_fonts(self) -> None:
+        family = "Helvetica"
+        self.fonts = {
+            "title": tkfont.Font(family=family, size=22, weight="bold"),
+            "subtitle": tkfont.Font(family=family, size=11),
+            "body": tkfont.Font(family=family, size=11),
+            "body_bold": tkfont.Font(family=family, size=11, weight="bold"),
+            "small": tkfont.Font(family=family, size=10),
+            "small_bold": tkfont.Font(family=family, size=10, weight="bold"),
+            "map_title": tkfont.Font(family=family, size=22, weight="bold"),
+            "map_subtitle": tkfont.Font(family=family, size=12),
+            "station": tkfont.Font(family=family, size=9),
+            "station_selected": tkfont.Font(family=family, size=10, weight="bold"),
+            "waypoint": tkfont.Font(family=family, size=9, weight="bold"),
+        }
+
+    def setup_styles(self) -> None:
+        self.style = ttk.Style(self.root)
+        self.style.configure("TButton", font=self.fonts["body"])
+
+    def apply_font_size(self, offset: int) -> None:
+        self.font_size_offset = offset
+        size_map = {
+            "title": 22,
+            "subtitle": 11,
+            "body": 11,
+            "body_bold": 11,
+            "small": 10,
+            "small_bold": 10,
+            "map_title": 22,
+            "map_subtitle": 12,
+            "station": 9,
+            "station_selected": 10,
+            "waypoint": 9,
+        }
+        for key, base_size in size_map.items():
+            self.fonts[key].configure(size=max(8, base_size + offset))
+        self.style.configure("TButton", font=self.fonts["body"])
+        self.render()
+
+    def open_settings(self) -> None:
+        if self.settings_window and self.settings_window.winfo_exists():
+            self.settings_window.lift()
+            self.settings_window.focus_force()
+            return
+
+        window = tk.Toplevel(self.root)
+        window.title("Settings")
+        window.configure(bg=PANEL)
+        window.geometry("360x180")
+        window.resizable(False, False)
+        self.settings_window = window
+
+        frame = tk.Frame(window, bg=PANEL, padx=18, pady=18)
+        frame.pack(fill="both", expand=True)
+
+        title = tk.Label(frame, text="Settings", bg=PANEL, fg=INK, font=self.fonts["body_bold"], anchor="w")
+        title.pack(anchor="w")
+
+        desc = tk.Label(
+            frame,
+            text="UI Font Size",
+            bg=PANEL,
+            fg=MUTED,
+            font=self.fonts["body"],
+            anchor="w",
+        )
+        desc.pack(anchor="w", pady=(12, 6))
+
+        scale = tk.Scale(
+            frame,
+            from_=-3,
+            to=8,
+            orient="horizontal",
+            resolution=1,
+            variable=self.font_size_var,
+            command=self.on_font_size_change,
+            bg=PANEL,
+            fg=INK,
+            highlightthickness=0,
+            font=self.fonts["small"],
+        )
+        scale.pack(fill="x")
+
+        value_label = tk.Label(
+            frame,
+            textvariable=self.font_size_var,
+            bg=PANEL,
+            fg=INK,
+            font=self.fonts["body"],
+            anchor="w",
+        )
+        value_label.pack(anchor="w", pady=(8, 0))
+
+    def on_font_size_change(self, value: str) -> None:
+        self.apply_font_size(int(float(value)))
+
     def build_ui(self) -> None:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(1, weight=1)
@@ -124,14 +227,14 @@ class OniChaseLocalClient:
         topbar.grid(row=0, column=0, sticky="ew", padx=18, pady=(18, 10))
         topbar.columnconfigure(0, weight=1)
 
-        title = tk.Label(topbar, text="OniChase Local Client", bg=PANEL, fg=INK, font=("Helvetica", 22, "bold"))
+        title = tk.Label(topbar, text="OniChase Local Client", bg=PANEL, fg=INK, font=self.fonts["title"])
         title.grid(row=0, column=0, sticky="w")
         subtitle = tk.Label(
             topbar,
             text="Local playtest shell for the real Yamanote timetable. No browser, no local website, just the board.",
             bg=PANEL,
             fg=MUTED,
-            font=("Helvetica", 11),
+            font=self.fonts["subtitle"],
         )
         subtitle.grid(row=1, column=0, sticky="w", pady=(4, 0))
 
@@ -141,6 +244,7 @@ class OniChaseLocalClient:
         ttk.Button(button_bar, text="Hunter Mode", command=lambda: self.set_active_mode("hunter")).grid(row=0, column=1, padx=4)
         ttk.Button(button_bar, text="Load Test Preset", command=self.apply_test_preset).grid(row=0, column=2, padx=4)
         ttk.Button(button_bar, text="Refresh", command=self.render).grid(row=0, column=3, padx=4)
+        ttk.Button(button_bar, text="Settings", command=self.open_settings).grid(row=0, column=4, padx=4)
 
         shell = tk.Frame(self.root, bg=BG)
         shell.grid(row=1, column=0, sticky="nsew", padx=18, pady=(0, 18))
@@ -188,7 +292,7 @@ class OniChaseLocalClient:
             fg="white",
             padx=18,
             pady=14,
-            font=("Helvetica", 11),
+            font=self.fonts["body"],
         )
         self.quick_label.grid(row=2, column=0, sticky="ew", padx=16, pady=(0, 16))
 
@@ -237,7 +341,7 @@ class OniChaseLocalClient:
             padx=14,
             pady=12,
             width=width,
-            font=("Helvetica", 11),
+            font=self.fonts["body"],
             highlightbackground=LINE,
             highlightthickness=1,
         )
@@ -924,7 +1028,7 @@ class OniChaseLocalClient:
             justify="left",
             bg=PANEL,
             fg=INK,
-            font=("Helvetica", 12, "bold"),
+            font=self.fonts["body_bold"],
         )
         title.grid(row=0, column=0, sticky="ew")
 
@@ -935,7 +1039,7 @@ class OniChaseLocalClient:
             justify="left",
             bg=PANEL,
             fg=MUTED,
-            font=("Helvetica", 10),
+            font=self.fonts["small"],
             wraplength=360,
         )
         helper.grid(row=1, column=0, sticky="ew", pady=(4, 10))
@@ -1010,7 +1114,7 @@ class OniChaseLocalClient:
             justify="left",
             bg=PANEL,
             fg=INK,
-            font=("Helvetica", 10, "bold"),
+            font=self.fonts["small_bold"],
         )
         label.grid(row=row, column=0, sticky="ew", pady=(10, 6))
         self.bind_right_panel_hover(label)
@@ -1027,8 +1131,8 @@ class OniChaseLocalClient:
 
     def draw_map(self, runner_preview: dict[str, Any], hunter_preview: dict[str, Any]) -> None:
         self.canvas.delete("all")
-        self.canvas.create_text(46, 36, text="JR Yamanote Line", anchor="w", fill=INK, font=("Helvetica", 22, "bold"), tags=("board",))
-        self.canvas.create_text(46, 64, text="Drag with left mouse button to move the map", anchor="w", fill=MUTED, font=("Helvetica", 12), tags=("board",))
+        self.canvas.create_text(46, 36, text="JR Yamanote Line", anchor="w", fill=INK, font=self.fonts["map_title"], tags=("board",))
+        self.canvas.create_text(46, 64, text="Drag with left mouse button to move the map", anchor="w", fill=MUTED, font=self.fonts["map_subtitle"], tags=("board",))
 
         coords = [self.map_coords[station["id"]] for station in self.stations]
         loop_points = [value for coord in coords for value in coord[:2]]
@@ -1052,7 +1156,7 @@ class OniChaseLocalClient:
             label_x = x + math.cos(angle) * 34
             label_y = y + math.sin(angle) * 34
             label_fill = SELECTED if station_id == self.selected_station_id else INK
-            label_font = ("Helvetica", 10, "bold") if station_id == self.selected_station_id else ("Helvetica", 9)
+            label_font = self.fonts["station_selected"] if station_id == self.selected_station_id else self.fonts["station"]
             self.canvas.create_text(label_x, label_y, text=station["names"]["en"], fill=label_fill, font=label_font, tags=("board",))
 
             if station_id == runner_station:
@@ -1060,9 +1164,9 @@ class OniChaseLocalClient:
             if station_id == hunter_station:
                 self.canvas.create_oval(x - 26, y - 26, x - 8, y - 8, fill=HUNTER_COLOR, outline="white", width=3, tags=("board",))
 
-        self.canvas.create_text(812, 720, text="Runner", fill=INK, font=("Helvetica", 11, "bold"), anchor="w", tags=("board",))
+        self.canvas.create_text(812, 720, text="Runner", fill=INK, font=self.fonts["body_bold"], anchor="w", tags=("board",))
         self.canvas.create_oval(778, 710, 796, 728, fill=RUNNER_COLOR, outline="white", width=3, tags=("board",))
-        self.canvas.create_text(812, 748, text="Hunter", fill=INK, font=("Helvetica", 11, "bold"), anchor="w", tags=("board",))
+        self.canvas.create_text(812, 748, text="Hunter", fill=INK, font=self.fonts["body_bold"], anchor="w", tags=("board",))
         self.canvas.create_oval(778, 738, 796, 756, fill=HUNTER_COLOR, outline="white", width=3, tags=("board",))
         self.canvas.scale("board", 0, 0, self.map_scale, self.map_scale)
         self.canvas.move("board", self.map_pan_x, self.map_pan_y)
@@ -1088,7 +1192,7 @@ class OniChaseLocalClient:
         for index, station_id in enumerate(station_ids, start=1):
             x, y, _ = self.map_coords[station_id]
             self.canvas.create_oval(x - 10, y - 10, x + 10, y + 10, fill=color, outline="white", width=3, tags=("board",))
-            self.canvas.create_text(x, y + 1, text=str(index), fill="white", font=("Helvetica", 9, "bold"), tags=("board",))
+            self.canvas.create_text(x, y + 1, text=str(index), fill="white", font=self.fonts["waypoint"], tags=("board",))
 
     def run(self) -> None:
         self.root.mainloop()
