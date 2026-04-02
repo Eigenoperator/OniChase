@@ -66,3 +66,4 @@
 - Fixed the local launcher path by changing `START_ONICHASE_LOCAL.desktop` to call `START_ONICHASE_LOCAL.sh` directly instead of using a nested `bash -lc`, and added `.onichase-launch.log` output for easier diagnosis when local launch fails.
 - Built the first native local client prototype in `local_client.py` using `tkinter`, plus `START_ONICHASE_CLIENT.sh` and `START_ONICHASE_CLIENT.desktop`, so local playtesting no longer has to depend on a browser-based website.
 - Fixed the new desktop client launcher permissions after Scorp reported that double-clicking still opened the `.desktop` file as text; both `START_ONICHASE_CLIENT.desktop` and `START_ONICHASE_CLIENT.sh` are now executable.
+- Added first map-navigation interaction to `local_client.py`: the Yamanote board can now be dragged with the left mouse button, making it possible to inspect different parts of the map during local playtesting.

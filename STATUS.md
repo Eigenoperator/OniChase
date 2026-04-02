@@ -13,6 +13,7 @@
 - 已修正本地启动器：`START_ONICHASE_LOCAL.desktop` 现在直接调用脚本本体，`START_ONICHASE_LOCAL.sh` 会写入 `.onichase-launch.log` 便于排查启动失败。
 - 已完成第一版本地桌面客户端原型：`local_client.py` 使用 `tkinter` 直接开窗，不依赖浏览器和本地 website。
 - 已修正 `START_ONICHASE_CLIENT.desktop` 与 `START_ONICHASE_CLIENT.sh` 的执行权限，避免桌面环境把新的客户端启动器当成普通文本打开。
+- 已为 `local_client.py` 增加鼠标左键拖拽地图，允许本地试玩时平移查看不同区域。
 
 ## In Progress
 - 正在决定是否把主试玩入口从 `planner.html` 彻底切到新的 `local_client.py` 本地桌面客户端。
@@ -23,6 +24,7 @@
 - 核心题材、长期玩法范围、目标平台仍未最终锁定。
 - 当前还没有把网页客户端直接接到本地模拟结果回传，所以玩法验证效率仍受限。
 - 当前本地桌面客户端还是第一版壳层，还没有在窗口内直接执行模拟或编辑步骤。
+- 当前地图只支持平移，还不支持缩放与更细的交互选择。
 
 ## Decisions
 - [2026-03-30] 主测试主线使用“真实山手线 + 真实站点 + 真实时刻表”。
@@ -34,4 +36,4 @@
 ## Next
 1. 让 `planner.html` 能直接触发本地模拟并展示结果，而不是只导出 scenario JSON。
 2. 把 `local_client.py` 从窗口原型推进到可交互：先补本地 step 编辑和窗口内模拟执行。
-3. 补 `RESULT_SCHEMA.md`、`REPLAY_SCHEMA.md`、`DATASET_SCHEMA.md`，继续强化 engine-interface 边界。
+3. 给本地客户端继续补地图缩放和站点点击交互。

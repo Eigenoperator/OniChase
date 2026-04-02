@@ -70,6 +70,10 @@ class OniChaseLocalClient:
         self.start_time = "06:00"
         self.end_time = "07:00"
         self.map_coords: dict[str, tuple[float, float, float]] = {}
+        self.map_pan_x = 0.0
+        self.map_pan_y = 0.0
+        self.map_scale = 1.12
+        self._drag_last: tuple[int, int] | None = None
         self.compute_map_coords()
 
         self.root = tk.Tk()
@@ -155,6 +159,10 @@ class OniChaseLocalClient:
         map_frame.columnconfigure(0, weight=1)
         self.canvas = tk.Canvas(map_frame, bg="#f8f0e0", highlightthickness=0, width=1020, height=760)
         self.canvas.grid(row=0, column=0, sticky="nsew")
+        self.canvas.configure(cursor="fleur")
+        self.canvas.bind("<ButtonPress-1>", self.on_map_drag_start)
+        self.canvas.bind("<B1-Motion>", self.on_map_drag_move)
+        self.canvas.bind("<ButtonRelease-1>", self.on_map_drag_end)
 
         self.quick_label = tk.Label(
             left,
@@ -217,6 +225,24 @@ class OniChaseLocalClient:
     def set_active_mode(self, mode: str) -> None:
         self.active_mode = mode
         self.render()
+
+    def on_map_drag_start(self, event: tk.Event) -> None:
+        self._drag_last = (event.x, event.y)
+
+    def on_map_drag_move(self, event: tk.Event) -> None:
+        if self._drag_last is None:
+            self._drag_last = (event.x, event.y)
+            return
+        last_x, last_y = self._drag_last
+        dx = event.x - last_x
+        dy = event.y - last_y
+        self.map_pan_x += dx
+        self.map_pan_y += dy
+        self.canvas.move("board", dx, dy)
+        self._drag_last = (event.x, event.y)
+
+    def on_map_drag_end(self, _event: tk.Event) -> None:
+        self._drag_last = None
 
     def preview_player(self, player_id: str) -> dict[str, Any]:
         player = self.players[player_id]
@@ -486,15 +512,15 @@ class OniChaseLocalClient:
 
     def draw_map(self, runner_preview: dict[str, Any], hunter_preview: dict[str, Any]) -> None:
         self.canvas.delete("all")
-        self.canvas.create_text(46, 36, text="JR Yamanote Line", anchor="w", fill=INK, font=("Helvetica", 22, "bold"))
-        self.canvas.create_text(46, 64, text="Local playtest board", anchor="w", fill=MUTED, font=("Helvetica", 12))
+        self.canvas.create_text(46, 36, text="JR Yamanote Line", anchor="w", fill=INK, font=("Helvetica", 22, "bold"), tags=("board",))
+        self.canvas.create_text(46, 64, text="Drag with left mouse button to move the map", anchor="w", fill=MUTED, font=("Helvetica", 12), tags=("board",))
 
         coords = [self.map_coords[station["id"]] for station in self.stations]
         loop_points = [value for coord in coords for value in coord[:2]]
         first = coords[0]
         loop_points.extend(first[:2])
-        self.canvas.create_line(*loop_points, width=34, fill="#d9ebc6", smooth=True)
-        self.canvas.create_line(*loop_points, width=14, fill=YAMANOTE_COLOR, smooth=True)
+        self.canvas.create_line(*loop_points, width=34, fill="#d9ebc6", smooth=True, tags=("board",))
+        self.canvas.create_line(*loop_points, width=14, fill=YAMANOTE_COLOR, smooth=True, tags=("board",))
 
         self.draw_plan_trace(self.preview_player(self.active_mode), self.active_mode, faded=False)
         self.draw_plan_trace(self.preview_player("hunter" if self.active_mode == "runner" else "runner"), "hunter" if self.active_mode == "runner" else "runner", faded=True)
@@ -505,20 +531,22 @@ class OniChaseLocalClient:
         for station in self.stations:
             station_id = station["id"]
             x, y, angle = self.map_coords[station_id]
-            self.canvas.create_oval(x - 12, y - 12, x + 12, y + 12, fill="white", outline=YAMANOTE_COLOR, width=4)
+            self.canvas.create_oval(x - 12, y - 12, x + 12, y + 12, fill="white", outline=YAMANOTE_COLOR, width=4, tags=("board",))
             label_x = x + math.cos(angle) * 34
             label_y = y + math.sin(angle) * 34
-            self.canvas.create_text(label_x, label_y, text=station["names"]["en"], fill=INK, font=("Helvetica", 9))
+            self.canvas.create_text(label_x, label_y, text=station["names"]["en"], fill=INK, font=("Helvetica", 9), tags=("board",))
 
             if station_id == runner_station:
-                self.canvas.create_oval(x + 8, y - 26, x + 26, y - 8, fill=RUNNER_COLOR, outline="white", width=3)
+                self.canvas.create_oval(x + 8, y - 26, x + 26, y - 8, fill=RUNNER_COLOR, outline="white", width=3, tags=("board",))
             if station_id == hunter_station:
-                self.canvas.create_oval(x - 26, y - 26, x - 8, y - 8, fill=HUNTER_COLOR, outline="white", width=3)
+                self.canvas.create_oval(x - 26, y - 26, x - 8, y - 8, fill=HUNTER_COLOR, outline="white", width=3, tags=("board",))
 
-        self.canvas.create_text(812, 720, text="Runner", fill=INK, font=("Helvetica", 11, "bold"), anchor="w")
-        self.canvas.create_oval(778, 710, 796, 728, fill=RUNNER_COLOR, outline="white", width=3)
-        self.canvas.create_text(812, 748, text="Hunter", fill=INK, font=("Helvetica", 11, "bold"), anchor="w")
-        self.canvas.create_oval(778, 738, 796, 756, fill=HUNTER_COLOR, outline="white", width=3)
+        self.canvas.create_text(812, 720, text="Runner", fill=INK, font=("Helvetica", 11, "bold"), anchor="w", tags=("board",))
+        self.canvas.create_oval(778, 710, 796, 728, fill=RUNNER_COLOR, outline="white", width=3, tags=("board",))
+        self.canvas.create_text(812, 748, text="Hunter", fill=INK, font=("Helvetica", 11, "bold"), anchor="w", tags=("board",))
+        self.canvas.create_oval(778, 738, 796, 756, fill=HUNTER_COLOR, outline="white", width=3, tags=("board",))
+        self.canvas.scale("board", 0, 0, self.map_scale, self.map_scale)
+        self.canvas.move("board", self.map_pan_x, self.map_pan_y)
 
     def draw_plan_trace(self, preview: dict[str, Any], player_id: str, faded: bool) -> None:
         station_ids = self.planned_station_ids(preview)
@@ -536,11 +564,12 @@ class OniChaseLocalClient:
             dash=(6, 10) if faded else (12, 10),
             smooth=True,
             stipple="gray50" if faded else "",
+            tags=("board",),
         )
         for index, station_id in enumerate(station_ids, start=1):
             x, y, _ = self.map_coords[station_id]
-            self.canvas.create_oval(x - 10, y - 10, x + 10, y + 10, fill=color, outline="white", width=3)
-            self.canvas.create_text(x, y + 1, text=str(index), fill="white", font=("Helvetica", 9, "bold"))
+            self.canvas.create_oval(x - 10, y - 10, x + 10, y + 10, fill=color, outline="white", width=3, tags=("board",))
+            self.canvas.create_text(x, y + 1, text=str(index), fill="white", font=("Helvetica", 9, "bold"), tags=("board",))
 
     def run(self) -> None:
         self.root.mainloop()
