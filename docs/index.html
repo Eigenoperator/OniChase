@@ -715,6 +715,10 @@
     function checkLiveCapture() {
       const capture = detectLiveCapture();
       if (!capture) return;
+      const runner = previewPlayer("runner", visibleGameMinute());
+      const hunter = previewPlayer("hunter", visibleGameMinute());
+      capture.runnerStateText = formatState(runner);
+      capture.hunterStateText = formatState(hunter);
       state.liveCapture = capture;
       state.phase = "ENDED";
       state.clockRunning = false;
@@ -722,6 +726,36 @@
         window.clearInterval(state.tickHandle);
         state.tickHandle = null;
       }
+    }
+
+    function captureSummaryLine(capture) {
+      if (!capture) return "No capture.";
+      if (capture.type === "same_node") {
+        return `same_node · ${capture.stationId} · ${capture.timeHhmm}`;
+      }
+      return `same_train · ${capture.trainNumber} · ${capture.timeHhmm}`;
+    }
+
+    function captureDetailHtml(capture) {
+      if (!capture) return "";
+      const locationLine = capture.type === "same_node"
+        ? `<div class="key">Meeting Point</div><div>${stationLabel(capture.stationId)}</div>`
+        : `<div class="key">Same Train</div><div>${capture.trainNumber}</div>`;
+      return `
+        <div class="section-head" style="margin-top:14px;">
+          <div>
+            <h3>Capture Detail</h3>
+            <p>Why the match ended</p>
+          </div>
+        </div>
+        <div class="row-grid">
+          <div class="key">Time</div><div>${capture.timeHhmm}</div>
+          <div class="key">Rule</div><div>${capture.type}</div>
+          ${locationLine}
+          <div class="key">Runner</div><div>${capture.runnerStateText || "unknown"}</div>
+          <div class="key">Hunter</div><div>${capture.hunterStateText || "unknown"}</div>
+        </div>
+      `;
     }
 
     function findBoardingStop(train, stationId, earliestMinute) {
@@ -1213,6 +1247,9 @@
           Real match rule: both players should agree before the game starts.
         </div>
       `;
+      if (state.liveCapture) {
+        state.ui.selectedCard.innerHTML += captureDetailHtml(state.liveCapture);
+      }
     }
 
     function renderPlanBoard() {
@@ -1412,6 +1449,7 @@
           <div class="quick-stat"><div class="label">Active Side</div><div class="value">${state.activeMode}</div></div>
           ${currentText ? `<div class="quick-stat"><div class="label">Current Position</div><div class="value">${currentText}</div></div>` : ""}
           ${opponentText ? `<div class="quick-stat"><div class="label">Opponent</div><div class="value">${opponentText}</div></div>` : ""}
+          ${state.liveCapture ? `<div class="quick-stat"><div class="label">Capture</div><div class="value">${captureSummaryLine(state.liveCapture)}</div></div>` : ""}
           <div class="quick-stat"><div class="label">Next Thing</div><div class="value">${nextDecision}</div></div>
         </div>
         <div class="quick-stat">

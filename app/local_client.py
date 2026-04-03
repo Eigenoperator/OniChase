@@ -753,9 +753,18 @@ class OniChaseLocalClient:
         capture = self.detect_live_capture()
         if not capture:
             return
+        visible_minute = self.visible_game_minute()
+        runner_preview = self.preview_player("runner", visible_minute)
+        hunter_preview = self.preview_player("hunter", visible_minute)
+        capture["runner_state_text"] = self.format_state(runner_preview)
+        capture["hunter_state_text"] = self.format_state(hunter_preview)
         self.live_capture = capture
         self.phase = "ENDED"
         self.clock_running = False
+        self.set_result_message("GAME END", self.capture_summary_lines(capture))
+        self.result_detail_var.set("\n".join(self.capture_detail_lines(capture)))
+
+    def capture_summary_lines(self, capture: dict[str, Any]) -> list[str]:
         lines = [
             f"Hunter caught the runner at {capture['time_hhmm']}.",
             f"Capture type: {capture['type']}.",
@@ -764,7 +773,27 @@ class OniChaseLocalClient:
             lines.append(f"Station: {capture['station_id']}.")
         else:
             lines.append(f"Train: {capture['train_number']}.")
-        self.set_result_message("GAME END", lines)
+        return lines
+
+    def capture_detail_lines(self, capture: dict[str, Any]) -> list[str]:
+        lines = [
+            "CAPTURE DETAIL",
+            "",
+            f"Time: {capture['time_hhmm']}",
+            f"Rule: {capture['type']}",
+        ]
+        if capture["type"] == "same_node":
+            lines.append(f"Meeting Point: {capture['station_id']}")
+        else:
+            lines.append(f"Same Train: {capture['train_number']}")
+        lines.extend(
+            [
+                "",
+                f"Runner: {capture.get('runner_state_text', 'unknown')}",
+                f"Hunter: {capture.get('hunter_state_text', 'unknown')}",
+            ]
+        )
+        return lines
 
     def toggle_clock_running(self) -> None:
         self.clock_running = not self.clock_running
@@ -1857,6 +1886,11 @@ class OniChaseLocalClient:
             (
                 quick_line + "\n"
                 + (f"REPLAY FOCUS: {replay_event['time_hhmm']} {replay_event['type']}\n" if replay_mode else "")
+                + (
+                    f"CAPTURE: {self.live_capture['type']} @ {self.live_capture['time_hhmm']}\n"
+                    if self.live_capture and not replay_mode
+                    else ""
+                )
                 + f"ROUTE PREVIEW: {' -> '.join(self.station_map[s]['names']['en'] for s in self.planned_station_ids(active_preview)) or 'No route yet'}\n"
                 + "MAP: drag to move, wheel to zoom, click a station; on-train clicks can directly set where to get off"
             )
