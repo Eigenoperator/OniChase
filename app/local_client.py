@@ -475,6 +475,23 @@ class OniChaseLocalClient:
             delta = -1 if event.delta > 0 else 1
         self.right_canvas.yview_scroll(delta, "units")
 
+    def apply_right_pane_layout(self, emphasize_actions: bool) -> None:
+        try:
+            self.right_pane.update_idletasks()
+            pane_height = self.right_pane.winfo_height()
+            if pane_height <= 0:
+                return
+            if emphasize_actions:
+                info_height = 170
+                result_top = max(info_height + 260, pane_height - 190)
+            else:
+                info_height = 250
+                result_top = max(info_height + 180, pane_height - 190)
+            self.right_pane.sash_place(0, 0, info_height)
+            self.right_pane.sash_place(1, 0, result_top)
+        except tk.TclError:
+            return
+
     def reset_match_flow(self, auto_start: bool = True) -> None:
         if self.tick_job:
             self.root.after_cancel(self.tick_job)
@@ -567,6 +584,18 @@ class OniChaseLocalClient:
     def clear_pending_board_train(self, player_id: str | None = None) -> None:
         target = player_id or self.active_mode
         self.pending_board_train_numbers[target] = None
+
+    def choose_another_train(self) -> None:
+        self.clear_pending_board_train()
+        self.set_result_message(
+            "ACTION",
+            [
+                "Cleared the current train selection.",
+                "Choose another departure in STEP 1.",
+            ],
+        )
+        self.render()
+        self.root.after_idle(lambda: self.right_canvas.yview_moveto(0.0))
 
     def set_pending_board_train(self, train_number: str) -> None:
         self.pending_board_train_numbers[self.active_mode] = train_number
@@ -1453,6 +1482,7 @@ class OniChaseLocalClient:
             + selected_station_text
         )
         self.render_action_card(active_preview)
+        self.root.after_idle(lambda: self.apply_right_pane_layout(bool(pending_context) or active_preview["current_state"]["kind"] == "TRAIN"))
         self.draw_map(runner_preview, hunter_preview, opponent_hidden)
 
     def render_selected_station_text(self, active_preview: dict[str, Any]) -> str:
@@ -1723,6 +1753,7 @@ class OniChaseLocalClient:
         if preview["current_state"]["kind"] == "NODE":
             departures = self.available_departures(preview)
             station_name = self.station_map[preview["current_state"]["station_id"]]["names"]["en"]
+            pending_context = self.pending_departure_context(preview)
             banner = self.make_action_banner(
                 self.action_card,
                 "STEP 1  Choose Your Train",
@@ -1731,7 +1762,7 @@ class OniChaseLocalClient:
             )
             banner.grid(row=row, column=0, sticky="ew", pady=(10, 10))
             row += 1
-            if departures:
+            if departures and not pending_context:
                 row = self.add_section_header(row, "Upcoming Departures")
                 for departure in departures:
                     row = self.add_train_choice_button(
@@ -1739,9 +1770,46 @@ class OniChaseLocalClient:
                         departure,
                         selected=(departure["train_number"] == self.pending_board_train_number()),
                     )
-            pending_context = self.pending_departure_context(preview)
             if pending_context:
                 selected_train = pending_context["train"]
+                compact = tk.Frame(self.action_card, bg="#f5efe2", highlightbackground=YAMANOTE_COLOR, highlightthickness=2, padx=12, pady=10)
+                compact.grid(row=row, column=0, sticky="ew", pady=(0, 8))
+                compact.columnconfigure(0, weight=1)
+                compact_title = tk.Label(
+                    compact,
+                    text=f"Selected train  {selected_train['train_number']}",
+                    bg="#f5efe2",
+                    fg=INK,
+                    font=self.fonts["action_card"],
+                    anchor="w",
+                    justify="left",
+                )
+                compact_title.grid(row=0, column=0, sticky="ew")
+                compact_meta = tk.Label(
+                    compact,
+                    text=f"{pending_context['board_stop'].get('departure_hhmm') or pending_context['board_stop'].get('arrival_hhmm')}  {selected_train.get('direction_label', 'unknown')}",
+                    bg="#f5efe2",
+                    fg=MUTED,
+                    font=self.fonts["action_meta"],
+                    anchor="w",
+                    justify="left",
+                )
+                compact_meta.grid(row=1, column=0, sticky="ew", pady=(4, 8))
+                change_button = tk.Button(
+                    compact,
+                    text="Choose Another Train",
+                    command=self.choose_another_train,
+                    bg="#fffaf2",
+                    fg=INK,
+                    activebackground="#f0c75e",
+                    relief="flat",
+                    padx=10,
+                    pady=6,
+                    font=self.fonts["body"],
+                )
+                change_button.grid(row=2, column=0, sticky="ew")
+                for widget in (compact, compact_title, compact_meta, change_button):
+                    self.bind_right_panel_hover(widget)
                 selected_banner = self.make_action_banner(
                     self.action_card,
                     f"STEP 2  Ride {selected_train['train_number']} To",

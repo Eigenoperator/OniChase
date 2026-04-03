@@ -59,6 +59,7 @@ The first local client prototype already provides:
   - the chosen service is also highlighted on the map so the planned route reads more like a railway UI than a raw form
   - after choosing a train, the right panel auto-scrolls toward the destination strip so the next step is easier to discover
   - step 2 now has two valid inputs: click `Ride Here` in the destination strip, or click one of the highlighted destination stations on the left map
+  - once a train is chosen, Step 1 collapses into a compact selected-train summary and the right pane automatically gives more height to the action area, so Step 2 has more room
 - the match clock is now much more prominent, especially during `PLANNING`
 
 ## Launch
