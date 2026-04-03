@@ -53,6 +53,10 @@ The first local client prototype already provides:
   - `Hunter Mode` now loads a dedicated `07:00 -> 08:00` window so hunter tests are not cut off at `07:00`
   - in `Hunter Mode`, the runner becomes the passive waiting side and the hunter starts with an empty plan, so the hunter plan board is no longer filled by a fixed `WAIT_UNTIL 08:00`
 - on-train map clicking now uses the same downstream-destination list as the right-side destination picker, so loop stations such as `TOKYO` are no longer accidentally blocked by a simpler board-stop equality check
+- station-click usability is now more forgiving when a player marker sits on top of a station:
+  - the native client uses a larger click radius for station selection
+  - station-local player markers are shifted slightly off the exact station center
+  - the browser client marks player overlays as non-interactive so station clicks fall through correctly
 - the current plan panel now marks `DONE` versus `NEXT` steps so the time flow is easier to read during playtests
 - the replay panel is now map-linked:
   - selecting an event in the result list updates the map to that event's `state_after`

@@ -1286,7 +1286,7 @@ class OniChaseLocalClient:
             if best_distance is None or distance < best_distance:
                 best_station = station["id"]
                 best_distance = distance
-        if best_station and best_distance is not None and best_distance <= 20:
+        if best_station and best_distance is not None and best_distance <= 32:
             self.selected_station_id = best_station
             self.handle_station_click(best_station)
             self.render()
@@ -2367,10 +2367,17 @@ class OniChaseLocalClient:
     ) -> None:
         if not visible:
             return
+        x, y, angle = self.map_coords[station_id]
         if preview.get("map_position"):
             x, y = preview["map_position"]
-        else:
-            x, y, _ = self.map_coords[station_id]
+        if preview["current_state"]["kind"] == "NODE" or (
+            preview["current_state"]["kind"] == "TRAIN"
+            and (preview.get("train_loc") or {}).get("status") == "AT_STATION"
+        ):
+            shift = 16
+            direction = 1 if side == "right" else -1
+            x += math.cos(angle) * shift * direction
+            y += math.sin(angle) * shift * direction
         color = RUNNER_COLOR if player_id == "runner" else HUNTER_COLOR
         label = "RUNNER" if player_id == "runner" else "HUNTER"
         station_name = self.station_map[station_id]["names"]["en"]

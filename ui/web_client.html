@@ -262,6 +262,7 @@
     .marker-box { fill: var(--panel-strong); }
     .marker-label { font-size: 11px; font-weight: 800; }
     .marker-sub { font-size: 11px; }
+    .player-marker { pointer-events: none; }
 
     .quickbar {
       position: absolute;
@@ -1464,8 +1465,15 @@
     function renderPlayerMarker(playerId, preview, visible, emphasized, side, replayMode = false) {
       if (!visible || !preview.mapPosition) return "";
       const color = playerId === "runner" ? "var(--runner)" : "var(--hunter)";
-      const x = preview.mapPosition.x;
-      const y = preview.mapPosition.y;
+      let x = preview.mapPosition.x;
+      let y = preview.mapPosition.y;
+      const stationCoord = state.mapCoords.get(preview.mapStationId || preview.currentState.station_id);
+      if (stationCoord && (preview.currentState.kind === "NODE" || preview.trainLoc?.status === "AT_STATION")) {
+        const shift = 16;
+        const direction = side === "right" ? 1 : -1;
+        x += Math.cos(stationCoord.angle) * shift * direction;
+        y += Math.sin(stationCoord.angle) * shift * direction;
+      }
       const outer = emphasized ? 24 : 20;
       const inner = emphasized ? 14 : 11;
       const boxWidth = emphasized ? 172 : 156;
@@ -1479,7 +1487,7 @@
         sub = `${preview.currentState.train_number}  at ${stationLabel(preview.mapStationId)}`;
       }
       return `
-        <g>
+        <g class="player-marker">
           <circle class="active-ring" cx="${x}" cy="${y}" r="${outer}"></circle>
           <circle cx="${x}" cy="${y}" r="${outer}" fill="none" stroke="${color}" stroke-width="${emphasized ? 5 : 4}"></circle>
           <circle cx="${x}" cy="${y}" r="${inner}" fill="${color}" stroke="white" stroke-width="3"></circle>
