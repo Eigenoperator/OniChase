@@ -531,6 +531,7 @@
       endTime: RUNNER_END_TIME_DEFAULT,
       clockRunning: true,
       tickHandle: null,
+      liveCapture: null,
       pendingBoardTrainNumbers: { runner: null, hunter: null },
       selectedStationId: "TOKYO",
       stations: [],
@@ -592,6 +593,7 @@
     function resetMatchFlow(autoStart = true) {
       if (state.tickHandle) window.clearInterval(state.tickHandle);
       state.phase = "PLANNING";
+      state.liveCapture = null;
       state.planningSecondsRemaining = 60;
       state.currentGameMinute = hhmmToMinutes(state.startTime);
       state.clockRunning = autoStart;
@@ -610,11 +612,13 @@
         state.planningSecondsRemaining = Math.max(0, state.planningSecondsRemaining - 1);
         if (state.planningSecondsRemaining === 0) {
           state.phase = "LIVE";
+          checkLiveCapture();
         }
       } else if (state.phase === "LIVE") {
         const endMinute = hhmmToMinutes(state.endTime);
         if (state.currentGameMinute < endMinute) {
           state.currentGameMinute += 1;
+          checkLiveCapture();
         } else {
           state.phase = "ENDED";
           state.clockRunning = false;
@@ -666,10 +670,58 @@
         return;
       }
       state.phase = "LIVE";
+      state.liveCapture = null;
       state.currentGameMinute = hhmmToMinutes(state.startTime);
       state.clockRunning = true;
-      scheduleTick();
+      checkLiveCapture();
+      if (state.phase === "LIVE") scheduleTick();
       renderAll();
+    }
+
+    function detectLiveCapture() {
+      if (state.phase !== "LIVE") return null;
+      const runner = previewPlayer("runner", visibleGameMinute());
+      const hunter = previewPlayer("hunter", visibleGameMinute());
+      if (
+        runner.currentState.kind === "TRAIN" &&
+        hunter.currentState.kind === "TRAIN" &&
+        runner.currentState.train_number === hunter.currentState.train_number
+      ) {
+        return {
+          type: "same_train",
+          timeHhmm: minutesToHhmm(visibleGameMinute()),
+          trainNumber: runner.currentState.train_number,
+          mapPosition: runner.mapPosition || hunter.mapPosition || null,
+          stationId: runner.mapStationId || hunter.mapStationId || null
+        };
+      }
+      if (
+        runner.currentState.kind === "NODE" &&
+        hunter.currentState.kind === "NODE" &&
+        runner.currentState.station_id === hunter.currentState.station_id
+      ) {
+        const stationId = runner.currentState.station_id;
+        const coord = state.mapCoords.get(stationId);
+        return {
+          type: "same_node",
+          timeHhmm: minutesToHhmm(visibleGameMinute()),
+          stationId,
+          mapPosition: coord ? { x: coord.x, y: coord.y } : null
+        };
+      }
+      return null;
+    }
+
+    function checkLiveCapture() {
+      const capture = detectLiveCapture();
+      if (!capture) return;
+      state.liveCapture = capture;
+      state.phase = "ENDED";
+      state.clockRunning = false;
+      if (state.tickHandle) {
+        window.clearInterval(state.tickHandle);
+        state.tickHandle = null;
+      }
     }
 
     function findBoardingStop(train, stationId, earliestMinute) {
@@ -1107,7 +1159,7 @@
         state.ui.clockSub.textContent = "Live clock running · opponent hidden";
       } else {
         state.ui.clockMain.textContent = minutesToHhmm(state.currentGameMinute);
-        state.ui.clockSub.textContent = "Match ended";
+        state.ui.clockSub.textContent = state.liveCapture ? `Capture: ${state.liveCapture.type}` : "Match ended";
       }
       state.ui.clockButton.textContent = state.clockRunning ? "Pause Clock" : "Resume Clock";
       state.ui.startGameButton.disabled = state.phase !== "PLANNING";
@@ -1123,6 +1175,7 @@
       const passivePlayerId = state.activeMode === "runner" ? "hunter" : "runner";
       const activeLocation = displayStateText(state.activeMode, active);
       const opponentText = displayStateText(passivePlayerId, passive);
+      const captureText = state.liveCapture ? `${state.liveCapture.type} @ ${state.liveCapture.timeHhmm}` : "";
       state.ui.hudCard.innerHTML = `
         <div class="section-head">
           <div>
@@ -1137,6 +1190,7 @@
           ${activeLocation ? `<div class="key">Location</div><div>${activeLocation}</div>` : ""}
           <div class="key">Resolved Steps</div><div>${active.resolvedSteps.length}</div>
           <div class="key">Status</div><div>${active.error || "Ready"}</div>
+          ${captureText ? `<div class="key">Capture</div><div>${captureText}</div>` : ""}
           ${opponentText ? `<div class="key">Opponent</div><div>${opponentText}</div>` : ""}
         </div>
       `;
@@ -1398,6 +1452,7 @@
       ].join("");
       const pending = pendingDepartureContext(planCursorPreview(state.activeMode));
       const highlighted = renderPendingRoute(pending);
+      const captureOverlay = renderLiveCaptureOverlay();
 
       state.ui.mapSvg.innerHTML = `
         <polyline class="rail-glow" points="${loopPoints} ${coords[0].x},${coords[0].y}"></polyline>
@@ -1406,6 +1461,7 @@
         ${highlighted}
         ${stationNodes}
         ${markers}
+        ${captureOverlay}
       `;
 
       state.ui.mapSvg.querySelectorAll("[data-station-id]").forEach((node) => {
@@ -1460,6 +1516,19 @@
         `;
       }).join("");
       return `<g><polyline points="${points}" fill="none" stroke="var(--gold)" stroke-width="10" stroke-dasharray="14 8"></polyline>${nodes}</g>`;
+    }
+
+    function renderLiveCaptureOverlay() {
+      if (!state.liveCapture || !state.liveCapture.mapPosition) return "";
+      const { x, y } = state.liveCapture.mapPosition;
+      return `
+        <g>
+          <circle cx="${x}" cy="${y}" r="28" fill="none" stroke="var(--gold)" stroke-width="5"></circle>
+          <line x1="${x - 18}" y1="${y - 18}" x2="${x + 18}" y2="${y + 18}" stroke="var(--gold)" stroke-width="5"></line>
+          <line x1="${x - 18}" y1="${y + 18}" x2="${x + 18}" y2="${y - 18}" stroke="var(--gold)" stroke-width="5"></line>
+          <text x="${x}" y="${y - 36}" fill="var(--runner)" font-size="14" font-weight="800" text-anchor="middle">CAUGHT</text>
+        </g>
+      `;
     }
 
     function renderPlayerMarker(playerId, preview, visible, emphasized, side, replayMode = false) {

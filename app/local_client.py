@@ -115,6 +115,7 @@ class OniChaseLocalClient:
         self.result_detail_var = tk.StringVar()
         self.latest_result: dict[str, Any] | None = None
         self.selected_result_event_index: int = 0
+        self.live_capture: dict[str, Any] | None = None
         self.last_action_card_signature: tuple[Any, ...] | None = None
         self.last_plan_board_signature: tuple[Any, ...] | None = None
         self.pending_right_scroll_target: float | None = None
@@ -652,6 +653,7 @@ class OniChaseLocalClient:
             self.root.after_cancel(self.tick_job)
             self.tick_job = None
         self.phase = "PLANNING"
+        self.live_capture = None
         self.planning_seconds_remaining = 60
         self.current_game_minute = hhmm_to_minutes(self.start_time)
         self.clock_running = auto_start
@@ -672,10 +674,12 @@ class OniChaseLocalClient:
             self.planning_seconds_remaining = max(0, self.planning_seconds_remaining - 1)
             if self.planning_seconds_remaining == 0:
                 self.phase = "LIVE"
+                self.check_live_capture()
         elif self.phase == "LIVE":
             end_minute = hhmm_to_minutes(self.end_time)
             if self.current_game_minute < end_minute:
                 self.current_game_minute += 1
+                self.check_live_capture()
             else:
                 self.phase = "ENDED"
                 self.clock_running = False
@@ -689,17 +693,78 @@ class OniChaseLocalClient:
             self.render()
             return
         self.phase = "LIVE"
+        self.live_capture = None
         self.current_game_minute = hhmm_to_minutes(self.start_time)
         self.clock_running = True
-        self.schedule_tick()
-        self.set_result_message(
-            "ACTION",
-            [
-                "Planning ended early and the live game started immediately.",
-                "In the real multiplayer version, both players should agree before the game starts.",
-            ],
-        )
+        self.check_live_capture()
+        if not self.live_capture:
+            self.schedule_tick()
+            self.set_result_message(
+                "ACTION",
+                [
+                    "Planning ended early and the live game started immediately.",
+                    "In the real multiplayer version, both players should agree before the game starts.",
+                ],
+            )
         self.render()
+
+    def detect_live_capture(self) -> dict[str, Any] | None:
+        if self.phase != "LIVE":
+            return None
+        visible_minute = self.visible_game_minute()
+        runner_preview = self.preview_player("runner", visible_minute)
+        hunter_preview = self.preview_player("hunter", visible_minute)
+        runner_state = runner_preview["current_state"]
+        hunter_state = hunter_preview["current_state"]
+
+        if (
+            runner_state["kind"] == "TRAIN"
+            and hunter_state["kind"] == "TRAIN"
+            and runner_state.get("train_number") == hunter_state.get("train_number")
+        ):
+            return {
+                "type": "same_train",
+                "time_hhmm": minutes_to_hhmm(visible_minute),
+                "train_number": runner_state["train_number"],
+                "map_position": runner_preview.get("map_position") or hunter_preview.get("map_position"),
+                "station_id": runner_preview.get("map_station_id") or hunter_preview.get("map_station_id"),
+            }
+
+        if (
+            runner_state["kind"] == "NODE"
+            and hunter_state["kind"] == "NODE"
+            and runner_state.get("station_id") == hunter_state.get("station_id")
+        ):
+            station_id = runner_state["station_id"]
+            position = None
+            if station_id and station_id in self.map_coords:
+                x, y, _ = self.map_coords[station_id]
+                position = {"x": x, "y": y}
+            return {
+                "type": "same_node",
+                "time_hhmm": minutes_to_hhmm(visible_minute),
+                "station_id": station_id,
+                "map_position": position,
+            }
+
+        return None
+
+    def check_live_capture(self) -> None:
+        capture = self.detect_live_capture()
+        if not capture:
+            return
+        self.live_capture = capture
+        self.phase = "ENDED"
+        self.clock_running = False
+        lines = [
+            f"Hunter caught the runner at {capture['time_hhmm']}.",
+            f"Capture type: {capture['type']}.",
+        ]
+        if capture["type"] == "same_node":
+            lines.append(f"Station: {capture['station_id']}.")
+        else:
+            lines.append(f"Train: {capture['train_number']}.")
+        self.set_result_message("GAME END", lines)
 
     def toggle_clock_running(self) -> None:
         self.clock_running = not self.clock_running
@@ -1726,9 +1791,12 @@ class OniChaseLocalClient:
             )
         else:
             self.clock_label.configure(bg="#2a2f38", fg="white")
+            end_note = "Match clock stopped"
+            if self.live_capture:
+                end_note = f"CAPTURE  {self.live_capture['type']}"
             self.clock_var.set(
                 f"ENDED\n{minutes_to_hhmm(self.current_game_minute)}\n"
-                "Match clock stopped\n"
+                f"{end_note}\n"
                 "Replay available"
             )
 
@@ -1748,6 +1816,10 @@ class OniChaseLocalClient:
                 f"Status: {('Replay focus: ' + replay_event['type']) if replay_mode else (active_preview['error'] or 'Ready')}",
             ]
         )
+        if self.live_capture and not replay_mode:
+            hud_lines.append(
+                f"Capture: {self.live_capture['type']} @ {self.live_capture['time_hhmm']}"
+            )
         self.hud_var.set("\n".join(hud_lines))
         self.test_var.set(
             "MATCH FLOW\n\n"
@@ -2290,6 +2362,16 @@ class OniChaseLocalClient:
                 font=self.fonts["map_subtitle"],
                 tags=("board",),
             )
+        elif self.live_capture:
+            self.canvas.create_text(
+                46,
+                92,
+                text=f"GAME END: Hunter caught Runner at {self.live_capture['time_hhmm']} ({self.live_capture['type']})",
+                anchor="w",
+                fill=RUNNER_COLOR,
+                font=self.fonts["map_subtitle"],
+                tags=("board",),
+            )
         pending_context = self.pending_departure_context(self.plan_cursor_preview())
         if pending_context:
             self.canvas.create_text(
@@ -2352,6 +2434,15 @@ class OniChaseLocalClient:
         if not self.should_hide_player("hunter", replay_mode):
             self.canvas.create_text(812, 748, text="Hunter", fill=INK, font=self.fonts["body_bold"], anchor="w", tags=("board",))
             self.canvas.create_oval(778, 738, 796, 756, fill=HUNTER_COLOR, outline="white", width=3, tags=("board",))
+        if self.live_capture and not replay_event:
+            capture_position = self.live_capture.get("map_position")
+            if capture_position:
+                x = capture_position["x"]
+                y = capture_position["y"]
+                self.canvas.create_oval(x - 28, y - 28, x + 28, y + 28, outline="#f4b942", width=5, tags=("board",))
+                self.canvas.create_line(x - 18, y - 18, x + 18, y + 18, fill="#f4b942", width=5, tags=("board",))
+                self.canvas.create_line(x - 18, y + 18, x + 18, y - 18, fill="#f4b942", width=5, tags=("board",))
+                self.canvas.create_text(x, y - 36, text="CAUGHT", fill="#9a2a1f", font=self.fonts["body_bold"], tags=("board",))
         self.canvas.scale("board", 0, 0, self.map_scale, self.map_scale)
         self.canvas.move("board", self.map_pan_x, self.map_pan_y)
 
