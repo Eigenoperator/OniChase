@@ -96,9 +96,15 @@ class OniChaseLocalClient:
         self.settings_window: tk.Toplevel | None = None
         self.font_size_offset = 10
         self.font_size_var = tk.IntVar(value=self.font_size_offset)
+        self.phase = "PLANNING"
+        self.planning_seconds_remaining = 60
+        self.current_game_minute = hhmm_to_minutes(self.start_time)
+        self.clock_running = False
+        self.tick_job: str | None = None
         self.setup_fonts()
         self.setup_styles()
 
+        self.clock_var = tk.StringVar()
         self.hud_var = tk.StringVar()
         self.test_var = tk.StringVar()
         self.train_var = tk.StringVar()
@@ -112,6 +118,7 @@ class OniChaseLocalClient:
         self.selected_result_event_index: int = 0
 
         self.build_ui()
+        self.reset_match_flow(auto_start=True)
         self.render()
 
     def compute_map_coords(self) -> None:
@@ -229,6 +236,8 @@ class OniChaseLocalClient:
         topbar = tk.Frame(self.root, bg=PANEL, padx=18, pady=14, highlightbackground=LINE, highlightthickness=1)
         topbar.grid(row=0, column=0, sticky="ew", padx=18, pady=(18, 10))
         topbar.columnconfigure(0, weight=1)
+        topbar.columnconfigure(1, weight=0)
+        topbar.columnconfigure(2, weight=0)
 
         title = tk.Label(topbar, text="OniChase Local Client", bg=PANEL, fg=INK, font=self.fonts["title"])
         title.grid(row=0, column=0, sticky="w")
@@ -241,13 +250,27 @@ class OniChaseLocalClient:
         )
         subtitle.grid(row=1, column=0, sticky="w", pady=(4, 0))
 
+        clock_card = tk.Label(
+            topbar,
+            textvariable=self.clock_var,
+            justify="left",
+            anchor="w",
+            bg="#1d2129",
+            fg="white",
+            padx=16,
+            pady=10,
+            font=self.fonts["body_bold"],
+        )
+        clock_card.grid(row=0, column=1, rowspan=2, sticky="e", padx=(12, 12))
+
         button_bar = tk.Frame(topbar, bg=PANEL)
-        button_bar.grid(row=0, column=1, rowspan=2, sticky="e")
+        button_bar.grid(row=0, column=2, rowspan=2, sticky="e")
         ttk.Button(button_bar, text="Runner Mode", command=lambda: self.set_active_mode("runner")).grid(row=0, column=0, padx=4)
         ttk.Button(button_bar, text="Hunter Mode", command=lambda: self.set_active_mode("hunter")).grid(row=0, column=1, padx=4)
         ttk.Button(button_bar, text="Load Test Preset", command=self.apply_test_preset).grid(row=0, column=2, padx=4)
-        ttk.Button(button_bar, text="Refresh", command=self.render).grid(row=0, column=3, padx=4)
-        ttk.Button(button_bar, text="Settings", command=self.open_settings).grid(row=0, column=4, padx=4)
+        ttk.Button(button_bar, text="Start Match", command=self.start_match_now).grid(row=0, column=3, padx=4)
+        ttk.Button(button_bar, text="Pause/Resume", command=self.toggle_clock_running).grid(row=0, column=4, padx=4)
+        ttk.Button(button_bar, text="Settings", command=self.open_settings).grid(row=0, column=5, padx=4)
 
         shell = tk.PanedWindow(
             self.root,
@@ -440,6 +463,63 @@ class OniChaseLocalClient:
             delta = -1 if event.delta > 0 else 1
         self.right_canvas.yview_scroll(delta, "units")
 
+    def reset_match_flow(self, auto_start: bool = True) -> None:
+        if self.tick_job:
+            self.root.after_cancel(self.tick_job)
+            self.tick_job = None
+        self.phase = "PLANNING"
+        self.planning_seconds_remaining = 60
+        self.current_game_minute = hhmm_to_minutes(self.start_time)
+        self.clock_running = auto_start
+        if auto_start:
+            self.schedule_tick()
+
+    def schedule_tick(self) -> None:
+        if self.tick_job:
+            self.root.after_cancel(self.tick_job)
+        if self.clock_running:
+            self.tick_job = self.root.after(1000, self.on_tick)
+
+    def on_tick(self) -> None:
+        self.tick_job = None
+        if not self.clock_running:
+            return
+        if self.phase == "PLANNING":
+            self.planning_seconds_remaining = max(0, self.planning_seconds_remaining - 1)
+            if self.planning_seconds_remaining == 0:
+                self.phase = "LIVE"
+        elif self.phase == "LIVE":
+            end_minute = hhmm_to_minutes(self.end_time)
+            if self.current_game_minute < end_minute:
+                self.current_game_minute += 1
+            else:
+                self.phase = "ENDED"
+                self.clock_running = False
+        self.render()
+        if self.clock_running:
+            self.schedule_tick()
+
+    def start_match_now(self) -> None:
+        self.phase = "LIVE"
+        self.current_game_minute = hhmm_to_minutes(self.start_time)
+        self.clock_running = True
+        self.schedule_tick()
+        self.render()
+
+    def toggle_clock_running(self) -> None:
+        self.clock_running = not self.clock_running
+        if self.clock_running:
+            self.schedule_tick()
+        elif self.tick_job:
+            self.root.after_cancel(self.tick_job)
+            self.tick_job = None
+        self.render()
+
+    def visible_game_minute(self) -> int:
+        if self.phase == "PLANNING":
+            return hhmm_to_minutes(self.start_time)
+        return self.current_game_minute
+
     def apply_test_preset(self) -> None:
         self.active_mode = "runner"
         self.start_time = "06:00"
@@ -455,6 +535,7 @@ class OniChaseLocalClient:
             "passive_hold": True,
             "steps": [{"type": "WAIT_UNTIL", "until_hhmm": self.end_time}],
         }
+        self.reset_match_flow(auto_start=True)
         self.render()
 
     def set_active_mode(self, mode: str) -> None:
@@ -465,7 +546,16 @@ class OniChaseLocalClient:
         return self.players[self.active_mode]
 
     def active_preview(self) -> dict[str, Any]:
-        return self.preview_player(self.active_mode)
+        return self.preview_player(self.active_mode, self.visible_game_minute())
+
+    def truncate_future_steps_to_current(self) -> int:
+        preview = self.active_preview()
+        resolved_count = len(preview["resolved_steps"])
+        steps = self.active_player()["steps"]
+        removed = max(0, len(steps) - resolved_count)
+        if removed:
+            self.active_player()["steps"] = list(steps[:resolved_count])
+        return removed
 
     def reset_passive_hold_if_needed(self) -> None:
         active_player = self.active_player()
@@ -518,13 +608,16 @@ class OniChaseLocalClient:
             self.set_result_message("ACTION", [f"Train {train_number} is not catchable from the current state."])
             self.render()
             return
+        removed = self.truncate_future_steps_to_current()
         self.active_player()["steps"].append({"type": "BOARD_TRAIN", "train_number": train_number})
         self.reset_passive_hold_if_needed()
+        note = f"Trimmed {removed} future step(s) before adding the new branch." if removed else "Appended to the current future plan."
         self.set_result_message(
             "ACTION",
             [
                 f"Added BOARD_TRAIN {train_number}.",
                 f"Departure: {minutes_to_hhmm(stop_departure_minutes(best_stop))} from {self.station_map[station_id]['names']['en']}.",
+                note,
             ],
         )
         self.render()
@@ -553,13 +646,16 @@ class OniChaseLocalClient:
             self.set_result_message("ACTION", ["That train does not reach the selected station later."])
             self.render()
             return
+        removed = self.truncate_future_steps_to_current()
         self.active_player()["steps"].append({"type": "RIDE_TO_STATION", "station_id": station_id})
         self.reset_passive_hold_if_needed()
+        note = f"Trimmed {removed} future step(s) before adding the new branch." if removed else "Appended to the current future plan."
         self.set_result_message(
             "ACTION",
             [
                 f"Added RIDE_TO_STATION {self.station_map[station_id]['names']['en']}.",
                 f"Arrival: {alight_stop.get('arrival_hhmm') or alight_stop.get('departure_hhmm')}.",
+                note,
             ],
         )
         self.render()
@@ -579,13 +675,16 @@ class OniChaseLocalClient:
             self.set_result_message("ACTION", ["No room left in the match clock for an extra wait step."])
             self.render()
             return
+        removed = self.truncate_future_steps_to_current()
         self.active_player()["steps"].append({"type": "WAIT_UNTIL", "until_hhmm": minutes_to_hhmm(target_minute)})
         self.reset_passive_hold_if_needed()
+        note = f"Trimmed {removed} future step(s) before adding the new branch." if removed else "Appended to the current future plan."
         self.set_result_message(
             "ACTION",
             [
                 f"Added WAIT_UNTIL {minutes_to_hhmm(target_minute)}.",
                 f"Current station: {self.station_map[preview['current_state']['station_id']]['names']['en']}.",
+                note,
             ],
         )
         self.render()
@@ -822,7 +921,7 @@ class OniChaseLocalClient:
             if alight_stop:
                 self.add_ride_to_station_step(station_id)
 
-    def preview_player(self, player_id: str) -> dict[str, Any]:
+    def preview_player(self, player_id: str, time_cap_minute: int | None = None) -> dict[str, Any]:
         player = self.players[player_id]
         current_minute = hhmm_to_minutes(self.start_time)
         current_station_id = player["start_station_id"]
@@ -840,6 +939,9 @@ class OniChaseLocalClient:
                         raise ValueError("Cannot wait while on a train.")
                     if target < current_minute:
                         raise ValueError("Cannot wait backwards in time.")
+                    if time_cap_minute is not None and target > time_cap_minute:
+                        current_minute = time_cap_minute
+                        break
                     current_minute = target
                     events.append({"type": "WAIT_UNTIL", "station_id": current_station_id})
                     resolved_steps.append({"step_index": index, **step})
@@ -852,7 +954,11 @@ class OniChaseLocalClient:
                     board_stop = self.find_boarding_stop(train, current_station_id, current_minute)
                     if not board_stop:
                         raise ValueError(f"Cannot board {step['train_number']} from {current_station_id}.")
-                    current_minute = stop_departure_minutes(board_stop)
+                    board_minute = stop_departure_minutes(board_stop)
+                    if time_cap_minute is not None and board_minute > time_cap_minute:
+                        current_minute = time_cap_minute
+                        break
+                    current_minute = board_minute
                     current_train = train
                     current_board_stop = board_stop
                     events.append({"type": "BOARD_TRAIN", "station_id": current_station_id, "train_number": train["train_number"]})
@@ -877,7 +983,11 @@ class OniChaseLocalClient:
                     if not picked:
                         raise ValueError("No candidate train is catchable.")
                     train, board_stop = picked
-                    current_minute = stop_departure_minutes(board_stop)
+                    board_minute = stop_departure_minutes(board_stop)
+                    if time_cap_minute is not None and board_minute > time_cap_minute:
+                        current_minute = time_cap_minute
+                        break
+                    current_minute = board_minute
                     current_train = train
                     current_board_stop = board_stop
                     events.append({"type": "PLAN_RESOLUTION", "station_id": current_station_id, "train_number": train["train_number"]})
@@ -905,7 +1015,11 @@ class OniChaseLocalClient:
                     )
                     if not alight_stop:
                         raise ValueError(f"Train {current_train['train_number']} does not reach {step['station_id']} later.")
-                    current_minute = stop_arrival_minutes(alight_stop)
+                    arrival_minute = stop_arrival_minutes(alight_stop)
+                    if time_cap_minute is not None and arrival_minute > time_cap_minute:
+                        current_minute = time_cap_minute
+                        break
+                    current_minute = arrival_minute
                     current_station_id = alight_stop["station_id"]
                     events.append(
                         {
@@ -1051,27 +1165,49 @@ class OniChaseLocalClient:
         return f"Train {state['train_number']}"
 
     def render(self) -> None:
-        runner_preview = self.preview_player("runner")
-        hunter_preview = self.preview_player("hunter")
+        visible_minute = self.visible_game_minute()
+        runner_preview = self.preview_player("runner", visible_minute)
+        hunter_preview = self.preview_player("hunter", visible_minute)
         previews = {"runner": runner_preview, "hunter": hunter_preview}
         active_preview = previews[self.active_mode]
         passive_preview = previews["hunter" if self.active_mode == "runner" else "runner"]
+        opponent_hidden = self.phase == "LIVE"
+
+        if self.phase == "PLANNING":
+            self.clock_var.set(
+                f"PLAN  {self.planning_seconds_remaining:02d}s\n"
+                f"Game starts at {self.start_time}\n"
+                "Positions visible"
+            )
+        elif self.phase == "LIVE":
+            self.clock_var.set(
+                f"LIVE  {minutes_to_hhmm(self.current_game_minute)}\n"
+                "Opponent hidden\n"
+                "Plan editable"
+            )
+        else:
+            self.clock_var.set(
+                f"ENDED  {minutes_to_hhmm(self.current_game_minute)}\n"
+                "Match clock stopped\n"
+                "Replay available"
+            )
 
         self.hud_var.set(
             f"{self.active_mode.upper()} HUD\n\n"
-            f"Time: {active_preview['current_time']}\n"
+            f"Phase: {self.phase}\n"
+            f"Time: {minutes_to_hhmm(visible_minute)}\n"
             f"Location: {self.format_state(active_preview)}\n"
             f"Mode: {self.players[self.active_mode]['input_mode']}\n"
             f"Resolved steps: {len(active_preview['resolved_steps'])}\n"
             f"Status: {active_preview['error'] or 'Ready'}"
         )
         self.test_var.set(
-            "PLAN TEST MODE\n\n"
-            f"Game clock starts at {self.start_time}\n"
-            f"Runner gets 1 minute before {self.start_time}\n"
+            "MATCH FLOW\n\n"
+            f"Planning: 60 real seconds\n"
+            f"Live clock: 1 game minute / sec\n"
             f"Runner start: {self.station_map[self.players['runner']['start_station_id']]['names']['en']}\n"
             f"Hunter start: {self.station_map[self.players['hunter']['start_station_id']]['names']['en']}\n"
-            f"Hunter default: {'Hold position' if self.players['hunter'].get('passive_hold') else 'Editable'}"
+            f"Visibility: {'Both visible' if self.phase == 'PLANNING' else 'Opponent hidden'}"
         )
         upcoming = self.current_train_upcoming(active_preview)
         self.train_var.set(
@@ -1079,16 +1215,17 @@ class OniChaseLocalClient:
             + ("\n".join(upcoming) if upcoming else "Not currently on a train.")
         )
         self.quick_var.set(
-            f"ACTIVE SIDE: {self.active_mode.upper()}   |   CURRENT: {self.format_state(active_preview)}   |   OPPONENT: {self.format_state(passive_preview)}\n"
+            f"ACTIVE SIDE: {self.active_mode.upper()}   |   CURRENT: {self.format_state(active_preview)}   |   OPPONENT: {self.format_state(passive_preview) if not opponent_hidden else 'Hidden'}\n"
             f"ROUTE PREVIEW: {' -> '.join(self.station_map[s]['names']['en'] for s in self.planned_station_ids(active_preview)) or 'No route yet'}\n"
             f"MAP: drag to move, wheel to zoom, click a station; on-train clicks can directly set where to get off"
         )
         self.duel_var.set(
             "MATCH TABLE\n\n"
             f"Runner\n  Start: {self.station_map[self.players['runner']['start_station_id']]['names']['en']}\n  Live: {self.format_state(runner_preview)}\n  Steps: {len(self.players['runner']['steps'])}\n\n"
-            f"Hunter\n  Start: {self.station_map[self.players['hunter']['start_station_id']]['names']['en']}\n  Live: {self.format_state(hunter_preview)}\n  Steps: {len(self.players['hunter']['steps'])}"
+            f"Hunter\n  Start: {self.station_map[self.players['hunter']['start_station_id']]['names']['en']}\n  Live: {self.format_state(hunter_preview) if (not opponent_hidden or self.active_mode == 'hunter') else 'Hidden'}\n  Steps: {len(self.players['hunter']['steps'])}"
         )
         active_steps = self.players[self.active_mode]["steps"]
+        resolved_count = len(active_preview["resolved_steps"])
         if active_steps:
             rendered_steps = []
             for idx, step in enumerate(active_steps, start=1):
@@ -1102,14 +1239,20 @@ class OniChaseLocalClient:
                     desc = "ride to " + self.station_map[step["station_id"]]["names"]["en"]
                 else:
                     desc = step["type"]
-                rendered_steps.append(f"{idx}. {desc}")
+                marker = "DONE" if idx <= resolved_count else "NEXT"
+                rendered_steps.append(f"{idx}. [{marker}] {desc}")
             plan_text = "\n".join(rendered_steps)
         else:
             plan_text = "No plan yet. This first local client is only a shell; editing tools come next."
-        self.plan_var.set(f"{self.active_mode.upper()} PLAN\n\n{plan_text}")
+        self.plan_var.set(
+            f"{self.active_mode.upper()} PLAN\n\n"
+            f"Game time now: {minutes_to_hhmm(visible_minute)}\n"
+            f"Resolved: {resolved_count} / {len(active_steps)}\n\n"
+            f"{plan_text}"
+        )
 
         options = self.available_options(active_preview)
-        selected_station_text = self.render_selected_station_text()
+        selected_station_text = self.render_selected_station_text(active_preview)
         self.options_var.set(
             "IMMEDIATE OPTIONS\n\n"
             + ("\n".join(options) if options else "No suggestion from the current state.")
@@ -1117,16 +1260,15 @@ class OniChaseLocalClient:
             + selected_station_text
         )
         self.render_action_card(active_preview)
-        self.draw_map(runner_preview, hunter_preview)
+        self.draw_map(runner_preview, hunter_preview, opponent_hidden)
 
-    def render_selected_station_text(self) -> str:
+    def render_selected_station_text(self, active_preview: dict[str, Any]) -> str:
         if not self.selected_station_id:
             return "SELECTED STATION\n\nNo station selected."
 
         station = self.station_map[self.selected_station_id]
         active_player = self.players[self.active_mode]
         upcoming = []
-        active_preview = self.preview_player(self.active_mode)
         if active_preview["current_state"]["kind"] == "NODE" and active_preview["current_state"]["station_id"] == self.selected_station_id:
             upcoming = self.available_options(active_preview)[:4]
 
@@ -1274,7 +1416,7 @@ class OniChaseLocalClient:
         train_number = preview["current_state"]["train_number"]
         return f"You are currently on train {train_number}. Choose a downstream station below, or click a reachable station on the map to get off there."
 
-    def draw_map(self, runner_preview: dict[str, Any], hunter_preview: dict[str, Any]) -> None:
+    def draw_map(self, runner_preview: dict[str, Any], hunter_preview: dict[str, Any], opponent_hidden: bool) -> None:
         self.canvas.delete("all")
         self.canvas.create_text(46, 36, text="JR Yamanote Line", anchor="w", fill=INK, font=self.fonts["map_title"], tags=("board",))
         self.canvas.create_text(46, 64, text="Drag with left mouse button to move the map", anchor="w", fill=MUTED, font=self.fonts["map_subtitle"], tags=("board",))
@@ -1306,13 +1448,14 @@ class OniChaseLocalClient:
 
             if station_id == runner_station:
                 self.canvas.create_oval(x + 8, y - 26, x + 26, y - 8, fill=RUNNER_COLOR, outline="white", width=3, tags=("board",))
-            if station_id == hunter_station:
+            if station_id == hunter_station and (not opponent_hidden or self.active_mode == "hunter"):
                 self.canvas.create_oval(x - 26, y - 26, x - 8, y - 8, fill=HUNTER_COLOR, outline="white", width=3, tags=("board",))
 
         self.canvas.create_text(812, 720, text="Runner", fill=INK, font=self.fonts["body_bold"], anchor="w", tags=("board",))
         self.canvas.create_oval(778, 710, 796, 728, fill=RUNNER_COLOR, outline="white", width=3, tags=("board",))
-        self.canvas.create_text(812, 748, text="Hunter", fill=INK, font=self.fonts["body_bold"], anchor="w", tags=("board",))
-        self.canvas.create_oval(778, 738, 796, 756, fill=HUNTER_COLOR, outline="white", width=3, tags=("board",))
+        if not opponent_hidden or self.active_mode == "hunter":
+            self.canvas.create_text(812, 748, text="Hunter", fill=INK, font=self.fonts["body_bold"], anchor="w", tags=("board",))
+            self.canvas.create_oval(778, 738, 796, 756, fill=HUNTER_COLOR, outline="white", width=3, tags=("board",))
         self.canvas.scale("board", 0, 0, self.map_scale, self.map_scale)
         self.canvas.move("board", self.map_pan_x, self.map_pan_y)
 

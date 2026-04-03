@@ -41,6 +41,12 @@ The first local client prototype already provides:
 - the main layout now uses a draggable left-right divider, so the player can widen the right planning panel when needed
 - the right column itself now also has draggable internal dividers, so `Info / Actions / Result` can be resized vertically
 - the `Result` area now works as a replay panel: after `Run Simulation`, it shows a scrollable event list plus detail for the selected event
+- the client now has explicit match flow:
+  - `PLANNING` lasts 60 real seconds before the in-game clock starts
+  - during planning, both player positions remain visible
+  - after the match enters `LIVE`, the in-game clock advances and the opponent position is hidden
+  - plan edits during `LIVE` automatically trim only the unresolved future steps, so the player can branch the rest of the route without rewriting already executed actions
+- the current plan panel now marks `DONE` versus `NEXT` steps so the time flow is easier to read during playtests
 
 ## Launch
 
