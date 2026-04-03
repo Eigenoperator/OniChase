@@ -10,7 +10,6 @@
 - 已完成 `ENGINE_ARCHITECTURE.md`，明确 `data / rules / engine / interface / frontend` 五层边界。
 - 已完成第一版本地桌面客户端原型：`local_client.py` 使用 `tkinter` 直接开窗，不依赖浏览器和本地 website。
 - 已修正 `START_ONICHASE_CLIENT.desktop` 与 `START_ONICHASE_CLIENT.sh` 的执行权限，避免桌面环境把新的客户端启动器当成普通文本打开。
-- 已为 `local_client.py` 增加鼠标左键拖拽地图，允许本地试玩时平移查看不同区域。
 - 已按职责整理工作区：本地客户端归入 `app/`，网页源页归入 `ui/`，静态发布包归入 `docs/`，`scripts/` 拆分为 `engine / ingest / dev`，并补充了 `WORKSPACE.md`。
 - 已为 `local_client.py` 补上第一版交互式动作流：可通过右侧按钮设起点、追加 `BOARD_TRAIN / RIDE_TO_STATION / WAIT_UNTIL`、撤销/清空步骤，并在窗口内直接运行模拟显示结果摘要。
 - 已让车上视图显示这趟车接下来完整的站序；若是环线服务，则按一整圈显示到回到起始站为止。
@@ -33,7 +32,7 @@
 - 已按新一天规则检查并回补缺失的 `DIARY-2026-04-02.md`，内容聚焦在当天的 hunter mode 测试与双端试玩工具推进。
 
 ## In Progress
-- 正在把本地客户端与新网页端一起推进到“更像正式玩法工作台”的阶段，重点是时间流、地图联动、输入闭环与在线试玩稳定性。
+- 正在把本地客户端与新网页端一起推进到“更像正式玩法工作台”的阶段，重点是时间流、地图联动、输入闭环、在线试玩稳定性，以及第一轮 hunter mode 测试准备。
 
 ## Blockers
 
@@ -43,8 +42,9 @@
 - [2026-03-30] 每次有实质项目变更后，默认都要 commit 并 push 到 GitHub。
 - [2026-03-30] 当前本地 plan 测试默认使用 `06:00` 开局、Runner 赛外 1 分钟预规划、Hunter 默认原地等待。
 - [2026-04-02] 当前阶段不因优化焦虑提前换语言；优先保证 `data schema / rules / simulation I/O / frontend-engine JSON boundary` 独立。
+- [2026-04-03] 第一轮 hunter mode 测试使用“runner 不移动、主动试玩 hunter”的方式先隔离验证 hunter 侧的信息展示与操作闭环。
 
 ## Next
-1. 继续把新的 `web_client` 往当前本地客户端能力靠近，比如补更完整的结果回放与事件步进。
-2. 让 `local_client.py` 与 `web_client` 的站内点击都更直接地进入“从该站出发”的计划编辑流。
-3. 跟进 GitHub Pages 的首次发布状态，确认公开 URL 能稳定打开并可直接试玩。
+1. 先把 hunter 在 `PLANNING` / `LIVE` 两阶段能看到什么落实到客户端展示。
+2. 为“runner 不移动、主动试玩 hunter”准备第一组专用测试场景。
+3. 继续把 `web_client` 往当前本地客户端能力靠近，比如补更完整的结果回放与事件步进。
