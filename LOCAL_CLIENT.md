@@ -51,6 +51,12 @@ The first local client prototype already provides:
   - selecting an event in the result list updates the map to that event's `state_after`
   - replay focus temporarily reveals both sides on the board, even if normal live mode would hide the opponent
   - if a replay event leaves a player on a train, the client anchors that train near the closest scheduled station at that replay time
+- planning is now more player-facing:
+  - while at a station, the right panel becomes a two-step flow: first choose a train, then choose a destination
+  - the chosen train is highlighted before commitment, instead of instantly appending a board step
+  - the destination strip is horizontally draggable for long routes
+  - the chosen service is also highlighted on the map so the planned route reads more like a railway UI than a raw form
+- the match clock is now much more prominent, especially during `PLANNING`
 
 ## Launch
 

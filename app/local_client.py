@@ -75,6 +75,7 @@ class OniChaseLocalClient:
                 "steps": [{"type": "WAIT_UNTIL", "until_hhmm": "07:00"}],
             },
         }
+        self.pending_board_train_numbers = {"runner": None, "hunter": None}
         self.start_time = "06:00"
         self.end_time = "07:00"
         self.map_coords: dict[str, tuple[float, float, float]] = {}
@@ -136,11 +137,16 @@ class OniChaseLocalClient:
         family = "Helvetica"
         self.fonts = {
             "title": tkfont.Font(family=family, size=22, weight="bold"),
+            "clock": tkfont.Font(family=family, size=20, weight="bold"),
+            "clock_small": tkfont.Font(family=family, size=12, weight="bold"),
             "subtitle": tkfont.Font(family=family, size=11),
             "body": tkfont.Font(family=family, size=11),
             "body_bold": tkfont.Font(family=family, size=11, weight="bold"),
             "small": tkfont.Font(family=family, size=10),
             "small_bold": tkfont.Font(family=family, size=10, weight="bold"),
+            "action_title": tkfont.Font(family=family, size=16, weight="bold"),
+            "action_card": tkfont.Font(family=family, size=12, weight="bold"),
+            "action_meta": tkfont.Font(family=family, size=10),
             "map_title": tkfont.Font(family=family, size=22, weight="bold"),
             "map_subtitle": tkfont.Font(family=family, size=12),
             "station": tkfont.Font(family=family, size=9),
@@ -156,11 +162,16 @@ class OniChaseLocalClient:
         self.font_size_offset = offset
         size_map = {
             "title": 22,
+            "clock": 20,
+            "clock_small": 12,
             "subtitle": 11,
             "body": 11,
             "body_bold": 11,
             "small": 10,
             "small_bold": 10,
+            "action_title": 16,
+            "action_card": 12,
+            "action_meta": 10,
             "map_title": 22,
             "map_subtitle": 12,
             "station": 9,
@@ -250,18 +261,18 @@ class OniChaseLocalClient:
         )
         subtitle.grid(row=1, column=0, sticky="w", pady=(4, 0))
 
-        clock_card = tk.Label(
+        self.clock_label = tk.Label(
             topbar,
             textvariable=self.clock_var,
             justify="left",
             anchor="w",
-            bg="#1d2129",
+            bg="#b8441f",
             fg="white",
-            padx=16,
-            pady=10,
-            font=self.fonts["body_bold"],
+            padx=18,
+            pady=12,
+            font=self.fonts["clock"],
         )
-        clock_card.grid(row=0, column=1, rowspan=2, sticky="e", padx=(12, 12))
+        self.clock_label.grid(row=0, column=1, rowspan=2, sticky="e", padx=(12, 12))
 
         button_bar = tk.Frame(topbar, bg=PANEL)
         button_bar.grid(row=0, column=2, rowspan=2, sticky="e")
@@ -524,6 +535,7 @@ class OniChaseLocalClient:
         self.active_mode = "runner"
         self.start_time = "06:00"
         self.end_time = "07:00"
+        self.pending_board_train_numbers = {"runner": None, "hunter": None}
         self.players["runner"] = {
             "start_station_id": "TOKYO",
             "input_mode": "plan",
@@ -547,6 +559,24 @@ class OniChaseLocalClient:
 
     def active_preview(self) -> dict[str, Any]:
         return self.preview_player(self.active_mode, self.visible_game_minute())
+
+    def pending_board_train_number(self) -> str | None:
+        return self.pending_board_train_numbers[self.active_mode]
+
+    def clear_pending_board_train(self, player_id: str | None = None) -> None:
+        target = player_id or self.active_mode
+        self.pending_board_train_numbers[target] = None
+
+    def set_pending_board_train(self, train_number: str) -> None:
+        self.pending_board_train_numbers[self.active_mode] = train_number
+        self.set_result_message(
+            "ACTION",
+            [
+                f"Selected train {train_number}.",
+                "Now choose where you want to get off.",
+            ],
+        )
+        self.render()
 
     def truncate_future_steps_to_current(self) -> int:
         preview = self.active_preview()
@@ -576,6 +606,7 @@ class OniChaseLocalClient:
         active_player = self.active_player()
         active_player["start_station_id"] = self.selected_station_id
         active_player["steps"] = []
+        self.clear_pending_board_train()
         self.reset_passive_hold_if_needed()
         self.set_result_message(
             "ACTION",
@@ -610,6 +641,7 @@ class OniChaseLocalClient:
             return
         removed = self.truncate_future_steps_to_current()
         self.active_player()["steps"].append({"type": "BOARD_TRAIN", "train_number": train_number})
+        self.clear_pending_board_train()
         self.reset_passive_hold_if_needed()
         note = f"Trimmed {removed} future step(s) before adding the new branch." if removed else "Appended to the current future plan."
         self.set_result_message(
@@ -648,6 +680,7 @@ class OniChaseLocalClient:
             return
         removed = self.truncate_future_steps_to_current()
         self.active_player()["steps"].append({"type": "RIDE_TO_STATION", "station_id": station_id})
+        self.clear_pending_board_train()
         self.reset_passive_hold_if_needed()
         note = f"Trimmed {removed} future step(s) before adding the new branch." if removed else "Appended to the current future plan."
         self.set_result_message(
@@ -677,6 +710,7 @@ class OniChaseLocalClient:
             return
         removed = self.truncate_future_steps_to_current()
         self.active_player()["steps"].append({"type": "WAIT_UNTIL", "until_hhmm": minutes_to_hhmm(target_minute)})
+        self.clear_pending_board_train()
         self.reset_passive_hold_if_needed()
         note = f"Trimmed {removed} future step(s) before adding the new branch." if removed else "Appended to the current future plan."
         self.set_result_message(
@@ -689,6 +723,49 @@ class OniChaseLocalClient:
         )
         self.render()
 
+    def add_board_and_ride_steps(self, train_number: str, station_id: str) -> None:
+        preview = self.active_preview()
+        if preview["error"]:
+            self.set_result_message("ACTION", [preview["error"]])
+            self.render()
+            return
+        if preview["current_state"]["kind"] != "NODE":
+            self.set_result_message("ACTION", ["You can only choose a new train while currently at a station."])
+            self.render()
+            return
+        station_from = preview["current_state"]["station_id"]
+        minute = preview["current_minute"]
+        train = self.train_map.get(train_number)
+        if not train:
+            self.set_result_message("ACTION", [f"Unknown train {train_number}."])
+            self.render()
+            return
+        board_stop = self.find_boarding_stop(train, station_from, minute)
+        if not board_stop:
+            self.set_result_message("ACTION", [f"Train {train_number} is not catchable from the current state."])
+            self.render()
+            return
+        alight_stop = self.find_alight_stop(train, board_stop["sequence"], station_id, None)
+        if not alight_stop:
+            self.set_result_message("ACTION", [f"Train {train_number} does not reach {station_id} later."])
+            self.render()
+            return
+        removed = self.truncate_future_steps_to_current()
+        self.active_player()["steps"].append({"type": "BOARD_TRAIN", "train_number": train_number})
+        self.active_player()["steps"].append({"type": "RIDE_TO_STATION", "station_id": station_id})
+        self.clear_pending_board_train()
+        self.reset_passive_hold_if_needed()
+        note = f"Trimmed {removed} future step(s) before branching." if removed else "Added a fresh boarding branch."
+        self.set_result_message(
+            "ACTION",
+            [
+                f"Planned {train_number} from {self.station_map[station_from]['names']['en']} to {self.station_map[station_id]['names']['en']}.",
+                f"Depart {minutes_to_hhmm(stop_departure_minutes(board_stop))}  Arrive {alight_stop.get('arrival_hhmm') or alight_stop.get('departure_hhmm')}.",
+                note,
+            ],
+        )
+        self.render()
+
     def undo_last_step(self) -> None:
         steps = self.active_player()["steps"]
         if not steps:
@@ -696,12 +773,14 @@ class OniChaseLocalClient:
             self.render()
             return
         removed = steps.pop()
+        self.clear_pending_board_train()
         self.reset_passive_hold_if_needed()
         self.set_result_message("ACTION", [f"Removed last step: {removed['type']}."])
         self.render()
 
     def clear_active_plan(self) -> None:
         self.active_player()["steps"] = []
+        self.clear_pending_board_train()
         self.reset_passive_hold_if_needed()
         self.set_result_message("ACTION", [f"Cleared all steps for {self.active_mode}."])
         self.render()
@@ -1167,6 +1246,38 @@ class OniChaseLocalClient:
             )
         return destinations
 
+    def pending_departure_context(self, preview: dict[str, Any]) -> dict[str, Any] | None:
+        train_number = self.pending_board_train_number()
+        if not train_number or preview["error"] or preview["current_state"]["kind"] != "NODE":
+            return None
+        station_id = preview["current_state"]["station_id"]
+        minute = preview["current_minute"]
+        train = self.train_map.get(train_number)
+        if not train:
+            return None
+        board_stop = self.find_boarding_stop(train, station_id, minute)
+        if not board_stop:
+            return None
+        destinations = []
+        for stop in train["stop_times"]:
+            if stop["sequence"] <= board_stop["sequence"]:
+                continue
+            destinations.append(
+                {
+                    "station_id": stop["station_id"],
+                    "label": self.station_map[stop["station_id"]]["names"]["en"],
+                    "arrival_hhmm": stop.get("arrival_hhmm") or stop.get("departure_hhmm"),
+                    "sequence": stop["sequence"],
+                }
+            )
+            if stop["station_id"] == board_stop["station_id"]:
+                break
+        return {
+            "train": train,
+            "board_stop": board_stop,
+            "destinations": destinations,
+        }
+
     def planned_station_ids(self, preview: dict[str, Any]) -> list[str]:
         station_ids: list[str] = []
 
@@ -1233,20 +1344,23 @@ class OniChaseLocalClient:
         display_minute = replay_event["time_minute"] if replay_mode else visible_minute
 
         if self.phase == "PLANNING":
+            self.clock_label.configure(bg="#b8441f", fg="white")
             self.clock_var.set(
-                f"PLAN  {self.planning_seconds_remaining:02d}s\n"
-                f"Game starts at {self.start_time}\n"
-                "Positions visible"
+                f"PLANNING\n{self.planning_seconds_remaining:02d}s left\n"
+                f"Game starts {self.start_time}\n"
+                "Both sides visible"
             )
         elif self.phase == "LIVE":
+            self.clock_label.configure(bg="#163d2c", fg="white")
             self.clock_var.set(
-                f"LIVE  {minutes_to_hhmm(self.current_game_minute)}\n"
+                f"LIVE\n{minutes_to_hhmm(self.current_game_minute)}\n"
                 "Opponent hidden\n"
                 "Plan editable"
             )
         else:
+            self.clock_label.configure(bg="#2a2f38", fg="white")
             self.clock_var.set(
-                f"ENDED  {minutes_to_hhmm(self.current_game_minute)}\n"
+                f"ENDED\n{minutes_to_hhmm(self.current_game_minute)}\n"
                 "Match clock stopped\n"
                 "Replay available"
             )
@@ -1268,7 +1382,16 @@ class OniChaseLocalClient:
             f"Hunter start: {self.station_map[self.players['hunter']['start_station_id']]['names']['en']}\n"
             f"Visibility: {'Replay override: both visible' if replay_mode else ('Both visible' if self.phase == 'PLANNING' else 'Opponent hidden')}"
         )
+        pending_context = self.pending_departure_context(active_preview)
         upcoming = self.current_train_upcoming(active_preview)
+        if pending_context:
+            upcoming = [
+                f"{pending_context['board_stop'].get('departure_hhmm') or pending_context['board_stop'].get('arrival_hhmm')}  BOARD {self.station_map[pending_context['board_stop']['station_id']]['names']['en']}",
+                *[
+                    f"{item['arrival_hhmm']}  {item['label']}"
+                    for item in pending_context["destinations"][:12]
+                ],
+            ]
         self.train_var.set(
             "TRAIN OUTLOOK\n\n"
             + ("\n".join(upcoming) if upcoming else "Not currently on a train.")
@@ -1366,35 +1489,144 @@ class OniChaseLocalClient:
                 break
         return suggestions
 
+    def make_action_banner(self, parent: tk.Widget, title: str, subtitle: str, accent: str) -> tk.Frame:
+        frame = tk.Frame(parent, bg=accent, padx=14, pady=12)
+        title_label = tk.Label(frame, text=title, bg=accent, fg="white", font=self.fonts["action_title"], anchor="w", justify="left")
+        title_label.pack(anchor="w")
+        subtitle_label = tk.Label(
+            frame,
+            text=subtitle,
+            bg=accent,
+            fg="#fff7ef",
+            font=self.fonts["body"],
+            anchor="w",
+            justify="left",
+            wraplength=360,
+        )
+        subtitle_label.pack(anchor="w", pady=(6, 0))
+        self.bind_right_panel_hover(frame)
+        self.bind_right_panel_hover(title_label)
+        self.bind_right_panel_hover(subtitle_label)
+        return frame
+
+    def add_train_choice_button(self, row: int, departure: dict[str, Any], selected: bool) -> int:
+        accent = "#f5efe2" if not selected else "#173b2f"
+        fg = INK if not selected else "white"
+        meta_fg = MUTED if not selected else "#d7f2e6"
+        wrapper = tk.Frame(self.action_card, bg=accent, highlightbackground=YAMANOTE_COLOR, highlightthickness=3 if selected else 1, padx=12, pady=10)
+        wrapper.grid(row=row, column=0, sticky="ew", pady=(0, 8))
+        wrapper.columnconfigure(0, weight=1)
+        top = tk.Label(
+            wrapper,
+            text=f"{departure['departure_hhmm']}   {departure['train_number']}",
+            bg=accent,
+            fg=fg,
+            font=self.fonts["action_card"],
+            anchor="w",
+            justify="left",
+        )
+        top.grid(row=0, column=0, sticky="ew")
+        route_preview = self.train_preview_text(departure["train_number"], departure["board_stop"])
+        meta = tk.Label(
+            wrapper,
+            text=f"{departure['direction_label']}\n{route_preview}",
+            bg=accent,
+            fg=meta_fg,
+            font=self.fonts["action_meta"],
+            anchor="w",
+            justify="left",
+            wraplength=340,
+        )
+        meta.grid(row=1, column=0, sticky="ew", pady=(6, 8))
+        button_text = "Selected" if selected else "Choose This Train"
+        button = tk.Button(
+            wrapper,
+            text=button_text,
+            command=lambda train_number=departure["train_number"]: self.set_pending_board_train(train_number),
+            bg="#fffaf2" if not selected else "#f0c75e",
+            fg=INK,
+            activebackground="#f0c75e",
+            relief="flat",
+            padx=12,
+            pady=6,
+            font=self.fonts["body_bold"],
+        )
+        button.grid(row=2, column=0, sticky="ew")
+        for widget in (wrapper, top, meta, button):
+            self.bind_right_panel_hover(widget)
+        return row + 1
+
+    def train_preview_text(self, train_number: str, board_stop: dict[str, Any] | None) -> str:
+        train = self.train_map.get(train_number)
+        if not train or not board_stop:
+            return "Route preview unavailable."
+        labels = []
+        for stop in train["stop_times"]:
+            if stop["sequence"] <= board_stop["sequence"]:
+                continue
+            labels.append(self.station_map[stop["station_id"]]["names"]["en"])
+            if len(labels) >= 6:
+                break
+        if not labels:
+            return "No downstream stops."
+        return " -> ".join(labels)
+
+    def bind_horizontal_drag_scroll(self, canvas: tk.Canvas) -> None:
+        canvas.bind("<ButtonPress-1>", lambda event, c=canvas: c.scan_mark(event.x, event.y), add="+")
+        canvas.bind("<B1-Motion>", lambda event, c=canvas: c.scan_dragto(event.x, event.y, gain=1), add="+")
+        self.bind_right_panel_hover(canvas)
+
+    def render_destination_strip(self, row: int, destinations: list[dict[str, Any]], command_builder) -> int:
+        hint = tk.Label(
+            self.action_card,
+            text="Drag left/right to browse the full route if it gets long.",
+            bg=PANEL,
+            fg=MUTED,
+            font=self.fonts["small"],
+            anchor="w",
+            justify="left",
+        )
+        hint.grid(row=row, column=0, sticky="ew", pady=(4, 6))
+        self.bind_right_panel_hover(hint)
+        row += 1
+
+        strip_canvas = tk.Canvas(self.action_card, bg=PANEL, highlightbackground=LINE, highlightthickness=1, height=142)
+        strip_canvas.grid(row=row, column=0, sticky="ew", pady=(0, 8))
+        inner = tk.Frame(strip_canvas, bg=PANEL)
+        window_id = strip_canvas.create_window((0, 0), window=inner, anchor="nw")
+        inner.bind("<Configure>", lambda _event, c=strip_canvas: c.configure(scrollregion=c.bbox("all")))
+        strip_canvas.bind("<Configure>", lambda event, c=strip_canvas, w=window_id: c.itemconfigure(w, height=event.height))
+        self.bind_horizontal_drag_scroll(strip_canvas)
+
+        for index, destination in enumerate(destinations):
+            card = tk.Frame(inner, bg="#f4f0e6", highlightbackground=LINE, highlightthickness=1, padx=12, pady=10)
+            card.grid(row=0, column=index, sticky="ns", padx=(0, 8))
+            time_label = tk.Label(card, text=destination["arrival_hhmm"], bg="#f4f0e6", fg=INK, font=self.fonts["action_card"])
+            time_label.pack(anchor="w")
+            station_label = tk.Label(card, text=destination["label"], bg="#f4f0e6", fg=INK, font=self.fonts["body_bold"])
+            station_label.pack(anchor="w", pady=(4, 2))
+            action_button = tk.Button(
+                card,
+                text="Ride Here",
+                command=command_builder(destination["station_id"]),
+                bg="#dff0d6",
+                fg=INK,
+                activebackground="#bddfb0",
+                relief="flat",
+                padx=10,
+                pady=6,
+                font=self.fonts["body"],
+            )
+            action_button.pack(anchor="w", pady=(8, 0), fill="x")
+            for widget in (card, time_label, station_label, action_button):
+                self.bind_right_panel_hover(widget)
+        return row + 1
+
     def render_action_card(self, preview: dict[str, Any]) -> None:
         for child in self.action_card.winfo_children():
             child.destroy()
 
-        title = tk.Label(
-            self.action_card,
-            text="PLAN ACTIONS",
-            anchor="w",
-            justify="left",
-            bg=PANEL,
-            fg=INK,
-            font=self.fonts["body_bold"],
-        )
-        title.grid(row=0, column=0, sticky="ew")
-
-        helper = tk.Label(
-            self.action_card,
-            text=self.action_card_helper_text(preview),
-            anchor="w",
-            justify="left",
-            bg=PANEL,
-            fg=MUTED,
-            font=self.fonts["small"],
-            wraplength=360,
-        )
-        helper.grid(row=1, column=0, sticky="ew", pady=(4, 10))
-        self.bind_right_panel_hover(helper)
-
-        row = 2
+        row = 0
         if self.selected_station_id:
             set_start_button = ttk.Button(self.action_card, text="Set Start To Selected Station", command=self.set_start_to_selected)
             set_start_button.grid(row=row, column=0, sticky="ew")
@@ -1403,18 +1635,39 @@ class OniChaseLocalClient:
 
         if preview["current_state"]["kind"] == "NODE":
             departures = self.available_departures(preview)
+            station_name = self.station_map[preview["current_state"]["station_id"]]["names"]["en"]
+            banner = self.make_action_banner(
+                self.action_card,
+                "STEP 1  Choose Your Train",
+                f"You are at {station_name} at {preview['current_time']}. Pick a real departure first, then pick where to get off.",
+                "#2d5d47",
+            )
+            banner.grid(row=row, column=0, sticky="ew", pady=(10, 10))
+            row += 1
             if departures:
-                row = self.add_section_header(row, "Departures From Current Station")
+                row = self.add_section_header(row, "Upcoming Departures")
                 for departure in departures:
-                    label = f"{departure['departure_hhmm']}  {departure['train_number']}  {departure['direction_label']}"
-                    departure_button = ttk.Button(
-                        self.action_card,
-                        text=label,
-                        command=lambda train_number=departure["train_number"]: self.add_board_train_step(train_number),
+                    row = self.add_train_choice_button(
+                        row,
+                        departure,
+                        selected=(departure["train_number"] == self.pending_board_train_number()),
                     )
-                    departure_button.grid(row=row, column=0, sticky="ew", pady=(0, 4))
-                    self.bind_right_panel_hover(departure_button)
-                    row += 1
+            pending_context = self.pending_departure_context(preview)
+            if pending_context:
+                selected_train = pending_context["train"]
+                selected_banner = self.make_action_banner(
+                    self.action_card,
+                    f"STEP 2  Ride {selected_train['train_number']} To",
+                    f"{pending_context['board_stop'].get('departure_hhmm') or pending_context['board_stop'].get('arrival_hhmm')} departure · {selected_train.get('direction_label', 'unknown')}. Drag the route strip if the service is long.",
+                    "#b8441f",
+                )
+                selected_banner.grid(row=row, column=0, sticky="ew", pady=(6, 10))
+                row += 1
+                row = self.render_destination_strip(
+                    row,
+                    pending_context["destinations"],
+                    lambda station_id: (lambda station_id=station_id, train_number=selected_train["train_number"]: self.add_board_and_ride_steps(train_number, station_id)),
+                )
             wait_label = f"Wait 5 minutes from {preview['current_time']}"
             wait_button = ttk.Button(self.action_card, text=wait_label, command=self.add_wait_step)
             wait_button.grid(row=row, column=0, sticky="ew", pady=(8, 0))
@@ -1422,22 +1675,22 @@ class OniChaseLocalClient:
             row += 1
 
         if preview["current_state"]["kind"] == "TRAIN":
+            train_number = preview["current_state"]["train_number"]
+            banner = self.make_action_banner(
+                self.action_card,
+                f"Ride Train {train_number}",
+                "Choose where to get off. The stop strip below can be dragged left and right if the route is long.",
+                "#214f88",
+            )
+            banner.grid(row=row, column=0, sticky="ew", pady=(10, 10))
+            row += 1
             destinations = self.available_destinations(preview)
             if destinations:
-                row = self.add_section_header(row, "Ride This Train To")
-                for destination in destinations:
-                    is_selected = destination["station_id"] == self.selected_station_id
-                    label = f"{destination['arrival_hhmm']}  {destination['label']}"
-                    if is_selected:
-                        label += "  [selected]"
-                    destination_button = ttk.Button(
-                        self.action_card,
-                        text=label,
-                        command=lambda station_id=destination["station_id"]: self.add_ride_to_station_step(station_id),
-                    )
-                    destination_button.grid(row=row, column=0, sticky="ew", pady=(0, 4))
-                    self.bind_right_panel_hover(destination_button)
-                    row += 1
+                row = self.render_destination_strip(
+                    row,
+                    destinations,
+                    lambda station_id: (lambda station_id=station_id: self.add_ride_to_station_step(station_id)),
+                )
 
         row = self.add_section_header(row, "Plan Controls")
         controls = tk.Frame(self.action_card, bg=PANEL)
@@ -1492,6 +1745,7 @@ class OniChaseLocalClient:
 
         self.draw_plan_trace(self.preview_player(self.active_mode), self.active_mode, faded=False)
         self.draw_plan_trace(self.preview_player("hunter" if self.active_mode == "runner" else "runner"), "hunter" if self.active_mode == "runner" else "runner", faded=True)
+        self.draw_pending_train_route(self.active_preview())
 
         replay_event = self.current_replay_event()
         if replay_event:
@@ -1563,6 +1817,22 @@ class OniChaseLocalClient:
             x, y, _ = self.map_coords[station_id]
             self.canvas.create_oval(x - 10, y - 10, x + 10, y + 10, fill=color, outline="white", width=3, tags=("board",))
             self.canvas.create_text(x, y + 1, text=str(index), fill="white", font=self.fonts["waypoint"], tags=("board",))
+
+    def draw_pending_train_route(self, preview: dict[str, Any]) -> None:
+        pending_context = self.pending_departure_context(preview)
+        if not pending_context:
+            return
+        station_ids = [pending_context["board_stop"]["station_id"], *[item["station_id"] for item in pending_context["destinations"]]]
+        line_points = []
+        for station_id in station_ids:
+            x, y, _ = self.map_coords[station_id]
+            line_points.extend([x, y])
+        if len(line_points) < 4:
+            return
+        self.canvas.create_line(*line_points, fill=SELECTED, width=10, dash=(14, 8), smooth=True, tags=("board",))
+        for station_id in station_ids:
+            x, y, _ = self.map_coords[station_id]
+            self.canvas.create_oval(x - 8, y - 8, x + 8, y + 8, fill=SELECTED, outline="white", width=2, tags=("board",))
 
     def run(self) -> None:
         self.root.mainloop()
