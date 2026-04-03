@@ -1655,22 +1655,11 @@ class OniChaseLocalClient:
             and preview["current_state"]["kind"] == "TRAIN"
         )
 
-    def abstract_runner_position_text(self, preview: dict[str, Any]) -> str:
-        train_loc = self.train_location_on_map(preview["current_state"]["train_number"], preview["current_minute"])
-        if train_loc and train_loc["status"] == "IN_TRANSIT":
-            from_name = self.station_map[train_loc["from_station_id"]]["names"]["en"]
-            to_name = self.station_map[train_loc["to_station_id"]]["names"]["en"]
-            return f"Between {from_name} and {to_name}"
-        anchor_station_id = preview.get("map_station_id")
-        if anchor_station_id:
-            return self.station_map[anchor_station_id]["names"]["en"]
-        return "In transit"
-
-    def display_state_text(self, player_id: str, preview: dict[str, Any], replay_mode: bool) -> str:
+    def display_state_text(self, player_id: str, preview: dict[str, Any], replay_mode: bool) -> str | None:
         if self.should_hide_player(player_id, replay_mode):
             return "Hidden during live play"
         if self.should_abstract_runner_for_hunter(player_id, preview, replay_mode):
-            return self.abstract_runner_position_text(preview)
+            return None
         return self.format_state(preview)
 
     def format_state(self, preview: dict[str, Any]) -> str:
@@ -1720,15 +1709,23 @@ class OniChaseLocalClient:
                 "Replay available"
             )
 
-        self.hud_var.set(
-            f"{self.active_mode.upper()} HUD\n\n"
-            f"Phase: {self.phase}\n"
-            f"Time: {minutes_to_hhmm(display_minute)}\n"
-            f"Location: {self.display_state_text(self.active_mode, active_preview, replay_mode)}\n"
-            f"Mode: {self.players[self.active_mode]['input_mode']}\n"
-            f"Resolved steps: {len(active_preview['resolved_steps'])}\n"
-            f"Status: {('Replay focus: ' + replay_event['type']) if replay_mode else (active_preview['error'] or 'Ready')}"
+        hud_lines = [
+            f"{self.active_mode.upper()} HUD",
+            "",
+            f"Phase: {self.phase}",
+            f"Time: {minutes_to_hhmm(display_minute)}",
+        ]
+        active_state_text = self.display_state_text(self.active_mode, active_preview, replay_mode)
+        if active_state_text:
+            hud_lines.append(f"Location: {active_state_text}")
+        hud_lines.extend(
+            [
+                f"Mode: {self.players[self.active_mode]['input_mode']}",
+                f"Resolved steps: {len(active_preview['resolved_steps'])}",
+                f"Status: {('Replay focus: ' + replay_event['type']) if replay_mode else (active_preview['error'] or 'Ready')}",
+            ]
         )
+        self.hud_var.set("\n".join(hud_lines))
         self.test_var.set(
             "MATCH FLOW\n\n"
             f"Planning: 60 real seconds\n"
@@ -1752,9 +1749,16 @@ class OniChaseLocalClient:
             "TRAIN OUTLOOK\n\n"
             + ("\n".join(upcoming) if upcoming else "Not currently on a train.")
         )
+        current_text = self.display_state_text(self.active_mode, active_preview, replay_mode) or ""
+        opponent_text = self.display_state_text("hunter" if self.active_mode == "runner" else "runner", passive_preview, replay_mode)
+        quick_line = f"ACTIVE SIDE: {self.active_mode.upper()}"
+        if current_text:
+            quick_line += f"   |   CURRENT: {current_text}"
+        if opponent_text:
+            quick_line += f"   |   OPPONENT: {opponent_text}"
         self.quick_var.set(
             (
-                f"ACTIVE SIDE: {self.active_mode.upper()}   |   CURRENT: {self.display_state_text(self.active_mode, active_preview, replay_mode)}   |   OPPONENT: {self.display_state_text('hunter' if self.active_mode == 'runner' else 'runner', passive_preview, replay_mode)}\n"
+                quick_line + "\n"
                 + (f"REPLAY FOCUS: {replay_event['time_hhmm']} {replay_event['type']}\n" if replay_mode else "")
                 + f"ROUTE PREVIEW: {' -> '.join(self.station_map[s]['names']['en'] for s in self.planned_station_ids(active_preview)) or 'No route yet'}\n"
                 + "MAP: drag to move, wheel to zoom, click a station; on-train clicks can directly set where to get off"
@@ -2399,7 +2403,7 @@ class OniChaseLocalClient:
             font=self.fonts["small_bold"],
             tags=("board",),
         )
-        secondary = self.display_state_text(player_id, preview, replay_mode)
+        secondary = self.display_state_text(player_id, preview, replay_mode) or ""
         if preview["current_state"]["kind"] == "TRAIN" and not self.should_abstract_runner_for_hunter(player_id, preview, replay_mode):
             train_loc = self.train_location_on_map(preview["current_state"]["train_number"], preview["current_minute"])
             if train_loc and train_loc["status"] == "IN_TRANSIT":

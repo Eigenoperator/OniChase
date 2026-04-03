@@ -14,13 +14,13 @@ It translates Scorp's current hunter-mode decisions into an implementation and t
 During `PLANNING`, the hunter can see the runner's current location in this abstracted way:
 
 - If the runner is at a station, show the exact station.
-- If the runner is on a train, show only a rough between-stations position on the map and matching abstract location text, but do not reveal the exact train number.
+- If the runner is on a train, show only a rough between-stations position on the map, but do not reveal the exact train number or any textual route hint.
 
 For the current Yamanote-only prototype, `on the line` effectively means:
 
 - show that the runner is somewhere between visible stations on the loop,
-- allow the hunter to infer the likely line from geography,
-- but do not expose the concrete service identifier or name the line for them.
+- allow the hunter to infer the likely line from geography and map shape,
+- but do not expose the concrete service identifier or add textual hints naming the line or the segment.
 
 ### Live
 

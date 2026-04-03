@@ -995,18 +995,9 @@
       );
     }
 
-    function abstractRunnerPositionText(preview) {
-      const trainLoc = trainLocationOnMap(preview.currentState.train_number, preview.currentMinute);
-      if (trainLoc?.status === "IN_TRANSIT") {
-        return `Between ${stationLabel(trainLoc.fromStationId)} and ${stationLabel(trainLoc.toStationId)}`;
-      }
-      if (preview.mapStationId) return stationLabel(preview.mapStationId);
-      return "In transit";
-    }
-
     function displayStateText(playerId, preview, replayMode = false) {
       if (shouldHidePlayer(playerId, replayMode)) return "Hidden during live play";
-      if (shouldAbstractRunnerForHunter(playerId, preview, replayMode)) return abstractRunnerPositionText(preview);
+      if (shouldAbstractRunnerForHunter(playerId, preview, replayMode)) return "";
       return formatState(preview);
     }
 
@@ -1104,6 +1095,8 @@
       const active = planCursorPreview(state.activeMode);
       const passive = planCursorPreview(state.activeMode === "runner" ? "hunter" : "runner");
       const passivePlayerId = state.activeMode === "runner" ? "hunter" : "runner";
+      const activeLocation = displayStateText(state.activeMode, active);
+      const opponentText = displayStateText(passivePlayerId, passive);
       state.ui.hudCard.innerHTML = `
         <div class="section-head">
           <div>
@@ -1115,10 +1108,10 @@
         <div class="row-grid">
           <div class="key">Phase</div><div>${state.phase}</div>
           <div class="key">Current Time</div><div>${state.phase === "PLANNING" ? state.startTime : minutesToHhmm(state.currentGameMinute)}</div>
-          <div class="key">Location</div><div>${displayStateText(state.activeMode, active)}</div>
+          ${activeLocation ? `<div class="key">Location</div><div>${activeLocation}</div>` : ""}
           <div class="key">Resolved Steps</div><div>${active.resolvedSteps.length}</div>
           <div class="key">Status</div><div>${active.error || "Ready"}</div>
-          <div class="key">Opponent</div><div>${displayStateText(passivePlayerId, passive)}</div>
+          ${opponentText ? `<div class="key">Opponent</div><div>${opponentText}</div>` : ""}
         </div>
       `;
       state.ui.selectedCard.innerHTML = `
@@ -1326,11 +1319,13 @@
       const route = plannedStationIds(active).map((stationId) => stationLabel(stationId)).join(" -> ");
       const nextDecision = state.players[state.activeMode].steps[0] ? describeStep(state.players[state.activeMode].steps[0]) : "No step yet.";
       const opponentId = state.activeMode === "runner" ? "hunter" : "runner";
+      const currentText = displayStateText(state.activeMode, active);
+      const opponentText = displayStateText(opponentId, opponent);
       state.ui.quickbar.innerHTML = `
         <div class="quick-grid">
           <div class="quick-stat"><div class="label">Active Side</div><div class="value">${state.activeMode}</div></div>
-          <div class="quick-stat"><div class="label">Current Position</div><div class="value">${displayStateText(state.activeMode, active)}</div></div>
-          <div class="quick-stat"><div class="label">Opponent</div><div class="value">${displayStateText(opponentId, opponent)}</div></div>
+          ${currentText ? `<div class="quick-stat"><div class="label">Current Position</div><div class="value">${currentText}</div></div>` : ""}
+          ${opponentText ? `<div class="quick-stat"><div class="label">Opponent</div><div class="value">${opponentText}</div></div>` : ""}
           <div class="quick-stat"><div class="label">Next Thing</div><div class="value">${nextDecision}</div></div>
         </div>
         <div class="quick-stat">
@@ -1461,7 +1456,7 @@
           <line class="marker-line" x1="${side === "right" ? x + outer : x - outer}" y1="${y}" x2="${side === "right" ? boxX : boxX + boxWidth}" y2="${y}" stroke="${color}"></line>
           <rect class="marker-box" x="${boxX}" y="${boxY}" width="${boxWidth}" height="${boxHeight}" rx="14" ry="14" stroke="${color}" stroke-width="${emphasized ? 3 : 2}"></rect>
           <text class="marker-label" x="${boxX + 10}" y="${boxY + 14}" fill="${color}">${playerId === "runner" ? "RUNNER" : "HUNTER"}</text>
-          <text class="marker-sub" x="${boxX + 10}" y="${boxY + boxHeight - 12}" fill="var(--ink)">${sub}</text>
+          ${sub ? `<text class="marker-sub" x="${boxX + 10}" y="${boxY + boxHeight - 12}" fill="var(--ink)">${sub}</text>` : ""}
         </g>
       `;
     }

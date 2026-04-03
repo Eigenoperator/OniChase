@@ -32,9 +32,9 @@
 - 已按新一天规则检查并回补缺失的 `DIARY-2026-04-02.md`，内容聚焦在当天的 hunter mode 测试与双端试玩工具推进。
 - 已把 hunter mode 的第一版可见性规则落实到本地端与网页端：hunter 在 `PLANNING` 中看到 runner 处于站点或抽象地“在线路上”，在 `LIVE` 中看不到 runner；同时不再向 hunter 泄露 runner 的整条 plan trace，并新增两组“runner 固定不动”的 hunter 专用测试场景。
 - 已继续收紧 hunter 视角表达：不再直接写“在线路上”，而是只给出地图上的粗位置和 `Between A and B` 这类站间提示，让 hunter 自己从空间关系推断 runner 所在线路。
+- 已进一步收紧 hunter 视角表达：现在连 `Between A and B` 这类文字也不再显示，runner 在车上时只保留地图上的模糊位置线索；同时已在 `SCHEMA.md` 补入未来真实地图所需的几何数据层设计。
 ## In Progress
 - 正在把本地客户端与新网页端一起推进到“更像正式玩法工作台”的阶段，重点是 hunter mode 的第一轮实测、时间流、地图联动、输入闭环，以及在线试玩稳定性。
-
 ## Blockers
 ## Decisions
 - [2026-03-30] 主测试主线使用“真实山手线 + 真实站点 + 真实时刻表”。

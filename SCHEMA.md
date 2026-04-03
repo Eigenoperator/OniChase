@@ -102,6 +102,50 @@ type Route = {
 };
 ```
 
+### Map Geometry
+
+Represents the real or schematic geometry used by clients to draw the map.
+
+This layer must stay separate from simulation logic.
+The engine only needs nodes, trips, and timing.
+The client may additionally load geometry for:
+
+- real station placement
+- real route shape drawing
+- zone overlays
+- future city map integration
+
+```ts
+type GeoPoint = {
+  lat: number;
+  lon: number;
+};
+
+type NodeGeometry = {
+  nodeId: NodeId;
+  point: GeoPoint;
+  labelPoint?: GeoPoint;
+};
+
+type RouteGeometry = {
+  routeId: RouteId;
+  polyline: GeoPoint[];
+};
+
+type MapGeometryBundle = {
+  version: string;
+  projectionHint?: "web_mercator" | "wgs84";
+  nodeGeometry: NodeGeometry[];
+  routeGeometry: RouteGeometry[];
+};
+```
+
+Notes:
+
+- The current Yamanote prototype still uses a schematic loop layout inside the client.
+- For future real-map play, station real positions and line polylines should be stored in a geometry bundle rather than hardcoded in UI files.
+- A client should be able to switch between `schematic geometry` and `real geometry` without changing the simulation engine.
+
 ### Trip
 
 Represents one concrete train instance. This is the unit used by same-train capture.
