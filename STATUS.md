@@ -13,7 +13,6 @@
 - 已完成第一版本地桌面客户端原型：`local_client.py` 使用 `tkinter` 直接开窗，不依赖浏览器和本地 website。
 - 已修正 `START_ONICHASE_CLIENT.desktop` 与 `START_ONICHASE_CLIENT.sh` 的执行权限，避免桌面环境把新的客户端启动器当成普通文本打开。
 - 已为 `local_client.py` 增加鼠标左键拖拽地图，允许本地试玩时平移查看不同区域。
-- 已为 `local_client.py` 增加滚轮缩放和站点点击选中，支持更自然的本地地图浏览。
 - 已按职责整理工作区：本地客户端归入 `app/`，网页原型归入 `ui/`，`scripts/` 拆分为 `engine / ingest / dev`，并补充了 `WORKSPACE.md`。
 - 已为 `local_client.py` 补上第一版交互式动作流：可通过右侧按钮设起点、追加 `BOARD_TRAIN / RIDE_TO_STATION / WAIT_UNTIL`、撤销/清空步骤，并在窗口内直接运行模拟显示结果摘要。
 - 已让车上视图显示这趟车接下来完整的站序；若是环线服务，则按一整圈显示到回到起始站为止。
@@ -31,6 +30,7 @@
 - 已为 `STEP 2` 增加左图直选：选车后可直接点击左侧地图中被高亮的可达站点完成选站。
 - 已为 `STEP 2` 增加右侧保底可见列表：即使横向站条不好看，也能直接在右侧竖向列表点 `Ride Here`。
 - 已在选车后自动压缩 `STEP 1` 并给动作区更多高度，让 `STEP 2` 不再被上面的长发车列表挤掉。
+- 已为 GitHub 外部测试者补上 `DEPLOYMENT.md`，并更新 `README.md` 的本地启动说明。
 
 ## In Progress
 - 正在把本地客户端从“可直接跑局”继续推进到“更像正式玩法工作台”的阶段，重点是时间流、回放、地图联动和输入闭环。

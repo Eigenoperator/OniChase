@@ -9,6 +9,24 @@ Current focus:
 - capture-rule prototyping
 - planning-oriented local tools
 
+## Local Test Build
+
+The main current playtest target is the native local client:
+
+- [app/local_client.py](/home/xincheng/toy/Chase/app/local_client.py)
+
+Quick start:
+
+```bash
+git clone https://github.com/Eigenoperator/OniChase.git
+cd OniChase
+./START_ONICHASE_CLIENT.sh
+```
+
+If `tkinter` is missing on your system, see:
+
+- [DEPLOYMENT.md](/home/xincheng/toy/Chase/DEPLOYMENT.md)
+
 Key entry points:
 
 - `STATUS.md`
@@ -26,3 +44,8 @@ Workspace layout:
 - `scripts/ingest/` timetable ingestion, normalization, validation, and rendering tools
 - `scripts/dev/` local developer utilities such as the local site launcher
 - `data/` real timetable datasets, scenarios, and simulation results
+
+Local testing and setup:
+
+- [DEPLOYMENT.md](/home/xincheng/toy/Chase/DEPLOYMENT.md)
+- [LOCAL_CLIENT.md](/home/xincheng/toy/Chase/LOCAL_CLIENT.md)
