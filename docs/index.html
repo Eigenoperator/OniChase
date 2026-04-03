@@ -482,6 +482,7 @@
           <button id="hunter-mode-button" type="button">Hunter</button>
         </div>
         <button id="preset-button" class="action-button secondary" type="button">Load Preset</button>
+        <button id="start-game-button" class="action-button secondary" type="button">Start Game</button>
         <button id="clock-button" class="action-button" type="button">Pause Clock</button>
       </div>
     </div>
@@ -644,6 +645,18 @@
         window.clearInterval(state.tickHandle);
         state.tickHandle = null;
       }
+      renderAll();
+    }
+
+    function startGameNow() {
+      if (state.phase !== "PLANNING") {
+        renderAll();
+        return;
+      }
+      state.phase = "LIVE";
+      state.currentGameMinute = hhmmToMinutes(state.startTime);
+      state.clockRunning = true;
+      scheduleTick();
       renderAll();
     }
 
@@ -1076,7 +1089,7 @@
       state.ui.clockPhase.textContent = state.phase;
       if (state.phase === "PLANNING") {
         state.ui.clockMain.textContent = `${String(state.planningSecondsRemaining).padStart(2, "0")}s`;
-        state.ui.clockSub.textContent = `Game starts at ${state.startTime} · both sides visible`;
+        state.ui.clockSub.textContent = `Game starts at ${state.startTime} · both sides visible · playtest can start early`;
       } else if (state.phase === "LIVE") {
         state.ui.clockMain.textContent = minutesToHhmm(state.currentGameMinute);
         state.ui.clockSub.textContent = "Live clock running · opponent hidden";
@@ -1085,6 +1098,7 @@
         state.ui.clockSub.textContent = "Match ended";
       }
       state.ui.clockButton.textContent = state.clockRunning ? "Pause Clock" : "Resume Clock";
+      state.ui.startGameButton.disabled = state.phase !== "PLANNING";
       state.ui.runnerModeButton.classList.toggle("active", state.activeMode === "runner");
       state.ui.runnerModeButton.classList.toggle("runner", state.activeMode === "runner");
       state.ui.hunterModeButton.classList.toggle("active", state.activeMode === "hunter");
@@ -1125,6 +1139,12 @@
           <div class="key">Station</div><div>${stationLabel(state.selectedStationId)}</div>
           <div class="key">Current Start</div><div>${stationLabel(state.players[state.activeMode].startStationId)}</div>
           <div class="key">Map Input</div><div>${active.currentState.kind === "TRAIN" ? "If highlighted, click reachable station to add ride target." : "Choose train on the right, then destination."}</div>
+        </div>
+      `;
+      state.ui.selectedCard.innerHTML += `
+        <div class="empty" style="margin-top:12px;">
+          Playtest start rule: either side can press <strong>Start Game</strong> during planning.<br />
+          Real match rule: both players should agree before the game starts.
         </div>
       `;
     }
@@ -1509,6 +1529,7 @@
       state.ui.runnerModeButton = document.getElementById("runner-mode-button");
       state.ui.hunterModeButton = document.getElementById("hunter-mode-button");
       state.ui.presetButton = document.getElementById("preset-button");
+      state.ui.startGameButton = document.getElementById("start-game-button");
       state.ui.clockButton = document.getElementById("clock-button");
       state.ui.hudCard = document.getElementById("hud-card");
       state.ui.selectedCard = document.getElementById("selected-card");
@@ -1521,6 +1542,7 @@
       state.ui.runnerModeButton.addEventListener("click", () => setActiveMode("runner"));
       state.ui.hunterModeButton.addEventListener("click", () => setActiveMode("hunter"));
       state.ui.presetButton.addEventListener("click", () => loadPreset());
+      state.ui.startGameButton.addEventListener("click", () => startGameNow());
       state.ui.clockButton.addEventListener("click", () => toggleClock());
 
       await loadStations();

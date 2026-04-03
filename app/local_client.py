@@ -280,7 +280,7 @@ class OniChaseLocalClient:
         ttk.Button(button_bar, text="Runner Mode", command=lambda: self.set_active_mode("runner")).grid(row=0, column=0, padx=4)
         ttk.Button(button_bar, text="Hunter Mode", command=lambda: self.set_active_mode("hunter")).grid(row=0, column=1, padx=4)
         ttk.Button(button_bar, text="Load Test Preset", command=self.apply_test_preset).grid(row=0, column=2, padx=4)
-        ttk.Button(button_bar, text="Start Match", command=self.start_match_now).grid(row=0, column=3, padx=4)
+        ttk.Button(button_bar, text="Start Game", command=self.start_match_now).grid(row=0, column=3, padx=4)
         ttk.Button(button_bar, text="Pause/Resume", command=self.toggle_clock_running).grid(row=0, column=4, padx=4)
         ttk.Button(button_bar, text="Settings", command=self.open_settings).grid(row=0, column=5, padx=4)
 
@@ -684,10 +684,21 @@ class OniChaseLocalClient:
             self.schedule_tick()
 
     def start_match_now(self) -> None:
+        if self.phase != "PLANNING":
+            self.set_result_message("ACTION", ["The game can only be started manually during PLANNING."])
+            self.render()
+            return
         self.phase = "LIVE"
         self.current_game_minute = hhmm_to_minutes(self.start_time)
         self.clock_running = True
         self.schedule_tick()
+        self.set_result_message(
+            "ACTION",
+            [
+                "Planning ended early and the live game started immediately.",
+                "In the real multiplayer version, both players should agree before the game starts.",
+            ],
+        )
         self.render()
 
     def toggle_clock_running(self) -> None:
@@ -1732,7 +1743,9 @@ class OniChaseLocalClient:
             f"Live clock: 1 game minute / sec\n"
             f"Runner start: {self.station_map[self.players['runner']['start_station_id']]['names']['en']}\n"
             f"Hunter start: {self.station_map[self.players['hunter']['start_station_id']]['names']['en']}\n"
-            f"Visibility: {'Replay override: both visible' if replay_mode else ('Both visible' if self.phase == 'PLANNING' else 'Opponent hidden')}"
+            f"Visibility: {'Replay override: both visible' if replay_mode else ('Both visible' if self.phase == 'PLANNING' else 'Opponent hidden')}\n"
+            "Playtest start rule: either side can press Start Game now\n"
+            "Real match rule: both players must agree before the game starts"
         )
         cursor_preview = self.plan_cursor_preview()
         pending_context = self.pending_departure_context(cursor_preview)

@@ -46,6 +46,8 @@ The first local client prototype already provides:
   - during planning, both player positions remain visible
   - after the match enters `LIVE`, the in-game clock advances and the opponent position is hidden
   - plan edits during `LIVE` automatically trim only the unresolved future steps, so the player can branch the rest of the route without rewriting already executed actions
+  - the local playtest client now also has a `Start Game` button, so the user can manually end `PLANNING` early and begin `LIVE` immediately
+  - this early-start button is a playtest convenience only; in the real multiplayer game, both players should agree before the game starts
 - the current plan panel now marks `DONE` versus `NEXT` steps so the time flow is easier to read during playtests
 - the replay panel is now map-linked:
   - selecting an event in the result list updates the map to that event's `state_after`
