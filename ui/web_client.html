@@ -517,7 +517,9 @@
     const MAP_CENTER_Y = 380;
     const MAP_RADIUS = 260;
     const MAP_START_ANGLE_DEG = 115;
-    const END_TIME_DEFAULT = "07:00";
+    const RUNNER_END_TIME_DEFAULT = "07:00";
+    const HUNTER_START_TIME_DEFAULT = "07:00";
+    const HUNTER_END_TIME_DEFAULT = "08:00";
 
     const state = {
       activeMode: "runner",
@@ -525,7 +527,7 @@
       planningSecondsRemaining: 60,
       currentGameMinute: 360,
       startTime: "06:00",
-      endTime: END_TIME_DEFAULT,
+      endTime: RUNNER_END_TIME_DEFAULT,
       clockRunning: true,
       tickHandle: null,
       pendingBoardTrainNumbers: { runner: null, hunter: null },
@@ -538,7 +540,7 @@
       trainMap: new Map(),
       players: {
         runner: { startStationId: "TOKYO", inputMode: "plan", steps: [] },
-        hunter: { startStationId: "SHINJUKU", inputMode: "actions", passiveHold: true, steps: [{ type: "WAIT_UNTIL", until_hhmm: END_TIME_DEFAULT }] }
+        hunter: { startStationId: "SHINJUKU", inputMode: "actions", passiveHold: true, steps: [{ type: "WAIT_UNTIL", until_hhmm: RUNNER_END_TIME_DEFAULT }] }
       },
       previews: {},
       ui: {}
@@ -626,13 +628,19 @@
     }
 
     function loadPreset() {
-      state.activeMode = "runner";
-      state.startTime = "06:00";
-      state.endTime = END_TIME_DEFAULT;
+      const targetMode = state.activeMode;
+      state.activeMode = targetMode;
+      if (targetMode === "hunter") {
+        state.startTime = HUNTER_START_TIME_DEFAULT;
+        state.endTime = HUNTER_END_TIME_DEFAULT;
+      } else {
+        state.startTime = "06:00";
+        state.endTime = RUNNER_END_TIME_DEFAULT;
+      }
       state.pendingBoardTrainNumbers = { runner: null, hunter: null };
       state.players.runner = { startStationId: "TOKYO", inputMode: "plan", steps: [] };
       state.players.hunter = { startStationId: "SHINJUKU", inputMode: "actions", passiveHold: true, steps: [{ type: "WAIT_UNTIL", until_hhmm: state.endTime }] };
-      state.selectedStationId = "TOKYO";
+      state.selectedStationId = state.players[state.activeMode].startStationId;
       resetMatchFlow(true);
       renderAll();
     }
