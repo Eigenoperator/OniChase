@@ -46,6 +46,12 @@ If this URL does not open yet, check these one-time GitHub conditions:
 2. In repository `Actions`, make sure the `Deploy Web Client` workflow has run successfully on `main`.
 3. After the first successful Pages deployment, wait a short time for propagation and then try the URL again.
 
+Current repo note:
+
+- `Eigenoperator/OniChase` is currently a private repository.
+- GitHub Pages can behave differently for private repositories depending on the account plan and site visibility settings.
+- If the expected public URL does not work, use the `Visit site` button shown on the repository's `Settings -> Pages` screen first, because GitHub may surface the effective live URL there before it is obvious elsewhere.
+
 ## Current Supported Path
 
 The simplest supported setup is:
