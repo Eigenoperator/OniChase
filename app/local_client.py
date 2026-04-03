@@ -338,11 +338,20 @@ class OniChaseLocalClient:
         right = tk.Frame(shell, bg=BG, width=420)
         right.grid_propagate(False)
         right.columnconfigure(0, weight=1)
-        right.rowconfigure(0, weight=1)
+        right.rowconfigure(1, weight=1)
 
-        self.right_canvas = tk.Canvas(right, bg=BG, highlightthickness=0, width=420)
+        self.plan_card = tk.Frame(right, bg=PANEL, highlightbackground=LINE, highlightthickness=1, padx=12, pady=12)
+        self.plan_card.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+        self.plan_card.columnconfigure(0, weight=1)
+
+        body = tk.Frame(right, bg=BG)
+        body.grid(row=1, column=0, sticky="nsew")
+        body.columnconfigure(0, weight=1)
+        body.rowconfigure(0, weight=1)
+
+        self.right_canvas = tk.Canvas(body, bg=BG, highlightthickness=0, width=420)
         self.right_canvas.grid(row=0, column=0, sticky="nsew")
-        right_scrollbar = ttk.Scrollbar(right, orient="vertical", command=self.right_canvas.yview)
+        right_scrollbar = ttk.Scrollbar(body, orient="vertical", command=self.right_canvas.yview)
         right_scrollbar.grid(row=0, column=1, sticky="ns")
         self.right_canvas.configure(yscrollcommand=right_scrollbar.set)
 
@@ -368,12 +377,6 @@ class OniChaseLocalClient:
         self.right_scroll_frame.columnconfigure(0, weight=1)
         self.right_scroll_frame.rowconfigure(0, weight=1)
         self.bind_right_panel_hover(self.right_pane)
-
-        self.info_stack = tk.Frame(self.right_pane, bg=BG)
-        self.info_stack.columnconfigure(0, weight=1)
-        self.plan_card = tk.Frame(self.info_stack, bg=PANEL, highlightbackground=LINE, highlightthickness=1, padx=12, pady=12)
-        self.plan_card.grid(row=0, column=0, sticky="ew", pady=(0, 10))
-        self.plan_card.columnconfigure(0, weight=1)
 
         self.action_card = tk.Frame(self.right_pane, bg=PANEL, highlightbackground=LINE, highlightthickness=1, padx=12, pady=12)
         self.action_card.columnconfigure(0, weight=1)
@@ -411,9 +414,8 @@ class OniChaseLocalClient:
         self.result_detail_label = self.make_card(self.result_container, self.result_detail_var, width=48)
         self.result_detail_label.grid(row=2, column=0, sticky="ew", pady=(8, 0))
 
-        self.right_pane.add(self.info_stack, minsize=220, stretch="always")
-        self.right_pane.add(self.action_card, minsize=180)
-        self.right_pane.add(self.result_container, minsize=160)
+        self.right_pane.add(self.action_card, minsize=260, stretch="always")
+        self.right_pane.add(self.result_container, minsize=180)
 
         shell.add(left, minsize=760, stretch="always")
         shell.add(right, minsize=320)
@@ -612,13 +614,10 @@ class OniChaseLocalClient:
             if pane_height <= 0:
                 return
             if emphasize_actions:
-                info_height = 240
-                result_top = max(info_height + 260, pane_height - 190)
+                action_height = max(320, pane_height - 240)
             else:
-                info_height = 300
-                result_top = max(info_height + 180, pane_height - 190)
-            self.right_pane.sash_place(0, 0, info_height)
-            self.right_pane.sash_place(1, 0, result_top)
+                action_height = max(260, pane_height - 280)
+            self.right_pane.sash_place(0, 0, action_height)
         except tk.TclError:
             return
 

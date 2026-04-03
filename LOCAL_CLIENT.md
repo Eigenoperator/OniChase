@@ -65,6 +65,7 @@ The first local client prototype already provides:
 - the upper-right plan board now also shows the current plan cursor location, so the player can tell where the next planned leg will start
 - the upper-right plan board is now rendered as route cards rather than a plain text block, so chained train plans read more like a real transfer board
 - the old `MATCH TABLE` and `IMMEDIATE OPTIONS` panels have been removed to keep the right side focused on planning, actions, and replay
+- the plan board is now a fixed top-right region instead of part of the scrollable right-side body, so choosing trains and stations below no longer pushes it out of view
 
 ## Launch
 

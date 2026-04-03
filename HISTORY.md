@@ -94,3 +94,4 @@
 - Made the plan board much more visually explicit after Scorp still could not find it: the plan board now sits at the very top of the upper-right info area, uses a colored header band, and the top info section gets more vertical space by default so the board is harder to miss.
 - Fixed a planning-state bug that caused chained plans to collapse back down to a single visible leg: in `PLANNING`, appending a new train segment no longer trims away the earlier unexecuted plan history, so multiple planned cars now remain on the board together.
 - Removed the native client's `MATCH TABLE` and `IMMEDIATE OPTIONS` panels entirely to simplify the right side and leave more room for the plan board, action workflow, and replay surfaces.
+- Changed the plan board from a scroll-body card into a fixed top-right region so long Step 1 / Step 2 content below can no longer cover or push the plan board out of sight.
