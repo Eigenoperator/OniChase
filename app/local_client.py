@@ -107,6 +107,9 @@ class OniChaseLocalClient:
         self.plan_var = tk.StringVar()
         self.options_var = tk.StringVar()
         self.result_var = tk.StringVar()
+        self.result_detail_var = tk.StringVar()
+        self.latest_result: dict[str, Any] | None = None
+        self.selected_result_event_index: int = 0
 
         self.build_ui()
         self.render()
@@ -347,8 +350,36 @@ class OniChaseLocalClient:
 
         self.result_container = tk.Frame(self.right_pane, bg=BG)
         self.result_container.columnconfigure(0, weight=1)
-        self.result_label = self.make_card(self.result_container, self.result_var, width=48)
-        self.result_label.grid(row=0, column=0, sticky="ew")
+        self.result_container.rowconfigure(1, weight=1)
+        self.result_summary_label = self.make_card(self.result_container, self.result_var, width=48)
+        self.result_summary_label.grid(row=0, column=0, sticky="ew", pady=(0, 8))
+
+        result_body = tk.Frame(self.result_container, bg=BG)
+        result_body.grid(row=1, column=0, sticky="nsew")
+        result_body.columnconfigure(0, weight=1)
+        result_body.rowconfigure(0, weight=1)
+
+        self.result_event_list = tk.Listbox(
+            result_body,
+            activestyle="none",
+            exportselection=False,
+            font=self.fonts["small"],
+            bg=PANEL,
+            fg=INK,
+            highlightthickness=1,
+            highlightbackground=LINE,
+            selectbackground="#dfead2",
+            selectforeground=INK,
+        )
+        self.result_event_list.grid(row=0, column=0, sticky="nsew")
+        result_scrollbar = ttk.Scrollbar(result_body, orient="vertical", command=self.result_event_list.yview)
+        result_scrollbar.grid(row=0, column=1, sticky="ns")
+        self.result_event_list.configure(yscrollcommand=result_scrollbar.set)
+        self.result_event_list.bind("<<ListboxSelect>>", self.on_result_event_select)
+        self.bind_right_panel_hover(self.result_event_list)
+
+        self.result_detail_label = self.make_card(self.result_container, self.result_detail_var, width=48)
+        self.result_detail_label.grid(row=2, column=0, sticky="ew", pady=(8, 0))
 
         self.right_pane.add(self.info_stack, minsize=220, stretch="always")
         self.right_pane.add(self.action_card, minsize=180)
@@ -443,6 +474,10 @@ class OniChaseLocalClient:
 
     def set_result_message(self, title: str, lines: list[str]) -> None:
         self.result_var.set(title + "\n\n" + "\n".join(lines))
+        self.result_detail_var.set("")
+        self.latest_result = None
+        self.selected_result_event_index = 0
+        self.refresh_result_event_list()
 
     def set_start_to_selected(self) -> None:
         if not self.selected_station_id:
@@ -600,6 +635,8 @@ class OniChaseLocalClient:
             self.render()
             return
 
+        self.latest_result = result
+        self.selected_result_event_index = 0
         capture = result["capture"]
         lines = [
             f"Scenario: {result['scenario_id']}",
@@ -625,7 +662,88 @@ class OniChaseLocalClient:
                 parts.append(event["capture_type"])
             lines.append("- " + " ".join(parts))
         self.set_result_message("SIMULATION", lines)
+        self.latest_result = result
+        self.selected_result_event_index = 0
+        self.refresh_result_event_list()
         self.render()
+
+    def on_result_event_select(self, _event: tk.Event) -> None:
+        selection = self.result_event_list.curselection()
+        if not selection:
+            return
+        self.selected_result_event_index = int(selection[0])
+        self.update_result_detail()
+
+    def refresh_result_event_list(self) -> None:
+        self.result_event_list.delete(0, tk.END)
+        if not self.latest_result:
+            self.result_event_list.insert(tk.END, "No replay yet. Run Simulation first.")
+            self.result_event_list.selection_clear(0, tk.END)
+            return
+        for event in self.latest_result["match_event_log"]:
+            parts = [event["time_hhmm"], event["type"]]
+            if event.get("player_id"):
+                parts.append(event["player_id"])
+            if event.get("station_id"):
+                parts.append(event["station_id"])
+            if event.get("train_number"):
+                parts.append(event["train_number"])
+            if event.get("capture_type"):
+                parts.append(event["capture_type"])
+            self.result_event_list.insert(tk.END, "  ".join(parts))
+
+        max_index = len(self.latest_result["match_event_log"]) - 1
+        self.selected_result_event_index = max(0, min(self.selected_result_event_index, max_index))
+        self.result_event_list.selection_clear(0, tk.END)
+        self.result_event_list.selection_set(self.selected_result_event_index)
+        self.result_event_list.see(self.selected_result_event_index)
+        self.update_result_detail()
+
+    def update_result_detail(self) -> None:
+        if not self.latest_result or not self.latest_result["match_event_log"]:
+            self.result_detail_var.set("EVENT DETAIL\n\nNo replay event selected.")
+            return
+        event = self.latest_result["match_event_log"][self.selected_result_event_index]
+        lines = [
+            "EVENT DETAIL",
+            "",
+            f"Time: {event['time_hhmm']}",
+            f"Type: {event['type']}",
+        ]
+        if event.get("player_id"):
+            lines.append(f"Player: {event['player_id']}")
+        if event.get("station_id"):
+            lines.append(f"Station: {event['station_id']}")
+        if event.get("train_number"):
+            lines.append(f"Train: {event['train_number']}")
+        if event.get("capture_type"):
+            lines.append(f"Capture: {event['capture_type']}")
+        if event.get("trigger_event_type"):
+            lines.append(f"Trigger: {event['trigger_event_type']}")
+        state_after = event.get("state_after")
+        if state_after:
+            runner_state = state_after.get("runner", {})
+            hunter_state = state_after.get("hunter", {})
+            lines.extend(
+                [
+                    "",
+                    f"Runner after: {self.format_carrier(runner_state)}",
+                    f"Hunter after: {self.format_carrier(hunter_state)}",
+                ]
+            )
+        self.result_detail_var.set("\n".join(lines))
+
+    def format_carrier(self, state: dict[str, Any]) -> str:
+        if not state:
+            return "unknown"
+        if state.get("kind") == "NODE":
+            station_id = state.get("station_id")
+            if not station_id:
+                return "node"
+            return self.station_map.get(station_id, {"names": {"en": station_id}})["names"]["en"]
+        if state.get("kind") == "TRAIN":
+            return f"Train {state.get('train_number', '?')}"
+        return state.get("kind", "unknown")
 
     def on_map_drag_start(self, event: tk.Event) -> None:
         self._drag_last = (event.x, event.y)

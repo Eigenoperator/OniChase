@@ -40,6 +40,7 @@ The first local client prototype already provides:
 - a `Settings` window is available from the top bar; for now it supports changing the UI font size
 - the main layout now uses a draggable left-right divider, so the player can widen the right planning panel when needed
 - the right column itself now also has draggable internal dividers, so `Info / Actions / Result` can be resized vertically
+- the `Result` area now works as a replay panel: after `Run Simulation`, it shows a scrollable event list plus detail for the selected event
 
 ## Launch
 
