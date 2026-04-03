@@ -1135,11 +1135,18 @@ class OniChaseLocalClient:
         current_state = dict(state)
         map_station_id = None
         current_train = None
+        map_position = None
         if current_state.get("kind") == "NODE":
             map_station_id = current_state.get("station_id")
+            if map_station_id in self.map_coords:
+                x, y, _ = self.map_coords[map_station_id]
+                map_position = (x, y)
         elif current_state.get("kind") == "TRAIN":
             current_train = self.train_map.get(current_state["train_number"])
-            map_station_id = self.train_anchor_station_id(current_state["train_number"], event["time_minute"])
+            train_loc = self.train_location_on_map(current_state["train_number"], event["time_minute"])
+            if train_loc:
+                map_station_id = train_loc["anchor_station_id"]
+                map_position = train_loc["position"]
         return {
             "player_id": player_id,
             "current_time": event["time_hhmm"],
@@ -1152,6 +1159,7 @@ class OniChaseLocalClient:
             "start_station_id": self.players[player_id]["start_station_id"],
             "error": None,
             "map_station_id": map_station_id,
+            "map_position": map_position,
             "replay_focus": True,
         }
 
@@ -1368,6 +1376,17 @@ class OniChaseLocalClient:
                 break
 
         current_state = {"kind": "TRAIN", "train_number": current_train["train_number"]} if current_train else {"kind": "NODE", "station_id": current_station_id}
+        map_station_id = None
+        map_position = None
+        if current_train:
+            train_loc = self.train_location_on_map(current_train["train_number"], current_minute)
+            if train_loc:
+                map_station_id = train_loc["anchor_station_id"]
+                map_position = train_loc["position"]
+        elif current_station_id in self.map_coords:
+            map_station_id = current_station_id
+            x, y, _ = self.map_coords[current_station_id]
+            map_position = (x, y)
         return {
             "player_id": player_id,
             "current_time": minutes_to_hhmm(current_minute),
@@ -1379,6 +1398,82 @@ class OniChaseLocalClient:
             "resolved_steps": resolved_steps,
             "start_station_id": player["start_station_id"],
             "error": error,
+            "map_station_id": map_station_id,
+            "map_position": map_position,
+        }
+
+    def train_location_on_map(self, train_number: str, time_minute: int) -> dict[str, Any] | None:
+        train = self.train_map.get(train_number)
+        if not train:
+            return None
+        stops = train["stop_times"]
+        if not stops:
+            return None
+
+        first_stop = stops[0]
+        first_station_id = first_stop["station_id"]
+        if first_station_id not in self.map_coords:
+            return None
+
+        first_departure = stop_departure_minutes(first_stop)
+        if time_minute <= first_departure:
+            x, y, _ = self.map_coords[first_station_id]
+            return {
+                "position": (x, y),
+                "anchor_station_id": first_station_id,
+                "from_station_id": first_station_id,
+                "to_station_id": first_station_id,
+                "status": "AT_STATION",
+            }
+
+        for index, stop in enumerate(stops):
+            station_id = stop["station_id"]
+            if station_id not in self.map_coords:
+                continue
+            arrival = stop_arrival_minutes(stop)
+            departure = stop_departure_minutes(stop)
+            if arrival <= time_minute <= departure:
+                x, y, _ = self.map_coords[station_id]
+                return {
+                    "position": (x, y),
+                    "anchor_station_id": station_id,
+                    "from_station_id": station_id,
+                    "to_station_id": station_id,
+                    "status": "AT_STATION",
+                }
+            if index + 1 >= len(stops):
+                continue
+            next_stop = stops[index + 1]
+            next_station_id = next_stop["station_id"]
+            if next_station_id not in self.map_coords:
+                continue
+            next_arrival = stop_arrival_minutes(next_stop)
+            if departure <= time_minute <= next_arrival:
+                start_x, start_y, _ = self.map_coords[station_id]
+                end_x, end_y, _ = self.map_coords[next_station_id]
+                span = max(1, next_arrival - departure)
+                progress = max(0.0, min(1.0, (time_minute - departure) / span))
+                x = start_x + (end_x - start_x) * progress
+                y = start_y + (end_y - start_y) * progress
+                anchor_station_id = next_station_id if progress >= 0.5 else station_id
+                return {
+                    "position": (x, y),
+                    "anchor_station_id": anchor_station_id,
+                    "from_station_id": station_id,
+                    "to_station_id": next_station_id,
+                    "status": "IN_TRANSIT",
+                }
+
+        last_station_id = stops[-1]["station_id"]
+        if last_station_id not in self.map_coords:
+            return None
+        x, y, _ = self.map_coords[last_station_id]
+        return {
+            "position": (x, y),
+            "anchor_station_id": last_station_id,
+            "from_station_id": last_station_id,
+            "to_station_id": last_station_id,
+            "status": "AT_STATION",
         }
 
     def find_boarding_stop(self, train: dict[str, Any], station_id: str | None, earliest_minute: int) -> dict[str, Any] | None:
@@ -2135,7 +2230,10 @@ class OniChaseLocalClient:
     ) -> None:
         if not visible:
             return
-        x, y, _ = self.map_coords[station_id]
+        if preview.get("map_position"):
+            x, y = preview["map_position"]
+        else:
+            x, y, _ = self.map_coords[station_id]
         color = RUNNER_COLOR if player_id == "runner" else HUNTER_COLOR
         label = "RUNNER" if player_id == "runner" else "HUNTER"
         station_name = self.station_map[station_id]["names"]["en"]
@@ -2195,7 +2293,13 @@ class OniChaseLocalClient:
         )
         secondary = station_name
         if preview["current_state"]["kind"] == "TRAIN":
-            secondary = f"on {preview['current_state']['train_number']} near {station_name}"
+            train_loc = self.train_location_on_map(preview["current_state"]["train_number"], preview["current_minute"])
+            if train_loc and train_loc["status"] == "IN_TRANSIT":
+                from_name = self.station_map[train_loc["from_station_id"]]["names"]["en"]
+                to_name = self.station_map[train_loc["to_station_id"]]["names"]["en"]
+                secondary = f"{preview['current_state']['train_number']}  {from_name} -> {to_name}"
+            else:
+                secondary = f"on {preview['current_state']['train_number']} at {station_name}"
         self.canvas.create_text(
             box_x + 10,
             box_y + box_height - 12,
