@@ -752,6 +752,8 @@ class OniChaseLocalClient:
         self.root.after_idle(lambda: self.right_canvas.yview_moveto(1.0))
 
     def truncate_future_steps_to_current(self) -> int:
+        if self.phase == "PLANNING" and self.current_replay_event() is None:
+            return 0
         preview = self.active_preview()
         resolved_count = len(preview["resolved_steps"])
         steps = self.active_player()["steps"]
