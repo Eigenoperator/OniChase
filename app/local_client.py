@@ -1599,6 +1599,42 @@ class OniChaseLocalClient:
         self.bind_right_panel_hover(instruction)
         row += 1
 
+        visible_list_label = tk.Label(
+            self.action_card,
+            text="Visible destination list",
+            bg=PANEL,
+            fg=INK,
+            font=self.fonts["small_bold"],
+            anchor="w",
+            justify="left",
+        )
+        visible_list_label.grid(row=row, column=0, sticky="ew", pady=(0, 6))
+        self.bind_right_panel_hover(visible_list_label)
+        row += 1
+
+        visible_list = tk.Frame(self.action_card, bg=PANEL)
+        visible_list.grid(row=row, column=0, sticky="ew", pady=(0, 10))
+        visible_list.columnconfigure(0, weight=1)
+        self.bind_right_panel_hover(visible_list)
+
+        for index, destination in enumerate(destinations, start=1):
+            button = tk.Button(
+                visible_list,
+                text=f"{index}. {destination['arrival_hhmm']}  {destination['label']}  -  Ride Here",
+                command=command_builder(destination["station_id"]),
+                bg="#e8f2e0",
+                fg=INK,
+                activebackground="#cfe5c5",
+                relief="flat",
+                anchor="w",
+                padx=12,
+                pady=8,
+                font=self.fonts["body"],
+            )
+            button.grid(row=index - 1, column=0, sticky="ew", pady=(0, 4))
+            self.bind_right_panel_hover(button)
+        row += 1
+
         hint = tk.Label(
             self.action_card,
             text="You can drag left/right here, or directly click the highlighted stations on the left map.",
