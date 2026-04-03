@@ -1987,14 +1987,57 @@ class OniChaseLocalClient:
         return row + 1
 
     def render_action_card(self, preview: dict[str, Any]) -> None:
+        departures_signature: tuple[Any, ...] = ()
+        pending_context_signature: tuple[Any, ...] | None = None
+        destinations_signature: tuple[Any, ...] = ()
+
+        if preview["current_state"]["kind"] == "NODE":
+            departures_signature = tuple(
+                (
+                    item["train_number"],
+                    item["departure_hhmm"],
+                    item["direction_label"],
+                    item["board_stop"]["station_id"],
+                    item["board_stop"]["sequence"],
+                )
+                for item in self.available_departures(preview)
+            )
+            pending_context = self.pending_departure_context(preview)
+            if pending_context:
+                pending_context_signature = (
+                    pending_context["train"]["train_number"],
+                    pending_context["board_stop"]["station_id"],
+                    pending_context["board_stop"]["sequence"],
+                    pending_context["board_stop"].get("departure_hhmm") or pending_context["board_stop"].get("arrival_hhmm"),
+                    tuple(
+                        (
+                            item["station_id"],
+                            item["arrival_hhmm"],
+                            item["sequence"],
+                        )
+                        for item in pending_context["destinations"]
+                    ),
+                )
+        elif preview["current_state"]["kind"] == "TRAIN":
+            destinations_signature = tuple(
+                (
+                    item["station_id"],
+                    item["arrival_hhmm"],
+                    item["sequence"],
+                )
+                for item in self.available_destinations(preview)
+            )
+
         signature = (
             self.active_mode,
             preview["current_state"].get("kind"),
             preview["current_state"].get("station_id"),
             preview["current_state"].get("train_number"),
-            preview["current_minute"],
             self.pending_board_train_number(),
             self.selected_station_id,
+            departures_signature,
+            pending_context_signature,
+            destinations_signature,
             tuple(
                 (
                     step.get("type"),
@@ -2026,7 +2069,7 @@ class OniChaseLocalClient:
             banner = self.make_action_banner(
                 self.action_card,
                 "STEP 1  Choose Your Train",
-                f"You are at {station_name} at {preview['current_time']}. Pick a real departure first, then pick where to get off.",
+                f"You are at {station_name}. Pick a real departure first, then pick where to get off.",
                 "#2d5d47",
             )
             banner.grid(row=row, column=0, sticky="ew", pady=(10, 10))
@@ -2092,7 +2135,7 @@ class OniChaseLocalClient:
                     pending_context["destinations"],
                     lambda station_id: (lambda station_id=station_id, train_number=selected_train["train_number"]: self.add_board_and_ride_steps(train_number, station_id)),
                 )
-            wait_label = f"Wait 5 minutes from {preview['current_time']}"
+            wait_label = "Wait +5 minutes"
             wait_button = ttk.Button(self.action_card, text=wait_label, command=self.add_wait_step)
             wait_button.grid(row=row, column=0, sticky="ew", pady=(8, 0))
             self.bind_right_panel_hover(wait_button)
