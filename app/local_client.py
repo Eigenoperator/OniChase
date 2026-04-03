@@ -116,6 +116,7 @@ class OniChaseLocalClient:
         self.latest_result: dict[str, Any] | None = None
         self.selected_result_event_index: int = 0
         self.last_action_card_signature: tuple[Any, ...] | None = None
+        self.last_plan_board_signature: tuple[Any, ...] | None = None
         self.pending_right_scroll_target: float | None = None
 
         self.build_ui()
@@ -438,6 +439,30 @@ class OniChaseLocalClient:
         )
 
     def render_plan_board(self, cursor_preview: dict[str, Any], resolved_count: int) -> None:
+        signature = (
+            self.active_mode,
+            self.players[self.active_mode]["start_station_id"],
+            cursor_preview["current_state"].get("kind"),
+            cursor_preview["current_state"].get("station_id"),
+            cursor_preview["current_state"].get("train_number"),
+            cursor_preview.get("map_station_id"),
+            cursor_preview["current_minute"],
+            resolved_count,
+            tuple(
+                (
+                    step.get("type"),
+                    step.get("until_hhmm"),
+                    step.get("train_number"),
+                    step.get("station_id"),
+                )
+                for step in self.players[self.active_mode]["steps"]
+            ),
+            self.font_size_offset,
+        )
+        if signature == self.last_plan_board_signature:
+            return
+        self.last_plan_board_signature = signature
+
         for child in self.plan_card.winfo_children():
             child.destroy()
 
