@@ -373,11 +373,11 @@ class OniChaseLocalClient:
 
         self.info_stack = tk.Frame(self.right_pane, bg=BG)
         self.info_stack.columnconfigure(0, weight=1)
-        self.duel_label = self.make_card(self.info_stack, self.duel_var, width=48)
-        self.duel_label.grid(row=0, column=0, sticky="ew", pady=(0, 10))
         self.plan_card = tk.Frame(self.info_stack, bg=PANEL, highlightbackground=LINE, highlightthickness=1, padx=12, pady=12)
-        self.plan_card.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+        self.plan_card.grid(row=0, column=0, sticky="ew", pady=(0, 10))
         self.plan_card.columnconfigure(0, weight=1)
+        self.duel_label = self.make_card(self.info_stack, self.duel_var, width=48)
+        self.duel_label.grid(row=1, column=0, sticky="ew", pady=(0, 10))
         self.options_label = self.make_card(self.info_stack, self.options_var, width=48)
         self.options_label.grid(row=2, column=0, sticky="ew")
 
@@ -444,16 +444,28 @@ class OniChaseLocalClient:
         for child in self.plan_card.winfo_children():
             child.destroy()
 
+        header = tk.Frame(self.plan_card, bg="#8c4d19", padx=10, pady=8)
+        header.grid(row=0, column=0, sticky="ew", pady=(0, 8))
         title = tk.Label(
-            self.plan_card,
+            header,
             text=f"{self.active_mode.upper()} PLAN BOARD",
-            bg=PANEL,
-            fg=INK,
-            font=self.fonts["body_bold"],
+            bg="#8c4d19",
+            fg="white",
+            font=self.fonts["action_title"],
             anchor="w",
             justify="left",
         )
-        title.grid(row=0, column=0, sticky="ew")
+        title.pack(anchor="w")
+        sub = tk.Label(
+            header,
+            text="This is the route you are building now.",
+            bg="#8c4d19",
+            fg="#fff1df",
+            font=self.fonts["small"],
+            anchor="w",
+            justify="left",
+        )
+        sub.pack(anchor="w", pady=(3, 0))
 
         summary = tk.Label(
             self.plan_card,
@@ -468,7 +480,7 @@ class OniChaseLocalClient:
             anchor="w",
             justify="left",
         )
-        summary.grid(row=1, column=0, sticky="ew", pady=(4, 10))
+        summary.grid(row=1, column=0, sticky="ew", pady=(0, 10))
 
         steps = self.players[self.active_mode]["steps"]
         if not steps:
@@ -606,10 +618,10 @@ class OniChaseLocalClient:
             if pane_height <= 0:
                 return
             if emphasize_actions:
-                info_height = 170
+                info_height = 240
                 result_top = max(info_height + 260, pane_height - 190)
             else:
-                info_height = 250
+                info_height = 300
                 result_top = max(info_height + 180, pane_height - 190)
             self.right_pane.sash_place(0, 0, info_height)
             self.right_pane.sash_place(1, 0, result_top)
