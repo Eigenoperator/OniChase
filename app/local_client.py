@@ -116,6 +116,7 @@ class OniChaseLocalClient:
         self.latest_result: dict[str, Any] | None = None
         self.selected_result_event_index: int = 0
         self.last_action_card_signature: tuple[Any, ...] | None = None
+        self.pending_right_scroll_target: float | None = None
 
         self.build_ui()
         self.reset_match_flow(auto_start=True)
@@ -722,6 +723,7 @@ class OniChaseLocalClient:
 
     def choose_another_train(self) -> None:
         self.clear_pending_board_train()
+        self.pending_right_scroll_target = 0.0
         self.set_result_message(
             "ACTION",
             [
@@ -730,10 +732,10 @@ class OniChaseLocalClient:
             ],
         )
         self.render()
-        self.root.after_idle(lambda: self.right_canvas.yview_moveto(0.0))
 
     def set_pending_board_train(self, train_number: str) -> None:
         self.pending_board_train_numbers[self.active_mode] = train_number
+        self.pending_right_scroll_target = 1.0
         self.set_result_message(
             "ACTION",
             [
@@ -742,7 +744,31 @@ class OniChaseLocalClient:
             ],
         )
         self.render()
-        self.root.after_idle(lambda: self.right_canvas.yview_moveto(1.0))
+
+    def current_right_scroll_top(self) -> float:
+        if not hasattr(self, "right_canvas"):
+            return 0.0
+        try:
+            yview = self.right_canvas.yview()
+        except tk.TclError:
+            return 0.0
+        if not yview:
+            return 0.0
+        return float(yview[0])
+
+    def restore_right_scroll_position(self, previous_top: float) -> None:
+        def _apply() -> None:
+            target = self.pending_right_scroll_target
+            if target is not None:
+                self.pending_right_scroll_target = None
+            else:
+                target = previous_top
+            try:
+                self.right_canvas.yview_moveto(max(0.0, min(1.0, target)))
+            except tk.TclError:
+                return
+
+        self.root.after_idle(_apply)
 
     def truncate_future_steps_to_current(self) -> int:
         if self.phase == "PLANNING" and self.current_replay_event() is None:
@@ -1503,6 +1529,7 @@ class OniChaseLocalClient:
         return f"Train {state['train_number']}"
 
     def render(self) -> None:
+        previous_right_scroll_top = self.current_right_scroll_top()
         visible_minute = self.visible_game_minute()
         runner_preview = self.preview_player("runner", visible_minute)
         hunter_preview = self.preview_player("hunter", visible_minute)
@@ -1604,6 +1631,7 @@ class OniChaseLocalClient:
 
         self.render_action_card(cursor_preview)
         self.root.after_idle(lambda: self.apply_right_pane_layout(bool(pending_context) or cursor_preview["current_state"]["kind"] == "TRAIN"))
+        self.restore_right_scroll_position(previous_right_scroll_top)
         self.draw_map(runner_preview, hunter_preview, opponent_hidden)
 
     def render_selected_station_text(self, active_preview: dict[str, Any]) -> str:

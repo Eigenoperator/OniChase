@@ -95,3 +95,4 @@
 - Fixed a planning-state bug that caused chained plans to collapse back down to a single visible leg: in `PLANNING`, appending a new train segment no longer trims away the earlier unexecuted plan history, so multiple planned cars now remain on the board together.
 - Removed the native client's `MATCH TABLE` and `IMMEDIATE OPTIONS` panels entirely to simplify the right side and leave more room for the plan board, action workflow, and replay surfaces.
 - Changed the plan board from a scroll-body card into a fixed top-right region so long Step 1 / Step 2 content below can no longer cover or push the plan board out of sight.
+- Fixed the right-side planning scroll behavior after Scorp reported that manually scrolling down through `Choose Your Train` would jump back up on its own: the client now preserves the right-panel scroll position across ordinary renders and only auto-jumps when intentionally switching focus between Step 1 and Step 2.
