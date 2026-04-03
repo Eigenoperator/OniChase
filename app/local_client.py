@@ -1655,11 +1655,22 @@ class OniChaseLocalClient:
             and preview["current_state"]["kind"] == "TRAIN"
         )
 
+    def abstract_runner_position_text(self, preview: dict[str, Any]) -> str:
+        train_loc = self.train_location_on_map(preview["current_state"]["train_number"], preview["current_minute"])
+        if train_loc and train_loc["status"] == "IN_TRANSIT":
+            from_name = self.station_map[train_loc["from_station_id"]]["names"]["en"]
+            to_name = self.station_map[train_loc["to_station_id"]]["names"]["en"]
+            return f"Between {from_name} and {to_name}"
+        anchor_station_id = preview.get("map_station_id")
+        if anchor_station_id:
+            return self.station_map[anchor_station_id]["names"]["en"]
+        return "In transit"
+
     def display_state_text(self, player_id: str, preview: dict[str, Any], replay_mode: bool) -> str:
         if self.should_hide_player(player_id, replay_mode):
             return "Hidden during live play"
         if self.should_abstract_runner_for_hunter(player_id, preview, replay_mode):
-            return "On the Yamanote Line"
+            return self.abstract_runner_position_text(preview)
         return self.format_state(preview)
 
     def format_state(self, preview: dict[str, Any]) -> str:

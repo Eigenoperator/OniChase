@@ -995,9 +995,18 @@
       );
     }
 
+    function abstractRunnerPositionText(preview) {
+      const trainLoc = trainLocationOnMap(preview.currentState.train_number, preview.currentMinute);
+      if (trainLoc?.status === "IN_TRANSIT") {
+        return `Between ${stationLabel(trainLoc.fromStationId)} and ${stationLabel(trainLoc.toStationId)}`;
+      }
+      if (preview.mapStationId) return stationLabel(preview.mapStationId);
+      return "In transit";
+    }
+
     function displayStateText(playerId, preview, replayMode = false) {
       if (shouldHidePlayer(playerId, replayMode)) return "Hidden during live play";
-      if (shouldAbstractRunnerForHunter(playerId, preview, replayMode)) return "On the Yamanote Line";
+      if (shouldAbstractRunnerForHunter(playerId, preview, replayMode)) return abstractRunnerPositionText(preview);
       return formatState(preview);
     }
 

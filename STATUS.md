@@ -31,7 +31,7 @@
 - 已把 `PLAN BOARD` 从右侧滚动内容中分离成固定区域，修正右侧动作区刷新后会把手动滚动位置弹回顶部的问题，并减少右侧 `PLAN BOARD` 与 `STEP 1 / STEP 2` 因整块重复重建导致的闪烁；玩家在车上时现在也会沿站间线路连续显示，不再只贴起终点站；同时已新增与本地客户端对齐的 `web_client` 和 GitHub Pages 发布链，并把“本地端与线上端保持同一主玩法流”正式写入 axioms；当前又补强了 Pages workflow 的 `configure-pages` 步骤并重新触发部署。
 - 已按新一天规则检查并回补缺失的 `DIARY-2026-04-02.md`，内容聚焦在当天的 hunter mode 测试与双端试玩工具推进。
 - 已把 hunter mode 的第一版可见性规则落实到本地端与网页端：hunter 在 `PLANNING` 中看到 runner 处于站点或抽象地“在线路上”，在 `LIVE` 中看不到 runner；同时不再向 hunter 泄露 runner 的整条 plan trace，并新增两组“runner 固定不动”的 hunter 专用测试场景。
-
+- 已继续收紧 hunter 视角表达：不再直接写“在线路上”，而是只给出地图上的粗位置和 `Between A and B` 这类站间提示，让 hunter 自己从空间关系推断 runner 所在线路。
 ## In Progress
 - 正在把本地客户端与新网页端一起推进到“更像正式玩法工作台”的阶段，重点是 hunter mode 的第一轮实测、时间流、地图联动、输入闭环，以及在线试玩稳定性。
 
@@ -45,6 +45,6 @@
 - [2026-04-03] 第一轮 hunter mode 测试使用“runner 不移动、主动试玩 hunter”的方式先隔离验证 hunter 侧的信息展示与操作闭环。
 
 ## Next
-1. 开始实际试玩 hunter mode，重点检查“站点可见 / 在线路上 / live 全隐藏”这套信息闭环是否好懂。
+1. 开始实际试玩 hunter mode，重点检查“站点可见 / 站间粗位置 / live 全隐藏”这套信息闭环是否好懂。
 2. 根据 hunter 实测结果继续调整客户端里的 hunter 信息提示和地图表达。
 3. 继续把 `web_client` 往当前本地客户端能力靠近，比如补更完整的结果回放与事件步进。

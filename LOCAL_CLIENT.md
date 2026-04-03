@@ -68,7 +68,7 @@ The first local client prototype already provides:
 - the plan board is now a fixed top-right region instead of part of the scrollable right-side body, so choosing trains and stations below no longer pushes it out of view
 - hunter-mode visibility is now implemented in the client:
   - while the hunter is active during `PLANNING`, a runner at station is shown exactly
-  - if the runner is currently riding, the hunter only sees the abstract state `On the Yamanote Line`
+  - if the runner is currently riding, the hunter only gets a rough between-stations map cue and matching abstract location text such as `Between Tokyo and Ueno`
   - during `LIVE`, the hunter no longer sees the runner on the map or in the HUD
   - the hunter also no longer sees the runner's route trace on the map
 
