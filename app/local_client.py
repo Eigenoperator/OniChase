@@ -375,8 +375,9 @@ class OniChaseLocalClient:
         self.info_stack.columnconfigure(0, weight=1)
         self.duel_label = self.make_card(self.info_stack, self.duel_var, width=48)
         self.duel_label.grid(row=0, column=0, sticky="ew", pady=(0, 10))
-        self.plan_label = self.make_card(self.info_stack, self.plan_var, width=48)
-        self.plan_label.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+        self.plan_card = tk.Frame(self.info_stack, bg=PANEL, highlightbackground=LINE, highlightthickness=1, padx=12, pady=12)
+        self.plan_card.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+        self.plan_card.columnconfigure(0, weight=1)
         self.options_label = self.make_card(self.info_stack, self.options_var, width=48)
         self.options_label.grid(row=2, column=0, sticky="ew")
 
@@ -438,6 +439,129 @@ class OniChaseLocalClient:
             highlightbackground=LINE,
             highlightthickness=1,
         )
+
+    def render_plan_board(self, cursor_preview: dict[str, Any], resolved_count: int) -> None:
+        for child in self.plan_card.winfo_children():
+            child.destroy()
+
+        title = tk.Label(
+            self.plan_card,
+            text=f"{self.active_mode.upper()} PLAN BOARD",
+            bg=PANEL,
+            fg=INK,
+            font=self.fonts["body_bold"],
+            anchor="w",
+            justify="left",
+        )
+        title.grid(row=0, column=0, sticky="ew")
+
+        summary = tk.Label(
+            self.plan_card,
+            text=(
+                f"Cursor: {self.format_state(cursor_preview)}\n"
+                f"Planned legs: {len(self.players[self.active_mode]['steps'])}\n"
+                f"Resolved now: {resolved_count}"
+            ),
+            bg=PANEL,
+            fg=MUTED,
+            font=self.fonts["small"],
+            anchor="w",
+            justify="left",
+        )
+        summary.grid(row=1, column=0, sticky="ew", pady=(4, 10))
+
+        steps = self.players[self.active_mode]["steps"]
+        if not steps:
+            empty = tk.Label(
+                self.plan_card,
+                text="No plan yet. Start by choosing the first train.",
+                bg=PANEL,
+                fg=INK,
+                font=self.fonts["body"],
+                anchor="w",
+                justify="left",
+            )
+            empty.grid(row=2, column=0, sticky="ew")
+            return
+
+        chain_station = self.players[self.active_mode]["start_station_id"]
+        pending_train_number = None
+        row = 2
+        leg_index = 1
+        for step_index, step in enumerate(steps, start=1):
+            is_done = step_index <= resolved_count
+            if step["type"] == "WAIT_UNTIL":
+                card = tk.Frame(self.plan_card, bg="#f3ede2", highlightbackground=LINE, highlightthickness=1, padx=10, pady=8)
+                card.grid(row=row, column=0, sticky="ew", pady=(0, 6))
+                label = tk.Label(
+                    card,
+                    text=f"WAIT  until {step['until_hhmm']}",
+                    bg="#f3ede2",
+                    fg=INK,
+                    font=self.fonts["body_bold"],
+                    anchor="w",
+                    justify="left",
+                )
+                label.pack(anchor="w")
+                meta = tk.Label(
+                    card,
+                    text=f"Status: {'DONE' if is_done else 'NEXT'}",
+                    bg="#f3ede2",
+                    fg=MUTED,
+                    font=self.fonts["small"],
+                    anchor="w",
+                    justify="left",
+                )
+                meta.pack(anchor="w", pady=(4, 0))
+                row += 1
+                continue
+
+            if step["type"] == "BOARD_TRAIN":
+                pending_train_number = step["train_number"]
+                continue
+
+            if step["type"] == "RIDE_TO_STATION":
+                accent = "#e5f2dc" if not is_done else "#d7e4f8"
+                card = tk.Frame(self.plan_card, bg=accent, highlightbackground=LINE, highlightthickness=1, padx=10, pady=8)
+                card.grid(row=row, column=0, sticky="ew", pady=(0, 6))
+                top = tk.Label(
+                    card,
+                    text=f"LEG {leg_index}  {'DONE' if is_done else 'NEXT'}",
+                    bg=accent,
+                    fg=INK,
+                    font=self.fonts["small_bold"],
+                    anchor="w",
+                    justify="left",
+                )
+                top.pack(anchor="w")
+                main = tk.Label(
+                    card,
+                    text=f"{self.station_map[chain_station]['names']['en']}  ->  {pending_train_number or '?'}  ->  {self.station_map[step['station_id']]['names']['en']}",
+                    bg=accent,
+                    fg=INK,
+                    font=self.fonts["body_bold"],
+                    anchor="w",
+                    justify="left",
+                    wraplength=330,
+                )
+                main.pack(anchor="w", pady=(4, 0))
+                row += 1
+                chain_station = step["station_id"]
+                pending_train_number = None
+                leg_index += 1
+                continue
+
+            fallback = tk.Label(
+                self.plan_card,
+                text=f"{step_index}. {step['type']}",
+                bg=PANEL,
+                fg=INK,
+                font=self.fonts["body"],
+                anchor="w",
+                justify="left",
+            )
+            fallback.grid(row=row, column=0, sticky="ew", pady=(0, 6))
+            row += 1
 
     def on_right_frame_configure(self, _event: tk.Event) -> None:
         self.right_canvas.configure(scrollregion=self.right_canvas.bbox("all"))
@@ -1473,13 +1597,8 @@ class OniChaseLocalClient:
             plan_text = "\n".join(rendered_steps)
         else:
             plan_text = "No plan yet. This first local client is only a shell; editing tools come next."
-        self.plan_var.set(
-            f"{self.active_mode.upper()} PLAN\n\n"
-            f"Game time now: {minutes_to_hhmm(display_minute)}\n"
-            f"Plan cursor: {self.format_state(cursor_preview)}\n"
-            f"Resolved: {resolved_count} / {len(active_steps)}\n\n"
-            f"{plan_text}"
-        )
+        self.plan_var.set(plan_text)
+        self.render_plan_board(cursor_preview, resolved_count)
 
         options = self.available_options(cursor_preview)
         selected_station_text = self.render_selected_station_text(cursor_preview)

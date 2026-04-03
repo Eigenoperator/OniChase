@@ -63,6 +63,7 @@ The first local client prototype already provides:
   - once a train is chosen, Step 1 collapses into a compact selected-train summary and the right pane automatically gives more height to the action area, so Step 2 has more room
 - the match clock is now much more prominent, especially during `PLANNING`
 - the upper-right plan board now also shows the current plan cursor location, so the player can tell where the next planned leg will start
+- the upper-right plan board is now rendered as route cards rather than a plain text block, so chained train plans read more like a real transfer board
 
 ## Launch
 
