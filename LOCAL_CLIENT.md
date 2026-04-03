@@ -51,6 +51,7 @@ The first local client prototype already provides:
 - `Load Test Preset` now respects the currently selected side:
   - `Runner Mode` loads the original `06:00 -> 07:00` playtest window
   - `Hunter Mode` now loads a dedicated `07:00 -> 08:00` window so hunter tests are not cut off at `07:00`
+  - in `Hunter Mode`, the runner becomes the passive waiting side and the hunter starts with an empty plan, so the hunter plan board is no longer filled by a fixed `WAIT_UNTIL 08:00`
 - the current plan panel now marks `DONE` versus `NEXT` steps so the time flow is easier to read during playtests
 - the replay panel is now map-linked:
   - selecting an event in the result list updates the map to that event's `state_after`

@@ -580,11 +580,12 @@
       return null;
     }
 
-    function syncPassiveHunterStep() {
-      const hunter = state.players.hunter;
-      if (!hunter.passiveHold) return;
-      hunter.inputMode = "actions";
-      hunter.steps = [{ type: "WAIT_UNTIL", until_hhmm: state.endTime }];
+    function syncPassiveHold() {
+      const passiveId = state.activeMode === "runner" ? "hunter" : "runner";
+      const passive = state.players[passiveId];
+      if (!passive?.passiveHold) return;
+      passive.inputMode = "actions";
+      passive.steps = [{ type: "WAIT_UNTIL", until_hhmm: state.endTime }];
     }
 
     function resetMatchFlow(autoStart = true) {
@@ -633,13 +634,15 @@
       if (targetMode === "hunter") {
         state.startTime = HUNTER_START_TIME_DEFAULT;
         state.endTime = HUNTER_END_TIME_DEFAULT;
+        state.players.runner = { startStationId: "TOKYO", inputMode: "actions", passiveHold: true, steps: [{ type: "WAIT_UNTIL", until_hhmm: state.endTime }] };
+        state.players.hunter = { startStationId: "SHINJUKU", inputMode: "actions", steps: [] };
       } else {
         state.startTime = "06:00";
         state.endTime = RUNNER_END_TIME_DEFAULT;
+        state.players.runner = { startStationId: "TOKYO", inputMode: "plan", steps: [] };
+        state.players.hunter = { startStationId: "SHINJUKU", inputMode: "actions", passiveHold: true, steps: [{ type: "WAIT_UNTIL", until_hhmm: state.endTime }] };
       }
       state.pendingBoardTrainNumbers = { runner: null, hunter: null };
-      state.players.runner = { startStationId: "TOKYO", inputMode: "plan", steps: [] };
-      state.players.hunter = { startStationId: "SHINJUKU", inputMode: "actions", passiveHold: true, steps: [{ type: "WAIT_UNTIL", until_hhmm: state.endTime }] };
       state.selectedStationId = state.players[state.activeMode].startStationId;
       resetMatchFlow(true);
       renderAll();
@@ -1519,7 +1522,7 @@
     }
 
     function renderAll() {
-      syncPassiveHunterStep();
+      syncPassiveHold();
       renderClock();
       renderHud();
       renderPlanBoard();

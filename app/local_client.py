@@ -725,17 +725,30 @@ class OniChaseLocalClient:
             self.start_time = "06:00"
             self.end_time = "07:00"
         self.pending_board_train_numbers = {"runner": None, "hunter": None}
-        self.players["runner"] = {
-            "start_station_id": "TOKYO",
-            "input_mode": "plan",
-            "steps": [],
-        }
-        self.players["hunter"] = {
-            "start_station_id": "SHINJUKU",
-            "input_mode": "actions",
-            "passive_hold": True,
-            "steps": [{"type": "WAIT_UNTIL", "until_hhmm": self.end_time}],
-        }
+        if target_mode == "hunter":
+            self.players["runner"] = {
+                "start_station_id": "TOKYO",
+                "input_mode": "actions",
+                "passive_hold": True,
+                "steps": [{"type": "WAIT_UNTIL", "until_hhmm": self.end_time}],
+            }
+            self.players["hunter"] = {
+                "start_station_id": "SHINJUKU",
+                "input_mode": "actions",
+                "steps": [],
+            }
+        else:
+            self.players["runner"] = {
+                "start_station_id": "TOKYO",
+                "input_mode": "plan",
+                "steps": [],
+            }
+            self.players["hunter"] = {
+                "start_station_id": "SHINJUKU",
+                "input_mode": "actions",
+                "passive_hold": True,
+                "steps": [{"type": "WAIT_UNTIL", "until_hhmm": self.end_time}],
+            }
         self.selected_station_id = self.players[self.active_mode]["start_station_id"]
         self.reset_match_flow(auto_start=True)
         self.render()
