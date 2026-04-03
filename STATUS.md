@@ -30,21 +30,21 @@
 - 已删除 `MATCH TABLE` 和 `IMMEDIATE OPTIONS` 两块 UI，让右侧更聚焦于 `PLAN BOARD`、动作区和回放区。
 - 已把 `PLAN BOARD` 从右侧滚动内容中分离成固定区域，修正右侧动作区刷新后会把手动滚动位置弹回顶部的问题，并减少右侧 `PLAN BOARD` 与 `STEP 1 / STEP 2` 因整块重复重建导致的闪烁；玩家在车上时现在也会沿站间线路连续显示，不再只贴起终点站；同时已新增与本地客户端对齐的 `web_client` 和 GitHub Pages 发布链，并把“本地端与线上端保持同一主玩法流”正式写入 axioms；当前又补强了 Pages workflow 的 `configure-pages` 步骤并重新触发部署。
 - 已按新一天规则检查并回补缺失的 `DIARY-2026-04-02.md`，内容聚焦在当天的 hunter mode 测试与双端试玩工具推进。
+- 已把 hunter mode 的第一版可见性规则落实到本地端与网页端：hunter 在 `PLANNING` 中看到 runner 处于站点或抽象地“在线路上”，在 `LIVE` 中看不到 runner；同时不再向 hunter 泄露 runner 的整条 plan trace，并新增两组“runner 固定不动”的 hunter 专用测试场景。
 
 ## In Progress
-- 正在把本地客户端与新网页端一起推进到“更像正式玩法工作台”的阶段，重点是时间流、地图联动、输入闭环、在线试玩稳定性，以及第一轮 hunter mode 测试准备。
+- 正在把本地客户端与新网页端一起推进到“更像正式玩法工作台”的阶段，重点是 hunter mode 的第一轮实测、时间流、地图联动、输入闭环，以及在线试玩稳定性。
 
 ## Blockers
-
 ## Decisions
 - [2026-03-30] 主测试主线使用“真实山手线 + 真实站点 + 真实时刻表”。
 - [2026-03-30] 规则只能新建版本，不能直接改旧规则文件。
-- [2026-03-30] 每次有实质项目变更后，默认都要 commit 并 push 到 GitHub。
+- [2026-04-03] 不再为每个小改动都 commit / push；只在显著变化时同步，但有实质工作的一天仍需至少同步一次。
 - [2026-03-30] 当前本地 plan 测试默认使用 `06:00` 开局、Runner 赛外 1 分钟预规划、Hunter 默认原地等待。
 - [2026-04-02] 当前阶段不因优化焦虑提前换语言；优先保证 `data schema / rules / simulation I/O / frontend-engine JSON boundary` 独立。
 - [2026-04-03] 第一轮 hunter mode 测试使用“runner 不移动、主动试玩 hunter”的方式先隔离验证 hunter 侧的信息展示与操作闭环。
 
 ## Next
-1. 先把 hunter 在 `PLANNING` / `LIVE` 两阶段能看到什么落实到客户端展示。
-2. 为“runner 不移动、主动试玩 hunter”准备第一组专用测试场景。
+1. 开始实际试玩 hunter mode，重点检查“站点可见 / 在线路上 / live 全隐藏”这套信息闭环是否好懂。
+2. 根据 hunter 实测结果继续调整客户端里的 hunter 信息提示和地图表达。
 3. 继续把 `web_client` 往当前本地客户端能力靠近，比如补更完整的结果回放与事件步进。

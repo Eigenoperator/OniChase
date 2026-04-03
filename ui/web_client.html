@@ -979,6 +979,28 @@
       return `Train ${preview.currentState.train_number}`;
     }
 
+    function shouldHidePlayer(playerId, replayMode = false) {
+      if (replayMode) return false;
+      if (playerId === state.activeMode) return false;
+      return state.phase === "LIVE";
+    }
+
+    function shouldAbstractRunnerForHunter(playerId, preview, replayMode = false) {
+      return (
+        !replayMode &&
+        state.activeMode === "hunter" &&
+        playerId === "runner" &&
+        state.phase === "PLANNING" &&
+        preview?.currentState?.kind === "TRAIN"
+      );
+    }
+
+    function displayStateText(playerId, preview, replayMode = false) {
+      if (shouldHidePlayer(playerId, replayMode)) return "Hidden during live play";
+      if (shouldAbstractRunnerForHunter(playerId, preview, replayMode)) return "On the Yamanote Line";
+      return formatState(preview);
+    }
+
     function addWaitStep() {
       const preview = planCursorPreview();
       if (preview.error || preview.currentState.kind !== "NODE") return;
@@ -1072,7 +1094,7 @@
     function renderHud() {
       const active = planCursorPreview(state.activeMode);
       const passive = planCursorPreview(state.activeMode === "runner" ? "hunter" : "runner");
-      const passiveVisible = state.phase === "PLANNING";
+      const passivePlayerId = state.activeMode === "runner" ? "hunter" : "runner";
       state.ui.hudCard.innerHTML = `
         <div class="section-head">
           <div>
@@ -1084,10 +1106,10 @@
         <div class="row-grid">
           <div class="key">Phase</div><div>${state.phase}</div>
           <div class="key">Current Time</div><div>${state.phase === "PLANNING" ? state.startTime : minutesToHhmm(state.currentGameMinute)}</div>
-          <div class="key">Location</div><div>${formatState(active)}</div>
+          <div class="key">Location</div><div>${displayStateText(state.activeMode, active)}</div>
           <div class="key">Resolved Steps</div><div>${active.resolvedSteps.length}</div>
           <div class="key">Status</div><div>${active.error || "Ready"}</div>
-          <div class="key">Opponent</div><div>${passiveVisible ? formatState(passive) : "Hidden during live play"}</div>
+          <div class="key">Opponent</div><div>${displayStateText(passivePlayerId, passive)}</div>
         </div>
       `;
       state.ui.selectedCard.innerHTML = `
@@ -1115,7 +1137,7 @@
           <p>This is the route you are building now.</p>
         </div>
         <div class="plan-summary">
-          Cursor: ${formatState(preview)}<br />
+          Cursor: ${displayStateText(state.activeMode, preview)}<br />
           Planned legs: ${steps.length}<br />
           Resolved now: ${resolvedCount}
         </div>
@@ -1294,11 +1316,12 @@
       const opponent = planCursorPreview(state.activeMode === "runner" ? "hunter" : "runner");
       const route = plannedStationIds(active).map((stationId) => stationLabel(stationId)).join(" -> ");
       const nextDecision = state.players[state.activeMode].steps[0] ? describeStep(state.players[state.activeMode].steps[0]) : "No step yet.";
+      const opponentId = state.activeMode === "runner" ? "hunter" : "runner";
       state.ui.quickbar.innerHTML = `
         <div class="quick-grid">
           <div class="quick-stat"><div class="label">Active Side</div><div class="value">${state.activeMode}</div></div>
-          <div class="quick-stat"><div class="label">Current Position</div><div class="value">${formatState(active)}</div></div>
-          <div class="quick-stat"><div class="label">Opponent</div><div class="value">${state.phase === "PLANNING" ? formatState(opponent) : "Hidden during live"}</div></div>
+          <div class="quick-stat"><div class="label">Current Position</div><div class="value">${displayStateText(state.activeMode, active)}</div></div>
+          <div class="quick-stat"><div class="label">Opponent</div><div class="value">${displayStateText(opponentId, opponent)}</div></div>
           <div class="quick-stat"><div class="label">Next Thing</div><div class="value">${nextDecision}</div></div>
         </div>
         <div class="quick-stat">
@@ -1311,7 +1334,10 @@
     function renderMap() {
       const runner = planCursorPreview("runner");
       const hunter = planCursorPreview("hunter");
-      const opponentHidden = state.phase === "LIVE" && state.activeMode === "runner";
+      const replayMode = false;
+      const runnerHidden = shouldHidePlayer("runner", replayMode);
+      const hunterHidden = shouldHidePlayer("hunter", replayMode);
+      const hideRunnerTrace = runnerHidden || shouldAbstractRunnerForHunter("runner", runner, replayMode);
       const coords = state.stations.map((station) => state.mapCoords.get(station.id));
       const loopPoints = coords.map((coord) => `${coord.x},${coord.y}`).join(" ");
       const stationNodes = state.stations.map((station) => {
@@ -1326,10 +1352,13 @@
         `;
       }).join("");
 
-      const traces = [renderTrace("runner", runner, false), renderTrace("hunter", hunter, true)].join("");
+      const traces = [
+        hideRunnerTrace ? "" : renderTrace("runner", runner, false),
+        hunterHidden ? "" : renderTrace("hunter", hunter, true)
+      ].join("");
       const markers = [
-        renderPlayerMarker("runner", runner, true, state.phase === "LIVE" && state.activeMode === "runner", "right"),
-        renderPlayerMarker("hunter", hunter, !opponentHidden || state.activeMode === "hunter", state.phase === "LIVE" && state.activeMode === "hunter", "left")
+        renderPlayerMarker("runner", runner, !runnerHidden, state.phase === "LIVE" && state.activeMode === "runner", "right", replayMode),
+        renderPlayerMarker("hunter", hunter, !hunterHidden, state.phase === "LIVE" && state.activeMode === "hunter", "left", replayMode)
       ].join("");
       const pending = pendingDepartureContext(planCursorPreview(state.activeMode));
       const highlighted = renderPendingRoute(pending);
@@ -1397,7 +1426,7 @@
       return `<g><polyline points="${points}" fill="none" stroke="var(--gold)" stroke-width="10" stroke-dasharray="14 8"></polyline>${nodes}</g>`;
     }
 
-    function renderPlayerMarker(playerId, preview, visible, emphasized, side) {
+    function renderPlayerMarker(playerId, preview, visible, emphasized, side, replayMode = false) {
       if (!visible || !preview.mapPosition) return "";
       const color = playerId === "runner" ? "var(--runner)" : "var(--hunter)";
       const x = preview.mapPosition.x;
@@ -1408,10 +1437,10 @@
       const boxHeight = emphasized ? 46 : 40;
       const boxX = side === "right" ? x + 34 : x - 34 - boxWidth;
       const boxY = y - boxHeight / 2;
-      let sub = stationLabel(preview.mapStationId || preview.currentState.station_id);
-      if (preview.currentState.kind === "TRAIN" && preview.trainLoc?.status === "IN_TRANSIT") {
+      let sub = displayStateText(playerId, preview, replayMode);
+      if (preview.currentState.kind === "TRAIN" && !shouldAbstractRunnerForHunter(playerId, preview, replayMode) && preview.trainLoc?.status === "IN_TRANSIT") {
         sub = `${preview.currentState.train_number}  ${stationLabel(preview.trainLoc.fromStationId)} -> ${stationLabel(preview.trainLoc.toStationId)}`;
-      } else if (preview.currentState.kind === "TRAIN") {
+      } else if (preview.currentState.kind === "TRAIN" && !shouldAbstractRunnerForHunter(playerId, preview, replayMode)) {
         sub = `${preview.currentState.train_number}  at ${stationLabel(preview.mapStationId)}`;
       }
       return `

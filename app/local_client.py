@@ -1639,6 +1639,29 @@ class OniChaseLocalClient:
                 break
         return future_stops
 
+    def should_hide_player(self, player_id: str, replay_mode: bool) -> bool:
+        if replay_mode:
+            return False
+        if player_id == self.active_mode:
+            return False
+        return self.phase == "LIVE"
+
+    def should_abstract_runner_for_hunter(self, player_id: str, preview: dict[str, Any], replay_mode: bool) -> bool:
+        return (
+            not replay_mode
+            and self.active_mode == "hunter"
+            and player_id == "runner"
+            and self.phase == "PLANNING"
+            and preview["current_state"]["kind"] == "TRAIN"
+        )
+
+    def display_state_text(self, player_id: str, preview: dict[str, Any], replay_mode: bool) -> str:
+        if self.should_hide_player(player_id, replay_mode):
+            return "Hidden during live play"
+        if self.should_abstract_runner_for_hunter(player_id, preview, replay_mode):
+            return "On the Yamanote Line"
+        return self.format_state(preview)
+
     def format_state(self, preview: dict[str, Any]) -> str:
         state = preview["current_state"]
         if state["kind"] == "NODE":
@@ -1661,7 +1684,7 @@ class OniChaseLocalClient:
         previews = {"runner": runner_preview, "hunter": hunter_preview}
         active_preview = previews[self.active_mode]
         passive_preview = previews["hunter" if self.active_mode == "runner" else "runner"]
-        opponent_hidden = self.phase == "LIVE" and not replay_mode
+        opponent_hidden = self.should_hide_player("hunter" if self.active_mode == "runner" else "runner", replay_mode)
         display_minute = replay_event["time_minute"] if replay_mode else visible_minute
 
         if self.phase == "PLANNING":
@@ -1690,7 +1713,7 @@ class OniChaseLocalClient:
             f"{self.active_mode.upper()} HUD\n\n"
             f"Phase: {self.phase}\n"
             f"Time: {minutes_to_hhmm(display_minute)}\n"
-            f"Location: {self.format_state(active_preview)}\n"
+            f"Location: {self.display_state_text(self.active_mode, active_preview, replay_mode)}\n"
             f"Mode: {self.players[self.active_mode]['input_mode']}\n"
             f"Resolved steps: {len(active_preview['resolved_steps'])}\n"
             f"Status: {('Replay focus: ' + replay_event['type']) if replay_mode else (active_preview['error'] or 'Ready')}"
@@ -1720,7 +1743,7 @@ class OniChaseLocalClient:
         )
         self.quick_var.set(
             (
-                f"ACTIVE SIDE: {self.active_mode.upper()}   |   CURRENT: {self.format_state(active_preview)}   |   OPPONENT: {self.format_state(passive_preview) if not opponent_hidden else 'Hidden'}\n"
+                f"ACTIVE SIDE: {self.active_mode.upper()}   |   CURRENT: {self.display_state_text(self.active_mode, active_preview, replay_mode)}   |   OPPONENT: {self.display_state_text('hunter' if self.active_mode == 'runner' else 'runner', passive_preview, replay_mode)}\n"
                 + (f"REPLAY FOCUS: {replay_event['time_hhmm']} {replay_event['type']}\n" if replay_mode else "")
                 + f"ROUTE PREVIEW: {' -> '.join(self.station_map[s]['names']['en'] for s in self.planned_station_ids(active_preview)) or 'No route yet'}\n"
                 + "MAP: drag to move, wheel to zoom, click a station; on-train clicks can directly set where to get off"
@@ -1752,7 +1775,7 @@ class OniChaseLocalClient:
         self.render_action_card(cursor_preview)
         self.root.after_idle(lambda: self.apply_right_pane_layout(bool(pending_context) or cursor_preview["current_state"]["kind"] == "TRAIN"))
         self.restore_right_scroll_position(previous_right_scroll_top)
-        self.draw_map(runner_preview, hunter_preview, opponent_hidden)
+        self.draw_map(runner_preview, hunter_preview, replay_mode)
 
     def render_selected_station_text(self, active_preview: dict[str, Any]) -> str:
         if not self.selected_station_id:
@@ -2198,7 +2221,7 @@ class OniChaseLocalClient:
         train_number = preview["current_state"]["train_number"]
         return f"You are currently on train {train_number}. Choose a downstream station below, or click a reachable station on the map to get off there."
 
-    def draw_map(self, runner_preview: dict[str, Any], hunter_preview: dict[str, Any], opponent_hidden: bool) -> None:
+    def draw_map(self, runner_preview: dict[str, Any], hunter_preview: dict[str, Any], replay_mode: bool) -> None:
         self.canvas.delete("all")
         self.canvas.create_text(46, 36, text="JR Yamanote Line", anchor="w", fill=INK, font=self.fonts["map_title"], tags=("board",))
         self.canvas.create_text(46, 64, text="Drag with left mouse button to move the map", anchor="w", fill=MUTED, font=self.fonts["map_subtitle"], tags=("board",))
@@ -2210,8 +2233,10 @@ class OniChaseLocalClient:
         self.canvas.create_line(*loop_points, width=34, fill="#d9ebc6", smooth=True, tags=("board",))
         self.canvas.create_line(*loop_points, width=14, fill=YAMANOTE_COLOR, smooth=True, tags=("board",))
 
+        passive_player_id = "hunter" if self.active_mode == "runner" else "runner"
         self.draw_plan_trace(self.preview_player(self.active_mode), self.active_mode, faded=False)
-        self.draw_plan_trace(self.preview_player("hunter" if self.active_mode == "runner" else "runner"), "hunter" if self.active_mode == "runner" else "runner", faded=True)
+        if not self.should_hide_player(passive_player_id, replay_mode) and not self.should_abstract_runner_for_hunter(passive_player_id, hunter_preview if passive_player_id == "hunter" else runner_preview, replay_mode):
+            self.draw_plan_trace(self.preview_player(passive_player_id), passive_player_id, faded=True)
         self.draw_pending_train_route(self.plan_cursor_preview())
 
         replay_event = self.current_replay_event()
@@ -2265,23 +2290,26 @@ class OniChaseLocalClient:
                 station_id=runner_station,
                 player_id="runner",
                 preview=runner_preview,
-                visible=True,
+                visible=not self.should_hide_player("runner", replay_mode),
                 emphasized=(self.phase == "LIVE" and self.active_mode == "runner"),
                 side="right",
+                replay_mode=replay_mode,
             )
         if hunter_station:
             self.draw_player_marker(
                 station_id=hunter_station,
                 player_id="hunter",
                 preview=hunter_preview,
-                visible=(not opponent_hidden or self.active_mode == "hunter"),
+                visible=not self.should_hide_player("hunter", replay_mode),
                 emphasized=(self.phase == "LIVE" and self.active_mode == "hunter"),
                 side="left",
+                replay_mode=replay_mode,
             )
 
-        self.canvas.create_text(812, 720, text="Runner", fill=INK, font=self.fonts["body_bold"], anchor="w", tags=("board",))
-        self.canvas.create_oval(778, 710, 796, 728, fill=RUNNER_COLOR, outline="white", width=3, tags=("board",))
-        if not opponent_hidden or self.active_mode == "hunter":
+        if not self.should_hide_player("runner", replay_mode):
+            self.canvas.create_text(812, 720, text="Runner", fill=INK, font=self.fonts["body_bold"], anchor="w", tags=("board",))
+            self.canvas.create_oval(778, 710, 796, 728, fill=RUNNER_COLOR, outline="white", width=3, tags=("board",))
+        if not self.should_hide_player("hunter", replay_mode):
             self.canvas.create_text(812, 748, text="Hunter", fill=INK, font=self.fonts["body_bold"], anchor="w", tags=("board",))
             self.canvas.create_oval(778, 738, 796, 756, fill=HUNTER_COLOR, outline="white", width=3, tags=("board",))
         self.canvas.scale("board", 0, 0, self.map_scale, self.map_scale)
@@ -2295,6 +2323,7 @@ class OniChaseLocalClient:
         visible: bool,
         emphasized: bool,
         side: str,
+        replay_mode: bool,
     ) -> None:
         if not visible:
             return
@@ -2359,8 +2388,8 @@ class OniChaseLocalClient:
             font=self.fonts["small_bold"],
             tags=("board",),
         )
-        secondary = station_name
-        if preview["current_state"]["kind"] == "TRAIN":
+        secondary = self.display_state_text(player_id, preview, replay_mode)
+        if preview["current_state"]["kind"] == "TRAIN" and not self.should_abstract_runner_for_hunter(player_id, preview, replay_mode):
             train_loc = self.train_location_on_map(preview["current_state"]["train_number"], preview["current_minute"])
             if train_loc and train_loc["status"] == "IN_TRANSIT":
                 from_name = self.station_map[train_loc["from_station_id"]]["names"]["en"]
