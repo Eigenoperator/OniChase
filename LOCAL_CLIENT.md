@@ -47,6 +47,10 @@ The first local client prototype already provides:
   - after the match enters `LIVE`, the in-game clock advances and the opponent position is hidden
   - plan edits during `LIVE` automatically trim only the unresolved future steps, so the player can branch the rest of the route without rewriting already executed actions
 - the current plan panel now marks `DONE` versus `NEXT` steps so the time flow is easier to read during playtests
+- the replay panel is now map-linked:
+  - selecting an event in the result list updates the map to that event's `state_after`
+  - replay focus temporarily reveals both sides on the board, even if normal live mode would hide the opponent
+  - if a replay event leaves a player on a train, the client anchors that train near the closest scheduled station at that replay time
 
 ## Launch
 
