@@ -78,3 +78,9 @@
 - English working translations of rule documents in `rule/` must use the naming pattern `RULES_vX.Y-EN.md`.
 - When a new rule version is created, keep older rule versions unchanged and preserved side by side.
 - Every new rule version file must state the main change at the top, immediately below the title, before the detailed sections.
+
+## 12. Local And Online Playtest Parity
+
+- The local playtest client and the online browser playtest must stay aligned to the same primary gameplay flow.
+- Do not let the online version drift into a separate product or legacy prototype.
+- When a meaningful playtest-facing feature is added to one primary client, evaluate whether the other primary client should receive the same gameplay capability or an explicitly documented temporary gap.

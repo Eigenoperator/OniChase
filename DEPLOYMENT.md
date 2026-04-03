@@ -40,6 +40,12 @@ Expected public URL:
 https://eigenoperator.github.io/OniChase/
 ```
 
+If this URL does not open yet, check these one-time GitHub conditions:
+
+1. In repository `Settings -> Pages`, make sure the site is configured to deploy from `GitHub Actions`.
+2. In repository `Actions`, make sure the `Deploy Web Client` workflow has run successfully on `main`.
+3. After the first successful Pages deployment, wait a short time for propagation and then try the URL again.
+
 ## Current Supported Path
 
 The simplest supported setup is:
