@@ -54,7 +54,7 @@ The first local client prototype already provides:
 - planning is now more player-facing:
   - while at a station, the right panel becomes a two-step flow: first choose a train, then choose a destination
   - the chosen train is highlighted before commitment, instead of instantly appending a board step
-  - the destination strip is horizontally draggable for long routes
+  - the destination strip is horizontally draggable for long routes and now also has a visible horizontal scrollbar
   - the chosen service is also highlighted on the map so the planned route reads more like a railway UI than a raw form
   - after choosing a train, the right panel auto-scrolls toward the destination strip so the next step is easier to discover
 - the match clock is now much more prominent, especially during `PLANNING`

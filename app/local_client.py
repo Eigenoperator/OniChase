@@ -574,11 +574,11 @@ class OniChaseLocalClient:
             "ACTION",
             [
                 f"Selected train {train_number}.",
-                "Now choose where you want to get off.",
+                "Now choose where you want to get off in STEP 2 below.",
             ],
         )
         self.render()
-        self.root.after_idle(lambda: self.right_canvas.yview_moveto(0.45))
+        self.root.after_idle(lambda: self.right_canvas.yview_moveto(1.0))
 
     def truncate_future_steps_to_current(self) -> int:
         preview = self.active_preview()
@@ -1579,6 +1579,20 @@ class OniChaseLocalClient:
         self.bind_right_panel_hover(canvas)
 
     def render_destination_strip(self, row: int, destinations: list[dict[str, Any]], command_builder) -> int:
+        instruction = tk.Label(
+            self.action_card,
+            text="Choose a destination below. Click `Ride Here` on the station you want.",
+            bg=PANEL,
+            fg=INK,
+            font=self.fonts["body_bold"],
+            anchor="w",
+            justify="left",
+            wraplength=360,
+        )
+        instruction.grid(row=row, column=0, sticky="ew", pady=(2, 6))
+        self.bind_right_panel_hover(instruction)
+        row += 1
+
         hint = tk.Label(
             self.action_card,
             text="Drag left/right to browse the full route if it gets long.",
@@ -1592,13 +1606,20 @@ class OniChaseLocalClient:
         self.bind_right_panel_hover(hint)
         row += 1
 
-        strip_canvas = tk.Canvas(self.action_card, bg=PANEL, highlightbackground=LINE, highlightthickness=1, height=142)
-        strip_canvas.grid(row=row, column=0, sticky="ew", pady=(0, 8))
+        strip_holder = tk.Frame(self.action_card, bg=PANEL)
+        strip_holder.grid(row=row, column=0, sticky="ew", pady=(0, 8))
+        strip_holder.columnconfigure(0, weight=1)
+        strip_canvas = tk.Canvas(strip_holder, bg=PANEL, highlightbackground=LINE, highlightthickness=1, height=156)
+        strip_canvas.grid(row=0, column=0, sticky="ew")
         inner = tk.Frame(strip_canvas, bg=PANEL)
         window_id = strip_canvas.create_window((0, 0), window=inner, anchor="nw")
         inner.bind("<Configure>", lambda _event, c=strip_canvas: c.configure(scrollregion=c.bbox("all")))
-        strip_canvas.bind("<Configure>", lambda event, c=strip_canvas, w=window_id: c.itemconfigure(w, height=event.height))
+        strip_canvas.bind("<Configure>", lambda event, c=strip_canvas, w=window_id: c.itemconfigure(w, height=event.height - 16))
+        x_scrollbar = ttk.Scrollbar(strip_holder, orient="horizontal", command=strip_canvas.xview)
+        x_scrollbar.grid(row=1, column=0, sticky="ew")
+        strip_canvas.configure(xscrollcommand=x_scrollbar.set)
         self.bind_horizontal_drag_scroll(strip_canvas)
+        self.bind_right_panel_hover(x_scrollbar)
 
         for index, destination in enumerate(destinations):
             card = tk.Frame(inner, bg="#f4f0e6", highlightbackground=LINE, highlightthickness=1, padx=12, pady=10)
