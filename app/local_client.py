@@ -2097,10 +2097,24 @@ class OniChaseLocalClient:
             label_font = self.fonts["station_selected"] if station_id == self.selected_station_id else self.fonts["station"]
             self.canvas.create_text(label_x, label_y, text=station["names"]["en"], fill=label_fill, font=label_font, tags=("board",))
 
-            if station_id == runner_station:
-                self.canvas.create_oval(x + 8, y - 26, x + 26, y - 8, fill=RUNNER_COLOR, outline="white", width=3, tags=("board",))
-            if station_id == hunter_station and (not opponent_hidden or self.active_mode == "hunter"):
-                self.canvas.create_oval(x - 26, y - 26, x - 8, y - 8, fill=HUNTER_COLOR, outline="white", width=3, tags=("board",))
+        if runner_station:
+            self.draw_player_marker(
+                station_id=runner_station,
+                player_id="runner",
+                preview=runner_preview,
+                visible=True,
+                emphasized=(self.phase == "LIVE" and self.active_mode == "runner"),
+                side="right",
+            )
+        if hunter_station:
+            self.draw_player_marker(
+                station_id=hunter_station,
+                player_id="hunter",
+                preview=hunter_preview,
+                visible=(not opponent_hidden or self.active_mode == "hunter"),
+                emphasized=(self.phase == "LIVE" and self.active_mode == "hunter"),
+                side="left",
+            )
 
         self.canvas.create_text(812, 720, text="Runner", fill=INK, font=self.fonts["body_bold"], anchor="w", tags=("board",))
         self.canvas.create_oval(778, 710, 796, 728, fill=RUNNER_COLOR, outline="white", width=3, tags=("board",))
@@ -2109,6 +2123,97 @@ class OniChaseLocalClient:
             self.canvas.create_oval(778, 738, 796, 756, fill=HUNTER_COLOR, outline="white", width=3, tags=("board",))
         self.canvas.scale("board", 0, 0, self.map_scale, self.map_scale)
         self.canvas.move("board", self.map_pan_x, self.map_pan_y)
+
+    def draw_player_marker(
+        self,
+        station_id: str,
+        player_id: str,
+        preview: dict[str, Any],
+        visible: bool,
+        emphasized: bool,
+        side: str,
+    ) -> None:
+        if not visible:
+            return
+        x, y, _ = self.map_coords[station_id]
+        color = RUNNER_COLOR if player_id == "runner" else HUNTER_COLOR
+        label = "RUNNER" if player_id == "runner" else "HUNTER"
+        station_name = self.station_map[station_id]["names"]["en"]
+
+        outer_radius = 26 if emphasized else 20
+        inner_radius = 14 if emphasized else 11
+        self.canvas.create_oval(
+            x - outer_radius,
+            y - outer_radius,
+            x + outer_radius,
+            y + outer_radius,
+            outline=color,
+            width=5 if emphasized else 4,
+            tags=("board",),
+        )
+        self.canvas.create_oval(
+            x - inner_radius,
+            y - inner_radius,
+            x + inner_radius,
+            y + inner_radius,
+            fill=color,
+            outline="white",
+            width=3,
+            tags=("board",),
+        )
+        self.canvas.create_text(
+            x,
+            y + 1,
+            text="R" if player_id == "runner" else "H",
+            fill="white",
+            font=self.fonts["small_bold"],
+            tags=("board",),
+        )
+
+        box_width = 168 if emphasized else 152
+        box_height = 44 if emphasized else 38
+        box_x = x + 34 if side == "right" else x - 34 - box_width
+        box_y = y - box_height / 2
+        self.canvas.create_rectangle(
+            box_x,
+            box_y,
+            box_x + box_width,
+            box_y + box_height,
+            fill=PANEL,
+            outline=color,
+            width=3 if emphasized else 2,
+            tags=("board",),
+        )
+        self.canvas.create_text(
+            box_x + 10,
+            box_y + 11,
+            text=label,
+            anchor="w",
+            fill=color,
+            font=self.fonts["small_bold"],
+            tags=("board",),
+        )
+        secondary = station_name
+        if preview["current_state"]["kind"] == "TRAIN":
+            secondary = f"on {preview['current_state']['train_number']} near {station_name}"
+        self.canvas.create_text(
+            box_x + 10,
+            box_y + box_height - 12,
+            text=secondary,
+            anchor="w",
+            fill=INK,
+            font=self.fonts["small"],
+            tags=("board",),
+        )
+        self.canvas.create_line(
+            x + (outer_radius if side == "right" else -outer_radius),
+            y,
+            box_x if side == "right" else box_x + box_width,
+            y,
+            fill=color,
+            width=3,
+            tags=("board",),
+        )
 
     def draw_plan_trace(self, preview: dict[str, Any], player_id: str, faded: bool) -> None:
         station_ids = self.planned_station_ids(preview)
