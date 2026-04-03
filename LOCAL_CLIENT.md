@@ -27,7 +27,7 @@ The first local client prototype already provides:
 - runner and hunter live readout
 - active plan route drawing on the map
 - a quick summary bar
-- a right-side plan and option panel
+- a right-side planning and replay workspace
 - the current runner-plan test preset
 - action buttons for `Set Start Here`, `Board Earliest`, `Ride To Selected`, `Wait +5m`, `Undo Step`, and `Clear Plan`
 - in-window simulation via `Run Simulation`
@@ -64,6 +64,7 @@ The first local client prototype already provides:
 - the match clock is now much more prominent, especially during `PLANNING`
 - the upper-right plan board now also shows the current plan cursor location, so the player can tell where the next planned leg will start
 - the upper-right plan board is now rendered as route cards rather than a plain text block, so chained train plans read more like a real transfer board
+- the old `MATCH TABLE` and `IMMEDIATE OPTIONS` panels have been removed to keep the right side focused on planning, actions, and replay
 
 ## Launch
 

@@ -110,9 +110,7 @@ class OniChaseLocalClient:
         self.test_var = tk.StringVar()
         self.train_var = tk.StringVar()
         self.quick_var = tk.StringVar()
-        self.duel_var = tk.StringVar()
         self.plan_var = tk.StringVar()
-        self.options_var = tk.StringVar()
         self.result_var = tk.StringVar()
         self.result_detail_var = tk.StringVar()
         self.latest_result: dict[str, Any] | None = None
@@ -376,10 +374,6 @@ class OniChaseLocalClient:
         self.plan_card = tk.Frame(self.info_stack, bg=PANEL, highlightbackground=LINE, highlightthickness=1, padx=12, pady=12)
         self.plan_card.grid(row=0, column=0, sticky="ew", pady=(0, 10))
         self.plan_card.columnconfigure(0, weight=1)
-        self.duel_label = self.make_card(self.info_stack, self.duel_var, width=48)
-        self.duel_label.grid(row=1, column=0, sticky="ew", pady=(0, 10))
-        self.options_label = self.make_card(self.info_stack, self.options_var, width=48)
-        self.options_label.grid(row=2, column=0, sticky="ew")
 
         self.action_card = tk.Frame(self.right_pane, bg=PANEL, highlightbackground=LINE, highlightthickness=1, padx=12, pady=12)
         self.action_card.columnconfigure(0, weight=1)
@@ -1586,11 +1580,6 @@ class OniChaseLocalClient:
                 + "MAP: drag to move, wheel to zoom, click a station; on-train clicks can directly set where to get off"
             )
         )
-        self.duel_var.set(
-            "MATCH TABLE\n\n"
-            f"Runner\n  Start: {self.station_map[self.players['runner']['start_station_id']]['names']['en']}\n  Live: {self.format_state(runner_preview)}\n  Steps: {len(self.players['runner']['steps'])}\n\n"
-            f"Hunter\n  Start: {self.station_map[self.players['hunter']['start_station_id']]['names']['en']}\n  Live: {self.format_state(hunter_preview) if (not opponent_hidden or self.active_mode == 'hunter') else 'Hidden'}\n  Steps: {len(self.players['hunter']['steps'])}"
-        )
         active_steps = self.players[self.active_mode]["steps"]
         resolved_count = len(active_preview["resolved_steps"])
         if active_steps:
@@ -1614,14 +1603,6 @@ class OniChaseLocalClient:
         self.plan_var.set(plan_text)
         self.render_plan_board(cursor_preview, resolved_count)
 
-        options = self.available_options(cursor_preview)
-        selected_station_text = self.render_selected_station_text(cursor_preview)
-        self.options_var.set(
-            "IMMEDIATE OPTIONS\n\n"
-            + ("\n".join(options) if options else "No suggestion from the current state.")
-            + "\n\n"
-            + selected_station_text
-        )
         self.render_action_card(cursor_preview)
         self.root.after_idle(lambda: self.apply_right_pane_layout(bool(pending_context) or cursor_preview["current_state"]["kind"] == "TRAIN"))
         self.draw_map(runner_preview, hunter_preview, opponent_hidden)

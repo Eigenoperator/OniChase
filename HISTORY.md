@@ -93,3 +93,4 @@
 - Upgraded the upper-right plan area from a plain text dump to a route-board style card list, so each planned leg now reads as its own `from -> train -> to` block and chained plans are easier to scan during playtests.
 - Made the plan board much more visually explicit after Scorp still could not find it: the plan board now sits at the very top of the upper-right info area, uses a colored header band, and the top info section gets more vertical space by default so the board is harder to miss.
 - Fixed a planning-state bug that caused chained plans to collapse back down to a single visible leg: in `PLANNING`, appending a new train segment no longer trims away the earlier unexecuted plan history, so multiple planned cars now remain on the board together.
+- Removed the native client's `MATCH TABLE` and `IMMEDIATE OPTIONS` panels entirely to simplify the right side and leave more room for the plan board, action workflow, and replay surfaces.
