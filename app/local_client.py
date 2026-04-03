@@ -1040,6 +1040,12 @@ class OniChaseLocalClient:
         preview = self.active_preview()
         if preview["error"]:
             return
+        pending_context = self.pending_departure_context(preview)
+        if preview["current_state"]["kind"] == "NODE" and pending_context:
+            valid_station_ids = {item["station_id"] for item in pending_context["destinations"]}
+            if station_id in valid_station_ids:
+                self.add_board_and_ride_steps(pending_context["train"]["train_number"], station_id)
+                return
         if preview["current_state"]["kind"] == "TRAIN":
             if station_id == (preview["current_board_stop"] or {}).get("station_id"):
                 return
@@ -1595,7 +1601,7 @@ class OniChaseLocalClient:
 
         hint = tk.Label(
             self.action_card,
-            text="Drag left/right to browse the full route if it gets long.",
+            text="You can drag left/right here, or directly click the highlighted stations on the left map.",
             bg=PANEL,
             fg=MUTED,
             font=self.fonts["small"],
@@ -1803,6 +1809,17 @@ class OniChaseLocalClient:
                 font=self.fonts["map_subtitle"],
                 tags=("board",),
             )
+        pending_context = self.pending_departure_context(self.active_preview())
+        if pending_context:
+            self.canvas.create_text(
+                46,
+                92 if not replay_event else 118,
+                text=f"STEP 2: Click a highlighted station for {pending_context['train']['train_number']}, or use Ride Here on the right",
+                anchor="w",
+                fill=SELECTED,
+                font=self.fonts["map_subtitle"],
+                tags=("board",),
+            )
 
         runner_station = (
             runner_preview["current_state"].get("station_id")
@@ -1878,6 +1895,10 @@ class OniChaseLocalClient:
         for station_id in station_ids:
             x, y, _ = self.map_coords[station_id]
             self.canvas.create_oval(x - 8, y - 8, x + 8, y + 8, fill=SELECTED, outline="white", width=2, tags=("board",))
+        for index, station_id in enumerate(station_ids[1:], start=1):
+            x, y, _ = self.map_coords[station_id]
+            self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, outline=SELECTED, width=3, dash=(4, 4), tags=("board",))
+            self.canvas.create_text(x, y - 22, text=str(index), fill=SELECTED, font=self.fonts["small_bold"], tags=("board",))
 
     def run(self) -> None:
         self.root.mainloop()
