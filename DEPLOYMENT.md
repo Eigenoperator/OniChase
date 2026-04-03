@@ -2,13 +2,43 @@
 
 ## Purpose
 
-This document explains how someone else can download OniChase and run the current local playtest build on their own machine.
+This document explains how someone else can download OniChase and run the current playtest builds on their own machine, or publish the browser build online.
 
-Right now, the intended public test target is the native local client:
+Right now, the intended public test targets are:
 
 - [app/local_client.py](/home/xincheng/toy/Chase/app/local_client.py)
+- [ui/web_client.html](/home/xincheng/toy/Chase/ui/web_client.html)
 
-The browser prototypes still exist, but the current main test path is the local desktop client.
+The local desktop client is still the richest playtest path, and the browser build is the easiest shareable online path.
+
+## Browser Build And GitHub Pages
+
+The repository now includes:
+
+- browser source: [ui/web_client.html](/home/xincheng/toy/Chase/ui/web_client.html)
+- static publish bundle: [docs/index.html](/home/xincheng/toy/Chase/docs/index.html)
+- bundle builder: [scripts/dev/build_web_client_bundle.py](/home/xincheng/toy/Chase/scripts/dev/build_web_client_bundle.py)
+- Pages workflow: [.github/workflows/deploy-pages.yml](/home/xincheng/toy/Chase/.github/workflows/deploy-pages.yml)
+
+To rebuild the static bundle locally:
+
+```bash
+python3 scripts/dev/build_web_client_bundle.py
+```
+
+This refreshes:
+
+- `docs/index.html`
+- `docs/data/yamanote_stations.json`
+- `docs/data/yamanote_weekday_train_instances_merged.json`
+
+When the `main` branch is pushed, the GitHub Actions workflow will publish `docs/` to GitHub Pages.
+
+Expected public URL:
+
+```text
+https://eigenoperator.github.io/OniChase/
+```
 
 ## Current Supported Path
 
@@ -139,4 +169,7 @@ This is still a local playtest build, not a packaged release.
 
 There is no installer yet, and there is no cross-platform release bundle yet.
 
-For now, the goal is simply to make it easy for another developer or tester to clone the repo and run the current prototype locally.
+For now, the goal is simply to make it easy for another developer or tester to either:
+
+1. clone the repo and run the current prototype locally, or
+2. open the GitHub Pages build and try the browser version immediately.

@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OniChase Web Client</title>
+  <style>
+    :root {
+      --bg: #efe5d2;
+      --panel: rgba(255, 251, 243, 0.95);
+      --panel-strong: #fffaf2;
+      --ink: #1f2933;
+      --muted: #697586;
+      --line: #dcd4c3;
+      --accent: #80c241;
+      --runner: #dc4d62;
+      --hunter: #2d6cdf;
+      --gold: #c48a29;
+      --ok: #173b2f;
+      --warm: #fff7eb;
+      --shadow: 0 20px 50px rgba(31, 41, 51, 0.12);
+      --shadow-soft: 0 12px 28px rgba(31, 41, 51, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 12% 12%, rgba(128, 194, 65, 0.18), transparent 24%),
+        radial-gradient(circle at 86% 14%, rgba(45, 108, 223, 0.12), transparent 22%),
+        linear-gradient(180deg, #fcfaf5 0%, var(--bg) 100%);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 16px;
+      align-items: center;
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(220, 212, 195, 0.95);
+      background: rgba(255, 253, 247, 0.82);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 34px;
+      letter-spacing: 0.04em;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+      max-width: 620px;
+    }
+
+    .clock-box {
+      min-width: 220px;
+      padding: 14px 18px;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      color: white;
+      text-align: center;
+      background: #b8441f;
+    }
+
+    .clock-box.live { background: #163d2c; }
+    .clock-box.ended { background: #2a2f38; }
+
+    .clock-phase {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.9;
+      font-weight: 800;
+    }
+
+    .clock-main {
+      margin-top: 6px;
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .clock-sub {
+      margin-top: 6px;
+      font-size: 12px;
+      opacity: 0.94;
+      line-height: 1.4;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .mode-toggle {
+      display: inline-flex;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .mode-toggle button {
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+
+    .mode-toggle button.active.runner { background: var(--runner); color: white; }
+    .mode-toggle button.active.hunter { background: var(--hunter); color: white; }
+
+    .action-button {
+      padding: 11px 16px;
+      border-radius: 14px;
+      background: var(--accent);
+      color: #173011;
+      font-weight: 800;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .action-button.secondary {
+      background: #efe8d9;
+      color: var(--ink);
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 430px;
+      gap: 20px;
+      padding: 20px 24px 24px;
+      min-height: 0;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(220, 212, 195, 0.95);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .map-panel {
+      position: relative;
+      min-height: 820px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 14%, rgba(128, 194, 65, 0.14), transparent 22%),
+        radial-gradient(circle at 84% 16%, rgba(45, 108, 223, 0.12), transparent 20%),
+        linear-gradient(180deg, rgba(255, 252, 244, 0.98), rgba(246, 239, 225, 0.99));
+    }
+
+    .hud-stack {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      z-index: 5;
+      width: min(390px, calc(100% - 36px));
+      display: grid;
+      gap: 12px;
+    }
+
+    .card {
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(220, 212, 195, 0.95);
+      box-shadow: var(--shadow-soft);
+      padding: 16px;
+    }
+
+    .card h3, .card h4 {
+      margin: 0;
+    }
+
+    .row-grid {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 6px 12px;
+      font-size: 14px;
+      line-height: 1.45;
+      margin-top: 12px;
+    }
+
+    .key { color: var(--muted); }
+
+    .map-title {
+      position: absolute;
+      top: 22px;
+      right: 24px;
+      z-index: 5;
+      text-align: right;
+      max-width: 280px;
+    }
+
+    .map-title h2 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .map-title p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .map-wrap {
+      width: 100%;
+      height: 100%;
+      min-height: 820px;
+      display: grid;
+      place-items: center;
+      padding: 30px 30px 22px;
+    }
+
+    .map-svg {
+      width: min(100%, 1000px);
+      height: auto;
+      overflow: visible;
+    }
+
+    .rail-glow { fill: none; stroke: rgba(128, 194, 65, 0.24); stroke-width: 42; }
+    .rail-line { fill: none; stroke: var(--accent); stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; }
+    .trace { fill: none; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 16 14; }
+    .trace.runner { stroke: rgba(220, 77, 98, 0.84); }
+    .trace.hunter { stroke: rgba(45, 108, 223, 0.78); }
+    .trace.faint { stroke-dasharray: 10 18; opacity: 0.35; stroke-width: 7; }
+    .station-ring { fill: white; stroke: var(--accent); stroke-width: 5; cursor: pointer; }
+    .station-ring.selected { stroke: var(--gold); stroke-width: 7; }
+    .station-label { font-size: 11px; fill: var(--muted); text-anchor: middle; }
+    .station-label.selected { fill: var(--ink); font-weight: 700; }
+    .waypoint { stroke: white; stroke-width: 4; }
+    .waypoint.runner { fill: var(--runner); }
+    .waypoint.hunter { fill: var(--hunter); }
+    .waypoint-label { fill: white; font-size: 11px; font-weight: 800; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
+    .marker-line { stroke-width: 3; }
+    .marker-box { fill: var(--panel-strong); }
+    .marker-label { font-size: 11px; font-weight: 800; }
+    .marker-sub { font-size: 11px; }
+
+    .quickbar {
+      position: absolute;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      z-index: 6;
+      width: min(760px, calc(100% - 56px));
+      padding: 12px 14px;
+      border-radius: 22px;
+      background: rgba(29, 33, 41, 0.84);
+      color: white;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 10px;
+      backdrop-filter: blur(14px);
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .quick-stat {
+      border-radius: 16px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.08);
+      display: grid;
+      gap: 4px;
+    }
+
+    .quick-stat .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .quick-stat .value {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .side {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 16px;
+      min-height: 820px;
+      min-width: 0;
+    }
+
+    .plan-board {
+      position: sticky;
+      top: 92px;
+      z-index: 4;
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .plan-head-band {
+      border-radius: 18px;
+      background: #8c4d19;
+      color: white;
+      padding: 12px 14px;
+    }
+
+    .plan-head-band p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: #fff1df;
+    }
+
+    .plan-summary {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .plan-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .plan-leg, .plan-wait, .train-card, .dest-card {
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.92);
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .plan-leg.done, .plan-wait.done { background: #d7e4f8; }
+    .plan-leg.next { background: #e5f2dc; }
+
+    .plan-kicker, .card-kicker {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .plan-main, .card-main {
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .train-outlook {
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .outlook-list {
+      display: grid;
+      gap: 8px;
+      max-height: 220px;
+      overflow: auto;
+    }
+
+    .outlook-row {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: var(--warm);
+      border: 1px solid rgba(220, 212, 195, 0.95);
+      font-size: 13px;
+    }
+
+    .action-region {
+      min-height: 0;
+      overflow: auto;
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .section-head h3 { font-size: 19px; }
+    .section-head p { margin: 4px 0 0; font-size: 12px; color: var(--muted); }
+
+    .stack { display: grid; gap: 10px; }
+    .tiny-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .tiny-button {
+      padding: 9px 12px;
+      border-radius: 12px;
+      background: #efe8d9;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .tiny-button.runner { background: var(--runner); color: white; }
+    .tiny-button.hunter { background: var(--hunter); color: white; }
+    .tiny-button.good { background: #dff0d6; color: var(--ok); }
+
+    .empty {
+      border-radius: 16px;
+      border: 1px dashed var(--line);
+      padding: 16px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.55);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .selected-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #f3ecdd;
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 1200px) {
+      .shell { grid-template-columns: 1fr; }
+      .side { min-height: auto; }
+      .plan-board { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <h1>OniChase</h1>
+        <p>Browser playtest build based on the current local client. Plan on the real Yamanote weekday timetable, then let the live clock run.</p>
+      </div>
+      <div id="clock-box" class="clock-box">
+        <div id="clock-phase" class="clock-phase">Planning</div>
+        <div id="clock-main" class="clock-main">60s</div>
+        <div id="clock-sub" class="clock-sub">Game starts at 06:00 · both sides visible</div>
+      </div>
+      <div class="top-actions">
+        <div class="mode-toggle">
+          <button id="runner-mode-button" class="active runner" type="button">Runner</button>
+          <button id="hunter-mode-button" type="button">Hunter</button>
+        </div>
+        <button id="preset-button" class="action-button secondary" type="button">Load Preset</button>
+        <button id="clock-button" class="action-button" type="button">Pause Clock</button>
+      </div>
+    </div>
+
+    <div class="shell">
+      <div class="map-panel panel">
+        <div class="hud-stack">
+          <div id="hud-card" class="card"></div>
+          <div id="selected-card" class="card"></div>
+        </div>
+        <div class="map-title">
+          <h2>JR Yamanote Line</h2>
+          <p>Current live map for the web playtest build</p>
+        </div>
+        <div class="map-wrap">
+          <svg id="map-svg" class="map-svg" viewBox="0 0 980 760"></svg>
+        </div>
+        <div id="quickbar" class="quickbar"></div>
+      </div>
+
+      <div class="side">
+        <div id="plan-board" class="plan-board panel"></div>
+        <div id="train-outlook" class="train-outlook panel"></div>
+        <div id="action-region" class="action-region panel"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DATA_BASE = "__DATA_BASE__";
+    const MAP_CENTER_X = 490;
+    const MAP_CENTER_Y = 380;
+    const MAP_RADIUS = 260;
+    const MAP_START_ANGLE_DEG = 115;
+    const END_TIME_DEFAULT = "07:00";
+
+    const state = {
+      activeMode: "runner",
+      phase: "PLANNING",
+      planningSecondsRemaining: 60,
+      currentGameMinute: 360,
+      startTime: "06:00",
+      endTime: END_TIME_DEFAULT,
+      clockRunning: true,
+      tickHandle: null,
+      pendingBoardTrainNumbers: { runner: null, hunter: null },
+      selectedStationId: "TOKYO",
+      stations: [],
+      stationMap: new Map(),
+      stationIndex: new Map(),
+      mapCoords: new Map(),
+      dataset: null,
+      trainMap: new Map(),
+      players: {
+        runner: { startStationId: "TOKYO", inputMode: "plan", steps: [] },
+        hunter: { startStationId: "SHINJUKU", inputMode: "actions", passiveHold: true, steps: [{ type: "WAIT_UNTIL", until_hhmm: END_TIME_DEFAULT }] }
+      },
+      previews: {},
+      ui: {}
+    };
+
+    function hhmmToMinutes(value) {
+      const [hour, minute] = value.split(":").map(Number);
+      return hour * 60 + minute;
+    }
+
+    function minutesToHhmm(value) {
+      return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
+    }
+
+    function stopDepartureMinutes(stop) {
+      return hhmmToMinutes(stop.departure_hhmm || stop.arrival_hhmm);
+    }
+
+    function stopArrivalMinutes(stop) {
+      return hhmmToMinutes(stop.arrival_hhmm || stop.departure_hhmm);
+    }
+
+    function stationLabel(stationId) {
+      const station = state.stationMap.get(stationId);
+      return station ? station.names.en : stationId;
+    }
+
+    function getTrain(trainNumber) {
+      return state.trainMap.get(trainNumber);
+    }
+
+    function visibleGameMinute() {
+      return state.phase === "PLANNING" ? hhmmToMinutes(state.startTime) : state.currentGameMinute;
+    }
+
+    function currentReplayEvent() {
+      return null;
+    }
+
+    function syncPassiveHunterStep() {
+      const hunter = state.players.hunter;
+      if (!hunter.passiveHold) return;
+      hunter.inputMode = "actions";
+      hunter.steps = [{ type: "WAIT_UNTIL", until_hhmm: state.endTime }];
+    }
+
+    function resetMatchFlow(autoStart = true) {
+      if (state.tickHandle) window.clearInterval(state.tickHandle);
+      state.phase = "PLANNING";
+      state.planningSecondsRemaining = 60;
+      state.currentGameMinute = hhmmToMinutes(state.startTime);
+      state.clockRunning = autoStart;
+      if (autoStart) scheduleTick();
+    }
+
+    function scheduleTick() {
+      if (state.tickHandle) window.clearInterval(state.tickHandle);
+      if (!state.clockRunning) return;
+      state.tickHandle = window.setInterval(onTick, 1000);
+    }
+
+    function onTick() {
+      if (!state.clockRunning) return;
+      if (state.phase === "PLANNING") {
+        state.planningSecondsRemaining = Math.max(0, state.planningSecondsRemaining - 1);
+        if (state.planningSecondsRemaining === 0) {
+          state.phase = "LIVE";
+        }
+      } else if (state.phase === "LIVE") {
+        const endMinute = hhmmToMinutes(state.endTime);
+        if (state.currentGameMinute < endMinute) {
+          state.currentGameMinute += 1;
+        } else {
+          state.phase = "ENDED";
+          state.clockRunning = false;
+          if (state.tickHandle) window.clearInterval(state.tickHandle);
+        }
+      }
+      renderAll();
+    }
+
+    function setActiveMode(mode) {
+      state.activeMode = mode;
+      renderAll();
+    }
+
+    function loadPreset() {
+      state.activeMode = "runner";
+      state.startTime = "06:00";
+      state.endTime = END_TIME_DEFAULT;
+      state.pendingBoardTrainNumbers = { runner: null, hunter: null };
+      state.players.runner = { startStationId: "TOKYO", inputMode: "plan", steps: [] };
+      state.players.hunter = { startStationId: "SHINJUKU", inputMode: "actions", passiveHold: true, steps: [{ type: "WAIT_UNTIL", until_hhmm: state.endTime }] };
+      state.selectedStationId = "TOKYO";
+      resetMatchFlow(true);
+      renderAll();
+    }
+
+    function toggleClock() {
+      state.clockRunning = !state.clockRunning;
+      if (state.clockRunning) {
+        scheduleTick();
+      } else if (state.tickHandle) {
+        window.clearInterval(state.tickHandle);
+        state.tickHandle = null;
+      }
+      renderAll();
+    }
+
+    function findBoardingStop(train, stationId, earliestMinute) {
+      const candidates = train.stop_times
+        .filter((stop) => stop.station_id === stationId)
+        .map((stop) => ({ stop, departMinute: stopDepartureMinutes(stop) }))
+        .filter((entry) => entry.departMinute >= earliestMinute)
+        .sort((a, b) => a.departMinute - b.departMinute);
+      return candidates[0]?.stop || null;
+    }
+
+    function findAlightStop(train, boardedSequence, stationId, loopPassIndex) {
+      return train.stop_times.find((stop) => {
+        if (stop.sequence <= boardedSequence) return false;
+        if (stop.station_id !== stationId) return false;
+        if (loopPassIndex != null && stop.loop_pass_index !== loopPassIndex) return false;
+        return true;
+      }) || null;
+    }
+
+    function selectBoardCandidate(stationId, earliestMinute, candidates) {
+      const rejected = [];
+      for (const candidate of candidates || []) {
+        const train = getTrain(candidate.train_number);
+        if (!train) {
+          rejected.push({ train_number: candidate.train_number, reason: "unknown_train" });
+          continue;
+        }
+        const boardStop = findBoardingStop(train, stationId, earliestMinute);
+        if (!boardStop) {
+          rejected.push({ train_number: candidate.train_number, reason: "not_catchable_from_current_state" });
+          continue;
+        }
+        return { train, boardStop, rejected };
+      }
+      return { train: null, boardStop: null, rejected };
+    }
+
+    function trainLocationOnMap(trainNumber, timeMinute) {
+      const train = getTrain(trainNumber);
+      if (!train || !train.stop_times.length) return null;
+      const stops = train.stop_times;
+      const first = stops[0];
+      if (!state.mapCoords.has(first.station_id)) return null;
+      const firstDeparture = stopDepartureMinutes(first);
+      if (timeMinute <= firstDeparture) {
+        return {
+          position: state.mapCoords.get(first.station_id),
+          anchorStationId: first.station_id,
+          fromStationId: first.station_id,
+          toStationId: first.station_id,
+          status: "AT_STATION"
+        };
+      }
+      for (let i = 0; i < stops.length; i += 1) {
+        const stop = stops[i];
+        const stationId = stop.station_id;
+        if (!state.mapCoords.has(stationId)) continue;
+        const arrival = stopArrivalMinutes(stop);
+        const departure = stopDepartureMinutes(stop);
+        if (arrival <= timeMinute && timeMinute <= departure) {
+          return {
+            position: state.mapCoords.get(stationId),
+            anchorStationId: stationId,
+            fromStationId: stationId,
+            toStationId: stationId,
+            status: "AT_STATION"
+          };
+        }
+        if (i + 1 >= stops.length) continue;
+        const nextStop = stops[i + 1];
+        const nextStationId = nextStop.station_id;
+        if (!state.mapCoords.has(nextStationId)) continue;
+        const nextArrival = stopArrivalMinutes(nextStop);
+        if (departure <= timeMinute && timeMinute <= nextArrival) {
+          const start = state.mapCoords.get(stationId);
+          const end = state.mapCoords.get(nextStationId);
+          const span = Math.max(1, nextArrival - departure);
+          const progress = Math.max(0, Math.min(1, (timeMinute - departure) / span));
+          return {
+            position: {
+              x: start.x + (end.x - start.x) * progress,
+              y: start.y + (end.y - start.y) * progress
+            },
+            anchorStationId: progress >= 0.5 ? nextStationId : stationId,
+            fromStationId: stationId,
+            toStationId: nextStationId,
+            status: "IN_TRANSIT"
+          };
+        }
+      }
+      const last = stops[stops.length - 1];
+      return {
+        position: state.mapCoords.get(last.station_id),
+        anchorStationId: last.station_id,
+        fromStationId: last.station_id,
+        toStationId: last.station_id,
+        status: "AT_STATION"
+      };
+    }
+
+    function previewPlayer(playerId, timeCapMinute = null) {
+      const player = state.players[playerId];
+      let currentMinute = hhmmToMinutes(state.startTime);
+      let currentStationId = player.startStationId;
+      let currentTrain = null;
+      let currentBoardStop = null;
+      const events = [{ type: "START_AT_STATION", station_id: currentStationId, time_hhmm: minutesToHhmm(currentMinute) }];
+      const resolvedSteps = [];
+      let error = null;
+
+      for (let index = 0; index < player.steps.length; index += 1) {
+        const step = player.steps[index];
+        try {
+          if (step.type === "WAIT_UNTIL") {
+            const target = hhmmToMinutes(step.until_hhmm);
+            if (currentStationId == null) throw new Error("Cannot wait while on a train.");
+            if (target < currentMinute) throw new Error("Cannot wait backwards in time.");
+            if (timeCapMinute != null && target > timeCapMinute) {
+              currentMinute = timeCapMinute;
+              break;
+            }
+            currentMinute = target;
+            resolvedSteps.push({ step_index: index + 1, ...step });
+            events.push({ type: "WAIT_UNTIL", station_id: currentStationId, time_hhmm: minutesToHhmm(currentMinute) });
+            continue;
+          }
+
+          if (step.type === "BOARD_TRAIN") {
+            if (currentStationId == null) throw new Error("Already on a train.");
+            const train = getTrain(step.train_number);
+            if (!train) throw new Error(`Unknown train ${step.train_number}.`);
+            const boardStop = findBoardingStop(train, currentStationId, currentMinute);
+            if (!boardStop) throw new Error(`Cannot board ${step.train_number} from ${currentStationId}.`);
+            const boardMinute = stopDepartureMinutes(boardStop);
+            if (timeCapMinute != null && boardMinute > timeCapMinute) {
+              currentMinute = timeCapMinute;
+              break;
+            }
+            currentMinute = boardMinute;
+            currentTrain = train;
+            currentBoardStop = boardStop;
+            resolvedSteps.push({ step_index: index + 1, ...step });
+            events.push({ type: "BOARD_TRAIN", station_id: currentStationId, train_number: train.train_number, time_hhmm: minutesToHhmm(currentMinute) });
+            currentStationId = null;
+            continue;
+          }
+
+          if (step.type === "BOARD_ANY_OF") {
+            if (currentStationId == null) throw new Error("Already on a train.");
+            const { train, boardStop, rejected } = selectBoardCandidate(currentStationId, currentMinute, step.candidates);
+            if (!train || !boardStop) throw new Error("No candidate train is catchable.");
+            const boardMinute = stopDepartureMinutes(boardStop);
+            if (timeCapMinute != null && boardMinute > timeCapMinute) {
+              currentMinute = timeCapMinute;
+              break;
+            }
+            currentMinute = boardMinute;
+            currentTrain = train;
+            currentBoardStop = boardStop;
+            resolvedSteps.push({ step_index: index + 1, type: "BOARD_TRAIN", source_plan_type: "BOARD_ANY_OF", train_number: train.train_number, rejected_candidates: rejected });
+            events.push({ type: "PLAN_RESOLUTION", chosen_train_number: train.train_number, rejected_candidates: rejected, time_hhmm: minutesToHhmm(currentMinute) });
+            events.push({ type: "BOARD_TRAIN", station_id: currentStationId, train_number: train.train_number, time_hhmm: minutesToHhmm(currentMinute) });
+            currentStationId = null;
+            continue;
+          }
+
+          if (step.type === "RIDE_TO_STATION") {
+            if (!currentTrain || !currentBoardStop) throw new Error("Not on a train.");
+            const alightStop = findAlightStop(currentTrain, currentBoardStop.sequence, step.station_id, step.loop_pass_index);
+            if (!alightStop) throw new Error(`Train ${currentTrain.train_number} does not reach ${step.station_id} later.`);
+            const arrivalMinute = stopArrivalMinutes(alightStop);
+            if (timeCapMinute != null && arrivalMinute > timeCapMinute) {
+              currentMinute = timeCapMinute;
+              break;
+            }
+            currentMinute = arrivalMinute;
+            currentStationId = alightStop.station_id;
+            resolvedSteps.push({ step_index: index + 1, ...step });
+            events.push({ type: "ALIGHT_TRAIN", station_id: currentStationId, train_number: currentTrain.train_number, time_hhmm: minutesToHhmm(currentMinute) });
+            currentTrain = null;
+            currentBoardStop = null;
+            continue;
+          }
+
+          throw new Error(`Unsupported step type ${step.type}.`);
+        } catch (err) {
+          error = `Step ${index + 1}: ${err.message}`;
+          break;
+        }
+      }
+
+      const currentState = currentTrain ? { kind: "TRAIN", train_number: currentTrain.train_number } : { kind: "NODE", station_id: currentStationId };
+      let mapStationId = null;
+      let mapPosition = null;
+      let trainLoc = null;
+      if (currentTrain) {
+        trainLoc = trainLocationOnMap(currentTrain.train_number, currentMinute);
+        if (trainLoc) {
+          mapStationId = trainLoc.anchorStationId;
+          mapPosition = trainLoc.position;
+        }
+      } else if (currentStationId && state.mapCoords.has(currentStationId)) {
+        mapStationId = currentStationId;
+        mapPosition = state.mapCoords.get(currentStationId);
+      }
+
+      return {
+        playerId,
+        inputMode: player.inputMode,
+        startStationId: player.startStationId,
+        currentMinute,
+        currentTime: minutesToHhmm(currentMinute),
+        currentState,
+        currentTrain,
+        currentBoardStop,
+        events,
+        resolvedSteps,
+        error,
+        mapStationId,
+        mapPosition,
+        trainLoc
+      };
+    }
+
+    function planCursorPreview(playerId = state.activeMode) {
+      if (state.phase === "PLANNING") return previewPlayer(playerId, null);
+      return previewPlayer(playerId, visibleGameMinute());
+    }
+
+    function activePreview() {
+      return planCursorPreview(state.activeMode);
+    }
+
+    function truncateFutureStepsToCurrent(playerId = state.activeMode) {
+      if (state.phase === "PLANNING") return 0;
+      const preview = previewPlayer(playerId, visibleGameMinute());
+      const resolvedCount = preview.resolvedSteps.length;
+      const steps = state.players[playerId].steps;
+      const removed = Math.max(0, steps.length - resolvedCount);
+      if (removed) state.players[playerId].steps = steps.slice(0, resolvedCount);
+      return removed;
+    }
+
+    function clearPendingTrain(playerId = state.activeMode) {
+      state.pendingBoardTrainNumbers[playerId] = null;
+    }
+
+    function pendingTrainNumber(playerId = state.activeMode) {
+      return state.pendingBoardTrainNumbers[playerId];
+    }
+
+    function availableDepartures(preview) {
+      if (preview.error || preview.currentState.kind !== "NODE") return [];
+      const stationId = preview.currentState.station_id;
+      const minute = preview.currentMinute;
+      return state.dataset.train_instances
+        .map((train) => {
+          const boardStop = findBoardingStop(train, stationId, minute);
+          if (!boardStop) return null;
+          return {
+            train,
+            boardStop,
+            departureMinute: stopDepartureMinutes(boardStop),
+            departureHhmm: minutesToHhmm(stopDepartureMinutes(boardStop)),
+            directionLabel: train.direction_label || "unknown"
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.departureMinute - b.departureMinute || a.train.train_number.localeCompare(b.train.train_number))
+        .slice(0, 8);
+    }
+
+    function futureTrainStops(preview) {
+      if (!preview.currentTrain || !preview.currentBoardStop) return [];
+      const boardedStationId = preview.currentBoardStop.station_id;
+      const futureStops = [];
+      for (const stop of preview.currentTrain.stop_times) {
+        if (stop.sequence <= preview.currentBoardStop.sequence) continue;
+        futureStops.push(stop);
+        if (stop.station_id === boardedStationId) break;
+      }
+      return futureStops;
+    }
+
+    function availableDestinations(preview) {
+      return futureTrainStops(preview).map((stop) => ({
+        stationId: stop.station_id,
+        label: stationLabel(stop.station_id),
+        arrivalHhmm: stop.arrival_hhmm || stop.departure_hhmm,
+        sequence: stop.sequence
+      }));
+    }
+
+    function pendingDepartureContext(preview) {
+      const trainNumber = pendingTrainNumber();
+      if (!trainNumber || preview.error || preview.currentState.kind !== "NODE") return null;
+      const stationId = preview.currentState.station_id;
+      const minute = preview.currentMinute;
+      const train = getTrain(trainNumber);
+      if (!train) return null;
+      const boardStop = findBoardingStop(train, stationId, minute);
+      if (!boardStop) return null;
+      const destinations = [];
+      for (const stop of train.stop_times) {
+        if (stop.sequence <= boardStop.sequence) continue;
+        destinations.push({ stationId: stop.station_id, label: stationLabel(stop.station_id), arrivalHhmm: stop.arrival_hhmm || stop.departure_hhmm, sequence: stop.sequence });
+        if (stop.station_id === boardStop.station_id) break;
+      }
+      return { train, boardStop, destinations };
+    }
+
+    function plannedStationIds(preview) {
+      const stationIds = [];
+      const push = (stationId) => {
+        if (!stationId) return;
+        if (stationIds[stationIds.length - 1] === stationId) return;
+        stationIds.push(stationId);
+      };
+      push(preview.startStationId);
+      for (const event of preview.events) push(event.station_id);
+      if (preview.currentState.kind === "NODE") push(preview.currentState.station_id);
+      return stationIds;
+    }
+
+    function formatState(preview) {
+      if (!preview || !preview.currentState) return "Unknown";
+      if (preview.currentState.kind === "NODE") return stationLabel(preview.currentState.station_id);
+      if (preview.trainLoc && preview.trainLoc.status === "IN_TRANSIT") {
+        return `Train ${preview.currentState.train_number} · ${stationLabel(preview.trainLoc.fromStationId)} -> ${stationLabel(preview.trainLoc.toStationId)}`;
+      }
+      return `Train ${preview.currentState.train_number}`;
+    }
+
+    function addWaitStep() {
+      const preview = planCursorPreview();
+      if (preview.error || preview.currentState.kind !== "NODE") return;
+      truncateFutureStepsToCurrent();
+      const targetMinute = Math.min(preview.currentMinute + 5, hhmmToMinutes(state.endTime));
+      state.players[state.activeMode].steps.push({ type: "WAIT_UNTIL", until_hhmm: minutesToHhmm(targetMinute) });
+      clearPendingTrain();
+      if (state.activeMode === "hunter") state.players.hunter.passiveHold = false;
+      renderAll();
+    }
+
+    function chooseTrain(trainNumber) {
+      state.pendingBoardTrainNumbers[state.activeMode] = trainNumber;
+      renderAll();
+    }
+
+    function chooseAnotherTrain() {
+      clearPendingTrain();
+      renderAll();
+    }
+
+    function addBoardAndRide(trainNumber, stationId) {
+      const preview = planCursorPreview();
+      if (preview.error || preview.currentState.kind !== "NODE") return;
+      truncateFutureStepsToCurrent();
+      state.players[state.activeMode].steps.push({ type: "BOARD_TRAIN", train_number: trainNumber });
+      state.players[state.activeMode].steps.push({ type: "RIDE_TO_STATION", station_id: stationId });
+      clearPendingTrain();
+      if (state.activeMode === "hunter") state.players.hunter.passiveHold = false;
+      renderAll();
+    }
+
+    function addRideToStation(stationId) {
+      const preview = planCursorPreview();
+      if (preview.error || preview.currentState.kind !== "TRAIN") return;
+      truncateFutureStepsToCurrent();
+      state.players[state.activeMode].steps.push({ type: "RIDE_TO_STATION", station_id: stationId });
+      clearPendingTrain();
+      if (state.activeMode === "hunter") state.players.hunter.passiveHold = false;
+      renderAll();
+    }
+
+    function undoLastStep() {
+      const steps = state.players[state.activeMode].steps;
+      if (!steps.length) return;
+      steps.pop();
+      clearPendingTrain();
+      if (state.activeMode === "hunter") state.players.hunter.passiveHold = false;
+      renderAll();
+    }
+
+    function clearPlan() {
+      state.players[state.activeMode].steps = [];
+      clearPendingTrain();
+      if (state.activeMode === "hunter") state.players.hunter.passiveHold = false;
+      renderAll();
+    }
+
+    function setStartToSelected() {
+      if (!state.selectedStationId) return;
+      const player = state.players[state.activeMode];
+      player.startStationId = state.selectedStationId;
+      player.steps = [];
+      clearPendingTrain();
+      if (state.activeMode === "hunter") player.passiveHold = false;
+      renderAll();
+    }
+
+    function renderClock() {
+      const box = state.ui.clockBox;
+      box.classList.toggle("live", state.phase === "LIVE");
+      box.classList.toggle("ended", state.phase === "ENDED");
+      state.ui.clockPhase.textContent = state.phase;
+      if (state.phase === "PLANNING") {
+        state.ui.clockMain.textContent = `${String(state.planningSecondsRemaining).padStart(2, "0")}s`;
+        state.ui.clockSub.textContent = `Game starts at ${state.startTime} · both sides visible`;
+      } else if (state.phase === "LIVE") {
+        state.ui.clockMain.textContent = minutesToHhmm(state.currentGameMinute);
+        state.ui.clockSub.textContent = "Live clock running · opponent hidden";
+      } else {
+        state.ui.clockMain.textContent = minutesToHhmm(state.currentGameMinute);
+        state.ui.clockSub.textContent = "Match ended";
+      }
+      state.ui.clockButton.textContent = state.clockRunning ? "Pause Clock" : "Resume Clock";
+      state.ui.runnerModeButton.classList.toggle("active", state.activeMode === "runner");
+      state.ui.runnerModeButton.classList.toggle("runner", state.activeMode === "runner");
+      state.ui.hunterModeButton.classList.toggle("active", state.activeMode === "hunter");
+      state.ui.hunterModeButton.classList.toggle("hunter", state.activeMode === "hunter");
+    }
+
+    function renderHud() {
+      const active = planCursorPreview(state.activeMode);
+      const passive = planCursorPreview(state.activeMode === "runner" ? "hunter" : "runner");
+      const passiveVisible = state.phase === "PLANNING";
+      state.ui.hudCard.innerHTML = `
+        <div class="section-head">
+          <div>
+            <h3>${state.activeMode === "runner" ? "Runner" : "Hunter"} HUD</h3>
+            <p>Current live route context</p>
+          </div>
+          <div class="selected-chip">${state.activeMode}</div>
+        </div>
+        <div class="row-grid">
+          <div class="key">Phase</div><div>${state.phase}</div>
+          <div class="key">Current Time</div><div>${state.phase === "PLANNING" ? state.startTime : minutesToHhmm(state.currentGameMinute)}</div>
+          <div class="key">Location</div><div>${formatState(active)}</div>
+          <div class="key">Resolved Steps</div><div>${active.resolvedSteps.length}</div>
+          <div class="key">Status</div><div>${active.error || "Ready"}</div>
+          <div class="key">Opponent</div><div>${passiveVisible ? formatState(passive) : "Hidden during live play"}</div>
+        </div>
+      `;
+      state.ui.selectedCard.innerHTML = `
+        <div class="section-head">
+          <div>
+            <h3>Selected Station</h3>
+            <p>Click a station on the map to inspect or set as the new start.</p>
+          </div>
+        </div>
+        <div class="row-grid">
+          <div class="key">Station</div><div>${stationLabel(state.selectedStationId)}</div>
+          <div class="key">Current Start</div><div>${stationLabel(state.players[state.activeMode].startStationId)}</div>
+          <div class="key">Map Input</div><div>${active.currentState.kind === "TRAIN" ? "If highlighted, click reachable station to add ride target." : "Choose train on the right, then destination."}</div>
+        </div>
+      `;
+    }
+
+    function renderPlanBoard() {
+      const preview = planCursorPreview(state.activeMode);
+      const resolvedCount = preview.resolvedSteps.length;
+      const steps = state.players[state.activeMode].steps;
+      let html = `
+        <div class="plan-head-band">
+          <h3>${state.activeMode.toUpperCase()} PLAN BOARD</h3>
+          <p>This is the route you are building now.</p>
+        </div>
+        <div class="plan-summary">
+          Cursor: ${formatState(preview)}<br />
+          Planned legs: ${steps.length}<br />
+          Resolved now: ${resolvedCount}
+        </div>
+        <div class="plan-list">
+      `;
+      if (!steps.length) {
+        html += `<div class="empty">No plan yet. Start by choosing the first train.</div>`;
+      } else {
+        let chainStation = state.players[state.activeMode].startStationId;
+        let pendingTrainNumber = null;
+        let legIndex = 1;
+        steps.forEach((step, index) => {
+          const done = index + 1 <= resolvedCount;
+          if (step.type === "WAIT_UNTIL") {
+            html += `
+              <div class="plan-wait ${done ? "done" : ""}">
+                <div class="plan-kicker">Wait · ${done ? "Done" : "Next"}</div>
+                <div class="plan-main">until ${step.until_hhmm}</div>
+              </div>
+            `;
+            return;
+          }
+          if (step.type === "BOARD_TRAIN") {
+            pendingTrainNumber = step.train_number;
+            return;
+          }
+          if (step.type === "RIDE_TO_STATION") {
+            html += `
+              <div class="plan-leg ${done ? "done" : "next"}">
+                <div class="plan-kicker">Leg ${legIndex} · ${done ? "Done" : "Next"}</div>
+                <div class="plan-main">${stationLabel(chainStation)} -> ${pendingTrainNumber || "?"} -> ${stationLabel(step.station_id)}</div>
+              </div>
+            `;
+            chainStation = step.station_id;
+            pendingTrainNumber = null;
+            legIndex += 1;
+          }
+        });
+      }
+      html += `</div>`;
+      state.ui.planBoard.innerHTML = html;
+    }
+
+    function renderTrainOutlook() {
+      const active = planCursorPreview(state.activeMode);
+      const pending = pendingDepartureContext(active);
+      let rows = [];
+      if (pending) {
+        rows = [
+          { time: pending.boardStop.departure_hhmm || pending.boardStop.arrival_hhmm, label: `BOARD ${stationLabel(pending.boardStop.station_id)}` },
+          ...pending.destinations.slice(0, 14).map((item) => ({ time: item.arrivalHhmm, label: item.label }))
+        ];
+      } else if (active.currentState.kind === "TRAIN") {
+        rows = availableDestinations(active).slice(0, 14).map((item) => ({ time: item.arrivalHhmm, label: item.label }));
+      }
+      state.ui.trainOutlook.innerHTML = `
+        <div class="section-head">
+          <div>
+            <h3>Train Outlook</h3>
+            <p>${pending ? `Selected ${pending.train.train_number}` : active.currentState.kind === "TRAIN" ? active.currentState.train_number : "No train selected"}</p>
+          </div>
+        </div>
+        <div class="outlook-list">
+          ${rows.length ? rows.map((row) => `<div class="outlook-row"><div>${row.time}</div><div>${row.label}</div></div>`).join("") : `<div class="empty">Not currently on a train.</div>`}
+        </div>
+      `;
+    }
+
+    function renderActionRegion() {
+      const preview = planCursorPreview(state.activeMode);
+      const pending = pendingDepartureContext(preview);
+      let html = `
+        <div class="section-head">
+          <div>
+            <h3>Planning Actions</h3>
+            <p>Use the current live route context to keep planning forward.</p>
+          </div>
+          <div class="selected-chip">${state.activeMode === "runner" ? "Runner" : "Hunter"}</div>
+        </div>
+        <div class="tiny-actions">
+          <button class="tiny-button" data-action="set-start">Set Start To Selected Station</button>
+          <button class="tiny-button" data-action="wait">Wait +5 minutes</button>
+          <button class="tiny-button" data-action="undo">Undo Step</button>
+          <button class="tiny-button" data-action="clear">Clear Plan</button>
+        </div>
+      `;
+
+      if (preview.error) {
+        html += `<div class="empty">${preview.error}</div>`;
+      } else if (preview.currentState.kind === "NODE" && !pending) {
+        const departures = availableDepartures(preview);
+        html += `
+          <div class="stack">
+            <div class="section-head"><div><h3>STEP 1 · Choose Your Train</h3><p>You are at ${stationLabel(preview.currentState.station_id)}. Pick a real departure first.</p></div></div>
+            ${departures.length ? departures.map((entry) => `
+              <div class="train-card">
+                <div class="card-kicker">${entry.departureHhmm} · ${entry.directionLabel}</div>
+                <div class="card-main">${entry.train.train_number}</div>
+                <div>${trainPreviewText(entry.train, entry.boardStop)}</div>
+                <div class="tiny-actions">
+                  <button class="tiny-button ${state.activeMode}" data-train="${entry.train.train_number}" data-action="choose-train">Choose This Train</button>
+                </div>
+              </div>
+            `).join("") : `<div class="empty">No catchable departures from ${stationLabel(preview.currentState.station_id)} after ${preview.currentTime}.</div>`}
+          </div>
+        `;
+      } else if (pending) {
+        html += `
+          <div class="stack">
+            <div class="train-card">
+              <div class="card-kicker">Selected train</div>
+              <div class="card-main">${pending.train.train_number}</div>
+              <div>${pending.boardStop.departure_hhmm || pending.boardStop.arrival_hhmm} · ${pending.train.direction_label || "unknown"}</div>
+              <div class="tiny-actions">
+                <button class="tiny-button" data-action="choose-another">Choose Another Train</button>
+              </div>
+            </div>
+            <div class="section-head"><div><h3>STEP 2 · Choose Destination</h3><p>Pick where to get off. You can also click highlighted stations on the left map.</p></div></div>
+            ${pending.destinations.length ? pending.destinations.map((item) => `
+              <div class="dest-card">
+                <div class="card-kicker">${item.arrivalHhmm}</div>
+                <div class="card-main">${item.label}</div>
+                <div class="tiny-actions">
+                  <button class="tiny-button good" data-train="${pending.train.train_number}" data-station="${item.stationId}" data-action="ride-here">Ride Here</button>
+                </div>
+              </div>
+            `).join("") : `<div class="empty">This train has no later stops.</div>`}
+          </div>
+        `;
+      } else if (preview.currentState.kind === "TRAIN") {
+        const destinations = availableDestinations(preview);
+        html += `
+          <div class="stack">
+            <div class="section-head"><div><h3>Ride ${preview.currentState.train_number}</h3><p>Choose where to get off next.</p></div></div>
+            ${destinations.length ? destinations.map((item) => `
+              <div class="dest-card">
+                <div class="card-kicker">${item.arrivalHhmm}</div>
+                <div class="card-main">${item.label}</div>
+                <div class="tiny-actions">
+                  <button class="tiny-button good" data-station="${item.stationId}" data-action="ride-only">Ride Here</button>
+                </div>
+              </div>
+            `).join("") : `<div class="empty">No later stops on the current train.</div>`}
+          </div>
+        `;
+      }
+
+      state.ui.actionRegion.innerHTML = html;
+      state.ui.actionRegion.querySelectorAll("[data-action]").forEach((node) => {
+        node.addEventListener("click", (event) => {
+          const action = event.currentTarget.dataset.action;
+          if (action === "set-start") setStartToSelected();
+          if (action === "wait") addWaitStep();
+          if (action === "undo") undoLastStep();
+          if (action === "clear") clearPlan();
+          if (action === "choose-train") chooseTrain(event.currentTarget.dataset.train);
+          if (action === "choose-another") chooseAnotherTrain();
+          if (action === "ride-here") addBoardAndRide(event.currentTarget.dataset.train, event.currentTarget.dataset.station);
+          if (action === "ride-only") addRideToStation(event.currentTarget.dataset.station);
+        });
+      });
+    }
+
+    function trainPreviewText(train, boardStop) {
+      const labels = [];
+      for (const stop of train.stop_times) {
+        if (stop.sequence <= boardStop.sequence) continue;
+        labels.push(stationLabel(stop.station_id));
+        if (labels.length >= 6) break;
+      }
+      return labels.length ? labels.join(" -> ") : "No downstream stops.";
+    }
+
+    function renderQuickbar() {
+      const active = planCursorPreview(state.activeMode);
+      const opponent = planCursorPreview(state.activeMode === "runner" ? "hunter" : "runner");
+      const route = plannedStationIds(active).map((stationId) => stationLabel(stationId)).join(" -> ");
+      const nextDecision = state.players[state.activeMode].steps[0] ? describeStep(state.players[state.activeMode].steps[0]) : "No step yet.";
+      state.ui.quickbar.innerHTML = `
+        <div class="quick-grid">
+          <div class="quick-stat"><div class="label">Active Side</div><div class="value">${state.activeMode}</div></div>
+          <div class="quick-stat"><div class="label">Current Position</div><div class="value">${formatState(active)}</div></div>
+          <div class="quick-stat"><div class="label">Opponent</div><div class="value">${state.phase === "PLANNING" ? formatState(opponent) : "Hidden during live"}</div></div>
+          <div class="quick-stat"><div class="label">Next Thing</div><div class="value">${nextDecision}</div></div>
+        </div>
+        <div class="quick-stat">
+          <div class="label">Route Preview</div>
+          <div class="value">${route || "No route yet"}</div>
+        </div>
+      `;
+    }
+
+    function renderMap() {
+      const runner = planCursorPreview("runner");
+      const hunter = planCursorPreview("hunter");
+      const opponentHidden = state.phase === "LIVE" && state.activeMode === "runner";
+      const coords = state.stations.map((station) => state.mapCoords.get(station.id));
+      const loopPoints = coords.map((coord) => `${coord.x},${coord.y}`).join(" ");
+      const stationNodes = state.stations.map((station) => {
+        const coord = state.mapCoords.get(station.id);
+        const labelX = coord.x + Math.cos(coord.angle) * 34;
+        const labelY = coord.y + Math.sin(coord.angle) * 34;
+        return `
+          <g data-station-id="${station.id}">
+            <circle class="station-ring ${state.selectedStationId === station.id ? "selected" : ""}" cx="${coord.x}" cy="${coord.y}" r="12"></circle>
+            <text class="station-label ${state.selectedStationId === station.id ? "selected" : ""}" x="${labelX}" y="${labelY}">${station.names.en}</text>
+          </g>
+        `;
+      }).join("");
+
+      const traces = [renderTrace("runner", runner, false), renderTrace("hunter", hunter, true)].join("");
+      const markers = [
+        renderPlayerMarker("runner", runner, true, state.phase === "LIVE" && state.activeMode === "runner", "right"),
+        renderPlayerMarker("hunter", hunter, !opponentHidden || state.activeMode === "hunter", state.phase === "LIVE" && state.activeMode === "hunter", "left")
+      ].join("");
+      const pending = pendingDepartureContext(planCursorPreview(state.activeMode));
+      const highlighted = renderPendingRoute(pending);
+
+      state.ui.mapSvg.innerHTML = `
+        <polyline class="rail-glow" points="${loopPoints} ${coords[0].x},${coords[0].y}"></polyline>
+        <polyline class="rail-line" points="${loopPoints} ${coords[0].x},${coords[0].y}"></polyline>
+        ${traces}
+        ${highlighted}
+        ${stationNodes}
+        ${markers}
+      `;
+
+      state.ui.mapSvg.querySelectorAll("[data-station-id]").forEach((node) => {
+        node.addEventListener("click", () => {
+          const stationId = node.dataset.stationId;
+          state.selectedStationId = stationId;
+          const preview = planCursorPreview();
+          const pendingCtx = pendingDepartureContext(preview);
+          if (preview.currentState.kind === "NODE" && pendingCtx) {
+            const valid = new Set(pendingCtx.destinations.map((item) => item.stationId));
+            if (valid.has(stationId)) addBoardAndRide(pendingCtx.train.train_number, stationId);
+          } else if (preview.currentState.kind === "TRAIN") {
+            const valid = new Set(availableDestinations(preview).map((item) => item.stationId));
+            if (valid.has(stationId)) addRideToStation(stationId);
+            else renderAll();
+          } else {
+            renderAll();
+          }
+        });
+      });
+    }
+
+    function renderTrace(playerId, preview, faint) {
+      const stationIds = plannedStationIds(preview);
+      if (stationIds.length < 2) return "";
+      const points = stationIds.map((stationId) => {
+        const coord = state.mapCoords.get(stationId);
+        return `${coord.x},${coord.y}`;
+      }).join(" ");
+      const waypoints = stationIds.map((stationId, index) => {
+        const coord = state.mapCoords.get(stationId);
+        return `
+          <circle class="waypoint ${playerId}" cx="${coord.x}" cy="${coord.y}" r="10"></circle>
+          <text class="waypoint-label" x="${coord.x}" y="${coord.y + 1}">${index + 1}</text>
+        `;
+      }).join("");
+      return `<g><polyline class="trace ${playerId} ${faint ? "faint" : ""}" points="${points}"></polyline>${waypoints}</g>`;
+    }
+
+    function renderPendingRoute(pending) {
+      if (!pending || !pending.destinations.length) return "";
+      const stationIds = [pending.boardStop.station_id, ...pending.destinations.map((item) => item.stationId)];
+      const points = stationIds.map((stationId) => {
+        const coord = state.mapCoords.get(stationId);
+        return `${coord.x},${coord.y}`;
+      }).join(" ");
+      const nodes = stationIds.slice(1).map((stationId, index) => {
+        const coord = state.mapCoords.get(stationId);
+        return `
+          <circle cx="${coord.x}" cy="${coord.y}" r="18" fill="none" stroke="var(--gold)" stroke-width="3" stroke-dasharray="4 4"></circle>
+          <text x="${coord.x}" y="${coord.y - 22}" fill="var(--gold)" font-size="11" font-weight="800" text-anchor="middle">${index + 1}</text>
+        `;
+      }).join("");
+      return `<g><polyline points="${points}" fill="none" stroke="var(--gold)" stroke-width="10" stroke-dasharray="14 8"></polyline>${nodes}</g>`;
+    }
+
+    function renderPlayerMarker(playerId, preview, visible, emphasized, side) {
+      if (!visible || !preview.mapPosition) return "";
+      const color = playerId === "runner" ? "var(--runner)" : "var(--hunter)";
+      const x = preview.mapPosition.x;
+      const y = preview.mapPosition.y;
+      const outer = emphasized ? 24 : 20;
+      const inner = emphasized ? 14 : 11;
+      const boxWidth = emphasized ? 172 : 156;
+      const boxHeight = emphasized ? 46 : 40;
+      const boxX = side === "right" ? x + 34 : x - 34 - boxWidth;
+      const boxY = y - boxHeight / 2;
+      let sub = stationLabel(preview.mapStationId || preview.currentState.station_id);
+      if (preview.currentState.kind === "TRAIN" && preview.trainLoc?.status === "IN_TRANSIT") {
+        sub = `${preview.currentState.train_number}  ${stationLabel(preview.trainLoc.fromStationId)} -> ${stationLabel(preview.trainLoc.toStationId)}`;
+      } else if (preview.currentState.kind === "TRAIN") {
+        sub = `${preview.currentState.train_number}  at ${stationLabel(preview.mapStationId)}`;
+      }
+      return `
+        <g>
+          <circle class="active-ring" cx="${x}" cy="${y}" r="${outer}"></circle>
+          <circle cx="${x}" cy="${y}" r="${outer}" fill="none" stroke="${color}" stroke-width="${emphasized ? 5 : 4}"></circle>
+          <circle cx="${x}" cy="${y}" r="${inner}" fill="${color}" stroke="white" stroke-width="3"></circle>
+          <text x="${x}" y="${y + 1}" fill="white" font-size="11" font-weight="800" text-anchor="middle" dominant-baseline="middle">${playerId === "runner" ? "R" : "H"}</text>
+          <line class="marker-line" x1="${side === "right" ? x + outer : x - outer}" y1="${y}" x2="${side === "right" ? boxX : boxX + boxWidth}" y2="${y}" stroke="${color}"></line>
+          <rect class="marker-box" x="${boxX}" y="${boxY}" width="${boxWidth}" height="${boxHeight}" rx="14" ry="14" stroke="${color}" stroke-width="${emphasized ? 3 : 2}"></rect>
+          <text class="marker-label" x="${boxX + 10}" y="${boxY + 14}" fill="${color}">${playerId === "runner" ? "RUNNER" : "HUNTER"}</text>
+          <text class="marker-sub" x="${boxX + 10}" y="${boxY + boxHeight - 12}" fill="var(--ink)">${sub}</text>
+        </g>
+      `;
+    }
+
+    function describeStep(step) {
+      if (step.type === "WAIT_UNTIL") return `Wait until ${step.until_hhmm}.`;
+      if (step.type === "BOARD_TRAIN") return `Board ${step.train_number}.`;
+      if (step.type === "BOARD_ANY_OF") return `Try ${(step.candidates || []).map((c) => c.train_number).join(", ")}.`;
+      if (step.type === "RIDE_TO_STATION") return `Ride to ${stationLabel(step.station_id)}.`;
+      return step.type;
+    }
+
+    async function loadStations() {
+      const response = await fetch(`${DATA_BASE}/yamanote_stations.json`);
+      const data = await response.json();
+      state.stations = [...data.stations].sort((a, b) => a.order - b.order);
+      state.stations.forEach((station, index) => {
+        state.stationMap.set(station.id, station);
+        state.stationIndex.set(station.id, index);
+        const angle = ((MAP_START_ANGLE_DEG + (index * 360) / state.stations.length) * Math.PI) / 180;
+        const x = MAP_CENTER_X + Math.cos(angle) * MAP_RADIUS;
+        const y = MAP_CENTER_Y + Math.sin(angle) * MAP_RADIUS;
+        state.mapCoords.set(station.id, { x, y, angle });
+      });
+    }
+
+    async function loadDataset() {
+      const response = await fetch(`${DATA_BASE}/yamanote_weekday_train_instances_merged.json`);
+      const data = await response.json();
+      state.dataset = data;
+      data.train_instances.forEach((train) => state.trainMap.set(train.train_number, train));
+    }
+
+    function renderAll() {
+      syncPassiveHunterStep();
+      renderClock();
+      renderHud();
+      renderPlanBoard();
+      renderTrainOutlook();
+      renderActionRegion();
+      renderQuickbar();
+      renderMap();
+    }
+
+    async function init() {
+      state.ui.clockBox = document.getElementById("clock-box");
+      state.ui.clockPhase = document.getElementById("clock-phase");
+      state.ui.clockMain = document.getElementById("clock-main");
+      state.ui.clockSub = document.getElementById("clock-sub");
+      state.ui.runnerModeButton = document.getElementById("runner-mode-button");
+      state.ui.hunterModeButton = document.getElementById("hunter-mode-button");
+      state.ui.presetButton = document.getElementById("preset-button");
+      state.ui.clockButton = document.getElementById("clock-button");
+      state.ui.hudCard = document.getElementById("hud-card");
+      state.ui.selectedCard = document.getElementById("selected-card");
+      state.ui.mapSvg = document.getElementById("map-svg");
+      state.ui.quickbar = document.getElementById("quickbar");
+      state.ui.planBoard = document.getElementById("plan-board");
+      state.ui.trainOutlook = document.getElementById("train-outlook");
+      state.ui.actionRegion = document.getElementById("action-region");
+
+      state.ui.runnerModeButton.addEventListener("click", () => setActiveMode("runner"));
+      state.ui.hunterModeButton.addEventListener("click", () => setActiveMode("hunter"));
+      state.ui.presetButton.addEventListener("click", () => loadPreset());
+      state.ui.clockButton.addEventListener("click", () => toggleClock());
+
+      await loadStations();
+      await loadDataset();
+      loadPreset();
+    }
+
+    init().catch((error) => {
+      document.body.innerHTML = `<div style="padding:24px;font-family:sans-serif;">Failed to load the OniChase web client.</div>`;
+      console.error(error);
+    });
+  </script>
+</body>
+</html>
