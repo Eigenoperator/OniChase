@@ -31,9 +31,9 @@
 - 已把 `PLAN BOARD` 从右侧滚动内容中分离成固定区域，修正右侧动作区刷新后会把手动滚动位置弹回顶部的问题，并减少右侧 `PLAN BOARD` 与 `STEP 1 / STEP 2` 因整块重复重建导致的闪烁；玩家在车上时现在也会沿站间线路连续显示，不再只贴起终点站；同时已新增与本地客户端对齐的 `web_client` 和 GitHub Pages 发布链，并把“本地端与线上端保持同一主玩法流”正式写入 axioms；当前又补强了 Pages workflow 的 `configure-pages` 步骤并重新触发部署。
 - 已把 hunter mode 的第一版可见性规则落实到本地端与网页端：hunter 在 `PLANNING` 中看到 runner 处于站点或抽象地“在线路上”，在 `LIVE` 中看不到 runner；同时不再向 hunter 泄露 runner 的整条 plan trace，并新增两组“runner 固定不动”的 hunter 专用测试场景。
 - 已继续收紧 hunter 视角表达：不再直接写“在线路上”，而是只给出地图上的粗位置和 `Between A and B` 这类站间提示，让 hunter 自己从空间关系推断 runner 所在线路。
-- 已新增 `ROADMAP.md`，正式把产品路线定为 `v1 山手线`、`v2 新干线全图`、`v3 东京全图`，明确当前先专注 `v1` 的玩法验证与 UX。
 - 已把测试 preset 改成按当前模式工作：`Runner Mode` 仍用 `06:00 -> 07:00`，`Hunter Mode` 改成 `07:00 -> 08:00`，避免 hunter 测试在 `07:00` 被过早截断。
 - 已修正 hunter preset 的核心逻辑错误：先前是 hunter 自己被固定成 `WAIT_UNTIL 08:00`，现在改为 runner 作为被动等待方、hunter 自己保持空计划，方便直接测试 hunter 操作。
+- 已修正车上点站的一个环线 bug：地图点击下车站现在和右侧可达站列表共用同一套目的地判定，像 `TOKYO` 这种环线目标站不再被错误拦住。
 ## In Progress
 - 正在把本地客户端与新网页端一起推进到“更像正式玩法工作台”的阶段，重点是 hunter mode 的第一轮实测、时间流、地图联动、输入闭环，以及在线试玩稳定性。
 ## Decisions

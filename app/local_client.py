@@ -1302,15 +1302,8 @@ class OniChaseLocalClient:
                 self.add_board_and_ride_steps(pending_context["train"]["train_number"], station_id)
                 return
         if preview["current_state"]["kind"] == "TRAIN":
-            if station_id == (preview["current_board_stop"] or {}).get("station_id"):
-                return
-            alight_stop = self.find_alight_stop(
-                preview["current_train"],
-                preview["current_board_stop"]["sequence"],
-                station_id,
-                None,
-            )
-            if alight_stop:
+            valid_station_ids = {item["station_id"] for item in self.available_destinations(preview)}
+            if station_id in valid_station_ids:
                 self.add_ride_to_station_step(station_id)
 
     def preview_player(self, player_id: str, time_cap_minute: int | None = None) -> dict[str, Any]:
