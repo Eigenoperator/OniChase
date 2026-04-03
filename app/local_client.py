@@ -117,6 +117,7 @@ class OniChaseLocalClient:
         self.result_detail_var = tk.StringVar()
         self.latest_result: dict[str, Any] | None = None
         self.selected_result_event_index: int = 0
+        self.last_action_card_signature: tuple[Any, ...] | None = None
 
         self.build_ui()
         self.reset_match_flow(auto_start=True)
@@ -577,6 +578,7 @@ class OniChaseLocalClient:
             ],
         )
         self.render()
+        self.root.after_idle(lambda: self.right_canvas.yview_moveto(0.45))
 
     def truncate_future_steps_to_current(self) -> int:
         preview = self.active_preview()
@@ -1623,6 +1625,28 @@ class OniChaseLocalClient:
         return row + 1
 
     def render_action_card(self, preview: dict[str, Any]) -> None:
+        signature = (
+            self.active_mode,
+            preview["current_state"].get("kind"),
+            preview["current_state"].get("station_id"),
+            preview["current_state"].get("train_number"),
+            preview["current_minute"],
+            self.pending_board_train_number(),
+            self.selected_station_id,
+            tuple(
+                (
+                    step.get("type"),
+                    step.get("until_hhmm"),
+                    step.get("train_number"),
+                    step.get("station_id"),
+                )
+                for step in self.players[self.active_mode]["steps"]
+            ),
+            self.font_size_offset,
+        )
+        if signature == self.last_action_card_signature:
+            return
+        self.last_action_card_signature = signature
         for child in self.action_card.winfo_children():
             child.destroy()
 
