@@ -578,6 +578,12 @@ class OniChaseLocalClient:
     def active_preview(self) -> dict[str, Any]:
         return self.preview_player(self.active_mode, self.visible_game_minute())
 
+    def plan_cursor_preview(self, player_id: str | None = None) -> dict[str, Any]:
+        target = player_id or self.active_mode
+        if self.phase == "PLANNING" and self.current_replay_event() is None:
+            return self.preview_player(target, None)
+        return self.preview_player(target, self.visible_game_minute())
+
     def pending_board_train_number(self) -> str | None:
         return self.pending_board_train_numbers[self.active_mode]
 
@@ -649,7 +655,7 @@ class OniChaseLocalClient:
         self.render()
 
     def add_board_train_step(self, train_number: str) -> None:
-        preview = self.active_preview()
+        preview = self.plan_cursor_preview()
         if preview["error"]:
             self.set_result_message("ACTION", [preview["error"]])
             self.render()
@@ -686,7 +692,7 @@ class OniChaseLocalClient:
         self.render()
 
     def add_ride_to_station_step(self, station_id: str) -> None:
-        preview = self.active_preview()
+        preview = self.plan_cursor_preview()
         if preview["error"]:
             self.set_result_message("ACTION", [preview["error"]])
             self.render()
@@ -725,7 +731,7 @@ class OniChaseLocalClient:
         self.render()
 
     def add_wait_step(self) -> None:
-        preview = self.active_preview()
+        preview = self.plan_cursor_preview()
         if preview["error"]:
             self.set_result_message("ACTION", [preview["error"]])
             self.render()
@@ -755,7 +761,7 @@ class OniChaseLocalClient:
         self.render()
 
     def add_board_and_ride_steps(self, train_number: str, station_id: str) -> None:
-        preview = self.active_preview()
+        preview = self.plan_cursor_preview()
         if preview["error"]:
             self.set_result_message("ACTION", [preview["error"]])
             self.render()
@@ -1066,7 +1072,7 @@ class OniChaseLocalClient:
             self.render()
 
     def handle_station_click(self, station_id: str) -> None:
-        preview = self.active_preview()
+        preview = self.plan_cursor_preview()
         if preview["error"]:
             return
         pending_context = self.pending_departure_context(preview)
@@ -1419,7 +1425,8 @@ class OniChaseLocalClient:
             f"Hunter start: {self.station_map[self.players['hunter']['start_station_id']]['names']['en']}\n"
             f"Visibility: {'Replay override: both visible' if replay_mode else ('Both visible' if self.phase == 'PLANNING' else 'Opponent hidden')}"
         )
-        pending_context = self.pending_departure_context(active_preview)
+        cursor_preview = self.plan_cursor_preview()
+        pending_context = self.pending_departure_context(cursor_preview)
         upcoming = self.current_train_upcoming(active_preview)
         if pending_context:
             upcoming = [
@@ -1469,20 +1476,21 @@ class OniChaseLocalClient:
         self.plan_var.set(
             f"{self.active_mode.upper()} PLAN\n\n"
             f"Game time now: {minutes_to_hhmm(display_minute)}\n"
+            f"Plan cursor: {self.format_state(cursor_preview)}\n"
             f"Resolved: {resolved_count} / {len(active_steps)}\n\n"
             f"{plan_text}"
         )
 
-        options = self.available_options(active_preview)
-        selected_station_text = self.render_selected_station_text(active_preview)
+        options = self.available_options(cursor_preview)
+        selected_station_text = self.render_selected_station_text(cursor_preview)
         self.options_var.set(
             "IMMEDIATE OPTIONS\n\n"
             + ("\n".join(options) if options else "No suggestion from the current state.")
             + "\n\n"
             + selected_station_text
         )
-        self.render_action_card(active_preview)
-        self.root.after_idle(lambda: self.apply_right_pane_layout(bool(pending_context) or active_preview["current_state"]["kind"] == "TRAIN"))
+        self.render_action_card(cursor_preview)
+        self.root.after_idle(lambda: self.apply_right_pane_layout(bool(pending_context) or cursor_preview["current_state"]["kind"] == "TRAIN"))
         self.draw_map(runner_preview, hunter_preview, opponent_hidden)
 
     def render_selected_station_text(self, active_preview: dict[str, Any]) -> str:
@@ -1900,7 +1908,7 @@ class OniChaseLocalClient:
 
         self.draw_plan_trace(self.preview_player(self.active_mode), self.active_mode, faded=False)
         self.draw_plan_trace(self.preview_player("hunter" if self.active_mode == "runner" else "runner"), "hunter" if self.active_mode == "runner" else "runner", faded=True)
-        self.draw_pending_train_route(self.active_preview())
+        self.draw_pending_train_route(self.plan_cursor_preview())
 
         replay_event = self.current_replay_event()
         if replay_event:
@@ -1913,7 +1921,7 @@ class OniChaseLocalClient:
                 font=self.fonts["map_subtitle"],
                 tags=("board",),
             )
-        pending_context = self.pending_departure_context(self.active_preview())
+        pending_context = self.pending_departure_context(self.plan_cursor_preview())
         if pending_context:
             self.canvas.create_text(
                 46,

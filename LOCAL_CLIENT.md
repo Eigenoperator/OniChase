@@ -53,6 +53,7 @@ The first local client prototype already provides:
   - if a replay event leaves a player on a train, the client anchors that train near the closest scheduled station at that replay time
 - planning is now more player-facing:
   - while at a station, the right panel becomes a two-step flow: first choose a train, then choose a destination
+  - during `PLANNING`, the planning controls now use a plan cursor instead of only the live current state, so the player can keep chaining multiple trains from the end of the already planned route
   - the chosen train is highlighted before commitment, instead of instantly appending a board step
   - the destination strip is horizontally draggable for long routes and now also has a visible horizontal scrollbar
   - the right panel now also shows a guaranteed visible vertical destination list, so Step 2 does not depend only on the horizontal strip rendering correctly
@@ -61,6 +62,7 @@ The first local client prototype already provides:
   - step 2 now has two valid inputs: click `Ride Here` in the destination strip, or click one of the highlighted destination stations on the left map
   - once a train is chosen, Step 1 collapses into a compact selected-train summary and the right pane automatically gives more height to the action area, so Step 2 has more room
 - the match clock is now much more prominent, especially during `PLANNING`
+- the upper-right plan board now also shows the current plan cursor location, so the player can tell where the next planned leg will start
 
 ## Launch
 

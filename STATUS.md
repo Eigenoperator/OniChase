@@ -7,7 +7,6 @@
 - 已完成项目初始化、记忆系统、规则版本管理与 GitHub 同步工作流。
 - 已完成真实山手线站点、weekday 时刻表抓取、规范化、合并与可视化。
 - 已完成第一版真实列车实例模拟器，支持 `actions` / `plan`、事件日志、`same_node` / `same_train` 抓捕，以及 `RULES_v0.6` 的边界判定。
-- 已完成本地 `planner.html` 客户端原型：双击启动、圆环地图、Runner/Hunter 模式、plan 可视化轨迹、Runner plan test preset。
 - 已完成 `ENGINE_ARCHITECTURE.md`，明确 `data / rules / engine / interface / frontend` 五层边界。
 - 已修正本地启动器：`START_ONICHASE_LOCAL.desktop` 现在直接调用脚本本体，`START_ONICHASE_LOCAL.sh` 会写入 `.onichase-launch.log` 便于排查启动失败。
 - 已完成第一版本地桌面客户端原型：`local_client.py` 使用 `tkinter` 直接开窗，不依赖浏览器和本地 website。
@@ -31,6 +30,7 @@
 - 已为 `STEP 2` 增加右侧保底可见列表：即使横向站条不好看，也能直接在右侧竖向列表点 `Ride Here`。
 - 已在选车后自动压缩 `STEP 1` 并给动作区更多高度，让 `STEP 2` 不再被上面的长发车列表挤掉。
 - 已为 GitHub 外部测试者补上 `DEPLOYMENT.md`，并更新 `README.md` 的本地启动说明。
+- 已把 planning 输入切到 `plan cursor` 逻辑：在 `PLANNING` 阶段可以沿着已规划路线继续接着规划下一辆车，右上 `PLAN` 板也会显示当前 cursor 位置。
 
 ## In Progress
 - 正在把本地客户端从“可直接跑局”继续推进到“更像正式玩法工作台”的阶段，重点是时间流、回放、地图联动和输入闭环。
