@@ -9,39 +9,41 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data"
 VISUALS_DIR = ROOT / "visuals"
+STATIONS_PATH = DATA_DIR / "shinkansen_v2_stations.json"
+ROUTES_PATH = DATA_DIR / "shinkansen_v2_routes.json"
 
 
 STATIONS = [
-    {"id": "TOKYO", "name": "Tokyo", "category": "hub", "x": 1310, "y": 1790},
-    {"id": "UENO", "name": "Ueno", "category": "hub", "x": 1320, "y": 1718},
-    {"id": "OMIYA", "name": "Omiya", "category": "hub", "x": 1332, "y": 1646},
-    {"id": "KUMAGAYA", "name": "Kumagaya", "category": "normal", "x": 1352, "y": 1560},
-    {"id": "HONJO_WASEDA", "name": "Honjo-Waseda", "category": "normal", "x": 1372, "y": 1480},
-    {"id": "TAKASAKI", "name": "Takasaki", "category": "hub", "x": 1394, "y": 1400},
-    {"id": "OYAMA", "name": "Oyama", "category": "normal", "x": 1384, "y": 1538},
-    {"id": "UTSUNOMIYA", "name": "Utsunomiya", "category": "normal", "x": 1420, "y": 1456},
-    {"id": "NASUSHIOBARA", "name": "Nasushiobara", "category": "normal", "x": 1456, "y": 1368},
-    {"id": "SHIN_SHIRAKAWA", "name": "Shin-Shirakawa", "category": "normal", "x": 1492, "y": 1282},
-    {"id": "KORIYAMA", "name": "Koriyama", "category": "normal", "x": 1528, "y": 1196},
-    {"id": "FUKUSHIMA", "name": "Fukushima", "category": "hub", "x": 1564, "y": 1108},
-    {"id": "SHIROISHI_ZAO", "name": "Shiroishi-Zao", "category": "normal", "x": 1600, "y": 1022},
-    {"id": "SENDAI_TOHOKU", "name": "Sendai", "category": "hub", "x": 1636, "y": 936},
-    {"id": "FURUKAWA", "name": "Furukawa", "category": "normal", "x": 1668, "y": 852},
-    {"id": "KURIKOMA_KOGEN", "name": "Kurikoma-Kogen", "category": "normal", "x": 1700, "y": 770},
-    {"id": "ICHINOSEKI", "name": "Ichinoseki", "category": "normal", "x": 1734, "y": 688},
-    {"id": "MIZUSAWA_ESASHI", "name": "Mizusawa-Esashi", "category": "normal", "x": 1766, "y": 616},
-    {"id": "KITAKAMI", "name": "Kitakami", "category": "normal", "x": 1796, "y": 546},
-    {"id": "SHIN_HANAMAKI", "name": "Shin-Hanamaki", "category": "normal", "x": 1826, "y": 478},
-    {"id": "MORIOKA", "name": "Morioka", "category": "hub", "x": 1858, "y": 410},
-    {"id": "IWATE_NUMAKUNAI", "name": "Iwate-Numakunai", "category": "normal", "x": 1890, "y": 340},
-    {"id": "NINOHE", "name": "Ninohe", "category": "normal", "x": 1922, "y": 272},
-    {"id": "HACHINOHE", "name": "Hachinohe", "category": "normal", "x": 1954, "y": 204},
-    {"id": "SHICHINOHE_TOWADA", "name": "Shichinohe-Towada", "category": "normal", "x": 1986, "y": 136},
-    {"id": "SHIN_AOMORI", "name": "Shin-Aomori", "category": "hub", "x": 2018, "y": 72},
-    {"id": "OKU_TSUGARU_IMABETSU", "name": "Oku-Tsugaru-Imabetsu", "category": "normal", "x": 2062, "y": 24},
-    {"id": "KIKONAI", "name": "Kikonai", "category": "normal", "x": 2108, "y": -20},
-    {"id": "SHIN_HAKODATE_HOKUTO", "name": "Shin-Hakodate-Hokuto", "category": "hub", "x": 2154, "y": -64},
-    {"id": "YONEZAWA", "name": "Yonezawa", "category": "normal", "x": 1478, "y": 1138},
+    {"id": "TOKYO", "name": "Tokyo", "category": "hub", "x": 1310, "y": 1790, "lat": None, "lon": None},
+    {"id": "UENO", "name": "Ueno", "category": "hub", "x": 1320, "y": 1718, "lat": None, "lon": None},
+    {"id": "OMIYA", "name": "Omiya", "category": "hub", "x": 1332, "y": 1646, "lat": None, "lon": None},
+    {"id": "KUMAGAYA", "name": "Kumagaya", "category": "normal", "x": 1352, "y": 1560, "lat": None, "lon": None},
+    {"id": "HONJO_WASEDA", "name": "Honjo-Waseda", "category": "normal", "x": 1372, "y": 1480, "lat": None, "lon": None},
+    {"id": "TAKASAKI", "name": "Takasaki", "category": "hub", "x": 1394, "y": 1400, "lat": None, "lon": None},
+    {"id": "OYAMA", "name": "Oyama", "category": "normal", "x": 1384, "y": 1538, "lat": None, "lon": None},
+    {"id": "UTSUNOMIYA", "name": "Utsunomiya", "category": "normal", "x": 1420, "y": 1456, "lat": None, "lon": None},
+    {"id": "NASUSHIOBARA", "name": "Nasushiobara", "category": "normal", "x": 1456, "y": 1368, "lat": None, "lon": None},
+    {"id": "SHIN_SHIRAKAWA", "name": "Shin-Shirakawa", "category": "normal", "x": 1492, "y": 1282, "lat": None, "lon": None},
+    {"id": "KORIYAMA", "name": "Koriyama", "category": "normal", "x": 1528, "y": 1196, "lat": None, "lon": None},
+    {"id": "FUKUSHIMA", "name": "Fukushima", "category": "hub", "x": 1564, "y": 1108, "lat": None, "lon": None},
+    {"id": "SHIROISHI_ZAO", "name": "Shiroishi-Zao", "category": "normal", "x": 1600, "y": 1022, "lat": None, "lon": None},
+    {"id": "SENDAI_TOHOKU", "name": "Sendai", "category": "hub", "x": 1636, "y": 936, "lat": None, "lon": None},
+    {"id": "FURUKAWA", "name": "Furukawa", "category": "normal", "x": 1668, "y": 852, "lat": None, "lon": None},
+    {"id": "KURIKOMA_KOGEN", "name": "Kurikoma-Kogen", "category": "normal", "x": 1700, "y": 770, "lat": None, "lon": None},
+    {"id": "ICHINOSEKI", "name": "Ichinoseki", "category": "normal", "x": 1734, "y": 688, "lat": None, "lon": None},
+    {"id": "MIZUSAWA_ESASHI", "name": "Mizusawa-Esashi", "category": "normal", "x": 1766, "y": 616, "lat": None, "lon": None},
+    {"id": "KITAKAMI", "name": "Kitakami", "category": "normal", "x": 1796, "y": 546, "lat": None, "lon": None},
+    {"id": "SHIN_HANAMAKI", "name": "Shin-Hanamaki", "category": "normal", "x": 1826, "y": 478, "lat": None, "lon": None},
+    {"id": "MORIOKA", "name": "Morioka", "category": "hub", "x": 1858, "y": 410, "lat": None, "lon": None},
+    {"id": "IWATE_NUMAKUNAI", "name": "Iwate-Numakunai", "category": "normal", "x": 1890, "y": 340, "lat": None, "lon": None},
+    {"id": "NINOHE", "name": "Ninohe", "category": "normal", "x": 1922, "y": 272, "lat": None, "lon": None},
+    {"id": "HACHINOHE", "name": "Hachinohe", "category": "normal", "x": 1954, "y": 204, "lat": None, "lon": None},
+    {"id": "SHICHINOHE_TOWADA", "name": "Shichinohe-Towada", "category": "normal", "x": 1986, "y": 136, "lat": None, "lon": None},
+    {"id": "SHIN_AOMORI", "name": "Shin-Aomori", "category": "hub", "x": 2018, "y": 72, "lat": None, "lon": None},
+    {"id": "OKU_TSUGARU_IMABETSU", "name": "Oku-Tsugaru-Imabetsu", "category": "normal", "x": 2062, "y": 24, "lat": None, "lon": None},
+    {"id": "KIKONAI", "name": "Kikonai", "category": "normal", "x": 2108, "y": -20, "lat": None, "lon": None},
+    {"id": "SHIN_HAKODATE_HOKUTO", "name": "Shin-Hakodate-Hokuto", "category": "hub", "x": 2154, "y": -64, "lat": None, "lon": None},
+    {"id": "YONEZAWA", "name": "Yonezawa", "category": "normal", "x": 1478, "y": 1138, "lat": None, "lon": None},
     {"id": "TAKAHATA", "name": "Takahata", "category": "normal", "x": 1418, "y": 1168},
     {"id": "AKAYU", "name": "Akayu", "category": "normal", "x": 1358, "y": 1202},
     {"id": "KAMINOYAMA_ONSEN", "name": "Kaminoyama-Onsen", "category": "normal", "x": 1298, "y": 1238},
@@ -130,7 +132,7 @@ STATIONS = [
     {"id": "URESHINO_ONSEN", "name": "Ureshino-Onsen", "category": "normal", "x": -1420, "y": 1784},
     {"id": "SHIN_OMURA", "name": "Shin-Omura", "category": "normal", "x": -1498, "y": 1736},
     {"id": "ISAHAYA", "name": "Isahaya", "category": "hub", "x": -1538, "y": 1712},
-    {"id": "NAGASAKI", "name": "Nagasaki", "category": "hub", "x": -1578, "y": 1688},
+    {"id": "NAGASAKI", "name": "Nagasaki", "category": "hub", "x": -1578, "y": 1688, "lat": None, "lon": None},
 ]
 
 
@@ -258,24 +260,111 @@ ROUTES = [
     },
 ]
 
+ROUTE_LABELS = {
+    route["id"]: route["label"] for route in ROUTES
+}
+
 
 def station_map():
-    return {station["id"]: station for station in STATIONS}
+    return {station["id"]: station for station in load_stations()}
+
+
+def load_stations():
+    if STATIONS_PATH.exists():
+        return json.loads(STATIONS_PATH.read_text(encoding="utf-8"))
+    return [
+        {
+            "id": station["id"],
+            "name": station["name"],
+            "names": {
+                "en": station["name"],
+                "ja": station.get("name"),
+                "zh_hans": station["name"],
+            },
+            "category": station["category"],
+            "lat": station.get("lat"),
+            "lon": station.get("lon"),
+            "geometry_seed": {"x": station["x"], "y": station["y"]},
+        }
+        for station in STATIONS
+    ]
+
+
+def load_routes():
+    if ROUTES_PATH.exists():
+        routes = json.loads(ROUTES_PATH.read_text(encoding="utf-8"))
+        for route in routes:
+            if "label" not in route and route["id"] in ROUTE_LABELS:
+                route["label"] = ROUTE_LABELS[route["id"]]
+        return routes
+    return [
+        {
+            "id": route["id"],
+            "name": route["name"],
+            "color": route["color"],
+            "station_ids": route["stations"],
+            **({"dash": route["dash"]} if route.get("dash") else {}),
+        }
+        for route in ROUTES
+    ]
+
+
+def projected_points():
+    latlon_stations = [station for station in load_stations() if station.get("lat") is not None and station.get("lon") is not None]
+    if not latlon_stations:
+        return {}
+
+    min_lon = min(station["lon"] for station in latlon_stations)
+    max_lon = max(station["lon"] for station in latlon_stations)
+    min_lat = min(station["lat"] for station in latlon_stations)
+    max_lat = max(station["lat"] for station in latlon_stations)
+
+    width = 3500
+    height = 2400
+    left = -1500
+    top = 0
+
+    points = {}
+    for station in latlon_stations:
+        lon_ratio = (station["lon"] - min_lon) / (max_lon - min_lon or 1)
+        lat_ratio = (station["lat"] - min_lat) / (max_lat - min_lat or 1)
+        x = left + lon_ratio * width
+        y = top + (1 - lat_ratio) * height
+        points[station["id"]] = {"x": round(x, 2), "y": round(y, 2)}
+    return points
+
+
+def point_for_station(station: dict, projected: dict) -> dict:
+    if station["id"] in projected:
+        return projected[station["id"]]
+    return {"x": station["x"], "y": station["y"]}
 
 
 def path_for_route(route: dict) -> str:
     stations_by_id = station_map()
+    projected = projected_points()
     points = []
-    for station_id in route["stations"]:
+    for station_id in route["station_ids"]:
         station = stations_by_id[station_id]
-        points.append(f"{station['x']},{station['y']}")
+        point = point_for_station(
+            {
+                "id": station["id"],
+                "x": station["geometry_seed"]["x"],
+                "y": station["geometry_seed"]["y"],
+            }
+            | station,
+            projected,
+        )
+        points.append(f"{point['x']},{point['y']}")
     return " ".join(points)
 
 
 def render_svg() -> str:
     width = 2600
     height = 2700
-    stations_by_id = station_map()
+    stations = load_stations()
+    routes = load_routes()
+    projected = projected_points()
 
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="-1700 -120 4400 2680" role="img" aria-labelledby="title desc">',
@@ -303,7 +392,7 @@ def render_svg() -> str:
         '<text class="note" x="-1580" y="2460">This map is generated from route and station data. It is now a geometry pipeline artifact rather than a hand-drawn final SVG.</text>',
     ]
 
-    for route in ROUTES:
+    for route in routes:
         dash_attr = ""
         if route.get("dash"):
             dash_attr = f' stroke-dasharray="{route["dash"]}"'
@@ -315,7 +404,16 @@ def render_svg() -> str:
             f'<text class="line-label" x="{label["x"]}" y="{label["y"]}">{route["name"]}</text>'
         )
 
-    for station in STATIONS:
+    for station in stations:
+        point = point_for_station(
+            {
+                "id": station["id"],
+                "x": station["geometry_seed"]["x"],
+                "y": station["geometry_seed"]["y"],
+            }
+            | station,
+            projected,
+        )
         klass = "hub" if station["category"] == "hub" else "station"
         radius = 9 if station["category"] == "hub" else 6
         label_class = "hub-label" if station["category"] == "hub" else "station-label"
@@ -324,10 +422,10 @@ def render_svg() -> str:
         if station["id"] in {"TOKYO", "SHIN_OSAKA", "HAKATA", "NAGOYA", "KANAZAWA", "AKITA", "NIIGATA"}:
             label_dy = -8
         parts.append(
-            f'<circle class="{klass}" cx="{station["x"]}" cy="{station["y"]}" r="{radius}"/>'
+            f'<circle class="{klass}" cx="{point["x"]}" cy="{point["y"]}" r="{radius}"/>'
         )
         parts.append(
-            f'<text class="{label_class}" x="{station["x"] + label_dx}" y="{station["y"] + label_dy}">{station["name"]}</text>'
+            f'<text class="{label_class}" x="{point["x"] + label_dx}" y="{point["y"] + label_dy}">{station["name"]}</text>'
         )
 
     parts.append("</svg>")
@@ -336,42 +434,45 @@ def render_svg() -> str:
 
 def export_json():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    stations_payload = []
-    for station in STATIONS:
-        stations_payload.append(
-            {
-                "id": station["id"],
-                "name": station["name"],
-                "names": {
-                    "en": station["name"],
-                    "ja": station["name"],
-                    "zh_hans": station["name"],
-                },
-                "category": station["category"],
-                "geometry_seed": {"x": station["x"], "y": station["y"]},
-            }
+    if not STATIONS_PATH.exists():
+        stations_payload = []
+        for station in STATIONS:
+            stations_payload.append(
+                {
+                    "id": station["id"],
+                    "name": station["name"],
+                    "names": {
+                        "en": station["name"],
+                        "ja": station["name"],
+                        "zh_hans": station["name"],
+                    },
+                    "category": station["category"],
+                    "lat": station.get("lat"),
+                    "lon": station.get("lon"),
+                    "geometry_seed": {"x": station["x"], "y": station["y"]},
+                }
+            )
+        STATIONS_PATH.write_text(
+            json.dumps(stations_payload, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
         )
 
-    routes_payload = []
-    for route in ROUTES:
-        route_payload = {
-            "id": route["id"],
-            "name": route["name"],
-            "color": route["color"],
-            "station_ids": route["stations"],
-        }
-        if route.get("dash"):
-            route_payload["dash"] = route["dash"]
-        routes_payload.append(route_payload)
-
-    (DATA_DIR / "shinkansen_v2_stations.json").write_text(
-        json.dumps(stations_payload, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-    (DATA_DIR / "shinkansen_v2_routes.json").write_text(
-        json.dumps(routes_payload, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    if not ROUTES_PATH.exists():
+        routes_payload = []
+        for route in ROUTES:
+            route_payload = {
+                "id": route["id"],
+                "name": route["name"],
+                "color": route["color"],
+                "station_ids": route["stations"],
+            }
+            if route.get("dash"):
+                route_payload["dash"] = route["dash"]
+            routes_payload.append(route_payload)
+        ROUTES_PATH.write_text(
+            json.dumps(routes_payload, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
 
 
 def main():
