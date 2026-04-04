@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 
 
@@ -393,6 +394,89 @@ def route_label_rect(route: dict) -> tuple[float, float, float, float]:
     return x, y, width, height
 
 
+def rects_intersect(a: tuple[float, float, float, float], b: tuple[float, float, float, float], padding: float = 0) -> bool:
+    ax1, ay1, ax2, ay2 = a
+    bx1, by1, bx2, by2 = b
+    return not (
+        ax2 + padding < bx1
+        or bx2 + padding < ax1
+        or ay2 + padding < by1
+        or by2 + padding < ay1
+    )
+
+
+def estimate_label_box(
+    station_name: str,
+    anchor_x: float,
+    anchor_y: float,
+    dx: float,
+    dy: float,
+    font_size: float,
+) -> tuple[float, float, float, float]:
+    width = max(28, len(station_name) * font_size * 0.62)
+    height = font_size + 6
+    x1 = anchor_x + dx
+    y2 = anchor_y + dy
+    y1 = y2 - height
+    x2 = x1 + width
+    return (x1, y1, x2, y2)
+
+
+def circle_intersects_rect(cx: float, cy: float, radius: float, rect: tuple[float, float, float, float], padding: float = 0) -> bool:
+    x1, y1, x2, y2 = rect
+    nearest_x = min(max(cx, x1), x2)
+    nearest_y = min(max(cy, y1), y2)
+    dx = cx - nearest_x
+    dy = cy - nearest_y
+    return dx * dx + dy * dy <= (radius + padding) * (radius + padding)
+
+
+def choose_label_layout(
+    station: dict,
+    point: dict,
+    radius: float,
+    font_size: float,
+    occupied_rects: list[tuple[float, float, float, float]],
+    station_circles: list[tuple[float, float, float]],
+) -> tuple[float, float]:
+    preferred = LABEL_LAYOUTS.get(station["id"])
+    candidates = []
+    if preferred:
+        candidates.append((preferred["dx"], preferred["dy"]))
+    candidates.extend(
+        [
+            (18, -6),
+            (18, 16),
+            (-18 - len(station["name"]) * font_size * 0.62, -6),
+            (-18 - len(station["name"]) * font_size * 0.62, 16),
+            (12, -18),
+            (12, 26),
+            (26, -18),
+            (26, 26),
+        ]
+    )
+
+    best = candidates[0]
+    best_score = None
+    for dx, dy in candidates:
+        rect = estimate_label_box(station["name"], point["x"], point["y"], dx, dy, font_size)
+        overlap_count = 0
+        for other_rect in occupied_rects:
+            if rects_intersect(rect, other_rect, padding=6):
+                overlap_count += 1
+        for cx, cy, cr in station_circles:
+            if circle_intersects_rect(cx, cy, cr, rect, padding=6):
+                overlap_count += 3
+        distance_penalty = math.hypot(dx, dy) * 0.05
+        score = overlap_count * 1000 + distance_penalty
+        if best_score is None or score < best_score:
+            best_score = score
+            best = (dx, dy)
+            if overlap_count == 0:
+                break
+    return best
+
+
 def render_svg() -> str:
     width = 2600
     height = 2700
@@ -428,6 +512,10 @@ def render_svg() -> str:
         '<text class="note" x="-1580" y="2460">Current pass: cleaner linework and labels over the real-coordinate geometry pipeline.</text>',
     ]
 
+    occupied_rects = []
+    for route in routes:
+        occupied_rects.append(route_label_rect(route))
+
     for route in routes:
         dash_attr = ""
         if route.get("dash"):
@@ -449,6 +537,7 @@ def render_svg() -> str:
         )
 
     for station in stations:
+        font_size = 13 if station["category"] == "hub" else 12
         point = point_for_station(
             {
                 "id": station["id"],
@@ -461,14 +550,40 @@ def render_svg() -> str:
         klass = "hub" if station["category"] == "hub" else "station"
         radius = 9 if station["category"] == "hub" else 6
         label_class = "hub-label" if station["category"] == "hub" else "station-label"
-        layout = LABEL_LAYOUTS.get(station["id"], {})
-        label_dx = layout.get("dx", 18)
-        label_dy = layout.get("dy", -5)
+        station_circles = [
+            (
+                point_for_station(
+                    {
+                        "id": other["id"],
+                        "x": other["geometry_seed"]["x"],
+                        "y": other["geometry_seed"]["y"],
+                    }
+                    | other,
+                    projected,
+                )["x"],
+                point_for_station(
+                    {
+                        "id": other["id"],
+                        "x": other["geometry_seed"]["x"],
+                        "y": other["geometry_seed"]["y"],
+                    }
+                    | other,
+                    projected,
+                )["y"],
+                13 if other["category"] == "hub" else 10,
+            )
+            for other in stations
+            if other["id"] != station["id"]
+        ]
+        label_dx, label_dy = choose_label_layout(station, point, radius, font_size, occupied_rects, station_circles)
         parts.append(
             f'<circle class="{klass}" cx="{point["x"]}" cy="{point["y"]}" r="{radius}"/>'
         )
         parts.append(
             f'<text class="{label_class}" x="{point["x"] + label_dx}" y="{point["y"] + label_dy}">{station["name"]}</text>'
+        )
+        occupied_rects.append(
+            estimate_label_box(station["name"], point["x"], point["y"], label_dx, label_dy, font_size)
         )
 
     parts.append("</svg>")
