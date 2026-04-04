@@ -15,10 +15,8 @@
       .hub-label { font: 700 13px Helvetica, Arial, sans-serif; fill: #1f2933; }
       .line-label { font: 700 15px Helvetica, Arial, sans-serif; fill: #1f2933; }
       .note { font: 500 13px Helvetica, Arial, sans-serif; fill: #697586; }
-      .track-back { fill: none; stroke: #d7d1c4; stroke-width: 18; stroke-linecap: round; stroke-linejoin: round; }
+      .track-back { display: none; }
       .track { fill: none; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
-      .seasonal { fill: none; stroke: #9aa7b5; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 8 8; }
-      .disconnected { fill: none; stroke: #b8bfc8; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 10 10; }
     </style>
   </defs>
 
@@ -55,7 +53,7 @@
 
   <g transform="translate(500 170)">
     <text class="note" x="0" y="0">This drawing is geography-aware but still schematic. It is meant for V2 route design, not as a final production map render.</text>
-    <text class="note" x="0" y="24">Shared track is drawn once per corridor, then colored line overlays show how the real network branches.</text>
+    <text class="note" x="0" y="24">This version keeps only colored service lines so route relationships are easier to read at a glance.</text>
   </g>
 
   <g transform="translate(950 250) scale(0.50)">
@@ -63,27 +61,26 @@
     <path class="track-back" d="M1150 1820 L1155 1752 L1164 1684 L1175 1618 L1187 1552 L1202 1488 L1217 1422 L1232 1352 L1247 1280 L1262 1210 L1278 1140 L1294 1072 L1311 1004 L1328 938 L1346 872 L1365 806 L1384 742 L1404 680 L1425 618 L1446 558 L1468 498 L1490 440 L1512 382 L1534 326 L1556 270"/>
     <path class="track-back" d="M1202 1488 L1138 1448 L1074 1406 L1012 1364 L950 1320 L888 1276 L840 1218 L792 1160 L738 1102 L686 1044 L634 986 L580 1028 L528 1070 L464 1120 L412 1168 L360 1218 L308 1266 L258 1314 L208 1364"/>
     <path class="track-back" d="M1202 1488 L1160 1460 L1112 1432 L1064 1406 L1014 1380 L966 1354"/>
-    <path class="track-back" d="M1384 742 L1332 718 L1278 694 L1226 670 L1176 648"/>
+    <path class="track-back" d="M1294 1072 L1240 1116 L1186 1156 L1134 1196 L1084 1238 L1036 1280 L988 1320 L940 1362 L892 1404 L844 1446 L796 1488"/>
     <path class="track-back" d="M1150 1820 L1054 1820 L960 1820 L872 1820 L792 1820 L710 1820 L630 1820 L548 1820 L466 1820 L388 1820 L314 1820 L244 1820 L174 1820 L104 1820 L34 1820 L-36 1820 L-108 1820 L-180 1820 L-252 1820 L-324 1820 L-396 1820 L-468 1820 L-540 1820 L-612 1820 L-684 1820 L-756 1820 L-828 1820 L-900 1820 L-972 1820 L-1044 1820 L-1116 1820 L-1188 1820 L-1260 1820 L-1332 1820 L-1404 1820"/>
     <path class="track-back" d="M-1404 1820 L-1368 1868 L-1350 1918 L-1336 1968 L-1324 2018 L-1312 2068"/>
-    <path class="track-back" d="M-1200 1768 L-1244 1716 L-1288 1664 L-1332 1614 L-1376 1566"/>
+    <path class="track-back" d="M-1396 1876 L-1472 1826 L-1546 1778 L-1618 1730 L-1654 1706 L-1690 1682"/>
 
     <!-- Tohoku + Hokkaido -->
-    <path class="track" stroke="#2d9c5b" d="M1150 1820 L1155 1752 L1164 1684 L1175 1618 L1187 1552 L1202 1488 L1217 1422 L1232 1352 L1247 1280 L1262 1210 L1278 1140 L1294 1072 L1311 1004 L1328 938 L1346 872 L1365 806 L1384 742 L1404 680 L1425 618 L1446 558 L1468 498 L1490 440"/>
-    <path class="track" stroke="#2aa7d8" d="M1490 440 L1512 382 L1534 326 L1556 270"/>
+    <path class="track" stroke="#2d9c5b" d="M1150 1820 L1155 1752 L1164 1684 L1175 1618 L1187 1552 L1202 1488 L1217 1422 L1232 1352 L1247 1280 L1262 1210 L1278 1140 L1294 1072 L1311 1004 L1328 938 L1346 872 L1365 806 L1384 742 L1404 680 L1425 618 L1446 558 L1468 498 L1490 440 L1512 382 L1534 326 L1556 270 L1578 214"/>
+    <path class="track" stroke="#2aa7d8" d="M1578 214 L1602 160 L1628 110 L1654 62"/>
 
     <!-- Yamagata -->
-    <path class="track" stroke="#f09b20" d="M1384 742 L1332 718 L1278 694 L1226 670 L1176 648"/>
+    <path class="track" stroke="#f09b20" d="M1294 1072 L1240 1116 L1186 1156 L1134 1196 L1084 1238 L1036 1280 L988 1320 L940 1362 L892 1404 L844 1446 L796 1488"/>
 
     <!-- Akita -->
     <path class="track" stroke="#d54a96" d="M1468 498 L1418 540 L1368 586 L1318 632 L1268 680 L1218 726"/>
 
     <!-- Joetsu -->
-    <path class="track" stroke="#e65045" d="M1202 1488 L1160 1460 L1112 1432 L1064 1406 L1014 1380 L966 1354"/>
-    <path class="seasonal" d="M1014 1380 L990 1322"/>
+    <path class="track" stroke="#e65045" d="M1202 1488 L1168 1428 L1130 1372 L1092 1316 L1054 1260 L1016 1204 L978 1148"/>
 
     <!-- Hokuriku -->
-    <path class="track" stroke="#2c62c9" d="M1202 1488 L1138 1448 L1074 1406 L1012 1364 L950 1320 L888 1276 L840 1218 L792 1160 L738 1102 L686 1044 L634 986 L580 1028 L528 1070 L464 1120 L412 1168 L360 1218 L308 1266 L258 1314 L208 1364"/>
+    <path class="track" stroke="#2c62c9" d="M1202 1488 L1138 1518 L1074 1548 L1012 1578 L950 1608 L888 1638 L824 1668 L760 1698 L696 1728 L632 1758 L568 1788 L504 1818 L440 1848 L376 1878 L312 1908 L248 1938 L184 1968 L120 1998"/>
 
     <!-- Tokaido -->
     <path class="track" stroke="#1f4fb9" d="M1150 1820 L1054 1820 L960 1820 L872 1820 L792 1820 L710 1820 L630 1820 L548 1820 L466 1820 L388 1820 L314 1820 L244 1820 L174 1820 L104 1820 L34 1820 L-36 1820 L-108 1820"/>
@@ -95,16 +92,15 @@
     <path class="track" stroke="#d35d1f" d="M-1404 1820 L-1396 1876 L-1388 1932 L-1380 1988 L-1372 2044 L-1364 2100 L-1356 2156 L-1348 2212 L-1340 2268"/>
 
     <!-- Nishi Kyushu -->
-    <path class="track" stroke="#7e52b8" d="M-1472 1826 L-1546 1778 L-1618 1730 L-1654 1706 L-1690 1682"/>
-    <path class="disconnected" d="M-1396 1876 L-1434 1850 L-1472 1826"/>
+    <path class="track" stroke="#7e52b8" d="M-1396 1876 L-1472 1826 L-1546 1778 L-1618 1730 L-1654 1706 L-1690 1682"/>
 
     <!-- Labels -->
     <text class="line-label" x="1466" y="230">Hokkaido</text>
     <text class="line-label" x="1450" y="520">Tohoku</text>
-    <text class="line-label" x="1010" y="602">Yamagata</text>
+    <text class="line-label" x="1008" y="1216">Yamagata</text>
     <text class="line-label" x="1328" y="646">Akita</text>
-    <text class="line-label" x="944" y="1332">Joetsu</text>
-    <text class="line-label" x="760" y="1128">Hokuriku</text>
+    <text class="line-label" x="1046" y="1184">Joetsu</text>
+    <text class="line-label" x="720" y="1708">Hokuriku</text>
     <text class="line-label" x="684" y="1790">Tokaido</text>
     <text class="line-label" x="-720" y="1790">Sanyo</text>
     <text class="line-label" x="-1478" y="2078">Kyushu</text>
@@ -142,23 +138,21 @@
     <g><circle class="hub" cx="1578" cy="214" r="8"/><text class="hub-label" x="1596" y="209">Shin-Aomori</text></g>
 
     <!-- Hokkaido -->
-    <path class="track-back" d="M1578 214 L1602 160 L1628 110 L1654 62"/>
-    <path class="track" stroke="#2aa7d8" d="M1578 214 L1602 160 L1628 110 L1654 62"/>
     <g><circle class="station" cx="1602" cy="160" r="6"/><text class="station-label" x="1620" y="155">Oku-Tsugaru-Imabetsu</text></g>
     <g><circle class="station" cx="1628" cy="110" r="6"/><text class="station-label" x="1646" y="105">Kikonai</text></g>
     <g><circle class="hub" cx="1654" cy="62" r="8"/><text class="hub-label" x="1672" y="57">Shin-Hakodate-Hokuto</text></g>
 
     <!-- Yamagata -->
-    <g><circle class="station" cx="1332" cy="718" r="6"/><text class="station-label" x="1212" y="713">Yonezawa</text></g>
-    <g><circle class="station" cx="1278" cy="694" r="6"/><text class="station-label" x="1188" y="689">Takahata</text></g>
-    <g><circle class="station" cx="1226" cy="670" r="6"/><text class="station-label" x="1140" y="665">Akayu</text></g>
-    <g><circle class="station" cx="1176" cy="648" r="6"/><text class="station-label" x="1074" y="643">Kaminoyama-Onsen</text></g>
-    <g><circle class="hub" cx="1128" cy="626" r="8"/><text class="hub-label" x="1010" y="621">Yamagata</text></g>
-    <g><circle class="station" cx="1080" cy="604" r="6"/><text class="station-label" x="990" y="599">Tendo</text></g>
-    <g><circle class="station" cx="1032" cy="582" r="6"/><text class="station-label" x="892" y="577">Sakuranbo-Higashine</text></g>
-    <g><circle class="station" cx="984" cy="560" r="6"/><text class="station-label" x="900" y="555">Murayama</text></g>
-    <g><circle class="hub" cx="936" cy="538" r="8"/><text class="hub-label" x="852" y="533">Oishida</text></g>
-    <g><circle class="hub" cx="888" cy="516" r="8"/><text class="hub-label" x="812" y="511">Shinjo</text></g>
+    <g><circle class="station" cx="1240" cy="1116" r="6"/><text class="station-label" x="1128" y="1111">Yonezawa</text></g>
+    <g><circle class="station" cx="1186" cy="1156" r="6"/><text class="station-label" x="1094" y="1151">Takahata</text></g>
+    <g><circle class="station" cx="1134" cy="1196" r="6"/><text class="station-label" x="1054" y="1191">Akayu</text></g>
+    <g><circle class="station" cx="1084" cy="1238" r="6"/><text class="station-label" x="948" y="1233">Kaminoyama-Onsen</text></g>
+    <g><circle class="hub" cx="1036" cy="1280" r="8"/><text class="hub-label" x="948" y="1275">Yamagata</text></g>
+    <g><circle class="station" cx="988" cy="1320" r="6"/><text class="station-label" x="920" y="1315">Tendo</text></g>
+    <g><circle class="station" cx="940" cy="1362" r="6"/><text class="station-label" x="794" y="1357">Sakuranbo-Higashine</text></g>
+    <g><circle class="station" cx="892" cy="1404" r="6"/><text class="station-label" x="814" y="1399">Murayama</text></g>
+    <g><circle class="station" cx="844" cy="1446" r="6"/><text class="station-label" x="770" y="1441">Oishida</text></g>
+    <g><circle class="hub" cx="796" cy="1488" r="8"/><text class="hub-label" x="734" y="1483">Shinjo</text></g>
 
     <!-- Akita -->
     <g><circle class="station" cx="1418" cy="540" r="6"/><text class="station-label" x="1436" y="535">Shizukuishi</text></g>
@@ -168,33 +162,33 @@
     <g><circle class="hub" cx="1218" cy="726" r="8"/><text class="hub-label" x="1142" y="721">Akita</text></g>
 
     <!-- Joetsu -->
-    <g><circle class="station" cx="1160" cy="1460" r="6"/><text class="station-label" x="1064" y="1455">Jomo-Kogen</text></g>
-    <g><circle class="hub" cx="1112" cy="1432" r="8"/><text class="hub-label" x="1014" y="1427">Echigo-Yuzawa</text></g>
-    <g><circle class="station" cx="990" cy="1322" r="6"/><text class="station-label" x="914" y="1317">Gala Yuzawa</text></g>
-    <g><circle class="station" cx="1064" cy="1406" r="6"/><text class="station-label" x="990" y="1401">Urasa</text></g>
-    <g><circle class="hub" cx="1014" cy="1380" r="8"/><text class="hub-label" x="926" y="1375">Nagaoka</text></g>
-    <g><circle class="station" cx="966" cy="1354" r="6"/><text class="station-label" x="856" y="1349">Tsubame-Sanjo</text></g>
-    <g><circle class="hub" cx="918" cy="1328" r="8"/><text class="hub-label" x="848" y="1323">Niigata</text></g>
+    <g><circle class="station" cx="1168" cy="1428" r="6"/><text class="station-label" x="1070" y="1423">Jomo-Kogen</text></g>
+    <g><circle class="hub" cx="1130" cy="1372" r="8"/><text class="hub-label" x="1010" y="1367">Echigo-Yuzawa</text></g>
+    <g><circle class="station" cx="1098" cy="1330" r="6"/><text class="station-label" x="1014" y="1325">Gala Yuzawa</text></g>
+    <g><circle class="station" cx="1092" cy="1316" r="6"/><text class="station-label" x="1034" y="1311">Urasa</text></g>
+    <g><circle class="hub" cx="1054" cy="1260" r="8"/><text class="hub-label" x="970" y="1255">Nagaoka</text></g>
+    <g><circle class="station" cx="1016" cy="1204" r="6"/><text class="station-label" x="900" y="1199">Tsubame-Sanjo</text></g>
+    <g><circle class="hub" cx="978" cy="1148" r="8"/><text class="hub-label" x="912" y="1143">Niigata</text></g>
 
     <!-- Hokuriku -->
-    <g><circle class="station" cx="1138" cy="1448" r="6"/><text class="station-label" x="1156" y="1443">Annaka-Haruna</text></g>
-    <g><circle class="station" cx="1074" cy="1406" r="6"/><text class="station-label" x="1092" y="1401">Karuizawa</text></g>
-    <g><circle class="station" cx="1012" cy="1364" r="6"/><text class="station-label" x="1030" y="1359">Sakudaira</text></g>
-    <g><circle class="station" cx="950" cy="1320" r="6"/><text class="station-label" x="968" y="1315">Ueda</text></g>
-    <g><circle class="hub" cx="888" cy="1276" r="8"/><text class="hub-label" x="906" y="1271">Nagano</text></g>
-    <g><circle class="station" cx="840" cy="1218" r="6"/><text class="station-label" x="858" y="1213">Iiyama</text></g>
-    <g><circle class="hub" cx="792" cy="1160" r="8"/><text class="hub-label" x="810" y="1155">Joetsumyoko</text></g>
-    <g><circle class="station" cx="738" cy="1102" r="6"/><text class="station-label" x="756" y="1097">Itoigawa</text></g>
-    <g><circle class="station" cx="686" cy="1044" r="6"/><text class="station-label" x="704" y="1039">Kurobe-Unazukionsen</text></g>
-    <g><circle class="hub" cx="634" cy="986" r="8"/><text class="hub-label" x="652" y="981">Toyama</text></g>
-    <g><circle class="station" cx="580" cy="1028" r="6"/><text class="station-label" x="470" y="1023">Shin-Takaoka</text></g>
-    <g><circle class="hub" cx="528" cy="1070" r="8"/><text class="hub-label" x="430" y="1065">Kanazawa</text></g>
-    <g><circle class="station" cx="464" cy="1120" r="6"/><text class="station-label" x="378" y="1115">Komatsu</text></g>
-    <g><circle class="station" cx="412" cy="1168" r="6"/><text class="station-label" x="316" y="1163">Kagaonsen</text></g>
-    <g><circle class="station" cx="360" cy="1218" r="6"/><text class="station-label" x="252" y="1213">Awaraonsen</text></g>
-    <g><circle class="hub" cx="308" cy="1266" r="8"/><text class="hub-label" x="244" y="1261">Fukui</text></g>
-    <g><circle class="station" cx="258" cy="1314" r="6"/><text class="station-label" x="120" y="1309">Echizen-Takefu</text></g>
-    <g><circle class="hub" cx="208" cy="1364" r="8"/><text class="hub-label" x="136" y="1359">Tsuruga</text></g>
+    <g><circle class="station" cx="1138" cy="1518" r="6"/><text class="station-label" x="1156" y="1513">Annaka-Haruna</text></g>
+    <g><circle class="station" cx="1074" cy="1548" r="6"/><text class="station-label" x="1092" y="1543">Karuizawa</text></g>
+    <g><circle class="station" cx="1012" cy="1578" r="6"/><text class="station-label" x="1030" y="1573">Sakudaira</text></g>
+    <g><circle class="station" cx="950" cy="1608" r="6"/><text class="station-label" x="968" y="1603">Ueda</text></g>
+    <g><circle class="hub" cx="888" cy="1638" r="8"/><text class="hub-label" x="906" y="1633">Nagano</text></g>
+    <g><circle class="station" cx="824" cy="1668" r="6"/><text class="station-label" x="842" y="1663">Iiyama</text></g>
+    <g><circle class="hub" cx="760" cy="1698" r="8"/><text class="hub-label" x="778" y="1693">Joetsumyoko</text></g>
+    <g><circle class="station" cx="696" cy="1728" r="6"/><text class="station-label" x="714" y="1723">Itoigawa</text></g>
+    <g><circle class="station" cx="632" cy="1758" r="6"/><text class="station-label" x="650" y="1753">Kurobe-Unazukionsen</text></g>
+    <g><circle class="hub" cx="568" cy="1788" r="8"/><text class="hub-label" x="586" y="1783">Toyama</text></g>
+    <g><circle class="station" cx="504" cy="1818" r="6"/><text class="station-label" x="394" y="1813">Shin-Takaoka</text></g>
+    <g><circle class="hub" cx="440" cy="1848" r="8"/><text class="hub-label" x="342" y="1843">Kanazawa</text></g>
+    <g><circle class="station" cx="376" cy="1878" r="6"/><text class="station-label" x="290" y="1873">Komatsu</text></g>
+    <g><circle class="station" cx="312" cy="1908" r="6"/><text class="station-label" x="216" y="1903">Kagaonsen</text></g>
+    <g><circle class="station" cx="248" cy="1938" r="6"/><text class="station-label" x="140" y="1933">Awaraonsen</text></g>
+    <g><circle class="hub" cx="184" cy="1968" r="8"/><text class="hub-label" x="120" y="1963">Fukui</text></g>
+    <g><circle class="station" cx="120" cy="1998" r="6"/><text class="station-label" x="-18" y="1993">Echizen-Takefu</text></g>
+    <g><circle class="hub" cx="56" cy="2028" r="8"/><text class="hub-label" x="-16" y="2023">Tsuruga</text></g>
 
     <!-- Tokaido -->
     <g><circle class="hub" cx="1054" cy="1820" r="8"/><text class="hub-label" x="972" y="1815">Shinagawa</text></g>
@@ -248,7 +242,7 @@
     <g><circle class="hub" cx="-1316" cy="2436" r="9"/><text class="hub-label" x="-1296" y="2432">Kagoshima-Chuo</text></g>
 
     <!-- Nishi-Kyushu -->
-    <g><circle class="hub" cx="-1472" cy="1826" r="8"/><text class="hub-label" x="-1554" y="1821">Takeo-Onsen</text></g>
+    <g><circle class="hub" cx="-1472" cy="1826" r="8"/><text class="hub-label" x="-1560" y="1821">Takeo-Onsen</text></g>
     <g><circle class="station" cx="-1546" cy="1778" r="6"/><text class="station-label" x="-1638" y="1773">Ureshino-Onsen</text></g>
     <g><circle class="station" cx="-1618" cy="1730" r="6"/><text class="station-label" x="-1704" y="1725">Shin-Omura</text></g>
     <g><circle class="hub" cx="-1654" cy="1706" r="8"/><text class="hub-label" x="-1730" y="1701">Isahaya</text></g>
