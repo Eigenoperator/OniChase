@@ -137,8 +137,10 @@ PREFECTURE_BY_ID = {
     "OMIYA": "11",
     "FUKUSHIMA": "07",
     "KORIYAMA": "07",
+    "SHIN_FUJI": "22",
     "FUKUI": "18",
     "KOKURA": "40",
+    "SENDAI_KYUSHU": "46",
     "NAGASAKI": "42",
 }
 
