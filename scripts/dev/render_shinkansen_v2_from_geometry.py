@@ -264,6 +264,30 @@ ROUTE_LABELS = {
     route["id"]: route["label"] for route in ROUTES
 }
 
+LABEL_LAYOUTS = {
+    "TOKYO": {"dx": 20, "dy": -12},
+    "UENO": {"dx": 20, "dy": -12},
+    "OMIYA": {"dx": 20, "dy": -10},
+    "KANAZAWA": {"dx": 16, "dy": -10},
+    "NAGOYA": {"dx": 18, "dy": -10},
+    "KYOTO": {"dx": 18, "dy": -10},
+    "SHIN_OSAKA": {"dx": 18, "dy": -12},
+    "HAKATA": {"dx": 18, "dy": -10},
+    "KOKURA": {"dx": 18, "dy": -10},
+    "HIROSHIMA": {"dx": 18, "dy": -10},
+    "TOKUYAMA": {"dx": 18, "dy": -10},
+    "SHIN_YAMAGUCHI": {"dx": 18, "dy": -10},
+    "AKITA": {"dx": 18, "dy": -10},
+    "NIIGATA": {"dx": 18, "dy": -10},
+    "MORIOKA": {"dx": 18, "dy": -10},
+    "SHIN_AOMORI": {"dx": 18, "dy": -10},
+    "SHIN_HAKODATE_HOKUTO": {"dx": 18, "dy": -10},
+    "SHIN_TOSU": {"dx": 18, "dy": -10},
+    "KUMAMOTO": {"dx": 18, "dy": -10},
+    "KAGOSHIMA_CHUO": {"dx": 18, "dy": -10},
+    "NAGASAKI": {"dx": 18, "dy": -10},
+}
+
 
 def station_map():
     return {station["id"]: station for station in load_stations()}
@@ -359,6 +383,16 @@ def path_for_route(route: dict) -> str:
     return " ".join(points)
 
 
+def route_label_rect(route: dict) -> tuple[float, float, float, float]:
+    label = route["label"]
+    text = route["name"]
+    width = max(88, 12 * len(text) + 24)
+    height = 28
+    x = label["x"] - 10
+    y = label["y"] - 18
+    return x, y, width, height
+
+
 def render_svg() -> str:
     width = 2600
     height = 2700
@@ -372,34 +406,44 @@ def render_svg() -> str:
         '<desc id="desc">Data-driven Shinkansen map generated from route and station geometry.</desc>',
         "<defs>",
         "<style>",
-        ".bg { fill: #f6f2e8; }",
-        ".panel { fill: #fffdf8; stroke: #d6d0c2; stroke-width: 2; }",
-        ".title { font: 700 34px Helvetica, Arial, sans-serif; fill: #1f2933; }",
+        ".bg { fill: #efe9db; }",
+        ".panel { fill: #fffdfa; stroke: #d5ccbb; stroke-width: 2; }",
+        ".title { font: 700 38px Helvetica, Arial, sans-serif; fill: #17212b; }",
         ".subtitle { font: 500 18px Helvetica, Arial, sans-serif; fill: #5f6b76; }",
-        ".note { font: 500 14px Helvetica, Arial, sans-serif; fill: #697586; }",
-        ".route { fill: none; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }",
-        ".station { fill: #ffffff; stroke: #1f2933; stroke-width: 2; }",
-        ".hub { fill: #ffffff; stroke: #1f2933; stroke-width: 4; }",
-        ".station-label { font: 600 12px Helvetica, Arial, sans-serif; fill: #1f2933; }",
-        ".hub-label { font: 700 13px Helvetica, Arial, sans-serif; fill: #1f2933; }",
-        ".line-label { font: 700 15px Helvetica, Arial, sans-serif; fill: #1f2933; }",
+        ".note { font: 500 13px Helvetica, Arial, sans-serif; fill: #7a8794; }",
+        ".route-back { fill: none; stroke: #ffffff; stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; opacity: 0.96; }",
+        ".route { fill: none; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }",
+        ".station { fill: #fffdfa; stroke: #1f2933; stroke-width: 2.2; }",
+        ".hub { fill: #fffdfa; stroke: #1f2933; stroke-width: 4.4; }",
+        ".station-label { font: 600 12px Helvetica, Arial, sans-serif; fill: #1f2933; paint-order: stroke; stroke: #fffdfa; stroke-width: 3.5; stroke-linejoin: round; }",
+        ".hub-label { font: 700 13px Helvetica, Arial, sans-serif; fill: #1f2933; paint-order: stroke; stroke: #fffdfa; stroke-width: 4; stroke-linejoin: round; }",
+        ".line-label-box { stroke: #ffffff; stroke-width: 2; rx: 14; }",
+        ".line-label { font: 700 14px Helvetica, Arial, sans-serif; fill: #ffffff; letter-spacing: 0.2px; }",
         "</style>",
         "</defs>",
         '<rect class="bg" x="-1700" y="-120" width="4400" height="2680"/>',
         '<rect class="panel" x="-1650" y="-80" width="4300" height="2600" rx="30"/>',
-        '<text class="title" x="-1580" y="-20">OniChase V2 Real Geometry Seed</text>',
-        '<text class="subtitle" x="-1580" y="12">First data-driven Shinkansen map: real route order, geometry-seed station placement, temporary before full lat/lon replacement.</text>',
-        '<text class="note" x="-1580" y="2460">This map is generated from route and station data. It is now a geometry pipeline artifact rather than a hand-drawn final SVG.</text>',
+        '<text class="title" x="-1580" y="-20">OniChase V2 Shinkansen Draft</text>',
+        '<text class="subtitle" x="-1580" y="12">Data-driven nationwide map built from real station coordinates and real route order.</text>',
+        '<text class="note" x="-1580" y="2460">Current pass: cleaner linework and labels over the real-coordinate geometry pipeline.</text>',
     ]
 
     for route in routes:
         dash_attr = ""
         if route.get("dash"):
             dash_attr = f' stroke-dasharray="{route["dash"]}"'
+        route_points = path_for_route(route)
         parts.append(
-            f'<polyline class="route" stroke="{route["color"]}"{dash_attr} points="{path_for_route(route)}"/>'
+            f'<polyline class="route-back"{dash_attr} points="{route_points}"/>'
+        )
+        parts.append(
+            f'<polyline class="route" stroke="{route["color"]}"{dash_attr} points="{route_points}"/>'
         )
         label = route["label"]
+        rx, ry, rw, rh = route_label_rect(route)
+        parts.append(
+            f'<rect class="line-label-box" x="{rx}" y="{ry}" width="{rw}" height="{rh}" fill="{route["color"]}"/>'
+        )
         parts.append(
             f'<text class="line-label" x="{label["x"]}" y="{label["y"]}">{route["name"]}</text>'
         )
@@ -417,10 +461,9 @@ def render_svg() -> str:
         klass = "hub" if station["category"] == "hub" else "station"
         radius = 9 if station["category"] == "hub" else 6
         label_class = "hub-label" if station["category"] == "hub" else "station-label"
-        label_dx = 18
-        label_dy = -5
-        if station["id"] in {"TOKYO", "SHIN_OSAKA", "HAKATA", "NAGOYA", "KANAZAWA", "AKITA", "NIIGATA"}:
-            label_dy = -8
+        layout = LABEL_LAYOUTS.get(station["id"], {})
+        label_dx = layout.get("dx", 18)
+        label_dy = layout.get("dy", -5)
         parts.append(
             f'<circle class="{klass}" cx="{point["x"]}" cy="{point["y"]}" r="{radius}"/>'
         )
