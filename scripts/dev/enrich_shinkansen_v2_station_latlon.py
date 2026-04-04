@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data"
+SECONDARY_SOURCE_PATH = DATA_DIR / "shinkansen_station_coordinates_wikipedia.json"
 
 
 KANJI_BY_ID = {
@@ -138,43 +139,31 @@ PREFECTURE_BY_ID = {
     "KORIYAMA": "07",
     "FUKUI": "18",
     "KOKURA": "40",
+    "NAGASAKI": "42",
 }
 
 ALIAS_BY_ID = {
     "SHIN_IWAKUNI": "清流新岩国",
 }
 
-MANUAL_LATLON_BY_ID = {
-    "NAGASAKI": {"lat": 32.75275, "lon": 129.86908, "ja": "長崎"},
-    "HONJO_WASEDA": {"lat": 36.218766, "lon": 139.179519, "ja": "本庄早稲田"},
-    "SHIROISHI_ZAO": {"lat": 37.991783056, "lon": 140.636077778, "ja": "白石蔵王"},
-    "KURIKOMA_KOGEN": {"lat": 38.748678077, "lon": 141.071560979, "ja": "くりこま高原"},
-    "MIZUSAWA_ESASHI": {"lat": 39.145217, "lon": 141.188329, "ja": "水沢江刺"},
-    "SHICHINOHE_TOWADA": {"lat": 40.719861, "lon": 141.154028, "ja": "七戸十和田"},
-    "OKU_TSUGARU_IMABETSU": {"lat": 41.145089, "lon": 140.515583, "ja": "奥津軽いまべつ"},
-    "JOMO_KOGEN": {"lat": 36.692777585, "lon": 138.977640867, "ja": "上毛高原"},
-    "GALA_YUZAWA": {"lat": 36.950461927, "lon": 138.799450994, "ja": "ガーラ湯沢"},
-    "ANNAKA_HARUNA": {"lat": 36.362576042, "lon": 138.849484921, "ja": "安中榛名"},
-    "KUROBE_UNAZUKIONSEN": {"lat": 36.874093593, "lon": 137.481268644, "ja": "黒部宇奈月温泉"},
-    "ECHIZEN_TAKEFU": {"lat": 35.895630927, "lon": 136.198924434, "ja": "越前たけふ"},
-    "GIFU_HASHIMA": {"lat": 35.31583, "lon": 136.68556, "ja": "岐阜羽島"},
-    "SHIN_ONOMICHI": {"lat": 34.426746944, "lon": 133.192649722, "ja": "新尾道"},
-    "HIGASHI_HIROSHIMA": {"lat": 34.389252894, "lon": 132.75959909, "ja": "東広島"},
-    "SHIN_OMUTA": {"lat": 33.071108036, "lon": 130.48881948, "ja": "新大牟田"},
-    "SHIN_TAMANA": {"lat": 32.9379663, "lon": 130.5714667, "ja": "新玉名"},
-    "URESHINO_ONSEN": {"lat": 33.106381, "lon": 129.998823, "ja": "嬉野温泉"},
-    "SHIN_OMURA": {"lat": 32.93278, "lon": 129.95694, "ja": "新大村"},
-}
+MANUAL_LATLON_BY_ID = {}
 
 
 def load_source():
     return json.loads((DATA_DIR / "japan_station_coordinates_source.json").read_text(encoding="utf-8"))
 
 
+def load_secondary_source():
+    if not SECONDARY_SOURCE_PATH.exists():
+        return {}
+    return json.loads(SECONDARY_SOURCE_PATH.read_text(encoding="utf-8"))
+
+
 def main():
     stations_path = DATA_DIR / "shinkansen_v2_stations.json"
     stations = json.loads(stations_path.read_text(encoding="utf-8"))
     source_items = load_source()
+    secondary_source = load_secondary_source()
 
     updated = 0
     missing = []
@@ -185,6 +174,7 @@ def main():
             station["lon"] = manual["lon"]
             station["names"]["ja"] = manual["ja"]
             station["latlon_status"] = "manual"
+            station["latlon_source"] = "manual"
             updated += 1
             continue
 
@@ -197,6 +187,15 @@ def main():
         if station["id"] in PREFECTURE_BY_ID:
             candidates = [item for item in candidates if item.get("prefecture") == PREFECTURE_BY_ID[station["id"]]]
         if not candidates:
+            secondary = secondary_source.get(alias)
+            if secondary:
+                station["lat"] = secondary["lat"]
+                station["lon"] = secondary["lon"]
+                station["names"]["ja"] = alias
+                station["latlon_status"] = "real"
+                station["latlon_source"] = secondary.get("source", "secondary")
+                updated += 1
+                continue
             missing.append(station["id"])
             continue
         source = candidates[0]
@@ -209,6 +208,7 @@ def main():
         station["lon"] = lon
         station["names"]["ja"] = alias
         station["latlon_status"] = "real"
+        station["latlon_source"] = "open-data-jp-railway-stations"
         updated += 1
 
     stations_path.write_text(json.dumps(stations, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
