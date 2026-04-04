@@ -391,7 +391,16 @@ def route_label_rect(route: dict) -> tuple[float, float, float, float]:
     height = 28
     x = label["x"] - 10
     y = label["y"] - 18
-    return x, y, width, height
+    return x, y, x + width, y + height
+
+
+def route_label_rect_from_position(route: dict, x: float, y: float) -> tuple[float, float, float, float]:
+    text = route["name"]
+    width = max(88, 12 * len(text) + 24)
+    height = 28
+    x1 = x - 10
+    y1 = y - 18
+    return x1, y1, x1 + width, y1 + height
 
 
 def rects_intersect(a: tuple[float, float, float, float], b: tuple[float, float, float, float], padding: float = 0) -> bool:
@@ -477,6 +486,45 @@ def choose_label_layout(
     return best
 
 
+def choose_route_label_position(
+    route: dict,
+    occupied_rects: list[tuple[float, float, float, float]],
+    station_circles: list[tuple[float, float, float]],
+) -> tuple[float, float]:
+    base_x = route["label"]["x"]
+    base_y = route["label"]["y"]
+    candidates = [
+        (base_x, base_y),
+        (base_x + 60, base_y),
+        (base_x - 60, base_y),
+        (base_x, base_y - 36),
+        (base_x, base_y + 36),
+        (base_x + 80, base_y - 24),
+        (base_x - 80, base_y - 24),
+        (base_x + 80, base_y + 24),
+        (base_x - 80, base_y + 24),
+    ]
+    best = candidates[0]
+    best_score = None
+    for x, y in candidates:
+        rect = route_label_rect_from_position(route, x, y)
+        overlap_count = 0
+        for other_rect in occupied_rects:
+            if rects_intersect(rect, other_rect, padding=10):
+                overlap_count += 1
+        for cx, cy, cr in station_circles:
+            if circle_intersects_rect(cx, cy, cr, rect, padding=8):
+                overlap_count += 2
+        distance_penalty = math.hypot(x - base_x, y - base_y) * 0.03
+        score = overlap_count * 1000 + distance_penalty
+        if best_score is None or score < best_score:
+            best_score = score
+            best = (x, y)
+            if overlap_count == 0:
+                break
+    return best
+
+
 def render_svg() -> str:
     width = 2600
     height = 2700
@@ -513,8 +561,35 @@ def render_svg() -> str:
     ]
 
     occupied_rects = []
+    station_circles_all = [
+        (
+            point_for_station(
+                {
+                    "id": station["id"],
+                    "x": station["geometry_seed"]["x"],
+                    "y": station["geometry_seed"]["y"],
+                }
+                | station,
+                projected,
+            )["x"],
+            point_for_station(
+                {
+                    "id": station["id"],
+                    "x": station["geometry_seed"]["x"],
+                    "y": station["geometry_seed"]["y"],
+                }
+                | station,
+                projected,
+            )["y"],
+            13 if station["category"] == "hub" else 10,
+        )
+        for station in stations
+    ]
+    route_label_positions = {}
     for route in routes:
-        occupied_rects.append(route_label_rect(route))
+        route_x, route_y = choose_route_label_position(route, occupied_rects, station_circles_all)
+        route_label_positions[route["id"]] = (route_x, route_y)
+        occupied_rects.append(route_label_rect_from_position(route, route_x, route_y))
 
     for route in routes:
         dash_attr = ""
@@ -527,13 +602,13 @@ def render_svg() -> str:
         parts.append(
             f'<polyline class="route" stroke="{route["color"]}"{dash_attr} points="{route_points}"/>'
         )
-        label = route["label"]
-        rx, ry, rw, rh = route_label_rect(route)
+        label_x, label_y = route_label_positions[route["id"]]
+        rx1, ry1, rx2, ry2 = route_label_rect_from_position(route, label_x, label_y)
         parts.append(
-            f'<rect class="line-label-box" x="{rx}" y="{ry}" width="{rw}" height="{rh}" fill="{route["color"]}"/>'
+            f'<rect class="line-label-box" x="{rx1}" y="{ry1}" width="{rx2 - rx1}" height="{ry2 - ry1}" fill="{route["color"]}"/>'
         )
         parts.append(
-            f'<text class="line-label" x="{label["x"]}" y="{label["y"]}">{route["name"]}</text>'
+            f'<text class="line-label" x="{label_x}" y="{label_y}">{route["name"]}</text>'
         )
 
     for station in stations:
@@ -550,31 +625,7 @@ def render_svg() -> str:
         klass = "hub" if station["category"] == "hub" else "station"
         radius = 9 if station["category"] == "hub" else 6
         label_class = "hub-label" if station["category"] == "hub" else "station-label"
-        station_circles = [
-            (
-                point_for_station(
-                    {
-                        "id": other["id"],
-                        "x": other["geometry_seed"]["x"],
-                        "y": other["geometry_seed"]["y"],
-                    }
-                    | other,
-                    projected,
-                )["x"],
-                point_for_station(
-                    {
-                        "id": other["id"],
-                        "x": other["geometry_seed"]["x"],
-                        "y": other["geometry_seed"]["y"],
-                    }
-                    | other,
-                    projected,
-                )["y"],
-                13 if other["category"] == "hub" else 10,
-            )
-            for other in stations
-            if other["id"] != station["id"]
-        ]
+        station_circles = [circle for circle in station_circles_all if not (circle[0] == point["x"] and circle[1] == point["y"])]
         label_dx, label_dy = choose_label_layout(station, point, radius, font_size, occupied_rects, station_circles)
         parts.append(
             f'<circle class="{klass}" cx="{point["x"]}" cy="{point["y"]}" r="{radius}"/>'
