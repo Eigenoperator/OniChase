@@ -8,17 +8,18 @@
 - 已完成 `v1` hunter mode 第一轮开发：信息限制、live 抓捕判定、结束标记、抓捕说明卡。
 - 已完成 `v2` 新干线全图的数据驱动地图底座：真实站点、真实线路顺序、真实坐标、自动标签避让、地图渲染脚本。
 - 已完成 `v2` 官方时刻表入口清单与站点清单，接通 `JR East / JR West / JR Kyushu` 多源 train-detail 抓取链。
-- 已生成 `data/shinkansen_v2_weekday_train_instances_merged.json`，当前合并后为 `1119` 趟 weekday 真实新干线列车实例。
+- 已生成 `data/shinkansen_v2_weekday_train_instances_merged.json`，当前合并后为 `1162` 趟 weekday 真实新干线列车实例。
 - 已补上 `Joetsu` 的 `Niigata -> Tokyo` 上行，以及 `Hokuriku` 的 `Nagano` 上下行和 `Tsuruga -> Tokyo` 上行。
 - 已新增 `visuals/shinkansen_v2_weekday_timetable.svg`，按线路分 panel 可视化 `v2` 全国新干线 weekday 时刻图。
+- 已打通 `JR Central` 的 `station-guide -> ResultControl -> tokainr.cgi` 官方链，并新增 `data/shinkansen_v2_jrcentral_tokaido_weekday_supplement.json`，补入 `43` 趟东海道中途始发/短折返真实班次。
 
 ## In Progress
-- 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，尤其是 `Tokaido / Sanyo / Hokuriku / Joetsu`。
+- 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，当前重点从 `JR Central / Tokaido` 转到补完后的全网抽查。
 - 正在把 `v2` 的 source inventory 和 station timetable inventory 收成长期可复用的 ingestion 底座。
 
 ## Blockers
 - 当前仓库和本会话里没有可用的 Notion 工具、脚本或配置，所以无法直接完成真正的 Notion 更新。
-- `JR Central` 官方入口仍需继续核对；`Tokaido` 全量列车覆盖目前主要来自 `Tokyo` 与 `Shin-Osaka` 侧入口，可能还缺部分中途始发/终到短折返。
+- `JR Central` 的 station-guide / ResultControl / `tokainr.cgi` 已能补东海道中途始发班次，但它没有像 `JR East / JR West` 那样直接暴露单趟 train-detail 页，所以后面若要进一步精细化，仍需继续完善“按全站 departure grid 聚合 train instances”的逻辑。
 
 ## Decisions
 - [2026-03-30] 主测试主线使用“真实山手线 + 真实站点 + 真实时刻表”。
@@ -27,6 +28,6 @@
 - [2026-04-04] `v2` 使用全图所有真实新干线列车，并保留真实列车名，例如 `Nozomi 1`、`Kagayaki 503`。
 
 ## Next
-1. 继续补 `v2` 尚未覆盖的关键方向入口，优先查 `JR Central` 与可能缺失的短折返班次。
+1. 继续抽查 `v2` 合并后的起终点分布，确认 `Tokaido / Sanyo / Hokuriku / Joetsu / Kyushu` 是否还缺明显短折返。
 2. 把 `v2` 训练有素的 source inventory / station inventory 再收一轮，确保后续扩充不靠人工记忆。
 3. 在 `v1` 维持稳定的前提下，开始规划 `v2` 的最小可玩模拟输入格式。

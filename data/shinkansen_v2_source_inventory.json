@@ -66,18 +66,23 @@
           "note": "Official Tokaido Shinkansen timetable page."
         },
         {
+          "kind": "station_guide_root",
+          "url": "https://railway.jr-central.co.jp/station-guide/shinkansen/nagoya/jikoku.html",
+          "note": "Official JR Central Shinkansen station guide timetable page. Exposes `ResultControl?st=...` JSON API and links to official `tokainr.cgi` station timetable pages."
+        },
+        {
           "kind": "service_context",
           "url": "https://global.jr-central.co.jp/en/company/about_shinkansen/",
           "note": "Operator context page; useful for service scale and official terminology."
         }
       ],
       "ingestion_shape": {
-        "station_timetable_pages": false,
+        "station_timetable_pages": true,
         "train_detail_pages": false,
         "notes": [
-          "Official English timetable explicitly says it is a basic timetable and not all trains are listed.",
-          "This is an official but incomplete source for the all-trains v2 target.",
-          "Need a deeper official path or an additional operator-specific official source to reach full train-instance coverage."
+          "Official English timetable is only a basic timetable and is not sufficient by itself.",
+          "JR Central's station guide pages expose `ResultControl?st=...` JSON plus official `tokainr.cgi` station timetable pages for all Tokaido Shinkansen stations.",
+          "These station timetable pages can be aggregated across all 17 Tokaido stations to reconstruct real mid-origin and short-turn services even without a direct per-train detail page."
         ]
       }
     },
@@ -112,10 +117,10 @@
       ],
       "ingestion_shape": {
         "station_timetable_pages": true,
-        "train_detail_pages": "unknown_needs_verification",
+        "train_detail_pages": true,
         "notes": [
           "JR West clearly exposes official station timetable pages.",
-          "Need to verify whether the station pages expose train-detail pages rich enough to reconstruct train instances directly.",
+          "JR West station timetable pages do expose official train-detail pages rich enough to reconstruct train instances directly.",
           "Electronic timetable pamphlets may become the fallback official source if train-detail pages are insufficient."
         ]
       }
@@ -216,7 +221,7 @@
     }
   ],
   "next_questions": [
-    "Which official operator pages expose enough detail to reconstruct full train instances directly?",
+    "Which remaining JR Central Tokaido short-turns still do not appear even after the all-stations supplemental pass?",
     "Where do we need official electronic timetable pamphlets as fallback instead of station-detail pages?",
     "How should we unify cross-operator services while preserving real service names and numbers?"
   ]
