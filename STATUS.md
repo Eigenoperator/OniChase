@@ -15,6 +15,7 @@
 - 已修正 `JR Kyushu / Nishi-Kyushu` 双栏 `Kamome` 详情页解析错误，`Takeo-Onsen -> Nagasaki` 与 `Nagasaki -> Takeo-Onsen` 现在都能正确进入全国合并库。
 - 已修正全国合并逻辑，跨运营商同一趟真实列车现在会按真实服务名/号合并，不再把 `JR Central` 的东海道补丁短版和 `JR West / JR East` 的全程版重复算两趟；重新收敛后全国 weekday 数据稳定为 `1139` 趟。
 - 已开始 `v2` 游戏层：新增 `data/shinkansen_v2_bundle.json` 和第一版 `app/v2_local_client.py`，现在可以在全国新干线图上点站、浏览真实发车，并把列车段接进 plan board。
+- 已把第一版 `v2` 游戏壳同步到网页端：`docs/` 现在发布全国新干线版本，支持点站、浏览真实发车、查看后续停站并把车程加进 plan board。
 
 ## In Progress
 - 正在把 `v2` 从“数据正确”推进成“最小可玩壳”，当前重点是全国图上的站点选择、真实发车浏览和 plan 连接。
@@ -33,6 +34,6 @@
 - [2026-04-05] 全国合并默认优先按真实 `service_name + service_number (+ direction)` 识别同一趟列车，而不是只按各运营商自带的 `train_number`。
 
 ## Next
-1. 让 `v2` 本地客户端从“选站看车”继续推进到“选车后选目标站”，而不是默认坐到终点站。
+1. 让 `v2` 本地端和网页端都从“选站看车”继续推进到“选车后选目标站”，而不是默认坐到终点站。
 2. 给 `v2` 客户端补 runner / hunter 两侧的最小模式切换和 plan cursor 规则。
 3. 在 `v2` 游戏壳稳定后，再继续逐线补 anomaly checklist 的余项。

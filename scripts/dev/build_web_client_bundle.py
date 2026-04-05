@@ -7,15 +7,15 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE_HTML = ROOT / "ui" / "web_client.html"
+SOURCE_HTML = ROOT / "ui" / "v2_web_client.html"
 DOCS_DIR = ROOT / "docs"
 DOCS_DATA_DIR = DOCS_DIR / "data"
 TARGET_HTML = DOCS_DIR / "index.html"
 NOJEKYLL = DOCS_DIR / ".nojekyll"
 
 DATA_FILES = [
-    ROOT / "data" / "yamanote_stations.json",
-    ROOT / "data" / "yamanote_weekday_train_instances_merged.json",
+    ROOT / "data" / "shinkansen_v2_bundle.json",
+    ROOT / "data" / "shinkansen_v2_weekday_train_instances_merged.json",
 ]
 
 
