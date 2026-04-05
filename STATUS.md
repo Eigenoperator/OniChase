@@ -22,8 +22,9 @@
 - 已把 `v2` 线路名也接入自动避让：线路牌现在会尽量避开彼此、避开站名和站点圆，不再固定钉在单一坐标上。
 - 已把 `GALA Yuzawa` 从“主干线同级线路”弱化成 `Joetsu branch` 的支线表达，避免它在 `v2` 全国图上抢占和主新干线同级的视觉权重。
 - 已正式写出 `V2_TIMETABLE_PLAN.md`：`v2` 将覆盖全图所有真实新干线列车，并明确要求保留真实列车名 / 列车种别，例如 `Nozomi 1`、`Kagayaki 503`，而不是退化成匿名 train id。
+- 已建立 `data/shinkansen_v2_source_inventory.json`，把 `JR East / JR Central / JR West / JR Kyushu` 的官方入口、覆盖线路和抓取约束先整理成统一清单。
 ## In Progress
-- 正在继续打磨 `v1` 的开发期可玩性，同时把 `v2` 从“地图已经成立”推进到“全图所有真实新干线列车 + 真实时刻表”的数据管线。
+- 正在继续打磨 `v1` 的开发期可玩性，同时开始推进 `v2` 的官方时刻表入口核对，准备把全图所有真实新干线列车接进统一 train-instance 管线。
 ## Blockers
 - 当前仓库和本会话里没有可用的 Notion 工具、脚本或配置，所以今天无法直接完成真正的 Notion 更新。
 - `v2` 新干线图仍需继续逐条核对真实线路关系，暂时还不能当正式底图使用。
@@ -37,6 +38,6 @@
 - [2026-04-03] 第一轮 hunter mode 测试使用“runner 不移动、主动试玩 hunter”的方式先隔离验证 hunter 侧的信息展示与操作闭环。
 - [2026-04-03] 产品路线当前固定为 `v1 山手线`、`v2 新干线全图`、`v3 东京全图`；在 `v1` 验证清楚前，不提前展开更大地图。
 ## Next
-1. 开始做 `v2` 的 `source inventory`，把全新干线地图涉及的官方时刻表入口按运营商列清楚。
-2. 开始核对哪些官方入口能给出完整 train-detail，哪些只能给 basic timetable，以便决定 `v2` 的真实 timetable 抓取路线。
+1. 继续核对 `JR East / JR Central / JR West / JR Kyushu` 哪些官方入口能给出完整 train-detail，哪些只能给 basic timetable。
+2. 选定 `v2` 第一条要实际打通的官方时刻表 ingestion 链，并开始做 train-instance 发现脚本。
 3. 继续做 `v1` 的 hunter / runner 开发期实机试玩，只盯“是否顺手、是否清楚、是否能稳定验证规则”。

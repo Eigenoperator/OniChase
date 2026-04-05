@@ -1,0 +1,223 @@
+{
+  "id": "shinkansen_v2_source_inventory_v0_1",
+  "scope": "all_shinkansen_lines_on_v2_map",
+  "policy": {
+    "timetable_requirement": "real",
+    "train_identity_requirement": "keep_real_service_names_and_numbers",
+    "examples": [
+      "Nozomi 1",
+      "Kagayaki 503",
+      "Hayabusa 5",
+      "Mizuho 601"
+    ]
+  },
+  "operators": [
+    {
+      "operator_id": "JR_EAST",
+      "operator_name": "JR East",
+      "official_domains": [
+        "timetables.jreast.co.jp",
+        "jreast.co.jp"
+      ],
+      "route_families": [
+        "TOHOKU",
+        "HOKKAIDO",
+        "YAMAGATA",
+        "AKITA",
+        "JOETSU",
+        "HOKURIKU"
+      ],
+      "official_entry_points": [
+        {
+          "kind": "network_timetable_root",
+          "url": "https://timetables.jreast.co.jp/en/index.html",
+          "note": "Primary official station timetable search root for JR East."
+        },
+        {
+          "kind": "representative_station_list",
+          "url": "https://timetables.jreast.co.jp/en/timetable/list1039.html",
+          "note": "Tokyo Station timetable list exposes Shinkansen route-family entry points including Tohoku/Hokkaido, Akita, Yamagata, Joetsu, and Hokuriku."
+        }
+      ],
+      "ingestion_shape": {
+        "station_timetable_pages": true,
+        "train_detail_pages": true,
+        "notes": [
+          "JR East already matches the v1 ingestion model well.",
+          "Use station timetable pages to discover minute links and train-detail pages.",
+          "Likely best starting operator for v2 scale-up because train-instance extraction pattern is already proven."
+        ]
+      }
+    },
+    {
+      "operator_id": "JR_CENTRAL",
+      "operator_name": "JR Central",
+      "official_domains": [
+        "global.jr-central.co.jp",
+        "jr-central.co.jp"
+      ],
+      "route_families": [
+        "TOKAIDO"
+      ],
+      "official_entry_points": [
+        {
+          "kind": "timetable_root",
+          "url": "https://global.jr-central.co.jp/en/info/timetable/index.html",
+          "note": "Official Tokaido Shinkansen timetable page."
+        },
+        {
+          "kind": "service_context",
+          "url": "https://global.jr-central.co.jp/en/company/about_shinkansen/",
+          "note": "Operator context page; useful for service scale and official terminology."
+        }
+      ],
+      "ingestion_shape": {
+        "station_timetable_pages": false,
+        "train_detail_pages": false,
+        "notes": [
+          "Official English timetable explicitly says it is a basic timetable and not all trains are listed.",
+          "This is an official but incomplete source for the all-trains v2 target.",
+          "Need a deeper official path or an additional operator-specific official source to reach full train-instance coverage."
+        ]
+      }
+    },
+    {
+      "operator_id": "JR_WEST",
+      "operator_name": "JR West",
+      "official_domains": [
+        "jr-odekake.net",
+        "westjr.co.jp"
+      ],
+      "route_families": [
+        "SANYO",
+        "HOKURIKU",
+        "TOKAIDO_SANYO_KYUSHU_CROSS_OPERATOR"
+      ],
+      "official_entry_points": [
+        {
+          "kind": "shinkansen_portal",
+          "url": "https://www.jr-odekake.net/railroad/shinkansen/",
+          "note": "Official JR West Shinkansen portal with route context, station timetable search, and electronic timetable pamphlets."
+        },
+        {
+          "kind": "representative_station_timetable",
+          "url": "https://timetable.jr-odekake.net/station-timetable/2815002002?date=20250116",
+          "note": "Representative official station timetable page for Shin-Osaka on Tokaido/Sanyo/Kyushu Shinkansen."
+        },
+        {
+          "kind": "electronic_timetable_pamphlet",
+          "url": "https://pamph.jr-odekake.net/sanyo2602a/pageindices/index.html",
+          "note": "Official electronic timetable pamphlet for Tokaido/Sanyo/Kyushu Shinkansen after the 2026-03-14 revision."
+        }
+      ],
+      "ingestion_shape": {
+        "station_timetable_pages": true,
+        "train_detail_pages": "unknown_needs_verification",
+        "notes": [
+          "JR West clearly exposes official station timetable pages.",
+          "Need to verify whether the station pages expose train-detail pages rich enough to reconstruct train instances directly.",
+          "Electronic timetable pamphlets may become the fallback official source if train-detail pages are insufficient."
+        ]
+      }
+    },
+    {
+      "operator_id": "JR_KYUSHU",
+      "operator_name": "JR Kyushu",
+      "official_domains": [
+        "jrkyushu.co.jp"
+      ],
+      "route_families": [
+        "KYUSHU",
+        "NISHI_KYUSHU"
+      ],
+      "official_entry_points": [
+        {
+          "kind": "train_portal",
+          "url": "https://www.jrkyushu.co.jp/english/train/",
+          "note": "Official JR Kyushu train portal with timetable links for major trains."
+        },
+        {
+          "kind": "nishi_kyushu_service_page",
+          "url": "https://www.jrkyushu.co.jp/english/train/shinkansen_kamome.html",
+          "note": "Official Nishi Kyushu Shinkansen KAMOME page with station list, timetable, and train-number context."
+        },
+        {
+          "kind": "representative_station_page_hakata",
+          "url": "https://www.jrkyushu.co.jp/railway/station/1191771_1601.html",
+          "note": "Official Hakata station page with timetable entry."
+        },
+        {
+          "kind": "representative_station_page_kagoshima_chuo",
+          "url": "https://www.jrkyushu.co.jp/railway/station/1191491_1601.html",
+          "note": "Official Kagoshima-Chuo station page with timetable entry."
+        }
+      ],
+      "ingestion_shape": {
+        "station_timetable_pages": true,
+        "train_detail_pages": "partial_or_operator_specific",
+        "notes": [
+          "JR Kyushu official pages expose major-train timetable pages and station timetable entry points.",
+          "Need to verify whether those official pages cover all trains or only curated major services.",
+          "Nishi Kyushu pages are especially important because v2 must preserve real names such as Kamome service numbers."
+        ]
+      }
+    }
+  ],
+  "route_family_targets": [
+    {
+      "route_family": "TOHOKU",
+      "operator_id": "JR_EAST",
+      "priority": 1
+    },
+    {
+      "route_family": "HOKKAIDO",
+      "operator_id": "JR_EAST",
+      "priority": 1
+    },
+    {
+      "route_family": "YAMAGATA",
+      "operator_id": "JR_EAST",
+      "priority": 1
+    },
+    {
+      "route_family": "AKITA",
+      "operator_id": "JR_EAST",
+      "priority": 1
+    },
+    {
+      "route_family": "JOETSU",
+      "operator_id": "JR_EAST",
+      "priority": 1
+    },
+    {
+      "route_family": "HOKURIKU",
+      "operator_id": "JR_EAST",
+      "priority": 1
+    },
+    {
+      "route_family": "TOKAIDO",
+      "operator_id": "JR_CENTRAL",
+      "priority": 2
+    },
+    {
+      "route_family": "SANYO",
+      "operator_id": "JR_WEST",
+      "priority": 2
+    },
+    {
+      "route_family": "KYUSHU",
+      "operator_id": "JR_KYUSHU",
+      "priority": 2
+    },
+    {
+      "route_family": "NISHI_KYUSHU",
+      "operator_id": "JR_KYUSHU",
+      "priority": 2
+    }
+  ],
+  "next_questions": [
+    "Which official operator pages expose enough detail to reconstruct full train instances directly?",
+    "Where do we need official electronic timetable pamphlets as fallback instead of station-detail pages?",
+    "How should we unify cross-operator services while preserving real service names and numbers?"
+  ]
+}
