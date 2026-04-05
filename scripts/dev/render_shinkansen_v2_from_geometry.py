@@ -396,8 +396,12 @@ def route_label_rect(route: dict) -> tuple[float, float, float, float]:
 
 def route_label_rect_from_position(route: dict, x: float, y: float) -> tuple[float, float, float, float]:
     text = route["name"]
-    width = max(88, 12 * len(text) + 24)
-    height = 28
+    if route["id"] == "GALA":
+        width = max(84, 11 * len(text) + 18)
+        height = 22
+    else:
+        width = max(88, 12 * len(text) + 24)
+        height = 28
     x1 = x - 10
     y1 = y - 18
     return x1, y1, x1 + width, y1 + height
@@ -551,6 +555,8 @@ def render_svg() -> str:
         ".hub-label { font: 700 13px Helvetica, Arial, sans-serif; fill: #1f2933; paint-order: stroke; stroke: #fffdfa; stroke-width: 4; stroke-linejoin: round; }",
         ".line-label-box { stroke: #ffffff; stroke-width: 2; rx: 14; }",
         ".line-label { font: 700 14px Helvetica, Arial, sans-serif; fill: #ffffff; letter-spacing: 0.2px; }",
+        ".branch-label-box { fill: #f5f1e8; stroke: #9aa7b5; stroke-width: 1.5; rx: 11; opacity: 0.98; }",
+        ".branch-label { font: 700 12px Helvetica, Arial, sans-serif; fill: #586574; letter-spacing: 0.15px; }",
         "</style>",
         "</defs>",
         '<rect class="bg" x="-1700" y="-120" width="4400" height="2680"/>',
@@ -604,12 +610,20 @@ def render_svg() -> str:
         )
         label_x, label_y = route_label_positions[route["id"]]
         rx1, ry1, rx2, ry2 = route_label_rect_from_position(route, label_x, label_y)
-        parts.append(
-            f'<rect class="line-label-box" x="{rx1}" y="{ry1}" width="{rx2 - rx1}" height="{ry2 - ry1}" fill="{route["color"]}"/>'
-        )
-        parts.append(
-            f'<text class="line-label" x="{label_x}" y="{label_y}">{route["name"]}</text>'
-        )
+        if route["id"] == "GALA":
+            parts.append(
+                f'<rect class="branch-label-box" x="{rx1}" y="{ry1}" width="{rx2 - rx1}" height="{ry2 - ry1}"/>'
+            )
+            parts.append(
+                f'<text class="branch-label" x="{label_x}" y="{label_y}">Joetsu branch</text>'
+            )
+        else:
+            parts.append(
+                f'<rect class="line-label-box" x="{rx1}" y="{ry1}" width="{rx2 - rx1}" height="{ry2 - ry1}" fill="{route["color"]}"/>'
+            )
+            parts.append(
+                f'<text class="line-label" x="{label_x}" y="{label_y}">{route["name"]}</text>'
+            )
 
     for station in stations:
         font_size = 13 if station["category"] == "hub" else 12
