@@ -14,10 +14,11 @@
 - 已打通 `JR Central` 的 `station-guide -> ResultControl -> tokainr.cgi` 官方链，并新增 `data/shinkansen_v2_jrcentral_tokaido_weekday_supplement.json`，补入 `43` 趟东海道中途始发/短折返真实班次。
 - 已修正 `JR Kyushu / Nishi-Kyushu` 双栏 `Kamome` 详情页解析错误，`Takeo-Onsen -> Nagasaki` 与 `Nagasaki -> Takeo-Onsen` 现在都能正确进入全国合并库。
 - 已修正全国合并逻辑，跨运营商同一趟真实列车现在会按真实服务名/号合并，不再把 `JR Central` 的东海道补丁短版和 `JR West / JR East` 的全程版重复算两趟；重新收敛后全国 weekday 数据稳定为 `1139` 趟。
+- 已开始 `v2` 游戏层：新增 `data/shinkansen_v2_bundle.json` 和第一版 `app/v2_local_client.py`，现在可以在全国新干线图上点站、浏览真实发车，并把列车段接进 plan board。
 
 ## In Progress
-- 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，当前重点是全国合并后的全网抽查。
-- 正在把 `v2` 的 source inventory、station timetable inventory 和合并规则收成长期可复用的 ingestion 底座。
+- 正在把 `v2` 从“数据正确”推进成“最小可玩壳”，当前重点是全国图上的站点选择、真实发车浏览和 plan 连接。
+- 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
 
 ## Blockers
 - 当前仓库和本会话里没有可用的 Notion 工具、脚本或配置，所以无法直接完成真正的 Notion 更新。
@@ -32,6 +33,6 @@
 - [2026-04-05] 全国合并默认优先按真实 `service_name + service_number (+ direction)` 识别同一趟列车，而不是只按各运营商自带的 `train_number`。
 
 ## Next
-1. 继续抽查 `v2` 合并后的起终点分布，确认 `Tokaido / Sanyo / Hokuriku / Joetsu / Kyushu` 是否还缺明显短折返。
-2. 继续核对 `JR Kyushu / Nishi-Kyushu` 之外是否还存在类似的双栏 / 多服务详情页解析陷阱。
-3. 开始定义 `v2` 的最小可玩输入格式和地图/列车选择交互，让全国新干线数据进入游戏层。
+1. 让 `v2` 本地客户端从“选站看车”继续推进到“选车后选目标站”，而不是默认坐到终点站。
+2. 给 `v2` 客户端补 runner / hunter 两侧的最小模式切换和 plan cursor 规则。
+3. 在 `v2` 游戏壳稳定后，再继续逐线补 anomaly checklist 的余项。
