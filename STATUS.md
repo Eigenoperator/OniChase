@@ -17,9 +17,11 @@
 - 已开始 `v2` 游戏层：新增 `data/shinkansen_v2_bundle.json` 和第一版 `app/v2_local_client.py`，现在可以在全国新干线图上点站、浏览真实发车，并把列车段接进 plan board。
 - 已把第一版 `v2` 游戏壳同步到网页端：`docs/` 现在发布全国新干线版本，支持点站、浏览真实发车、查看后续停站并把车程加进 plan board。
 - 已把 `v2` 本地端和网页端都推进到“选车后选目标站”：不再默认坐到终点站，而是先选一趟真实列车，再从后续停站中选一个目标站接进 plan board。
+- 已把 `v2` 本地端推进到接近 `v1` 的 phase 效果：补上 `runner / hunter` 模式、`PLANNING / LIVE / ENDED`、`Start Game`、live 地图位置、抓捕结束反馈、模拟结果和 replay 事件列表。
+- 已把 `v2` 网页端推进到同一条主玩法流：补上 `runner / hunter` 模式、phase 时钟、`Start Game`、live 地图位置和基于 plan steps 的全国新干线规划。
 
 ## In Progress
-- 正在把 `v2` 从“数据正确”推进成“最小可玩壳”，当前重点是全国图上的站点选择、真实发车浏览、目标站选择和 plan 连接。
+- 正在把 `v2` 从“最小可玩壳”继续推进到真正和 `v1` 等级接近的客户端，当前重点是继续压实本地端与网页端的一致性。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
 
 ## Blockers
@@ -35,6 +37,6 @@
 - [2026-04-05] 全国合并默认优先按真实 `service_name + service_number (+ direction)` 识别同一趟列车，而不是只按各运营商自带的 `train_number`。
 
 ## Next
-1. 给 `v2` 客户端补 runner / hunter 两侧的最小模式切换和 plan cursor 规则。
+1. 继续收齐 `v2` 本地端和网页端之间仍然存在的细节差异，直到两边的 phase / planning / result 体验更接近 `v1`。
 2. 让 `v2` 进入真正的多段规划状态，包括更顺的 plan board 编辑和后续 leg 继续接续。
 3. 在 `v2` 游戏壳稳定后，再继续逐线补 anomaly checklist 的余项。
