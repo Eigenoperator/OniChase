@@ -11,6 +11,16 @@ SERVICE_NAME_ALIASES = {
     "のぞみ": "Nozomi",
     "ひかり": "Hikari",
     "こだま": "Kodama",
+    "かがやき": "Kagayaki",
+    "はくたか": "Hakutaka",
+    "あさま": "Asama",
+    "とき": "Toki",
+    "たにがわ": "Tanigawa",
+    "はやぶさ": "Hayabusa",
+    "やまびこ": "Yamabiko",
+    "なすの": "Nasuno",
+    "こまち": "Komachi",
+    "つばさ": "Tsubasa",
     "つるぎ": "Tsurugi",
     "みずほ": "Mizuho",
     "さくら": "Sakura",
@@ -24,6 +34,25 @@ def load_json(path: Path) -> dict[str, Any]:
         return json.load(f)
 
 
+def canonical_service_name(train: dict[str, Any]) -> str | None:
+    service_name = train.get("service_name")
+    if service_name in SERVICE_NAME_ALIASES:
+        return SERVICE_NAME_ALIASES[service_name]
+    return service_name
+
+
+def build_merge_key(train: dict[str, Any], dataset_direction: str | None) -> str:
+    service_name = canonical_service_name(train)
+    service_number = train.get("service_number")
+    direction_label = train.get("direction_label") or dataset_direction
+    if service_name and service_number:
+        key_parts = ["service", service_name, str(service_number)]
+        if direction_label:
+            key_parts.append(direction_label)
+        return "::".join(key_parts)
+    return f"train::{train['train_number']}"
+
+
 def merge_datasets(datasets: list[dict[str, Any]]) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
     merged: dict[str, dict[str, Any]] = {}
     merge_report: list[dict[str, Any]] = []
@@ -33,26 +62,29 @@ def merge_datasets(datasets: list[dict[str, Any]]) -> tuple[dict[str, dict[str, 
         dataset_direction = dataset.get("direction_label")
 
         for train in dataset.get("train_instances", []):
-            train_number = train["train_number"]
             candidate = dict(train)
+            train_number = candidate["train_number"]
             candidate.setdefault("service_instance_id", train_number)
             if candidate.get("service_name") in SERVICE_NAME_ALIASES:
                 candidate["service_name"] = SERVICE_NAME_ALIASES[candidate["service_name"]]
             if dataset_direction and not candidate.get("direction_label"):
                 candidate["direction_label"] = dataset_direction
+            merge_key = build_merge_key(candidate, dataset_direction)
+            candidate.setdefault("merge_key", merge_key)
 
-            if train_number not in merged:
-                merged[train_number] = candidate
+            if merge_key not in merged:
+                merged[merge_key] = candidate
                 continue
 
-            current = merged[train_number]
+            current = merged[merge_key]
             current_len = len(current.get("stop_times", []))
             candidate_len = len(candidate.get("stop_times", []))
 
             if candidate_len > current_len:
-                merged[train_number] = candidate
+                merged[merge_key] = candidate
                 merge_report.append(
                     {
+                        "merge_key": merge_key,
                         "train_number": train_number,
                         "resolution": "replaced_with_longer_stop_list",
                         "kept_stop_count": candidate_len,
@@ -63,6 +95,7 @@ def merge_datasets(datasets: list[dict[str, Any]]) -> tuple[dict[str, dict[str, 
             else:
                 merge_report.append(
                     {
+                        "merge_key": merge_key,
                         "train_number": train_number,
                         "resolution": "kept_existing_longer_or_equal_stop_list",
                         "kept_stop_count": current_len,
