@@ -44,12 +44,8 @@ def canonical_service_name(train: dict[str, Any]) -> str | None:
 def build_merge_key(train: dict[str, Any], dataset_direction: str | None) -> str:
     service_name = canonical_service_name(train)
     service_number = train.get("service_number")
-    direction_label = train.get("direction_label") or dataset_direction
     if service_name and service_number:
-        key_parts = ["service", service_name, str(service_number)]
-        if direction_label:
-            key_parts.append(direction_label)
-        return "::".join(key_parts)
+        return "::".join(["service", service_name, str(service_number)])
     return f"train::{train['train_number']}"
 
 
