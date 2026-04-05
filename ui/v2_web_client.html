@@ -371,7 +371,7 @@
     <div class="topbar">
       <div class="brand">
         <h1>OniChase V2</h1>
-        <p>Nationwide Shinkansen playable shell. Click a station, browse real departures after the current cursor time, preview remaining stops, and append route legs into a first plan board.</p>
+        <p>Nationwide Shinkansen playable shell. Click a station, browse real departures after the current cursor time, choose a train, then choose a destination stop and append that leg into the plan board.</p>
       </div>
       <div class="toolbar">
         <label class="pill">Cursor Time <input id="timeInput" value="07:00" /></label>
@@ -411,20 +411,25 @@
             <div class="list" id="departuresList"></div>
             <div class="detail" id="departureDetail">Select a departure to preview the remaining stop list.</div>
             <div class="card-actions">
-              <button class="primary" id="addTrainButton">Add Selected Train To Plan</button>
+              <button class="primary" id="addTrainButton">Add Selected Leg To Plan</button>
             </div>
           </section>
 
           <section class="list-card">
-            <h4>PLAN BOARD</h4>
-            <div class="list" id="planList"></div>
-            <div class="detail" id="planHint">This first web shell mirrors the local v2 client: each added leg currently rides to the selected train's terminal stop.</div>
+            <h4>DESTINATION OPTIONS</h4>
+            <div class="list" id="destinationsList"></div>
+            <div class="detail" id="planHint">Choose one downstream stop after selecting a train. The chosen stop becomes the new plan cursor.</div>
             <div class="card-actions"></div>
           </section>
         </div>
 
+        <div class="section">
+          <h3>PLAN BOARD</h3>
+          <div class="info-box" id="planBoardInfo"></div>
+        </div>
+
         <div class="footer-note">
-          Current scope: station click, real departure browser, full-stop preview, and chained leg planning.
+          Current scope: station click, real departure browser, destination selection, and chained leg planning.
         </div>
       </aside>
     </div>
@@ -441,6 +446,7 @@
       currentStationId: "TOKYO",
       currentMinute: hhmmToMinutes("07:00"),
       selectedTrainNumber: null,
+      selectedDestinationStationId: null,
       planSegments: [],
       mapCoords: new Map(),
     };
@@ -542,7 +548,9 @@
         );
         circle.addEventListener("click", () => {
           state.selectedStationId = station.id;
-          state.selectedTrainNumber = null;
+          if (!state.selectedTrainNumber) {
+            state.selectedDestinationStationId = null;
+          }
           render();
         });
         svg.appendChild(circle);
@@ -587,6 +595,7 @@
         `;
         item.addEventListener("click", () => {
           state.selectedTrainNumber = row.train.train_number;
+          state.selectedDestinationStationId = null;
           render();
         });
         list.appendChild(item);
@@ -608,26 +617,51 @@
       detail.textContent = lines.slice(0, 20).join("\n");
     }
 
-    function renderPlanBoard() {
-      const list = document.getElementById("planList");
+    function downstreamDestinations(stationId, currentMinute, trainNumber) {
+      if (!trainNumber) return [];
+      const departures = departuresForStation(stationId, currentMinute);
+      const match = departures.find((row) => row.train.train_number === trainNumber);
+      if (!match) return [];
+      return match.train.stop_times.filter((stop) => stop.sequence > match.stop.sequence);
+    }
+
+    function renderDestinations() {
+      const stationId = state.selectedStationId || state.currentStationId;
+      const list = document.getElementById("destinationsList");
       list.innerHTML = "";
-      if (!state.planSegments.length) {
+      const destinations = downstreamDestinations(stationId, state.currentMinute, state.selectedTrainNumber);
+      if (!destinations.length) {
         const item = document.createElement("div");
         item.className = "list-item";
-        item.innerHTML = "<strong>No legs yet</strong><div>Select a station, choose a departure, then add it to the board.</div>";
+        item.innerHTML = "<strong>No destination yet</strong><div>Select a train first.</div>";
         list.appendChild(item);
         return;
       }
-
-      for (const [index, segment] of state.planSegments.entries()) {
-        const item = document.createElement("div");
-        item.className = "list-item";
+      for (const stop of destinations) {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = `list-item${stop.station_id === state.selectedDestinationStationId ? " selected" : ""}`;
         item.innerHTML = `
-          <strong>${index + 1}. ${segment.from_station_id} ${segment.departure_hhmm} -> ${segment.to_station_id} ${segment.arrival_hhmm}</strong>
-          <div>${segment.display_name} | ${segment.train_number}</div>
+          <strong>${stop.arrival_hhmm || stop.departure_hhmm}  ${stop.station_id}</strong>
+          <div>${state.stationMap.get(stop.station_id)?.name || stop.station_id}</div>
         `;
+        item.addEventListener("click", () => {
+          state.selectedDestinationStationId = stop.station_id;
+          render();
+        });
         list.appendChild(item);
       }
+    }
+
+    function renderPlanBoard() {
+      const box = document.getElementById("planBoardInfo");
+      if (!state.planSegments.length) {
+        box.textContent = "No legs yet.\nSelect a station, choose a departure, then choose a destination stop.";
+        return;
+      }
+      box.textContent = state.planSegments.map((segment, index) =>
+        `${index + 1}. ${segment.from_station_id} ${segment.departure_hhmm} -> ${segment.to_station_id} ${segment.arrival_hhmm}\n${segment.display_name} | ${segment.train_number}`
+      ).join("\n\n");
     }
 
     function renderInfo() {
@@ -649,7 +683,7 @@
     }
 
     function addSelectedTrainToPlan() {
-      if (!state.selectedTrainNumber) return;
+      if (!state.selectedTrainNumber || !state.selectedDestinationStationId) return;
       const stationId = state.selectedStationId || state.currentStationId;
       const departures = departuresForStation(stationId, state.currentMinute);
       const match = departures.find((row) => row.train.train_number === state.selectedTrainNumber);
@@ -657,7 +691,8 @@
 
       const downstream = match.train.stop_times.filter((stop) => stop.sequence > match.stop.sequence);
       if (!downstream.length) return;
-      const destination = downstream[downstream.length - 1];
+      const destination = downstream.find((stop) => stop.station_id === state.selectedDestinationStationId);
+      if (!destination) return;
 
       state.planSegments.push({
         from_station_id: stationId,
@@ -672,6 +707,7 @@
       state.currentMinute = hhmmToMinutes(destination.arrival_hhmm || destination.departure_hhmm);
       state.selectedStationId = state.currentStationId;
       state.selectedTrainNumber = null;
+      state.selectedDestinationStationId = null;
       document.getElementById("timeInput").value = minutesToHhmm(state.currentMinute);
       render();
     }
@@ -681,6 +717,7 @@
       if (!/^\d{2}:\d{2}$/.test(value)) return;
       state.currentMinute = hhmmToMinutes(value);
       state.selectedTrainNumber = null;
+      state.selectedDestinationStationId = null;
       render();
     }
 
@@ -690,6 +727,7 @@
       state.selectedStationId = "TOKYO";
       state.currentMinute = hhmmToMinutes("07:00");
       state.selectedTrainNumber = null;
+      state.selectedDestinationStationId = null;
       document.getElementById("timeInput").value = "07:00";
       render();
     }
@@ -697,6 +735,7 @@
     function render() {
       renderInfo();
       renderDepartures();
+      renderDestinations();
       renderPlanBoard();
       renderMap();
     }

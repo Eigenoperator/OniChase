@@ -63,6 +63,7 @@ class OniChaseV2Client:
         self.current_minute = hhmm_to_minutes("07:00")
         self.selected_station_id: str | None = self.current_station_id
         self.selected_train_number: str | None = None
+        self.selected_destination_station_id: str | None = None
         self.plan_segments: list[dict[str, Any]] = []
 
         self.map_pan_x = 0.0
@@ -188,7 +189,8 @@ class OniChaseV2Client:
         lists.add(plan_frame, weight=2)
 
         departures_frame.columnconfigure(0, weight=1)
-        departures_frame.rowconfigure(1, weight=1)
+        departures_frame.rowconfigure(1, weight=2)
+        departures_frame.rowconfigure(4, weight=2)
         tk.Label(departures_frame, text="UPCOMING DEPARTURES", bg=PANEL, fg=INK, font=self.fonts["body_bold"]).grid(row=0, column=0, sticky="w")
         self.departures_list = tk.Listbox(departures_frame, font=self.fonts["small"], activestyle="none")
         self.departures_list.grid(row=1, column=0, sticky="nsew", pady=(6, 8))
@@ -198,7 +200,14 @@ class OniChaseV2Client:
         self.departures_list.configure(yscrollcommand=dep_scroll.set)
 
         tk.Label(departures_frame, textvariable=self.train_detail_var, bg=PANEL, fg=MUTED, justify="left", anchor="w", font=self.fonts["small"]).grid(row=2, column=0, columnspan=2, sticky="ew", pady=(0, 8))
-        ttk.Button(departures_frame, text="Add Selected Train To Plan", command=self.add_selected_train_to_plan).grid(row=3, column=0, sticky="w")
+        tk.Label(departures_frame, text="DESTINATION OPTIONS", bg=PANEL, fg=INK, font=self.fonts["body_bold"]).grid(row=3, column=0, sticky="w", pady=(8, 0))
+        self.destinations_list = tk.Listbox(departures_frame, font=self.fonts["small"], activestyle="none")
+        self.destinations_list.grid(row=4, column=0, sticky="nsew", pady=(6, 8))
+        self.destinations_list.bind("<<ListboxSelect>>", self.on_destination_select)
+        dest_scroll = tk.Scrollbar(departures_frame, orient="vertical", command=self.destinations_list.yview)
+        dest_scroll.grid(row=4, column=1, sticky="ns", pady=(6, 8))
+        self.destinations_list.configure(yscrollcommand=dest_scroll.set)
+        ttk.Button(departures_frame, text="Add Selected Leg To Plan", command=self.add_selected_train_to_plan).grid(row=5, column=0, sticky="w")
 
         plan_frame.columnconfigure(0, weight=1)
         plan_frame.rowconfigure(1, weight=1)
@@ -299,15 +308,40 @@ class OniChaseV2Client:
         selection = self.departures_list.curselection()
         if not selection:
             self.selected_train_number = None
+            self.selected_destination_station_id = None
             self.render()
             return
         label = self.departures_list.get(selection[0])
         train_number = label.split(" | ")[-1]
         self.selected_train_number = train_number
+        self.selected_destination_station_id = None
         self.render()
 
+    def on_destination_select(self, _event: tk.Event[tk.Misc] | None = None) -> None:
+        selection = self.destinations_list.curselection()
+        if not selection:
+            self.selected_destination_station_id = None
+            return
+        label = self.destinations_list.get(selection[0])
+        self.selected_destination_station_id = label.split(" | ")[-1]
+        self.render()
+
+    def downstream_destinations(self, station_id: str, current_minute: int, train_number: str | None) -> list[dict[str, Any]]:
+        if not train_number:
+            return []
+        departures = self.departures_for_station(station_id, current_minute)
+        match = None
+        for departure_minute, train, stop in departures:
+            if train["train_number"] == train_number:
+                match = (departure_minute, train, stop)
+                break
+        if not match:
+            return []
+        _departure_minute, train, stop = match
+        return [candidate for candidate in train["stop_times"] if candidate["sequence"] > stop["sequence"]]
+
     def add_selected_train_to_plan(self) -> None:
-        if not self.selected_train_number:
+        if not self.selected_train_number or not self.selected_destination_station_id:
             return
         station_id = self.selected_station_id or self.current_station_id
         departures = self.departures_for_station(station_id, self.current_minute)
@@ -326,7 +360,9 @@ class OniChaseV2Client:
             downstream.append(candidate)
         if not downstream:
             return
-        destination = downstream[-1]
+        destination = next((candidate for candidate in downstream if candidate["station_id"] == self.selected_destination_station_id), None)
+        if not destination:
+            return
         self.plan_segments.append(
             {
                 "from_station_id": station_id,
@@ -341,6 +377,7 @@ class OniChaseV2Client:
         self.current_minute = hhmm_to_minutes(destination.get("arrival_hhmm") or destination.get("departure_hhmm"))
         self.selected_station_id = self.current_station_id
         self.selected_train_number = None
+        self.selected_destination_station_id = None
         self.time_entry.delete(0, tk.END)
         self.time_entry.insert(0, minutes_to_hhmm(self.current_minute))
         self.render()
@@ -376,6 +413,7 @@ class OniChaseV2Client:
         station_id = self.selected_station_id or self.current_station_id
         departures = self.departures_for_station(station_id, self.current_minute)
         self.departures_list.delete(0, tk.END)
+        self.destinations_list.delete(0, tk.END)
         selected_train = self.train_map.get(self.selected_train_number) if self.selected_train_number else None
         detail_lines = ["Select a departure to preview its full remaining stop list."]
         for departure_minute, train, stop in departures:
@@ -398,6 +436,17 @@ class OniChaseV2Client:
                         f"- {stop['station_id']}  {stop.get('arrival_hhmm') or stop.get('departure_hhmm')}"
                     )
         self.train_detail_var.set("\n".join(detail_lines[:18]))
+        destinations = self.downstream_destinations(station_id, self.current_minute, self.selected_train_number)
+        for stop in destinations:
+            label = f"{stop.get('arrival_hhmm') or stop.get('departure_hhmm')}  {stop['station_id']}  |  {stop['station_id']}"
+            self.destinations_list.insert(tk.END, label)
+        if self.selected_destination_station_id:
+            for index, stop in enumerate(destinations):
+                if stop["station_id"] == self.selected_destination_station_id:
+                    self.destinations_list.selection_clear(0, tk.END)
+                    self.destinations_list.selection_set(index)
+                    self.destinations_list.activate(index)
+                    break
 
     def render_plan_board(self) -> None:
         self.plan_list.delete(0, tk.END)

@@ -30,6 +30,7 @@ The current `v2` client already provides:
 - a current plan cursor station and time
 - upcoming departures from the selected station after the cursor time
 - train preview with downstream stop list
+- destination selection from the selected train's downstream stops
 - a minimal plan board that chains route legs from the current cursor
 
 ## Launch
@@ -47,4 +48,4 @@ The next stage is to turn this shell into actual `v2` gameplay:
 - start presets
 - hidden-information rules
 - capture checks
-- route-leg editing instead of always riding to the terminal stop
+- richer route-leg editing beyond the current "select train -> select destination stop" flow
