@@ -31,6 +31,22 @@ def extract_train_numbers(table_html: str) -> list[str]:
     return [strip_tags(cell) for cell in cells]
 
 
+def extract_train_names(table_html: str) -> list[str]:
+    match = re.search(r"<th>Train name</th>(.*?)</tr>", table_html, re.DOTALL)
+    if not match:
+        return []
+    cells = re.findall(r"<td[^>]*colspan=\"2\"[^>]*>(.*?)</td>", match.group(1), re.DOTALL)
+    return [strip_tags(cell) for cell in cells]
+
+
+def extract_train_types(table_html: str) -> list[str]:
+    match = re.search(r"<th>Train type</th>(.*?)</tr>", table_html, re.DOTALL)
+    if not match:
+        return []
+    cells = re.findall(r"<td[^>]*colspan=\"2\"[^>]*>(.*?)</td>", match.group(1), re.DOTALL)
+    return [strip_tags(cell) for cell in cells]
+
+
 def extract_rows(table_html: str) -> list[str]:
     return re.findall(r'<tr class="time">(.*?)</tr>', table_html, re.DOTALL)
 
@@ -81,18 +97,42 @@ def parse_source_month(html: str) -> str | None:
     return match.group(1)
 
 
-def parse_html(html: str, source_url: str | None) -> dict[str, object]:
+def split_service_name(raw_name: str) -> tuple[str | None, str | None]:
+    value = raw_name.strip()
+    if not value:
+        return None, None
+    match = re.match(r"^(.*?)(\d+)$", value)
+    if not match:
+        return value, None
+    return match.group(1).strip(), match.group(2).strip()
+
+
+def parse_html(html: str, source_url: str | None, line_id: str = "JR_YAMANOTE") -> dict[str, object]:
     table_html = extract_table(html)
     train_numbers = extract_train_numbers(table_html)
+    train_names = extract_train_names(table_html)
+    train_types = extract_train_types(table_html)
     rows = extract_rows(table_html)
 
-    trains = [
-        {
+    trains = []
+    for index, train_number in enumerate(train_numbers):
+        raw_train_name = train_names[index] if index < len(train_names) else None
+        service_name, service_number = split_service_name(raw_train_name or "")
+        train_type = train_types[index] if index < len(train_types) else None
+        train = {
             "train_number": train_number,
             "stop_times": [],
         }
-        for train_number in train_numbers
-    ]
+        if train_type:
+            train["train_type"] = train_type
+        if raw_train_name:
+            train["train_name_raw"] = raw_train_name
+            train["display_name"] = raw_train_name
+        if service_name:
+            train["service_name"] = service_name
+        if service_number:
+            train["service_number"] = service_number
+        trains.append(train)
 
     for sequence, row_html in enumerate(rows, start=1):
         station_name = extract_station_name(row_html)
@@ -107,7 +147,7 @@ def parse_html(html: str, source_url: str | None) -> dict[str, object]:
             record = {
                 "sequence": sequence,
                 "station_name_raw": station_name,
-                "line_id": "JR_YAMANOTE",
+                "line_id": line_id,
             }
             record.update(time_info)
             if platform is not None:

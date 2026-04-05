@@ -7,24 +7,53 @@ from typing import Any
 
 
 def normalize_name(name: str) -> str:
-    return re.sub(r"[^a-z0-9]", "", name.lower())
+    lowered = name.lower().strip()
+    return re.sub(r"[\s\-_()（）・'’.,/]", "", lowered)
+
+
+AMBIGUOUS_STATION_BY_LINE = {
+    ("sendai", "SHINKANSEN_TOHOKU_HOKKAIDO"): "SENDAI_TOHOKU",
+    ("sendai", "SHINKANSEN_AKITA"): "SENDAI_TOHOKU",
+    ("sendai", "SHINKANSEN_YAMAGATA"): "SENDAI_TOHOKU",
+    ("sendai", "SHINKANSEN_KYUSHU"): "SENDAI_KYUSHU",
+}
 
 
 def build_station_lookup(stations_data: dict[str, Any]) -> dict[str, str]:
+    stations = stations_data["stations"] if isinstance(stations_data, dict) else stations_data
     lookup: dict[str, str] = {}
-    for station in stations_data["stations"]:
+    for station in stations:
         station_id = station["id"]
-        english_name = station["names"]["en"]
-        lookup[normalize_name(english_name)] = station_id
+        names = station.get("names", {})
+        for value in [station.get("name"), names.get("en"), names.get("ja"), names.get("zh_hans")]:
+            if value:
+                lookup[normalize_name(value)] = station_id
 
     lookup.update(
         {
             "takanawagateway": "TAKANAWA_GATEWAY",
             "shinokubo": "SHIN_OKUBO",
             "nishinippori": "NISHI_NIPPORI",
+            "sakurambohigashine": "SAKURANBO_HIGASHINE",
+            "galayuzawaseasonal": "GALA_YUZAWA",
+            "shinosaka": "SHIN_OSAKA",
+            "shinyokohama": "SHIN_YOKOHAMA",
+            "shinhakodatehokuto": "SHIN_HAKODATE_HOKUTO",
+            "shinshimonoseki": "SHIN_SHIMONOSEKI",
+            "shinomura": "SHIN_OMURA",
+            "新岩国": "SHIN_IWAKUNI",
         }
     )
     return lookup
+
+
+def resolve_station_id(raw_name: str, line_id: str | None, station_lookup: dict[str, str]) -> str | None:
+    normalized = normalize_name(raw_name)
+    if line_id is not None:
+        keyed = AMBIGUOUS_STATION_BY_LINE.get((normalized, line_id))
+        if keyed is not None:
+            return keyed
+    return station_lookup.get(normalized)
 
 
 def normalize_train_instances(
@@ -41,7 +70,7 @@ def normalize_train_instances(
 
         for stop_time in train.get("stop_times", []):
             raw_name = stop_time["station_name_raw"]
-            station_id = station_lookup.get(normalize_name(raw_name))
+            station_id = resolve_station_id(raw_name, stop_time.get("line_id"), station_lookup)
             if station_id is None:
                 unresolved.add(raw_name)
                 continue

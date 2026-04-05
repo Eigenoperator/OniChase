@@ -24,7 +24,8 @@ def hhmm_to_minutes(value: str) -> int:
 
 
 def build_station_order_lookup(stations_data: dict[str, Any]) -> dict[str, int]:
-    return {station["id"]: station["order"] for station in stations_data["stations"]}
+    stations = stations_data["stations"] if isinstance(stations_data, dict) else stations_data
+    return {station["id"]: station["order"] for station in stations if "order" in station}
 
 
 def validate_train_instance(
@@ -111,7 +112,8 @@ def main() -> int:
     require(bool(dataset.get("version")), "Dataset version is missing.", errors)
     require(bool(dataset.get("train_instances")), "Dataset has no train_instances.", errors)
 
-    station_ids = {station["id"] for station in stations_data["stations"]}
+    stations = stations_data["stations"] if isinstance(stations_data, dict) else stations_data
+    station_ids = {station["id"] for station in stations}
     station_order_lookup = build_station_order_lookup(stations_data)
     seen_train_numbers: set[str] = set()
 

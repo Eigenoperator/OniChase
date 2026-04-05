@@ -1,43 +1,32 @@
 # STATUS
+
 ## Current Focus
-把 `v1` 山手线试玩底座保持稳定，同时继续修正 `v2` 新干线全图草图。
+把 `v1` 山手线试玩底座保持稳定，同时把 `v2` 全国新干线真实列车数据接成可继续扩充的 train-instance 管线。
+
 ## Done
-- 已完成 `v1` 山手线真实站点、weekday 时刻表抓取、合并、可视化与第一版真实列车实例模拟器。
-- 已完成本地客户端与网页端的 `PLANNING -> LIVE -> ENDED` 主流程、地图联动、`PLAN BOARD`、抓捕结束标记与抓捕说明卡。
-- 已完成 hunter mode 第一轮开发：限制 hunter 视角信息、修正 hunter preset、补上 live 抓捕判定与结果反馈。
-- 已完成一轮 `v1` 自测：真实山手线时刻表下 10 组代表性对局结果都符合预期。
-- 已开始 `v2` 新干线全图草图，并已按真实网络关系修正 `Akita`、`Hokuriku`、`Kyushu / Nishi-Kyushu` 等关键错误。
-- 已继续清理 `v2` 新干线图的可读性问题：去掉灰色辅助线路、拉开 `Joetsu` 与 `Hokuriku`、并把 `Yamagata` 与 `Akita` 调整为不再互相交叉。
-- 已继续按真实关系修正 `v2` 图的骨架：`Joetsu` 现在明确在 `Hokuriku` 上方，`Yamagata` 不再压进 `Hokuriku`，`Tohoku` 绿线也已真实延伸到 `Shin-Aomori` 再接 `Hokkaido`。
-- 已回补 `DIARY-2026-04-03.md`，并确认当前仓库与会话中没有可直接执行的 Notion 集成入口。
-- 已正式为 `v2` 选定 `Plan A`，并在 `V2_GEOMETRY_PLAN.md` 里定义“真实站点坐标 + 真实线路顺序 -> 几何渲染 -> 有限视觉整理”的地图实施路线。
-- 已完成 `v2` 第一版数据驱动底座：新增 `scripts/dev/render_shinkansen_v2_from_geometry.py`，并生成 `data/shinkansen_v2_stations.json`、`data/shinkansen_v2_routes.json` 与 `visuals/shinkansen_v2_map_real_geometry.svg`。
-- 已把 `v2` 数据结构和渲染器升级成 `lat/lon-ready`：`shinkansen_v2_stations.json` 现在正式带 `lat / lon` 字段，渲染器也会优先使用真实坐标投影、否则回退到 `geometry_seed`。
-- 已接入一份公开日本铁路站点坐标源，并完成第一轮 `v2` 坐标富化：当前 `119` 个站里已有 `101` 个拿到真实 `lat / lon`，且已修正 `大宮 / 福島 / 郡山 / 福井 / 小倉 / 長崎` 等同名错配问题。
-- 已修正 `v2` 地图“部分站看起来很怪”的主因：新增缺失坐标估算脚本，用线路邻站插值为剩余站点补地理位置，当前除 `GALA_YUZAWA` 外，其余站点都已进入同一套地理坐标体系。
-- 已完成 `GALA_YUZAWA` 与其余插值站的替换，并继续把 `19` 个 `manual precise` 站点全部落回公开来源：当前 `v2` 的 `119` 个站点已全部具备 `real` 点位，其中 `100` 个来自主公开源、`19` 个来自日文维基百科车站页坐标。
-- 已继续修正 `v2` 中两个明显的同名错配点：`TOKAIDO` 上的 `SHIN_FUJI` 已从北海道错误点位拉回静冈，`KYUSHU` 上的 `SENDAI_KYUSHU` 也已拉回鹿儿岛 `川内`。
-- 已对 `v2` 真实坐标图做第一轮视觉收光：新增线路白色底托、彩色线路牌、站名白描边与一轮标签偏移，让地图从技术图更接近可读的作品图。
-- 已把 `v2` 站名布局从少量手写偏移升级成自动避让：站名现在会尽量避开彼此、避开线路牌，也尽量不压到站点圆。
-- 已把 `v2` 线路名也接入自动避让：线路牌现在会尽量避开彼此、避开站名和站点圆，不再固定钉在单一坐标上。
-- 已把 `GALA Yuzawa` 从“主干线同级线路”弱化成 `Joetsu branch` 的支线表达，避免它在 `v2` 全国图上抢占和主新干线同级的视觉权重。
-- 已正式写出 `V2_TIMETABLE_PLAN.md`：`v2` 将覆盖全图所有真实新干线列车，并明确要求保留真实列车名 / 列车种别，例如 `Nozomi 1`、`Kagayaki 503`，而不是退化成匿名 train id。
-- 已建立 `data/shinkansen_v2_source_inventory.json`，把 `JR East / JR Central / JR West / JR Kyushu` 的官方入口、覆盖线路和抓取约束先整理成统一清单。
+- 已完成 `v1` 山手线真实站点、weekday 时刻表、合并列车实例、可视化与第一版可玩客户端。
+- 已完成 `v1` hunter mode 第一轮开发：信息限制、live 抓捕判定、结束标记、抓捕说明卡。
+- 已完成 `v2` 新干线全图的数据驱动地图底座：真实站点、真实线路顺序、真实坐标、自动标签避让、地图渲染脚本。
+- 已完成 `v2` 官方时刻表入口清单与站点清单，接通 `JR East / JR West / JR Kyushu` 多源 train-detail 抓取链。
+- 已生成 `data/shinkansen_v2_weekday_train_instances_merged.json`，当前合并后为 `1119` 趟 weekday 真实新干线列车实例。
+- 已补上 `Joetsu` 的 `Niigata -> Tokyo` 上行，以及 `Hokuriku` 的 `Nagano` 上下行和 `Tsuruga -> Tokyo` 上行。
+- 已新增 `visuals/shinkansen_v2_weekday_timetable.svg`，按线路分 panel 可视化 `v2` 全国新干线 weekday 时刻图。
+
 ## In Progress
-- 正在继续打磨 `v1` 的开发期可玩性，同时开始推进 `v2` 的官方时刻表入口核对，准备把全图所有真实新干线列车接进统一 train-instance 管线。
+- 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，尤其是 `Tokaido / Sanyo / Hokuriku / Joetsu`。
+- 正在把 `v2` 的 source inventory 和 station timetable inventory 收成长期可复用的 ingestion 底座。
+
 ## Blockers
-- 当前仓库和本会话里没有可用的 Notion 工具、脚本或配置，所以今天无法直接完成真正的 Notion 更新。
-- `v2` 新干线图仍需继续逐条核对真实线路关系，暂时还不能当正式底图使用。
-- `v2` 的点位来源现在已经收敛到两套公开源，但图面布局和标签避让仍未完成，当前图还不能直接当最终视觉底图使用。
-- `v2` 的真实时刻表抓取会横跨 `JR East / JR Central / JR West / JR Kyushu` 多套官方入口，部分运营商可能不直接暴露完整 all-trains detail 页面，后面需要逐家核对。
+- 当前仓库和本会话里没有可用的 Notion 工具、脚本或配置，所以无法直接完成真正的 Notion 更新。
+- `JR Central` 官方入口仍需继续核对；`Tokaido` 全量列车覆盖目前主要来自 `Tokyo` 与 `Shin-Osaka` 侧入口，可能还缺部分中途始发/终到短折返。
+
 ## Decisions
 - [2026-03-30] 主测试主线使用“真实山手线 + 真实站点 + 真实时刻表”。
-- [2026-03-30] 规则只能新建版本，不能直接改旧规则文件。
 - [2026-04-03] 不再为每个小改动都 commit / push；只在显著变化时同步，但有实质工作的一天仍需至少同步一次。
-- [2026-04-02] 当前阶段不因优化焦虑提前换语言；优先保证 `data schema / rules / simulation I/O / frontend-engine JSON boundary` 独立。
-- [2026-04-03] 第一轮 hunter mode 测试使用“runner 不移动、主动试玩 hunter”的方式先隔离验证 hunter 侧的信息展示与操作闭环。
-- [2026-04-03] 产品路线当前固定为 `v1 山手线`、`v2 新干线全图`、`v3 东京全图`；在 `v1` 验证清楚前，不提前展开更大地图。
+- [2026-04-03] 产品路线固定为 `v1 山手线`、`v2 新干线全图`、`v3 东京全图`。
+- [2026-04-04] `v2` 使用全图所有真实新干线列车，并保留真实列车名，例如 `Nozomi 1`、`Kagayaki 503`。
+
 ## Next
-1. 继续核对 `JR East / JR Central / JR West / JR Kyushu` 哪些官方入口能给出完整 train-detail，哪些只能给 basic timetable。
-2. 选定 `v2` 第一条要实际打通的官方时刻表 ingestion 链，并开始做 train-instance 发现脚本。
-3. 继续做 `v1` 的 hunter / runner 开发期实机试玩，只盯“是否顺手、是否清楚、是否能稳定验证规则”。
+1. 继续补 `v2` 尚未覆盖的关键方向入口，优先查 `JR Central` 与可能缺失的短折返班次。
+2. 把 `v2` 训练有素的 source inventory / station inventory 再收一轮，确保后续扩充不靠人工记忆。
+3. 在 `v1` 维持稳定的前提下，开始规划 `v2` 的最小可玩模拟输入格式。

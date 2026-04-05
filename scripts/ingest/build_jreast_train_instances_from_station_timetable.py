@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import time
 import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
@@ -46,13 +47,28 @@ class AnchorCollector(HTMLParser):
 
 
 def fetch_html(url: str) -> str:
-    request = urllib.request.Request(
-        url,
-        headers={"User-Agent": "Mozilla/5.0 (compatible; Codex Yamanote Builder)"},
-    )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        charset = response.headers.get_content_charset() or "utf-8"
-        return response.read().decode(charset, errors="replace")
+    last_error: Exception | None = None
+    for attempt in range(3):
+        try:
+            request = urllib.request.Request(
+                url,
+                headers={"User-Agent": "Mozilla/5.0 (compatible; Codex OniChase Builder)"},
+            )
+            with urllib.request.urlopen(request, timeout=30) as response:
+                charset = response.headers.get_content_charset() or "utf-8"
+                return response.read().decode(charset, errors="replace")
+        except urllib.error.HTTPError as exc:
+            last_error = exc
+            if exc.code not in {502, 503, 504} or attempt == 2:
+                raise
+            time.sleep(1.5 * (attempt + 1))
+        except urllib.error.URLError as exc:
+            last_error = exc
+            if attempt == 2:
+                raise
+            time.sleep(1.5 * (attempt + 1))
+    assert last_error is not None
+    raise last_error
 
 
 def normalize_url(href: str, base_url: str) -> str:
@@ -119,6 +135,21 @@ def main() -> int:
         required=True,
         help="Human-readable source station name for metadata only.",
     )
+    parser.add_argument(
+        "--line-id",
+        default="JR_YAMANOTE",
+        help="Canonical line or route-family id to record on stop_times. Default: JR_YAMANOTE",
+    )
+    parser.add_argument(
+        "--dataset-id",
+        default="train_instances_from_station_timetable_v0_1",
+        help="Output dataset id.",
+    )
+    parser.add_argument(
+        "--label",
+        default="Train instances built from one JR East station timetable page",
+        help="Human-readable output dataset label.",
+    )
     args = parser.parse_args()
 
     stations_data = json.loads(Path(args.stations).read_text(encoding="utf-8"))
@@ -131,7 +162,7 @@ def main() -> int:
     for train_url in train_links:
         source_urls.append(train_url)
         train_html = fetch_html(train_url)
-        parsed = parse_train_detail_html(train_html, train_url)
+        parsed = parse_train_detail_html(train_html, train_url, line_id=args.line_id)
         raw_instances.extend(parsed["train_instances"])
 
     normalized_instances, unresolved = normalize_train_instances(raw_instances, stations_data)
@@ -141,14 +172,15 @@ def main() -> int:
     deduped_instances = dedupe_train_instances(normalized_instances)
 
     output = {
-      "id": "train_instances_from_station_timetable_v0_1",
-      "label": "Train instances built from one JR East station timetable page",
+      "id": args.dataset_id,
+      "label": args.label,
       "version": "0.1.0",
       "source_station_name": args.station_name,
       "service_day": "weekday",
       "direction_label": direction_label,
       "source_issue": source_issue,
       "source_timetable_url": args.timetable_url,
+      "line_id": args.line_id,
       "source_train_urls": source_urls,
       "train_instances": deduped_instances
     }

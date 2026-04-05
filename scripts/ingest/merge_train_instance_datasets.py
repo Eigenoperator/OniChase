@@ -7,6 +7,17 @@ import json
 from pathlib import Path
 from typing import Any
 
+SERVICE_NAME_ALIASES = {
+    "のぞみ": "Nozomi",
+    "ひかり": "Hikari",
+    "こだま": "Kodama",
+    "つるぎ": "Tsurugi",
+    "みずほ": "Mizuho",
+    "さくら": "Sakura",
+    "つばめ": "Tsubame",
+    "かもめ": "Kamome",
+}
+
 
 def load_json(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as f:
@@ -25,6 +36,8 @@ def merge_datasets(datasets: list[dict[str, Any]]) -> tuple[dict[str, dict[str, 
             train_number = train["train_number"]
             candidate = dict(train)
             candidate.setdefault("service_instance_id", train_number)
+            if candidate.get("service_name") in SERVICE_NAME_ALIASES:
+                candidate["service_name"] = SERVICE_NAME_ALIASES[candidate["service_name"]]
             if dataset_direction and not candidate.get("direction_label"):
                 candidate["direction_label"] = dataset_direction
 
