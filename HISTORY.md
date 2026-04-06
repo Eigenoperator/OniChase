@@ -170,3 +170,4 @@
 - Created `memory/MEMORY-2026-04-06.md` and recorded the daily sync kickoff for the new day.
 - Continued `v2` web parity work by adding a simulator-backed result summary, replay event list, replay detail panel, and replay-driven map-state jumping to the online nationwide Shinkansen client.
 - Split the GitHub Pages entry flow into three pages: a new landing page at `docs/index.html`, plus dedicated `docs/v1.html` and `docs/v2.html` playtest pages, and updated `README.md` so the repository homepage links directly to all three public URLs.
+- Normalized `v2` right-panel train labels to English-first display on both the local and web clients, so timetable choices now show service names like `Nozomi 1` and `Kagayaki 503` instead of raw Japanese display names.

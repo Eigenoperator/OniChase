@@ -724,8 +724,19 @@
           break;
         }
       }
-      rows.sort((a, b) => a.departureMinute - b.departureMinute || a.train.display_name.localeCompare(b.train.display_name));
+      rows.sort((a, b) => a.departureMinute - b.departureMinute || formatTrainLabel(a.train).localeCompare(formatTrainLabel(b.train)));
       return rows.slice(0, 90);
+    }
+
+    function formatTrainLabel(train) {
+      const serviceName = train.service_name;
+      const serviceNumber = train.service_number;
+      if (serviceName && serviceNumber !== undefined && serviceNumber !== null && serviceNumber !== "") {
+        return `${serviceName} ${serviceNumber}`;
+      }
+      if (serviceName) return String(serviceName);
+      if (train.display_name) return String(train.display_name);
+      return String(train.train_number);
     }
 
     function renderDepartures() {
@@ -740,7 +751,7 @@
         item.type = "button";
         item.className = `list-item${row.train.train_number === state.selectedTrainNumber ? " selected" : ""}`;
         item.innerHTML = `
-          <strong>${minutesToHhmm(row.departureMinute)}  ${row.train.display_name}</strong>
+          <strong>${minutesToHhmm(row.departureMinute)}  ${formatTrainLabel(row.train)}</strong>
           <div>${row.train.train_number}</div>
         `;
         item.addEventListener("click", () => {
@@ -759,7 +770,7 @@
       }
 
       const boardingStop = selectedTrain.stop_times.find((stop) => stop.station_id === stationId && stopDepartureMinutes(stop) >= preview.currentMinute);
-      const lines = [`${selectedTrain.display_name}`, `Board at ${stationId} ${minutesToHhmm(stopDepartureMinutes(boardingStop))}`, "Remaining stops:"];
+      const lines = [`${formatTrainLabel(selectedTrain)}`, `Board at ${stationId} ${minutesToHhmm(stopDepartureMinutes(boardingStop))}`, "Remaining stops:"];
       for (const stop of selectedTrain.stop_times) {
         if (stop.sequence <= boardingStop.sequence) continue;
         lines.push(`- ${stop.station_id}  ${stop.arrival_hhmm || stop.departure_hhmm}`);

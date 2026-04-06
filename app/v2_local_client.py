@@ -53,6 +53,18 @@ def stop_arrival_minutes(stop: dict[str, Any]) -> int:
     return hhmm_to_minutes(stop.get("arrival_hhmm") or stop["departure_hhmm"])
 
 
+def format_train_label(train: dict[str, Any]) -> str:
+    service_name = train.get("service_name")
+    service_number = train.get("service_number")
+    if service_name and service_number not in (None, ""):
+        return f"{service_name} {service_number}"
+    if service_name:
+        return str(service_name)
+    if train.get("display_name"):
+        return str(train["display_name"])
+    return str(train["train_number"])
+
+
 class OniChaseV2Client:
     def __init__(self) -> None:
         self.bundle = load_json(BUNDLE_PATH)
@@ -603,7 +615,7 @@ class OniChaseV2Client:
                     continue
                 departures.append((departure_minute, train, stop))
                 break
-        departures.sort(key=lambda item: (item[0], item[1].get("display_name", ""), item[1]["train_number"]))
+        departures.sort(key=lambda item: (item[0], format_train_label(item[1]), item[1]["train_number"]))
         return departures[:100]
 
     def add_board_and_ride_steps(self, train_number: str, station_id: str) -> None:
@@ -1004,7 +1016,7 @@ class OniChaseV2Client:
         )
         active_train = active_preview.get("current_train")
         if active_train and active_preview.get("current_board_stop"):
-            lines = [f"{active_train.get('display_name', active_train['train_number'])}", "Upcoming stops:"]
+            lines = [format_train_label(active_train), "Upcoming stops:"]
             boarded_sequence = active_preview["current_board_stop"]["sequence"]
             for stop in active_train["stop_times"]:
                 if stop["sequence"] <= boarded_sequence:
@@ -1069,7 +1081,7 @@ class OniChaseV2Client:
         dep_list = tk.Listbox(self.action_card, font=self.fonts["small"], activestyle="none", height=10)
         dep_list.grid(row=4, column=0, sticky="ew")
         for departure_minute, train, _stop in departures[:40]:
-            dep_list.insert(tk.END, f"{minutes_to_hhmm(departure_minute)}  {train.get('display_name', train['train_number'])}  |  {train['train_number']}")
+            dep_list.insert(tk.END, f"{minutes_to_hhmm(departure_minute)}  {format_train_label(train)}  |  {train['train_number']}")
         if departures:
             def choose_train() -> None:
                 selection = dep_list.curselection()
@@ -1086,7 +1098,7 @@ class OniChaseV2Client:
             if train:
                 board_stop = self.find_boarding_stop(train, station_id, preview["current_minute"])
                 if board_stop:
-                    detail_lines = [f"{train.get('display_name', train['train_number'])}", f"Board at {station_id} {minutes_to_hhmm(stop_departure_minutes(board_stop))}", "Remaining stops:"]
+                    detail_lines = [format_train_label(train), f"Board at {station_id} {minutes_to_hhmm(stop_departure_minutes(board_stop))}", "Remaining stops:"]
                     for stop in train["stop_times"]:
                         if stop["sequence"] <= board_stop["sequence"]:
                             continue

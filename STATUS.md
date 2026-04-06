@@ -22,6 +22,7 @@
 - 已把 `v2` 网页端推进到同一条主玩法流：补上 `runner / hunter` 模式、phase 时钟、`Start Game`、live 地图位置和基于 plan steps 的全国新干线规划。
 - 已继续把 `v2` 网页端往本地端收齐：补上 `Run Simulation`、结果摘要、replay 事件列表、事件详情，以及地图随选中事件跳到对应状态。
 - 已完成 `2026-04-05` 的 diary 回补，并创建今天 `2026-04-06` 的 daily memory，保持日记与记忆链连续。
+- 已把 `v2` 右侧列车显示统一为英文服务名优先，例如 `Nozomi 1`、`Kagayaki 503`，不再在右栏直接显示日文车名。
 - 已更新 `README.md`，把 GitHub Pages 首页、`v1` 页面、`v2` 页面三个公开地址都写清楚。
 
 ## In Progress
