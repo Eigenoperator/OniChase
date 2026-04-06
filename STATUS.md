@@ -19,6 +19,7 @@
 - 已把 `v2` 本地端和网页端都推进到“选车后选目标站”：不再默认坐到终点站，而是先选一趟真实列车，再从后续停站中选一个目标站接进 plan board。
 - 已把 `v2` 本地端推进到接近 `v1` 的 phase 效果：补上 `runner / hunter` 模式、`PLANNING / LIVE / ENDED`、`Start Game`、live 地图位置、抓捕结束反馈、模拟结果和 replay 事件列表。
 - 已把 `v2` 网页端推进到同一条主玩法流：补上 `runner / hunter` 模式、phase 时钟、`Start Game`、live 地图位置和基于 plan steps 的全国新干线规划。
+- 已完成 `2026-04-05` 的 diary 回补，并创建今天 `2026-04-06` 的 daily memory，保持日记与记忆链连续。
 
 ## In Progress
 - 正在把 `v2` 从“最小可玩壳”继续推进到真正和 `v1` 等级接近的客户端，当前重点是继续压实本地端与网页端的一致性。

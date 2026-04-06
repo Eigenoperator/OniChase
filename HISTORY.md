@@ -163,3 +163,8 @@
 - Upgraded both the local and web `v2` shells from “select a train and automatically ride to the terminal stop” to the first real routing flow: after choosing a departure, the player now picks one downstream stop as the destination leg before appending it to the `plan board`.
 - Reworked the `v2` local client from a route-browser shell into a real match shell with `runner / hunter` modes, `PLANNING / LIVE / ENDED` flow, manual start, live player markers on the nationwide map, live capture checks, simulation results, and a replay event list.
 - Pulled the `v2` web client onto the same main gameplay flow: it now includes `runner / hunter` mode switching, a visible phase clock, manual match start, live player positions on the nationwide map, and plan-step-based nationwide Shinkansen routing instead of only passive timetable browsing.
+
+## 2026-04-06
+
+- Backfilled `diary/DIARY-2026-04-05.md` to keep the daily diary chain continuous.
+- Created `memory/MEMORY-2026-04-06.md` and recorded the daily sync kickoff for the new day.
