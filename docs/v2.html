@@ -284,8 +284,8 @@
     }
 
     .sidebar {
-      display: grid;
-      grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+      display: flex;
+      flex-direction: column;
       height: 100%;
       min-height: 0;
       overflow-y: auto;
@@ -320,10 +320,11 @@
     .lists {
       padding: 14px 18px;
       display: grid;
-      grid-template-rows: 1fr 0.9fr;
+      grid-template-rows: minmax(320px, auto) minmax(220px, auto);
       gap: 16px;
-      min-height: 0;
+      min-height: auto;
       overflow: visible;
+      flex: 0 0 auto;
     }
 
     .list-card {
@@ -332,7 +333,7 @@
       border: 1px solid rgba(212, 202, 184, 0.95);
       background: #fffdf8;
       display: grid;
-      grid-template-rows: auto 1fr auto auto;
+      grid-template-rows: auto minmax(180px, 1fr) auto auto;
       overflow: hidden;
     }
 
@@ -345,6 +346,7 @@
 
     .list {
       overflow: auto;
+      min-height: 180px;
       padding: 0 8px 8px;
       display: grid;
       gap: 8px;
