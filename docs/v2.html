@@ -903,6 +903,24 @@
       const list = document.getElementById("departuresList");
       list.innerHTML = "";
 
+      if (preview.currentState.kind !== "NODE") {
+        const item = document.createElement("div");
+        item.className = "list-item";
+        item.innerHTML = `<strong>No departures available</strong><div>You are currently on ${preview.currentState.train_number}. Choose a destination first or wait until you are back at a station.</div>`;
+        list.appendChild(item);
+        document.getElementById("departureDetail").textContent = `Current state: on ${preview.currentState.train_number} at ${preview.currentTime}.\nTrain choices only appear while your plan cursor is at a station.`;
+        return;
+      }
+
+      if (!departures.length) {
+        const item = document.createElement("div");
+        item.className = "list-item";
+        item.innerHTML = `<strong>No departures found</strong><div>No real trains leave ${stationId} after ${preview.currentTime} in the current timetable window.</div>`;
+        list.appendChild(item);
+        document.getElementById("departureDetail").textContent = `Station: ${stationId}\nCursor time: ${preview.currentTime}\nTry an earlier time, a different station, or reset the current plan branch.`;
+        return;
+      }
+
       for (const row of departures) {
         const item = document.createElement("button");
         item.type = "button";
