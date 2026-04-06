@@ -431,6 +431,7 @@
         <button class="secondary" id="loadPresetButton">Load Test Preset</button>
         <button class="primary" id="startGameButton">Start Game</button>
         <button class="secondary" id="pauseGameButton">Pause/Resume</button>
+        <button class="primary" id="runSimulationButton">Run Simulation</button>
         <button class="secondary" id="applyTimeButton">Apply Time</button>
         <button class="primary" id="resetPlanButton">Reset Plan</button>
       </div>
@@ -487,6 +488,12 @@
         <div class="section">
           <h3>RESULT</h3>
           <div class="info-box" id="resultInfo">No result yet.</div>
+          <div class="list-card" style="margin-top:12px;">
+            <h4>REPLAY EVENTS</h4>
+            <div class="list" id="resultEventList"></div>
+            <div class="detail" id="resultDetail">Select an event to inspect it.</div>
+            <div class="card-actions"></div>
+          </div>
         </div>
 
         <div class="footer-note">
@@ -926,6 +933,7 @@
       state.selectedTrainNumber = null;
       state.selectedDestinationStationId = null;
       state.latestResult = null;
+      state.selectedResultEventIndex = 0;
       state.liveCapture = null;
       document.getElementById("timeInput").value = state.startTime;
       scheduleTick();
@@ -1071,7 +1079,42 @@
     }
 
     function currentMapPreview(playerId) {
+      const event = currentReplayEvent();
+      if (event && event.state_after && event.state_after[playerId]) {
+        return replayPreviewFromState(playerId, event.state_after[playerId], event);
+      }
       return previewPlayer(playerId, visibleGameMinute());
+    }
+
+    function currentReplayEvent() {
+      if (!state.latestResult || !state.latestResult.match_event_log || !state.latestResult.match_event_log.length) return null;
+      const index = Math.max(0, Math.min(state.selectedResultEventIndex, state.latestResult.match_event_log.length - 1));
+      return state.latestResult.match_event_log[index];
+    }
+
+    function replayPreviewFromState(playerId, carrierState, event) {
+      const currentState = { ...carrierState };
+      let mapPosition = null;
+      let mapStationId = currentState.station_id || null;
+      if (currentState.kind === "NODE" && mapStationId && state.mapCoords.has(mapStationId)) {
+        mapPosition = state.mapCoords.get(mapStationId);
+      } else if (currentState.kind === "TRAIN") {
+        const loc = trainLocationOnMap(currentState.train_number, event.time_minute);
+        if (loc) {
+          mapPosition = loc.position;
+          mapStationId = loc.anchor_station_id;
+        }
+      }
+      return {
+        currentMinute: event.time_minute,
+        currentTime: event.time_hhmm,
+        currentState,
+        currentTrain: currentState.kind === "TRAIN" ? state.trains.train_instances.find((item) => item.train_number === currentState.train_number) || null : null,
+        currentBoardStop: null,
+        resolvedSteps: [],
+        mapPosition,
+        mapStationId,
+      };
     }
 
     function formatState(preview) {
@@ -1113,6 +1156,7 @@
     }
 
     function shouldShowPlayer(playerId) {
+      if (currentReplayEvent()) return true;
       if (state.phase === "PLANNING") return true;
       return playerId === state.activeMode;
     }
@@ -1143,11 +1187,298 @@
         : `GAME END\n\nHunter caught the runner at ${capture.time_hhmm}.\nRule: same_train\nTrain: ${capture.train_number}`;
     }
 
+    function classifyEventFamily(eventType) {
+      if (["SCENARIO_START", "SCENARIO_END"].includes(eventType)) return "LIFECYCLE";
+      if (eventType === "CAPTURE") return "RESOLUTION";
+      if (["START_AT_STATION", "WAIT_UNTIL"].includes(eventType)) return "POSITION";
+      if (["BOARD_TRAIN", "ALIGHT_TRAIN"].includes(eventType)) return "MOVEMENT";
+      if (eventType === "PLAN_RESOLUTION") return "PLANNING";
+      return "GENERIC";
+    }
+
+    function formatEvent(timeMinute, eventType, playerId = null, payload = {}) {
+      const event = {
+        time_hhmm: minutesToHhmm(timeMinute),
+        time_minute: timeMinute,
+        type: eventType,
+        event_scope: ["SCENARIO_START", "CAPTURE", "SCENARIO_END"].includes(eventType) ? "MATCH_GLOBAL" : "PLAYER_LOCAL",
+        timeline_lane: playerId || "match",
+        event_family: classifyEventFamily(eventType),
+      };
+      if (playerId) event.player_id = playerId;
+      return { ...event, ...payload };
+    }
+
+    function eventPriority(eventType) {
+      return { SCENARIO_START: 0, START_AT_STATION: 1, WAIT_UNTIL: 2, PLAN_RESOLUTION: 3, BOARD_TRAIN: 4, ALIGHT_TRAIN: 5, CAPTURE: 6, SCENARIO_END: 7 }[eventType] ?? 99;
+    }
+
+    function expandPlayerPlan(playerId, playerData, scenario) {
+      let currentMinute = hhmmToMinutes(scenario.start_time_hhmm);
+      const endMinute = hhmmToMinutes(scenario.end_time_hhmm);
+      let currentStationId = playerData.start_station_id;
+      let currentTrain = null;
+      let currentBoardStop = null;
+      const intervals = [];
+      const resolvedActions = [];
+      const events = [
+        formatEvent(currentMinute, "START_AT_STATION", playerId, {
+          station_id: currentStationId,
+          carrier_after: { kind: "NODE", station_id: currentStationId },
+        }),
+      ];
+      const steps = playerData.plan ? playerData.plan.steps : (playerData.actions || []);
+      for (let i = 0; i < steps.length; i += 1) {
+        const action = steps[i];
+        if (action.type === "WAIT_UNTIL") {
+          const targetMinute = hhmmToMinutes(action.until_hhmm);
+          if (currentStationId == null || targetMinute < currentMinute) throw new Error(`${playerId} has invalid WAIT_UNTIL`);
+          intervals.push({ kind: "NODE", station_id: currentStationId, start_minute: currentMinute, end_minute: targetMinute });
+          events.push(formatEvent(targetMinute, "WAIT_UNTIL", playerId, { station_id: currentStationId }));
+          currentMinute = targetMinute;
+          resolvedActions.push({ step_index: i + 1, ...action });
+          continue;
+        }
+        if (action.type === "BOARD_TRAIN") {
+          if (currentStationId == null) throw new Error(`${playerId} cannot board while not at a station`);
+          const train = state.trains.train_instances.find((item) => item.train_number === action.train_number);
+          if (!train) throw new Error(`Unknown train ${action.train_number}`);
+          const boardStop = findBoardingStop(train, currentStationId, currentMinute);
+          if (!boardStop) throw new Error(`Train ${action.train_number} not catchable from ${currentStationId}`);
+          const boardMinute = stopDepartureMinutes(boardStop);
+          if (boardMinute > currentMinute) intervals.push({ kind: "NODE", station_id: currentStationId, start_minute: currentMinute, end_minute: boardMinute });
+          events.push(formatEvent(boardMinute, "BOARD_TRAIN", playerId, {
+            station_id: currentStationId,
+            train_number: train.train_number,
+            sequence: boardStop.sequence,
+            carrier_after: { kind: "TRAIN", train_number: train.train_number },
+          }));
+          currentMinute = boardMinute;
+          currentTrain = train;
+          currentBoardStop = boardStop;
+          currentStationId = null;
+          resolvedActions.push({ step_index: i + 1, ...action });
+          continue;
+        }
+        if (action.type === "RIDE_TO_STATION") {
+          if (!currentTrain || !currentBoardStop) throw new Error(`${playerId} cannot ride while not on a train`);
+          const alightStop = findAlightStop(currentTrain, currentBoardStop.sequence, action.station_id);
+          if (!alightStop) throw new Error(`${currentTrain.train_number} does not reach ${action.station_id}`);
+          const arrivalMinute = stopArrivalMinutes(alightStop);
+          intervals.push({ kind: "TRAIN", train_number: currentTrain.train_number, start_minute: currentMinute, end_minute: arrivalMinute });
+          events.push(formatEvent(arrivalMinute, "ALIGHT_TRAIN", playerId, {
+            station_id: alightStop.station_id,
+            train_number: currentTrain.train_number,
+            sequence: alightStop.sequence,
+            carrier_after: { kind: "NODE", station_id: alightStop.station_id },
+          }));
+          currentMinute = arrivalMinute;
+          currentStationId = alightStop.station_id;
+          currentTrain = null;
+          currentBoardStop = null;
+          resolvedActions.push({ step_index: i + 1, ...action });
+        }
+      }
+      if (currentTrain) throw new Error(`${playerId} ends while still on a train`);
+      if (currentStationId && currentMinute < endMinute) {
+        intervals.push({ kind: "NODE", station_id: currentStationId, start_minute: currentMinute, end_minute: endMinute });
+      }
+      return {
+        player_id: playerId,
+        start_station_id: playerData.start_station_id,
+        input_mode: playerData.plan ? "plan" : "actions",
+        resolved_actions: resolvedActions,
+        intervals,
+        events,
+        final_station_id: currentStationId,
+      };
+    }
+
+    function cloneState(stateObj) {
+      return {
+        runner: { ...stateObj.runner },
+        hunter: { ...stateObj.hunter },
+      };
+    }
+
+    function applyEventToState(stateObj, event) {
+      if (!event.player_id) return;
+      if (event.type === "START_AT_STATION" || event.type === "ALIGHT_TRAIN") {
+        stateObj[event.player_id] = { kind: "NODE", station_id: event.station_id };
+      } else if (event.type === "BOARD_TRAIN") {
+        stateObj[event.player_id] = { kind: "TRAIN", train_number: event.train_number };
+      }
+    }
+
+    function detectCaptureAfterEvent(event, runningState) {
+      if (!["SCENARIO_START", "START_AT_STATION", "BOARD_TRAIN", "ALIGHT_TRAIN"].includes(event.type)) return null;
+      const runnerState = runningState.runner;
+      const hunterState = runningState.hunter;
+      if (runnerState.kind === "TRAIN" && hunterState.kind === "TRAIN" && runnerState.train_number === hunterState.train_number) {
+        return { type: "same_train", train_number: runnerState.train_number };
+      }
+      if (runnerState.kind === "NODE" && hunterState.kind === "NODE" && runnerState.station_id === hunterState.station_id) {
+        return { type: "same_node", station_id: runnerState.station_id };
+      }
+      return null;
+    }
+
+    function buildScenario() {
+      return {
+        id: "v2-web-client-live",
+        start_time_hhmm: state.startTime,
+        end_time_hhmm: state.endTime,
+        players: {
+          runner: state.players.runner.input_mode === "plan"
+            ? { start_station_id: state.players.runner.start_station_id, plan: { steps: state.players.runner.steps } }
+            : { start_station_id: state.players.runner.start_station_id, actions: state.players.runner.steps },
+          hunter: state.players.hunter.input_mode === "plan"
+            ? { start_station_id: state.players.hunter.start_station_id, plan: { steps: state.players.hunter.steps } }
+            : { start_station_id: state.players.hunter.start_station_id, actions: state.players.hunter.steps },
+        },
+      };
+    }
+
+    function buildMatchEventLog(scenario, runner, hunter) {
+      const startMinute = hhmmToMinutes(scenario.start_time_hhmm);
+      const endMinute = hhmmToMinutes(scenario.end_time_hhmm);
+      const events = [
+        formatEvent(startMinute, "SCENARIO_START", null, { scenario_id: scenario.id }),
+        ...runner.events,
+        ...hunter.events,
+      ].sort((a, b) => {
+        if (a.time_minute !== b.time_minute) return a.time_minute - b.time_minute;
+        const pa = eventPriority(a.type);
+        const pb = eventPriority(b.type);
+        if (pa !== pb) return pa - pb;
+        return String(a.player_id || "").localeCompare(String(b.player_id || ""));
+      });
+
+      const runningState = {
+        runner: { kind: "NODE", station_id: runner.start_station_id },
+        hunter: { kind: "NODE", station_id: hunter.start_station_id },
+      };
+      const resolvedEvents = [];
+      let resolvedCapture = null;
+      for (const event of events) {
+        event.state_before = cloneState(runningState);
+        applyEventToState(runningState, event);
+        event.state_after = cloneState(runningState);
+        event.state_snapshot = cloneState(runningState);
+        resolvedEvents.push(event);
+        const capture = detectCaptureAfterEvent(event, runningState);
+        if (capture) {
+          const captureEvent = formatEvent(event.time_minute, "CAPTURE", null, {
+            capture_type: capture.type,
+            trigger_event_type: event.type,
+            trigger_player_id: event.player_id,
+            ...Object.fromEntries(Object.entries(capture).filter(([key]) => key !== "type")),
+          });
+          captureEvent.state_before = cloneState(runningState);
+          captureEvent.state_after = cloneState(runningState);
+          captureEvent.state_snapshot = cloneState(runningState);
+          resolvedEvents.push(captureEvent);
+          resolvedCapture = { type: capture.type, time_hhmm: captureEvent.time_hhmm, ...Object.fromEntries(Object.entries(capture).filter(([key]) => key !== "type")) };
+          break;
+        }
+      }
+      if (!resolvedCapture) {
+        const endEvent = formatEvent(endMinute, "SCENARIO_END", null, { scenario_id: scenario.id });
+        endEvent.state_before = cloneState(runningState);
+        endEvent.state_after = cloneState(runningState);
+        endEvent.state_snapshot = cloneState(runningState);
+        resolvedEvents.push(endEvent);
+      }
+      return { match_event_log: resolvedEvents, capture: resolvedCapture };
+    }
+
+    function buildResult() {
+      const scenario = buildScenario();
+      const runner = expandPlayerPlan("runner", scenario.players.runner, scenario);
+      const hunter = expandPlayerPlan("hunter", scenario.players.hunter, scenario);
+      const match = buildMatchEventLog(scenario, runner, hunter);
+      return {
+        scenario_id: scenario.id,
+        dataset_id: state.trains.id,
+        capture: match.capture,
+        match_event_log: match.match_event_log,
+        players: { runner, hunter },
+      };
+    }
+
+    function formatEventSummary(event) {
+      const parts = [event.time_hhmm, event.type];
+      if (event.player_id) parts.push(event.player_id);
+      if (event.station_id) parts.push(event.station_id);
+      if (event.train_number) parts.push(event.train_number);
+      if (event.capture_type) parts.push(event.capture_type);
+      return parts.join("  ");
+    }
+
+    function renderReplayList() {
+      const list = document.getElementById("resultEventList");
+      const detail = document.getElementById("resultDetail");
+      list.innerHTML = "";
+      if (!state.latestResult || !state.latestResult.match_event_log || !state.latestResult.match_event_log.length) {
+        const item = document.createElement("div");
+        item.className = "list-item";
+        item.innerHTML = "<strong>No replay yet</strong><div>Run Simulation first.</div>";
+        list.appendChild(item);
+        detail.textContent = "Select an event to inspect it.";
+        return;
+      }
+      state.latestResult.match_event_log.forEach((event, index) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = `list-item${index === state.selectedResultEventIndex ? " selected" : ""}`;
+        item.innerHTML = `<strong>${formatEventSummary(event)}</strong><div>${event.event_family}</div>`;
+        item.addEventListener("click", () => {
+          state.selectedResultEventIndex = index;
+          render();
+        });
+        list.appendChild(item);
+      });
+      const event = currentReplayEvent();
+      if (!event) {
+        detail.textContent = "Select an event to inspect it.";
+        return;
+      }
+      const lines = [`Time: ${event.time_hhmm}`, `Type: ${event.type}`];
+      if (event.player_id) lines.push(`Player: ${event.player_id}`);
+      if (event.station_id) lines.push(`Station: ${event.station_id}`);
+      if (event.train_number) lines.push(`Train: ${event.train_number}`);
+      if (event.capture_type) lines.push(`Capture: ${event.capture_type}`);
+      if (event.state_after) {
+        lines.push("", `Runner after: ${event.state_after.runner.kind === "NODE" ? event.state_after.runner.station_id : `on ${event.state_after.runner.train_number}`}`);
+        lines.push(`Hunter after: ${event.state_after.hunter.kind === "NODE" ? event.state_after.hunter.station_id : `on ${event.state_after.hunter.train_number}`}`);
+      }
+      detail.textContent = lines.join("\n");
+    }
+
+    function runSimulation() {
+      try {
+        const result = buildResult();
+        state.latestResult = result;
+        state.selectedResultEventIndex = 0;
+        const capture = result.capture;
+        const lines = [`Scenario: ${result.scenario_id}`, `Events: ${result.match_event_log.length}`];
+        if (!capture) lines.push("Capture: none");
+        else if (capture.type === "same_node") lines.push(`Capture: same_node at ${capture.station_id} ${capture.time_hhmm}`);
+        else lines.push(`Capture: same_train on ${capture.train_number} ${capture.time_hhmm}`);
+        document.getElementById("resultInfo").textContent = `SIMULATION\n\n${lines.join("\n")}`;
+      } catch (error) {
+        document.getElementById("resultInfo").textContent = `SIMULATION\n\nFailed to simulate: ${String(error)}`;
+        state.latestResult = null;
+      }
+      render();
+    }
+
     function render() {
       renderInfo();
       renderDepartures();
       renderDestinations();
       renderPlanBoard();
+      renderReplayList();
       renderMap();
     }
 
@@ -1174,6 +1505,7 @@
       document.getElementById("loadPresetButton").addEventListener("click", applyTestPreset);
       document.getElementById("startGameButton").addEventListener("click", startGameNow);
       document.getElementById("pauseGameButton").addEventListener("click", toggleClock);
+      document.getElementById("runSimulationButton").addEventListener("click", runSimulation);
       applyTestPreset();
     }
 

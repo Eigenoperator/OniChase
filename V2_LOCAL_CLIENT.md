@@ -37,6 +37,7 @@ The current `v2` client already provides:
 - a plan board that chains route legs from the current cursor
 - live capture checks and `GAME END` feedback
 - result summary and replay event list from the generic train-instance simulator
+- the same result / replay layer is now also being mirrored onto the `v2` web client
 
 ## Launch
 
@@ -52,4 +53,4 @@ The next stage is to deepen actual `v2` gameplay:
 - make local and web `v2` parity tighter
 - keep polishing hidden-information rules and map feedback
 - richer route-leg editing beyond the current "select train -> select destination stop" flow
-- expand replay detail and result readability
+- expand replay detail and result readability even further
