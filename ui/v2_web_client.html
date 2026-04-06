@@ -20,6 +20,8 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
+      height: 100vh;
+      overflow: hidden;
       font-family: "Avenir Next", "Segoe UI", sans-serif;
       color: var(--ink);
       background:
@@ -29,9 +31,10 @@
     }
 
     .app {
-      min-height: 100vh;
+      height: 100vh;
       display: grid;
       grid-template-rows: auto 1fr;
+      overflow: hidden;
     }
 
     .topbar {
@@ -145,7 +148,9 @@
       grid-template-columns: minmax(0, 1fr) 440px;
       gap: 20px;
       padding: 20px 24px 24px;
+      height: 100%;
       min-height: 0;
+      overflow: hidden;
     }
 
     .panel {
@@ -160,7 +165,7 @@
     .map-panel {
       display: grid;
       grid-template-rows: auto 1fr;
-      min-height: 840px;
+      height: 100%;
       background:
         radial-gradient(circle at 22% 14%, rgba(204, 139, 44, 0.08), transparent 20%),
         linear-gradient(180deg, rgba(255, 252, 245, 0.98), rgba(244, 237, 225, 0.98));
@@ -195,15 +200,22 @@
     .map-wrap {
       padding: 0 18px 18px;
       min-height: 0;
+      overflow: hidden;
     }
 
     svg {
       width: 100%;
       height: 100%;
-      min-height: 760px;
       display: block;
       border-radius: 22px;
       background: rgba(255,255,255,0.46);
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+
+    svg.dragging {
+      cursor: grabbing;
     }
 
     .route-underlay {
@@ -273,12 +285,15 @@
 
     .sidebar {
       display: grid;
-      grid-template-rows: auto auto 1fr auto;
-      min-height: 840px;
+      grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .section {
-      padding: 18px 18px 0;
+      padding: 14px 18px 0;
+      min-height: 0;
     }
 
     .section h3 {
@@ -296,14 +311,16 @@
       line-height: 1.55;
       color: var(--muted);
       white-space: pre-line;
+      overflow: auto;
     }
 
     .lists {
-      padding: 18px;
+      padding: 14px 18px;
       display: grid;
       grid-template-rows: 1fr 0.9fr;
       gap: 16px;
       min-height: 0;
+      overflow: hidden;
     }
 
     .list-card {
@@ -402,11 +419,23 @@
     }
 
     @media (max-width: 1240px) {
+      body {
+        height: auto;
+        overflow: auto;
+      }
+      .app {
+        height: auto;
+        overflow: visible;
+      }
       .shell {
         grid-template-columns: 1fr;
+        height: auto;
+        overflow: visible;
       }
       .sidebar {
         min-height: 0;
+        height: auto;
+        overflow: visible;
       }
       svg {
         min-height: 640px;
@@ -516,6 +545,7 @@
       selectedTrainNumber: null,
       selectedDestinationStationId: null,
       mapCoords: new Map(),
+      mapView: { scale: 1, tx: 0, ty: 0, dragging: false, lastX: 0, lastY: 0 },
       activeMode: "runner",
       players: {},
       pendingBoardTrainNumbers: { runner: null, hunter: null },
@@ -577,9 +607,41 @@
       }
     }
 
+    function visibleStationLabelLevel(station) {
+      const scale = state.mapView.scale;
+      if (station.id === state.selectedStationId || station.id === state.players[state.activeMode].start_station_id) return "full";
+      if (scale >= 1.7) return "full";
+      if (scale >= 1.28) {
+        return station.is_interchange || (station.route_ids || []).length >= 2 ? "major" : "none";
+      }
+      const majorStations = new Set([
+        "TOKYO", "SHINAGAWA", "SHIN_YOKOHAMA", "NAGOYA", "KYOTO", "SHIN_OSAKA",
+        "OKAYAMA", "HIROSHIMA", "HAKATA", "KAGOSHIMA_CHUO", "OMIYA", "SENDAI",
+        "MORIOKA", "SHIN_AOMORI", "SHIN_HAKODATE_HOKUTO", "KANAZAWA", "TSURUGA",
+        "NIIGATA", "NAGANO", "FUKUSHIMA", "NAGASAKI"
+      ]);
+      return majorStations.has(station.id) ? "major" : "none";
+    }
+
+    function mapTransformValue() {
+      const { scale, tx, ty } = state.mapView;
+      return `translate(${tx} ${ty}) scale(${scale})`;
+    }
+
+    function clampMapView() {
+      state.mapView.scale = Math.max(0.72, Math.min(3.2, state.mapView.scale));
+      state.mapView.tx = Math.max(-360, Math.min(360, state.mapView.tx));
+      state.mapView.ty = Math.max(-260, Math.min(260, state.mapView.ty));
+    }
+
     function renderMap() {
       const svg = document.getElementById("mapSvg");
       svg.innerHTML = "";
+      svg.classList.toggle("dragging", state.mapView.dragging);
+
+      const content = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      content.setAttribute("transform", mapTransformValue());
+      svg.appendChild(content);
 
       for (const route of state.bundle.routes) {
         const points = route.station_ids
@@ -593,13 +655,13 @@
         const underlay = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         underlay.setAttribute("points", points);
         underlay.setAttribute("class", "route-underlay");
-        svg.appendChild(underlay);
+        content.appendChild(underlay);
 
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         line.setAttribute("points", points);
         line.setAttribute("class", "route-main");
         line.setAttribute("stroke", route.color);
-        svg.appendChild(line);
+        content.appendChild(line);
       }
 
       let chainStation = state.players[state.activeMode].start_station_id;
@@ -619,7 +681,7 @@
             trace.setAttribute("x2", to.x);
             trace.setAttribute("y2", to.y);
             trace.setAttribute("class", "plan-trace");
-            svg.appendChild(trace);
+            content.appendChild(trace);
           }
           chainStation = step.station_id;
           pendingTrain = null;
@@ -648,14 +710,21 @@
           }
           render();
         });
-        svg.appendChild(circle);
+        content.appendChild(circle);
 
-        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        label.setAttribute("x", x + 8);
-        label.setAttribute("y", y - 10);
-        label.setAttribute("class", `station-label${station.id === state.selectedStationId ? " selected" : ""}`);
-        label.textContent = station.name;
-        svg.appendChild(label);
+        const labelLevel = visibleStationLabelLevel(station);
+        if (labelLevel !== "none") {
+          const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          label.setAttribute("x", x + 10);
+          label.setAttribute("y", y - 12);
+          label.setAttribute("class", `station-label${station.id === state.selectedStationId ? " selected" : ""}`);
+          if (labelLevel === "major") {
+            label.setAttribute("font-size", "13");
+            label.setAttribute("font-weight", "700");
+          }
+          label.textContent = station.name;
+          content.appendChild(label);
+        }
       }
 
       for (const playerId of ["runner", "hunter"]) {
@@ -698,7 +767,7 @@
         sub.setAttribute("fill", "#1c2733");
         sub.textContent = preview.currentState.kind === "TRAIN" ? preview.currentState.train_number : preview.currentState.station_id;
         group.appendChild(sub);
-        svg.appendChild(group);
+        content.appendChild(group);
       }
 
       if (state.liveCapture) {
@@ -709,8 +778,51 @@
         text.setAttribute("font-size", "32");
         text.setAttribute("font-weight", "800");
         text.textContent = "CAUGHT";
-        svg.appendChild(text);
+        content.appendChild(text);
       }
+    }
+
+    function setupMapInteractions() {
+      const svg = document.getElementById("mapSvg");
+      svg.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        state.mapView.scale *= event.deltaY < 0 ? 1.14 : 0.88;
+        clampMapView();
+        renderMap();
+      }, { passive: false });
+
+      svg.addEventListener("pointerdown", (event) => {
+        if (event.target.closest(".station-dot")) return;
+        state.mapView.dragging = true;
+        state.mapView.lastX = event.clientX;
+        state.mapView.lastY = event.clientY;
+        try {
+          svg.setPointerCapture(event.pointerId);
+        } catch (_err) {}
+        renderMap();
+      });
+
+      svg.addEventListener("pointermove", (event) => {
+        if (!state.mapView.dragging) return;
+        state.mapView.tx += event.clientX - state.mapView.lastX;
+        state.mapView.ty += event.clientY - state.mapView.lastY;
+        state.mapView.lastX = event.clientX;
+        state.mapView.lastY = event.clientY;
+        clampMapView();
+        renderMap();
+      });
+
+      const endDrag = (event) => {
+        if (!state.mapView.dragging) return;
+        state.mapView.dragging = false;
+        try {
+          svg.releasePointerCapture(event.pointerId);
+        } catch (_err) {}
+        renderMap();
+      };
+
+      svg.addEventListener("pointerup", endDrag);
+      svg.addEventListener("pointercancel", endDrag);
     }
 
     function departuresForStation(stationId, currentMinute) {
@@ -1517,6 +1629,7 @@
       document.getElementById("startGameButton").addEventListener("click", startGameNow);
       document.getElementById("pauseGameButton").addEventListener("click", toggleClock);
       document.getElementById("runSimulationButton").addEventListener("click", runSimulation);
+      setupMapInteractions();
       applyTestPreset();
     }
 
