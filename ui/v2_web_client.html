@@ -628,10 +628,48 @@
       return `translate(${tx} ${ty}) scale(${scale})`;
     }
 
+    function mapContentBounds() {
+      const points = Array.from(state.mapCoords.values());
+      const xs = points.map((point) => point.x);
+      const ys = points.map((point) => point.y);
+      return {
+        minX: Math.min(...xs),
+        maxX: Math.max(...xs),
+        minY: Math.min(...ys),
+        maxY: Math.max(...ys),
+      };
+    }
+
     function clampMapView() {
       state.mapView.scale = Math.max(0.72, Math.min(3.2, state.mapView.scale));
-      state.mapView.tx = Math.max(-360, Math.min(360, state.mapView.tx));
-      state.mapView.ty = Math.max(-260, Math.min(260, state.mapView.ty));
+      if (!state.mapCoords.size) return;
+      const bounds = mapContentBounds();
+      const viewWidth = 1100;
+      const viewHeight = 820;
+      const padding = 48;
+      const scaledMinX = state.mapView.scale * bounds.minX;
+      const scaledMaxX = state.mapView.scale * bounds.maxX;
+      const scaledMinY = state.mapView.scale * bounds.minY;
+      const scaledMaxY = state.mapView.scale * bounds.maxY;
+
+      let minTx = viewWidth - padding - scaledMaxX;
+      let maxTx = padding - scaledMinX;
+      let minTy = viewHeight - padding - scaledMaxY;
+      let maxTy = padding - scaledMinY;
+
+      if (minTx > maxTx) {
+        const centerTx = (minTx + maxTx) / 2;
+        minTx = centerTx;
+        maxTx = centerTx;
+      }
+      if (minTy > maxTy) {
+        const centerTy = (minTy + maxTy) / 2;
+        minTy = centerTy;
+        maxTy = centerTy;
+      }
+
+      state.mapView.tx = Math.max(minTx, Math.min(maxTx, state.mapView.tx));
+      state.mapView.ty = Math.max(minTy, Math.min(maxTy, state.mapView.ty));
     }
 
     function renderMap() {
@@ -690,10 +728,14 @@
 
       for (const station of state.bundle.stations) {
         const { x, y } = state.mapCoords.get(station.id);
+        const stationRadius = station.is_interchange
+          ? Math.max(2.8, Math.min(5.2, 5.2 / Math.sqrt(state.mapView.scale)))
+          : Math.max(2.1, Math.min(3.8, 3.8 / Math.sqrt(state.mapView.scale)));
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         circle.setAttribute("cx", x);
         circle.setAttribute("cy", y);
-        circle.setAttribute("r", station.is_interchange ? 6 : 4.2);
+        circle.setAttribute("r", stationRadius);
+        circle.setAttribute("stroke-width", Math.max(1.1, 2 / Math.sqrt(state.mapView.scale)));
         circle.setAttribute(
           "class",
           [
