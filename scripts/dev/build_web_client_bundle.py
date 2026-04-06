@@ -7,25 +7,206 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE_HTML = ROOT / "ui" / "v2_web_client.html"
+UI_DIR = ROOT / "ui"
 DOCS_DIR = ROOT / "docs"
 DOCS_DATA_DIR = DOCS_DIR / "data"
-TARGET_HTML = DOCS_DIR / "index.html"
 NOJEKYLL = DOCS_DIR / ".nojekyll"
 
+V1_SOURCE_HTML = UI_DIR / "web_client.html"
+V2_SOURCE_HTML = UI_DIR / "v2_web_client.html"
+INDEX_HTML = DOCS_DIR / "index.html"
+V1_TARGET_HTML = DOCS_DIR / "v1.html"
+V2_TARGET_HTML = DOCS_DIR / "v2.html"
+
 DATA_FILES = [
+    ROOT / "data" / "yamanote_stations.json",
+    ROOT / "data" / "yamanote_weekday_train_instances_merged.json",
     ROOT / "data" / "shinkansen_v2_bundle.json",
     ROOT / "data" / "shinkansen_v2_weekday_train_instances_merged.json",
 ]
 
 
+def build_landing_page() -> str:
+    return """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OniChase</title>
+  <style>
+    :root {
+      --bg: #f4eee2;
+      --ink: #1f2933;
+      --muted: #687382;
+      --line: #d9cfbd;
+      --panel: rgba(255, 251, 244, 0.94);
+      --shadow: 0 20px 52px rgba(31, 41, 51, 0.12);
+      --shadow-soft: 0 12px 28px rgba(31, 41, 51, 0.08);
+      --v1: #80c241;
+      --v2: #cc8b2c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 14% 14%, rgba(128, 194, 65, 0.18), transparent 24%),
+        radial-gradient(circle at 84% 16%, rgba(204, 139, 44, 0.14), transparent 22%),
+        linear-gradient(180deg, #fbf8f2 0%, var(--bg) 100%);
+    }
+    .page {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 32px;
+    }
+    .shell {
+      width: min(1120px, 100%);
+      display: grid;
+      gap: 22px;
+    }
+    .hero {
+      border: 1px solid rgba(217, 207, 189, 0.95);
+      border-radius: 32px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 32px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: 48px;
+      letter-spacing: 0.04em;
+    }
+    .hero p {
+      margin: 10px 0 0;
+      max-width: 780px;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+    }
+    .card {
+      border: 1px solid rgba(217, 207, 189, 0.95);
+      border-radius: 28px;
+      background: var(--panel);
+      box-shadow: var(--shadow-soft);
+      padding: 26px;
+      display: grid;
+      gap: 16px;
+    }
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .card.v1 .eyebrow { color: var(--v1); }
+    .card.v2 .eyebrow { color: var(--v2); }
+    .card h2 {
+      margin: 0;
+      font-size: 30px;
+    }
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .meta {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    a.button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 150px;
+      padding: 13px 16px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-weight: 800;
+      color: #1f2933;
+      box-shadow: var(--shadow-soft);
+    }
+    .card.v1 a.button { background: #dff1c4; }
+    .card.v2 a.button { background: #f6dfba; }
+    .secondary-link {
+      align-self: center;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 700;
+    }
+    @media (max-width: 900px) {
+      .cards { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 38px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="shell">
+      <section class="hero">
+        <h1>OniChase</h1>
+        <p>Choose a playable version. <strong>V1</strong> is the Yamanote prototype with a single real loop line. <strong>V2</strong> is the nationwide Shinkansen prototype built on real trains, real routes, and real station geometry.</p>
+      </section>
+      <section class="cards">
+        <article class="card v1">
+          <div class="eyebrow">V1</div>
+          <h2>Yamanote Line</h2>
+          <p>Single-line, round-loop prototype. Best for validating the core chase loop, planning flow, hunter information rules, and capture timing.</p>
+          <div class="meta">
+            <div>Map: Yamanote line</div>
+            <div>Scope: real weekday loop timetable</div>
+            <div>Play style: compact and readable</div>
+          </div>
+          <div class="actions">
+            <a class="button" href="./v1.html">Open V1</a>
+          </div>
+        </article>
+        <article class="card v2">
+          <div class="eyebrow">V2</div>
+          <h2>Nationwide Shinkansen</h2>
+          <p>Multi-line nationwide prototype. Built from real Shinkansen routes, real station coordinates, and a merged national train-instance timetable.</p>
+          <div class="meta">
+            <div>Map: nationwide Shinkansen</div>
+            <div>Scope: real weekday train instances</div>
+            <div>Play style: large-scale route planning</div>
+          </div>
+          <div class="actions">
+            <a class="button" href="./v2.html">Open V2</a>
+          </div>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
+"""
+
+
 def build() -> None:
     DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    html = SOURCE_HTML.read_text(encoding="utf-8").replace("__DATA_BASE__", "./data")
-    TARGET_HTML.write_text(html, encoding="utf-8")
+    v1_html = V1_SOURCE_HTML.read_text(encoding="utf-8").replace("__DATA_BASE__", "./data")
+    v2_html = V2_SOURCE_HTML.read_text(encoding="utf-8").replace("__DATA_BASE__", "./data")
+    INDEX_HTML.write_text(build_landing_page(), encoding="utf-8")
+    V1_TARGET_HTML.write_text(v1_html, encoding="utf-8")
+    V2_TARGET_HTML.write_text(v2_html, encoding="utf-8")
     NOJEKYLL.write_text("", encoding="utf-8")
     for path in DATA_FILES:
-      shutil.copy2(path, DOCS_DATA_DIR / path.name)
+        shutil.copy2(path, DOCS_DATA_DIR / path.name)
 
 
 if __name__ == "__main__":

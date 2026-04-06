@@ -169,3 +169,4 @@
 - Backfilled `diary/DIARY-2026-04-05.md` to keep the daily diary chain continuous.
 - Created `memory/MEMORY-2026-04-06.md` and recorded the daily sync kickoff for the new day.
 - Continued `v2` web parity work by adding a simulator-backed result summary, replay event list, replay detail panel, and replay-driven map-state jumping to the online nationwide Shinkansen client.
+- Split the GitHub Pages entry flow into three pages: a new landing page at `docs/index.html`, plus dedicated `docs/v1.html` and `docs/v2.html` playtest pages, and updated `README.md` so the repository homepage links directly to all three public URLs.

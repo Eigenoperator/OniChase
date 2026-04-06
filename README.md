@@ -12,17 +12,18 @@ Current focus:
 
 ## Online Playtest
 
-The repository now includes a deployable browser playtest build based on the current local client flow:
+The GitHub Pages site now has separate entry pages for each playable version:
 
-- source page: [ui/web_client.html](/home/xincheng/toy/Chase/ui/web_client.html)
-- static publish bundle: [docs/index.html](/home/xincheng/toy/Chase/docs/index.html)
+- landing page: `https://eigenoperator.github.io/OniChase/`
+- `v1` Yamanote client: `https://eigenoperator.github.io/OniChase/v1.html`
+- `v2` Shinkansen client: `https://eigenoperator.github.io/OniChase/v2.html`
+
+Browser source pages:
+
+- `v1` source: [ui/web_client.html](/home/xincheng/toy/Chase/ui/web_client.html)
+- `v2` source: [ui/v2_web_client.html](/home/xincheng/toy/Chase/ui/v2_web_client.html)
+- landing page output: [docs/index.html](/home/xincheng/toy/Chase/docs/index.html)
 - Pages workflow: [.github/workflows/deploy-pages.yml](/home/xincheng/toy/Chase/.github/workflows/deploy-pages.yml)
-
-Expected GitHub Pages URL after the workflow finishes:
-
-```text
-https://eigenoperator.github.io/OniChase/
-```
 
 ## Local Test Build
 
@@ -50,7 +51,10 @@ Key entry points:
 - `SIMULATION_INPUT.md`
 - `PLANNING_FORMAT.md`
 - `ui/web_client.html`
+- `ui/v2_web_client.html`
 - `docs/index.html`
+- `docs/v1.html`
+- `docs/v2.html`
 
 Workspace layout:
 
