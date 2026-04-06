@@ -317,6 +317,199 @@
       overflow: auto;
     }
 
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: 0.04em;
+    }
+
+    .section-head p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .selected-chip {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f4ead8;
+      border: 1px solid rgba(212, 202, 184, 0.95);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .tiny-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .tiny-button {
+      padding: 9px 11px;
+      border-radius: 12px;
+      font-size: 12px;
+      background: #efe6d7;
+      color: var(--ink);
+      box-shadow: none;
+      border: 1px solid rgba(212, 202, 184, 0.95);
+    }
+
+    .tiny-button.good {
+      background: #f7e4c3;
+      color: #4d3210;
+    }
+
+    .tiny-button.runner {
+      background: rgba(220, 77, 98, 0.12);
+      color: #8a2334;
+    }
+
+    .tiny-button.hunter {
+      background: rgba(45, 108, 223, 0.12);
+      color: #1d4d9c;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .train-card,
+    .dest-card {
+      border-radius: 18px;
+      border: 1px solid rgba(212, 202, 184, 0.95);
+      background: #fffdf8;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .card-kicker {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .card-main {
+      margin-top: 4px;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .plan-head-band {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(212, 202, 184, 0.85);
+      margin-bottom: 12px;
+    }
+
+    .plan-head-band h3 {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: 0.04em;
+    }
+
+    .plan-head-band p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .plan-summary {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .plan-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .plan-leg,
+    .plan-wait {
+      border-radius: 16px;
+      border: 1px solid rgba(212, 202, 184, 0.95);
+      background: #fff;
+      padding: 12px 14px;
+    }
+
+    .plan-leg.done,
+    .plan-wait.done {
+      opacity: 0.65;
+    }
+
+    .plan-kicker {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .plan-main {
+      font-size: 14px;
+      color: var(--ink);
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .outlook-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .outlook-row {
+      display: grid;
+      grid-template-columns: 74px 1fr;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px dashed rgba(212, 202, 184, 0.9);
+      font-size: 13px;
+    }
+
+    .outlook-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .action-region {
+      white-space: normal;
+      overflow: visible;
+    }
+
+    .empty {
+      border-radius: 16px;
+      border: 1px dashed rgba(212, 202, 184, 0.95);
+      background: rgba(255, 253, 248, 0.78);
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
     .lists {
       padding: 14px 18px;
       display: grid;
@@ -496,22 +689,14 @@
           <div class="info-box" id="stationInfo"></div>
         </div>
 
-        <div class="lists">
-          <section class="list-card">
-            <h4>UPCOMING DEPARTURES</h4>
-            <div class="list" id="departuresList"></div>
-            <div class="detail" id="departureDetail">Select a departure to preview the remaining stop list.</div>
-            <div class="card-actions">
-              <button class="primary" id="addTrainButton">Add Selected Leg To Plan</button>
-            </div>
-          </section>
+        <div class="section">
+          <h3>TRAIN OUTLOOK</h3>
+          <div class="info-box" id="trainOutlook">No train selected yet.</div>
+        </div>
 
-          <section class="list-card">
-            <h4>DESTINATION OPTIONS</h4>
-            <div class="list" id="destinationsList"></div>
-            <div class="detail" id="planHint">Choose one downstream stop after selecting a train. The chosen stop becomes the new plan cursor.</div>
-            <div class="card-actions"></div>
-          </section>
+        <div class="section">
+          <h3>PLANNING ACTIONS</h3>
+          <div class="info-box action-region" id="actionRegion"></div>
         </div>
 
         <div class="section">
@@ -549,6 +734,7 @@
       currentMinute: hhmmToMinutes("07:00"),
       selectedTrainNumber: null,
       selectedDestinationStationId: null,
+      pendingTrainNumbers: { runner: null, hunter: null },
       mapCoords: new Map(),
       mapView: { scale: 1, tx: 0, ty: 0, dragging: false, lastX: 0, lastY: 0 },
       activeMode: "runner",
@@ -751,6 +937,22 @@
           ].filter(Boolean).join(" ")
         );
         circle.addEventListener("click", () => {
+          const preview = planCursorPreview(state.activeMode);
+          const pending = pendingDepartureContext(preview);
+          if (pending) {
+            const pendingDestination = pending.destinations.find((item) => item.stationId === station.id);
+            if (pendingDestination) {
+              addBoardAndRide(pending.train.train_number, station.id);
+              return;
+            }
+          }
+          if (preview.currentState.kind === "TRAIN") {
+            const directDestination = availableDestinations(preview).find((item) => item.stationId === station.id);
+            if (directDestination) {
+              addRideToStation(station.id);
+              return;
+            }
+          }
           state.selectedStationId = station.id;
           if (!state.selectedTrainNumber) {
             state.selectedDestinationStationId = null;
@@ -898,98 +1100,252 @@
       return String(train.train_number);
     }
 
-    function renderDepartures() {
-      const preview = planCursorPreview(state.activeMode);
-      const stationId = preview.currentState.kind === "NODE" ? preview.currentState.station_id : (state.selectedStationId || state.players[state.activeMode].start_station_id);
-      const departures = preview.currentState.kind === "NODE" ? departuresForStation(stationId, preview.currentMinute) : [];
-      const list = document.getElementById("departuresList");
-      list.innerHTML = "";
-
-      if (preview.currentState.kind !== "NODE") {
-        const item = document.createElement("div");
-        item.className = "list-item";
-        item.innerHTML = `<strong>No departures available</strong><div>You are currently on ${preview.currentState.train_number}. Choose a destination first or wait until you are back at a station.</div>`;
-        list.appendChild(item);
-        document.getElementById("departureDetail").textContent = `Current state: on ${preview.currentState.train_number} at ${preview.currentTime}.\nTrain choices only appear while your plan cursor is at a station.`;
-        return;
-      }
-
-      if (!departures.length) {
-        const item = document.createElement("div");
-        item.className = "list-item";
-        item.innerHTML = `<strong>No departures found</strong><div>No real trains leave ${stationId} after ${preview.currentTime} in the current timetable window.</div>`;
-        list.appendChild(item);
-        document.getElementById("departureDetail").textContent = `Station: ${stationId}\nCursor time: ${preview.currentTime}\nTry an earlier time, a different station, or reset the current plan branch.`;
-        return;
-      }
-
-      for (const row of departures) {
-        const item = document.createElement("button");
-        item.type = "button";
-        item.className = `list-item${row.train.train_number === state.selectedTrainNumber ? " selected" : ""}`;
-        item.innerHTML = `
-          <strong>${minutesToHhmm(row.departureMinute)}  ${formatTrainLabel(row.train)}</strong>
-          <div>${row.train.train_number}</div>
-        `;
-        item.addEventListener("click", () => {
-          state.selectedTrainNumber = row.train.train_number;
-          state.selectedDestinationStationId = null;
-          render();
-        });
-        list.appendChild(item);
-      }
-
-      const detail = document.getElementById("departureDetail");
-      const selectedTrain = state.trains.train_instances.find((train) => train.train_number === state.selectedTrainNumber);
-      if (!selectedTrain) {
-        detail.textContent = "Select a departure to preview the remaining stop list.";
-        return;
-      }
-
-      const boardingStop = selectedTrain.stop_times.find((stop) => stop.station_id === stationId && stopDepartureMinutes(stop) >= preview.currentMinute);
-      const lines = [`${formatTrainLabel(selectedTrain)}`, `Board at ${stationId} ${minutesToHhmm(stopDepartureMinutes(boardingStop))}`, "Remaining stops:"];
-      for (const stop of selectedTrain.stop_times) {
-        if (stop.sequence <= boardingStop.sequence) continue;
-        lines.push(`- ${stop.station_id}  ${stop.arrival_hhmm || stop.departure_hhmm}`);
-      }
-      detail.textContent = lines.slice(0, 20).join("\n");
+    function stationLabel(stationId) {
+      return state.stationMap.get(stationId)?.name || stationId;
     }
 
-    function downstreamDestinations(stationId, currentMinute, trainNumber) {
-      if (!trainNumber) return [];
-      const departures = departuresForStation(stationId, currentMinute);
+    function pendingTrainNumber(playerId = state.activeMode) {
+      return state.pendingTrainNumbers[playerId];
+    }
+
+    function clearPendingTrain(playerId = state.activeMode) {
+      state.pendingTrainNumbers[playerId] = null;
+      if (playerId === state.activeMode) {
+        state.selectedTrainNumber = null;
+        state.selectedDestinationStationId = null;
+      }
+    }
+
+    function availableDepartures(preview) {
+      if (preview.currentState.kind !== "NODE") return [];
+      return departuresForStation(preview.currentState.station_id, preview.currentMinute)
+        .map((row) => ({
+          train: row.train,
+          boardStop: row.stop,
+          departureMinute: row.departureMinute,
+          departureHhmm: minutesToHhmm(row.departureMinute),
+          directionLabel: row.train.direction_label || row.train.route_id || "service"
+        }))
+        .slice(0, 24);
+    }
+
+    function futureTrainStops(preview) {
+      if (!preview.currentTrain || !preview.currentBoardStop) return [];
+      return preview.currentTrain.stop_times.filter((stop) => stop.sequence > preview.currentBoardStop.sequence);
+    }
+
+    function availableDestinations(preview) {
+      return futureTrainStops(preview).map((stop) => ({
+        stationId: stop.station_id,
+        label: stationLabel(stop.station_id),
+        arrivalHhmm: stop.arrival_hhmm || stop.departure_hhmm,
+        sequence: stop.sequence,
+      }));
+    }
+
+    function pendingDepartureContext(preview) {
+      const trainNumber = pendingTrainNumber();
+      if (!trainNumber || preview.currentState.kind !== "NODE") return null;
+      const departures = departuresForStation(preview.currentState.station_id, preview.currentMinute);
       const match = departures.find((row) => row.train.train_number === trainNumber);
-      if (!match) return [];
-      return match.train.stop_times.filter((stop) => stop.sequence > match.stop.sequence);
+      if (!match) return null;
+      return {
+        train: match.train,
+        boardStop: match.stop,
+        destinations: match.train.stop_times
+          .filter((stop) => stop.sequence > match.stop.sequence)
+          .map((stop) => ({
+            stationId: stop.station_id,
+            label: stationLabel(stop.station_id),
+            arrivalHhmm: stop.arrival_hhmm || stop.departure_hhmm,
+            sequence: stop.sequence,
+          })),
+      };
     }
 
-    function renderDestinations() {
+    function trainPreviewText(train, boardStop) {
+      const future = train.stop_times
+        .filter((stop) => stop.sequence > boardStop.sequence)
+        .slice(0, 4)
+        .map((stop) => `${stationLabel(stop.station_id)} ${stop.arrival_hhmm || stop.departure_hhmm}`);
+      return future.length ? future.join(" · ") : "No later stops";
+    }
+
+    function chooseTrain(trainNumber) {
+      state.pendingTrainNumbers[state.activeMode] = trainNumber;
+      state.selectedTrainNumber = trainNumber;
+      state.selectedDestinationStationId = null;
+      render();
+    }
+
+    function chooseAnotherTrain() {
+      clearPendingTrain();
+      render();
+    }
+
+    function addBoardAndRide(trainNumber, stationId) {
       const preview = planCursorPreview(state.activeMode);
-      const stationId = preview.currentState.kind === "NODE" ? preview.currentState.station_id : (state.selectedStationId || state.players[state.activeMode].start_station_id);
-      const list = document.getElementById("destinationsList");
-      list.innerHTML = "";
-      const destinations = preview.currentState.kind === "NODE" ? downstreamDestinations(stationId, preview.currentMinute, state.selectedTrainNumber) : [];
-      if (!destinations.length) {
-        const item = document.createElement("div");
-        item.className = "list-item";
-        item.innerHTML = "<strong>No destination yet</strong><div>Select a train first.</div>";
-        list.appendChild(item);
-        return;
+      if (preview.currentState.kind !== "NODE") return;
+      state.players[state.activeMode].steps.push({ type: "BOARD_TRAIN", train_number: trainNumber });
+      state.players[state.activeMode].steps.push({ type: "RIDE_TO_STATION", station_id: stationId });
+      clearPendingTrain();
+      render();
+    }
+
+    function addRideToStation(stationId) {
+      const preview = planCursorPreview(state.activeMode);
+      if (preview.currentState.kind !== "TRAIN") return;
+      state.players[state.activeMode].steps.push({ type: "RIDE_TO_STATION", station_id: stationId });
+      clearPendingTrain();
+      render();
+    }
+
+    function addWaitStep() {
+      const preview = planCursorPreview(state.activeMode);
+      if (preview.currentState.kind !== "NODE") return;
+      const targetMinute = Math.min(preview.currentMinute + 5, hhmmToMinutes(state.endTime));
+      state.players[state.activeMode].steps.push({ type: "WAIT_UNTIL", until_hhmm: minutesToHhmm(targetMinute) });
+      clearPendingTrain();
+      render();
+    }
+
+    function undoLastStep() {
+      const steps = state.players[state.activeMode].steps;
+      if (!steps.length) return;
+      steps.pop();
+      clearPendingTrain();
+      render();
+    }
+
+    function setStartToSelected() {
+      if (!state.selectedStationId) return;
+      state.players[state.activeMode].start_station_id = state.selectedStationId;
+      state.players[state.activeMode].steps = [];
+      clearPendingTrain();
+      render();
+    }
+
+    function renderTrainOutlook() {
+      const box = document.getElementById("trainOutlook");
+      const preview = planCursorPreview(state.activeMode);
+      const pending = pendingDepartureContext(preview);
+      let rows = [];
+      let title = "No train selected";
+      if (pending) {
+        title = formatTrainLabel(pending.train);
+        rows = [
+          { time: pending.boardStop.departure_hhmm || pending.boardStop.arrival_hhmm, label: `Board ${stationLabel(pending.boardStop.station_id)}` },
+          ...pending.destinations.slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label }))
+        ];
+      } else if (preview.currentState.kind === "TRAIN") {
+        title = formatTrainLabel(preview.currentTrain || { train_number: preview.currentState.train_number });
+        rows = availableDestinations(preview).slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label }));
       }
-      for (const stop of destinations) {
-        const item = document.createElement("button");
-        item.type = "button";
-        item.className = `list-item${stop.station_id === state.selectedDestinationStationId ? " selected" : ""}`;
-        item.innerHTML = `
-          <strong>${stop.arrival_hhmm || stop.departure_hhmm}  ${stop.station_id}</strong>
-          <div>${state.stationMap.get(stop.station_id)?.name || stop.station_id}</div>
+      box.innerHTML = `
+        <div class="section-head">
+          <div>
+            <h3>${title}</h3>
+            <p>${pending ? "Selected service preview" : preview.currentState.kind === "TRAIN" ? "Current onboard route" : "Choose a train to preview later stops"}</p>
+          </div>
+        </div>
+        <div class="outlook-list">
+          ${rows.length ? rows.map((row) => `<div class="outlook-row"><div>${row.time}</div><div>${row.label}</div></div>`).join("") : `<div class="empty">Not currently on a train.</div>`}
+        </div>
+      `;
+    }
+
+    function renderActionRegion() {
+      const region = document.getElementById("actionRegion");
+      const preview = planCursorPreview(state.activeMode);
+      const pending = pendingDepartureContext(preview);
+      let html = `
+        <div class="section-head">
+          <div>
+            <h3>Planning Actions</h3>
+            <p>Use the same flow as v1: choose a train, then choose where to get off.</p>
+          </div>
+          <div class="selected-chip">${state.activeMode}</div>
+        </div>
+        <div class="tiny-actions">
+          <button class="tiny-button" data-action="set-start">Set Start To Selected Station</button>
+          <button class="tiny-button" data-action="wait">Wait +5 minutes</button>
+          <button class="tiny-button" data-action="undo">Undo Step</button>
+          <button class="tiny-button" data-action="clear">Clear Plan</button>
+        </div>
+      `;
+
+      if (preview.currentState.kind === "NODE" && !pending) {
+        const departures = availableDepartures(preview);
+        html += `
+          <div class="stack" style="margin-top:12px;">
+            <div class="section-head"><div><h3>STEP 1 · Choose Your Train</h3><p>You are at ${stationLabel(preview.currentState.station_id)}. Pick a real departure first.</p></div></div>
+            ${departures.length ? departures.map((entry) => `
+              <div class="train-card">
+                <div class="card-kicker">${entry.departureHhmm} · ${entry.directionLabel}</div>
+                <div class="card-main">${formatTrainLabel(entry.train)}</div>
+                <div>${trainPreviewText(entry.train, entry.boardStop)}</div>
+                <div class="tiny-actions">
+                  <button class="tiny-button ${state.activeMode}" data-train="${entry.train.train_number}" data-action="choose-train">Choose This Train</button>
+                </div>
+              </div>
+            `).join("") : `<div class="empty">No catchable departures from ${stationLabel(preview.currentState.station_id)} after ${preview.currentTime}.</div>`}
+          </div>
         `;
-        item.addEventListener("click", () => {
-          state.selectedDestinationStationId = stop.station_id;
-          render();
-        });
-        list.appendChild(item);
+      } else if (pending) {
+        html += `
+          <div class="stack" style="margin-top:12px;">
+            <div class="train-card">
+              <div class="card-kicker">Selected train</div>
+              <div class="card-main">${formatTrainLabel(pending.train)}</div>
+              <div>${pending.boardStop.departure_hhmm || pending.boardStop.arrival_hhmm} · ${stationLabel(pending.boardStop.station_id)}</div>
+              <div class="tiny-actions">
+                <button class="tiny-button" data-action="choose-another">Choose Another Train</button>
+              </div>
+            </div>
+            <div class="section-head"><div><h3>STEP 2 · Choose Destination</h3><p>Pick where to get off. You can also click highlighted stations on the map.</p></div></div>
+            ${pending.destinations.length ? pending.destinations.map((item) => `
+              <div class="dest-card">
+                <div class="card-kicker">${item.arrivalHhmm}</div>
+                <div class="card-main">${item.label}</div>
+                <div class="tiny-actions">
+                  <button class="tiny-button good" data-train="${pending.train.train_number}" data-station="${item.stationId}" data-action="ride-here">Ride Here</button>
+                </div>
+              </div>
+            `).join("") : `<div class="empty">This train has no later stops.</div>`}
+          </div>
+        `;
+      } else if (preview.currentState.kind === "TRAIN") {
+        const destinations = availableDestinations(preview);
+        html += `
+          <div class="stack" style="margin-top:12px;">
+            <div class="section-head"><div><h3>Choose Where To Get Off</h3><p>You are on ${formatTrainLabel(preview.currentTrain || { train_number: preview.currentState.train_number })}. Click a downstream station.</p></div></div>
+            ${destinations.length ? destinations.map((item) => `
+              <div class="dest-card">
+                <div class="card-kicker">${item.arrivalHhmm}</div>
+                <div class="card-main">${item.label}</div>
+                <div class="tiny-actions">
+                  <button class="tiny-button good" data-station="${item.stationId}" data-action="ride-direct">Ride Here</button>
+                </div>
+              </div>
+            `).join("") : `<div class="empty">No downstream stops available from the current on-train state.</div>`}
+          </div>
+        `;
       }
+
+      region.innerHTML = html;
+      region.querySelectorAll("[data-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const action = button.dataset.action;
+          if (action === "set-start") setStartToSelected();
+          else if (action === "wait") addWaitStep();
+          else if (action === "undo") undoLastStep();
+          else if (action === "clear") resetPlan();
+          else if (action === "choose-train") chooseTrain(button.dataset.train);
+          else if (action === "choose-another") chooseAnotherTrain();
+          else if (action === "ride-here") addBoardAndRide(button.dataset.train, button.dataset.station);
+          else if (action === "ride-direct") addRideToStation(button.dataset.station);
+        });
+      });
     }
 
     function renderPlanBoard() {
@@ -1059,26 +1415,6 @@
       document.getElementById("hunterModeButton").className = state.activeMode === "hunter" ? "active hunter" : "";
     }
 
-    function addSelectedTrainToPlan() {
-      if (!state.selectedTrainNumber || !state.selectedDestinationStationId) return;
-      const preview = planCursorPreview(state.activeMode);
-      const stationId = preview.currentState.station_id;
-      const departures = departuresForStation(stationId, preview.currentMinute);
-      const match = departures.find((row) => row.train.train_number === state.selectedTrainNumber);
-      if (!match) return;
-
-      const downstream = match.train.stop_times.filter((stop) => stop.sequence > match.stop.sequence);
-      if (!downstream.length) return;
-      const destination = downstream.find((stop) => stop.station_id === state.selectedDestinationStationId);
-      if (!destination) return;
-
-      state.players[state.activeMode].steps.push({ type: "BOARD_TRAIN", train_number: match.train.train_number });
-      state.players[state.activeMode].steps.push({ type: "RIDE_TO_STATION", station_id: destination.station_id });
-      state.selectedTrainNumber = null;
-      state.selectedDestinationStationId = null;
-      render();
-    }
-
     function applyTimeInput() {
       const value = document.getElementById("timeInput").value.trim();
       if (!/^\d{2}:\d{2}$/.test(value)) return;
@@ -1088,14 +1424,15 @@
 
     function resetPlan() {
       state.players[state.activeMode].steps = [];
-      state.selectedTrainNumber = null;
-      state.selectedDestinationStationId = null;
+      clearPendingTrain();
       render();
     }
 
     function setActiveMode(mode) {
       state.activeMode = mode;
       state.selectedStationId = state.players[mode].start_station_id;
+      state.selectedTrainNumber = pendingTrainNumber(mode);
+      state.selectedDestinationStationId = null;
       render();
     }
 
@@ -1118,6 +1455,7 @@
       state.planningSecondsRemaining = 60;
       state.currentGameMinute = hhmmToMinutes(state.startTime);
       state.clockRunning = true;
+      state.pendingTrainNumbers = { runner: null, hunter: null };
       state.selectedTrainNumber = null;
       state.selectedDestinationStationId = null;
       state.latestResult = null;
@@ -1663,8 +2001,8 @@
 
     function render() {
       renderInfo();
-      renderDepartures();
-      renderDestinations();
+      renderTrainOutlook();
+      renderActionRegion();
       renderPlanBoard();
       renderReplayList();
       renderMap();
@@ -1687,7 +2025,6 @@
       projectCoords();
       document.getElementById("applyTimeButton").addEventListener("click", applyTimeInput);
       document.getElementById("resetPlanButton").addEventListener("click", resetPlan);
-      document.getElementById("addTrainButton").addEventListener("click", addSelectedTrainToPlan);
       document.getElementById("runnerModeButton").addEventListener("click", () => setActiveMode("runner"));
       document.getElementById("hunterModeButton").addEventListener("click", () => setActiveMode("hunter"));
       document.getElementById("loadPresetButton").addEventListener("click", applyTestPreset);
