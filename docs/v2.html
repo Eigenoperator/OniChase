@@ -1162,7 +1162,11 @@
     }
 
     function planCursorPreview(playerId) {
-      if (state.phase === 'PLANNING' && !state.latestResult) return previewPlayer(playerId, null);
+      if (state.phase === 'PLANNING' && !state.latestResult) {
+        const startMinute = hhmmToMinutes(state.startTime);
+        const isInitialPlanning = state.currentGameMinute <= startMinute;
+        return previewPlayer(playerId, isInitialPlanning ? null : state.currentGameMinute);
+      }
       return previewPlayer(playerId, visibleGameMinute());
     }
 
