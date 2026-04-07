@@ -203,3 +203,4 @@
 - Archived the previous nationwide Shinkansen page as `v2-legacy` at both source and published-page level.
 - Changed `docs/v3.html` into a redirect page that now points to the new primary `v2.html`.
 - Updated the landing page and `README.md` so the public web structure now clearly exposes `v1`, the new main `v2`, and the archived `v2-legacy`.
+- Removed `v2-legacy` and `v3` from the public Pages surface again, leaving only `v1` and the new main `v2` as public entry points while the old files remain internal.

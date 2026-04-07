@@ -1,7 +1,7 @@
 # STATUS
 
 ## Current Focus
-保持 `v1` 稳定，并把 GIS-first 新干线主玩法正式收敛为新的 `v2`；旧 `v2` 归档为 legacy。
+保持 `v1` 稳定，并把 GIS-first 新干线主玩法正式收敛为新的 `v2`；公开入口只保留 `v1` 和 `v2`。
 
 ## Done
 - 已补写 `diary/DIARY-2026-04-06.md`，并创建 `memory/MEMORY-2026-04-07.md` 作为今天的 raw memory。
@@ -25,7 +25,7 @@
 - 已完成 `v3` 第一版 GIS Shinkansen pilot：包括架构/Schema、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json`、`visuals/v3_shinkansen_multiscale_map.svg`、`ui/v3_web_client.html`、`docs/v3.html`、`data/v3_gis/*.geojson`、`docs/data/v3_tiles/` tile-ready GeoJSON 金字塔、地图 + route timetable diagram 的同源联动，以及开始直接消费 `v3_tiles` 的 tile-driven 地图层。
 - 已继续推进 `v3` 地图/diagram 联动：diagram hover 现可同步高亮地图上的具体 trip 路径；点选站点时，右栏会额外显示“当前选中线路在该站的真实发车集合”。
 - 已把 `v1` 的核心游戏逻辑接入 `v3` 网页端：补上 `runner / hunter` 模式、`PLANNING / LIVE / ENDED`、`Load Test Preset`、`Start Game`、`Run Simulation`、plan board、实时地图玩家位置和 `same_node / same_train` 抓捕。
-- 已完成版本迁移：原 `v3` GIS-first 新干线玩法页已提升为新的主 `v2`；旧 `v2` 已归档为 `v2-legacy`；`v3.html` 现在重定向到新的 `v2.html`。
+- 已完成版本迁移：原 `v3` GIS-first 新干线玩法页已提升为新的主 `v2`；公开网站现只保留 `v1` 和主 `v2`，不再公开 `v2-legacy` 与 `v3` 页面。
 
 ## In Progress
 - 正在继续把新的主 `v2` 收成稳定版本：一方面保留 GIS-first 地图/diagram 联动，另一方面把原来 `v1` 的可玩逻辑继续在全国新干线上收顺。
@@ -42,7 +42,7 @@
 - [2026-04-04] `v2` 使用全图所有真实新干线列车，并保留真实列车名，例如 `Nozomi 1`、`Kagayaki 503`。
 - [2026-04-05] `JR Kyushu` 双栏列车详情页必须按目标服务列解析，不能把 `Relay Kamome` 误当作 `Nishi-Kyushu Kamome`。
 - [2026-04-05] 全国合并默认优先按真实 `service_name + service_number (+ direction)` 识别同一趟列车，而不是只按各运营商自带的 `train_number`。
-- [2026-04-07] GIS-first 新干线页面已成为新的主 `v2`；旧全国新干线页归档为 `v2-legacy`，`v3` 保留为指向新 `v2` 的升级别名页。
+- [2026-04-07] GIS-first 新干线页面已成为新的主 `v2`；公开网站现在只保留 `v1` 与主 `v2`，`v3` 暂不定义。
 
 ## Next
 1. 继续实测新的主 `v2`，确认地图、diagram、plan board、capture、replay 这一整套在全国新干线上稳定工作。
