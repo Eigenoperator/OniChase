@@ -25,11 +25,11 @@
 - 已更新 `README.md`，把 GitHub Pages 首页、`v1` 页面、`v2` 页面三个公开地址都写清楚。
 - 已把 `v2` 网页端的右侧 planning 交互切换为和 `v1` 同一条主流程：统一的 `Planning Actions` + `Train Outlook`，支持 `选车 -> 选目标站`，并让地图点击与右侧动作区共用同一套逻辑。
 - 已继续收 `v2` 网页地图观感：缩小默认站名字号，并在选中一趟车后把后续停站直接高亮在地图上，方便不看右侧也能判断路线。
-- 已新增 `V3_GIS_ARCHITECTURE.md`、`V3_GIS_SCHEMA.md`、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json` 和 `visuals/v3_shinkansen_multiscale_map.svg`，正式产出第一份 `v3` 全国新干线 pilot bundle 与双视图地图图稿。
-- 已新增 `ui/v3_web_client.html` 与 `docs/v3.html`，把 `v3` pilot bundle 推进成第一版可交互网页地图，并继续补上 `Selected Route` 联动、线路卡片/图例点击高亮、选中线路停靠站高亮和更强的多尺度标签显示。
+- 已把 `v3` 的线路联动思路合并进 `v2` 网页端：新增 `ROUTE FOCUS` 面板、线路卡片、地图线条点击高亮、选中线路停靠站高亮，以及路线级别的标签增强。
+- 已完成 `v3` 第一版 GIS Shinkansen pilot：包括架构/Schema 文档、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json`、`visuals/v3_shinkansen_multiscale_map.svg`、`ui/v3_web_client.html`、`docs/v3.html`，并已具备 `Selected Route` 联动、线路卡片/图例点击高亮、选中线路停靠站高亮和更强的多尺度标签显示。
 
 ## In Progress
-- 正在同时推进 `v2` 和 `v3`：`v2` 继续收本地端与网页端的一致性、多段规划和结果反馈，`v3` 已经进入第一版可交互网页地图阶段，下一步是把线路联动继续推到 timetable/运营层。
+- 正在同时推进 `v2` 和 `v3`：`v2` 已开始吸收 `v3` 的线路联动思路，下一步是把路线级高亮继续推到时刻和结果层；`v3` 则继续往 map+timetable 一体化推进。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
 
 ## Blockers
@@ -46,5 +46,5 @@
 
 ## Next
 1. 继续实测 `v2` 网页端新 action flow 和地图高亮，确认它已经能像 `v1` 一样稳定完成 `选车 -> 选站 -> 接续下一段`。
-2. 继续收 `v3` 第一版网页地图：把 `Selected Route` 联动继续推到 timetable 视图和更细的 service geometry 表达。
+2. 继续把 `Selected Route` 联动推到 `v2 / v3` 的 timetable 与结果视图，让地图和运营层真正连起来。
 3. 在 `v2` 游戏壳稳定后，再继续逐线补 anomaly checklist 的余项。

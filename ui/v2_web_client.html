@@ -397,13 +397,25 @@
     }
 
     .train-card,
-    .dest-card {
+    .dest-card,
+    .route-card {
       border-radius: 18px;
       border: 1px solid rgba(212, 202, 184, 0.95);
       background: #fffdf8;
       padding: 12px 14px;
       font-size: 13px;
       line-height: 1.45;
+    }
+
+    .route-card {
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+    }
+
+    .route-card.active {
+      border-color: rgba(45, 108, 223, 0.42);
+      background: rgba(229, 238, 254, 0.96);
     }
 
     .card-kicker {
@@ -698,6 +710,12 @@
         </div>
 
         <div class="section">
+          <h3>ROUTE FOCUS</h3>
+          <div class="info-box" id="routeInfo">No route selected yet.</div>
+          <div class="stack" id="routeRegion" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="section">
           <h3>TRAIN OUTLOOK</h3>
           <div class="info-box" id="trainOutlook">No train selected yet.</div>
         </div>
@@ -738,6 +756,7 @@
       trains: null,
       stationMap: new Map(),
       selectedStationId: "TOKYO",
+      selectedRouteId: null,
       currentStationId: "TOKYO",
       currentMinute: hhmmToMinutes("07:00"),
       selectedTrainNumber: null,
@@ -809,6 +828,7 @@
     function visibleStationLabelLevel(station) {
       const scale = state.mapView.scale;
       if (station.id === state.selectedStationId || station.id === state.players[state.activeMode].start_station_id) return "full";
+      if (state.selectedRouteId && routeStationSet(state.selectedRouteId).has(station.id) && scale >= 1.15) return "major";
       if (scale >= 1.7) return "full";
       if (scale >= 1.28) {
         return station.is_interchange || (station.route_ids || []).length >= 2 ? "major" : "none";
@@ -889,6 +909,7 @@
             ? availableDestinations(activePreview).map((item) => item.stationId)
             : []
       );
+      const selectedRouteStationIds = state.selectedRouteId ? routeStationSet(state.selectedRouteId) : new Set();
 
       for (const route of state.bundle.routes) {
         const points = route.station_ids
@@ -902,12 +923,27 @@
         const underlay = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         underlay.setAttribute("points", points);
         underlay.setAttribute("class", "route-underlay");
+        if (state.selectedRouteId && route.id !== state.selectedRouteId) {
+          underlay.setAttribute("opacity", "0.42");
+        } else if (state.selectedRouteId === route.id) {
+          underlay.setAttribute("stroke-width", "9");
+        }
         content.appendChild(underlay);
 
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         line.setAttribute("points", points);
         line.setAttribute("class", "route-main");
         line.setAttribute("stroke", route.color);
+        line.style.cursor = "pointer";
+        if (state.selectedRouteId && route.id !== state.selectedRouteId) {
+          line.setAttribute("opacity", "0.26");
+        } else if (state.selectedRouteId === route.id) {
+          line.setAttribute("stroke-width", "4.8");
+        }
+        line.addEventListener("click", () => {
+          state.selectedRouteId = state.selectedRouteId === route.id ? null : route.id;
+          render();
+        });
         content.appendChild(line);
       }
 
@@ -966,6 +1002,11 @@
             station.id === state.players[state.activeMode].start_station_id ? "cursor" : "",
           ].filter(Boolean).join(" ")
         );
+        if (selectedRouteStationIds.has(station.id) && station.id !== state.selectedStationId) {
+          circle.setAttribute("fill", "#3b6cb2");
+          circle.setAttribute("stroke", "#ffffff");
+          circle.setAttribute("stroke-width", Math.max(1.1, 1.8 / Math.sqrt(state.mapView.scale)));
+        }
         circle.addEventListener("click", () => {
           const preview = planCursorPreview(state.activeMode);
           const pending = pendingDepartureContext(preview);
@@ -1410,6 +1451,52 @@
       box.textContent = lines.join("\n\n");
     }
 
+    function routeStationSet(routeId) {
+      const route = state.bundle.routes.find((item) => item.id === routeId);
+      return new Set(route ? route.station_ids : []);
+    }
+
+    function routeTripCount(routeId) {
+      if (!state.trains) return 0;
+      return state.trains.filter((train) => train.route_id === routeId).length;
+    }
+
+    function renderRouteRegion() {
+      const routeInfo = document.getElementById("routeInfo");
+      const routeRegion = document.getElementById("routeRegion");
+      const selectedRoute = state.bundle.routes.find((item) => item.id === state.selectedRouteId);
+
+      if (!selectedRoute) {
+        routeInfo.textContent = "No route selected yet.\nClick a route on the map or in the list below to highlight that service family.";
+      } else {
+        routeInfo.textContent = [
+          `Selected route: ${selectedRoute.name} [${selectedRoute.id}]`,
+          `Stations: ${selectedRoute.station_ids.length}`,
+          `Trips in current dataset: ${routeTripCount(selectedRoute.id)}`,
+          `Color: ${selectedRoute.color}`,
+        ].join("\n");
+      }
+
+      routeRegion.innerHTML = state.bundle.routes.map((route) => `
+        <button class="route-card ${state.selectedRouteId === route.id ? "active" : ""}" data-route-id="${route.id}">
+          <div class="card-kicker">Route family</div>
+          <div class="card-main">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:999px;background:${route.color};margin-right:8px;vertical-align:1px;"></span>
+            ${route.name}
+          </div>
+          <div class="card-sub">${route.station_ids.length} stations · ${routeTripCount(route.id)} trains</div>
+        </button>
+      `).join("");
+
+      routeRegion.querySelectorAll("[data-route-id]").forEach((node) => {
+        node.addEventListener("click", () => {
+          const routeId = node.getAttribute("data-route-id");
+          state.selectedRouteId = state.selectedRouteId === routeId ? null : routeId;
+          render();
+        });
+      });
+    }
+
     function renderInfo() {
       const currentStation = state.stationMap.get(state.players[state.activeMode].start_station_id);
       const selectedStation = state.stationMap.get(state.selectedStationId || state.players[state.activeMode].start_station_id);
@@ -1445,6 +1532,7 @@
       document.getElementById("phaseClock").style.color = "white";
       document.getElementById("runnerModeButton").className = state.activeMode === "runner" ? "active runner" : "";
       document.getElementById("hunterModeButton").className = state.activeMode === "hunter" ? "active hunter" : "";
+      renderRouteRegion();
     }
 
     function applyTimeInput() {
