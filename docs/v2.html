@@ -41,6 +41,168 @@
       overflow: hidden;
     }
 
+    .app.hidden {
+      display: none;
+    }
+
+    .lobby {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      background:
+        radial-gradient(circle at 18% 20%, rgba(21, 101, 192, 0.2), transparent 24%),
+        radial-gradient(circle at 82% 16%, rgba(220, 77, 98, 0.14), transparent 20%),
+        linear-gradient(180deg, rgba(245, 249, 255, 0.98), rgba(234, 241, 249, 0.98));
+      backdrop-filter: blur(10px);
+    }
+
+    .lobby.hidden {
+      display: none;
+    }
+
+    .lobby-shell {
+      width: min(1120px, 100%);
+      display: grid;
+      grid-template-columns: minmax(320px, 1.1fr) minmax(320px, 0.9fr);
+      gap: 20px;
+    }
+
+    .lobby-panel {
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      border-radius: 30px;
+      background: rgba(250, 252, 255, 0.96);
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    .lobby-hero h1 {
+      margin: 0;
+      font-size: 46px;
+      letter-spacing: 0.02em;
+    }
+
+    .lobby-hero p {
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+      max-width: 48ch;
+    }
+
+    .lobby-badges {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .lobby-badge {
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(21, 101, 192, 0.08);
+      border: 1px solid rgba(21, 101, 192, 0.14);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .lobby-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .lobby-card {
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.86);
+      padding: 20px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .lobby-card h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .lobby-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .lobby-actions {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .seat-toggle {
+      margin-top: 16px;
+      display: inline-flex;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(239, 244, 251, 0.94);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+    }
+
+    .seat-toggle button {
+      padding: 10px 16px;
+      border-radius: 999px;
+      box-shadow: none;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .seat-toggle button.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .lobby-fields {
+      margin-top: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .lobby-field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .lobby-field input {
+      width: 100%;
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(255, 255, 255, 0.96);
+      color: var(--ink);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+    }
+
+    .lobby-status {
+      margin-top: 16px;
+      min-height: 42px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(237, 242, 248, 0.92);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 700;
+    }
+
     .topbar {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -75,39 +237,6 @@
       align-items: center;
       flex-wrap: wrap;
       justify-content: flex-end;
-    }
-
-    .room-controls {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 8px;
-      border-radius: 18px;
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      background: rgba(255, 255, 255, 0.86);
-      box-shadow: var(--shadow-soft);
-    }
-
-    .room-input {
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      background: rgba(255, 255, 255, 0.96);
-      color: var(--ink);
-      border-radius: 12px;
-      padding: 10px 12px;
-      font: inherit;
-      min-width: 110px;
-    }
-
-    .room-input.url {
-      min-width: 180px;
-    }
-
-    .room-status {
-      min-width: 180px;
-      font-size: 12px;
-      line-height: 1.4;
-      color: var(--muted);
-      font-weight: 700;
     }
 
     .mode-toggle {
@@ -575,6 +704,9 @@
         height: auto;
         overflow: auto;
       }
+      .lobby-shell {
+        grid-template-columns: 1fr;
+      }
       .app {
         height: auto;
       }
@@ -592,11 +724,64 @@
   </style>
 </head>
 <body>
-  <main class="app">
+  <section id="lobby" class="lobby">
+    <div class="lobby-shell">
+      <section class="lobby-panel lobby-hero">
+        <h1>OniChase V2</h1>
+        <p>
+          Nationwide Shinkansen playable map. Enter through a dedicated lobby, then move into the main game with a cleaner board:
+          single-player for local testing, or multiplayer with a room-based authoritative server.
+        </p>
+        <div class="lobby-badges">
+          <div class="lobby-badge">GIS-first map</div>
+          <div class="lobby-badge">Real train names</div>
+          <div class="lobby-badge">Hourly replanning</div>
+          <div class="lobby-badge">Runner / Hunter</div>
+        </div>
+      </section>
+
+      <section class="lobby-stack">
+        <div class="lobby-card">
+          <h2>Single Player</h2>
+          <p>Open a local test match immediately and play as either side on the same browser.</p>
+          <div class="lobby-actions">
+            <button id="singleRunnerButton" class="primary">Play as Runner</button>
+            <button id="singleHunterButton" class="secondary">Play as Hunter</button>
+          </div>
+        </div>
+
+        <div class="lobby-card">
+          <h2>Multiplayer</h2>
+          <p>Create or join a room, claim one seat, then enter the game once the authoritative room server accepts you.</p>
+          <div class="seat-toggle">
+            <button id="lobbyRunnerSeatButton" class="active">Runner</button>
+            <button id="lobbyHunterSeatButton">Hunter</button>
+          </div>
+          <div class="lobby-fields">
+            <div class="lobby-field">
+              <label for="serverUrlInput">Room Server URL</label>
+              <input id="serverUrlInput" value="http://127.0.0.1:8765" aria-label="Room server URL" />
+            </div>
+            <div class="lobby-field">
+              <label for="roomIdInput">Room ID</label>
+              <input id="roomIdInput" placeholder="ROOM ID" aria-label="Room ID" />
+            </div>
+          </div>
+          <div class="lobby-actions">
+            <button id="createRoomButton" class="primary">Create Room</button>
+            <button id="joinRoomButton" class="secondary">Join Room</button>
+          </div>
+          <div id="lobbyStatus" class="lobby-status">Choose a seat, then create a room or enter an existing room code.</div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <main id="app" class="app hidden">
     <header class="topbar">
       <div class="brand">
         <h1>OniChase V2</h1>
-        <p>Nationwide Shinkansen playable map. This version now uses the stronger GIS-first Shinkansen page as the main <code>v2</code> experience, combining multiscale map views, real train planning, simulation, capture, and replay.</p>
+        <p>Nationwide Shinkansen playable map with a cleaner in-game board. Enter through the lobby, then use the main view for planning, live play, simulation, and replay.</p>
       </div>
       <div class="toolbar">
         <div class="mode-toggle">
@@ -604,15 +789,6 @@
           <button id="hunterModeButton">Hunter</button>
         </div>
         <div class="pill" id="phaseClock">PLANNING 60s<br/>Game starts 06:00</div>
-        <div class="room-controls">
-          <input id="serverUrlInput" class="room-input url" value="http://127.0.0.1:8765" aria-label="Room server URL" />
-          <input id="roomIdInput" class="room-input" placeholder="ROOM ID" aria-label="Room ID" />
-          <button id="createRoomButton" class="secondary">Create Room</button>
-          <button id="joinRoomButton" class="secondary">Join Room</button>
-          <button id="submitPlanButton" class="secondary">Submit Plan</button>
-          <button id="readyButton" class="secondary">Ready</button>
-          <div id="roomStatus" class="room-status">Offline local mode</div>
-        </div>
         <button id="loadPresetButton" class="secondary">Load Test Preset</button>
         <button id="startGameButton" class="primary">Start Game</button>
         <button id="pauseGameButton" class="secondary">Pause/Resume</button>
@@ -653,6 +829,16 @@
       </section>
 
       <aside class="panel sidebar">
+        <section>
+          <div class="section-label">Session</div>
+          <div id="roomStatus" class="info-box">Single-player local mode.</div>
+          <div class="toolbar" style="justify-content:flex-start; margin-top:12px;">
+            <button id="submitPlanButton" class="secondary">Submit Plan</button>
+            <button id="readyButton" class="secondary">Ready</button>
+            <button id="openLobbyButton" class="secondary">Lobby</button>
+          </div>
+        </section>
+
         <section>
           <div class="section-label">Bundle</div>
           <div class="overview-grid" id="overview-grid"></div>
@@ -804,19 +990,27 @@
     const resultDetailEl = document.getElementById('result-detail');
     const legendEl = document.getElementById('legend');
     const phaseClockEl = document.getElementById('phaseClock');
+    const lobbyEl = document.getElementById('lobby');
+    const appEl = document.getElementById('app');
     const serverUrlInput = document.getElementById('serverUrlInput');
     const roomIdInput = document.getElementById('roomIdInput');
     const roomStatusEl = document.getElementById('roomStatus');
+    const lobbyStatusEl = document.getElementById('lobbyStatus');
 
     document.getElementById('corridor-btn').addEventListener('click', () => setViewMode('corridor'));
     document.getElementById('service-btn').addEventListener('click', () => setViewMode('service'));
     document.getElementById('fit-btn').addEventListener('click', resetViewport);
     document.getElementById('runnerModeButton').addEventListener('click', () => setActiveMode('runner'));
     document.getElementById('hunterModeButton').addEventListener('click', () => setActiveMode('hunter'));
+    document.getElementById('singleRunnerButton').addEventListener('click', () => enterSinglePlayer('runner'));
+    document.getElementById('singleHunterButton').addEventListener('click', () => enterSinglePlayer('hunter'));
+    document.getElementById('lobbyRunnerSeatButton').addEventListener('click', () => setLobbySeat('runner'));
+    document.getElementById('lobbyHunterSeatButton').addEventListener('click', () => setLobbySeat('hunter'));
     document.getElementById('createRoomButton').addEventListener('click', createRoomAndJoinSeat);
     document.getElementById('joinRoomButton').addEventListener('click', joinExistingRoom);
     document.getElementById('submitPlanButton').addEventListener('click', submitCurrentPlanToRoom);
     document.getElementById('readyButton').addEventListener('click', markSeatReady);
+    document.getElementById('openLobbyButton').addEventListener('click', openLobby);
     document.getElementById('loadPresetButton').addEventListener('click', applyTestPreset);
     document.getElementById('startGameButton').addEventListener('click', startGameNow);
     document.getElementById('pauseGameButton').addEventListener('click', toggleClock);
@@ -870,6 +1064,43 @@
       return Boolean(state.online.roomId && state.online.seat && state.online.token);
     }
 
+    function setLobbySeat(seat) {
+      state.activeMode = seat;
+      document.getElementById('lobbyRunnerSeatButton').className = seat === 'runner' ? 'active' : '';
+      document.getElementById('lobbyHunterSeatButton').className = seat === 'hunter' ? 'active' : '';
+      document.getElementById('runnerModeButton').className = seat === 'runner' ? 'active runner' : '';
+      document.getElementById('hunterModeButton').className = seat === 'hunter' ? 'active hunter' : '';
+    }
+
+    function closeLobby() {
+      lobbyEl.classList.add('hidden');
+      appEl.classList.remove('hidden');
+    }
+
+    function openLobby() {
+      lobbyEl.classList.remove('hidden');
+      appEl.classList.add('hidden');
+      if (onlineActive()) {
+        lobbyStatusEl.textContent = `Reconnect as ${state.online.seat?.toUpperCase() || 'seat'} in room ${state.online.roomId}.`;
+      } else {
+        lobbyStatusEl.textContent = 'Choose a seat, then create a room or enter an existing room code.';
+      }
+    }
+
+    function enterSinglePlayer(seat) {
+      stopOnlinePolling();
+      state.online.roomId = '';
+      state.online.seat = null;
+      state.online.token = '';
+      state.online.lastRoom = null;
+      state.online.presences = { runner: null, hunter: null };
+      roomStatusEl.textContent = 'Single-player local mode.';
+      setActiveMode(seat);
+      applyTestPreset();
+      closeLobby();
+      render();
+    }
+
     function roomTokenStorageKey(roomId, seat) {
       return `onichase-v2-room-token:${roomId}:${seat}`;
     }
@@ -895,6 +1126,7 @@
       state.online.pollingHandle = window.setTimeout(() => {
         syncRoomState().catch((error) => {
           roomStatusEl.textContent = `Room sync failed: ${String(error)}`;
+          lobbyStatusEl.textContent = `Room sync failed: ${String(error)}`;
         });
       }, 1200);
     }
@@ -984,7 +1216,9 @@
       }
       const selfReady = room.self?.ready ? 'ready' : 'not ready';
       roomStatusEl.textContent = `Room ${room.room_id} · ${state.online.seat || 'viewer'} · ${room.phase} · ${selfReady}`;
+      lobbyStatusEl.textContent = `Connected to room ${room.room_id} as ${state.online.seat?.toUpperCase() || 'seat'}.`;
       if (!state.selectedStationGroupId && room.self?.start_station_id) state.selectedStationGroupId = room.self.start_station_id;
+      closeLobby();
       render();
       scheduleOnlinePoll();
     }
@@ -2749,6 +2983,7 @@
         hunter: { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: '18:00' }] },
       };
       serverUrlInput.value = state.online.serverUrl;
+      setLobbySeat(state.activeMode);
       state.selectedStationGroupId = state.players.runner.start_station_id;
       state.currentGameMinute = hhmmToMinutes(state.startTime);
       state.projection = makeProjection(bundle);
