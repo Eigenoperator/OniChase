@@ -204,3 +204,4 @@
 - Changed `docs/v3.html` into a redirect page that now points to the new primary `v2.html`.
 - Updated the landing page and `README.md` so the public web structure now clearly exposes `v1`, the new main `v2`, and the archived `v2-legacy`.
 - Removed `v2-legacy` and `v3` from the public Pages surface again, leaving only `v1` and the new main `v2` as public entry points while the old files remain internal.
+- Extended the active `v2` match window to `18:00` and changed the live flow so every in-game hour automatically returns players to `PLANNING` for the next decision phase.

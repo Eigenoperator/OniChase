@@ -702,7 +702,8 @@
       planningSecondsRemaining: 60,
       currentGameMinute: 360,
       startTime: '06:00',
-      endTime: '07:00',
+      endTime: '18:00',
+      nextPlanningMinute: 420,
       latestResult: null,
       selectedResultEventIndex: 0,
       liveCapture: null,
@@ -1662,12 +1663,12 @@
     function applyTestPreset() {
       if (state.activeMode === 'hunter') {
         state.startTime = '07:00';
-        state.endTime = '08:00';
+        state.endTime = '18:00';
         state.players.runner = { start_station_id: 'SG_TOKYO', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: state.endTime }] };
         state.players.hunter = { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', steps: [] };
       } else {
         state.startTime = '06:00';
-        state.endTime = '07:00';
+        state.endTime = '18:00';
         state.players.runner = { start_station_id: 'SG_TOKYO', input_mode: 'plan', steps: [] };
         state.players.hunter = { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: state.endTime }] };
       }
@@ -1675,6 +1676,7 @@
       state.phase = 'PLANNING';
       state.planningSecondsRemaining = 60;
       state.currentGameMinute = hhmmToMinutes(state.startTime);
+      state.nextPlanningMinute = Math.min(hhmmToMinutes(state.startTime) + 60, hhmmToMinutes(state.endTime));
       state.clockRunning = true;
       state.pendingTripIds = { runner: null, hunter: null };
       invalidateSimulation();
@@ -1702,6 +1704,17 @@
         if (state.currentGameMinute < endMinute) {
           state.currentGameMinute += 1;
           checkLiveCapture();
+          if (
+            state.clockRunning &&
+            state.phase === 'LIVE' &&
+            state.nextPlanningMinute !== null &&
+            state.currentGameMinute >= state.nextPlanningMinute &&
+            state.currentGameMinute < endMinute
+          ) {
+            state.phase = 'PLANNING';
+            state.planningSecondsRemaining = 60;
+            state.nextPlanningMinute = Math.min(state.nextPlanningMinute + 60, endMinute);
+          }
         } else {
           state.phase = 'ENDED';
           state.clockRunning = false;
@@ -1714,7 +1727,6 @@
     function startGameNow() {
       if (state.phase !== 'PLANNING') return;
       state.phase = 'LIVE';
-      state.currentGameMinute = hhmmToMinutes(state.startTime);
       state.clockRunning = true;
       invalidateSimulation();
       checkLiveCapture();
@@ -2432,7 +2444,7 @@
       state.selectedRouteId = bundle.serviceRoutes[0]?.id || null;
       state.players = {
         runner: { start_station_id: 'SG_TOKYO', input_mode: 'plan', steps: [] },
-        hunter: { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: '07:00' }] },
+        hunter: { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: '18:00' }] },
       };
       state.selectedStationGroupId = state.players.runner.start_station_id;
       state.currentGameMinute = hhmmToMinutes(state.startTime);
