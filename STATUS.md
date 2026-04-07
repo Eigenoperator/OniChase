@@ -10,7 +10,6 @@
 - 已完成 `v2` 新干线全图的数据驱动地图底座：真实站点、真实线路顺序、真实坐标、自动标签避让、地图渲染脚本。
 - 已完成 `v2` 官方时刻表入口清单与站点清单，接通 `JR East / JR West / JR Kyushu` 多源 train-detail 抓取链。
 - 已生成 `data/shinkansen_v2_weekday_train_instances_merged.json`，当前合并后为 `1139` 趟 weekday 真实新干线列车实例。
-- 已新增 `visuals/shinkansen_v2_weekday_timetable.svg`，按线路分 panel 可视化 `v2` 全国新干线 weekday 时刻图。
 - 已打通 `JR Central` 的 `station-guide -> ResultControl -> tokainr.cgi` 官方链，并新增 `data/shinkansen_v2_jrcentral_tokaido_weekday_supplement.json`，补入 `43` 趟东海道中途始发/短折返真实班次。
 - 已修正 `JR Kyushu / Nishi-Kyushu` 双栏 `Kamome` 详情页解析错误，`Takeo-Onsen -> Nagasaki` 与 `Nagasaki -> Takeo-Onsen` 现在都能正确进入全国合并库。
 - 已修正全国合并逻辑，跨运营商同一趟真实列车现在会按真实服务名/号合并，不再把 `JR Central` 的东海道补丁短版和 `JR West / JR East` 的全程版重复算两趟；重新收敛后全国 weekday 数据稳定为 `1139` 趟。
@@ -27,9 +26,10 @@
 - 已把 `v2` 网页端的右侧 planning 交互切换为和 `v1` 同一条主流程：统一的 `Planning Actions` + `Train Outlook`，支持 `选车 -> 选目标站`，并让地图点击与右侧动作区共用同一套逻辑。
 - 已继续收 `v2` 网页地图观感：缩小默认站名字号，并在选中一趟车后把后续停站直接高亮在地图上，方便不看右侧也能判断路线。
 - 已新增 `V3_GIS_ARCHITECTURE.md` 和 `V3_GIS_SCHEMA.md`，正式定义 `v3` 的物理网络层、运营服务层、游戏抽象层以及 OniChase 自己的 canonical transit bundle。
+- 已新增 `V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json` 和 `visuals/v3_shinkansen_multiscale_map.svg`，正式产出第一份 `v3` 全国新干线 pilot bundle 与双视图地图图稿。
 
 ## In Progress
-- 正在同时推进 `v2` 和 `v3`：`v2` 继续收本地端与网页端的一致性、多段规划和结果反馈，`v3` 先锁 GIS 架构与中间层 schema，再决定第一个新干线 pilot slice。
+- 正在同时推进 `v2` 和 `v3`：`v2` 继续收本地端与网页端的一致性、多段规划和结果反馈，`v3` 已经进入 pilot bundle 阶段，下一步是把第一份 bundle 真正接进可交互地图。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
 
 ## Blockers
@@ -46,5 +46,5 @@
 
 ## Next
 1. 继续实测 `v2` 网页端新 action flow 和地图高亮，确认它已经能像 `v1` 一样稳定完成 `选车 -> 选站 -> 接续下一段`。
-2. 为 `v3` 选定第一个新干线 GIS pilot slice，并开始定义最小 `V3TransitBundle`。
+2. 让 `v3` 的第一份 `V3TransitBundle` 进入下一步：把 `corridor / service` 双视图从静态 SVG 推进到可交互地图。
 3. 在 `v2` 游戏壳稳定后，再继续逐线补 anomaly checklist 的余项。
