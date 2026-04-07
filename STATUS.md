@@ -4,7 +4,6 @@
 把 `v1` 山手线试玩底座保持稳定，继续收 `v2` 全国新干线可玩壳，并正式启动 `v3` 新干线 GIS 底座架构设计。
 
 ## Done
-- 已把 GitHub Pages 主页拆成版本入口页：`docs/index.html` 现在单独列出 `v1` 山手线与 `v2` 全国新干线两个可玩入口。
 - 已完成 `v1` 山手线真实站点、weekday 时刻表、合并列车实例、可视化与第一版可玩客户端。
 - 已完成 `v1` hunter mode 第一轮开发：信息限制、live 抓捕判定、结束标记、抓捕说明卡。
 - 已完成 `v2` 新干线全图的数据驱动地图底座：真实站点、真实线路顺序、真实坐标、自动标签避让、地图渲染脚本。
@@ -27,9 +26,10 @@
 - 已把 `v3` 的线路联动思路合并进 `v2` 网页端：新增 `ROUTE FOCUS` 面板、线路卡片、地图线条点击高亮、选中线路停靠站高亮，以及路线级别的标签增强。
 - 已完成 `v3` 第一版 GIS Shinkansen pilot：包括架构/Schema、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json`、`visuals/v3_shinkansen_multiscale_map.svg`、`ui/v3_web_client.html`、`docs/v3.html`、`data/v3_gis/*.geojson`、`docs/data/v3_tiles/` tile-ready GeoJSON 金字塔、地图 + route timetable diagram 的同源联动，以及开始直接消费 `v3_tiles` 的 tile-driven 地图层。
 - 已继续推进 `v3` 地图/diagram 联动：diagram hover 现可同步高亮地图上的具体 trip 路径；点选站点时，右栏会额外显示“当前选中线路在该站的真实发车集合”。
+- 已把 `v1` 的核心游戏逻辑接入 `v3` 网页端：补上 `runner / hunter` 模式、`PLANNING / LIVE / ENDED`、`Load Test Preset`、`Start Game`、`Run Simulation`、plan board、实时地图玩家位置和 `same_node / same_train` 抓捕。
 
 ## In Progress
-- 正在同时推进 `v2` 和 `v3`：`v2` 已开始吸收 `v3` 的线路联动思路，下一步是把路线级高亮继续推到时刻和结果层；`v3` 则继续把 tile-driven 地图和 diagram 的 hover / trip 级联动做强。
+- 正在同时推进 `v2` 和 `v3`：`v2` 已开始吸收 `v3` 的线路联动思路，下一步是把路线级高亮继续推到时刻和结果层；`v3` 则继续把 tile-driven GIS 表达和可玩逻辑收成一个稳定页面。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
 
 ## Blockers
@@ -46,5 +46,5 @@
 
 ## Next
 1. 继续实测 `v2` 网页端新 action flow 和地图高亮，确认它已经能像 `v1` 一样稳定完成 `选车 -> 选站 -> 接续下一段`。
-2. 继续把 `v3` 的 tile-driven 地图和 diagram 做强：把当前 hover / trip 高亮继续推到站级时间集合、route 过滤和更标准的矢量瓦片消费方式。
+2. 继续实测 `v3` 现在接上的 phase / plan / capture 逻辑，确认地图、diagram、plan board 和 replay 在同一套 bundle 上稳定工作。
 3. 在 `v2` 游戏壳稳定后，再继续逐线补 anomaly checklist 的余项。

@@ -162,6 +162,7 @@
 ## 2026-04-06
 
 - Continued the `v3` GIS-first Shinkansen pilot by wiring deeper map/diagram interaction into `ui/v3_web_client.html`: hovering a trip in the route diagram now highlights that specific service path on the map, and selecting a station now also shows the actual departures for the currently selected route at that station.
+- Brought the `v1` gameplay loop into `v3` web: added runner/hunter modes, `PLANNING / LIVE / ENDED`, test presets, manual start, simulation/replay, plan board, live player markers, and same-node / same-train capture on top of the GIS-first map and timetable page.
 - Continued the nationwide `v2` data audit and found a second systemic issue: cross-operator duplicates were still surviving because the merge step treated synthetic `train_number` values from supplements as canonical instead of recognizing the same real service by its name and number.
 - Updated the national merge logic to deduplicate by real service identity (`service_name + service_number`, plus direction when available), added broader Japanese-to-romanized service alias normalization for lines such as `Kagayaki`, `Hakutaka`, `Asama`, `Toki`, `Tanigawa`, `Hayabusa`, `Yamabiko`, `Nasuno`, `Komachi`, and `Tsubasa`, and reran the national merge.
 - Tightened the merge key one step further so synthetic supplement direction tags no longer prevent true cross-operator service merges, then reran the audit: the nationwide weekday Shinkansen dataset now stabilizes at `1139` validated train instances.
