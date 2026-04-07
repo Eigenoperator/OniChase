@@ -167,6 +167,7 @@
 ## 2026-04-07
 
 - Backfilled `DIARY-2026-04-06.md`, created `MEMORY-2026-04-07.md`, and completed the daily GitHub sync so the project control files remain continuous across sessions.
+- Tuned `v2` and `v3` web map label behavior so station names no longer balloon with zoom: map labels now counter-scale against the viewport transform and reveal more conservatively at higher zoom levels, reducing the overlap that made the maps unreadable when zoomed in.
 - Continued the nationwide `v2` data audit and found a second systemic issue: cross-operator duplicates were still surviving because the merge step treated synthetic `train_number` values from supplements as canonical instead of recognizing the same real service by its name and number.
 - Updated the national merge logic to deduplicate by real service identity (`service_name + service_number`, plus direction when available), added broader Japanese-to-romanized service alias normalization for lines such as `Kagayaki`, `Hakutaka`, `Asama`, `Toki`, `Tanigawa`, `Hayabusa`, `Yamabiko`, `Nasuno`, `Komachi`, and `Tsubasa`, and reran the national merge.
 - Tightened the merge key one step further so synthetic supplement direction tags no longer prevent true cross-operator service merges, then reran the audit: the nationwide weekday Shinkansen dataset now stabilizes at `1139` validated train instances.

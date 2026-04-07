@@ -24,6 +24,7 @@
 - 已把 `v2` 网页端的右侧 planning 交互切换为和 `v1` 同一条主流程：统一的 `Planning Actions` + `Train Outlook`，支持 `选车 -> 选目标站`，并让地图点击与右侧动作区共用同一套逻辑。
 - 已继续收 `v2` 网页地图观感：缩小默认站名字号，并在选中一趟车后把后续停站直接高亮在地图上，方便不看右侧也能判断路线。
 - 已把 `v3` 的线路联动思路合并进 `v2` 网页端：新增 `ROUTE FOCUS` 面板、线路卡片、地图线条点击高亮、选中线路停靠站高亮，以及路线级别的标签增强。
+- 已修正 `v2 / v3` 网页地图缩放时的站名可读性：站名字号和描边现在会随缩放反向调节，且高 zoom 时的标签密度也更克制，不会一放大就整片重叠。
 - 已完成 `v3` 第一版 GIS Shinkansen pilot：包括架构/Schema、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json`、`visuals/v3_shinkansen_multiscale_map.svg`、`ui/v3_web_client.html`、`docs/v3.html`、`data/v3_gis/*.geojson`、`docs/data/v3_tiles/` tile-ready GeoJSON 金字塔、地图 + route timetable diagram 的同源联动，以及开始直接消费 `v3_tiles` 的 tile-driven 地图层。
 - 已继续推进 `v3` 地图/diagram 联动：diagram hover 现可同步高亮地图上的具体 trip 路径；点选站点时，右栏会额外显示“当前选中线路在该站的真实发车集合”。
 - 已把 `v1` 的核心游戏逻辑接入 `v3` 网页端：补上 `runner / hunter` 模式、`PLANNING / LIVE / ENDED`、`Load Test Preset`、`Start Game`、`Run Simulation`、plan board、实时地图玩家位置和 `same_node / same_train` 抓捕。

@@ -841,13 +841,21 @@
       if (state.selectedStationGroupId === entry.stationGroupId) return true;
       if (state.selectedRouteId) {
         const routeStations = getRouteStationSet(state.selectedRouteId);
-        if (routeStations.has(entry.stationGroupId) && state.zoom >= 2.6) return true;
+        if (routeStations.has(entry.stationGroupId) && state.zoom >= 3.2) return true;
       }
       const rank = entry.labelRank || 0;
-      if (state.zoom >= 5.5) return true;
-      if (state.zoom >= 3.4) return rank >= 85;
-      if (state.zoom >= 2.2) return rank >= 95;
+      if (state.zoom >= 6.2) return true;
+      if (state.zoom >= 4.2) return rank >= 92;
+      if (state.zoom >= 3.0) return rank >= 97;
       return rank >= 99;
+    }
+
+    function mapLabelFontSize(baseSize) {
+      return (baseSize / Math.max(1, state.zoom)).toFixed(2);
+    }
+
+    function mapLabelStrokeWidth(baseWidth) {
+      return (baseWidth / Math.max(1, state.zoom)).toFixed(2);
     }
 
     function makeProjection(bundle) {
@@ -1417,7 +1425,7 @@
         const fontSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
         const displayName = entry.displayNameEn || entry.displayNameJa || niceName(entry.stationGroupId);
         labelSvg.push(
-          `<text x="${point.x + 8}" y="${point.y - 8}" font-size="${fontSize}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="4.2" paint-order="stroke" style="pointer-events:none">${displayName}</text>`
+          `<text x="${point.x + 8}" y="${point.y - 8}" font-size="${mapLabelFontSize(fontSize)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${mapLabelStrokeWidth(4.2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`
         );
       });
 

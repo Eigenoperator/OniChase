@@ -828,9 +828,9 @@
     function visibleStationLabelLevel(station) {
       const scale = state.mapView.scale;
       if (station.id === state.selectedStationId || station.id === state.players[state.activeMode].start_station_id) return "full";
-      if (state.selectedRouteId && routeStationSet(state.selectedRouteId).has(station.id) && scale >= 1.15) return "major";
-      if (scale >= 1.7) return "full";
-      if (scale >= 1.28) {
+      if (state.selectedRouteId && routeStationSet(state.selectedRouteId).has(station.id) && scale >= 1.4) return "major";
+      if (scale >= 2.2) return "full";
+      if (scale >= 1.45) {
         return station.is_interchange || (station.route_ids || []).length >= 2 ? "major" : "none";
       }
       const majorStations = new Set([
@@ -840,6 +840,14 @@
         "NIIGATA", "NAGANO", "FUKUSHIMA", "NAGASAKI"
       ]);
       return majorStations.has(station.id) ? "major" : "none";
+    }
+
+    function mapLabelFontSize(baseSize) {
+      return (baseSize / Math.max(1, state.mapView.scale)).toFixed(2);
+    }
+
+    function mapLabelStrokeWidth(baseWidth) {
+      return (baseWidth / Math.max(1, state.mapView.scale)).toFixed(2);
     }
 
     function mapTransformValue() {
@@ -1039,11 +1047,12 @@
           label.setAttribute("y", y - 12);
           label.setAttribute("class", `station-label${station.id === state.selectedStationId ? " selected" : ""}`);
           if (labelLevel === "major") {
-            label.setAttribute("font-size", "10.5");
+            label.setAttribute("font-size", mapLabelFontSize(10.5));
             label.setAttribute("font-weight", "700");
           } else {
-            label.setAttribute("font-size", "8");
+            label.setAttribute("font-size", mapLabelFontSize(8));
           }
+          label.setAttribute("stroke-width", mapLabelStrokeWidth(3));
           label.textContent = station.name;
           content.appendChild(label);
         }
