@@ -70,3 +70,15 @@ Local testing and setup:
 
 - [DEPLOYMENT.md](/home/xincheng/toy/Chase/DEPLOYMENT.md)
 - [LOCAL_CLIENT.md](/home/xincheng/toy/Chase/LOCAL_CLIENT.md)
+
+## Online Prototype
+
+- architecture: [ONLINE_ARCHITECTURE.md](/home/xincheng/toy/Chase/ONLINE_ARCHITECTURE.md)
+- protocol: [ONLINE_PROTOCOL.md](/home/xincheng/toy/Chase/ONLINE_PROTOCOL.md)
+- room server: [scripts/engine/v2_online_room_server.py](/home/xincheng/toy/Chase/scripts/engine/v2_online_room_server.py)
+
+Quick start:
+
+```bash
+./START_ONICHASE_V2_SERVER.sh
+```

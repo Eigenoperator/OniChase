@@ -22,11 +22,11 @@
 - 已继续收 `v2` 网页地图观感：缩小默认站名字号，并在选中一趟车后把后续停站直接高亮在地图上，方便不看右侧也能判断路线。
 - 已把 `v3` 的线路联动思路合并进 `v2` 网页端：新增 `ROUTE FOCUS` 面板、线路卡片、地图线条点击高亮、选中线路停靠站高亮，以及路线级别的标签增强。
 - 已修正 `v2` 抓捕边界：同分钟里若是一人下车到站、另一人从同站上不同列车离开，则不再误判 `same_node`；回归确认 `same_node`、`same_train` 和“异车交错未抓”三类判定都成立。
+- 已启动多人联机底座：新增 `ONLINE_ARCHITECTURE.md`、`ONLINE_PROTOCOL.md`、`scripts/engine/v2_online_room_server.py` 和 `START_ONICHASE_V2_SERVER.sh`，当前已有可跑的房间制权威服务器骨架，支持建房、占位、提交计划、ready/start 和按 seat 过滤后的房间状态。
 - 已完成 `v3` 第一版 GIS Shinkansen pilot：包括架构/Schema、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json`、`visuals/v3_shinkansen_multiscale_map.svg`、`ui/v3_web_client.html`、`docs/v3.html`、`data/v3_gis/*.geojson`、`docs/data/v3_tiles/` tile-ready GeoJSON 金字塔、地图 + route timetable diagram 的同源联动，以及开始直接消费 `v3_tiles` 的 tile-driven 地图层。
 - 已继续推进 `v3` 地图/diagram 联动：diagram hover 现可同步高亮地图上的具体 trip 路径；点选站点时，右栏会额外显示“当前选中线路在该站的真实发车集合”。
 - 已把 `v1` 的核心游戏逻辑接入 `v3` 网页端：补上 `runner / hunter` 模式、`PLANNING / LIVE / ENDED`、`Load Test Preset`、`Start Game`、`Run Simulation`、plan board、实时地图玩家位置和 `same_node / same_train` 抓捕。
 - 已完成版本迁移：原 `v3` GIS-first 新干线玩法页已提升为新的主 `v2`；公开网站现只保留 `v1` 和主 `v2`，不再公开 `v2-legacy` 与 `v3` 页面。
-
 ## In Progress
 - 正在继续把新的主 `v2` 收成稳定版本：一方面保留 GIS-first 地图/diagram 联动，另一方面把原来 `v1` 的可玩逻辑继续在全国新干线上收顺。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
@@ -45,6 +45,6 @@
 - [2026-04-07] GIS-first 新干线页面已成为新的主 `v2`；公开网站现在只保留 `v1` 与主 `v2`，`v3` 暂不定义。
 
 ## Next
-1. 继续实测新的主 `v2`，重点再打同分钟交错、整点重规划和长链接续这些边界，确认 capture / replay 一直自洽。
+1. 继续把新的主 `v2` 接到房间制联机底座，先做浏览器端 `create / join / submit plan / ready` 这条最小多人链路。
 2. 持续收主 `v2` 的地图视觉和交互细节，避免 GIS 表达比旧版更强但玩法上更难用。
 3. 在主 `v2` 稳定后，再继续逐线补 anomaly checklist 的余项。
