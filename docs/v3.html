@@ -509,6 +509,12 @@
     const DATA_URL = window.location.pathname.includes('/ui/')
       ? '../data/v3_shinkansen_bundle.json'
       : './data/v3_shinkansen_bundle.json';
+    const TILE_MANIFEST_URL = window.location.pathname.includes('/ui/')
+      ? '../docs/data/v3_tiles/manifest.json'.replace('../docs/', '../')
+      : './data/v3_tiles/manifest.json';
+    const TILE_BASE_URL = window.location.pathname.includes('/ui/')
+      ? '../docs/data/v3_tiles/'.replace('../docs/', '../')
+      : './data/v3_tiles/';
 
     const SERVICE_COLORS = {};
     const state = {
@@ -524,6 +530,10 @@
       projection: null,
       labelEntries: [],
       stationPoints: [],
+      tileManifest: null,
+      tileCache: new Map(),
+      visibleTileData: { stations: [], track_centerlines: [], service_paths: [] },
+      currentTileSignature: '',
       dragging: false,
       dragStartX: 0,
       dragStartY: 0,
@@ -645,8 +655,107 @@
           const x = padding + (lon - minLon) * scale;
           const y = height - padding - (lat - minLat) * scale;
           return { x, y };
+        },
+        invert(x, y) {
+          const lon = minLon + ((x - padding) / scale);
+          const lat = minLat + ((height - padding - y) / scale);
+          return { lat, lon };
         }
       };
+    }
+
+    function tileZoomForCurrentView() {
+      if (state.zoom < 1.35) return 3;
+      if (state.zoom < 2.1) return 4;
+      if (state.zoom < 3.6) return 5;
+      return 6;
+    }
+
+    function visibleGeoBounds() {
+      const projection = state.projection;
+      const width = projection.width;
+      const height = projection.height;
+      const minContentX = (0 - state.panX) / state.zoom;
+      const maxContentX = (width - state.panX) / state.zoom;
+      const minContentY = (0 - state.panY) / state.zoom;
+      const maxContentY = (height - state.panY) / state.zoom;
+      const a = projection.invert(minContentX, maxContentY);
+      const b = projection.invert(maxContentX, minContentY);
+      return {
+        minLon: Math.max(Math.min(a.lon, b.lon), projection.minLon),
+        maxLon: Math.min(Math.max(a.lon, b.lon), projection.maxLon),
+        minLat: Math.max(Math.min(a.lat, b.lat), projection.minLat),
+        maxLat: Math.min(Math.max(a.lat, b.lat), projection.maxLat),
+      };
+    }
+
+    function tileGridBounds(z) {
+      const cols = 2 ** z;
+      const rows = 2 ** z;
+      return {
+        cols,
+        rows,
+        minLon: 128.0,
+        maxLon: 146.5,
+        minLat: 30.0,
+        maxLat: 46.5,
+      };
+    }
+
+    function tilesForBounds(bounds, z) {
+      const grid = tileGridBounds(z);
+      const lonSpan = grid.maxLon - grid.minLon;
+      const latSpan = grid.maxLat - grid.minLat;
+      const x0 = Math.max(0, Math.floor(((bounds.minLon - grid.minLon) / lonSpan) * grid.cols));
+      const x1 = Math.min(grid.cols - 1, Math.floor(((bounds.maxLon - grid.minLon) / lonSpan) * grid.cols));
+      const y0 = Math.max(0, Math.floor(((grid.maxLat - bounds.maxLat) / latSpan) * grid.rows));
+      const y1 = Math.min(grid.rows - 1, Math.floor(((grid.maxLat - bounds.minLat) / latSpan) * grid.rows));
+      const tiles = [];
+      for (let x = x0; x <= x1; x += 1) {
+        for (let y = y0; y <= y1; y += 1) {
+          tiles.push({ z, x, y });
+        }
+      }
+      return tiles;
+    }
+
+    async function fetchTileLayer(layer, tile) {
+      const key = `${layer}:${tile.z}/${tile.x}/${tile.y}`;
+      if (state.tileCache.has(key)) return state.tileCache.get(key);
+      const url = `${TILE_BASE_URL}${layer}/${tile.z}/${tile.x}/${tile.y}.geojson`;
+      const promise = fetch(url)
+        .then((response) => {
+          if (!response.ok) return { features: [] };
+          return response.json();
+        })
+        .catch(() => ({ features: [] }));
+      state.tileCache.set(key, promise);
+      return promise;
+    }
+
+    async function refreshVisibleTiles() {
+      if (!state.tileManifest) return;
+      const z = tileZoomForCurrentView();
+      const bounds = visibleGeoBounds();
+      const tiles = tilesForBounds(bounds, z);
+      const signature = `${state.viewMode}|${z}|${tiles.map((tile) => `${tile.x}:${tile.y}`).join(',')}`;
+      if (signature === state.currentTileSignature) return;
+      state.currentTileSignature = signature;
+
+      const [stationCollections, trackCollections, serviceCollections] = await Promise.all([
+        Promise.all(tiles.map((tile) => fetchTileLayer('stations', tile))),
+        Promise.all(tiles.map((tile) => fetchTileLayer('track_centerlines', tile))),
+        Promise.all(tiles.map((tile) => fetchTileLayer('service_paths', tile))),
+      ]);
+
+      if (state.currentTileSignature !== signature) return;
+
+      state.visibleTileData = {
+        stations: stationCollections.flatMap((fc) => fc.features || []),
+        track_centerlines: trackCollections.flatMap((fc) => fc.features || []),
+        service_paths: serviceCollections.flatMap((fc) => fc.features || []),
+      };
+      render();
     }
 
     function drawPath(points, opts = {}) {
@@ -669,10 +778,40 @@
       const stationSvg = [];
       const labelSvg = [];
       const selectedRouteStations = state.selectedRouteId ? getRouteStationSet(state.selectedRouteId) : new Set();
+      const trackFeatures = state.visibleTileData.track_centerlines.length
+        ? state.visibleTileData.track_centerlines
+        : bundle.trackCenterlines.map((line) => ({
+            geometry: { coordinates: line.polyline.map((point) => [point.lon, point.lat]) },
+            properties: { line_name: line.lineName, station_group_ids: line.stationGroupIds }
+          }));
+      const serviceFeatures = state.visibleTileData.service_paths.length
+        ? state.visibleTileData.service_paths
+        : bundle.serviceGeometry.map((geometry) => {
+            const route = bundle.serviceRoutes.find((item) => item.id === geometry.routeId);
+            return {
+              geometry: { coordinates: geometry.polyline.map((point) => [point.lon, point.lat]) },
+              properties: {
+                route_id: geometry.routeId,
+                route_name: route?.shortName,
+                route_color: route?.color,
+                offset_rank: geometry.offsetRank || 0,
+              }
+            };
+          });
+      const stationFeatures = state.visibleTileData.stations.length
+        ? state.visibleTileData.stations
+        : bundle.physicalStations.map((station) => ({
+            geometry: { coordinates: [station.lon, station.lat] },
+            properties: {
+              id: station.id,
+              station_group_id: station.stationGroupId,
+            }
+          }));
 
-      bundle.trackCenterlines.forEach((line) => {
-        const points = line.polyline.map((point) => projection.project(point.lat, point.lon));
-        const lineTouchesSelectedRoute = state.selectedRouteId && line.stationGroupIds.some((id) => selectedRouteStations.has(id));
+      trackFeatures.forEach((feature) => {
+        const points = feature.geometry.coordinates.map(([lon, lat]) => projection.project(lat, lon));
+        const stationGroupIds = feature.properties.station_group_ids || [];
+        const lineTouchesSelectedRoute = state.selectedRouteId && stationGroupIds.some((id) => selectedRouteStations.has(id));
         centerlineSvg.push(drawPath(points, {
           stroke: state.viewMode === 'corridor' ? '#ffffff' : 'rgba(255,255,255,0.75)',
           width: state.viewMode === 'corridor' ? (lineTouchesSelectedRoute ? 11.5 : 10) : 7,
@@ -686,12 +825,12 @@
       });
 
       if (state.viewMode === 'service') {
-        bundle.serviceGeometry.forEach((geometry) => {
-          const route = bundle.serviceRoutes.find((item) => item.id === geometry.routeId);
-          const color = route?.color || '#666';
-          const selected = !state.selectedRouteId || geometry.routeId === state.selectedRouteId;
-          const points = geometry.polyline.map((point) => projection.project(point.lat, point.lon));
-          const offset = (geometry.offsetRank || 0) * 0.8;
+        serviceFeatures.forEach((feature) => {
+          const routeId = feature.properties.route_id;
+          const color = feature.properties.route_color || '#666';
+          const selected = !state.selectedRouteId || routeId === state.selectedRouteId;
+          const points = feature.geometry.coordinates.map(([lon, lat]) => projection.project(lat, lon));
+          const offset = (feature.properties.offset_rank || 0) * 0.8;
           const offsetPoints = points.map((point, index) => {
             const prev = points[Math.max(index - 1, 0)];
             const next = points[Math.min(index + 1, points.length - 1)];
@@ -715,9 +854,21 @@
         });
       }
 
-      state.stationPoints = bundle.physicalStations.map((station) => {
-        const point = projection.project(station.lat, station.lon);
-        return { ...station, x: point.x, y: point.y };
+      const physicalStationMap = new Map(bundle.physicalStations.map((station) => [station.stationGroupId, station]));
+      state.stationPoints = stationFeatures.map((feature) => {
+        const stationGroupId = feature.properties.station_group_id;
+        const backing = physicalStationMap.get(stationGroupId);
+        const [lon, lat] = feature.geometry.coordinates;
+        const point = projection.project(lat, lon);
+        return {
+          ...(backing || {}),
+          stationGroupId,
+          id: backing?.id || feature.properties.id,
+          lat,
+          lon,
+          x: point.x,
+          y: point.y,
+        };
       });
 
       const stationRadius = clamp(4.4 / Math.sqrt(state.zoom), 2.3, 5.2);
@@ -769,12 +920,14 @@
       renderSidebar();
       renderDiagram();
       applyViewport();
+      refreshVisibleTiles();
     }
 
     function applyViewport() {
       const viewport = document.getElementById('viewport');
       if (!viewport || !state.projection) return;
       viewport.setAttribute('transform', `translate(${state.panX.toFixed(2)} ${state.panY.toFixed(2)}) scale(${state.zoom.toFixed(4)})`);
+      refreshVisibleTiles();
     }
 
     function resetViewport() {
@@ -1030,7 +1183,10 @@
     async function init() {
       const response = await fetch(DATA_URL);
       const bundle = await response.json();
+      const tileManifestResponse = await fetch(TILE_MANIFEST_URL);
+      const tileManifest = await tileManifestResponse.json();
       state.bundle = bundle;
+      state.tileManifest = tileManifest;
       state.labelEntries = bundle.labelRepresentations;
       state.selectedRouteId = bundle.serviceRoutes[0]?.id || null;
       state.projection = makeProjection(bundle);
