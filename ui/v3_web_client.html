@@ -338,6 +338,22 @@
       font-size: 14px;
     }
 
+    .mini-card.clickable {
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    }
+
+    .mini-card.clickable:hover {
+      transform: translateY(-1px);
+      border-color: rgba(21, 101, 192, 0.4);
+    }
+
+    .mini-card.active {
+      border-color: rgba(21, 101, 192, 0.58);
+      box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.10), var(--shadow-soft);
+      background: rgba(226, 237, 251, 0.96);
+    }
+
     @media (max-width: 1100px) {
       body {
         height: auto;
@@ -400,6 +416,11 @@
           <div id="selected-station" class="empty">Click a station to inspect its station group, connected lines, and service footprint.</div>
         </section>
 
+        <section>
+          <div class="section-label">Selected Route</div>
+          <div id="selected-route" class="empty">Click a route card or legend chip to highlight one service family across the whole map.</div>
+        </section>
+
         <section class="lists">
           <div>
             <div class="section-label">Visible Services</div>
@@ -428,6 +449,7 @@
     const state = {
       bundle: null,
       selectedStationGroupId: null,
+      selectedRouteId: null,
       viewMode: 'corridor',
       zoom: 1,
       minZoom: 0.85,
@@ -450,6 +472,7 @@
     const mapStats = document.getElementById('map-stats');
     const overviewGrid = document.getElementById('overview-grid');
     const selectedStationEl = document.getElementById('selected-station');
+    const selectedRouteEl = document.getElementById('selected-route');
     const visibleServicesEl = document.getElementById('visible-services');
     const stationTripsEl = document.getElementById('station-trips');
     const legendEl = document.getElementById('legend');
@@ -514,6 +537,10 @@
     function shouldShowLabel(entry) {
       if (!entry) return false;
       if (state.selectedStationGroupId === entry.stationGroupId) return true;
+      if (state.selectedRouteId) {
+        const routeStations = getRouteStationSet(state.selectedRouteId);
+        if (routeStations.has(entry.stationGroupId) && state.zoom >= 2.6) return true;
+      }
       const rank = entry.labelRank || 0;
       if (state.zoom >= 5.5) return true;
       if (state.zoom >= 3.4) return rank >= 85;
@@ -572,20 +599,20 @@
       const serviceSvg = [];
       const stationSvg = [];
       const labelSvg = [];
-
-      const stationMap = new Map(bundle.physicalStations.map((station) => [station.stationGroupId, station]));
+      const selectedRouteStations = state.selectedRouteId ? getRouteStationSet(state.selectedRouteId) : new Set();
 
       bundle.trackCenterlines.forEach((line) => {
         const points = line.polyline.map((point) => projection.project(point.lat, point.lon));
+        const lineTouchesSelectedRoute = state.selectedRouteId && line.stationGroupIds.some((id) => selectedRouteStations.has(id));
         centerlineSvg.push(drawPath(points, {
           stroke: state.viewMode === 'corridor' ? '#ffffff' : 'rgba(255,255,255,0.75)',
-          width: state.viewMode === 'corridor' ? 10 : 7,
-          opacity: 0.95
+          width: state.viewMode === 'corridor' ? (lineTouchesSelectedRoute ? 11.5 : 10) : 7,
+          opacity: lineTouchesSelectedRoute ? 1 : 0.95
         }));
         centerlineSvg.push(drawPath(points, {
-          stroke: state.viewMode === 'corridor' ? '#c5d0df' : '#d8dee8',
-          width: state.viewMode === 'corridor' ? 5.2 : 3.4,
-          opacity: state.viewMode === 'corridor' ? 1 : 0.88
+          stroke: lineTouchesSelectedRoute ? '#8aa4c8' : (state.viewMode === 'corridor' ? '#c5d0df' : '#d8dee8'),
+          width: state.viewMode === 'corridor' ? (lineTouchesSelectedRoute ? 6.6 : 5.2) : 3.4,
+          opacity: lineTouchesSelectedRoute ? 1 : (state.viewMode === 'corridor' ? 1 : 0.88)
         }));
       });
 
@@ -593,6 +620,7 @@
         bundle.serviceGeometry.forEach((geometry) => {
           const route = bundle.serviceRoutes.find((item) => item.id === geometry.routeId);
           const color = route?.color || '#666';
+          const selected = !state.selectedRouteId || geometry.routeId === state.selectedRouteId;
           const points = geometry.polyline.map((point) => projection.project(point.lat, point.lon));
           const offset = (geometry.offsetRank || 0) * 0.8;
           const offsetPoints = points.map((point, index) => {
@@ -607,13 +635,13 @@
           });
           serviceSvg.push(drawPath(offsetPoints, {
             stroke: '#ffffff',
-            width: 8,
-            opacity: 0.92
+            width: selected ? 8.4 : 7,
+            opacity: selected ? 0.95 : 0.55
           }));
           serviceSvg.push(drawPath(offsetPoints, {
             stroke: color,
-            width: 4.8,
-            opacity: 0.96
+            width: selected ? 5.4 : 3.6,
+            opacity: selected ? 0.98 : 0.34
           }));
         });
       }
@@ -627,13 +655,16 @@
 
       state.stationPoints.forEach((station) => {
         const selected = station.stationGroupId === selectedId;
+        const onSelectedRoute = selectedRouteStations.has(station.stationGroupId);
         const stroke = selected ? '#f97316' : '#ffffff';
         const fill = selected ? '#f97316' : '#203247';
-        const haloRadius = selected ? stationRadius + 4.2 : stationRadius;
+        const haloRadius = selected ? stationRadius + 4.2 : onSelectedRoute ? stationRadius + 2.2 : stationRadius;
         if (selected) {
           stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(249,115,22,0.18)" />`);
+        } else if (onSelectedRoute) {
+          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(21,101,192,0.12)" />`);
         }
-        stationSvg.push(`<circle data-station-group-id="${station.stationGroupId}" cx="${station.x}" cy="${station.y}" r="${stationRadius}" fill="${fill}" stroke="${stroke}" stroke-width="${selected ? 2.4 : 1.2}" style="cursor:pointer" />`);
+        stationSvg.push(`<circle data-station-group-id="${station.stationGroupId}" cx="${station.x}" cy="${station.y}" r="${stationRadius}" fill="${onSelectedRoute && !selected ? '#2f5d97' : fill}" stroke="${selected ? stroke : onSelectedRoute ? '#dbeafe' : stroke}" stroke-width="${selected ? 2.4 : onSelectedRoute ? 1.6 : 1.2}" style="cursor:pointer" />`);
       });
 
       state.labelEntries.forEach((entry) => {
@@ -702,6 +733,7 @@
         <div>Stations: <strong>${bundle.physicalStations.length}</strong></div>
         <div>Routes: <strong>${bundle.serviceRoutes.length}</strong></div>
         <div>Trips: <strong>${bundle.tripInstances.length}</strong></div>
+        <div>Zoom: <strong>${state.zoom.toFixed(1)}x</strong></div>
       `;
 
       overviewGrid.innerHTML = [
@@ -717,69 +749,110 @@
       `).join('');
 
       visibleServicesEl.innerHTML = bundle.serviceRoutes.map((route) => `
-        <div class="mini-card">
+        <button class="mini-card clickable ${state.selectedRouteId === route.id ? 'active' : ''}" data-route-id="${route.id}">
           <strong><span class="swatch" style="background:${route.color}"></span>${route.shortName}</strong>
           <span>${route.longName}</span>
           <small>${countTripsForRoute(route.id)} trips in the current pilot bundle</small>
-        </div>
+        </button>
       `).join('');
 
       legendEl.innerHTML = bundle.serviceRoutes.map((route) => `
-        <span><span class="swatch" style="background:${route.color}"></span>${route.shortName}</span>
+        <button class="mini-card clickable ${state.selectedRouteId === route.id ? 'active' : ''}" data-route-id="${route.id}" style="padding:8px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:2px">
+          <span><span class="swatch" style="background:${route.color}"></span>${route.shortName}</span>
+        </button>
       `).join('');
+
+      bindRouteClickTargets();
 
       if (!state.selectedStationGroupId) {
         selectedStationEl.className = 'empty';
         selectedStationEl.textContent = 'Click a station to inspect its station group, connected lines, and service footprint.';
         stationTripsEl.innerHTML = '';
-        return;
+      } else {
+        const station = bundle.physicalStations.find((item) => item.stationGroupId === state.selectedStationGroupId);
+        const label = resolveLabelEntry(state.selectedStationGroupId);
+        const touchingTrackLines = bundle.trackCenterlines
+          .filter((line) => line.stationGroupIds.includes(state.selectedStationGroupId))
+          .map((line) => line.lineName);
+        const touchingRoutes = bundle.serviceRoutes
+          .filter((route) => bundle.tripInstances.some((trip) =>
+            trip.routeId === route.id &&
+            trip.stopTimes.some((stop) => stop.stationGroupId === state.selectedStationGroupId)
+          ))
+          .map((route) => route.shortName);
+
+        selectedStationEl.className = '';
+        selectedStationEl.innerHTML = `
+          <div class="selected-card">
+            <h3>${label?.displayNameEn || station.name}</h3>
+            <p>${label?.displayNameJa || ''} · ${station.id}</p>
+            <p>Lat/Lon: ${station.lat.toFixed(4)}, ${station.lon.toFixed(4)}</p>
+            <div class="tags">
+              ${touchingTrackLines.map((line) => `<span class="tag">${line}</span>`).join('')}
+              ${touchingRoutes.filter((item) => !touchingTrackLines.includes(item)).map((route) => `<span class="tag">${route}</span>`).join('')}
+            </div>
+          </div>
+        `;
+
+        const trips = bundle.tripInstances
+          .filter((trip) => trip.stopTimes.some((stop) => stop.stationGroupId === state.selectedStationGroupId))
+          .slice(0, 24);
+
+        stationTripsEl.innerHTML = trips.length
+          ? trips.map((trip) => {
+              const stop = trip.stopTimes.find((item) => item.stationGroupId === state.selectedStationGroupId);
+              return `
+                <div class="mini-card">
+                  <strong>${trip.serviceName} ${trip.serviceNumber || ''}</strong>
+                  <span>${trip.routeId.replace(/_/g, ' ')}</span>
+                  <small>${stop ? secToClock(stop.departureTimeSec ?? stop.arrivalTimeSec) : 'time n/a'} · ${trip.stopTimes.length} stops in pilot record</small>
+                </div>
+              `;
+            }).join('')
+          : `<div class="empty">No trip instances touch this station in the current pilot bundle.</div>`;
       }
 
-      const station = bundle.physicalStations.find((item) => item.stationGroupId === state.selectedStationGroupId);
-      const label = resolveLabelEntry(state.selectedStationGroupId);
-      const touchingTrackLines = bundle.trackCenterlines
-        .filter((line) => line.stationGroupIds.includes(state.selectedStationGroupId))
-        .map((line) => line.lineName);
-      const touchingRoutes = bundle.serviceRoutes
-        .filter((route) => bundle.tripInstances.some((trip) =>
-          trip.routeId === route.id &&
-          trip.stopTimes.some((stop) => stop.stationGroupId === state.selectedStationGroupId)
-        ))
-        .map((route) => route.shortName);
-
-      selectedStationEl.className = '';
-      selectedStationEl.innerHTML = `
-        <div class="selected-card">
-          <h3>${label?.displayNameEn || station.name}</h3>
-          <p>${label?.displayNameJa || ''} · ${station.id}</p>
-          <p>Lat/Lon: ${station.lat.toFixed(4)}, ${station.lon.toFixed(4)}</p>
-          <div class="tags">
-            ${touchingTrackLines.map((line) => `<span class="tag">${line}</span>`).join('')}
-            ${touchingRoutes.filter((item) => !touchingTrackLines.includes(item)).map((route) => `<span class="tag">${route}</span>`).join('')}
+      if (!state.selectedRouteId) {
+        selectedRouteEl.className = 'empty';
+        selectedRouteEl.textContent = 'Click a route card or legend chip to highlight one service family across the whole map.';
+      } else {
+        const route = bundle.serviceRoutes.find((item) => item.id === state.selectedRouteId);
+        const routeStations = [...getRouteStationSet(route.id)];
+        selectedRouteEl.className = '';
+        selectedRouteEl.innerHTML = `
+          <div class="selected-card">
+            <h3>${route.shortName}</h3>
+            <p>${route.longName}</p>
+            <div class="tags">
+              <span class="tag">${countTripsForRoute(route.id)} trips</span>
+              <span class="tag">${routeStations.length} served stations</span>
+            </div>
           </div>
-        </div>
-      `;
-
-      const trips = bundle.tripInstances
-        .filter((trip) => trip.stopTimes.some((stop) => stop.stationGroupId === state.selectedStationGroupId))
-        .slice(0, 24);
-
-      stationTripsEl.innerHTML = trips.length
-        ? trips.map((trip) => {
-            const stop = trip.stopTimes.find((item) => item.stationGroupId === state.selectedStationGroupId);
-            return `
-              <div class="mini-card">
-                <strong>${trip.serviceName} ${trip.serviceNumber || ''}</strong>
-                <span>${trip.routeId.replace(/_/g, ' ')}</span>
-                <small>${stop ? secToClock(stop.departureTimeSec ?? stop.arrivalTimeSec) : 'time n/a'} · ${trip.stopTimes.length} stops in pilot record</small>
-              </div>
-            `;
-          }).join('')
-        : `<div class="empty">No trip instances touch this station in the current pilot bundle.</div>`;
+        `;
+      }
     }
 
     function countTripsForRoute(routeId) {
       return state.bundle.tripInstances.filter((trip) => trip.routeId === routeId).length;
+    }
+
+    function getRouteStationSet(routeId) {
+      const set = new Set();
+      state.bundle.tripInstances.forEach((trip) => {
+        if (trip.routeId !== routeId) return;
+        trip.stopTimes.forEach((stop) => set.add(stop.stationGroupId));
+      });
+      return set;
+    }
+
+    function bindRouteClickTargets() {
+      document.querySelectorAll('[data-route-id]').forEach((node) => {
+        node.addEventListener('click', () => {
+          const routeId = node.getAttribute('data-route-id');
+          state.selectedRouteId = state.selectedRouteId === routeId ? null : routeId;
+          render();
+        });
+      });
     }
 
     async function init() {
