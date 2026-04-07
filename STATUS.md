@@ -22,14 +22,14 @@
 - 已把 `v2` 网页端地图改成可缩放/拖拽，并按缩放级别动态显示站名；同时页面改成固定视口布局，主要模块内部可独立滚动，减少整页空白和长页面滚动。
 - 已继续修正 `v2` 网页端地图交互：站点圆点现在会随缩放更合理地缩放，放大后不会显得过大，同时拖拽边界已改成按真实地图内容范围动态计算。
 - 已修正 `v2` 固定页面后的右栏交互问题：右侧面板恢复为整栏可滚动，同时保留内部列表滚动，不再因为固定高度而把下半部分裁死。
-- 已更新 `README.md`，把 GitHub Pages 首页、`v1` 页面、`v2` 页面三个公开地址都写清楚。
 - 已把 `v2` 网页端的右侧 planning 交互切换为和 `v1` 同一条主流程：统一的 `Planning Actions` + `Train Outlook`，支持 `选车 -> 选目标站`，并让地图点击与右侧动作区共用同一套逻辑。
 - 已继续收 `v2` 网页地图观感：缩小默认站名字号，并在选中一趟车后把后续停站直接高亮在地图上，方便不看右侧也能判断路线。
 - 已把 `v3` 的线路联动思路合并进 `v2` 网页端：新增 `ROUTE FOCUS` 面板、线路卡片、地图线条点击高亮、选中线路停靠站高亮，以及路线级别的标签增强。
 - 已完成 `v3` 第一版 GIS Shinkansen pilot：包括架构/Schema、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json`、`visuals/v3_shinkansen_multiscale_map.svg`、`ui/v3_web_client.html`、`docs/v3.html`、`data/v3_gis/*.geojson`、`docs/data/v3_tiles/` tile-ready GeoJSON 金字塔、地图 + route timetable diagram 的同源联动，以及开始直接消费 `v3_tiles` 的 tile-driven 地图层。
+- 已继续推进 `v3` 地图/diagram 联动：diagram hover 现可同步高亮地图上的具体 trip 路径；点选站点时，右栏会额外显示“当前选中线路在该站的真实发车集合”。
 
 ## In Progress
-- 正在同时推进 `v2` 和 `v3`：`v2` 已开始吸收 `v3` 的线路联动思路，下一步是把路线级高亮继续推到时刻和结果层；`v3` 则继续把 tile-driven 地图和 diagram 的交互深度做强。
+- 正在同时推进 `v2` 和 `v3`：`v2` 已开始吸收 `v3` 的线路联动思路，下一步是把路线级高亮继续推到时刻和结果层；`v3` 则继续把 tile-driven 地图和 diagram 的 hover / trip 级联动做强。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
 
 ## Blockers
@@ -46,5 +46,5 @@
 
 ## Next
 1. 继续实测 `v2` 网页端新 action flow 和地图高亮，确认它已经能像 `v1` 一样稳定完成 `选车 -> 选站 -> 接续下一段`。
-2. 继续把 `v3` 的 tile-driven 地图和 diagram 做强：增加更细的 hover 联动、trip 级别高亮、以及从 tile source 进一步过渡到更标准的矢量瓦片消费方式。
+2. 继续把 `v3` 的 tile-driven 地图和 diagram 做强：把当前 hover / trip 高亮继续推到站级时间集合、route 过滤和更标准的矢量瓦片消费方式。
 3. 在 `v2` 游戏壳稳定后，再继续逐线补 anomaly checklist 的余项。

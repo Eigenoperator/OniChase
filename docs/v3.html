@@ -407,6 +407,12 @@
       background: rgba(226, 237, 251, 0.96);
     }
 
+    .mini-card.trip-hover {
+      border-color: rgba(15, 23, 42, 0.35);
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08), var(--shadow-soft);
+      background: rgba(241, 245, 249, 0.98);
+    }
+
     @media (max-width: 1100px) {
       body {
         height: auto;
@@ -495,6 +501,10 @@
             <div class="section-label">Selected Station Trips</div>
             <div id="station-trips" class="card-list"></div>
           </div>
+          <div>
+            <div class="section-label">Route Departures At Station</div>
+            <div id="route-station-departures" class="card-list"></div>
+          </div>
         </section>
 
         <section>
@@ -534,6 +544,7 @@
       tileCache: new Map(),
       visibleTileData: { stations: [], track_centerlines: [], service_paths: [] },
       currentTileSignature: '',
+      hoveredTripId: null,
       dragging: false,
       dragStartX: 0,
       dragStartY: 0,
@@ -554,6 +565,7 @@
     const selectedRouteEl = document.getElementById('selected-route');
     const visibleServicesEl = document.getElementById('visible-services');
     const stationTripsEl = document.getElementById('station-trips');
+    const routeStationDeparturesEl = document.getElementById('route-station-departures');
     const legendEl = document.getElementById('legend');
 
     document.getElementById('corridor-btn').addEventListener('click', () => setViewMode('corridor'));
@@ -768,6 +780,20 @@
       return `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}" ${dash ? `stroke-dasharray="${dash}"` : ''}/>`;
     }
 
+    function stationPointByGroupId(stationGroupId) {
+      return state.stationPoints.find((station) => station.stationGroupId === stationGroupId);
+    }
+
+    function hoveredTripPathPoints() {
+      if (!state.hoveredTripId || !state.bundle) return [];
+      const trip = state.bundle.tripInstances.find((item) => item.id === state.hoveredTripId);
+      if (!trip) return [];
+      return trip.stopTimes
+        .map((stop) => stationPointByGroupId(stop.stationGroupId))
+        .filter(Boolean)
+        .map((station) => ({ x: station.x, y: station.y }));
+    }
+
     function render() {
       if (!state.bundle) return;
       const bundle = state.bundle;
@@ -777,6 +803,7 @@
       const serviceSvg = [];
       const stationSvg = [];
       const labelSvg = [];
+      const hoverSvg = [];
       const selectedRouteStations = state.selectedRouteId ? getRouteStationSet(state.selectedRouteId) : new Set();
       const trackFeatures = state.visibleTileData.track_centerlines.length
         ? state.visibleTileData.track_centerlines
@@ -897,12 +924,30 @@
         );
       });
 
+      const hoveredPoints = hoveredTripPathPoints();
+      if (hoveredPoints.length >= 2) {
+        hoverSvg.push(drawPath(hoveredPoints, {
+          stroke: '#ffffff',
+          width: state.viewMode === 'service' ? 12 : 10,
+          opacity: 0.95
+        }));
+        hoverSvg.push(drawPath(hoveredPoints, {
+          stroke: '#0f172a',
+          width: state.viewMode === 'service' ? 7.2 : 6.2,
+          opacity: 0.92
+        }));
+        hoveredPoints.forEach((point) => {
+          hoverSvg.push(`<circle cx="${point.x}" cy="${point.y}" r="5.2" fill="#0f172a" stroke="rgba(255,255,255,0.95)" stroke-width="2" />`);
+        });
+      }
+
       svg.innerHTML = `
         <g id="viewport">
           <rect x="0" y="0" width="${projection.width}" height="${projection.height}" fill="transparent" />
           <g id="corridor-layer">${centerlineSvg.join('')}</g>
           <g id="service-layer" opacity="${state.viewMode === 'service' ? 1 : 0.18}">${serviceSvg.join('')}</g>
           <g id="station-layer">${stationSvg.join('')}</g>
+          <g id="hovered-trip-layer">${hoverSvg.join('')}</g>
           <g id="label-layer">${labelSvg.join('')}</g>
         </g>
       `;
@@ -1035,8 +1080,9 @@
       const tripSvg = trips.slice(0, 90).map((trip) => {
         const path = trip.points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${xForSec(point.xSec).toFixed(2)} ${yForIndex(point.yIndex).toFixed(2)}`).join(' ');
         const highlighted = state.selectedStationGroupId && trip.points.some((point) => point.stationGroupId === state.selectedStationGroupId);
+        const hovered = state.hoveredTripId === trip.id;
         return `
-          <path d="${path}" fill="none" stroke="${route.color}" stroke-width="${highlighted ? 2.8 : 1.3}" opacity="${highlighted ? 0.95 : 0.28}" stroke-linecap="round" stroke-linejoin="round">
+          <path data-trip-id="${trip.id}" d="${path}" fill="none" stroke="${hovered ? '#0f172a' : route.color}" stroke-width="${hovered ? 4.8 : highlighted ? 2.8 : 1.3}" opacity="${hovered ? 0.96 : highlighted ? 0.95 : 0.28}" stroke-linecap="round" stroke-linejoin="round" style="cursor:pointer">
             <title>${formatTripLabel(trip)}</title>
           </path>
         `;
@@ -1048,6 +1094,19 @@
         ${axisSvg}
         ${tripSvg}
       `;
+
+      diagram.querySelectorAll('[data-trip-id]').forEach((node) => {
+        node.addEventListener('mouseenter', () => {
+          state.hoveredTripId = node.getAttribute('data-trip-id');
+          render();
+        });
+        node.addEventListener('mouseleave', () => {
+          if (state.hoveredTripId === node.getAttribute('data-trip-id')) {
+            state.hoveredTripId = null;
+            render();
+          }
+        });
+      });
     }
 
     function renderSidebar() {
@@ -1093,6 +1152,7 @@
         selectedStationEl.className = 'empty';
         selectedStationEl.textContent = 'Click a station to inspect its station group, connected lines, and service footprint.';
         stationTripsEl.innerHTML = '';
+        routeStationDeparturesEl.innerHTML = '';
       } else {
         const station = bundle.physicalStations.find((item) => item.stationGroupId === state.selectedStationGroupId);
         const label = resolveLabelEntry(state.selectedStationGroupId);
@@ -1126,8 +1186,9 @@
         stationTripsEl.innerHTML = trips.length
           ? trips.map((trip) => {
               const stop = trip.stopTimes.find((item) => item.stationGroupId === state.selectedStationGroupId);
+              const hoverClass = state.hoveredTripId === trip.id ? 'trip-hover' : '';
               return `
-                <div class="mini-card">
+                <div class="mini-card ${hoverClass}">
                   <strong>${trip.serviceName} ${trip.serviceNumber || ''}</strong>
                   <span>${trip.routeId.replace(/_/g, ' ')}</span>
                   <small>${stop ? secToClock(stop.departureTimeSec ?? stop.arrivalTimeSec) : 'time n/a'} · ${trip.stopTimes.length} stops in pilot record</small>
@@ -1135,6 +1196,38 @@
               `;
             }).join('')
           : `<div class="empty">No trip instances touch this station in the current pilot bundle.</div>`;
+
+        if (!state.selectedRouteId) {
+          routeStationDeparturesEl.innerHTML = `<div class="empty">Select one route to see the actual departures for that route at this station.</div>`;
+        } else {
+          const routeDepartures = bundle.tripInstances
+            .filter((trip) => trip.routeId === state.selectedRouteId)
+            .map((trip) => {
+              const stop = trip.stopTimes.find((item) => item.stationGroupId === state.selectedStationGroupId);
+              if (!stop) return null;
+              return {
+                trip,
+                timeSec: stop.departureTimeSec ?? stop.arrivalTimeSec,
+                stopCount: trip.stopTimes.length,
+              };
+            })
+            .filter(Boolean)
+            .sort((a, b) => a.timeSec - b.timeSec)
+            .slice(0, 24);
+
+          routeStationDeparturesEl.innerHTML = routeDepartures.length
+            ? routeDepartures.map(({ trip, timeSec, stopCount }) => {
+                const hoverClass = state.hoveredTripId === trip.id ? 'trip-hover' : '';
+                return `
+                  <div class="mini-card ${hoverClass}">
+                    <strong>${secToClock(timeSec)} · ${formatTripLabel(trip)}</strong>
+                    <span>${trip.routeId.replace(/_/g, ' ')}</span>
+                    <small>${stopCount} stops in this service record</small>
+                  </div>
+                `;
+              }).join('')
+            : `<div class="empty">This route has no recorded departures at the selected station in the current pilot bundle.</div>`;
+        }
       }
 
       if (!state.selectedRouteId) {
