@@ -26,10 +26,10 @@
 - 已把 `v2` 网页端的右侧 planning 交互切换为和 `v1` 同一条主流程：统一的 `Planning Actions` + `Train Outlook`，支持 `选车 -> 选目标站`，并让地图点击与右侧动作区共用同一套逻辑。
 - 已继续收 `v2` 网页地图观感：缩小默认站名字号，并在选中一趟车后把后续停站直接高亮在地图上，方便不看右侧也能判断路线。
 - 已把 `v3` 的线路联动思路合并进 `v2` 网页端：新增 `ROUTE FOCUS` 面板、线路卡片、地图线条点击高亮、选中线路停靠站高亮，以及路线级别的标签增强。
-- 已完成 `v3` 第一版 GIS Shinkansen pilot：包括架构/Schema 文档、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json`、`visuals/v3_shinkansen_multiscale_map.svg`、`ui/v3_web_client.html`、`docs/v3.html`，并已具备 `Selected Route` 联动、线路卡片/图例点击高亮、选中线路停靠站高亮和更强的多尺度标签显示。
+- 已完成 `v3` 第一版 GIS Shinkansen pilot：包括架构/Schema、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json`、`visuals/v3_shinkansen_multiscale_map.svg`、`ui/v3_web_client.html`、`docs/v3.html`、`data/v3_gis/*.geojson`、`docs/data/v3_tiles/` tile-ready GeoJSON 金字塔，以及地图 + route timetable diagram 的同源联动。
 
 ## In Progress
-- 正在同时推进 `v2` 和 `v3`：`v2` 已开始吸收 `v3` 的线路联动思路，下一步是把路线级高亮继续推到时刻和结果层；`v3` 则继续往 map+timetable 一体化推进。
+- 正在同时推进 `v2` 和 `v3`：`v2` 已开始吸收 `v3` 的线路联动思路，下一步是把路线级高亮继续推到时刻和结果层；`v3` 则继续把 GIS source / tile-ready 数据真正接进前端渲染链。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
 
 ## Blockers
@@ -46,5 +46,5 @@
 
 ## Next
 1. 继续实测 `v2` 网页端新 action flow 和地图高亮，确认它已经能像 `v1` 一样稳定完成 `选车 -> 选站 -> 接续下一段`。
-2. 继续把 `Selected Route` 联动推到 `v2 / v3` 的 timetable 与结果视图，让地图和运营层真正连起来。
+2. 继续把 `v3` 的 GIS source 和 tile-ready 数据从“已生成”推进到“前端直接消费”，同时把 `Selected Route` 联动继续推到 `v2 / v3` 的 timetable 与结果视图。
 3. 在 `v2` 游戏壳稳定后，再继续逐线补 anomaly checklist 的余项。
