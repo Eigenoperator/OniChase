@@ -270,17 +270,25 @@
     }
 
     .station-label {
-      font-size: 10px;
+      font-size: 8px;
       fill: var(--muted);
       paint-order: stroke;
       stroke: rgba(255,255,255,0.85);
-      stroke-width: 4px;
+      stroke-width: 3px;
       stroke-linejoin: round;
     }
 
     .station-label.selected {
       fill: var(--ink);
       font-weight: 800;
+    }
+
+    .future-stop-ring {
+      fill: rgba(208, 79, 97, 0.12);
+      stroke: rgba(208, 79, 97, 0.82);
+      stroke-width: 2.5;
+      stroke-dasharray: 4 4;
+      pointer-events: none;
     }
 
     .sidebar {
@@ -872,6 +880,16 @@
       content.setAttribute("transform", mapTransformValue());
       svg.appendChild(content);
 
+      const activePreview = planCursorPreview(state.activeMode);
+      const pending = pendingDepartureContext(activePreview);
+      const highlightedFutureStops = new Set(
+        pending
+          ? pending.destinations.map((item) => item.stationId)
+          : activePreview.currentState.kind === "TRAIN"
+            ? availableDestinations(activePreview).map((item) => item.stationId)
+            : []
+      );
+
       for (const route of state.bundle.routes) {
         const points = route.station_ids
           .map((stationId) => state.mapCoords.get(stationId))
@@ -891,6 +909,18 @@
         line.setAttribute("class", "route-main");
         line.setAttribute("stroke", route.color);
         content.appendChild(line);
+      }
+
+      for (const stationId of highlightedFutureStops) {
+        const point = state.mapCoords.get(stationId);
+        if (!point) continue;
+        const ring = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        ring.setAttribute("cx", point.x);
+        ring.setAttribute("cy", point.y);
+        ring.setAttribute("r", Math.max(7, Math.min(11, 10 / Math.sqrt(state.mapView.scale))));
+        ring.setAttribute("class", "future-stop-ring");
+        ring.setAttribute("stroke-width", Math.max(1.2, 2.5 / Math.sqrt(state.mapView.scale)));
+        content.appendChild(ring);
       }
 
       let chainStation = state.players[state.activeMode].start_station_id;
@@ -968,8 +998,10 @@
           label.setAttribute("y", y - 12);
           label.setAttribute("class", `station-label${station.id === state.selectedStationId ? " selected" : ""}`);
           if (labelLevel === "major") {
-            label.setAttribute("font-size", "13");
+            label.setAttribute("font-size", "10.5");
             label.setAttribute("font-weight", "700");
+          } else {
+            label.setAttribute("font-size", "8");
           }
           label.textContent = station.name;
           content.appendChild(label);
