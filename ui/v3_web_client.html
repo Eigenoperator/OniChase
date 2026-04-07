@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OniChase V3 GIS Shinkansen</title>
+  <style>
+    :root {
+      --bg: #eef2f7;
+      --panel: rgba(250, 252, 255, 0.96);
+      --panel-strong: rgba(244, 248, 252, 0.98);
+      --line: #d5dde8;
+      --ink: #1f2a37;
+      --muted: #667487;
+      --accent: #1565c0;
+      --accent-soft: rgba(21, 101, 192, 0.12);
+      --corridor: #b7c3d8;
+      --station: #203247;
+      --shadow: 0 20px 44px rgba(21, 33, 52, 0.12);
+      --shadow-soft: 0 10px 24px rgba(21, 33, 52, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 14%, rgba(21, 101, 192, 0.16), transparent 24%),
+        radial-gradient(circle at 85% 16%, rgba(126, 87, 194, 0.12), transparent 22%),
+        linear-gradient(180deg, #f8fbff 0%, #edf2f8 100%);
+    }
+
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      padding: 18px 24px 16px;
+      border-bottom: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(252, 254, 255, 0.92);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 32px;
+      letter-spacing: 0.03em;
+    }
+
+    .brand p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+      max-width: 860px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .mode-toggle {
+      display: inline-flex;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.86);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      box-shadow: var(--shadow-soft);
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 800;
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow-soft);
+      color: var(--ink);
+      background: #eef4fb;
+    }
+
+    .mode-toggle button {
+      padding: 10px 16px;
+      border-radius: 999px;
+      box-shadow: none;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .mode-toggle button.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    button.secondary {
+      background: #edf2f8;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 20px;
+      padding: 20px 24px 24px;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .panel {
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      border-radius: 28px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .map-panel {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      background:
+        radial-gradient(circle at 16% 12%, rgba(21, 101, 192, 0.08), transparent 20%),
+        linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(241, 246, 251, 0.98));
+    }
+
+    .map-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: end;
+      padding: 18px 20px 10px;
+    }
+
+    .map-head h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .map-head p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .stats {
+      text-align: right;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .map-wrap {
+      padding: 0 18px 18px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 18% 16%, rgba(21, 101, 192, 0.06), transparent 18%),
+        linear-gradient(180deg, rgba(255,255,255,0.9), rgba(246, 249, 253, 0.96));
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+
+    svg.dragging { cursor: grabbing; }
+
+    .sidebar {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      min-height: 0;
+      gap: 0;
+    }
+
+    .sidebar section {
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(213, 221, 232, 0.92);
+    }
+
+    .sidebar section:last-child {
+      border-bottom: 0;
+    }
+
+    .section-label {
+      margin: 0 0 10px;
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      padding: 12px;
+      border-radius: 18px;
+      background: var(--panel-strong);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .metric .value {
+      display: block;
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .metric .label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .selected-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: var(--panel-strong);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      box-shadow: var(--shadow-soft);
+      display: grid;
+      gap: 8px;
+    }
+
+    .selected-card h3 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .selected-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .lists {
+      min-height: 0;
+      overflow: auto;
+      display: grid;
+      align-content: start;
+      gap: 14px;
+    }
+
+    .card-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-card {
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: var(--panel-strong);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      box-shadow: var(--shadow-soft);
+      display: grid;
+      gap: 6px;
+    }
+
+    .mini-card strong {
+      font-size: 15px;
+    }
+
+    .mini-card span,
+    .mini-card small {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-right: 6px;
+      border: 1px solid rgba(31, 42, 55, 0.15);
+      vertical-align: -1px;
+    }
+
+    .empty {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    @media (max-width: 1100px) {
+      body {
+        height: auto;
+        overflow: auto;
+      }
+      .app {
+        height: auto;
+      }
+      .shell {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      .panel {
+        min-height: 560px;
+      }
+      .sidebar {
+        min-height: 620px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>OniChase V3</h1>
+        <p>GIS-first nationwide Shinkansen pilot. This page renders the first <code>V3TransitBundle</code> as an interactive map with two representations: a low-zoom corridor view and a service-oriented view.</p>
+      </div>
+      <div class="toolbar">
+        <div class="mode-toggle">
+          <button id="corridor-btn" class="active">Corridor View</button>
+          <button id="service-btn">Service View</button>
+        </div>
+        <button id="fit-btn" class="secondary">Fit Map</button>
+      </div>
+    </header>
+
+    <section class="shell">
+      <section class="panel map-panel">
+        <div class="map-head">
+          <div>
+            <h2 id="map-title">Corridor View</h2>
+            <p id="map-subtitle">Lower-zoom structural map. Physical track centerlines stay clean while the station hierarchy drives label density.</p>
+          </div>
+          <div class="stats" id="map-stats"></div>
+        </div>
+        <div class="map-wrap">
+          <svg id="map" viewBox="0 0 1200 820" aria-label="V3 nationwide Shinkansen map"></svg>
+        </div>
+      </section>
+
+      <aside class="panel sidebar">
+        <section>
+          <div class="section-label">Bundle</div>
+          <div class="overview-grid" id="overview-grid"></div>
+        </section>
+
+        <section>
+          <div class="section-label">Selected Station</div>
+          <div id="selected-station" class="empty">Click a station to inspect its station group, connected lines, and service footprint.</div>
+        </section>
+
+        <section class="lists">
+          <div>
+            <div class="section-label">Visible Services</div>
+            <div id="visible-services" class="card-list"></div>
+          </div>
+          <div>
+            <div class="section-label">Selected Station Trips</div>
+            <div id="station-trips" class="card-list"></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-label">Legend</div>
+          <div class="legend" id="legend"></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const DATA_URL = window.location.pathname.includes('/ui/')
+      ? '../data/v3_shinkansen_bundle.json'
+      : './data/v3_shinkansen_bundle.json';
+
+    const SERVICE_COLORS = {};
+    const state = {
+      bundle: null,
+      selectedStationGroupId: null,
+      viewMode: 'corridor',
+      zoom: 1,
+      minZoom: 0.85,
+      maxZoom: 9,
+      panX: 0,
+      panY: 0,
+      projection: null,
+      labelEntries: [],
+      stationPoints: [],
+      dragging: false,
+      dragStartX: 0,
+      dragStartY: 0,
+      panStartX: 0,
+      panStartY: 0
+    };
+
+    const svg = document.getElementById('map');
+    const mapTitle = document.getElementById('map-title');
+    const mapSubtitle = document.getElementById('map-subtitle');
+    const mapStats = document.getElementById('map-stats');
+    const overviewGrid = document.getElementById('overview-grid');
+    const selectedStationEl = document.getElementById('selected-station');
+    const visibleServicesEl = document.getElementById('visible-services');
+    const stationTripsEl = document.getElementById('station-trips');
+    const legendEl = document.getElementById('legend');
+
+    document.getElementById('corridor-btn').addEventListener('click', () => setViewMode('corridor'));
+    document.getElementById('service-btn').addEventListener('click', () => setViewMode('service'));
+    document.getElementById('fit-btn').addEventListener('click', resetViewport);
+
+    svg.addEventListener('mousedown', (event) => {
+      state.dragging = true;
+      state.dragStartX = event.clientX;
+      state.dragStartY = event.clientY;
+      state.panStartX = state.panX;
+      state.panStartY = state.panY;
+      svg.classList.add('dragging');
+    });
+
+    window.addEventListener('mouseup', () => {
+      state.dragging = false;
+      svg.classList.remove('dragging');
+    });
+
+    window.addEventListener('mousemove', (event) => {
+      if (!state.dragging) return;
+      state.panX = state.panStartX + (event.clientX - state.dragStartX);
+      state.panY = state.panStartY + (event.clientY - state.dragStartY);
+      applyViewport();
+    });
+
+    svg.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      const rect = svg.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+      const prevZoom = state.zoom;
+      const factor = event.deltaY < 0 ? 1.12 : 0.9;
+      state.zoom = clamp(state.zoom * factor, state.minZoom, state.maxZoom);
+      const scaleChange = state.zoom / prevZoom;
+      state.panX = mouseX - (mouseX - state.panX) * scaleChange;
+      state.panY = mouseY - (mouseY - state.panY) * scaleChange;
+      applyViewport();
+    }, { passive: false });
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function secToClock(sec) {
+      const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+      const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+      return `${h}:${m}`;
+    }
+
+    function niceName(id) {
+      return id.replace(/^SG_/, '').replace(/^PS_/, '').replace(/_/g, ' ');
+    }
+
+    function resolveLabelEntry(groupId) {
+      return state.labelEntries.find((entry) => entry.stationGroupId === groupId);
+    }
+
+    function shouldShowLabel(entry) {
+      if (!entry) return false;
+      if (state.selectedStationGroupId === entry.stationGroupId) return true;
+      const rank = entry.labelRank || 0;
+      if (state.zoom >= 5.5) return true;
+      if (state.zoom >= 3.4) return rank >= 85;
+      if (state.zoom >= 2.2) return rank >= 95;
+      return rank >= 99;
+    }
+
+    function makeProjection(bundle) {
+      const stations = bundle.physicalStations.filter((s) => Number.isFinite(s.lon) && Number.isFinite(s.lat));
+      const minLon = Math.min(...stations.map((s) => s.lon));
+      const maxLon = Math.max(...stations.map((s) => s.lon));
+      const minLat = Math.min(...stations.map((s) => s.lat));
+      const maxLat = Math.max(...stations.map((s) => s.lat));
+      const width = 1200;
+      const height = 820;
+      const padding = 70;
+      const usableWidth = width - padding * 2;
+      const usableHeight = height - padding * 2;
+      const lonSpan = Math.max(maxLon - minLon, 0.0001);
+      const latSpan = Math.max(maxLat - minLat, 0.0001);
+      const scale = Math.min(usableWidth / lonSpan, usableHeight / latSpan);
+
+      return {
+        width,
+        height,
+        minLon,
+        maxLon,
+        minLat,
+        maxLat,
+        padding,
+        scale,
+        project(lat, lon) {
+          const x = padding + (lon - minLon) * scale;
+          const y = height - padding - (lat - minLat) * scale;
+          return { x, y };
+        }
+      };
+    }
+
+    function drawPath(points, opts = {}) {
+      if (!points.length) return '';
+      const d = points.map((pt, index) => `${index === 0 ? 'M' : 'L'} ${pt.x.toFixed(2)} ${pt.y.toFixed(2)}`).join(' ');
+      const stroke = opts.stroke || '#000';
+      const width = opts.width ?? 2;
+      const opacity = opts.opacity ?? 1;
+      const dash = opts.dash || '';
+      return `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}" ${dash ? `stroke-dasharray="${dash}"` : ''}/>`;
+    }
+
+    function render() {
+      if (!state.bundle) return;
+      const bundle = state.bundle;
+      const projection = state.projection;
+      const selectedId = state.selectedStationGroupId;
+      const centerlineSvg = [];
+      const serviceSvg = [];
+      const stationSvg = [];
+      const labelSvg = [];
+
+      const stationMap = new Map(bundle.physicalStations.map((station) => [station.stationGroupId, station]));
+
+      bundle.trackCenterlines.forEach((line) => {
+        const points = line.polyline.map((point) => projection.project(point.lat, point.lon));
+        centerlineSvg.push(drawPath(points, {
+          stroke: state.viewMode === 'corridor' ? '#ffffff' : 'rgba(255,255,255,0.75)',
+          width: state.viewMode === 'corridor' ? 10 : 7,
+          opacity: 0.95
+        }));
+        centerlineSvg.push(drawPath(points, {
+          stroke: state.viewMode === 'corridor' ? '#c5d0df' : '#d8dee8',
+          width: state.viewMode === 'corridor' ? 5.2 : 3.4,
+          opacity: state.viewMode === 'corridor' ? 1 : 0.88
+        }));
+      });
+
+      if (state.viewMode === 'service') {
+        bundle.serviceGeometry.forEach((geometry) => {
+          const route = bundle.serviceRoutes.find((item) => item.id === geometry.routeId);
+          const color = route?.color || '#666';
+          const points = geometry.polyline.map((point) => projection.project(point.lat, point.lon));
+          const offset = (geometry.offsetRank || 0) * 0.8;
+          const offsetPoints = points.map((point, index) => {
+            const prev = points[Math.max(index - 1, 0)];
+            const next = points[Math.min(index + 1, points.length - 1)];
+            const dx = next.x - prev.x;
+            const dy = next.y - prev.y;
+            const len = Math.hypot(dx, dy) || 1;
+            const nx = -dy / len;
+            const ny = dx / len;
+            return { x: point.x + nx * offset, y: point.y + ny * offset };
+          });
+          serviceSvg.push(drawPath(offsetPoints, {
+            stroke: '#ffffff',
+            width: 8,
+            opacity: 0.92
+          }));
+          serviceSvg.push(drawPath(offsetPoints, {
+            stroke: color,
+            width: 4.8,
+            opacity: 0.96
+          }));
+        });
+      }
+
+      state.stationPoints = bundle.physicalStations.map((station) => {
+        const point = projection.project(station.lat, station.lon);
+        return { ...station, x: point.x, y: point.y };
+      });
+
+      const stationRadius = clamp(4.4 / Math.sqrt(state.zoom), 2.3, 5.2);
+
+      state.stationPoints.forEach((station) => {
+        const selected = station.stationGroupId === selectedId;
+        const stroke = selected ? '#f97316' : '#ffffff';
+        const fill = selected ? '#f97316' : '#203247';
+        const haloRadius = selected ? stationRadius + 4.2 : stationRadius;
+        if (selected) {
+          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(249,115,22,0.18)" />`);
+        }
+        stationSvg.push(`<circle data-station-group-id="${station.stationGroupId}" cx="${station.x}" cy="${station.y}" r="${stationRadius}" fill="${fill}" stroke="${stroke}" stroke-width="${selected ? 2.4 : 1.2}" style="cursor:pointer" />`);
+      });
+
+      state.labelEntries.forEach((entry) => {
+        if (!shouldShowLabel(entry)) return;
+        const point = projection.project(entry.labelPoint.lat, entry.labelPoint.lon);
+        const fontSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
+        const displayName = entry.displayNameEn || entry.displayNameJa || niceName(entry.stationGroupId);
+        labelSvg.push(
+          `<text x="${point.x + 8}" y="${point.y - 8}" font-size="${fontSize}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="4.2" paint-order="stroke" style="pointer-events:none">${displayName}</text>`
+        );
+      });
+
+      svg.innerHTML = `
+        <g id="viewport">
+          <rect x="0" y="0" width="${projection.width}" height="${projection.height}" fill="transparent" />
+          <g id="corridor-layer">${centerlineSvg.join('')}</g>
+          <g id="service-layer" opacity="${state.viewMode === 'service' ? 1 : 0.18}">${serviceSvg.join('')}</g>
+          <g id="station-layer">${stationSvg.join('')}</g>
+          <g id="label-layer">${labelSvg.join('')}</g>
+        </g>
+      `;
+
+      svg.querySelectorAll('[data-station-group-id]').forEach((node) => {
+        node.addEventListener('click', (event) => {
+          event.stopPropagation();
+          state.selectedStationGroupId = node.getAttribute('data-station-group-id');
+          renderSidebar();
+          render();
+          applyViewport();
+        });
+      });
+
+      renderSidebar();
+      applyViewport();
+    }
+
+    function applyViewport() {
+      const viewport = document.getElementById('viewport');
+      if (!viewport || !state.projection) return;
+      viewport.setAttribute('transform', `translate(${state.panX.toFixed(2)} ${state.panY.toFixed(2)}) scale(${state.zoom.toFixed(4)})`);
+    }
+
+    function resetViewport() {
+      state.zoom = 1;
+      state.panX = 0;
+      state.panY = 0;
+      applyViewport();
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      document.getElementById('corridor-btn').classList.toggle('active', mode === 'corridor');
+      document.getElementById('service-btn').classList.toggle('active', mode === 'service');
+      mapTitle.textContent = mode === 'corridor' ? 'Corridor View' : 'Service View';
+      mapSubtitle.textContent = mode === 'corridor'
+        ? 'Lower-zoom structural map. Physical track centerlines stay clean while the station hierarchy drives label density.'
+        : 'Service-oriented view. Real service families ride on top of the same Shinkansen bundle with distinct colors and offsets.';
+      render();
+    }
+
+    function renderSidebar() {
+      const bundle = state.bundle;
+      if (!bundle) return;
+
+      mapStats.innerHTML = `
+        <div>Stations: <strong>${bundle.physicalStations.length}</strong></div>
+        <div>Routes: <strong>${bundle.serviceRoutes.length}</strong></div>
+        <div>Trips: <strong>${bundle.tripInstances.length}</strong></div>
+      `;
+
+      overviewGrid.innerHTML = [
+        ['Physical Stations', bundle.physicalStations.length],
+        ['Track Centerlines', bundle.trackCenterlines.length],
+        ['Service Routes', bundle.serviceRoutes.length],
+        ['Trip Instances', bundle.tripInstances.length]
+      ].map(([label, value]) => `
+        <div class="metric">
+          <span class="value">${value}</span>
+          <span class="label">${label}</span>
+        </div>
+      `).join('');
+
+      visibleServicesEl.innerHTML = bundle.serviceRoutes.map((route) => `
+        <div class="mini-card">
+          <strong><span class="swatch" style="background:${route.color}"></span>${route.shortName}</strong>
+          <span>${route.longName}</span>
+          <small>${countTripsForRoute(route.id)} trips in the current pilot bundle</small>
+        </div>
+      `).join('');
+
+      legendEl.innerHTML = bundle.serviceRoutes.map((route) => `
+        <span><span class="swatch" style="background:${route.color}"></span>${route.shortName}</span>
+      `).join('');
+
+      if (!state.selectedStationGroupId) {
+        selectedStationEl.className = 'empty';
+        selectedStationEl.textContent = 'Click a station to inspect its station group, connected lines, and service footprint.';
+        stationTripsEl.innerHTML = '';
+        return;
+      }
+
+      const station = bundle.physicalStations.find((item) => item.stationGroupId === state.selectedStationGroupId);
+      const label = resolveLabelEntry(state.selectedStationGroupId);
+      const touchingTrackLines = bundle.trackCenterlines
+        .filter((line) => line.stationGroupIds.includes(state.selectedStationGroupId))
+        .map((line) => line.lineName);
+      const touchingRoutes = bundle.serviceRoutes
+        .filter((route) => bundle.tripInstances.some((trip) =>
+          trip.routeId === route.id &&
+          trip.stopTimes.some((stop) => stop.stationGroupId === state.selectedStationGroupId)
+        ))
+        .map((route) => route.shortName);
+
+      selectedStationEl.className = '';
+      selectedStationEl.innerHTML = `
+        <div class="selected-card">
+          <h3>${label?.displayNameEn || station.name}</h3>
+          <p>${label?.displayNameJa || ''} · ${station.id}</p>
+          <p>Lat/Lon: ${station.lat.toFixed(4)}, ${station.lon.toFixed(4)}</p>
+          <div class="tags">
+            ${touchingTrackLines.map((line) => `<span class="tag">${line}</span>`).join('')}
+            ${touchingRoutes.filter((item) => !touchingTrackLines.includes(item)).map((route) => `<span class="tag">${route}</span>`).join('')}
+          </div>
+        </div>
+      `;
+
+      const trips = bundle.tripInstances
+        .filter((trip) => trip.stopTimes.some((stop) => stop.stationGroupId === state.selectedStationGroupId))
+        .slice(0, 24);
+
+      stationTripsEl.innerHTML = trips.length
+        ? trips.map((trip) => {
+            const stop = trip.stopTimes.find((item) => item.stationGroupId === state.selectedStationGroupId);
+            return `
+              <div class="mini-card">
+                <strong>${trip.serviceName} ${trip.serviceNumber || ''}</strong>
+                <span>${trip.routeId.replace(/_/g, ' ')}</span>
+                <small>${stop ? secToClock(stop.departureTimeSec ?? stop.arrivalTimeSec) : 'time n/a'} · ${trip.stopTimes.length} stops in pilot record</small>
+              </div>
+            `;
+          }).join('')
+        : `<div class="empty">No trip instances touch this station in the current pilot bundle.</div>`;
+    }
+
+    function countTripsForRoute(routeId) {
+      return state.bundle.tripInstances.filter((trip) => trip.routeId === routeId).length;
+    }
+
+    async function init() {
+      const response = await fetch(DATA_URL);
+      const bundle = await response.json();
+      state.bundle = bundle;
+      state.labelEntries = bundle.labelRepresentations;
+      state.projection = makeProjection(bundle);
+      SERVICE_COLORS.clear?.();
+      bundle.serviceRoutes.forEach((route) => { SERVICE_COLORS[route.id] = route.color; });
+      render();
+      resetViewport();
+    }
+
+    init().catch((error) => {
+      console.error(error);
+      selectedStationEl.className = 'empty';
+      selectedStationEl.textContent = 'Failed to load v3 bundle.';
+    });
+  </script>
+</body>
+</html>

@@ -25,11 +25,11 @@
 - 已更新 `README.md`，把 GitHub Pages 首页、`v1` 页面、`v2` 页面三个公开地址都写清楚。
 - 已把 `v2` 网页端的右侧 planning 交互切换为和 `v1` 同一条主流程：统一的 `Planning Actions` + `Train Outlook`，支持 `选车 -> 选目标站`，并让地图点击与右侧动作区共用同一套逻辑。
 - 已继续收 `v2` 网页地图观感：缩小默认站名字号，并在选中一趟车后把后续停站直接高亮在地图上，方便不看右侧也能判断路线。
-- 已新增 `V3_GIS_ARCHITECTURE.md` 和 `V3_GIS_SCHEMA.md`，正式定义 `v3` 的物理网络层、运营服务层、游戏抽象层以及 OniChase 自己的 canonical transit bundle。
-- 已新增 `V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json` 和 `visuals/v3_shinkansen_multiscale_map.svg`，正式产出第一份 `v3` 全国新干线 pilot bundle 与双视图地图图稿。
+- 已新增 `V3_GIS_ARCHITECTURE.md`、`V3_GIS_SCHEMA.md`、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json` 和 `visuals/v3_shinkansen_multiscale_map.svg`，正式产出第一份 `v3` 全国新干线 pilot bundle 与双视图地图图稿。
+- 已新增 `ui/v3_web_client.html` 与 `docs/v3.html`，把 `v3` pilot bundle 推进成第一版可交互网页地图，并把首页与 `README.md` 一起更新为 `v1 / v2 / v3` 三入口结构。
 
 ## In Progress
-- 正在同时推进 `v2` 和 `v3`：`v2` 继续收本地端与网页端的一致性、多段规划和结果反馈，`v3` 已经进入 pilot bundle 阶段，下一步是把第一份 bundle 真正接进可交互地图。
+- 正在同时推进 `v2` 和 `v3`：`v2` 继续收本地端与网页端的一致性、多段规划和结果反馈，`v3` 已经进入第一版可交互网页地图阶段，下一步是继续加强交互和多尺度表达。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
 
 ## Blockers
@@ -46,5 +46,5 @@
 
 ## Next
 1. 继续实测 `v2` 网页端新 action flow 和地图高亮，确认它已经能像 `v1` 一样稳定完成 `选车 -> 选站 -> 接续下一段`。
-2. 让 `v3` 的第一份 `V3TransitBundle` 进入下一步：把 `corridor / service` 双视图从静态 SVG 推进到可交互地图。
+2. 继续收 `v3` 第一版网页地图：增加更强的缩放级别切换、服务高亮和站点/线路联动。
 3. 在 `v2` 游戏壳稳定后，再继续逐线补 anomaly checklist 的余项。
