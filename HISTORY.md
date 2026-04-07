@@ -206,3 +206,4 @@
 - Removed `v2-legacy` and `v3` from the public Pages surface again, leaving only `v1` and the new main `v2` as public entry points while the old files remain internal.
 - Extended the active `v2` match window to `18:00` and changed the live flow so every in-game hour automatically returns players to `PLANNING` for the next decision phase.
 - Fixed a real `v2` replanning bug: when the game returned to `PLANNING` after an hourly live segment, the plan cursor used to jump to the end of the whole existing route; it now correctly resumes from the current in-game position.
+- Tightened the `v2` same-minute station-crossing boundary: if one player alights into a station while the other boards a different train from that same station in the same minute, the engine no longer auto-captures them as `same_node`; ordinary `same_node` and `same_train` captures were rechecked after the fix.

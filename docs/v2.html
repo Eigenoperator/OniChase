@@ -1935,7 +1935,15 @@
       else if (event.type === 'BOARD_TRAIN') stateObj[event.player_id] = { kind: 'TRAIN', tripId: event.trip_id };
     }
 
-    function detectCaptureAfterEvent(event, runningState) {
+    function allowsSameNodeCapture(event, minuteEvents) {
+      const playerEvents = minuteEvents.filter((item) => item.player_id);
+      const involvedPlayers = new Set(playerEvents.map((item) => item.player_id));
+      if (involvedPlayers.size < 2) return true;
+      const nodeEnteringTypes = new Set(['START_AT_STATION', 'ALIGHT_TRAIN']);
+      return playerEvents.every((item) => nodeEnteringTypes.has(item.type));
+    }
+
+    function detectCaptureAfterEvent(event, runningState, minuteEvents) {
       if (!['SCENARIO_START', 'START_AT_STATION', 'BOARD_TRAIN', 'ALIGHT_TRAIN'].includes(event.type)) return null;
       const runnerState = runningState.runner;
       const hunterState = runningState.hunter;
@@ -1943,6 +1951,7 @@
         return { type: 'same_train', trip_id: runnerState.tripId };
       }
       if (runnerState.kind === 'NODE' && hunterState.kind === 'NODE' && runnerState.stationGroupId === hunterState.stationGroupId) {
+        if (!allowsSameNodeCapture(event, minuteEvents || [event])) return null;
         return { type: 'same_node', station_group_id: runnerState.stationGroupId };
       }
       return null;
@@ -1985,13 +1994,15 @@
       };
       const resolvedEvents = [];
       let resolvedCapture = null;
-      for (const event of events) {
+      for (let index = 0; index < events.length; index += 1) {
+        const event = events[index];
+        const minuteEvents = events.filter((item) => item.time_minute === event.time_minute);
         event.state_before = cloneState(runningState);
         applyEventToState(runningState, event);
         event.state_after = cloneState(runningState);
         event.state_snapshot = cloneState(runningState);
         resolvedEvents.push(event);
-        const capture = detectCaptureAfterEvent(event, runningState);
+        const capture = detectCaptureAfterEvent(event, runningState, minuteEvents);
         if (capture) {
           const captureEvent = formatEvent(event.time_minute, 'CAPTURE', null, {
             capture_type: capture.type,
