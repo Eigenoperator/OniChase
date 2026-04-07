@@ -15,7 +15,6 @@
 - 已修正全国合并逻辑，跨运营商同一趟真实列车现在会按真实服务名/号合并，不再把 `JR Central` 的东海道补丁短版和 `JR West / JR East` 的全程版重复算两趟；重新收敛后全国 weekday 数据稳定为 `1139` 趟。
 - 已开始 `v2` 游戏层：新增 `data/shinkansen_v2_bundle.json` 和第一版 `app/v2_local_client.py`，现在可以在全国新干线图上点站、浏览真实发车，并把列车段接进 plan board。
 - 已把 `v2` 本地端和网页端都推进到“选车后选目标站”：不再默认坐到终点站，而是先选一趟真实列车，再从后续停站中选一个目标站接进 plan board。
-- 已把 `v2` 本地端推进到接近 `v1` 的 phase 效果：补上 `runner / hunter` 模式、`PLANNING / LIVE / ENDED`、`Start Game`、live 地图位置、抓捕结束反馈、模拟结果和 replay 事件列表。
 - 已把 `v2` 网页端推进到同一条主玩法流：补上 `runner / hunter` 模式、phase 时钟、`Start Game`、live 地图位置和基于 plan steps 的全国新干线规划。
 - 已继续把 `v2` 网页端往本地端收齐：补上 `Run Simulation`、结果摘要、replay 事件列表、事件详情，以及地图随选中事件跳到对应状态。
 - 已把 `v2` 网页端地图改成可缩放/拖拽，并按缩放级别动态显示站名；同时页面改成固定视口布局，主要模块内部可独立滚动，减少整页空白和长页面滚动。
