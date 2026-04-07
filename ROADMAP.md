@@ -66,51 +66,49 @@ Not the goal of V2:
 - huge same-station ambiguity
 - full metropolitan schedule density
 
-### V3: Tokyo Full Map
+### V3: GIS Shinkansen
 
-`V3` is the large-scale urban version.
+`V3` is the GIS-first upgrade of the nationwide Shinkansen version.
 
 Scope:
 
-- Tokyo network
-- complicated lines
-- complicated transfers
-- complicated timetable interactions
-- the highest-density information game in the roadmap
+- whole Shinkansen map
+- real physical geometry
+- real service geometry
+- multi-scale map rendering
+- stronger map / timetable linkage
+- a more modern transit-map presentation layer than `v2`
 
 Purpose:
 
-- realize the full original vision of the project
-- combine the rules validated in `V1` with the multi-line planning lessons from `V2`
-- support a much richer pursuit-and-evasion experience with real urban rail complexity
+- keep the same nationwide Shinkansen gameplay scope as `v2`
+- upgrade the map and data stack from a game-oriented board to a GIS-oriented transit model
+- prove the long-term architecture before moving to a denser urban system later
 
 Risks:
 
-- UI clarity becomes much harder
-- path planning becomes much heavier
-- data modeling for stations, interchanges, and geometry becomes much more important
+- GIS and timetable integration become much more demanding
+- map readability becomes harder as geometry becomes more real
+- station grouping and multi-scale rendering become more important
 
 ## Current Priority
 
-The project is currently in `V1`.
+The project is currently transitioning from `V2` playability work into the first `V3` architecture track.
 
 That means current work should primarily optimize for:
 
-- Yamanote gameplay quality
-- hunter / runner usability
-- information presentation
-- planning flow
-- local and online playtest stability
+- `v2` playable stability
+- `v2` client flow quality
+- `v3` GIS architecture correctness
+- reusable geometry and service contracts
+- long-term map/timetable linkage
 
 ## Expansion Rule
 
-We should not move to `V2` or `V3` just because a larger map sounds exciting.
+We should not change version scope casually once a version is already carrying real data and clients.
 
-We should move only when `V1` has answered these questions well enough:
+For the current roadmap:
 
-1. Is the core chase loop fun?
-2. Is the current plan UX understandable?
-3. Is hunter information readable but not overpowered?
-4. Can we explain the game clearly to a new player?
-
-Only after that should the project scale outward.
+1. `V2` proves the nationwide Shinkansen game loop with real trains.
+2. `V3` upgrades the same network into a GIS-first architecture.
+3. A later city-scale version can build on that architecture instead of starting from scratch.

@@ -125,7 +125,7 @@ type Pathway = {
 };
 ```
 
-This is where future Tokyo complexity can live without polluting the rule layer.
+This is where future high-detail interchange complexity can live without polluting the rule layer.
 
 ## 5. Service Route
 
@@ -304,4 +304,4 @@ Minimum useful subset:
 
 `v3` should not begin from a client mock alone.
 
-It should begin by producing the first small `V3TransitBundle` for one Tokyo pilot area.
+It should begin by producing the first small `V3TransitBundle` for one Shinkansen pilot slice.

@@ -1,7 +1,7 @@
 # STATUS
 
 ## Current Focus
-把 `v1` 山手线试玩底座保持稳定，继续收 `v2` 全国新干线可玩壳，并正式启动 `v3` 东京 GIS 底座架构设计。
+把 `v1` 山手线试玩底座保持稳定，继续收 `v2` 全国新干线可玩壳，并正式启动 `v3` 新干线 GIS 底座架构设计。
 
 ## Done
 - 已把 GitHub Pages 主页拆成版本入口页：`docs/index.html` 现在单独列出 `v1` 山手线与 `v2` 全国新干线两个可玩入口。
@@ -29,7 +29,7 @@
 - 已新增 `V3_GIS_ARCHITECTURE.md` 和 `V3_GIS_SCHEMA.md`，正式定义 `v3` 的物理网络层、运营服务层、游戏抽象层以及 OniChase 自己的 canonical transit bundle。
 
 ## In Progress
-- 正在同时推进 `v2` 和 `v3`：`v2` 继续收本地端与网页端的一致性、 多段规划和结果反馈，`v3` 先锁 GIS 架构与中间层 schema，再决定第一个东京 pilot 区域。
+- 正在同时推进 `v2` 和 `v3`：`v2` 继续收本地端与网页端的一致性、多段规划和结果反馈，`v3` 先锁 GIS 架构与中间层 schema，再决定第一个新干线 pilot slice。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
 
 ## Blockers
@@ -39,12 +39,12 @@
 ## Decisions
 - [2026-03-30] 主测试主线使用“真实山手线 + 真实站点 + 真实时刻表”。
 - [2026-04-03] 不再为每个小改动都 commit / push；只在显著变化时同步，但有实质工作的一天仍需至少同步一次。
-- [2026-04-03] 产品路线固定为 `v1 山手线`、`v2 新干线全图`、`v3 东京全图`。
+- [2026-04-03] 产品路线现已收敛为 `v1 山手线`、`v2 新干线全图可玩版`、`v3 新干线 GIS 升级版`。
 - [2026-04-04] `v2` 使用全图所有真实新干线列车，并保留真实列车名，例如 `Nozomi 1`、`Kagayaki 503`。
 - [2026-04-05] `JR Kyushu` 双栏列车详情页必须按目标服务列解析，不能把 `Relay Kamome` 误当作 `Nishi-Kyushu Kamome`。
 - [2026-04-05] 全国合并默认优先按真实 `service_name + service_number (+ direction)` 识别同一趟列车，而不是只按各运营商自带的 `train_number`。
 
 ## Next
 1. 继续实测 `v2` 网页端新 action flow 和地图高亮，确认它已经能像 `v1` 一样稳定完成 `选车 -> 选站 -> 接续下一段`。
-2. 为 `v3` 选定第一个东京 GIS pilot 区域，并开始定义最小 `V3TransitBundle`。
+2. 为 `v3` 选定第一个新干线 GIS pilot slice，并开始定义最小 `V3TransitBundle`。
 3. 在 `v2` 游戏壳稳定后，再继续逐线补 anomaly checklist 的余项。

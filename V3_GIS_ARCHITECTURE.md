@@ -9,7 +9,7 @@ It is the point where OniChase starts treating rail data as a real multi-scale t
 
 The goal is to support:
 
-- real Tokyo rail geometry
+- real Shinkansen physical geometry
 - real service patterns and timetables
 - multi-scale map rendering
 - station-group and interchange modeling
@@ -30,7 +30,7 @@ These two layers must stay separate, but they must be joinable through stable ID
 
 ### 1. Physical Network Layer
 
-This layer describes what exists in the city physically.
+This layer describes what exists physically on the rail network.
 
 Examples:
 
@@ -160,13 +160,13 @@ This stack is recommended because it supports:
 
 `v1` and `v2` can tolerate much more schematic rendering.
 
-`v3` cannot, because Tokyo introduces:
+`v3` cannot stay schematic-first, because nationwide Shinkansen still introduces:
 
-- many shared corridors
-- many same-name or near-name stations
-- very dense interchange complexes
-- route branches that overlap visually
-- service patterns that diverge on one physical path
+- long-distance branch structure
+- shared or near-shared corridors
+- geographically meaningful line divergence
+- multiple services over one physical path
+- a need for stronger map/timetable coupling
 
 A manually edited single SVG stops scaling at this point.
 
@@ -246,9 +246,9 @@ This is essential for:
 
 ## Proposed Development Sequence
 
-### Phase 1: Tokyo GIS Pilot
+### Phase 1: Shinkansen GIS Pilot
 
-Pick one smaller Tokyo area and prove:
+Pick one first Shinkansen bundle slice and prove:
 
 - physical geometry load
 - GTFS service load
@@ -286,7 +286,7 @@ Connect:
 Starting now:
 
 - `v1` remains the gameplay validation base
-- `v2` remains the nationwide real-train bridge version
-- `v3` starts its own architecture track using GIS-first assumptions
+- `v2` remains the first playable nationwide real-train version
+- `v3` upgrades the same Shinkansen map into a GIS-first architecture track
 
 This means `v3` work can begin before `v2` is fully finished, but it should begin at the architecture and data-model level first.
