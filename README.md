@@ -76,9 +76,21 @@ Local testing and setup:
 - architecture: [ONLINE_ARCHITECTURE.md](/home/xincheng/toy/Chase/ONLINE_ARCHITECTURE.md)
 - protocol: [ONLINE_PROTOCOL.md](/home/xincheng/toy/Chase/ONLINE_PROTOCOL.md)
 - room server: [scripts/engine/v2_online_room_server.py](/home/xincheng/toy/Chase/scripts/engine/v2_online_room_server.py)
+- web client: [ui/v2_web_client.html](/home/xincheng/toy/Chase/ui/v2_web_client.html)
 
 Quick start:
 
 ```bash
 ./START_ONICHASE_V2_SERVER.sh
 ```
+
+Then open:
+
+- local/public `v2` page: `https://eigenoperator.github.io/OniChase/v2.html`
+
+Current multiplayer flow:
+
+- one player opens `v2`, chooses `Runner`, and clicks `Create Room`
+- the second player opens `v2`, chooses `Hunter`, enters the room code, and clicks `Join Room`
+- both players build plans, click `Ready`, then either side can click `Start Game`
+- the room server is authoritative for phase changes, live time progression, hourly replanning, and capture

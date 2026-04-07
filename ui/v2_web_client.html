@@ -77,6 +77,39 @@
       justify-content: flex-end;
     }
 
+    .room-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 18px;
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .room-input {
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(255, 255, 255, 0.96);
+      color: var(--ink);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font: inherit;
+      min-width: 110px;
+    }
+
+    .room-input.url {
+      min-width: 180px;
+    }
+
+    .room-status {
+      min-width: 180px;
+      font-size: 12px;
+      line-height: 1.4;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
     .mode-toggle {
       display: inline-flex;
       padding: 4px;
@@ -571,6 +604,15 @@
           <button id="hunterModeButton">Hunter</button>
         </div>
         <div class="pill" id="phaseClock">PLANNING 60s<br/>Game starts 06:00</div>
+        <div class="room-controls">
+          <input id="serverUrlInput" class="room-input url" value="http://127.0.0.1:8765" aria-label="Room server URL" />
+          <input id="roomIdInput" class="room-input" placeholder="ROOM ID" aria-label="Room ID" />
+          <button id="createRoomButton" class="secondary">Create Room</button>
+          <button id="joinRoomButton" class="secondary">Join Room</button>
+          <button id="submitPlanButton" class="secondary">Submit Plan</button>
+          <button id="readyButton" class="secondary">Ready</button>
+          <div id="roomStatus" class="room-status">Offline local mode</div>
+        </div>
         <button id="loadPresetButton" class="secondary">Load Test Preset</button>
         <button id="startGameButton" class="primary">Start Game</button>
         <button id="pauseGameButton" class="secondary">Pause/Resume</button>
@@ -727,7 +769,16 @@
       dragStartX: 0,
       dragStartY: 0,
       panStartX: 0,
-      panStartY: 0
+      panStartY: 0,
+      online: {
+        serverUrl: 'http://127.0.0.1:8765',
+        roomId: '',
+        seat: null,
+        token: '',
+        pollingHandle: null,
+        lastRoom: null,
+        presences: { runner: null, hunter: null },
+      }
     };
 
     const svg = document.getElementById('map');
@@ -753,17 +804,28 @@
     const resultDetailEl = document.getElementById('result-detail');
     const legendEl = document.getElementById('legend');
     const phaseClockEl = document.getElementById('phaseClock');
+    const serverUrlInput = document.getElementById('serverUrlInput');
+    const roomIdInput = document.getElementById('roomIdInput');
+    const roomStatusEl = document.getElementById('roomStatus');
 
     document.getElementById('corridor-btn').addEventListener('click', () => setViewMode('corridor'));
     document.getElementById('service-btn').addEventListener('click', () => setViewMode('service'));
     document.getElementById('fit-btn').addEventListener('click', resetViewport);
     document.getElementById('runnerModeButton').addEventListener('click', () => setActiveMode('runner'));
     document.getElementById('hunterModeButton').addEventListener('click', () => setActiveMode('hunter'));
+    document.getElementById('createRoomButton').addEventListener('click', createRoomAndJoinSeat);
+    document.getElementById('joinRoomButton').addEventListener('click', joinExistingRoom);
+    document.getElementById('submitPlanButton').addEventListener('click', submitCurrentPlanToRoom);
+    document.getElementById('readyButton').addEventListener('click', markSeatReady);
     document.getElementById('loadPresetButton').addEventListener('click', applyTestPreset);
     document.getElementById('startGameButton').addEventListener('click', startGameNow);
     document.getElementById('pauseGameButton').addEventListener('click', toggleClock);
     document.getElementById('runSimulationButton').addEventListener('click', runSimulation);
     document.getElementById('resetPlanButton').addEventListener('click', resetPlan);
+
+    serverUrlInput.addEventListener('change', () => {
+      state.online.serverUrl = serverUrlInput.value.trim() || 'http://127.0.0.1:8765';
+    });
 
     svg.addEventListener('mousedown', (event) => {
       state.dragging = true;
@@ -802,6 +864,186 @@
 
     function clamp(value, min, max) {
       return Math.max(min, Math.min(max, value));
+    }
+
+    function onlineActive() {
+      return Boolean(state.online.roomId && state.online.seat && state.online.token);
+    }
+
+    function roomTokenStorageKey(roomId, seat) {
+      return `onichase-v2-room-token:${roomId}:${seat}`;
+    }
+
+    function saveOnlineToken(roomId, seat, token) {
+      if (!roomId || !seat || !token) return;
+      window.localStorage.setItem(roomTokenStorageKey(roomId, seat), token);
+    }
+
+    function loadOnlineToken(roomId, seat) {
+      if (!roomId || !seat) return '';
+      return window.localStorage.getItem(roomTokenStorageKey(roomId, seat)) || '';
+    }
+
+    function stopOnlinePolling() {
+      if (state.online.pollingHandle) window.clearTimeout(state.online.pollingHandle);
+      state.online.pollingHandle = null;
+    }
+
+    function scheduleOnlinePoll() {
+      if (!onlineActive()) return;
+      stopOnlinePolling();
+      state.online.pollingHandle = window.setTimeout(() => {
+        syncRoomState().catch((error) => {
+          roomStatusEl.textContent = `Room sync failed: ${String(error)}`;
+        });
+      }, 1200);
+    }
+
+    async function apiJson(url, options = {}) {
+      const response = await fetch(url, {
+        headers: { 'Content-Type': 'application/json' },
+        ...options,
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+      return data;
+    }
+
+    function presenceToPreview(playerId, presence) {
+      if (!presence || presence.kind === 'HIDDEN') return null;
+      let mapPosition = null;
+      let mapStationGroupId = null;
+      if (presence.map_position?.kind === 'STATION') {
+        mapStationGroupId = presence.map_position.station_group_id;
+        mapPosition = stationPointByGroupId(mapStationGroupId);
+      } else if (presence.map_position?.kind === 'SEGMENT') {
+        const from = stationPointByGroupId(presence.map_position.from_station_group_id);
+        const to = stationPointByGroupId(presence.map_position.to_station_group_id);
+        if (from && to) {
+          const progress = presence.map_position.progress ?? 0;
+          mapPosition = {
+            x: from.x + (to.x - from.x) * progress,
+            y: from.y + (to.y - from.y) * progress,
+          };
+          mapStationGroupId = presence.map_position.to_station_group_id;
+        }
+      }
+      return {
+        currentMinute: hhmmToMinutes(presence.time_hhmm),
+        currentTime: presence.time_hhmm,
+        currentState: presence.kind === 'NODE'
+          ? { kind: 'NODE', stationGroupId: presence.station_group_id }
+          : { kind: 'TRAIN', tripId: presence.trip_id || null },
+        currentTrip: presence.trip_id ? state.bundle.tripInstances.find((item) => item.id === presence.trip_id) || null : null,
+        currentBoardStop: null,
+        resolvedSteps: [],
+        mapPosition,
+        mapStationGroupId,
+        displayLabel: presence.station_label || presence.service_label || null,
+        visibility: presence.visibility || 'full',
+      };
+    }
+
+    function syncStateFromRoom(room) {
+      state.online.lastRoom = room;
+      state.online.roomId = room.room_id;
+      roomIdInput.value = room.room_id;
+      state.phase = room.phase;
+      state.startTime = room.start_time_hhmm;
+      state.endTime = room.end_time_hhmm;
+      state.currentGameMinute = room.current_game_minute;
+      state.nextPlanningMinute = room.next_planning_minute;
+      state.clockRunning = false;
+      if (state.tickHandle) {
+        window.clearTimeout(state.tickHandle);
+        state.tickHandle = null;
+      }
+      state.liveCapture = room.capture || null;
+      if (room.self) {
+        state.activeMode = room.self.seat;
+        state.online.seat = room.self.seat;
+        if (room.self.session_token && room.self.session_token !== state.online.token) {
+          state.online.token = room.self.session_token;
+          saveOnlineToken(room.room_id, room.self.seat, room.self.session_token);
+        }
+        state.players[room.self.seat] = {
+          start_station_id: room.self.start_station_id,
+          input_mode: 'plan',
+          steps: room.self.steps || [],
+        };
+        state.online.presences[room.self.seat] = room.self.presence || null;
+      }
+      if (room.opponent) {
+        const opponentSeat = room.opponent.seat;
+        state.players[opponentSeat] = {
+          start_station_id: state.players[opponentSeat]?.start_station_id || null,
+          input_mode: 'actions',
+          steps: [],
+        };
+        state.online.presences[opponentSeat] = room.opponent.presence || null;
+      }
+      const selfReady = room.self?.ready ? 'ready' : 'not ready';
+      roomStatusEl.textContent = `Room ${room.room_id} · ${state.online.seat || 'viewer'} · ${room.phase} · ${selfReady}`;
+      if (!state.selectedStationGroupId && room.self?.start_station_id) state.selectedStationGroupId = room.self.start_station_id;
+      render();
+      scheduleOnlinePoll();
+    }
+
+    async function syncRoomState() {
+      if (!onlineActive()) return;
+      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/state?seat=${state.online.seat}&token=${encodeURIComponent(state.online.token)}`);
+      syncStateFromRoom(data.room);
+    }
+
+    async function createRoomAndJoinSeat() {
+      state.online.serverUrl = serverUrlInput.value.trim() || 'http://127.0.0.1:8765';
+      const created = await apiJson(`${state.online.serverUrl}/api/rooms`, {
+        method: 'POST',
+        body: JSON.stringify({ start_time_hhmm: state.startTime, end_time_hhmm: state.endTime }),
+      });
+      state.online.roomId = created.room.room_id;
+      roomIdInput.value = created.room.room_id;
+      await joinExistingRoom();
+    }
+
+    async function joinExistingRoom() {
+      state.online.serverUrl = serverUrlInput.value.trim() || 'http://127.0.0.1:8765';
+      state.online.roomId = roomIdInput.value.trim().toUpperCase();
+      if (!state.online.roomId) return;
+      state.online.token = loadOnlineToken(state.online.roomId, state.activeMode);
+      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/join`, {
+        method: 'POST',
+        body: JSON.stringify({ seat: state.activeMode, display_name: state.activeMode.toUpperCase(), token: state.online.token || null }),
+      });
+      if (data.token) {
+        state.online.token = data.token;
+        saveOnlineToken(state.online.roomId, state.activeMode, data.token);
+      }
+      syncStateFromRoom(data.room);
+    }
+
+    async function submitCurrentPlanToRoom() {
+      if (!onlineActive()) return;
+      const player = state.players[state.online.seat];
+      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/plan`, {
+        method: 'POST',
+        body: JSON.stringify({
+          seat: state.online.seat,
+          token: state.online.token,
+          start_station_id: player.start_station_id,
+          steps: player.steps,
+        }),
+      });
+      syncStateFromRoom(data.room);
+    }
+
+    async function markSeatReady() {
+      if (!onlineActive()) return;
+      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/ready`, {
+        method: 'POST',
+        body: JSON.stringify({ seat: state.online.seat, token: state.online.token, ready: true }),
+      });
+      syncStateFromRoom(data.room);
     }
 
     function secToClock(sec) {
@@ -999,6 +1241,7 @@
     }
 
     function invalidateSimulation() {
+      if (onlineActive()) return;
       state.latestResult = null;
       state.selectedResultEventIndex = 0;
       state.liveCapture = null;
@@ -1200,6 +1443,10 @@
     }
 
     function currentMapPreview(playerId) {
+      if (onlineActive() && state.online.presences[playerId]) {
+        const preview = presenceToPreview(playerId, state.online.presences[playerId]);
+        if (preview) return preview;
+      }
       const event = currentReplayEvent();
       if (event?.state_after?.[playerId]) return replayPreviewFromState(playerId, event.state_after[playerId], event);
       return previewPlayer(playerId, visibleGameMinute());
@@ -1207,12 +1454,19 @@
 
     function formatState(preview) {
       if (!preview) return 'unknown';
+      if (preview.visibility === 'hidden') return 'hidden during LIVE';
+      if (preview.displayLabel && preview.currentState.kind === 'NODE') return `at ${preview.displayLabel} ${preview.currentTime}`;
+      if (preview.displayLabel && preview.currentState.kind === 'TRAIN') return `on ${preview.displayLabel} ${preview.currentTime}`;
       return preview.currentState.kind === 'NODE'
         ? `at ${stationGroupLabel(preview.currentState.stationGroupId)} ${preview.currentTime}`
         : `on ${formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: preview.currentState.tripId })} ${preview.currentTime}`;
     }
 
     function shouldShowPlayer(playerId) {
+      if (onlineActive()) {
+        const presence = state.online.presences[playerId];
+        return Boolean(presence && presence.kind !== 'HIDDEN');
+      }
       if (currentReplayEvent()) return true;
       if (state.phase === 'PLANNING') return true;
       return playerId === state.activeMode;
@@ -1651,6 +1905,7 @@
     }
 
     function setActiveMode(mode) {
+      if (onlineActive() && state.online.seat && mode !== state.online.seat) return;
       state.activeMode = mode;
       state.selectedStationGroupId = state.players[mode].start_station_id;
       state.hoveredTripId = null;
@@ -1684,11 +1939,13 @@
       state.clockRunning = true;
       state.pendingTripIds = { runner: null, hunter: null };
       invalidateSimulation();
-      scheduleTick();
+      if (!onlineActive()) scheduleTick();
+      else submitCurrentPlanToRoom().catch(() => {});
       render();
     }
 
     function scheduleTick() {
+      if (onlineActive()) return;
       if (state.tickHandle) window.clearTimeout(state.tickHandle);
       if (!state.clockRunning) return;
       state.tickHandle = window.setTimeout(onTick, 1000);
@@ -1729,6 +1986,15 @@
     }
 
     function startGameNow() {
+      if (onlineActive()) {
+        apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/start`, {
+          method: 'POST',
+          body: JSON.stringify({ seat: state.online.seat, token: state.online.token }),
+        }).then((data) => syncStateFromRoom(data.room)).catch((error) => {
+          roomStatusEl.textContent = `Start failed: ${String(error)}`;
+        });
+        return;
+      }
       if (state.phase !== 'PLANNING') return;
       state.phase = 'LIVE';
       state.clockRunning = true;
@@ -1739,6 +2005,7 @@
     }
 
     function toggleClock() {
+      if (onlineActive()) return;
       state.clockRunning = !state.clockRunning;
       if (state.clockRunning) scheduleTick();
       else if (state.tickHandle) {
@@ -1765,6 +2032,7 @@
       clearPendingTrip();
       invalidateSimulation();
       render();
+      submitCurrentPlanToRoom().catch(() => {});
     }
 
     function addWaitStep() {
@@ -1775,6 +2043,7 @@
       clearPendingTrip();
       invalidateSimulation();
       render();
+      submitCurrentPlanToRoom().catch(() => {});
     }
 
     function undoLastStep() {
@@ -1784,6 +2053,7 @@
       clearPendingTrip();
       invalidateSimulation();
       render();
+      submitCurrentPlanToRoom().catch(() => {});
     }
 
     function addBoardAndRide(tripId, stationGroupId) {
@@ -1794,6 +2064,7 @@
       clearPendingTrip();
       invalidateSimulation();
       render();
+      submitCurrentPlanToRoom().catch(() => {});
     }
 
     function addRideToStation(stationGroupId) {
@@ -1803,6 +2074,7 @@
       clearPendingTrip();
       invalidateSimulation();
       render();
+      submitCurrentPlanToRoom().catch(() => {});
     }
 
     function detectLiveCapture() {
@@ -2255,7 +2527,9 @@
       const hunterPreview = currentMapPreview('hunter');
 
       phaseClockEl.innerHTML = state.phase === 'PLANNING'
-        ? `PLANNING ${String(state.planningSecondsRemaining).padStart(2, '0')}s<br/>Game starts ${state.startTime}`
+        ? (onlineActive()
+            ? `PLANNING ${minutesToHhmm(state.currentGameMinute)}<br/>Room ${state.online.roomId || 'local'}`
+            : `PLANNING ${String(state.planningSecondsRemaining).padStart(2, '0')}s<br/>Game starts ${state.startTime}`)
         : state.phase === 'LIVE'
           ? `LIVE ${minutesToHhmm(state.currentGameMinute)}<br/>Window ${state.startTime} -> ${state.endTime}`
           : `ENDED ${minutesToHhmm(state.currentGameMinute)}<br/>Window ${state.startTime} -> ${state.endTime}`;
@@ -2263,6 +2537,8 @@
       phaseClockEl.style.color = 'white';
       document.getElementById('runnerModeButton').className = state.activeMode === 'runner' ? 'active runner' : '';
       document.getElementById('hunterModeButton').className = state.activeMode === 'hunter' ? 'active hunter' : '';
+      document.getElementById('pauseGameButton').disabled = onlineActive();
+      document.getElementById('runSimulationButton').disabled = onlineActive();
 
       mapStats.innerHTML = `
         <div>Stations: <strong>${bundle.physicalStations.length}</strong></div>
@@ -2419,9 +2695,20 @@
       }
 
       if (!state.latestResult) {
-        resultInfoEl.textContent = state.liveCapture
+      resultInfoEl.textContent = state.liveCapture
           ? `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.`
           : 'No result yet.';
+      }
+
+      if (onlineActive() && !state.latestResult) {
+        if (state.liveCapture?.type === 'same_node') {
+          resultInfoEl.textContent = `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_node\nStation: ${stationGroupLabel(state.liveCapture.station_group_id)}`;
+        } else if (state.liveCapture?.type === 'same_train') {
+          const trip = state.bundle.tripInstances.find((item) => item.id === state.liveCapture.trip_id);
+          resultInfoEl.textContent = `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_train\nTrip: ${formatTripLabel(trip || { serviceName: state.liveCapture.trip_id, serviceNumber: '' })}`;
+        } else if (onlineActive()) {
+          resultInfoEl.textContent = `ONLINE ROOM\n\nRoom: ${state.online.roomId || 'not joined'}\nPhase: ${state.phase}\nTime: ${minutesToHhmm(state.currentGameMinute)}`;
+        }
       }
     }
 
@@ -2461,6 +2748,7 @@
         runner: { start_station_id: 'SG_TOKYO', input_mode: 'plan', steps: [] },
         hunter: { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: '18:00' }] },
       };
+      serverUrlInput.value = state.online.serverUrl;
       state.selectedStationGroupId = state.players.runner.start_station_id;
       state.currentGameMinute = hhmmToMinutes(state.startTime);
       state.projection = makeProjection(bundle);
