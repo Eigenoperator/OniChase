@@ -194,3 +194,12 @@
 - Refined the `v2` web board readability after the planning-flow switch: reduced station-label size and added direct map highlighting for every downstream stop of the currently selected train, so route choice is legible without relying only on the sidebar.
 - Formally started the `v3` track by adding `V3_GIS_ARCHITECTURE.md` and `V3_GIS_SCHEMA.md`, defining OniChase's GIS-first Tokyo direction: physical network layer, service operation layer, station-group abstraction, multi-scale presentation, and the first canonical `V3TransitBundle` model.
 - Realigned `v3` immediately after that first draft: `v3` is no longer the first Tokyo full-map version, but the GIS-first upgrade of the nationwide Shinkansen version. Added `V3_SHINKANSEN_SCOPE.md` and updated the roadmap and GIS docs so the architecture track now cleanly targets the same Shinkansen network as `v2`.
+
+## 2026-04-07
+
+- Backfilled `diary/DIARY-2026-04-06.md` and created `memory/MEMORY-2026-04-07.md` for the new day.
+- Reduced web map label blow-up on both `v2` and `v3` by counter-scaling station text and making dense label reveal thresholds more conservative at high zoom.
+- Promoted the GIS-first nationwide Shinkansen gameplay page from `v3` into the main `v2` role.
+- Archived the previous nationwide Shinkansen page as `v2-legacy` at both source and published-page level.
+- Changed `docs/v3.html` into a redirect page that now points to the new primary `v2.html`.
+- Updated the landing page and `README.md` so the public web structure now clearly exposes `v1`, the new main `v2`, and the archived `v2-legacy`.

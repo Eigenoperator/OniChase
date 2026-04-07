@@ -3,21 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OniChase V2 Web Client</title>
+  <title>OniChase V2 GIS Shinkansen</title>
   <style>
     :root {
-      --bg: #f2eee5;
-      --panel: rgba(255, 250, 243, 0.96);
-      --line: #d4cab8;
-      --ink: #1c2733;
-      --muted: #677383;
-      --accent: #cc8b2c;
-      --plan: #d04f61;
-      --shadow: 0 18px 48px rgba(28, 39, 51, 0.12);
-      --shadow-soft: 0 10px 24px rgba(28, 39, 51, 0.08);
+      --bg: #eef2f7;
+      --panel: rgba(250, 252, 255, 0.96);
+      --panel-strong: rgba(244, 248, 252, 0.98);
+      --line: #d5dde8;
+      --ink: #1f2a37;
+      --muted: #667487;
+      --accent: #1565c0;
+      --accent-soft: rgba(21, 101, 192, 0.12);
+      --corridor: #b7c3d8;
+      --station: #203247;
+      --shadow: 0 20px 44px rgba(21, 33, 52, 0.12);
+      --shadow-soft: 0 10px 24px rgba(21, 33, 52, 0.08);
     }
 
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       height: 100vh;
@@ -25,9 +29,9 @@
       font-family: "Avenir Next", "Segoe UI", sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(circle at 10% 14%, rgba(204, 139, 44, 0.12), transparent 24%),
-        radial-gradient(circle at 86% 12%, rgba(72, 122, 196, 0.10), transparent 22%),
-        linear-gradient(180deg, #faf7f1 0%, var(--bg) 100%);
+        radial-gradient(circle at 12% 14%, rgba(21, 101, 192, 0.16), transparent 24%),
+        radial-gradient(circle at 85% 16%, rgba(126, 87, 194, 0.12), transparent 22%),
+        linear-gradient(180deg, #f8fbff 0%, #edf2f8 100%);
     }
 
     .app {
@@ -42,10 +46,10 @@
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 18px;
       align-items: center;
-      padding: 20px 24px 16px;
-      border-bottom: 1px solid rgba(212, 202, 184, 0.9);
-      background: rgba(255, 252, 246, 0.84);
-      backdrop-filter: blur(12px);
+      padding: 18px 24px 16px;
+      border-bottom: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(252, 254, 255, 0.92);
+      backdrop-filter: blur(14px);
       position: sticky;
       top: 0;
       z-index: 10;
@@ -53,16 +57,16 @@
 
     .brand h1 {
       margin: 0;
-      font-size: 34px;
+      font-size: 32px;
       letter-spacing: 0.03em;
     }
 
     .brand p {
       margin: 6px 0 0;
-      color: var(--muted);
       font-size: 13px;
-      max-width: 720px;
-      line-height: 1.45;
+      line-height: 1.5;
+      color: var(--muted);
+      max-width: 860px;
     }
 
     .toolbar {
@@ -77,17 +81,35 @@
       display: inline-flex;
       padding: 4px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.82);
-      border: 1px solid rgba(212, 202, 184, 0.95);
+      background: rgba(255,255,255,0.86);
+      border: 1px solid rgba(213, 221, 232, 0.95);
       box-shadow: var(--shadow-soft);
     }
 
+    button {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 800;
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow-soft);
+      color: var(--ink);
+      background: #eef4fb;
+    }
+
     .mode-toggle button {
-      border-radius: 999px;
       padding: 10px 16px;
+      border-radius: 999px;
       box-shadow: none;
       background: transparent;
       color: var(--muted);
+    }
+
+    .mode-toggle button.active {
+      background: var(--accent);
+      color: white;
     }
 
     .mode-toggle button.active.runner {
@@ -100,75 +122,51 @@
       color: white;
     }
 
-    .pill {
-      padding: 12px 14px;
-      border-radius: 16px;
-      background: var(--panel);
-      border: 1px solid rgba(212, 202, 184, 0.95);
-      box-shadow: var(--shadow-soft);
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--muted);
-    }
-
-    .pill input {
-      width: 72px;
-      margin-left: 8px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 6px 8px;
-      font: inherit;
-      color: var(--ink);
-      background: #fff;
-    }
-
-    button {
-      appearance: none;
-      border: 0;
-      cursor: pointer;
-      font: inherit;
-      border-radius: 14px;
-      padding: 12px 14px;
-      font-weight: 800;
-      box-shadow: var(--shadow-soft);
+    button.secondary {
+      background: #edf2f8;
     }
 
     button.primary {
       background: var(--accent);
-      color: #2f220e;
+      color: white;
     }
 
-    button.secondary {
-      background: #ece4d5;
-      color: var(--ink);
+    .pill {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: var(--panel);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      box-shadow: var(--shadow-soft);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      white-space: nowrap;
     }
 
     .shell {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 440px;
+      grid-template-columns: minmax(0, 1fr) 390px;
       gap: 20px;
       padding: 20px 24px 24px;
       height: 100%;
       min-height: 0;
-      overflow: hidden;
     }
 
     .panel {
-      border: 1px solid rgba(212, 202, 184, 0.95);
-      background: var(--panel);
+      border: 1px solid rgba(213, 221, 232, 0.95);
       border-radius: 28px;
+      background: var(--panel);
       box-shadow: var(--shadow);
-      overflow: hidden;
       min-height: 0;
+      overflow: hidden;
     }
 
     .map-panel {
       display: grid;
-      grid-template-rows: auto 1fr;
-      height: 100%;
+      grid-template-rows: auto minmax(0, 1fr) 280px;
       background:
-        radial-gradient(circle at 22% 14%, rgba(204, 139, 44, 0.08), transparent 20%),
-        linear-gradient(180deg, rgba(255, 252, 245, 0.98), rgba(244, 237, 225, 0.98));
+        radial-gradient(circle at 16% 12%, rgba(21, 101, 192, 0.08), transparent 20%),
+        linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(241, 246, 251, 0.98));
     }
 
     .map-head {
@@ -192,8 +190,8 @@
 
     .stats {
       text-align: right;
-      font-size: 12px;
       color: var(--muted);
+      font-size: 12px;
       line-height: 1.5;
     }
 
@@ -203,119 +201,247 @@
       overflow: hidden;
     }
 
+    .diagram-wrap {
+      padding: 0 18px 18px;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 10px;
+    }
+
+    .diagram-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .diagram-head h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .diagram-head p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .diagram-box {
+      min-height: 0;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(255,255,255,0.72);
+      box-shadow: var(--shadow-soft);
+    }
+
+    #diagram {
+      cursor: default;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248, 251, 255, 0.98));
+    }
+
     svg {
       width: 100%;
       height: 100%;
       display: block;
       border-radius: 22px;
-      background: rgba(255,255,255,0.46);
+      background:
+        radial-gradient(circle at 18% 16%, rgba(21, 101, 192, 0.06), transparent 18%),
+        linear-gradient(180deg, rgba(255,255,255,0.9), rgba(246, 249, 253, 0.96));
       cursor: grab;
       user-select: none;
       touch-action: none;
     }
 
-    svg.dragging {
-      cursor: grabbing;
+    svg.dragging { cursor: grabbing; }
+
+    .sidebar {
+      display: block;
+      min-height: 0;
+      overflow: auto;
     }
 
-    .route-underlay {
-      fill: none;
-      stroke: rgba(255,255,255,0.9);
-      stroke-width: 7;
-      stroke-linejoin: round;
-      stroke-linecap: round;
+    .sidebar section {
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(213, 221, 232, 0.92);
     }
 
-    .route-main {
-      fill: none;
-      stroke-width: 3.4;
-      stroke-linejoin: round;
-      stroke-linecap: round;
+    .sidebar section:last-child {
+      border-bottom: 0;
     }
 
-    .plan-trace {
-      fill: none;
-      stroke: var(--plan);
-      stroke-width: 3.5;
-      stroke-dasharray: 10 8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+    .section-label {
+      margin: 0 0 10px;
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
 
-    .station-dot {
-      fill: #fff;
-      stroke: #fff;
-      stroke-width: 2;
-      cursor: pointer;
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
     }
 
-    .station-dot.interchange {
-      r: 4.6;
+    .metric {
+      padding: 12px;
+      border-radius: 18px;
+      background: var(--panel-strong);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      box-shadow: var(--shadow-soft);
     }
 
-    .station-dot.normal {
-      r: 3.1;
+    .metric .value {
+      display: block;
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 6px;
     }
 
-    .station-dot.selected {
-      fill: var(--accent);
-      stroke: #fff;
-      stroke-width: 3;
+    .metric .label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
     }
 
-    .station-dot.cursor {
-      fill: var(--plan);
-      stroke: #fff;
-      stroke-width: 3;
+    .selected-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: var(--panel-strong);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      box-shadow: var(--shadow-soft);
+      display: grid;
+      gap: 8px;
     }
 
-    .station-label {
-      font-size: 8px;
-      fill: var(--muted);
-      paint-order: stroke;
-      stroke: rgba(255,255,255,0.85);
-      stroke-width: 3px;
-      stroke-linejoin: round;
+    .selected-card h3 {
+      margin: 0;
+      font-size: 22px;
     }
 
-    .station-label.selected {
-      fill: var(--ink);
+    .selected-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
       font-weight: 800;
     }
 
-    .future-stop-ring {
-      fill: rgba(208, 79, 97, 0.12);
-      stroke: rgba(208, 79, 97, 0.82);
-      stroke-width: 1.9;
-      stroke-dasharray: 4 4;
-      pointer-events: none;
-    }
-
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
+    .lists {
       min-height: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      overscroll-behavior: contain;
+      overflow: auto;
+      display: grid;
+      align-content: start;
+      gap: 14px;
     }
 
-    .section {
-      padding: 14px 18px 0;
-      min-height: 0;
-      flex: 0 0 auto;
+    .card-list {
+      display: grid;
+      gap: 10px;
     }
 
-    .section h3 {
-      margin: 0 0 10px;
+    .mini-card {
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: var(--panel-strong);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      box-shadow: var(--shadow-soft);
+      display: grid;
+      gap: 6px;
+    }
+
+    .mini-card strong {
       font-size: 15px;
-      letter-spacing: 0.05em;
+    }
+
+    .mini-card span,
+    .mini-card small {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-right: 6px;
+      border: 1px solid rgba(31, 42, 55, 0.15);
+      vertical-align: -1px;
+    }
+
+    .empty {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .diagram-chip {
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(21, 101, 192, 0.08);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .mini-card.clickable {
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    }
+
+    .mini-card.clickable:hover {
+      transform: translateY(-1px);
+      border-color: rgba(21, 101, 192, 0.4);
+    }
+
+    .mini-card.active {
+      border-color: rgba(21, 101, 192, 0.58);
+      box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.10), var(--shadow-soft);
+      background: rgba(226, 237, 251, 0.96);
+    }
+
+    .mini-card.trip-hover {
+      border-color: rgba(15, 23, 42, 0.35);
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08), var(--shadow-soft);
+      background: rgba(241, 245, 249, 0.98);
     }
 
     .info-box {
       border-radius: 18px;
-      border: 1px solid rgba(212, 202, 184, 0.95);
+      border: 1px solid rgba(213, 221, 232, 0.95);
       background: #fffdf8;
       padding: 14px;
       font-size: 13px;
@@ -325,38 +451,14 @@
       overflow: auto;
     }
 
-    .section-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      margin-bottom: 10px;
-    }
-
-    .section-head h3 {
-      margin: 0;
-      font-size: 15px;
-      letter-spacing: 0.04em;
-    }
-
-    .section-head p {
-      margin: 4px 0 0;
+    .empty {
+      border-radius: 16px;
+      border: 1px dashed rgba(213, 221, 232, 0.95);
+      background: rgba(255, 253, 248, 0.78);
+      padding: 12px 14px;
       font-size: 12px;
       color: var(--muted);
-      line-height: 1.4;
-    }
-
-    .selected-chip {
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: #f4ead8;
-      border: 1px solid rgba(212, 202, 184, 0.95);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      text-transform: uppercase;
-      white-space: nowrap;
+      line-height: 1.5;
     }
 
     .tiny-actions {
@@ -370,15 +472,15 @@
       padding: 9px 11px;
       border-radius: 12px;
       font-size: 12px;
-      background: #efe6d7;
+      background: #eef4fb;
       color: var(--ink);
       box-shadow: none;
-      border: 1px solid rgba(212, 202, 184, 0.95);
+      border: 1px solid rgba(213, 221, 232, 0.95);
     }
 
     .tiny-button.good {
-      background: #f7e4c3;
-      color: #4d3210;
+      background: rgba(21, 101, 192, 0.12);
+      color: var(--accent);
     }
 
     .tiny-button.runner {
@@ -391,111 +493,6 @@
       color: #1d4d9c;
     }
 
-    .stack {
-      display: grid;
-      gap: 12px;
-    }
-
-    .train-card,
-    .dest-card,
-    .route-card {
-      border-radius: 18px;
-      border: 1px solid rgba(212, 202, 184, 0.95);
-      background: #fffdf8;
-      padding: 12px 14px;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .route-card {
-      cursor: pointer;
-      text-align: left;
-      width: 100%;
-    }
-
-    .route-card.active {
-      border-color: rgba(45, 108, 223, 0.42);
-      background: rgba(229, 238, 254, 0.96);
-    }
-
-    .card-kicker {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-
-    .card-main {
-      margin-top: 4px;
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--ink);
-    }
-
-    .plan-head-band {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(212, 202, 184, 0.85);
-      margin-bottom: 12px;
-    }
-
-    .plan-head-band h3 {
-      margin: 0;
-      font-size: 15px;
-      letter-spacing: 0.04em;
-    }
-
-    .plan-head-band p {
-      margin: 4px 0 0;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .plan-summary {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.5;
-      margin-bottom: 12px;
-    }
-
-    .plan-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .plan-leg,
-    .plan-wait {
-      border-radius: 16px;
-      border: 1px solid rgba(212, 202, 184, 0.95);
-      background: #fff;
-      padding: 12px 14px;
-    }
-
-    .plan-leg.done,
-    .plan-wait.done {
-      opacity: 0.65;
-    }
-
-    .plan-kicker {
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-
-    .plan-main {
-      font-size: 14px;
-      color: var(--ink);
-      line-height: 1.45;
-      font-weight: 700;
-    }
-
     .outlook-list {
       display: grid;
       gap: 8px;
@@ -506,7 +503,7 @@
       grid-template-columns: 74px 1fr;
       gap: 10px;
       padding: 9px 0;
-      border-bottom: 1px dashed rgba(212, 202, 184, 0.9);
+      border-bottom: 1px dashed rgba(213, 221, 232, 0.9);
       font-size: 13px;
     }
 
@@ -515,94 +512,8 @@
       padding-bottom: 0;
     }
 
-    .action-region {
-      white-space: normal;
-      overflow: visible;
-    }
-
-    .empty {
-      border-radius: 16px;
-      border: 1px dashed rgba(212, 202, 184, 0.95);
-      background: rgba(255, 253, 248, 0.78);
-      padding: 12px 14px;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .lists {
-      padding: 14px 18px;
-      display: grid;
-      grid-template-rows: minmax(320px, auto) minmax(220px, auto);
-      gap: 16px;
-      min-height: auto;
-      overflow: visible;
-      flex: 0 0 auto;
-    }
-
-    .list-card {
-      min-height: 0;
-      border-radius: 20px;
-      border: 1px solid rgba(212, 202, 184, 0.95);
-      background: #fffdf8;
-      display: grid;
-      grid-template-rows: auto minmax(180px, 1fr) auto auto;
-      overflow: hidden;
-    }
-
-    .list-card h4 {
-      margin: 0;
-      padding: 14px 14px 8px;
-      font-size: 14px;
-      color: var(--ink);
-    }
-
-    .list {
-      overflow: auto;
-      min-height: 180px;
-      padding: 0 8px 8px;
-      display: grid;
-      gap: 8px;
-      align-content: start;
-    }
-
-    .list-item {
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(212, 202, 184, 0.9);
-      background: #fff;
-      cursor: pointer;
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .list-item.selected {
-      border-color: var(--accent);
-      box-shadow: inset 0 0 0 1px var(--accent);
-      background: #fff8ea;
-    }
-
-    .list-item strong {
-      display: block;
-      color: var(--ink);
-      font-size: 13px;
-      margin-bottom: 2px;
-    }
-
-    .detail {
-      padding: 0 14px 12px;
-      font-size: 12px;
-      line-height: 1.5;
-      color: var(--muted);
-      white-space: pre-line;
-    }
-
     .player-marker {
       pointer-events: none;
-    }
-
-    .marker-line {
-      stroke-width: 2;
     }
 
     .marker-box {
@@ -618,55 +529,41 @@
       font-size: 10px;
     }
 
-    .card-actions {
-      padding: 0 14px 14px;
-      display: flex;
-      justify-content: flex-start;
+    .future-stop-ring {
+      fill: rgba(21, 101, 192, 0.12);
+      stroke: rgba(21, 101, 192, 0.82);
+      stroke-width: 1.9;
+      stroke-dasharray: 4 4;
+      pointer-events: none;
     }
 
-    .card-actions button {
-      padding: 10px 12px;
-      font-size: 12px;
-    }
-
-    .footer-note {
-      padding: 0 18px 18px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    @media (max-width: 1240px) {
+    @media (max-width: 1100px) {
       body {
         height: auto;
         overflow: auto;
       }
       .app {
         height: auto;
-        overflow: visible;
       }
       .shell {
         grid-template-columns: 1fr;
         height: auto;
-        overflow: visible;
+      }
+      .panel {
+        min-height: 560px;
       }
       .sidebar {
-        min-height: 0;
-        height: auto;
-        overflow: visible;
-      }
-      svg {
-        min-height: 640px;
+        min-height: 620px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="topbar">
+  <main class="app">
+    <header class="topbar">
       <div class="brand">
         <h1>OniChase V2</h1>
-        <p>Nationwide Shinkansen playable shell. V2 now follows the v1 phase loop: planning, live execution, capture, and replay-friendly results.</p>
+        <p>Nationwide Shinkansen playable map. This version now uses the stronger GIS-first Shinkansen page as the main <code>v2</code> experience, combining multiscale map views, real train planning, simulation, capture, and replay.</p>
       </div>
       <div class="toolbar">
         <div class="mode-toggle">
@@ -674,923 +571,1113 @@
           <button id="hunterModeButton">Hunter</button>
         </div>
         <div class="pill" id="phaseClock">PLANNING 60s<br/>Game starts 06:00</div>
-        <label class="pill">Cursor Time <input id="timeInput" value="07:00" /></label>
-        <button class="secondary" id="loadPresetButton">Load Test Preset</button>
-        <button class="primary" id="startGameButton">Start Game</button>
-        <button class="secondary" id="pauseGameButton">Pause/Resume</button>
-        <button class="primary" id="runSimulationButton">Run Simulation</button>
-        <button class="secondary" id="applyTimeButton">Apply Time</button>
-        <button class="primary" id="resetPlanButton">Reset Plan</button>
+        <button id="loadPresetButton" class="secondary">Load Test Preset</button>
+        <button id="startGameButton" class="primary">Start Game</button>
+        <button id="pauseGameButton" class="secondary">Pause/Resume</button>
+        <button id="runSimulationButton" class="primary">Run Simulation</button>
+        <button id="resetPlanButton" class="secondary">Reset Plan</button>
+        <div class="mode-toggle">
+          <button id="corridor-btn" class="active">Corridor View</button>
+          <button id="service-btn">Service View</button>
+        </div>
+        <button id="fit-btn" class="secondary">Fit Map</button>
       </div>
-    </div>
+    </header>
 
-    <div class="shell">
+    <section class="shell">
       <section class="panel map-panel">
         <div class="map-head">
           <div>
-            <h2>V2 Board</h2>
-            <p id="mapSubtitle">Nationwide Shinkansen routes rendered from real station coordinates.</p>
+            <h2 id="map-title">Corridor View</h2>
+            <p id="map-subtitle">Lower-zoom structural map. Physical track centerlines stay clean while the station hierarchy drives label density.</p>
           </div>
-          <div class="stats" id="mapStats"></div>
+          <div class="stats" id="map-stats"></div>
         </div>
         <div class="map-wrap">
-          <svg id="mapSvg" viewBox="0 0 1100 820" preserveAspectRatio="xMidYMid meet"></svg>
+          <svg id="map" viewBox="0 0 1200 820" aria-label="V3 nationwide Shinkansen map"></svg>
+        </div>
+        <div class="diagram-wrap">
+          <div class="diagram-head">
+            <div>
+              <h3 id="diagram-title">Route Diagram</h3>
+              <p id="diagram-subtitle">Select one route to inspect its service-time pattern. The diagram uses the same trip and station source as the map.</p>
+            </div>
+            <div class="diagram-chip" id="diagram-chip">No route selected</div>
+          </div>
+          <div class="diagram-box">
+            <svg id="diagram" viewBox="0 0 1200 260" aria-label="V3 route timetable diagram"></svg>
+          </div>
         </div>
       </section>
 
       <aside class="panel sidebar">
-        <div class="section">
-          <h3>PLAN CURSOR</h3>
-          <div class="info-box" id="cursorInfo"></div>
-        </div>
+        <section>
+          <div class="section-label">Bundle</div>
+          <div class="overview-grid" id="overview-grid"></div>
+        </section>
 
-        <div class="section">
-          <h3>INFO</h3>
-          <div class="info-box" id="stationInfo"></div>
-        </div>
+        <section>
+          <div class="section-label">Plan Cursor</div>
+          <div id="cursor-info" class="info-box"></div>
+        </section>
 
-        <div class="section">
-          <h3>ROUTE FOCUS</h3>
-          <div class="info-box" id="routeInfo">No route selected yet.</div>
-          <div class="stack" id="routeRegion" style="margin-top:12px;"></div>
-        </div>
+        <section>
+          <div class="section-label">Selected Station</div>
+          <div id="selected-station" class="empty">Click a station to inspect its station group, connected lines, and service footprint.</div>
+        </section>
 
-        <div class="section">
-          <h3>TRAIN OUTLOOK</h3>
-          <div class="info-box" id="trainOutlook">No train selected yet.</div>
-        </div>
+        <section>
+          <div class="section-label">Selected Route</div>
+          <div id="selected-route" class="empty">Click a route card or legend chip to highlight one service family across the whole map.</div>
+        </section>
 
-        <div class="section">
-          <h3>PLANNING ACTIONS</h3>
-          <div class="info-box action-region" id="actionRegion"></div>
-        </div>
+        <section>
+          <div class="section-label">Train Outlook</div>
+          <div id="train-outlook" class="info-box">No train selected yet.</div>
+        </section>
 
-        <div class="section">
-          <h3>PLAN BOARD</h3>
-          <div class="info-box" id="planBoardInfo"></div>
-        </div>
+        <section>
+          <div class="section-label">Planning Actions</div>
+          <div id="action-region" class="info-box"></div>
+        </section>
 
-        <div class="section">
-          <h3>RESULT</h3>
-          <div class="info-box" id="resultInfo">No result yet.</div>
-          <div class="list-card" style="margin-top:12px;">
-            <h4>REPLAY EVENTS</h4>
-            <div class="list" id="resultEventList"></div>
-            <div class="detail" id="resultDetail">Select an event to inspect it.</div>
-            <div class="card-actions"></div>
+        <section>
+          <div class="section-label">Plan Board</div>
+          <div id="plan-board-info" class="info-box">No legs yet.</div>
+        </section>
+
+        <section class="lists">
+          <div>
+            <div class="section-label">Visible Services</div>
+            <div id="visible-services" class="card-list"></div>
           </div>
-        </div>
+          <div>
+            <div class="section-label">Selected Station Trips</div>
+            <div id="station-trips" class="card-list"></div>
+          </div>
+          <div>
+            <div class="section-label">Route Departures At Station</div>
+            <div id="route-station-departures" class="card-list"></div>
+          </div>
+        </section>
 
-        <div class="footer-note">
-          Current scope: planning/live/ended loop, runner-hunter modes, destination selection, live player positions, and result summaries.
-        </div>
+        <section>
+          <div class="section-label">Result</div>
+          <div id="result-info" class="info-box">No result yet.</div>
+          <div style="margin-top:12px;">
+            <div class="section-label">Replay Events</div>
+            <div id="result-event-list" class="card-list"></div>
+          </div>
+          <div id="result-detail" class="info-box" style="margin-top:12px;">Select an event to inspect it.</div>
+        </section>
+
+        <section>
+          <div class="section-label">Legend</div>
+          <div class="legend" id="legend"></div>
+        </section>
       </aside>
-    </div>
-  </div>
+    </section>
+  </main>
 
   <script>
-    const DATA_BASE = "__DATA_BASE__";
+    const DATA_URL = window.location.pathname.includes('/ui/')
+      ? '../data/v3_shinkansen_bundle.json'
+      : './data/v3_shinkansen_bundle.json';
+    const TILE_MANIFEST_URL = window.location.pathname.includes('/ui/')
+      ? '../docs/data/v3_tiles/manifest.json'.replace('../docs/', '../')
+      : './data/v3_tiles/manifest.json';
+    const TILE_BASE_URL = window.location.pathname.includes('/ui/')
+      ? '../docs/data/v3_tiles/'.replace('../docs/', '../')
+      : './data/v3_tiles/';
 
+    const SERVICE_COLORS = {};
     const state = {
       bundle: null,
-      trains: null,
-      stationMap: new Map(),
-      selectedStationId: "TOKYO",
+      selectedStationGroupId: null,
       selectedRouteId: null,
-      currentStationId: "TOKYO",
-      currentMinute: hhmmToMinutes("07:00"),
-      selectedTrainNumber: null,
-      selectedDestinationStationId: null,
-      pendingTrainNumbers: { runner: null, hunter: null },
-      mapCoords: new Map(),
-      mapView: { scale: 1, tx: 0, ty: 0, dragging: false, lastX: 0, lastY: 0 },
-      activeMode: "runner",
+      activeMode: 'runner',
       players: {},
-      pendingBoardTrainNumbers: { runner: null, hunter: null },
-      phase: "PLANNING",
+      pendingTripIds: { runner: null, hunter: null },
+      phase: 'PLANNING',
       planningSecondsRemaining: 60,
-      currentGameMinute: hhmmToMinutes("06:00"),
-      clockRunning: false,
-      tickHandle: null,
-      startTime: "06:00",
-      endTime: "07:00",
+      currentGameMinute: 360,
+      startTime: '06:00',
+      endTime: '07:00',
       latestResult: null,
       selectedResultEventIndex: 0,
       liveCapture: null,
+      clockRunning: false,
+      tickHandle: null,
+      viewMode: 'corridor',
+      zoom: 1,
+      minZoom: 0.85,
+      maxZoom: 9,
+      panX: 0,
+      panY: 0,
+      projection: null,
+      labelEntries: [],
+      stationPoints: [],
+      tileManifest: null,
+      tileCache: new Map(),
+      visibleTileData: { stations: [], track_centerlines: [], service_paths: [] },
+      currentTileSignature: '',
+      hoveredTripId: null,
+      dragging: false,
+      dragStartX: 0,
+      dragStartY: 0,
+      panStartX: 0,
+      panStartY: 0
     };
 
+    const svg = document.getElementById('map');
+    const mapTitle = document.getElementById('map-title');
+    const mapSubtitle = document.getElementById('map-subtitle');
+    const mapStats = document.getElementById('map-stats');
+    const diagram = document.getElementById('diagram');
+    const diagramTitle = document.getElementById('diagram-title');
+    const diagramSubtitle = document.getElementById('diagram-subtitle');
+    const diagramChip = document.getElementById('diagram-chip');
+    const overviewGrid = document.getElementById('overview-grid');
+    const selectedStationEl = document.getElementById('selected-station');
+    const selectedRouteEl = document.getElementById('selected-route');
+    const cursorInfoEl = document.getElementById('cursor-info');
+    const trainOutlookEl = document.getElementById('train-outlook');
+    const actionRegionEl = document.getElementById('action-region');
+    const planBoardInfoEl = document.getElementById('plan-board-info');
+    const visibleServicesEl = document.getElementById('visible-services');
+    const stationTripsEl = document.getElementById('station-trips');
+    const routeStationDeparturesEl = document.getElementById('route-station-departures');
+    const resultInfoEl = document.getElementById('result-info');
+    const resultEventListEl = document.getElementById('result-event-list');
+    const resultDetailEl = document.getElementById('result-detail');
+    const legendEl = document.getElementById('legend');
+    const phaseClockEl = document.getElementById('phaseClock');
+
+    document.getElementById('corridor-btn').addEventListener('click', () => setViewMode('corridor'));
+    document.getElementById('service-btn').addEventListener('click', () => setViewMode('service'));
+    document.getElementById('fit-btn').addEventListener('click', resetViewport);
+    document.getElementById('runnerModeButton').addEventListener('click', () => setActiveMode('runner'));
+    document.getElementById('hunterModeButton').addEventListener('click', () => setActiveMode('hunter'));
+    document.getElementById('loadPresetButton').addEventListener('click', applyTestPreset);
+    document.getElementById('startGameButton').addEventListener('click', startGameNow);
+    document.getElementById('pauseGameButton').addEventListener('click', toggleClock);
+    document.getElementById('runSimulationButton').addEventListener('click', runSimulation);
+    document.getElementById('resetPlanButton').addEventListener('click', resetPlan);
+
+    svg.addEventListener('mousedown', (event) => {
+      state.dragging = true;
+      state.dragStartX = event.clientX;
+      state.dragStartY = event.clientY;
+      state.panStartX = state.panX;
+      state.panStartY = state.panY;
+      svg.classList.add('dragging');
+    });
+
+    window.addEventListener('mouseup', () => {
+      state.dragging = false;
+      svg.classList.remove('dragging');
+    });
+
+    window.addEventListener('mousemove', (event) => {
+      if (!state.dragging) return;
+      state.panX = state.panStartX + (event.clientX - state.dragStartX);
+      state.panY = state.panStartY + (event.clientY - state.dragStartY);
+      applyViewport();
+    });
+
+    svg.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      const rect = svg.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+      const prevZoom = state.zoom;
+      const factor = event.deltaY < 0 ? 1.12 : 0.9;
+      state.zoom = clamp(state.zoom * factor, state.minZoom, state.maxZoom);
+      const scaleChange = state.zoom / prevZoom;
+      state.panX = mouseX - (mouseX - state.panX) * scaleChange;
+      state.panY = mouseY - (mouseY - state.panY) * scaleChange;
+      applyViewport();
+    }, { passive: false });
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function secToClock(sec) {
+      const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+      const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+      return `${h}:${m}`;
+    }
+
     function hhmmToMinutes(value) {
-      const [h, m] = value.split(":").map(Number);
+      const [h, m] = value.split(':').map(Number);
       return h * 60 + m;
     }
 
     function minutesToHhmm(value) {
       const hour = Math.floor(value / 60);
       const minute = value % 60;
-      return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+      return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
     }
 
     function stopArrivalMinutes(stop) {
-      return hhmmToMinutes(stop.arrival_hhmm || stop.departure_hhmm);
+      return Math.floor((stop.arrivalTimeSec ?? stop.departureTimeSec) / 60);
     }
 
     function stopDepartureMinutes(stop) {
-      return hhmmToMinutes(stop.departure_hhmm || stop.arrival_hhmm);
+      return Math.floor((stop.departureTimeSec ?? stop.arrivalTimeSec) / 60);
     }
 
-    async function loadJson(path) {
-      const response = await fetch(path);
-      if (!response.ok) {
-        throw new Error(`Failed to load ${path}: ${response.status}`);
-      }
-      return response.json();
+    function niceName(id) {
+      return id.replace(/^SG_/, '').replace(/^PS_/, '').replace(/_/g, ' ');
     }
 
-    function projectCoords() {
-      const stations = state.bundle.stations;
-      const lats = stations.map((station) => station.lat);
-      const lons = stations.map((station) => station.lon);
-      const minLat = Math.min(...lats);
-      const maxLat = Math.max(...lats);
-      const minLon = Math.min(...lons);
-      const maxLon = Math.max(...lons);
-      const width = 920;
-      const height = 680;
-      const padX = 90;
-      const padY = 70;
-      for (const station of stations) {
-        const x = padX + ((station.lon - minLon) / (maxLon - minLon)) * width;
-        const y = padY + ((maxLat - station.lat) / (maxLat - minLat)) * height;
-        state.mapCoords.set(station.id, { x, y });
-      }
+    function resolveLabelEntry(groupId) {
+      return state.labelEntries.find((entry) => entry.stationGroupId === groupId);
     }
 
-    function visibleStationLabelLevel(station) {
-      const scale = state.mapView.scale;
-      if (station.id === state.selectedStationId || station.id === state.players[state.activeMode].start_station_id) return "full";
-      if (state.selectedRouteId && routeStationSet(state.selectedRouteId).has(station.id) && scale >= 1.4) return "major";
-      if (scale >= 2.2) return "full";
-      if (scale >= 1.45) {
-        return station.is_interchange || (station.route_ids || []).length >= 2 ? "major" : "none";
+    function shouldShowLabel(entry) {
+      if (!entry) return false;
+      if (state.selectedStationGroupId === entry.stationGroupId) return true;
+      if (state.selectedRouteId) {
+        const routeStations = getRouteStationSet(state.selectedRouteId);
+        if (routeStations.has(entry.stationGroupId) && state.zoom >= 3.2) return true;
       }
-      const majorStations = new Set([
-        "TOKYO", "SHINAGAWA", "SHIN_YOKOHAMA", "NAGOYA", "KYOTO", "SHIN_OSAKA",
-        "OKAYAMA", "HIROSHIMA", "HAKATA", "KAGOSHIMA_CHUO", "OMIYA", "SENDAI",
-        "MORIOKA", "SHIN_AOMORI", "SHIN_HAKODATE_HOKUTO", "KANAZAWA", "TSURUGA",
-        "NIIGATA", "NAGANO", "FUKUSHIMA", "NAGASAKI"
-      ]);
-      return majorStations.has(station.id) ? "major" : "none";
+      const rank = entry.labelRank || 0;
+      if (state.zoom >= 6.2) return true;
+      if (state.zoom >= 4.2) return rank >= 92;
+      if (state.zoom >= 3.0) return rank >= 97;
+      return rank >= 99;
     }
 
     function mapLabelFontSize(baseSize) {
-      return (baseSize / Math.max(1, state.mapView.scale)).toFixed(2);
+      return (baseSize / Math.max(1, state.zoom)).toFixed(2);
     }
 
     function mapLabelStrokeWidth(baseWidth) {
-      return (baseWidth / Math.max(1, state.mapView.scale)).toFixed(2);
+      return (baseWidth / Math.max(1, state.zoom)).toFixed(2);
     }
 
-    function mapTransformValue() {
-      const { scale, tx, ty } = state.mapView;
-      return `translate(${tx} ${ty}) scale(${scale})`;
-    }
+    function makeProjection(bundle) {
+      const stations = bundle.physicalStations.filter((s) => Number.isFinite(s.lon) && Number.isFinite(s.lat));
+      const minLon = Math.min(...stations.map((s) => s.lon));
+      const maxLon = Math.max(...stations.map((s) => s.lon));
+      const minLat = Math.min(...stations.map((s) => s.lat));
+      const maxLat = Math.max(...stations.map((s) => s.lat));
+      const width = 1200;
+      const height = 820;
+      const padding = 70;
+      const usableWidth = width - padding * 2;
+      const usableHeight = height - padding * 2;
+      const lonSpan = Math.max(maxLon - minLon, 0.0001);
+      const latSpan = Math.max(maxLat - minLat, 0.0001);
+      const scale = Math.min(usableWidth / lonSpan, usableHeight / latSpan);
 
-    function mapContentBounds() {
-      const points = Array.from(state.mapCoords.values());
-      const xs = points.map((point) => point.x);
-      const ys = points.map((point) => point.y);
       return {
-        minX: Math.min(...xs),
-        maxX: Math.max(...xs),
-        minY: Math.min(...ys),
-        maxY: Math.max(...ys),
+        width,
+        height,
+        minLon,
+        maxLon,
+        minLat,
+        maxLat,
+        padding,
+        scale,
+        project(lat, lon) {
+          const x = padding + (lon - minLon) * scale;
+          const y = height - padding - (lat - minLat) * scale;
+          return { x, y };
+        },
+        invert(x, y) {
+          const lon = minLon + ((x - padding) / scale);
+          const lat = minLat + ((height - padding - y) / scale);
+          return { lat, lon };
+        }
       };
     }
 
-    function clampMapView() {
-      state.mapView.scale = Math.max(0.72, Math.min(3.2, state.mapView.scale));
-      if (!state.mapCoords.size) return;
-      const bounds = mapContentBounds();
-      const viewWidth = 1100;
-      const viewHeight = 820;
-      const padding = 48;
-      const scaledMinX = state.mapView.scale * bounds.minX;
-      const scaledMaxX = state.mapView.scale * bounds.maxX;
-      const scaledMinY = state.mapView.scale * bounds.minY;
-      const scaledMaxY = state.mapView.scale * bounds.maxY;
-
-      let minTx = viewWidth - padding - scaledMaxX;
-      let maxTx = padding - scaledMinX;
-      let minTy = viewHeight - padding - scaledMaxY;
-      let maxTy = padding - scaledMinY;
-
-      if (minTx > maxTx) {
-        const centerTx = (minTx + maxTx) / 2;
-        minTx = centerTx;
-        maxTx = centerTx;
-      }
-      if (minTy > maxTy) {
-        const centerTy = (minTy + maxTy) / 2;
-        minTy = centerTy;
-        maxTy = centerTy;
-      }
-
-      state.mapView.tx = Math.max(minTx, Math.min(maxTx, state.mapView.tx));
-      state.mapView.ty = Math.max(minTy, Math.min(maxTy, state.mapView.ty));
+    function tileZoomForCurrentView() {
+      if (state.zoom < 1.35) return 3;
+      if (state.zoom < 2.1) return 4;
+      if (state.zoom < 3.6) return 5;
+      return 6;
     }
 
-    function renderMap() {
-      const svg = document.getElementById("mapSvg");
-      svg.innerHTML = "";
-      svg.classList.toggle("dragging", state.mapView.dragging);
-
-      const content = document.createElementNS("http://www.w3.org/2000/svg", "g");
-      content.setAttribute("transform", mapTransformValue());
-      svg.appendChild(content);
-
-      const activePreview = planCursorPreview(state.activeMode);
-      const pending = pendingDepartureContext(activePreview);
-      const highlightedFutureStops = new Set(
-        pending
-          ? pending.destinations.map((item) => item.stationId)
-          : activePreview.currentState.kind === "TRAIN"
-            ? availableDestinations(activePreview).map((item) => item.stationId)
-            : []
-      );
-      const selectedRouteStationIds = state.selectedRouteId ? routeStationSet(state.selectedRouteId) : new Set();
-
-      for (const route of state.bundle.routes) {
-        const points = route.station_ids
-          .map((stationId) => state.mapCoords.get(stationId))
-          .filter(Boolean)
-          .map(({ x, y }) => `${x},${y}`)
-          .join(" ");
-
-        if (!points) continue;
-
-        const underlay = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-        underlay.setAttribute("points", points);
-        underlay.setAttribute("class", "route-underlay");
-        if (state.selectedRouteId && route.id !== state.selectedRouteId) {
-          underlay.setAttribute("opacity", "0.42");
-        } else if (state.selectedRouteId === route.id) {
-          underlay.setAttribute("stroke-width", "9");
-        }
-        content.appendChild(underlay);
-
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-        line.setAttribute("points", points);
-        line.setAttribute("class", "route-main");
-        line.setAttribute("stroke", route.color);
-        line.style.cursor = "pointer";
-        if (state.selectedRouteId && route.id !== state.selectedRouteId) {
-          line.setAttribute("opacity", "0.26");
-        } else if (state.selectedRouteId === route.id) {
-          line.setAttribute("stroke-width", "4.8");
-        }
-        line.addEventListener("click", () => {
-          state.selectedRouteId = state.selectedRouteId === route.id ? null : route.id;
-          render();
-        });
-        content.appendChild(line);
-      }
-
-      for (const stationId of highlightedFutureStops) {
-        const point = state.mapCoords.get(stationId);
-        if (!point) continue;
-        const ring = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        ring.setAttribute("cx", point.x);
-        ring.setAttribute("cy", point.y);
-        ring.setAttribute("r", Math.max(5.4, Math.min(8.4, 7.4 / Math.sqrt(state.mapView.scale))));
-        ring.setAttribute("class", "future-stop-ring");
-        ring.setAttribute("stroke-width", Math.max(1, 1.9 / Math.sqrt(state.mapView.scale)));
-        content.appendChild(ring);
-      }
-
-      let chainStation = state.players[state.activeMode].start_station_id;
-      let pendingTrain = null;
-      for (const step of state.players[state.activeMode].steps) {
-        if (step.type === "BOARD_TRAIN") {
-          pendingTrain = step.train_number;
-          continue;
-        }
-        if (step.type === "RIDE_TO_STATION") {
-          const from = state.mapCoords.get(chainStation);
-          const to = state.mapCoords.get(step.station_id);
-          if (from && to) {
-            const trace = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            trace.setAttribute("x1", from.x);
-            trace.setAttribute("y1", from.y);
-            trace.setAttribute("x2", to.x);
-            trace.setAttribute("y2", to.y);
-            trace.setAttribute("class", "plan-trace");
-            content.appendChild(trace);
-          }
-          chainStation = step.station_id;
-          pendingTrain = null;
-        }
-      }
-
-      for (const station of state.bundle.stations) {
-        const { x, y } = state.mapCoords.get(station.id);
-        const stationRadius = station.is_interchange
-          ? Math.max(2.2, Math.min(4.4, 4.4 / Math.sqrt(state.mapView.scale)))
-          : Math.max(1.7, Math.min(3.1, 3.1 / Math.sqrt(state.mapView.scale)));
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttribute("cx", x);
-        circle.setAttribute("cy", y);
-        circle.setAttribute("r", stationRadius);
-        circle.setAttribute("stroke-width", Math.max(0.9, 1.5 / Math.sqrt(state.mapView.scale)));
-        circle.setAttribute(
-          "class",
-          [
-            "station-dot",
-            station.is_interchange ? "interchange" : "normal",
-            station.id === state.selectedStationId ? "selected" : "",
-            station.id === state.players[state.activeMode].start_station_id ? "cursor" : "",
-          ].filter(Boolean).join(" ")
-        );
-        if (selectedRouteStationIds.has(station.id) && station.id !== state.selectedStationId) {
-          circle.setAttribute("fill", "#3b6cb2");
-          circle.setAttribute("stroke", "#ffffff");
-          circle.setAttribute("stroke-width", Math.max(1.1, 1.8 / Math.sqrt(state.mapView.scale)));
-        }
-        circle.addEventListener("click", () => {
-          const preview = planCursorPreview(state.activeMode);
-          const pending = pendingDepartureContext(preview);
-          if (pending) {
-            const pendingDestination = pending.destinations.find((item) => item.stationId === station.id);
-            if (pendingDestination) {
-              addBoardAndRide(pending.train.train_number, station.id);
-              return;
-            }
-          }
-          if (preview.currentState.kind === "TRAIN") {
-            const directDestination = availableDestinations(preview).find((item) => item.stationId === station.id);
-            if (directDestination) {
-              addRideToStation(station.id);
-              return;
-            }
-          }
-          state.selectedStationId = station.id;
-          if (!state.selectedTrainNumber) {
-            state.selectedDestinationStationId = null;
-          }
-          render();
-        });
-        content.appendChild(circle);
-
-        const labelLevel = visibleStationLabelLevel(station);
-        if (labelLevel !== "none") {
-          const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-          label.setAttribute("x", x + 10);
-          label.setAttribute("y", y - 12);
-          label.setAttribute("class", `station-label${station.id === state.selectedStationId ? " selected" : ""}`);
-          if (labelLevel === "major") {
-            label.setAttribute("font-size", mapLabelFontSize(10.5));
-            label.setAttribute("font-weight", "700");
-          } else {
-            label.setAttribute("font-size", mapLabelFontSize(8));
-          }
-          label.setAttribute("stroke-width", mapLabelStrokeWidth(3));
-          label.textContent = station.name;
-          content.appendChild(label);
-        }
-      }
-
-      for (const playerId of ["runner", "hunter"]) {
-        if (!shouldShowPlayer(playerId)) continue;
-        const preview = currentMapPreview(playerId);
-        if (!preview || !preview.mapPosition) continue;
-        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        group.setAttribute("class", "player-marker");
-        const color = playerId === "runner" ? "#dc4d62" : "#2d6cdf";
-        const { x, y } = preview.mapPosition;
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttribute("cx", x);
-        circle.setAttribute("cy", y);
-        circle.setAttribute("r", 10);
-        circle.setAttribute("fill", color);
-        circle.setAttribute("stroke", "white");
-        circle.setAttribute("stroke-width", "3");
-        group.appendChild(circle);
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        rect.setAttribute("x", x + 14);
-        rect.setAttribute("y", y - 20);
-        rect.setAttribute("width", 150);
-        rect.setAttribute("height", 36);
-        rect.setAttribute("rx", 8);
-        rect.setAttribute("class", "marker-box");
-        rect.setAttribute("stroke", color);
-        rect.setAttribute("stroke-width", "2");
-        group.appendChild(rect);
-        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        label.setAttribute("x", x + 22);
-        label.setAttribute("y", y - 6);
-        label.setAttribute("class", "marker-label");
-        label.setAttribute("fill", color);
-        label.textContent = playerId.toUpperCase();
-        group.appendChild(label);
-        const sub = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        sub.setAttribute("x", x + 22);
-        sub.setAttribute("y", y + 10);
-        sub.setAttribute("class", "marker-sub");
-        sub.setAttribute("fill", "#1c2733");
-        sub.textContent = preview.currentState.kind === "TRAIN" ? preview.currentState.train_number : preview.currentState.station_id;
-        group.appendChild(sub);
-        content.appendChild(group);
-      }
-
-      if (state.liveCapture) {
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        text.setAttribute("x", 120);
-        text.setAttribute("y", 90);
-        text.setAttribute("fill", "#8b1f2d");
-        text.setAttribute("font-size", "32");
-        text.setAttribute("font-weight", "800");
-        text.textContent = "CAUGHT";
-        content.appendChild(text);
-      }
-    }
-
-    function setupMapInteractions() {
-      const svg = document.getElementById("mapSvg");
-      svg.addEventListener("wheel", (event) => {
-        event.preventDefault();
-        state.mapView.scale *= event.deltaY < 0 ? 1.14 : 0.88;
-        clampMapView();
-        renderMap();
-      }, { passive: false });
-
-      svg.addEventListener("pointerdown", (event) => {
-        if (event.target.closest(".station-dot")) return;
-        state.mapView.dragging = true;
-        state.mapView.lastX = event.clientX;
-        state.mapView.lastY = event.clientY;
-        try {
-          svg.setPointerCapture(event.pointerId);
-        } catch (_err) {}
-        renderMap();
-      });
-
-      svg.addEventListener("pointermove", (event) => {
-        if (!state.mapView.dragging) return;
-        state.mapView.tx += event.clientX - state.mapView.lastX;
-        state.mapView.ty += event.clientY - state.mapView.lastY;
-        state.mapView.lastX = event.clientX;
-        state.mapView.lastY = event.clientY;
-        clampMapView();
-        renderMap();
-      });
-
-      const endDrag = (event) => {
-        if (!state.mapView.dragging) return;
-        state.mapView.dragging = false;
-        try {
-          svg.releasePointerCapture(event.pointerId);
-        } catch (_err) {}
-        renderMap();
+    function visibleGeoBounds() {
+      const projection = state.projection;
+      const width = projection.width;
+      const height = projection.height;
+      const minContentX = (0 - state.panX) / state.zoom;
+      const maxContentX = (width - state.panX) / state.zoom;
+      const minContentY = (0 - state.panY) / state.zoom;
+      const maxContentY = (height - state.panY) / state.zoom;
+      const a = projection.invert(minContentX, maxContentY);
+      const b = projection.invert(maxContentX, minContentY);
+      return {
+        minLon: Math.max(Math.min(a.lon, b.lon), projection.minLon),
+        maxLon: Math.min(Math.max(a.lon, b.lon), projection.maxLon),
+        minLat: Math.max(Math.min(a.lat, b.lat), projection.minLat),
+        maxLat: Math.min(Math.max(a.lat, b.lat), projection.maxLat),
       };
-
-      svg.addEventListener("pointerup", endDrag);
-      svg.addEventListener("pointercancel", endDrag);
     }
 
-    function departuresForStation(stationId, currentMinute) {
+    function tileGridBounds(z) {
+      const cols = 2 ** z;
+      const rows = 2 ** z;
+      return {
+        cols,
+        rows,
+        minLon: 128.0,
+        maxLon: 146.5,
+        minLat: 30.0,
+        maxLat: 46.5,
+      };
+    }
+
+    function tilesForBounds(bounds, z) {
+      const grid = tileGridBounds(z);
+      const lonSpan = grid.maxLon - grid.minLon;
+      const latSpan = grid.maxLat - grid.minLat;
+      const x0 = Math.max(0, Math.floor(((bounds.minLon - grid.minLon) / lonSpan) * grid.cols));
+      const x1 = Math.min(grid.cols - 1, Math.floor(((bounds.maxLon - grid.minLon) / lonSpan) * grid.cols));
+      const y0 = Math.max(0, Math.floor(((grid.maxLat - bounds.maxLat) / latSpan) * grid.rows));
+      const y1 = Math.min(grid.rows - 1, Math.floor(((grid.maxLat - bounds.minLat) / latSpan) * grid.rows));
+      const tiles = [];
+      for (let x = x0; x <= x1; x += 1) {
+        for (let y = y0; y <= y1; y += 1) {
+          tiles.push({ z, x, y });
+        }
+      }
+      return tiles;
+    }
+
+    async function fetchTileLayer(layer, tile) {
+      const key = `${layer}:${tile.z}/${tile.x}/${tile.y}`;
+      if (state.tileCache.has(key)) return state.tileCache.get(key);
+      const url = `${TILE_BASE_URL}${layer}/${tile.z}/${tile.x}/${tile.y}.geojson`;
+      const promise = fetch(url)
+        .then((response) => {
+          if (!response.ok) return { features: [] };
+          return response.json();
+        })
+        .catch(() => ({ features: [] }));
+      state.tileCache.set(key, promise);
+      return promise;
+    }
+
+    async function refreshVisibleTiles() {
+      if (!state.tileManifest) return;
+      const z = tileZoomForCurrentView();
+      const bounds = visibleGeoBounds();
+      const tiles = tilesForBounds(bounds, z);
+      const signature = `${state.viewMode}|${z}|${tiles.map((tile) => `${tile.x}:${tile.y}`).join(',')}`;
+      if (signature === state.currentTileSignature) return;
+      state.currentTileSignature = signature;
+
+      const [stationCollections, trackCollections, serviceCollections] = await Promise.all([
+        Promise.all(tiles.map((tile) => fetchTileLayer('stations', tile))),
+        Promise.all(tiles.map((tile) => fetchTileLayer('track_centerlines', tile))),
+        Promise.all(tiles.map((tile) => fetchTileLayer('service_paths', tile))),
+      ]);
+
+      if (state.currentTileSignature !== signature) return;
+
+      state.visibleTileData = {
+        stations: stationCollections.flatMap((fc) => fc.features || []),
+        track_centerlines: trackCollections.flatMap((fc) => fc.features || []),
+        service_paths: serviceCollections.flatMap((fc) => fc.features || []),
+      };
+      render();
+    }
+
+    function visibleGameMinute() {
+      return state.phase === 'PLANNING' ? hhmmToMinutes(state.startTime) : state.currentGameMinute;
+    }
+
+    function pendingTripId(playerId = state.activeMode) {
+      return state.pendingTripIds[playerId];
+    }
+
+    function invalidateSimulation() {
+      state.latestResult = null;
+      state.selectedResultEventIndex = 0;
+      state.liveCapture = null;
+      resultInfoEl.textContent = 'No result yet.';
+      resultDetailEl.textContent = 'Select an event to inspect it.';
+    }
+
+    function clearPendingTrip(playerId = state.activeMode) {
+      state.pendingTripIds[playerId] = null;
+    }
+
+    function findBoardingStop(trip, stationGroupId, earliestMinute) {
+      return trip.stopTimes
+        .filter((stop) => stop.stationGroupId === stationGroupId && stopDepartureMinutes(stop) >= earliestMinute)
+        .sort((a, b) => stopDepartureMinutes(a) - stopDepartureMinutes(b))[0] || null;
+    }
+
+    function findAlightStop(trip, boardedSequence, stationGroupId) {
+      return trip.stopTimes.find((stop) => stop.sequence > boardedSequence && stop.stationGroupId === stationGroupId) || null;
+    }
+
+    function formatTripLabel(trip) {
+      return `${trip.serviceName}${trip.serviceNumber ? ` ${trip.serviceNumber}` : ''}`;
+    }
+
+    function departuresForStationGroup(stationGroupId, currentMinute) {
       const rows = [];
-      for (const train of state.trains.train_instances) {
-        for (const stop of train.stop_times) {
-          if (stop.station_id !== stationId) continue;
+      for (const trip of state.bundle.tripInstances) {
+        for (const stop of trip.stopTimes) {
+          if (stop.stationGroupId !== stationGroupId) continue;
           const departureMinute = stopDepartureMinutes(stop);
           if (departureMinute < currentMinute) continue;
-          rows.push({ departureMinute, train, stop });
+          rows.push({ departureMinute, trip, stop });
           break;
         }
       }
-      rows.sort((a, b) => a.departureMinute - b.departureMinute || formatTrainLabel(a.train).localeCompare(formatTrainLabel(b.train)));
-      return rows.slice(0, 90);
-    }
-
-    function formatTrainLabel(train) {
-      const serviceName = train.service_name;
-      const serviceNumber = train.service_number;
-      if (serviceName && serviceNumber !== undefined && serviceNumber !== null && serviceNumber !== "") {
-        return `${serviceName} ${serviceNumber}`;
-      }
-      if (serviceName) return String(serviceName);
-      if (train.display_name) return String(train.display_name);
-      return String(train.train_number);
-    }
-
-    function stationLabel(stationId) {
-      return state.stationMap.get(stationId)?.name || stationId;
-    }
-
-    function pendingTrainNumber(playerId = state.activeMode) {
-      return state.pendingTrainNumbers[playerId];
-    }
-
-    function clearPendingTrain(playerId = state.activeMode) {
-      state.pendingTrainNumbers[playerId] = null;
-      if (playerId === state.activeMode) {
-        state.selectedTrainNumber = null;
-        state.selectedDestinationStationId = null;
-      }
+      rows.sort((a, b) => a.departureMinute - b.departureMinute || formatTripLabel(a.trip).localeCompare(formatTripLabel(b.trip)));
+      return rows.slice(0, 36);
     }
 
     function availableDepartures(preview) {
-      if (preview.currentState.kind !== "NODE") return [];
-      return departuresForStation(preview.currentState.station_id, preview.currentMinute)
-        .map((row) => ({
-          train: row.train,
-          boardStop: row.stop,
-          departureMinute: row.departureMinute,
-          departureHhmm: minutesToHhmm(row.departureMinute),
-          directionLabel: row.train.direction_label || row.train.route_id || "service"
-        }))
-        .slice(0, 24);
+      if (preview.currentState.kind !== 'NODE') return [];
+      return departuresForStationGroup(preview.currentState.stationGroupId, preview.currentMinute).map((row) => ({
+        trip: row.trip,
+        boardStop: row.stop,
+        departureMinute: row.departureMinute,
+        departureHhmm: minutesToHhmm(row.departureMinute),
+        directionLabel: row.trip.routeId,
+      }));
     }
 
-    function futureTrainStops(preview) {
-      if (!preview.currentTrain || !preview.currentBoardStop) return [];
-      return preview.currentTrain.stop_times.filter((stop) => stop.sequence > preview.currentBoardStop.sequence);
+    function futureTripStops(preview) {
+      if (!preview.currentTrip || !preview.currentBoardStop) return [];
+      return preview.currentTrip.stopTimes.filter((stop) => stop.sequence > preview.currentBoardStop.sequence);
     }
 
     function availableDestinations(preview) {
-      return futureTrainStops(preview).map((stop) => ({
-        stationId: stop.station_id,
-        label: stationLabel(stop.station_id),
-        arrivalHhmm: stop.arrival_hhmm || stop.departure_hhmm,
+      return futureTripStops(preview).map((stop) => ({
+        stationGroupId: stop.stationGroupId,
+        label: stationGroupLabel(stop.stationGroupId),
+        arrivalHhmm: secToClock(stop.arrivalTimeSec ?? stop.departureTimeSec),
         sequence: stop.sequence,
       }));
     }
 
-    function pendingDepartureContext(preview) {
-      const trainNumber = pendingTrainNumber();
-      if (!trainNumber || preview.currentState.kind !== "NODE") return null;
-      const departures = departuresForStation(preview.currentState.station_id, preview.currentMinute);
-      const match = departures.find((row) => row.train.train_number === trainNumber);
+    function pendingDepartureContext(preview, playerId = state.activeMode) {
+      const tripId = pendingTripId(playerId);
+      if (!tripId || preview.currentState.kind !== 'NODE') return null;
+      const departures = departuresForStationGroup(preview.currentState.stationGroupId, preview.currentMinute);
+      const match = departures.find((row) => row.trip.id === tripId);
       if (!match) return null;
       return {
-        train: match.train,
+        trip: match.trip,
         boardStop: match.stop,
-        destinations: match.train.stop_times
+        destinations: match.trip.stopTimes
           .filter((stop) => stop.sequence > match.stop.sequence)
           .map((stop) => ({
-            stationId: stop.station_id,
-            label: stationLabel(stop.station_id),
-            arrivalHhmm: stop.arrival_hhmm || stop.departure_hhmm,
+            stationGroupId: stop.stationGroupId,
+            label: stationGroupLabel(stop.stationGroupId),
+            arrivalHhmm: secToClock(stop.arrivalTimeSec ?? stop.departureTimeSec),
             sequence: stop.sequence,
           })),
       };
     }
 
-    function trainPreviewText(train, boardStop) {
-      const future = train.stop_times
+    function trainPreviewText(trip, boardStop) {
+      return trip.stopTimes
         .filter((stop) => stop.sequence > boardStop.sequence)
         .slice(0, 4)
-        .map((stop) => `${stationLabel(stop.station_id)} ${stop.arrival_hhmm || stop.departure_hhmm}`);
-      return future.length ? future.join(" · ") : "No later stops";
+        .map((stop) => `${stationGroupLabel(stop.stationGroupId)} ${secToClock(stop.arrivalTimeSec ?? stop.departureTimeSec)}`)
+        .join(' · ') || 'No later stops';
     }
 
-    function chooseTrain(trainNumber) {
-      state.pendingTrainNumbers[state.activeMode] = trainNumber;
-      state.selectedTrainNumber = trainNumber;
-      state.selectedDestinationStationId = null;
-      render();
-    }
+    function previewPlayer(playerId, timeCapMinute = null) {
+      const player = state.players[playerId];
+      let currentMinute = hhmmToMinutes(state.startTime);
+      let currentState = { kind: 'NODE', stationGroupId: player.start_station_id };
+      let currentTrip = null;
+      let currentBoardStop = null;
+      const resolvedSteps = [];
 
-    function chooseAnotherTrain() {
-      clearPendingTrain();
-      render();
-    }
-
-    function addBoardAndRide(trainNumber, stationId) {
-      const preview = planCursorPreview(state.activeMode);
-      if (preview.currentState.kind !== "NODE") return;
-      state.players[state.activeMode].steps.push({ type: "BOARD_TRAIN", train_number: trainNumber });
-      state.players[state.activeMode].steps.push({ type: "RIDE_TO_STATION", station_id: stationId });
-      clearPendingTrain();
-      render();
-    }
-
-    function addRideToStation(stationId) {
-      const preview = planCursorPreview(state.activeMode);
-      if (preview.currentState.kind !== "TRAIN") return;
-      state.players[state.activeMode].steps.push({ type: "RIDE_TO_STATION", station_id: stationId });
-      clearPendingTrain();
-      render();
-    }
-
-    function addWaitStep() {
-      const preview = planCursorPreview(state.activeMode);
-      if (preview.currentState.kind !== "NODE") return;
-      const targetMinute = Math.min(preview.currentMinute + 5, hhmmToMinutes(state.endTime));
-      state.players[state.activeMode].steps.push({ type: "WAIT_UNTIL", until_hhmm: minutesToHhmm(targetMinute) });
-      clearPendingTrain();
-      render();
-    }
-
-    function undoLastStep() {
-      const steps = state.players[state.activeMode].steps;
-      if (!steps.length) return;
-      steps.pop();
-      clearPendingTrain();
-      render();
-    }
-
-    function setStartToSelected() {
-      if (!state.selectedStationId) return;
-      state.players[state.activeMode].start_station_id = state.selectedStationId;
-      state.players[state.activeMode].steps = [];
-      clearPendingTrain();
-      render();
-    }
-
-    function renderTrainOutlook() {
-      const box = document.getElementById("trainOutlook");
-      const preview = planCursorPreview(state.activeMode);
-      const pending = pendingDepartureContext(preview);
-      let rows = [];
-      let title = "No train selected";
-      if (pending) {
-        title = formatTrainLabel(pending.train);
-        rows = [
-          { time: pending.boardStop.departure_hhmm || pending.boardStop.arrival_hhmm, label: `Board ${stationLabel(pending.boardStop.station_id)}` },
-          ...pending.destinations.slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label }))
-        ];
-      } else if (preview.currentState.kind === "TRAIN") {
-        title = formatTrainLabel(preview.currentTrain || { train_number: preview.currentState.train_number });
-        rows = availableDestinations(preview).slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label }));
-      }
-      box.innerHTML = `
-        <div class="section-head">
-          <div>
-            <h3>${title}</h3>
-            <p>${pending ? "Selected service preview" : preview.currentState.kind === "TRAIN" ? "Current onboard route" : "Choose a train to preview later stops"}</p>
-          </div>
-        </div>
-        <div class="outlook-list">
-          ${rows.length ? rows.map((row) => `<div class="outlook-row"><div>${row.time}</div><div>${row.label}</div></div>`).join("") : `<div class="empty">Not currently on a train.</div>`}
-        </div>
-      `;
-    }
-
-    function renderActionRegion() {
-      const region = document.getElementById("actionRegion");
-      const preview = planCursorPreview(state.activeMode);
-      const pending = pendingDepartureContext(preview);
-      let html = `
-        <div class="section-head">
-          <div>
-            <h3>Planning Actions</h3>
-            <p>Use the same flow as v1: choose a train, then choose where to get off.</p>
-          </div>
-          <div class="selected-chip">${state.activeMode}</div>
-        </div>
-        <div class="tiny-actions">
-          <button class="tiny-button" data-action="set-start">Set Start To Selected Station</button>
-          <button class="tiny-button" data-action="wait">Wait +5 minutes</button>
-          <button class="tiny-button" data-action="undo">Undo Step</button>
-          <button class="tiny-button" data-action="clear">Clear Plan</button>
-        </div>
-      `;
-
-      if (preview.currentState.kind === "NODE" && !pending) {
-        const departures = availableDepartures(preview);
-        html += `
-          <div class="stack" style="margin-top:12px;">
-            <div class="section-head"><div><h3>STEP 1 · Choose Your Train</h3><p>You are at ${stationLabel(preview.currentState.station_id)}. Pick a real departure first.</p></div></div>
-            ${departures.length ? departures.map((entry) => `
-              <div class="train-card">
-                <div class="card-kicker">${entry.departureHhmm} · ${entry.directionLabel}</div>
-                <div class="card-main">${formatTrainLabel(entry.train)}</div>
-                <div>${trainPreviewText(entry.train, entry.boardStop)}</div>
-                <div class="tiny-actions">
-                  <button class="tiny-button ${state.activeMode}" data-train="${entry.train.train_number}" data-action="choose-train">Choose This Train</button>
-                </div>
-              </div>
-            `).join("") : `<div class="empty">No catchable departures from ${stationLabel(preview.currentState.station_id)} after ${preview.currentTime}.</div>`}
-          </div>
-        `;
-      } else if (pending) {
-        html += `
-          <div class="stack" style="margin-top:12px;">
-            <div class="train-card">
-              <div class="card-kicker">Selected train</div>
-              <div class="card-main">${formatTrainLabel(pending.train)}</div>
-              <div>${pending.boardStop.departure_hhmm || pending.boardStop.arrival_hhmm} · ${stationLabel(pending.boardStop.station_id)}</div>
-              <div class="tiny-actions">
-                <button class="tiny-button" data-action="choose-another">Choose Another Train</button>
-              </div>
-            </div>
-            <div class="section-head"><div><h3>STEP 2 · Choose Destination</h3><p>Pick where to get off. You can also click highlighted stations on the map.</p></div></div>
-            ${pending.destinations.length ? pending.destinations.map((item) => `
-              <div class="dest-card">
-                <div class="card-kicker">${item.arrivalHhmm}</div>
-                <div class="card-main">${item.label}</div>
-                <div class="tiny-actions">
-                  <button class="tiny-button good" data-train="${pending.train.train_number}" data-station="${item.stationId}" data-action="ride-here">Ride Here</button>
-                </div>
-              </div>
-            `).join("") : `<div class="empty">This train has no later stops.</div>`}
-          </div>
-        `;
-      } else if (preview.currentState.kind === "TRAIN") {
-        const destinations = availableDestinations(preview);
-        html += `
-          <div class="stack" style="margin-top:12px;">
-            <div class="section-head"><div><h3>Choose Where To Get Off</h3><p>You are on ${formatTrainLabel(preview.currentTrain || { train_number: preview.currentState.train_number })}. Click a downstream station.</p></div></div>
-            ${destinations.length ? destinations.map((item) => `
-              <div class="dest-card">
-                <div class="card-kicker">${item.arrivalHhmm}</div>
-                <div class="card-main">${item.label}</div>
-                <div class="tiny-actions">
-                  <button class="tiny-button good" data-station="${item.stationId}" data-action="ride-direct">Ride Here</button>
-                </div>
-              </div>
-            `).join("") : `<div class="empty">No downstream stops available from the current on-train state.</div>`}
-          </div>
-        `;
+      for (const step of player.steps) {
+        if (step.type === 'WAIT_UNTIL') {
+          const targetMinute = hhmmToMinutes(step.until_hhmm);
+          if (timeCapMinute !== null && targetMinute > timeCapMinute) break;
+          currentMinute = targetMinute;
+          resolvedSteps.push(step);
+          continue;
+        }
+        if (step.type === 'BOARD_TRAIN') {
+          if (currentState.kind !== 'NODE') break;
+          const trip = state.bundle.tripInstances.find((item) => item.id === step.trip_id);
+          if (!trip) break;
+          const boardStop = findBoardingStop(trip, currentState.stationGroupId, currentMinute);
+          if (!boardStop) break;
+          const boardMinute = stopDepartureMinutes(boardStop);
+          if (timeCapMinute !== null && boardMinute > timeCapMinute) break;
+          currentMinute = boardMinute;
+          currentState = { kind: 'TRAIN', tripId: trip.id };
+          currentTrip = trip;
+          currentBoardStop = boardStop;
+          resolvedSteps.push(step);
+          continue;
+        }
+        if (step.type === 'RIDE_TO_STATION') {
+          if (currentState.kind !== 'TRAIN' || !currentTrip || !currentBoardStop) break;
+          const alightStop = findAlightStop(currentTrip, currentBoardStop.sequence, step.station_id);
+          if (!alightStop) break;
+          const arrivalMinute = stopArrivalMinutes(alightStop);
+          if (timeCapMinute !== null && arrivalMinute > timeCapMinute) {
+            const loc = tripLocationOnMap(currentTrip.id, timeCapMinute);
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'TRAIN', tripId: currentTrip.id },
+              currentTrip,
+              currentBoardStop,
+              resolvedSteps,
+              mapPosition: loc?.position || null,
+              mapStationGroupId: loc?.anchorStationGroupId || null,
+            };
+          }
+          currentMinute = arrivalMinute;
+          currentState = { kind: 'NODE', stationGroupId: alightStop.stationGroupId };
+          currentTrip = null;
+          currentBoardStop = null;
+          resolvedSteps.push(step);
+        }
       }
 
-      region.innerHTML = html;
-      region.querySelectorAll("[data-action]").forEach((button) => {
-        button.addEventListener("click", () => {
-          const action = button.dataset.action;
-          if (action === "set-start") setStartToSelected();
-          else if (action === "wait") addWaitStep();
-          else if (action === "undo") undoLastStep();
-          else if (action === "clear") resetPlan();
-          else if (action === "choose-train") chooseTrain(button.dataset.train);
-          else if (action === "choose-another") chooseAnotherTrain();
-          else if (action === "ride-here") addBoardAndRide(button.dataset.train, button.dataset.station);
-          else if (action === "ride-direct") addRideToStation(button.dataset.station);
+      let mapPosition = null;
+      let mapStationGroupId = currentState.stationGroupId || null;
+      if (currentState.kind === 'NODE' && mapStationGroupId) {
+        mapPosition = stationPointByGroupId(mapStationGroupId);
+      } else if (currentState.kind === 'TRAIN') {
+        const loc = tripLocationOnMap(currentState.tripId, timeCapMinute ?? currentMinute);
+        mapPosition = loc?.position || null;
+        mapStationGroupId = loc?.anchorStationGroupId || null;
+      }
+      return { currentMinute, currentTime: minutesToHhmm(currentMinute), currentState, currentTrip, currentBoardStop, resolvedSteps, mapPosition, mapStationGroupId };
+    }
+
+    function planCursorPreview(playerId) {
+      if (state.phase === 'PLANNING' && !state.latestResult) return previewPlayer(playerId, null);
+      return previewPlayer(playerId, visibleGameMinute());
+    }
+
+    function currentReplayEvent() {
+      if (!state.latestResult?.match_event_log?.length) return null;
+      const index = Math.max(0, Math.min(state.selectedResultEventIndex, state.latestResult.match_event_log.length - 1));
+      return state.latestResult.match_event_log[index];
+    }
+
+    function replayPreviewFromState(playerId, carrierState, event) {
+      const currentState = { ...carrierState };
+      let mapPosition = null;
+      let mapStationGroupId = currentState.stationGroupId || null;
+      if (currentState.kind === 'NODE' && mapStationGroupId) {
+        mapPosition = stationPointByGroupId(mapStationGroupId);
+      } else if (currentState.kind === 'TRAIN') {
+        const loc = tripLocationOnMap(currentState.tripId, event.time_minute);
+        mapPosition = loc?.position || null;
+        mapStationGroupId = loc?.anchorStationGroupId || null;
+      }
+      return {
+        currentMinute: event.time_minute,
+        currentTime: event.time_hhmm,
+        currentState,
+        currentTrip: currentState.kind === 'TRAIN' ? state.bundle.tripInstances.find((item) => item.id === currentState.tripId) || null : null,
+        currentBoardStop: null,
+        resolvedSteps: [],
+        mapPosition,
+        mapStationGroupId,
+      };
+    }
+
+    function currentMapPreview(playerId) {
+      const event = currentReplayEvent();
+      if (event?.state_after?.[playerId]) return replayPreviewFromState(playerId, event.state_after[playerId], event);
+      return previewPlayer(playerId, visibleGameMinute());
+    }
+
+    function formatState(preview) {
+      if (!preview) return 'unknown';
+      return preview.currentState.kind === 'NODE'
+        ? `at ${stationGroupLabel(preview.currentState.stationGroupId)} ${preview.currentTime}`
+        : `on ${formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: preview.currentState.tripId })} ${preview.currentTime}`;
+    }
+
+    function shouldShowPlayer(playerId) {
+      if (currentReplayEvent()) return true;
+      if (state.phase === 'PLANNING') return true;
+      return playerId === state.activeMode;
+    }
+
+    function tripLocationOnMap(tripId, timeMinute) {
+      const trip = state.bundle.tripInstances.find((item) => item.id === tripId);
+      if (!trip) return null;
+      const stops = trip.stopTimes;
+      for (let i = 0; i < stops.length; i += 1) {
+        const stop = stops[i];
+        const arr = stopArrivalMinutes(stop);
+        const dep = stopDepartureMinutes(stop);
+        if (arr <= timeMinute && timeMinute <= dep) {
+          const pos = stationPointByGroupId(stop.stationGroupId);
+          return pos ? { anchorStationGroupId: stop.stationGroupId, position: pos } : null;
+        }
+        if (dep < timeMinute && i + 1 < stops.length) {
+          const nextStop = stops[i + 1];
+          const nextArr = stopArrivalMinutes(nextStop);
+          if (dep <= timeMinute && timeMinute <= nextArr) {
+            const a = stationPointByGroupId(stop.stationGroupId);
+            const b = stationPointByGroupId(nextStop.stationGroupId);
+            if (!a || !b) return null;
+            const ratio = nextArr === dep ? 1 : ((timeMinute - dep) / (nextArr - dep));
+            return {
+              anchorStationGroupId: nextStop.stationGroupId,
+              position: { x: a.x + (b.x - a.x) * ratio, y: a.y + (b.y - a.y) * ratio },
+            };
+          }
+        }
+      }
+      const last = stops[stops.length - 1];
+      const pos = stationPointByGroupId(last.stationGroupId);
+      return pos ? { anchorStationGroupId: last.stationGroupId, position: pos } : null;
+    }
+
+    function drawPath(points, opts = {}) {
+      if (!points.length) return '';
+      const d = points.map((pt, index) => `${index === 0 ? 'M' : 'L'} ${pt.x.toFixed(2)} ${pt.y.toFixed(2)}`).join(' ');
+      const stroke = opts.stroke || '#000';
+      const width = opts.width ?? 2;
+      const opacity = opts.opacity ?? 1;
+      const dash = opts.dash || '';
+      return `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}" ${dash ? `stroke-dasharray="${dash}"` : ''}/>`;
+    }
+
+    function stationGroupById(stationGroupId) {
+      return state.bundle.stationGroups.find((item) => item.id === stationGroupId);
+    }
+
+    function stationGroupLabel(stationGroupId) {
+      const label = resolveLabelEntry(stationGroupId);
+      return label?.displayNameEn || stationGroupById(stationGroupId)?.primaryName || niceName(stationGroupId);
+    }
+
+    function stationPointByGroupId(stationGroupId) {
+      return state.stationPoints.find((station) => station.stationGroupId === stationGroupId) || projectedStationPoint(stationGroupId);
+    }
+
+    function projectedStationPoint(stationGroupId) {
+      if (!state.projection || !state.bundle) return null;
+      const group = stationGroupById(stationGroupId);
+      if (!group?.centroid) return null;
+      const point = state.projection.project(group.centroid.lat, group.centroid.lon);
+      return { stationGroupId, x: point.x, y: point.y, lat: group.centroid.lat, lon: group.centroid.lon };
+    }
+
+    function hoveredTripPathPoints() {
+      if (!state.hoveredTripId || !state.bundle) return [];
+      const trip = state.bundle.tripInstances.find((item) => item.id === state.hoveredTripId);
+      if (!trip) return [];
+      return trip.stopTimes
+        .map((stop) => stationPointByGroupId(stop.stationGroupId))
+        .filter(Boolean)
+        .map((station) => ({ x: station.x, y: station.y }));
+    }
+
+    function render() {
+      if (!state.bundle) return;
+      const bundle = state.bundle;
+      const projection = state.projection;
+      const selectedId = state.selectedStationGroupId;
+      const centerlineSvg = [];
+      const serviceSvg = [];
+      const stationSvg = [];
+      const labelSvg = [];
+      const hoverSvg = [];
+      const selectedRouteStations = state.selectedRouteId ? getRouteStationSet(state.selectedRouteId) : new Set();
+      const activePreview = planCursorPreview(state.activeMode);
+      const pending = pendingDepartureContext(activePreview);
+      const highlightedFutureStops = new Set(
+        pending
+          ? pending.destinations.map((item) => item.stationGroupId)
+          : activePreview.currentState.kind === 'TRAIN'
+            ? availableDestinations(activePreview).map((item) => item.stationGroupId)
+            : []
+      );
+      const trackFeatures = state.visibleTileData.track_centerlines.length
+        ? state.visibleTileData.track_centerlines
+        : bundle.trackCenterlines.map((line) => ({
+            geometry: { coordinates: line.polyline.map((point) => [point.lon, point.lat]) },
+            properties: { line_name: line.lineName, station_group_ids: line.stationGroupIds }
+          }));
+      const serviceFeatures = state.visibleTileData.service_paths.length
+        ? state.visibleTileData.service_paths
+        : bundle.serviceGeometry.map((geometry) => {
+            const route = bundle.serviceRoutes.find((item) => item.id === geometry.routeId);
+            return {
+              geometry: { coordinates: geometry.polyline.map((point) => [point.lon, point.lat]) },
+              properties: {
+                route_id: geometry.routeId,
+                route_name: route?.shortName,
+                route_color: route?.color,
+                offset_rank: geometry.offsetRank || 0,
+              }
+            };
+          });
+      const stationFeatures = state.visibleTileData.stations.length
+        ? state.visibleTileData.stations
+        : bundle.physicalStations.map((station) => ({
+            geometry: { coordinates: [station.lon, station.lat] },
+            properties: {
+              id: station.id,
+              station_group_id: station.stationGroupId,
+            }
+          }));
+
+      trackFeatures.forEach((feature) => {
+        const points = feature.geometry.coordinates.map(([lon, lat]) => projection.project(lat, lon));
+        const stationGroupIds = feature.properties.station_group_ids || [];
+        const lineTouchesSelectedRoute = state.selectedRouteId && stationGroupIds.some((id) => selectedRouteStations.has(id));
+        centerlineSvg.push(drawPath(points, {
+          stroke: state.viewMode === 'corridor' ? '#ffffff' : 'rgba(255,255,255,0.75)',
+          width: state.viewMode === 'corridor' ? (lineTouchesSelectedRoute ? 11.5 : 10) : 7,
+          opacity: lineTouchesSelectedRoute ? 1 : 0.95
+        }));
+        centerlineSvg.push(drawPath(points, {
+          stroke: lineTouchesSelectedRoute ? '#8aa4c8' : (state.viewMode === 'corridor' ? '#c5d0df' : '#d8dee8'),
+          width: state.viewMode === 'corridor' ? (lineTouchesSelectedRoute ? 6.6 : 5.2) : 3.4,
+          opacity: lineTouchesSelectedRoute ? 1 : (state.viewMode === 'corridor' ? 1 : 0.88)
+        }));
+      });
+
+      if (state.viewMode === 'service') {
+        serviceFeatures.forEach((feature) => {
+          const routeId = feature.properties.route_id;
+          const color = feature.properties.route_color || '#666';
+          const selected = !state.selectedRouteId || routeId === state.selectedRouteId;
+          const points = feature.geometry.coordinates.map(([lon, lat]) => projection.project(lat, lon));
+          const offset = (feature.properties.offset_rank || 0) * 0.8;
+          const offsetPoints = points.map((point, index) => {
+            const prev = points[Math.max(index - 1, 0)];
+            const next = points[Math.min(index + 1, points.length - 1)];
+            const dx = next.x - prev.x;
+            const dy = next.y - prev.y;
+            const len = Math.hypot(dx, dy) || 1;
+            const nx = -dy / len;
+            const ny = dx / len;
+            return { x: point.x + nx * offset, y: point.y + ny * offset };
+          });
+          serviceSvg.push(drawPath(offsetPoints, {
+            stroke: '#ffffff',
+            width: selected ? 8.4 : 7,
+            opacity: selected ? 0.95 : 0.55
+          }));
+          serviceSvg.push(drawPath(offsetPoints, {
+            stroke: color,
+            width: selected ? 5.4 : 3.6,
+            opacity: selected ? 0.98 : 0.34
+          }));
+        });
+      }
+
+      const physicalStationMap = new Map(bundle.physicalStations.map((station) => [station.stationGroupId, station]));
+      state.stationPoints = stationFeatures.map((feature) => {
+        const stationGroupId = feature.properties.station_group_id;
+        const backing = physicalStationMap.get(stationGroupId);
+        const [lon, lat] = feature.geometry.coordinates;
+        const point = projection.project(lat, lon);
+        return {
+          ...(backing || {}),
+          stationGroupId,
+          id: backing?.id || feature.properties.id,
+          lat,
+          lon,
+          x: point.x,
+          y: point.y,
+        };
+      });
+
+      const stationRadius = clamp(4.4 / Math.sqrt(state.zoom), 2.3, 5.2);
+
+      state.stationPoints.forEach((station) => {
+        const selected = station.stationGroupId === selectedId;
+        const onSelectedRoute = selectedRouteStations.has(station.stationGroupId);
+        const onFutureTrip = highlightedFutureStops.has(station.stationGroupId);
+        const stroke = selected ? '#f97316' : '#ffffff';
+        const fill = selected ? '#f97316' : '#203247';
+        const haloRadius = selected ? stationRadius + 4.2 : onSelectedRoute ? stationRadius + 2.2 : stationRadius;
+        if (selected) {
+          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(249,115,22,0.18)" />`);
+        } else if (onSelectedRoute) {
+          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(21,101,192,0.12)" />`);
+        }
+        if (onFutureTrip) {
+          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${Math.max(haloRadius + 2.2, stationRadius + 4.4)}" class="future-stop-ring" />`);
+        }
+        stationSvg.push(`<circle data-station-group-id="${station.stationGroupId}" cx="${station.x}" cy="${station.y}" r="${stationRadius}" fill="${onSelectedRoute && !selected ? '#2f5d97' : fill}" stroke="${selected ? stroke : onSelectedRoute ? '#dbeafe' : stroke}" stroke-width="${selected ? 2.4 : onSelectedRoute ? 1.6 : 1.2}" style="cursor:pointer" />`);
+      });
+
+      state.labelEntries.forEach((entry) => {
+        if (!shouldShowLabel(entry)) return;
+        const point = projection.project(entry.labelPoint.lat, entry.labelPoint.lon);
+        const fontSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
+        const displayName = entry.displayNameEn || entry.displayNameJa || niceName(entry.stationGroupId);
+        labelSvg.push(
+          `<text x="${point.x + 8}" y="${point.y - 8}" font-size="${mapLabelFontSize(fontSize)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${mapLabelStrokeWidth(4.2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`
+        );
+      });
+
+      const hoveredPoints = hoveredTripPathPoints();
+      if (hoveredPoints.length >= 2) {
+        hoverSvg.push(drawPath(hoveredPoints, {
+          stroke: '#ffffff',
+          width: state.viewMode === 'service' ? 12 : 10,
+          opacity: 0.95
+        }));
+        hoverSvg.push(drawPath(hoveredPoints, {
+          stroke: '#0f172a',
+          width: state.viewMode === 'service' ? 7.2 : 6.2,
+          opacity: 0.92
+        }));
+        hoveredPoints.forEach((point) => {
+          hoverSvg.push(`<circle cx="${point.x}" cy="${point.y}" r="5.2" fill="#0f172a" stroke="rgba(255,255,255,0.95)" stroke-width="2" />`);
+        });
+      }
+
+      const playerSvg = [];
+      for (const playerId of ['runner', 'hunter']) {
+        if (!shouldShowPlayer(playerId)) continue;
+        const preview = currentMapPreview(playerId);
+        if (!preview?.mapPosition) continue;
+        const color = playerId === 'runner' ? '#dc4d62' : '#2d6cdf';
+        const { x, y } = preview.mapPosition;
+        playerSvg.push(`
+          <g class="player-marker">
+            <circle cx="${x}" cy="${y}" r="10" fill="${color}" stroke="white" stroke-width="3" />
+            <rect x="${x + 14}" y="${y - 20}" width="170" height="36" rx="8" class="marker-box" stroke="${color}" stroke-width="2" />
+            <text x="${x + 22}" y="${y - 6}" class="marker-label" fill="${color}">${playerId.toUpperCase()}</text>
+            <text x="${x + 22}" y="${y + 10}" class="marker-sub" fill="#1f2a37">${preview.currentState.kind === 'NODE' ? stationGroupLabel(preview.currentState.stationGroupId) : formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: '' })}</text>
+          </g>
+        `);
+      }
+
+      svg.innerHTML = `
+        <g id="viewport">
+          <rect x="0" y="0" width="${projection.width}" height="${projection.height}" fill="transparent" />
+          <g id="corridor-layer">${centerlineSvg.join('')}</g>
+          <g id="service-layer" opacity="${state.viewMode === 'service' ? 1 : 0.18}">${serviceSvg.join('')}</g>
+          <g id="station-layer">${stationSvg.join('')}</g>
+          <g id="hovered-trip-layer">${hoverSvg.join('')}</g>
+          <g id="player-layer">${playerSvg.join('')}</g>
+          <g id="label-layer">${labelSvg.join('')}</g>
+        </g>
+      `;
+
+      svg.querySelectorAll('[data-station-group-id]').forEach((node) => {
+        node.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const stationGroupId = node.getAttribute('data-station-group-id');
+          const preview = planCursorPreview(state.activeMode);
+          const pending = pendingDepartureContext(preview);
+          if (pending) {
+            const pendingDestination = pending.destinations.find((item) => item.stationGroupId === stationGroupId);
+            if (pendingDestination) {
+              addBoardAndRide(pending.trip.id, stationGroupId);
+              return;
+            }
+          }
+          if (preview.currentState.kind === 'TRAIN') {
+            const directDestination = availableDestinations(preview).find((item) => item.stationGroupId === stationGroupId);
+            if (directDestination) {
+              addRideToStation(stationGroupId);
+              return;
+            }
+          }
+          state.selectedStationGroupId = stationGroupId;
+          renderSidebar();
+          render();
+          applyViewport();
         });
       });
+
+      renderSidebar();
+      renderDiagram();
+      applyViewport();
+      refreshVisibleTiles();
     }
 
-    function renderPlanBoard() {
-      const box = document.getElementById("planBoardInfo");
-      const steps = state.players[state.activeMode].steps;
-      if (!steps.length) {
-        box.textContent = "No legs yet.\nSelect a station, choose a departure, then choose a destination stop.";
+    function applyViewport() {
+      const viewport = document.getElementById('viewport');
+      if (!viewport || !state.projection) return;
+      viewport.setAttribute('transform', `translate(${state.panX.toFixed(2)} ${state.panY.toFixed(2)}) scale(${state.zoom.toFixed(4)})`);
+      refreshVisibleTiles();
+    }
+
+    function resetViewport() {
+      state.zoom = 1;
+      state.panX = 0;
+      state.panY = 0;
+      applyViewport();
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      document.getElementById('corridor-btn').classList.toggle('active', mode === 'corridor');
+      document.getElementById('service-btn').classList.toggle('active', mode === 'service');
+      mapTitle.textContent = mode === 'corridor' ? 'Corridor View' : 'Service View';
+      mapSubtitle.textContent = mode === 'corridor'
+        ? 'Lower-zoom structural map. Physical track centerlines stay clean while the station hierarchy drives label density.'
+        : 'Service-oriented view. Real service families ride on top of the same Shinkansen bundle with distinct colors and offsets.';
+      render();
+    }
+
+    function getRoutePattern(routeId) {
+      return state.bundle.servicePatterns.find((item) => item.routeId === routeId);
+    }
+
+    function renderDiagram() {
+      if (!state.bundle) return;
+      if (!state.selectedRouteId) {
+        diagramTitle.textContent = 'Route Diagram';
+        diagramSubtitle.textContent = 'Select one route to inspect its service-time pattern. The diagram uses the same trip and station source as the map.';
+        diagramChip.textContent = 'No route selected';
+        diagram.innerHTML = `
+          <rect x="0" y="0" width="1200" height="260" fill="transparent"></rect>
+          <text x="30" y="52" fill="#667487" font-size="18" font-weight="700">No route selected</text>
+          <text x="30" y="82" fill="#667487" font-size="13">Click a route card, legend chip, or service path on the map to load its timetable diagram.</text>
+        `;
         return;
       }
-      let chainStation = state.players[state.activeMode].start_station_id;
-      let pendingTrain = null;
-      let legIndex = 1;
-      const lines = [];
-      for (const step of steps) {
-        if (step.type === "WAIT_UNTIL") {
-          lines.push(`WAIT until ${step.until_hhmm}`);
-          continue;
-        }
-        if (step.type === "BOARD_TRAIN") {
-          pendingTrain = step.train_number;
-          continue;
-        }
-        if (step.type === "RIDE_TO_STATION") {
-          lines.push(`LEG ${legIndex}. ${chainStation} -> ${pendingTrain || "?"} -> ${step.station_id}`);
-          chainStation = step.station_id;
-          pendingTrain = null;
-          legIndex += 1;
-        }
-      }
-      box.textContent = lines.join("\n\n");
-    }
 
-    function routeStationSet(routeId) {
-      const route = state.bundle.routes.find((item) => item.id === routeId);
-      return new Set(route ? route.station_ids : []);
-    }
-
-    function routeTripCount(routeId) {
-      if (!state.trains) return 0;
-      return state.trains.filter((train) => train.route_id === routeId).length;
-    }
-
-    function renderRouteRegion() {
-      const routeInfo = document.getElementById("routeInfo");
-      const routeRegion = document.getElementById("routeRegion");
-      const selectedRoute = state.bundle.routes.find((item) => item.id === state.selectedRouteId);
-
-      if (!selectedRoute) {
-        routeInfo.textContent = "No route selected yet.\nClick a route on the map or in the list below to highlight that service family.";
-      } else {
-        routeInfo.textContent = [
-          `Selected route: ${selectedRoute.name} [${selectedRoute.id}]`,
-          `Stations: ${selectedRoute.station_ids.length}`,
-          `Trips in current dataset: ${routeTripCount(selectedRoute.id)}`,
-          `Color: ${selectedRoute.color}`,
-        ].join("\n");
+      const route = state.bundle.serviceRoutes.find((item) => item.id === state.selectedRouteId);
+      const pattern = getRoutePattern(route.id);
+      if (!pattern) {
+        diagram.innerHTML = '';
+        return;
       }
 
-      routeRegion.innerHTML = state.bundle.routes.map((route) => `
-        <button class="route-card ${state.selectedRouteId === route.id ? "active" : ""}" data-route-id="${route.id}">
-          <div class="card-kicker">Route family</div>
-          <div class="card-main">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:999px;background:${route.color};margin-right:8px;vertical-align:1px;"></span>
-            ${route.name}
-          </div>
-          <div class="card-sub">${route.station_ids.length} stations · ${routeTripCount(route.id)} trains</div>
-        </button>
-      `).join("");
+      const stationIds = pattern.stationGroupIds;
+      const stationIndex = new Map(stationIds.map((id, index) => [id, index]));
+      const trips = state.bundle.tripInstances
+        .filter((trip) => trip.routeId === route.id)
+        .map((trip) => ({
+          ...trip,
+          points: trip.stopTimes
+            .filter((stop) => stationIndex.has(stop.stationGroupId))
+            .map((stop) => ({
+              stationGroupId: stop.stationGroupId,
+              xSec: stop.departureTimeSec ?? stop.arrivalTimeSec,
+              yIndex: stationIndex.get(stop.stationGroupId),
+            }))
+            .sort((a, b) => a.xSec - b.xSec),
+        }))
+        .filter((trip) => trip.points.length >= 2)
+        .sort((a, b) => (a.points[0]?.xSec ?? 0) - (b.points[0]?.xSec ?? 0));
 
-      routeRegion.querySelectorAll("[data-route-id]").forEach((node) => {
-        node.addEventListener("click", () => {
-          const routeId = node.getAttribute("data-route-id");
-          state.selectedRouteId = state.selectedRouteId === routeId ? null : routeId;
+      const width = 1200;
+      const height = 260;
+      const margin = { top: 18, right: 18, bottom: 30, left: 124 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      const dayStart = 5 * 3600;
+      const dayEnd = 24 * 3600;
+      const maxIndex = Math.max(stationIds.length - 1, 1);
+      const xForSec = (sec) => margin.left + ((sec - dayStart) / (dayEnd - dayStart)) * innerWidth;
+      const yForIndex = (index) => margin.top + (index / maxIndex) * innerHeight;
+
+      diagramTitle.textContent = `${route.shortName} Diagram`;
+      diagramSubtitle.textContent = `${pattern.stationGroupIds.length} stations in the pilot pattern. Click the map and timetable together to read the same route from both operational and spatial views.`;
+      diagramChip.textContent = `${route.shortName} · ${trips.length} trips`;
+
+      const rowSvg = stationIds.map((stationId) => {
+        const label = resolveLabelEntry(stationId);
+        const index = stationIndex.get(stationId);
+        const y = yForIndex(index);
+        const selected = stationId === state.selectedStationGroupId;
+        return `
+          <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="${selected ? 'rgba(21,101,192,0.18)' : 'rgba(149,164,184,0.28)'}" stroke-width="${selected ? 2.4 : 1}" />
+          <text x="${margin.left - 10}" y="${y + 4}" text-anchor="end" font-size="${selected ? 12 : 11}" font-weight="${selected ? 800 : 600}" fill="${selected ? '#1565c0' : '#4c5b70'}">${label?.displayNameEn || niceName(stationId)}</text>
+        `;
+      }).join('');
+
+      const axisSvg = Array.from({ length: 8 }, (_, i) => {
+        const sec = dayStart + i * 2.5 * 3600;
+        const x = xForSec(sec);
+        const hour = Math.floor(sec / 3600);
+        const minute = Math.floor((sec % 3600) / 60);
+        return `
+          <line x1="${x}" y1="${margin.top}" x2="${x}" y2="${height - margin.bottom}" stroke="rgba(149,164,184,0.35)" stroke-width="1" />
+          <text x="${x}" y="${height - 10}" text-anchor="middle" font-size="11" fill="#667487">${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}</text>
+        `;
+      }).join('');
+
+      const tripSvg = trips.slice(0, 90).map((trip) => {
+        const path = trip.points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${xForSec(point.xSec).toFixed(2)} ${yForIndex(point.yIndex).toFixed(2)}`).join(' ');
+        const highlighted = state.selectedStationGroupId && trip.points.some((point) => point.stationGroupId === state.selectedStationGroupId);
+        const hovered = state.hoveredTripId === trip.id;
+        return `
+          <path data-trip-id="${trip.id}" d="${path}" fill="none" stroke="${hovered ? '#0f172a' : route.color}" stroke-width="${hovered ? 4.8 : highlighted ? 2.8 : 1.3}" opacity="${hovered ? 0.96 : highlighted ? 0.95 : 0.28}" stroke-linecap="round" stroke-linejoin="round" style="cursor:pointer">
+            <title>${formatTripLabel(trip)}</title>
+          </path>
+        `;
+      }).join('');
+
+      diagram.innerHTML = `
+        <rect x="0" y="0" width="${width}" height="${height}" fill="transparent"></rect>
+        ${rowSvg}
+        ${axisSvg}
+        ${tripSvg}
+      `;
+
+      diagram.querySelectorAll('[data-trip-id]').forEach((node) => {
+        node.addEventListener('mouseenter', () => {
+          state.hoveredTripId = node.getAttribute('data-trip-id');
           render();
+        });
+        node.addEventListener('mouseleave', () => {
+          if (state.hoveredTripId === node.getAttribute('data-trip-id')) {
+            state.hoveredTripId = null;
+            render();
+          }
         });
       });
     }
 
-    function renderInfo() {
-      const currentStation = state.stationMap.get(state.players[state.activeMode].start_station_id);
-      const selectedStation = state.stationMap.get(state.selectedStationId || state.players[state.activeMode].start_station_id);
-      const activePreview = planCursorPreview(state.activeMode);
-      const runnerPreview = currentMapPreview("runner");
-      const hunterPreview = currentMapPreview("hunter");
-
-      document.getElementById("mapStats").textContent = `${state.bundle.routes.length} routes | ${state.bundle.train_count} real weekday trains`;
-      document.getElementById("cursorInfo").textContent = [
-        `Mode: ${state.activeMode.toUpperCase()}`,
-        `Current: ${formatState(activePreview)}`,
-        `Match window: ${state.startTime} -> ${state.endTime}`,
-        `Planned steps: ${state.players[state.activeMode].steps.length}`,
-      ].join("\n");
-
-      document.getElementById("stationInfo").textContent = [
-        `Selected station: ${selectedStation.name} [${selectedStation.id}]`,
-        `Routes: ${(selectedStation.route_ids || []).join(", ") || "-"}`,
-        state.activeMode === "hunter"
-          ? (state.phase === "PLANNING"
-              ? `Runner: ${runnerPreview.currentState.kind === "NODE" ? runnerPreview.currentState.station_id : "hidden in text while on a train"}`
-              : "Runner hidden during LIVE.")
-          : `Runner: ${formatState(runnerPreview)}`,
-        `Hunter: ${formatState(hunterPreview)}`,
-      ].join("\n");
-
-      document.getElementById("phaseClock").innerHTML = state.phase === "PLANNING"
-        ? `PLANNING ${String(state.planningSecondsRemaining).padStart(2, "0")}s<br/>Game starts ${state.startTime}`
-        : state.phase === "LIVE"
-          ? `LIVE ${minutesToHhmm(state.currentGameMinute)}<br/>Window ${state.startTime} -> ${state.endTime}`
-          : `ENDED ${minutesToHhmm(state.currentGameMinute)}<br/>Window ${state.startTime} -> ${state.endTime}`;
-      document.getElementById("phaseClock").style.background = state.phase === "PLANNING" ? "#b8441f" : (state.phase === "LIVE" ? "#163d2c" : "#2a2f38");
-      document.getElementById("phaseClock").style.color = "white";
-      document.getElementById("runnerModeButton").className = state.activeMode === "runner" ? "active runner" : "";
-      document.getElementById("hunterModeButton").className = state.activeMode === "hunter" ? "active hunter" : "";
-      renderRouteRegion();
-    }
-
-    function applyTimeInput() {
-      const value = document.getElementById("timeInput").value.trim();
-      if (!/^\d{2}:\d{2}$/.test(value)) return;
-      state.currentMinute = hhmmToMinutes(value);
+    function setActiveMode(mode) {
+      state.activeMode = mode;
+      state.selectedStationGroupId = state.players[mode].start_station_id;
+      state.hoveredTripId = null;
       render();
     }
 
     function resetPlan() {
       state.players[state.activeMode].steps = [];
-      clearPendingTrain();
-      render();
-    }
-
-    function setActiveMode(mode) {
-      state.activeMode = mode;
-      state.selectedStationId = state.players[mode].start_station_id;
-      state.selectedTrainNumber = pendingTrainNumber(mode);
-      state.selectedDestinationStationId = null;
+      clearPendingTrip();
+      invalidateSimulation();
       render();
     }
 
     function applyTestPreset() {
-      if (state.activeMode === "hunter") {
-        state.startTime = "07:00";
-        state.endTime = "08:00";
-        state.players.runner = { start_station_id: "TOKYO", input_mode: "actions", passive_hold: true, steps: [{ type: "WAIT_UNTIL", until_hhmm: state.endTime }] };
-        state.players.hunter = { start_station_id: "SHIN_OSAKA", input_mode: "actions", steps: [] };
+      if (state.activeMode === 'hunter') {
+        state.startTime = '07:00';
+        state.endTime = '08:00';
+        state.players.runner = { start_station_id: 'SG_TOKYO', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: state.endTime }] };
+        state.players.hunter = { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', steps: [] };
       } else {
-        state.startTime = "06:00";
-        state.endTime = "07:00";
-        state.players.runner = { start_station_id: "TOKYO", input_mode: "plan", steps: [] };
-        state.players.hunter = { start_station_id: "SHIN_OSAKA", input_mode: "actions", passive_hold: true, steps: [{ type: "WAIT_UNTIL", until_hhmm: state.endTime }] };
+        state.startTime = '06:00';
+        state.endTime = '07:00';
+        state.players.runner = { start_station_id: 'SG_TOKYO', input_mode: 'plan', steps: [] };
+        state.players.hunter = { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: state.endTime }] };
       }
-      state.currentStationId = state.players[state.activeMode].start_station_id;
-      state.selectedStationId = state.currentStationId;
-      state.currentMinute = hhmmToMinutes(state.startTime);
-      state.phase = "PLANNING";
+      state.selectedStationGroupId = state.players[state.activeMode].start_station_id;
+      state.phase = 'PLANNING';
       state.planningSecondsRemaining = 60;
       state.currentGameMinute = hhmmToMinutes(state.startTime);
       state.clockRunning = true;
-      state.pendingTrainNumbers = { runner: null, hunter: null };
-      state.selectedTrainNumber = null;
-      state.selectedDestinationStationId = null;
-      state.latestResult = null;
-      state.selectedResultEventIndex = 0;
-      state.liveCapture = null;
-      document.getElementById("timeInput").value = state.startTime;
+      state.pendingTripIds = { runner: null, hunter: null };
+      invalidateSimulation();
       scheduleTick();
       render();
     }
@@ -1604,19 +1691,19 @@
     function onTick() {
       state.tickHandle = null;
       if (!state.clockRunning) return;
-      if (state.phase === "PLANNING") {
+      if (state.phase === 'PLANNING') {
         state.planningSecondsRemaining = Math.max(0, state.planningSecondsRemaining - 1);
         if (state.planningSecondsRemaining === 0) {
-          state.phase = "LIVE";
+          state.phase = 'LIVE';
           checkLiveCapture();
         }
-      } else if (state.phase === "LIVE") {
+      } else if (state.phase === 'LIVE') {
         const endMinute = hhmmToMinutes(state.endTime);
         if (state.currentGameMinute < endMinute) {
           state.currentGameMinute += 1;
           checkLiveCapture();
         } else {
-          state.phase = "ENDED";
+          state.phase = 'ENDED';
           state.clockRunning = false;
         }
       }
@@ -1625,10 +1712,11 @@
     }
 
     function startGameNow() {
-      if (state.phase !== "PLANNING") return;
-      state.phase = "LIVE";
+      if (state.phase !== 'PLANNING') return;
+      state.phase = 'LIVE';
       state.currentGameMinute = hhmmToMinutes(state.startTime);
       state.clockRunning = true;
+      invalidateSimulation();
       checkLiveCapture();
       if (!state.liveCapture) scheduleTick();
       render();
@@ -1644,189 +1732,74 @@
       render();
     }
 
-    function findBoardingStop(train, stationId, earliestMinute) {
-      const candidates = train.stop_times
-        .filter((stop) => stop.station_id === stationId && stopDepartureMinutes(stop) >= earliestMinute)
-        .sort((a, b) => stopDepartureMinutes(a) - stopDepartureMinutes(b));
-      return candidates[0] || null;
+    function chooseTrip(tripId) {
+      state.pendingTripIds[state.activeMode] = tripId;
+      render();
     }
 
-    function findAlightStop(train, boardedSequence, stationId) {
-      return train.stop_times.find((stop) => stop.sequence > boardedSequence && stop.station_id === stationId) || null;
+    function chooseAnotherTrip() {
+      clearPendingTrip();
+      render();
     }
 
-    function previewPlayer(playerId, timeCapMinute = null) {
-      const player = state.players[playerId];
-      let currentMinute = hhmmToMinutes(state.startTime);
-      let currentState = { kind: "NODE", station_id: player.start_station_id };
-      let currentTrain = null;
-      let currentBoardStop = null;
-      const resolvedSteps = [];
-
-      for (const step of player.steps) {
-        if (step.type === "WAIT_UNTIL") {
-          const targetMinute = hhmmToMinutes(step.until_hhmm);
-          if (timeCapMinute !== null && targetMinute > timeCapMinute) break;
-          currentMinute = targetMinute;
-          resolvedSteps.push(step);
-          continue;
-        }
-        if (step.type === "BOARD_TRAIN") {
-          if (currentState.kind !== "NODE") break;
-          const train = state.trains.train_instances.find((item) => item.train_number === step.train_number);
-          if (!train) break;
-          const boardStop = findBoardingStop(train, currentState.station_id, currentMinute);
-          if (!boardStop) break;
-          const boardMinute = stopDepartureMinutes(boardStop);
-          if (timeCapMinute !== null && boardMinute > timeCapMinute) break;
-          currentMinute = boardMinute;
-          currentState = { kind: "TRAIN", train_number: train.train_number };
-          currentTrain = train;
-          currentBoardStop = boardStop;
-          resolvedSteps.push(step);
-          continue;
-        }
-        if (step.type === "RIDE_TO_STATION") {
-          if (currentState.kind !== "TRAIN" || !currentTrain || !currentBoardStop) break;
-          const alightStop = findAlightStop(currentTrain, currentBoardStop.sequence, step.station_id);
-          if (!alightStop) break;
-          const arrivalMinute = stopArrivalMinutes(alightStop);
-          if (timeCapMinute !== null && arrivalMinute > timeCapMinute) {
-            const loc = trainLocationOnMap(currentTrain.train_number, timeCapMinute);
-            return {
-              currentMinute: timeCapMinute,
-              currentTime: minutesToHhmm(timeCapMinute),
-              currentState: { kind: "TRAIN", train_number: currentTrain.train_number },
-              currentTrain,
-              currentBoardStop,
-              resolvedSteps,
-              mapPosition: loc?.position || null,
-              mapStationId: loc?.anchor_station_id || null,
-            };
-          }
-          currentMinute = arrivalMinute;
-          currentState = { kind: "NODE", station_id: alightStop.station_id };
-          currentTrain = null;
-          currentBoardStop = null;
-          resolvedSteps.push(step);
-        }
-      }
-
-      let mapPosition = null;
-      let mapStationId = currentState.station_id || null;
-      if (currentState.kind === "NODE" && mapStationId && state.mapCoords.has(mapStationId)) {
-        mapPosition = state.mapCoords.get(mapStationId);
-      } else if (currentState.kind === "TRAIN") {
-        const loc = trainLocationOnMap(currentState.train_number, timeCapMinute ?? currentMinute);
-        mapPosition = loc?.position || null;
-        mapStationId = loc?.anchor_station_id || null;
-      }
-      return { currentMinute, currentTime: minutesToHhmm(currentMinute), currentState, currentTrain, currentBoardStop, resolvedSteps, mapPosition, mapStationId };
+    function setStartToSelected() {
+      if (!state.selectedStationGroupId) return;
+      state.players[state.activeMode].start_station_id = state.selectedStationGroupId;
+      state.players[state.activeMode].steps = [];
+      clearPendingTrip();
+      invalidateSimulation();
+      render();
     }
 
-    function planCursorPreview(playerId) {
-      if (state.phase === "PLANNING" && !state.latestResult) return previewPlayer(playerId, null);
-      return previewPlayer(playerId, visibleGameMinute());
+    function addWaitStep() {
+      const preview = planCursorPreview(state.activeMode);
+      if (preview.currentState.kind !== 'NODE') return;
+      const targetMinute = Math.min(preview.currentMinute + 5, hhmmToMinutes(state.endTime));
+      state.players[state.activeMode].steps.push({ type: 'WAIT_UNTIL', until_hhmm: minutesToHhmm(targetMinute) });
+      clearPendingTrip();
+      invalidateSimulation();
+      render();
     }
 
-    function visibleGameMinute() {
-      return state.phase === "PLANNING" ? hhmmToMinutes(state.startTime) : state.currentGameMinute;
+    function undoLastStep() {
+      const steps = state.players[state.activeMode].steps;
+      if (!steps.length) return;
+      steps.pop();
+      clearPendingTrip();
+      invalidateSimulation();
+      render();
     }
 
-    function currentMapPreview(playerId) {
-      const event = currentReplayEvent();
-      if (event && event.state_after && event.state_after[playerId]) {
-        return replayPreviewFromState(playerId, event.state_after[playerId], event);
-      }
-      return previewPlayer(playerId, visibleGameMinute());
+    function addBoardAndRide(tripId, stationGroupId) {
+      const preview = planCursorPreview(state.activeMode);
+      if (preview.currentState.kind !== 'NODE') return;
+      state.players[state.activeMode].steps.push({ type: 'BOARD_TRAIN', trip_id: tripId });
+      state.players[state.activeMode].steps.push({ type: 'RIDE_TO_STATION', station_id: stationGroupId });
+      clearPendingTrip();
+      invalidateSimulation();
+      render();
     }
 
-    function currentReplayEvent() {
-      if (!state.latestResult || !state.latestResult.match_event_log || !state.latestResult.match_event_log.length) return null;
-      const index = Math.max(0, Math.min(state.selectedResultEventIndex, state.latestResult.match_event_log.length - 1));
-      return state.latestResult.match_event_log[index];
-    }
-
-    function replayPreviewFromState(playerId, carrierState, event) {
-      const currentState = { ...carrierState };
-      let mapPosition = null;
-      let mapStationId = currentState.station_id || null;
-      if (currentState.kind === "NODE" && mapStationId && state.mapCoords.has(mapStationId)) {
-        mapPosition = state.mapCoords.get(mapStationId);
-      } else if (currentState.kind === "TRAIN") {
-        const loc = trainLocationOnMap(currentState.train_number, event.time_minute);
-        if (loc) {
-          mapPosition = loc.position;
-          mapStationId = loc.anchor_station_id;
-        }
-      }
-      return {
-        currentMinute: event.time_minute,
-        currentTime: event.time_hhmm,
-        currentState,
-        currentTrain: currentState.kind === "TRAIN" ? state.trains.train_instances.find((item) => item.train_number === currentState.train_number) || null : null,
-        currentBoardStop: null,
-        resolvedSteps: [],
-        mapPosition,
-        mapStationId,
-      };
-    }
-
-    function formatState(preview) {
-      if (!preview) return "unknown";
-      return preview.currentState.kind === "NODE"
-        ? `at ${preview.currentState.station_id} ${preview.currentTime}`
-        : `on ${preview.currentState.train_number} ${preview.currentTime}`;
-    }
-
-    function trainLocationOnMap(trainNumber, timeMinute) {
-      const train = state.trains.train_instances.find((item) => item.train_number === trainNumber);
-      if (!train) return null;
-      const stops = train.stop_times;
-      for (let i = 0; i < stops.length; i += 1) {
-        const stop = stops[i];
-        const arr = stopArrivalMinutes(stop);
-        const dep = stopDepartureMinutes(stop);
-        if (arr <= timeMinute && timeMinute <= dep && state.mapCoords.has(stop.station_id)) {
-          const pos = state.mapCoords.get(stop.station_id);
-          return { anchor_station_id: stop.station_id, position: pos };
-        }
-        if (dep < timeMinute && i + 1 < stops.length) {
-          const nextStop = stops[i + 1];
-          const nextArr = stopArrivalMinutes(nextStop);
-          if (dep <= timeMinute && timeMinute <= nextArr) {
-            const a = state.mapCoords.get(stop.station_id);
-            const b = state.mapCoords.get(nextStop.station_id);
-            if (!a || !b) return null;
-            const ratio = nextArr === dep ? 1 : ((timeMinute - dep) / (nextArr - dep));
-            return {
-              anchor_station_id: nextStop.station_id,
-              position: { x: a.x + (b.x - a.x) * ratio, y: a.y + (b.y - a.y) * ratio },
-            };
-          }
-        }
-      }
-      const last = stops[stops.length - 1];
-      return state.mapCoords.has(last.station_id) ? { anchor_station_id: last.station_id, position: state.mapCoords.get(last.station_id) } : null;
-    }
-
-    function shouldShowPlayer(playerId) {
-      if (currentReplayEvent()) return true;
-      if (state.phase === "PLANNING") return true;
-      return playerId === state.activeMode;
+    function addRideToStation(stationGroupId) {
+      const preview = planCursorPreview(state.activeMode);
+      if (preview.currentState.kind !== 'TRAIN') return;
+      state.players[state.activeMode].steps.push({ type: 'RIDE_TO_STATION', station_id: stationGroupId });
+      clearPendingTrip();
+      invalidateSimulation();
+      render();
     }
 
     function detectLiveCapture() {
-      if (state.phase !== "LIVE") return null;
-      const runnerPreview = previewPlayer("runner", visibleGameMinute());
-      const hunterPreview = previewPlayer("hunter", visibleGameMinute());
+      if (state.phase !== 'LIVE') return null;
+      const runnerPreview = previewPlayer('runner', visibleGameMinute());
+      const hunterPreview = previewPlayer('hunter', visibleGameMinute());
       const runnerState = runnerPreview.currentState;
       const hunterState = hunterPreview.currentState;
-      if (runnerState.kind === "TRAIN" && hunterState.kind === "TRAIN" && runnerState.train_number === hunterState.train_number) {
-        return { type: "same_train", time_hhmm: minutesToHhmm(visibleGameMinute()), train_number: runnerState.train_number };
+      if (runnerState.kind === 'TRAIN' && hunterState.kind === 'TRAIN' && runnerState.tripId === hunterState.tripId) {
+        return { type: 'same_train', time_hhmm: minutesToHhmm(visibleGameMinute()), trip_id: runnerState.tripId };
       }
-      if (runnerState.kind === "NODE" && hunterState.kind === "NODE" && runnerState.station_id === hunterState.station_id) {
-        return { type: "same_node", time_hhmm: minutesToHhmm(visibleGameMinute()), station_id: runnerState.station_id };
+      if (runnerState.kind === 'NODE' && hunterState.kind === 'NODE' && runnerState.stationGroupId === hunterState.stationGroupId) {
+        return { type: 'same_node', time_hhmm: minutesToHhmm(visibleGameMinute()), station_group_id: runnerState.stationGroupId };
       }
       return null;
     }
@@ -1835,20 +1808,19 @@
       const capture = detectLiveCapture();
       if (!capture) return;
       state.liveCapture = capture;
-      state.phase = "ENDED";
+      state.phase = 'ENDED';
       state.clockRunning = false;
-      document.getElementById("resultInfo").textContent = capture.type === "same_node"
-        ? `GAME END\n\nHunter caught the runner at ${capture.time_hhmm}.\nRule: same_node\nStation: ${capture.station_id}`
-        : `GAME END\n\nHunter caught the runner at ${capture.time_hhmm}.\nRule: same_train\nTrain: ${capture.train_number}`;
+      resultInfoEl.textContent = capture.type === 'same_node'
+        ? `GAME END\n\nHunter caught the runner at ${capture.time_hhmm}.\nRule: same_node\nStation: ${stationGroupLabel(capture.station_group_id)}`
+        : `GAME END\n\nHunter caught the runner at ${capture.time_hhmm}.\nRule: same_train\nTrip: ${formatTripLabel(state.bundle.tripInstances.find((item) => item.id === capture.trip_id) || { serviceName: capture.trip_id })}`;
     }
 
     function classifyEventFamily(eventType) {
-      if (["SCENARIO_START", "SCENARIO_END"].includes(eventType)) return "LIFECYCLE";
-      if (eventType === "CAPTURE") return "RESOLUTION";
-      if (["START_AT_STATION", "WAIT_UNTIL"].includes(eventType)) return "POSITION";
-      if (["BOARD_TRAIN", "ALIGHT_TRAIN"].includes(eventType)) return "MOVEMENT";
-      if (eventType === "PLAN_RESOLUTION") return "PLANNING";
-      return "GENERIC";
+      if (['SCENARIO_START', 'SCENARIO_END'].includes(eventType)) return 'LIFECYCLE';
+      if (eventType === 'CAPTURE') return 'RESOLUTION';
+      if (['START_AT_STATION', 'WAIT_UNTIL'].includes(eventType)) return 'POSITION';
+      if (['BOARD_TRAIN', 'ALIGHT_TRAIN'].includes(eventType)) return 'MOVEMENT';
+      return 'GENERIC';
     }
 
     function formatEvent(timeMinute, eventType, playerId = null, payload = {}) {
@@ -1856,8 +1828,8 @@
         time_hhmm: minutesToHhmm(timeMinute),
         time_minute: timeMinute,
         type: eventType,
-        event_scope: ["SCENARIO_START", "CAPTURE", "SCENARIO_END"].includes(eventType) ? "MATCH_GLOBAL" : "PLAYER_LOCAL",
-        timeline_lane: playerId || "match",
+        event_scope: ['SCENARIO_START', 'CAPTURE', 'SCENARIO_END'].includes(eventType) ? 'MATCH_GLOBAL' : 'PLAYER_LOCAL',
+        timeline_lane: playerId || 'match',
         event_family: classifyEventFamily(eventType),
       };
       if (playerId) event.player_id = playerId;
@@ -1865,129 +1837,111 @@
     }
 
     function eventPriority(eventType) {
-      return { SCENARIO_START: 0, START_AT_STATION: 1, WAIT_UNTIL: 2, PLAN_RESOLUTION: 3, BOARD_TRAIN: 4, ALIGHT_TRAIN: 5, CAPTURE: 6, SCENARIO_END: 7 }[eventType] ?? 99;
+      return { SCENARIO_START: 0, START_AT_STATION: 1, WAIT_UNTIL: 2, BOARD_TRAIN: 4, ALIGHT_TRAIN: 5, CAPTURE: 6, SCENARIO_END: 7 }[eventType] ?? 99;
     }
 
     function expandPlayerPlan(playerId, playerData, scenario) {
       let currentMinute = hhmmToMinutes(scenario.start_time_hhmm);
       const endMinute = hhmmToMinutes(scenario.end_time_hhmm);
       let currentStationId = playerData.start_station_id;
-      let currentTrain = null;
+      let currentTrip = null;
       let currentBoardStop = null;
-      const intervals = [];
       const resolvedActions = [];
       const events = [
-        formatEvent(currentMinute, "START_AT_STATION", playerId, {
-          station_id: currentStationId,
-          carrier_after: { kind: "NODE", station_id: currentStationId },
+        formatEvent(currentMinute, 'START_AT_STATION', playerId, {
+          station_group_id: currentStationId,
+          carrier_after: { kind: 'NODE', stationGroupId: currentStationId },
         }),
       ];
       const steps = playerData.plan ? playerData.plan.steps : (playerData.actions || []);
       for (let i = 0; i < steps.length; i += 1) {
         const action = steps[i];
-        if (action.type === "WAIT_UNTIL") {
+        if (action.type === 'WAIT_UNTIL') {
           const targetMinute = hhmmToMinutes(action.until_hhmm);
-          if (currentStationId == null || targetMinute < currentMinute) throw new Error(`${playerId} has invalid WAIT_UNTIL`);
-          intervals.push({ kind: "NODE", station_id: currentStationId, start_minute: currentMinute, end_minute: targetMinute });
-          events.push(formatEvent(targetMinute, "WAIT_UNTIL", playerId, { station_id: currentStationId }));
+          if (targetMinute < currentMinute) throw new Error(`${playerId} has invalid WAIT_UNTIL`);
+          events.push(formatEvent(targetMinute, 'WAIT_UNTIL', playerId, { station_group_id: currentStationId }));
           currentMinute = targetMinute;
           resolvedActions.push({ step_index: i + 1, ...action });
           continue;
         }
-        if (action.type === "BOARD_TRAIN") {
-          if (currentStationId == null) throw new Error(`${playerId} cannot board while not at a station`);
-          const train = state.trains.train_instances.find((item) => item.train_number === action.train_number);
-          if (!train) throw new Error(`Unknown train ${action.train_number}`);
-          const boardStop = findBoardingStop(train, currentStationId, currentMinute);
-          if (!boardStop) throw new Error(`Train ${action.train_number} not catchable from ${currentStationId}`);
+        if (action.type === 'BOARD_TRAIN') {
+          const trip = state.bundle.tripInstances.find((item) => item.id === action.trip_id);
+          if (!trip) throw new Error(`Unknown trip ${action.trip_id}`);
+          const boardStop = findBoardingStop(trip, currentStationId, currentMinute);
+          if (!boardStop) throw new Error(`Trip ${action.trip_id} not catchable from ${currentStationId}`);
           const boardMinute = stopDepartureMinutes(boardStop);
-          if (boardMinute > currentMinute) intervals.push({ kind: "NODE", station_id: currentStationId, start_minute: currentMinute, end_minute: boardMinute });
-          events.push(formatEvent(boardMinute, "BOARD_TRAIN", playerId, {
-            station_id: currentStationId,
-            train_number: train.train_number,
-            sequence: boardStop.sequence,
-            carrier_after: { kind: "TRAIN", train_number: train.train_number },
+          events.push(formatEvent(boardMinute, 'BOARD_TRAIN', playerId, {
+            station_group_id: currentStationId,
+            trip_id: trip.id,
+            carrier_after: { kind: 'TRAIN', tripId: trip.id },
           }));
           currentMinute = boardMinute;
-          currentTrain = train;
+          currentTrip = trip;
           currentBoardStop = boardStop;
           currentStationId = null;
           resolvedActions.push({ step_index: i + 1, ...action });
           continue;
         }
-        if (action.type === "RIDE_TO_STATION") {
-          if (!currentTrain || !currentBoardStop) throw new Error(`${playerId} cannot ride while not on a train`);
-          const alightStop = findAlightStop(currentTrain, currentBoardStop.sequence, action.station_id);
-          if (!alightStop) throw new Error(`${currentTrain.train_number} does not reach ${action.station_id}`);
+        if (action.type === 'RIDE_TO_STATION') {
+          if (!currentTrip || !currentBoardStop) throw new Error(`${playerId} cannot ride while not on a trip`);
+          const alightStop = findAlightStop(currentTrip, currentBoardStop.sequence, action.station_id);
+          if (!alightStop) throw new Error(`${currentTrip.id} does not reach ${action.station_id}`);
           const arrivalMinute = stopArrivalMinutes(alightStop);
-          intervals.push({ kind: "TRAIN", train_number: currentTrain.train_number, start_minute: currentMinute, end_minute: arrivalMinute });
-          events.push(formatEvent(arrivalMinute, "ALIGHT_TRAIN", playerId, {
-            station_id: alightStop.station_id,
-            train_number: currentTrain.train_number,
-            sequence: alightStop.sequence,
-            carrier_after: { kind: "NODE", station_id: alightStop.station_id },
+          events.push(formatEvent(arrivalMinute, 'ALIGHT_TRAIN', playerId, {
+            station_group_id: alightStop.stationGroupId,
+            trip_id: currentTrip.id,
+            carrier_after: { kind: 'NODE', stationGroupId: alightStop.stationGroupId },
           }));
           currentMinute = arrivalMinute;
-          currentStationId = alightStop.station_id;
-          currentTrain = null;
+          currentStationId = alightStop.stationGroupId;
+          currentTrip = null;
           currentBoardStop = null;
           resolvedActions.push({ step_index: i + 1, ...action });
         }
       }
-      if (currentTrain) throw new Error(`${playerId} ends while still on a train`);
-      if (currentStationId && currentMinute < endMinute) {
-        intervals.push({ kind: "NODE", station_id: currentStationId, start_minute: currentMinute, end_minute: endMinute });
-      }
       return {
         player_id: playerId,
         start_station_id: playerData.start_station_id,
-        input_mode: playerData.plan ? "plan" : "actions",
+        input_mode: playerData.plan ? 'plan' : 'actions',
         resolved_actions: resolvedActions,
-        intervals,
         events,
         final_station_id: currentStationId,
       };
     }
 
     function cloneState(stateObj) {
-      return {
-        runner: { ...stateObj.runner },
-        hunter: { ...stateObj.hunter },
-      };
+      return { runner: { ...stateObj.runner }, hunter: { ...stateObj.hunter } };
     }
 
     function applyEventToState(stateObj, event) {
       if (!event.player_id) return;
-      if (event.type === "START_AT_STATION" || event.type === "ALIGHT_TRAIN") {
-        stateObj[event.player_id] = { kind: "NODE", station_id: event.station_id };
-      } else if (event.type === "BOARD_TRAIN") {
-        stateObj[event.player_id] = { kind: "TRAIN", train_number: event.train_number };
-      }
+      if (event.type === 'START_AT_STATION' || event.type === 'ALIGHT_TRAIN') stateObj[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
+      else if (event.type === 'BOARD_TRAIN') stateObj[event.player_id] = { kind: 'TRAIN', tripId: event.trip_id };
     }
 
     function detectCaptureAfterEvent(event, runningState) {
-      if (!["SCENARIO_START", "START_AT_STATION", "BOARD_TRAIN", "ALIGHT_TRAIN"].includes(event.type)) return null;
+      if (!['SCENARIO_START', 'START_AT_STATION', 'BOARD_TRAIN', 'ALIGHT_TRAIN'].includes(event.type)) return null;
       const runnerState = runningState.runner;
       const hunterState = runningState.hunter;
-      if (runnerState.kind === "TRAIN" && hunterState.kind === "TRAIN" && runnerState.train_number === hunterState.train_number) {
-        return { type: "same_train", train_number: runnerState.train_number };
+      if (runnerState.kind === 'TRAIN' && hunterState.kind === 'TRAIN' && runnerState.tripId === hunterState.tripId) {
+        return { type: 'same_train', trip_id: runnerState.tripId };
       }
-      if (runnerState.kind === "NODE" && hunterState.kind === "NODE" && runnerState.station_id === hunterState.station_id) {
-        return { type: "same_node", station_id: runnerState.station_id };
+      if (runnerState.kind === 'NODE' && hunterState.kind === 'NODE' && runnerState.stationGroupId === hunterState.stationGroupId) {
+        return { type: 'same_node', station_group_id: runnerState.stationGroupId };
       }
       return null;
     }
 
     function buildScenario() {
       return {
-        id: "v2-web-client-live",
+        id: 'v3-web-client-live',
         start_time_hhmm: state.startTime,
         end_time_hhmm: state.endTime,
         players: {
-          runner: state.players.runner.input_mode === "plan"
+          runner: state.players.runner.input_mode === 'plan'
             ? { start_station_id: state.players.runner.start_station_id, plan: { steps: state.players.runner.steps } }
             : { start_station_id: state.players.runner.start_station_id, actions: state.players.runner.steps },
-          hunter: state.players.hunter.input_mode === "plan"
+          hunter: state.players.hunter.input_mode === 'plan'
             ? { start_station_id: state.players.hunter.start_station_id, plan: { steps: state.players.hunter.steps } }
             : { start_station_id: state.players.hunter.start_station_id, actions: state.players.hunter.steps },
         },
@@ -1998,7 +1952,7 @@
       const startMinute = hhmmToMinutes(scenario.start_time_hhmm);
       const endMinute = hhmmToMinutes(scenario.end_time_hhmm);
       const events = [
-        formatEvent(startMinute, "SCENARIO_START", null, { scenario_id: scenario.id }),
+        formatEvent(startMinute, 'SCENARIO_START', null, { scenario_id: scenario.id }),
         ...runner.events,
         ...hunter.events,
       ].sort((a, b) => {
@@ -2006,12 +1960,12 @@
         const pa = eventPriority(a.type);
         const pb = eventPriority(b.type);
         if (pa !== pb) return pa - pb;
-        return String(a.player_id || "").localeCompare(String(b.player_id || ""));
+        return String(a.player_id || '').localeCompare(String(b.player_id || ''));
       });
 
       const runningState = {
-        runner: { kind: "NODE", station_id: runner.start_station_id },
-        hunter: { kind: "NODE", station_id: hunter.start_station_id },
+        runner: { kind: 'NODE', stationGroupId: runner.start_station_id },
+        hunter: { kind: 'NODE', stationGroupId: hunter.start_station_id },
       };
       const resolvedEvents = [];
       let resolvedCapture = null;
@@ -2023,22 +1977,22 @@
         resolvedEvents.push(event);
         const capture = detectCaptureAfterEvent(event, runningState);
         if (capture) {
-          const captureEvent = formatEvent(event.time_minute, "CAPTURE", null, {
+          const captureEvent = formatEvent(event.time_minute, 'CAPTURE', null, {
             capture_type: capture.type,
             trigger_event_type: event.type,
             trigger_player_id: event.player_id,
-            ...Object.fromEntries(Object.entries(capture).filter(([key]) => key !== "type")),
+            ...Object.fromEntries(Object.entries(capture).filter(([key]) => key !== 'type')),
           });
           captureEvent.state_before = cloneState(runningState);
           captureEvent.state_after = cloneState(runningState);
           captureEvent.state_snapshot = cloneState(runningState);
           resolvedEvents.push(captureEvent);
-          resolvedCapture = { type: capture.type, time_hhmm: captureEvent.time_hhmm, ...Object.fromEntries(Object.entries(capture).filter(([key]) => key !== "type")) };
+          resolvedCapture = { type: capture.type, time_hhmm: captureEvent.time_hhmm, ...Object.fromEntries(Object.entries(capture).filter(([key]) => key !== 'type')) };
           break;
         }
       }
       if (!resolvedCapture) {
-        const endEvent = formatEvent(endMinute, "SCENARIO_END", null, { scenario_id: scenario.id });
+        const endEvent = formatEvent(endMinute, 'SCENARIO_END', null, { scenario_id: scenario.id });
         endEvent.state_before = cloneState(runningState);
         endEvent.state_after = cloneState(runningState);
         endEvent.state_snapshot = cloneState(runningState);
@@ -2049,12 +2003,12 @@
 
     function buildResult() {
       const scenario = buildScenario();
-      const runner = expandPlayerPlan("runner", scenario.players.runner, scenario);
-      const hunter = expandPlayerPlan("hunter", scenario.players.hunter, scenario);
+      const runner = expandPlayerPlan('runner', scenario.players.runner, scenario);
+      const hunter = expandPlayerPlan('hunter', scenario.players.hunter, scenario);
       const match = buildMatchEventLog(scenario, runner, hunter);
       return {
         scenario_id: scenario.id,
-        dataset_id: state.trains.id,
+        dataset_id: state.bundle.metadata?.datasetId || 'v3_bundle',
         capture: match.capture,
         match_event_log: match.match_event_log,
         players: { runner, hunter },
@@ -2064,50 +2018,51 @@
     function formatEventSummary(event) {
       const parts = [event.time_hhmm, event.type];
       if (event.player_id) parts.push(event.player_id);
-      if (event.station_id) parts.push(event.station_id);
-      if (event.train_number) parts.push(event.train_number);
+      if (event.station_group_id) parts.push(stationGroupLabel(event.station_group_id));
+      if (event.trip_id) {
+        const trip = state.bundle.tripInstances.find((item) => item.id === event.trip_id);
+        parts.push(formatTripLabel(trip || { serviceName: event.trip_id, serviceNumber: '' }));
+      }
       if (event.capture_type) parts.push(event.capture_type);
-      return parts.join("  ");
+      return parts.join('  ');
     }
 
     function renderReplayList() {
-      const list = document.getElementById("resultEventList");
-      const detail = document.getElementById("resultDetail");
-      list.innerHTML = "";
-      if (!state.latestResult || !state.latestResult.match_event_log || !state.latestResult.match_event_log.length) {
-        const item = document.createElement("div");
-        item.className = "list-item";
-        item.innerHTML = "<strong>No replay yet</strong><div>Run Simulation first.</div>";
-        list.appendChild(item);
-        detail.textContent = "Select an event to inspect it.";
+      resultEventListEl.innerHTML = '';
+      if (!state.latestResult?.match_event_log?.length) {
+        resultEventListEl.innerHTML = `<div class="empty">No replay yet. Run Simulation first.</div>`;
+        resultDetailEl.textContent = 'Select an event to inspect it.';
         return;
       }
       state.latestResult.match_event_log.forEach((event, index) => {
-        const item = document.createElement("button");
-        item.type = "button";
-        item.className = `list-item${index === state.selectedResultEventIndex ? " selected" : ""}`;
-        item.innerHTML = `<strong>${formatEventSummary(event)}</strong><div>${event.event_family}</div>`;
-        item.addEventListener("click", () => {
-          state.selectedResultEventIndex = index;
+        resultEventListEl.innerHTML += `
+          <button class="mini-card clickable ${index === state.selectedResultEventIndex ? 'active' : ''}" data-replay-index="${index}">
+            <strong>${formatEventSummary(event)}</strong>
+            <span>${event.event_family}</span>
+          </button>
+        `;
+      });
+      resultEventListEl.querySelectorAll('[data-replay-index]').forEach((node) => {
+        node.addEventListener('click', () => {
+          state.selectedResultEventIndex = Number(node.getAttribute('data-replay-index'));
           render();
         });
-        list.appendChild(item);
       });
       const event = currentReplayEvent();
-      if (!event) {
-        detail.textContent = "Select an event to inspect it.";
-        return;
-      }
+      if (!event) return;
       const lines = [`Time: ${event.time_hhmm}`, `Type: ${event.type}`];
       if (event.player_id) lines.push(`Player: ${event.player_id}`);
-      if (event.station_id) lines.push(`Station: ${event.station_id}`);
-      if (event.train_number) lines.push(`Train: ${event.train_number}`);
+      if (event.station_group_id) lines.push(`Station: ${stationGroupLabel(event.station_group_id)}`);
+      if (event.trip_id) {
+        const trip = state.bundle.tripInstances.find((item) => item.id === event.trip_id);
+        lines.push(`Trip: ${formatTripLabel(trip || { serviceName: event.trip_id, serviceNumber: '' })}`);
+      }
       if (event.capture_type) lines.push(`Capture: ${event.capture_type}`);
       if (event.state_after) {
-        lines.push("", `Runner after: ${event.state_after.runner.kind === "NODE" ? event.state_after.runner.station_id : `on ${event.state_after.runner.train_number}`}`);
-        lines.push(`Hunter after: ${event.state_after.hunter.kind === "NODE" ? event.state_after.hunter.station_id : `on ${event.state_after.hunter.train_number}`}`);
+        lines.push('', `Runner after: ${event.state_after.runner.kind === 'NODE' ? stationGroupLabel(event.state_after.runner.stationGroupId) : event.state_after.runner.tripId}`);
+        lines.push(`Hunter after: ${event.state_after.hunter.kind === 'NODE' ? stationGroupLabel(event.state_after.hunter.stationGroupId) : event.state_after.hunter.tripId}`);
       }
-      detail.textContent = lines.join("\n");
+      resultDetailEl.textContent = lines.join('\n');
     }
 
     function runSimulation() {
@@ -2117,56 +2072,381 @@
         state.selectedResultEventIndex = 0;
         const capture = result.capture;
         const lines = [`Scenario: ${result.scenario_id}`, `Events: ${result.match_event_log.length}`];
-        if (!capture) lines.push("Capture: none");
-        else if (capture.type === "same_node") lines.push(`Capture: same_node at ${capture.station_id} ${capture.time_hhmm}`);
-        else lines.push(`Capture: same_train on ${capture.train_number} ${capture.time_hhmm}`);
-        document.getElementById("resultInfo").textContent = `SIMULATION\n\n${lines.join("\n")}`;
+        if (!capture) lines.push('Capture: none');
+        else if (capture.type === 'same_node') lines.push(`Capture: same_node at ${stationGroupLabel(capture.station_group_id)} ${capture.time_hhmm}`);
+        else {
+          const trip = state.bundle.tripInstances.find((item) => item.id === capture.trip_id);
+          lines.push(`Capture: same_train on ${formatTripLabel(trip || { serviceName: capture.trip_id, serviceNumber: '' })} ${capture.time_hhmm}`);
+        }
+        resultInfoEl.textContent = `SIMULATION\n\n${lines.join('\n')}`;
       } catch (error) {
-        document.getElementById("resultInfo").textContent = `SIMULATION\n\nFailed to simulate: ${String(error)}`;
+        resultInfoEl.textContent = `SIMULATION\n\nFailed to simulate: ${String(error)}`;
         state.latestResult = null;
       }
       render();
     }
 
-    function render() {
-      renderInfo();
+    function renderTrainOutlook() {
+      const preview = planCursorPreview(state.activeMode);
+      const pending = pendingDepartureContext(preview);
+      let rows = [];
+      let title = 'No train selected';
+      if (pending) {
+        title = formatTripLabel(pending.trip);
+        rows = [
+          { time: secToClock(pending.boardStop.departureTimeSec ?? pending.boardStop.arrivalTimeSec), label: `Board ${stationGroupLabel(pending.boardStop.stationGroupId)}` },
+          ...pending.destinations.slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label }))
+        ];
+      } else if (preview.currentState.kind === 'TRAIN') {
+        title = formatTripLabel(preview.currentTrip || { serviceName: preview.currentState.tripId, serviceNumber: '' });
+        rows = availableDestinations(preview).slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label }));
+      }
+      trainOutlookEl.innerHTML = `
+        <div class="selected-card">
+          <h3>${title}</h3>
+          <p>${pending ? 'Selected service preview' : preview.currentState.kind === 'TRAIN' ? 'Current onboard route' : 'Choose a train to preview later stops'}</p>
+        </div>
+        <div class="outlook-list" style="margin-top:12px;">
+          ${rows.length ? rows.map((row) => `<div class="outlook-row"><div>${row.time}</div><div>${row.label}</div></div>`).join('') : `<div class="empty">Not currently on a train.</div>`}
+        </div>
+      `;
+    }
+
+    function renderPlanBoard() {
+      const steps = state.players[state.activeMode].steps;
+      if (!steps.length) {
+        planBoardInfoEl.textContent = 'No legs yet.\nSelect a station, choose a departure, then choose a destination stop.';
+        return;
+      }
+      let chainStation = state.players[state.activeMode].start_station_id;
+      let pendingTrip = null;
+      let legIndex = 1;
+      const lines = [];
+      for (const step of steps) {
+        if (step.type === 'WAIT_UNTIL') {
+          lines.push(`WAIT until ${step.until_hhmm}`);
+          continue;
+        }
+        if (step.type === 'BOARD_TRAIN') {
+          pendingTrip = state.bundle.tripInstances.find((item) => item.id === step.trip_id);
+          continue;
+        }
+        if (step.type === 'RIDE_TO_STATION') {
+          lines.push(`LEG ${legIndex}. ${stationGroupLabel(chainStation)} -> ${formatTripLabel(pendingTrip || { serviceName: 'Trip', serviceNumber: '' })} -> ${stationGroupLabel(step.station_id)}`);
+          chainStation = step.station_id;
+          pendingTrip = null;
+          legIndex += 1;
+        }
+      }
+      planBoardInfoEl.textContent = lines.join('\n\n');
+    }
+
+    function renderActionRegion() {
+      const preview = planCursorPreview(state.activeMode);
+      const pending = pendingDepartureContext(preview);
+      let html = `
+        <div class="tiny-actions">
+          <button class="tiny-button" data-action="set-start">Set Start To Selected Station</button>
+          <button class="tiny-button" data-action="wait">Wait +5 minutes</button>
+          <button class="tiny-button" data-action="undo">Undo Step</button>
+          <button class="tiny-button" data-action="clear">Clear Plan</button>
+        </div>
+      `;
+
+      if (preview.currentState.kind === 'NODE' && !pending) {
+        const departures = availableDepartures(preview);
+        html += `
+          <div style="margin-top:12px;" class="card-list">
+            ${departures.length ? departures.map((entry) => `
+              <div class="mini-card">
+                <strong>${entry.departureHhmm} · ${formatTripLabel(entry.trip)}</strong>
+                <span>${trainPreviewText(entry.trip, entry.boardStop)}</span>
+                <div class="tiny-actions">
+                  <button class="tiny-button ${state.activeMode}" data-trip-id="${entry.trip.id}" data-action="choose-trip">Choose This Train</button>
+                </div>
+              </div>
+            `).join('') : `<div class="empty">No catchable departures from ${stationGroupLabel(preview.currentState.stationGroupId)} after ${preview.currentTime}.</div>`}
+          </div>
+        `;
+      } else if (pending) {
+        html += `
+          <div style="margin-top:12px;" class="card-list">
+            <div class="mini-card">
+              <strong>${formatTripLabel(pending.trip)}</strong>
+              <span>${secToClock(pending.boardStop.departureTimeSec ?? pending.boardStop.arrivalTimeSec)} · ${stationGroupLabel(pending.boardStop.stationGroupId)}</span>
+              <div class="tiny-actions">
+                <button class="tiny-button" data-action="choose-another">Choose Another Train</button>
+              </div>
+            </div>
+            ${pending.destinations.map((item) => `
+              <div class="mini-card">
+                <strong>${item.arrivalHhmm} · ${item.label}</strong>
+                <div class="tiny-actions">
+                  <button class="tiny-button good" data-trip-id="${pending.trip.id}" data-station-group-id="${item.stationGroupId}" data-action="ride-here">Ride Here</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (preview.currentState.kind === 'TRAIN') {
+        const destinations = availableDestinations(preview);
+        html += `
+          <div style="margin-top:12px;" class="card-list">
+            ${destinations.length ? destinations.map((item) => `
+              <div class="mini-card">
+                <strong>${item.arrivalHhmm} · ${item.label}</strong>
+                <div class="tiny-actions">
+                  <button class="tiny-button good" data-station-group-id="${item.stationGroupId}" data-action="ride-direct">Ride Here</button>
+                </div>
+              </div>
+            `).join('') : `<div class="empty">No downstream stops available from the current on-train state.</div>`}
+          </div>
+        `;
+      }
+
+      actionRegionEl.innerHTML = html;
+      actionRegionEl.querySelectorAll('[data-action]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const action = button.dataset.action;
+          if (action === 'set-start') setStartToSelected();
+          else if (action === 'wait') addWaitStep();
+          else if (action === 'undo') undoLastStep();
+          else if (action === 'clear') resetPlan();
+          else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
+          else if (action === 'choose-another') chooseAnotherTrip();
+          else if (action === 'ride-here') addBoardAndRide(button.dataset.tripId, button.dataset.stationGroupId);
+          else if (action === 'ride-direct') addRideToStation(button.dataset.stationGroupId);
+        });
+      });
+    }
+
+    function renderSidebar() {
+      const bundle = state.bundle;
+      if (!bundle) return;
+      const activePreview = planCursorPreview(state.activeMode);
+      const runnerPreview = currentMapPreview('runner');
+      const hunterPreview = currentMapPreview('hunter');
+
+      phaseClockEl.innerHTML = state.phase === 'PLANNING'
+        ? `PLANNING ${String(state.planningSecondsRemaining).padStart(2, '0')}s<br/>Game starts ${state.startTime}`
+        : state.phase === 'LIVE'
+          ? `LIVE ${minutesToHhmm(state.currentGameMinute)}<br/>Window ${state.startTime} -> ${state.endTime}`
+          : `ENDED ${minutesToHhmm(state.currentGameMinute)}<br/>Window ${state.startTime} -> ${state.endTime}`;
+      phaseClockEl.style.background = state.phase === 'PLANNING' ? '#b8441f' : (state.phase === 'LIVE' ? '#163d2c' : '#2a2f38');
+      phaseClockEl.style.color = 'white';
+      document.getElementById('runnerModeButton').className = state.activeMode === 'runner' ? 'active runner' : '';
+      document.getElementById('hunterModeButton').className = state.activeMode === 'hunter' ? 'active hunter' : '';
+
+      mapStats.innerHTML = `
+        <div>Stations: <strong>${bundle.physicalStations.length}</strong></div>
+        <div>Routes: <strong>${bundle.serviceRoutes.length}</strong></div>
+        <div>Trips: <strong>${bundle.tripInstances.length}</strong></div>
+        <div>Zoom: <strong>${state.zoom.toFixed(1)}x</strong></div>
+      `;
+
+      overviewGrid.innerHTML = [
+        ['Physical Stations', bundle.physicalStations.length],
+        ['Track Centerlines', bundle.trackCenterlines.length],
+        ['Service Routes', bundle.serviceRoutes.length],
+        ['Trip Instances', bundle.tripInstances.length]
+      ].map(([label, value]) => `
+        <div class="metric">
+          <span class="value">${value}</span>
+          <span class="label">${label}</span>
+        </div>
+      `).join('');
+
+      cursorInfoEl.textContent = [
+        `Mode: ${state.activeMode.toUpperCase()}`,
+        `Current: ${formatState(activePreview)}`,
+        `Match window: ${state.startTime} -> ${state.endTime}`,
+        `Planned steps: ${state.players[state.activeMode].steps.length}`,
+      ].join('\n');
+
       renderTrainOutlook();
       renderActionRegion();
       renderPlanBoard();
       renderReplayList();
-      renderMap();
-    }
 
-    async function main() {
-      const [bundle, trains] = await Promise.all([
-        loadJson(`${DATA_BASE}/shinkansen_v2_bundle.json`),
-        loadJson(`${DATA_BASE}/shinkansen_v2_weekday_train_instances_merged.json`),
-      ]);
-      state.bundle = bundle;
-      state.trains = trains;
-      for (const station of bundle.stations) {
-        state.stationMap.set(station.id, station);
+      visibleServicesEl.innerHTML = bundle.serviceRoutes.map((route) => `
+        <button class="mini-card clickable ${state.selectedRouteId === route.id ? 'active' : ''}" data-route-id="${route.id}">
+          <strong><span class="swatch" style="background:${route.color}"></span>${route.shortName}</strong>
+          <span>${route.longName}</span>
+          <small>${countTripsForRoute(route.id)} trips in the current pilot bundle</small>
+        </button>
+      `).join('');
+
+      legendEl.innerHTML = bundle.serviceRoutes.map((route) => `
+        <button class="mini-card clickable ${state.selectedRouteId === route.id ? 'active' : ''}" data-route-id="${route.id}" style="padding:8px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:2px">
+          <span><span class="swatch" style="background:${route.color}"></span>${route.shortName}</span>
+        </button>
+      `).join('');
+
+      bindRouteClickTargets();
+
+      if (!state.selectedStationGroupId) {
+        selectedStationEl.className = 'empty';
+        selectedStationEl.textContent = 'Click a station to inspect its station group, connected lines, and service footprint.';
+        stationTripsEl.innerHTML = '';
+        routeStationDeparturesEl.innerHTML = '';
+      } else {
+        const station = bundle.physicalStations.find((item) => item.stationGroupId === state.selectedStationGroupId);
+        const label = resolveLabelEntry(state.selectedStationGroupId);
+        const touchingTrackLines = bundle.trackCenterlines
+          .filter((line) => line.stationGroupIds.includes(state.selectedStationGroupId))
+          .map((line) => line.lineName);
+        const touchingRoutes = bundle.serviceRoutes
+          .filter((route) => bundle.tripInstances.some((trip) =>
+            trip.routeId === route.id &&
+            trip.stopTimes.some((stop) => stop.stationGroupId === state.selectedStationGroupId)
+          ))
+          .map((route) => route.shortName);
+
+        selectedStationEl.className = '';
+        selectedStationEl.innerHTML = `
+          <div class="selected-card">
+            <h3>${label?.displayNameEn || station.name}</h3>
+            <p>${label?.displayNameJa || ''} · ${station.id}</p>
+            <p>Lat/Lon: ${station.lat.toFixed(4)}, ${station.lon.toFixed(4)}</p>
+            <p>${state.activeMode === 'hunter'
+              ? (state.phase === 'PLANNING'
+                  ? `Runner: ${runnerPreview.currentState.kind === 'NODE' ? stationGroupLabel(runnerPreview.currentState.stationGroupId) : 'visible on map only while on a train'}`
+                  : 'Runner hidden during LIVE.')
+              : `Runner: ${formatState(runnerPreview)}`}</p>
+            <p>Hunter: ${formatState(hunterPreview)}</p>
+            <div class="tags">
+              ${touchingTrackLines.map((line) => `<span class="tag">${line}</span>`).join('')}
+              ${touchingRoutes.filter((item) => !touchingTrackLines.includes(item)).map((route) => `<span class="tag">${route}</span>`).join('')}
+            </div>
+          </div>
+        `;
+
+        const trips = bundle.tripInstances
+          .filter((trip) => trip.stopTimes.some((stop) => stop.stationGroupId === state.selectedStationGroupId))
+          .slice(0, 24);
+
+        stationTripsEl.innerHTML = trips.length
+          ? trips.map((trip) => {
+              const stop = trip.stopTimes.find((item) => item.stationGroupId === state.selectedStationGroupId);
+              const hoverClass = state.hoveredTripId === trip.id ? 'trip-hover' : '';
+              return `
+                <div class="mini-card ${hoverClass}">
+                  <strong>${trip.serviceName} ${trip.serviceNumber || ''}</strong>
+                  <span>${trip.routeId.replace(/_/g, ' ')}</span>
+                  <small>${stop ? secToClock(stop.departureTimeSec ?? stop.arrivalTimeSec) : 'time n/a'} · ${trip.stopTimes.length} stops in pilot record</small>
+                </div>
+              `;
+            }).join('')
+          : `<div class="empty">No trip instances touch this station in the current pilot bundle.</div>`;
+
+        if (!state.selectedRouteId) {
+          routeStationDeparturesEl.innerHTML = `<div class="empty">Select one route to see the actual departures for that route at this station.</div>`;
+        } else {
+          const routeDepartures = bundle.tripInstances
+            .filter((trip) => trip.routeId === state.selectedRouteId)
+            .map((trip) => {
+              const stop = trip.stopTimes.find((item) => item.stationGroupId === state.selectedStationGroupId);
+              if (!stop) return null;
+              return {
+                trip,
+                timeSec: stop.departureTimeSec ?? stop.arrivalTimeSec,
+                stopCount: trip.stopTimes.length,
+              };
+            })
+            .filter(Boolean)
+            .sort((a, b) => a.timeSec - b.timeSec)
+            .slice(0, 24);
+
+          routeStationDeparturesEl.innerHTML = routeDepartures.length
+            ? routeDepartures.map(({ trip, timeSec, stopCount }) => {
+                const hoverClass = state.hoveredTripId === trip.id ? 'trip-hover' : '';
+                return `
+                  <div class="mini-card ${hoverClass}">
+                    <strong>${secToClock(timeSec)} · ${formatTripLabel(trip)}</strong>
+                    <span>${trip.routeId.replace(/_/g, ' ')}</span>
+                    <small>${stopCount} stops in this service record</small>
+                  </div>
+                `;
+              }).join('')
+            : `<div class="empty">This route has no recorded departures at the selected station in the current pilot bundle.</div>`;
+        }
       }
-      state.players = {
-        runner: { start_station_id: "TOKYO", input_mode: "plan", steps: [] },
-        hunter: { start_station_id: "SHIN_OSAKA", input_mode: "actions", passive_hold: true, steps: [{ type: "WAIT_UNTIL", until_hhmm: "07:00" }] },
-      };
-      projectCoords();
-      document.getElementById("applyTimeButton").addEventListener("click", applyTimeInput);
-      document.getElementById("resetPlanButton").addEventListener("click", resetPlan);
-      document.getElementById("runnerModeButton").addEventListener("click", () => setActiveMode("runner"));
-      document.getElementById("hunterModeButton").addEventListener("click", () => setActiveMode("hunter"));
-      document.getElementById("loadPresetButton").addEventListener("click", applyTestPreset);
-      document.getElementById("startGameButton").addEventListener("click", startGameNow);
-      document.getElementById("pauseGameButton").addEventListener("click", toggleClock);
-      document.getElementById("runSimulationButton").addEventListener("click", runSimulation);
-      setupMapInteractions();
-      applyTestPreset();
+
+      if (!state.selectedRouteId) {
+        selectedRouteEl.className = 'empty';
+        selectedRouteEl.textContent = 'Click a route card or legend chip to highlight one service family across the whole map.';
+      } else {
+        const route = bundle.serviceRoutes.find((item) => item.id === state.selectedRouteId);
+        const routeStations = [...getRouteStationSet(route.id)];
+        selectedRouteEl.className = '';
+        selectedRouteEl.innerHTML = `
+          <div class="selected-card">
+            <h3>${route.shortName}</h3>
+            <p>${route.longName}</p>
+            <div class="tags">
+              <span class="tag">${countTripsForRoute(route.id)} trips</span>
+              <span class="tag">${routeStations.length} served stations</span>
+            </div>
+          </div>
+        `;
+      }
+
+      if (!state.latestResult) {
+        resultInfoEl.textContent = state.liveCapture
+          ? `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.`
+          : 'No result yet.';
+      }
     }
 
-    main().catch((error) => {
+    function countTripsForRoute(routeId) {
+      return state.bundle.tripInstances.filter((trip) => trip.routeId === routeId).length;
+    }
+
+    function getRouteStationSet(routeId) {
+      const set = new Set();
+      state.bundle.tripInstances.forEach((trip) => {
+        if (trip.routeId !== routeId) return;
+        trip.stopTimes.forEach((stop) => set.add(stop.stationGroupId));
+      });
+      return set;
+    }
+
+    function bindRouteClickTargets() {
+      document.querySelectorAll('[data-route-id]').forEach((node) => {
+        node.addEventListener('click', () => {
+          const routeId = node.getAttribute('data-route-id');
+          state.selectedRouteId = state.selectedRouteId === routeId ? null : routeId;
+          render();
+        });
+      });
+    }
+
+    async function init() {
+      const response = await fetch(DATA_URL);
+      const bundle = await response.json();
+      const tileManifestResponse = await fetch(TILE_MANIFEST_URL);
+      const tileManifest = await tileManifestResponse.json();
+      state.bundle = bundle;
+      state.tileManifest = tileManifest;
+      state.labelEntries = bundle.labelRepresentations;
+      state.selectedRouteId = bundle.serviceRoutes[0]?.id || null;
+      state.players = {
+        runner: { start_station_id: 'SG_TOKYO', input_mode: 'plan', steps: [] },
+        hunter: { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: '07:00' }] },
+      };
+      state.selectedStationGroupId = state.players.runner.start_station_id;
+      state.currentGameMinute = hhmmToMinutes(state.startTime);
+      state.projection = makeProjection(bundle);
+      SERVICE_COLORS.clear?.();
+      bundle.serviceRoutes.forEach((route) => { SERVICE_COLORS[route.id] = route.color; });
+      applyTestPreset();
+      resetViewport();
+    }
+
+    init().catch((error) => {
       console.error(error);
-      document.body.innerHTML = `<pre style="padding:24px;color:#8b2c2c;font-family:monospace;">${String(error)}</pre>`;
+      selectedStationEl.className = 'empty';
+      selectedStationEl.textContent = 'Failed to load v3 bundle.';
     });
   </script>
 </body>
