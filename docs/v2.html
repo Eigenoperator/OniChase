@@ -221,14 +221,14 @@
     .route-underlay {
       fill: none;
       stroke: rgba(255,255,255,0.9);
-      stroke-width: 10;
+      stroke-width: 7;
       stroke-linejoin: round;
       stroke-linecap: round;
     }
 
     .route-main {
       fill: none;
-      stroke-width: 5;
+      stroke-width: 3.4;
       stroke-linejoin: round;
       stroke-linecap: round;
     }
@@ -250,11 +250,11 @@
     }
 
     .station-dot.interchange {
-      r: 6;
+      r: 4.6;
     }
 
     .station-dot.normal {
-      r: 4.2;
+      r: 3.1;
     }
 
     .station-dot.selected {
@@ -286,7 +286,7 @@
     .future-stop-ring {
       fill: rgba(208, 79, 97, 0.12);
       stroke: rgba(208, 79, 97, 0.82);
-      stroke-width: 2.5;
+      stroke-width: 1.9;
       stroke-dasharray: 4 4;
       pointer-events: none;
     }
@@ -917,9 +917,9 @@
         const ring = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         ring.setAttribute("cx", point.x);
         ring.setAttribute("cy", point.y);
-        ring.setAttribute("r", Math.max(7, Math.min(11, 10 / Math.sqrt(state.mapView.scale))));
+        ring.setAttribute("r", Math.max(5.4, Math.min(8.4, 7.4 / Math.sqrt(state.mapView.scale))));
         ring.setAttribute("class", "future-stop-ring");
-        ring.setAttribute("stroke-width", Math.max(1.2, 2.5 / Math.sqrt(state.mapView.scale)));
+        ring.setAttribute("stroke-width", Math.max(1, 1.9 / Math.sqrt(state.mapView.scale)));
         content.appendChild(ring);
       }
 
@@ -950,13 +950,13 @@
       for (const station of state.bundle.stations) {
         const { x, y } = state.mapCoords.get(station.id);
         const stationRadius = station.is_interchange
-          ? Math.max(2.8, Math.min(5.2, 5.2 / Math.sqrt(state.mapView.scale)))
-          : Math.max(2.1, Math.min(3.8, 3.8 / Math.sqrt(state.mapView.scale)));
+          ? Math.max(2.2, Math.min(4.4, 4.4 / Math.sqrt(state.mapView.scale)))
+          : Math.max(1.7, Math.min(3.1, 3.1 / Math.sqrt(state.mapView.scale)));
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         circle.setAttribute("cx", x);
         circle.setAttribute("cy", y);
         circle.setAttribute("r", stationRadius);
-        circle.setAttribute("stroke-width", Math.max(1.1, 2 / Math.sqrt(state.mapView.scale)));
+        circle.setAttribute("stroke-width", Math.max(0.9, 1.5 / Math.sqrt(state.mapView.scale)));
         circle.setAttribute(
           "class",
           [
