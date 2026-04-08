@@ -795,6 +795,217 @@
       background: rgba(6, 15, 24, 0.72);
     }
 
+    .planner-block {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .planner-block h4 {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .state-ribbon {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(103, 132, 162, 0.18);
+      background: linear-gradient(180deg, rgba(17, 37, 58, 0.96), rgba(12, 28, 44, 0.96));
+      box-shadow: var(--shadow-soft);
+    }
+
+    .state-ribbon strong {
+      font-size: 18px;
+      letter-spacing: 0.02em;
+    }
+
+    .state-ribbon span,
+    .state-ribbon small {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .departure-board {
+      display: grid;
+      gap: 10px;
+    }
+
+    .departure-card {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(103, 132, 162, 0.18);
+      background: rgba(14, 31, 48, 0.94);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .departure-time {
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      color: #fff2cf;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .departure-main {
+      display: grid;
+      gap: 6px;
+    }
+
+    .departure-main strong {
+      font-size: 16px;
+    }
+
+    .departure-main span,
+    .departure-main small {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .stop-ladder {
+      display: grid;
+      gap: 8px;
+    }
+
+    .stop-row {
+      display: grid;
+      grid-template-columns: 68px 10px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px dashed rgba(103, 132, 162, 0.22);
+    }
+
+    .stop-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .stop-time {
+      font-size: 13px;
+      font-weight: 800;
+      color: #d7e8ff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stop-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(46, 140, 255, 0.9);
+      box-shadow: 0 0 0 4px rgba(46, 140, 255, 0.14);
+    }
+
+    .stop-label {
+      display: grid;
+      gap: 2px;
+      color: var(--ink);
+      line-height: 1.35;
+    }
+
+    .stop-label small {
+      color: var(--muted);
+    }
+
+    .plan-chain {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .plan-leg {
+      min-width: 250px;
+      max-width: 290px;
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 22px;
+      border: 1px solid rgba(103, 132, 162, 0.18);
+      background: linear-gradient(180deg, rgba(16, 35, 54, 0.98), rgba(10, 24, 39, 0.96));
+      box-shadow: var(--shadow-soft);
+    }
+
+    .plan-leg.wait {
+      background: linear-gradient(180deg, rgba(36, 42, 56, 0.98), rgba(22, 28, 39, 0.96));
+    }
+
+    .plan-leg.current {
+      border-color: rgba(46, 140, 255, 0.45);
+      box-shadow: 0 0 0 2px rgba(46, 140, 255, 0.12), var(--shadow-soft);
+    }
+
+    .plan-leg.done {
+      opacity: 0.65;
+    }
+
+    .leg-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .leg-badge {
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(46, 140, 255, 0.14);
+      color: #cce5ff;
+    }
+
+    .leg-window {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .leg-route {
+      display: grid;
+      gap: 8px;
+    }
+
+    .leg-route strong {
+      font-size: 17px;
+    }
+
+    .leg-stations {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      flex-wrap: wrap;
+    }
+
+    .leg-arrow {
+      color: rgba(255,255,255,0.34);
+      font-weight: 900;
+    }
+
+    .app[data-phase="planning"] .map-panel {
+      box-shadow: 0 0 0 1px rgba(255, 102, 121, 0.12), var(--shadow);
+    }
+
+    .app[data-phase="live"] .map-panel {
+      box-shadow: 0 0 0 1px rgba(85, 225, 203, 0.12), var(--shadow);
+    }
+
     @media (max-width: 1100px) {
       body {
         height: auto;
@@ -2756,115 +2967,210 @@
       const pending = pendingDepartureContext(preview);
       let rows = [];
       let title = 'No train selected';
+      let description = 'Choose a departure to inspect the stop ladder.';
       if (pending) {
         title = formatTripLabel(pending.trip);
+        description = `Selected departure from ${stationGroupLabel(pending.boardStop.stationGroupId)}.`;
         rows = [
-          { time: secToClock(pending.boardStop.departureTimeSec ?? pending.boardStop.arrivalTimeSec), label: `Board ${stationGroupLabel(pending.boardStop.stationGroupId)}` },
-          ...pending.destinations.slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label }))
+          { time: secToClock(pending.boardStop.departureTimeSec ?? pending.boardStop.arrivalTimeSec), label: stationGroupLabel(pending.boardStop.stationGroupId), meta: 'Board here' },
+          ...pending.destinations.slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label, meta: 'Downstream stop' }))
         ];
       } else if (preview.currentState.kind === 'TRAIN') {
         title = formatTripLabel(preview.currentTrip || { serviceName: preview.currentState.tripId, serviceNumber: '' });
-        rows = availableDestinations(preview).slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label }));
+        description = 'Current onboard stop ladder.';
+        rows = availableDestinations(preview).slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label, meta: 'Eligible alight stop' }));
       }
       trainOutlookEl.innerHTML = `
         <div class="selected-card">
           <h3>${title}</h3>
-          <p>${pending ? 'Selected service preview' : preview.currentState.kind === 'TRAIN' ? 'Current onboard route' : 'Choose a train to preview later stops'}</p>
+          <p>${description}</p>
         </div>
-        <div class="outlook-list" style="margin-top:12px;">
-          ${rows.length ? rows.map((row) => `<div class="outlook-row"><div>${row.time}</div><div>${row.label}</div></div>`).join('') : `<div class="empty">Not currently on a train.</div>`}
+        <div class="planner-block">
+          <h4>Stop Ladder</h4>
+          <div class="stop-ladder">
+            ${rows.length ? rows.map((row) => `
+              <div class="stop-row">
+                <div class="stop-time">${row.time}</div>
+                <div class="stop-dot"></div>
+                <div class="stop-label">
+                  <strong>${row.label}</strong>
+                  <small>${row.meta}</small>
+                </div>
+              </div>
+            `).join('') : `<div class="empty">Not currently on a train.</div>`}
+          </div>
         </div>
       `;
     }
 
-    function renderPlanBoard() {
+    function buildPlanBoardCards() {
       const steps = state.players[state.activeMode].steps;
-      if (!steps.length) {
-        planBoardInfoEl.textContent = 'No legs yet.\nSelect a station, choose a departure, then choose a destination stop.';
-        return;
-      }
-      let chainStation = state.players[state.activeMode].start_station_id;
+      const startStationId = state.players[state.activeMode].start_station_id;
+      if (!steps.length) return [];
+      let chainStation = startStationId;
       let pendingTrip = null;
-      let legIndex = 1;
-      const lines = [];
-      for (const step of steps) {
+      let pendingBoardTime = null;
+      const cards = [];
+      steps.forEach((step) => {
         if (step.type === 'WAIT_UNTIL') {
-          lines.push(`WAIT until ${step.until_hhmm}`);
-          continue;
+          cards.push({
+            type: 'WAIT',
+            from: null,
+            to: null,
+            trip: null,
+            fromTime: null,
+            toTime: step.until_hhmm,
+            title: `Wait until ${step.until_hhmm}`,
+          });
+          return;
         }
         if (step.type === 'BOARD_TRAIN') {
           pendingTrip = state.bundle.tripInstances.find((item) => item.id === step.trip_id);
-          continue;
+          const boardStop = pendingTrip ? findBoardingStop(pendingTrip, chainStation, 0) : null;
+          pendingBoardTime = boardStop ? secToClock(boardStop.departureTimeSec ?? boardStop.arrivalTimeSec) : null;
+          return;
         }
         if (step.type === 'RIDE_TO_STATION') {
-          lines.push(`LEG ${legIndex}. ${stationGroupLabel(chainStation)} -> ${formatTripLabel(pendingTrip || { serviceName: 'Trip', serviceNumber: '' })} -> ${stationGroupLabel(step.station_id)}`);
+          const alightStop = pendingTrip ? findAlightStop(pendingTrip, 0, step.station_id) : null;
+          const arrivalTime = alightStop ? secToClock(alightStop.arrivalTimeSec ?? alightStop.departureTimeSec) : null;
+          cards.push({
+            type: 'LEG',
+            from: chainStation,
+            to: step.station_id,
+            trip: pendingTrip,
+            fromTime: pendingBoardTime,
+            toTime: arrivalTime,
+            title: pendingTrip ? formatTripLabel(pendingTrip) : 'Train leg',
+          });
           chainStation = step.station_id;
           pendingTrip = null;
-          legIndex += 1;
+          pendingBoardTime = null;
         }
+      });
+      return cards;
+    }
+
+    function renderPlanBoard() {
+      const cards = buildPlanBoardCards();
+      if (!cards.length) {
+        planBoardInfoEl.innerHTML = '<div class="empty">No legs yet. Select a station, choose a departure, then choose a destination stop.</div>';
+        return;
       }
-      planBoardInfoEl.textContent = lines.join('\n\n');
+      planBoardInfoEl.innerHTML = `
+        <div class="plan-chain">
+          ${cards.map((card, index) => `
+            <div class="plan-leg ${card.type === 'WAIT' ? 'wait' : ''} ${index === cards.length - 1 ? 'current' : ''}">
+              <div class="leg-top">
+                <span class="leg-badge">${card.type === 'WAIT' ? 'Wait' : `Leg ${index + 1}`}</span>
+                <span class="leg-window">${card.fromTime ? `${card.fromTime} → ${card.toTime || '--:--'}` : (card.toTime || '')}</span>
+              </div>
+              <div class="leg-route">
+                <strong>${card.title}</strong>
+                ${card.type === 'WAIT'
+                  ? `<div class="leg-stations"><span>Hold position and reassess at the next lock point.</span></div>`
+                  : `<div class="leg-stations">
+                      <span>${stationGroupLabel(card.from)}</span>
+                      <span class="leg-arrow">→</span>
+                      <span>${stationGroupLabel(card.to)}</span>
+                    </div>`}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
     }
 
     function renderActionRegion() {
       const preview = planCursorPreview(state.activeMode);
       const pending = pendingDepartureContext(preview);
       let html = `
-        <div class="tiny-actions">
-          <button class="tiny-button" data-action="set-start">Set Start To Selected Station</button>
-          <button class="tiny-button" data-action="wait">Wait +5 minutes</button>
-          <button class="tiny-button" data-action="undo">Undo Step</button>
-          <button class="tiny-button" data-action="clear">Clear Plan</button>
+        <div class="planner-block">
+          <h4>Current State</h4>
+          <div class="state-ribbon">
+            <strong>${preview.currentState.kind === 'NODE' ? stationGroupLabel(preview.currentState.stationGroupId) : formatTripLabel(preview.currentTrip || { serviceName: preview.currentState.tripId, serviceNumber: '' })}</strong>
+            <span>${preview.currentState.kind === 'NODE' ? `Station cursor at ${preview.currentTime}` : `Onboard at ${preview.currentTime}`}</span>
+            <div class="tiny-actions">
+              <button class="tiny-button" data-action="set-start">Set Start To Selected Station</button>
+              <button class="tiny-button" data-action="wait">Wait +5 minutes</button>
+              <button class="tiny-button" data-action="undo">Undo Step</button>
+              <button class="tiny-button" data-action="clear">Clear Plan</button>
+            </div>
+          </div>
         </div>
       `;
 
       if (preview.currentState.kind === 'NODE' && !pending) {
         const departures = availableDepartures(preview);
         html += `
-          <div style="margin-top:12px;" class="card-list">
+          <div class="planner-block">
+            <h4>Departure Board</h4>
+            <div class="departure-board">
             ${departures.length ? departures.map((entry) => `
-              <div class="mini-card">
-                <strong>${entry.departureHhmm} · ${formatTripLabel(entry.trip)}</strong>
-                <span>${trainPreviewText(entry.trip, entry.boardStop)}</span>
+              <div class="departure-card">
+                <div class="departure-time">${entry.departureHhmm}</div>
+                <div class="departure-main">
+                  <strong>${formatTripLabel(entry.trip)}</strong>
+                  <span>${trainPreviewText(entry.trip, entry.boardStop)}</span>
+                  <small>${entry.trip.routeId.replace(/_/g, ' ')}</small>
                 <div class="tiny-actions">
                   <button class="tiny-button ${state.activeMode}" data-trip-id="${entry.trip.id}" data-action="choose-trip">Choose This Train</button>
                 </div>
               </div>
             `).join('') : `<div class="empty">No catchable departures from ${stationGroupLabel(preview.currentState.stationGroupId)} after ${preview.currentTime}.</div>`}
+            </div>
           </div>
         `;
       } else if (pending) {
         html += `
-          <div style="margin-top:12px;" class="card-list">
-            <div class="mini-card">
+          <div class="planner-block">
+            <h4>Selected Departure</h4>
+            <div class="state-ribbon">
               <strong>${formatTripLabel(pending.trip)}</strong>
               <span>${secToClock(pending.boardStop.departureTimeSec ?? pending.boardStop.arrivalTimeSec)} · ${stationGroupLabel(pending.boardStop.stationGroupId)}</span>
               <div class="tiny-actions">
                 <button class="tiny-button" data-action="choose-another">Choose Another Train</button>
               </div>
             </div>
+          </div>
+          <div class="planner-block">
+            <h4>Stop Ladder</h4>
+            <div class="stop-ladder">
             ${pending.destinations.map((item) => `
-              <div class="mini-card">
-                <strong>${item.arrivalHhmm} · ${item.label}</strong>
+              <div class="stop-row">
+                <div class="stop-time">${item.arrivalHhmm}</div>
+                <div class="stop-dot"></div>
+                <div class="stop-label">
+                  <strong>${item.label}</strong>
+                  <small>Available destination</small>
+                </div>
                 <div class="tiny-actions">
                   <button class="tiny-button good" data-trip-id="${pending.trip.id}" data-station-group-id="${item.stationGroupId}" data-action="ride-here">Ride Here</button>
                 </div>
               </div>
             `).join('')}
+            </div>
           </div>
         `;
       } else if (preview.currentState.kind === 'TRAIN') {
         const destinations = availableDestinations(preview);
         html += `
-          <div style="margin-top:12px;" class="card-list">
+          <div class="planner-block">
+            <h4>Stop Ladder</h4>
+            <div class="stop-ladder">
             ${destinations.length ? destinations.map((item) => `
-              <div class="mini-card">
-                <strong>${item.arrivalHhmm} · ${item.label}</strong>
+              <div class="stop-row">
+                <div class="stop-time">${item.arrivalHhmm}</div>
+                <div class="stop-dot"></div>
+                <div class="stop-label">
+                  <strong>${item.label}</strong>
+                  <small>Eligible alight stop</small>
+                </div>
                 <div class="tiny-actions">
                   <button class="tiny-button good" data-station-group-id="${item.stationGroupId}" data-action="ride-direct">Ride Here</button>
                 </div>
               </div>
             `).join('') : `<div class="empty">No downstream stops available from the current on-train state.</div>`}
+            </div>
           </div>
         `;
       }
@@ -2912,6 +3218,7 @@
           : `Match closed at ${currentTime} · Window ${state.startTime} -> ${state.endTime}`;
       phaseClockEl.style.background = 'transparent';
       phaseClockEl.style.color = 'var(--muted)';
+      appEl.dataset.phase = String(state.phase || '').toLowerCase();
       document.getElementById('runnerModeButton').className = state.activeMode === 'runner' ? 'active runner' : '';
       document.getElementById('hunterModeButton').className = state.activeMode === 'hunter' ? 'active hunter' : '';
       document.getElementById('pauseGameButton').disabled = onlineActive();

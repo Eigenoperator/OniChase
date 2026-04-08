@@ -24,7 +24,7 @@
 - 已启动并打通 `v2` 多人联机底座：新增 `ONLINE_ARCHITECTURE.md`、`ONLINE_PROTOCOL.md`、`scripts/engine/v2_online_room_server.py` 和 `START_ONICHASE_V2_SERVER.sh`，网页端也已接上建房/入房/submit plan/ready；当前联机版已补上 seat token / seat lock，并确认 `create room -> join runner/hunter -> submit plan -> ready/start -> LIVE 推进 -> authoritative capture` 全部跑通，同时已补 `render.yaml`、`ONLINE_DEPLOYMENT.md` 和 `docs/data/v2_online_config.json` 作为公网部署入口。
 - 已完成 `v3` 第一版 GIS Shinkansen pilot：包括架构/Schema、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json`、`visuals/v3_shinkansen_multiscale_map.svg`、`ui/v3_web_client.html`、`docs/v3.html`、`data/v3_gis/*.geojson`、`docs/data/v3_tiles/` tile-ready GeoJSON 金字塔、地图 + route timetable diagram 的同源联动，以及开始直接消费 `v3_tiles` 的 tile-driven 地图层。
 - 已继续推进 `v3` 地图/diagram 联动：diagram hover 现可同步高亮地图上的具体 trip 路径；点选站点时，右栏会额外显示“当前选中线路在该站的真实发车集合”。
-- 已根据新的 `UI_BRIEF_V2.md` 开始重做主 `v2` 网页 UI：当前已换成深色交通导视风格，并重构为“顶部强时间层 + 左侧地图主舞台 + 右侧 Planning Rail”的主布局。
+- 已根据新的 `UI_BRIEF_V2.md` 继续重做主 `v2` 网页 UI：当前已换成深色交通导视风格，并重构为“顶部强时间层 + 左侧地图主舞台 + 右侧 Planning Rail”的主布局；`Plan Board` 也已开始转成横向 leg cards，而右侧 rail 已改成更像“Current State / Departure Board / Stop Ladder”的结构。
 - 已完成版本迁移：原 `v3` GIS-first 新干线玩法页已提升为新的主 `v2`；公开网站现只保留 `v1` 和主 `v2`，不再公开 `v2-legacy` 与 `v3` 页面。
 ## In Progress
 - 正在继续把新的主 `v2` 收成稳定版本：一方面保留 GIS-first 地图/diagram 联动，另一方面把联机页面细节、单机页面体验和新的 UI brief 继续对齐。
