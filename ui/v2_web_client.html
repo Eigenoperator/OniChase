@@ -1319,22 +1319,22 @@
       if (state.selectedStationGroupId === entry.stationGroupId) return true;
       if (state.selectedRouteId) {
         const routeStations = getRouteStationSet(state.selectedRouteId);
-        if (routeStations.has(entry.stationGroupId) && state.zoom >= 4.2) return true;
+        if (routeStations.has(entry.stationGroupId) && state.zoom >= 5.8) return true;
       }
       const rank = entry.labelRank || 0;
-      if (state.zoom >= 10.5) return true;
-      if (state.zoom >= 7.2) return rank >= 88;
-      if (state.zoom >= 5.2) return rank >= 94;
-      if (state.zoom >= 3.4) return rank >= 98;
+      if (state.zoom >= 16) return true;
+      if (state.zoom >= 11) return rank >= 90;
+      if (state.zoom >= 7.5) return rank >= 95;
+      if (state.zoom >= 4.8) return rank >= 98;
       return rank >= 99;
     }
 
     function mapLabelFontSize(baseSize) {
-      return (baseSize / Math.pow(Math.max(1, state.zoom), 1.16)).toFixed(2);
+      return (baseSize / Math.pow(Math.max(1, state.zoom), 1.34)).toFixed(2);
     }
 
     function mapLabelStrokeWidth(baseWidth) {
-      return (baseWidth / Math.pow(Math.max(1, state.zoom), 1.08)).toFixed(2);
+      return (baseWidth / Math.pow(Math.max(1, state.zoom), 1.26)).toFixed(2);
     }
 
     function makeProjection(bundle) {
@@ -1793,16 +1793,16 @@
       const labelSvg = [];
       const hoverSvg = [];
       const zoomScale = Math.max(1, state.zoom);
-      const corridorOuterWidth = clamp((state.viewMode === 'corridor' ? 10 : 7) / Math.pow(zoomScale, 0.72), 0.7, state.viewMode === 'corridor' ? 10 : 7);
-      const corridorOuterSelectedWidth = clamp((state.viewMode === 'corridor' ? 11.5 : 7.8) / Math.pow(zoomScale, 0.72), 0.8, state.viewMode === 'corridor' ? 11.5 : 7.8);
-      const corridorInnerWidth = clamp((state.viewMode === 'corridor' ? 5.2 : 3.4) / Math.pow(zoomScale, 0.72), 0.5, state.viewMode === 'corridor' ? 5.2 : 3.4);
-      const corridorInnerSelectedWidth = clamp((state.viewMode === 'corridor' ? 6.6 : 4.2) / Math.pow(zoomScale, 0.72), 0.6, state.viewMode === 'corridor' ? 6.6 : 4.2);
-      const serviceOuterSelectedWidth = clamp(8.4 / Math.pow(zoomScale, 0.72), 0.8, 8.4);
-      const serviceOuterWidth = clamp(7 / Math.pow(zoomScale, 0.72), 0.7, 7);
-      const serviceInnerSelectedWidth = clamp(5.4 / Math.pow(zoomScale, 0.72), 0.55, 5.4);
-      const serviceInnerWidth = clamp(3.6 / Math.pow(zoomScale, 0.72), 0.4, 3.6);
-      const hoverOuterWidth = clamp((state.viewMode === 'service' ? 12 : 10) / Math.pow(zoomScale, 0.72), 0.9, state.viewMode === 'service' ? 12 : 10);
-      const hoverInnerWidth = clamp((state.viewMode === 'service' ? 7.2 : 6.2) / Math.pow(zoomScale, 0.72), 0.6, state.viewMode === 'service' ? 7.2 : 6.2);
+      const corridorOuterWidth = clamp((state.viewMode === 'corridor' ? 10 : 7) / Math.pow(zoomScale, 1.08), 0.22, state.viewMode === 'corridor' ? 10 : 7);
+      const corridorOuterSelectedWidth = clamp((state.viewMode === 'corridor' ? 11.5 : 7.8) / Math.pow(zoomScale, 1.08), 0.26, state.viewMode === 'corridor' ? 11.5 : 7.8);
+      const corridorInnerWidth = clamp((state.viewMode === 'corridor' ? 5.2 : 3.4) / Math.pow(zoomScale, 1.08), 0.12, state.viewMode === 'corridor' ? 5.2 : 3.4);
+      const corridorInnerSelectedWidth = clamp((state.viewMode === 'corridor' ? 6.6 : 4.2) / Math.pow(zoomScale, 1.08), 0.16, state.viewMode === 'corridor' ? 6.6 : 4.2);
+      const serviceOuterSelectedWidth = clamp(8.4 / Math.pow(zoomScale, 1.08), 0.24, 8.4);
+      const serviceOuterWidth = clamp(7 / Math.pow(zoomScale, 1.08), 0.2, 7);
+      const serviceInnerSelectedWidth = clamp(5.4 / Math.pow(zoomScale, 1.08), 0.16, 5.4);
+      const serviceInnerWidth = clamp(3.6 / Math.pow(zoomScale, 1.08), 0.12, 3.6);
+      const hoverOuterWidth = clamp((state.viewMode === 'service' ? 12 : 10) / Math.pow(zoomScale, 1.1), 0.28, state.viewMode === 'service' ? 12 : 10);
+      const hoverInnerWidth = clamp((state.viewMode === 'service' ? 7.2 : 6.2) / Math.pow(zoomScale, 1.1), 0.18, state.viewMode === 'service' ? 7.2 : 6.2);
       const selectedRouteStations = state.selectedRouteId ? getRouteStationSet(state.selectedRouteId) : new Set();
       const activePreview = planCursorPreview(state.activeMode);
       const pending = pendingDepartureContext(activePreview);
@@ -1967,21 +1967,31 @@
         if (!preview?.mapPosition) continue;
         const color = playerId === 'runner' ? '#dc4d62' : '#2d6cdf';
         const { x, y } = preview.mapPosition;
-        const markerScale = clamp(1 / Math.pow(zoomScale, 0.95), 0.16, 1);
+        const markerScale = clamp(1 / Math.pow(zoomScale, 1.45), 0.04, 1);
         const markerRadius = 10;
         const markerStroke = 3;
         const markerBoxWidth = 170;
         const markerBoxHeight = 36;
         const markerOffsetX = 14;
         const markerOffsetY = -20;
-        playerSvg.push(`
-          <g class="player-marker" transform="translate(${x} ${y}) scale(${markerScale}) translate(${-x} ${-y})">
-            <circle cx="${x}" cy="${y}" r="${markerRadius}" fill="${color}" stroke="white" stroke-width="${markerStroke}" />
-            <rect x="${x + markerOffsetX}" y="${y + markerOffsetY}" width="${markerBoxWidth}" height="${markerBoxHeight}" rx="8" class="marker-box" stroke="${color}" stroke-width="2" />
-            <text x="${x + 22}" y="${y - 6}" class="marker-label" fill="${color}">${playerId.toUpperCase()}</text>
-            <text x="${x + 22}" y="${y + 10}" class="marker-sub" fill="#1f2a37">${preview.currentState.kind === 'NODE' ? stationGroupLabel(preview.currentState.stationGroupId) : formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: '' })}</text>
-          </g>
-        `);
+        if (zoomScale >= 5.5) {
+          const compactRadius = clamp(4.4 / Math.pow(zoomScale, 1.2), 0.12, 0.95);
+          const compactStroke = clamp(1.1 / Math.pow(zoomScale, 0.7), 0.08, 0.28);
+          playerSvg.push(`
+            <g class="player-marker">
+              <circle cx="${x}" cy="${y}" r="${compactRadius}" fill="${color}" stroke="white" stroke-width="${compactStroke}" />
+            </g>
+          `);
+        } else {
+          playerSvg.push(`
+            <g class="player-marker" transform="translate(${x} ${y}) scale(${markerScale}) translate(${-x} ${-y})">
+              <circle cx="${x}" cy="${y}" r="${markerRadius}" fill="${color}" stroke="white" stroke-width="${markerStroke}" />
+              <rect x="${x + markerOffsetX}" y="${y + markerOffsetY}" width="${markerBoxWidth}" height="${markerBoxHeight}" rx="8" class="marker-box" stroke="${color}" stroke-width="2" />
+              <text x="${x + 22}" y="${y - 6}" class="marker-label" fill="${color}">${playerId.toUpperCase()}</text>
+              <text x="${x + 22}" y="${y + 10}" class="marker-sub" fill="#1f2a37">${preview.currentState.kind === 'NODE' ? stationGroupLabel(preview.currentState.stationGroupId) : formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: '' })}</text>
+            </g>
+          `);
+        }
       }
 
       svg.innerHTML = `
