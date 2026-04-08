@@ -932,7 +932,7 @@
       viewMode: 'corridor',
       zoom: 1,
       minZoom: 0.85,
-      maxZoom: 16,
+      maxZoom: 24,
       panX: 0,
       panY: 0,
       projection: null,
@@ -1895,7 +1895,10 @@
         };
       });
 
-      const stationRadius = clamp(4.8 / Math.pow(Math.max(1, state.zoom), 1.18), 0.7, 4.8);
+      const stationRadius = clamp(3.8 / Math.pow(Math.max(1, state.zoom), 1.45), 0.22, 3.8);
+      const stationStrokeWidth = clamp(1.15 / Math.pow(Math.max(1, state.zoom), 0.42), 0.3, 1.15);
+      const selectedStrokeWidth = clamp(2.1 / Math.pow(Math.max(1, state.zoom), 0.42), 0.55, 2.1);
+      const routeStrokeWidth = clamp(1.45 / Math.pow(Math.max(1, state.zoom), 0.42), 0.4, 1.45);
 
       state.stationPoints.forEach((station) => {
         const selected = station.stationGroupId === selectedId;
@@ -1903,16 +1906,16 @@
         const onFutureTrip = highlightedFutureStops.has(station.stationGroupId);
         const stroke = selected ? '#f97316' : '#ffffff';
         const fill = selected ? '#f97316' : '#203247';
-        const haloRadius = selected ? stationRadius + 4.2 : onSelectedRoute ? stationRadius + 2.2 : stationRadius;
+        const haloRadius = selected ? stationRadius + 2.8 : onSelectedRoute ? stationRadius + 1.4 : stationRadius;
         if (selected) {
           stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(249,115,22,0.18)" />`);
         } else if (onSelectedRoute) {
           stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(21,101,192,0.12)" />`);
         }
         if (onFutureTrip) {
-          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${Math.max(haloRadius + 2.2, stationRadius + 4.4)}" class="future-stop-ring" />`);
+          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${Math.max(haloRadius + 1.2, stationRadius + 2.6)}" class="future-stop-ring" />`);
         }
-        stationSvg.push(`<circle data-station-group-id="${station.stationGroupId}" cx="${station.x}" cy="${station.y}" r="${stationRadius}" fill="${onSelectedRoute && !selected ? '#2f5d97' : fill}" stroke="${selected ? stroke : onSelectedRoute ? '#dbeafe' : stroke}" stroke-width="${selected ? 2.4 : onSelectedRoute ? 1.6 : 1.2}" style="cursor:pointer" />`);
+        stationSvg.push(`<circle data-station-group-id="${station.stationGroupId}" cx="${station.x}" cy="${station.y}" r="${stationRadius}" fill="${onSelectedRoute && !selected ? '#2f5d97' : fill}" stroke="${selected ? stroke : onSelectedRoute ? '#dbeafe' : stroke}" stroke-width="${selected ? selectedStrokeWidth : onSelectedRoute ? routeStrokeWidth : stationStrokeWidth}" style="cursor:pointer" />`);
       });
 
       state.labelEntries.forEach((entry) => {
