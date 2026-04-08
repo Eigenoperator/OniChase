@@ -221,3 +221,4 @@
 ## 2026-04-08
 
 - Continued the main `v2` UI redesign by turning the lower plan area into route-leg cards and refactoring the right rail into a more railway-like current-state / departure-board / stop-ladder structure.
+- Rolled the public `v2` web shell back to the earlier stable sidebar layout and light palette after feedback that the redesigned planning rail and overall color treatment were worse for play.

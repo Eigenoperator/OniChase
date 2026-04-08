@@ -6,23 +6,18 @@
   <title>OniChase V2 GIS Shinkansen</title>
   <style>
     :root {
-      --bg: #07131f;
-      --bg-2: #0d1d2c;
-      --panel: rgba(10, 24, 39, 0.92);
-      --panel-strong: rgba(14, 31, 48, 0.96);
-      --panel-soft: rgba(17, 37, 58, 0.88);
-      --line: rgba(103, 132, 162, 0.34);
-      --ink: #eef6ff;
-      --muted: #96aabe;
-      --accent: #2e8cff;
-      --accent-soft: rgba(46, 140, 255, 0.18);
-      --runner: #55e1cb;
-      --hunter: #ff9c48;
-      --danger: #ff6679;
-      --corridor: #6a829a;
-      --station: #d6e5f5;
-      --shadow: 0 24px 56px rgba(0, 0, 0, 0.34);
-      --shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.22);
+      --bg: #eef2f7;
+      --panel: rgba(250, 252, 255, 0.96);
+      --panel-strong: rgba(244, 248, 252, 0.98);
+      --line: #d5dde8;
+      --ink: #1f2a37;
+      --muted: #667487;
+      --accent: #1565c0;
+      --accent-soft: rgba(21, 101, 192, 0.12);
+      --corridor: #b7c3d8;
+      --station: #203247;
+      --shadow: 0 20px 44px rgba(21, 33, 52, 0.12);
+      --shadow-soft: 0 10px 24px rgba(21, 33, 52, 0.08);
     }
 
     * { box-sizing: border-box; }
@@ -31,12 +26,12 @@
       margin: 0;
       height: 100vh;
       overflow: hidden;
-      font-family: "Avenir Next", "Segoe UI", "Noto Sans JP", sans-serif;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(circle at 14% 12%, rgba(46, 140, 255, 0.16), transparent 22%),
-        radial-gradient(circle at 82% 10%, rgba(255, 158, 72, 0.13), transparent 20%),
-        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+        radial-gradient(circle at 12% 14%, rgba(21, 101, 192, 0.16), transparent 24%),
+        radial-gradient(circle at 85% 16%, rgba(126, 87, 194, 0.12), transparent 22%),
+        linear-gradient(180deg, #f8fbff 0%, #edf2f8 100%);
     }
 
     .app {
@@ -58,9 +53,9 @@
       place-items: center;
       padding: 28px;
       background:
-        radial-gradient(circle at 18% 20%, rgba(46, 140, 255, 0.18), transparent 24%),
-        radial-gradient(circle at 82% 16%, rgba(255, 158, 72, 0.15), transparent 20%),
-        linear-gradient(180deg, rgba(7, 19, 31, 0.98), rgba(13, 29, 44, 0.98));
+        radial-gradient(circle at 18% 20%, rgba(21, 101, 192, 0.2), transparent 24%),
+        radial-gradient(circle at 82% 16%, rgba(220, 77, 98, 0.14), transparent 20%),
+        linear-gradient(180deg, rgba(245, 249, 255, 0.98), rgba(234, 241, 249, 0.98));
       backdrop-filter: blur(10px);
     }
 
@@ -76,9 +71,9 @@
     }
 
     .lobby-panel {
-      border: 1px solid rgba(103, 132, 162, 0.28);
+      border: 1px solid rgba(213, 221, 232, 0.95);
       border-radius: 30px;
-      background: rgba(11, 24, 39, 0.92);
+      background: rgba(250, 252, 255, 0.96);
       box-shadow: var(--shadow);
       padding: 28px;
     }
@@ -107,9 +102,9 @@
     .lobby-badge {
       padding: 10px 12px;
       border-radius: 999px;
-      background: rgba(46, 140, 255, 0.12);
-      border: 1px solid rgba(46, 140, 255, 0.22);
-      color: #b7d9ff;
+      background: rgba(21, 101, 192, 0.08);
+      border: 1px solid rgba(21, 101, 192, 0.14);
+      color: var(--accent);
       font-size: 12px;
       font-weight: 800;
       letter-spacing: 0.04em;
@@ -122,9 +117,9 @@
     }
 
     .lobby-card {
-      border: 1px solid rgba(103, 132, 162, 0.24);
+      border: 1px solid rgba(213, 221, 232, 0.95);
       border-radius: 24px;
-      background: rgba(17, 37, 58, 0.84);
+      background: rgba(255, 255, 255, 0.86);
       padding: 20px;
       box-shadow: var(--shadow-soft);
     }
@@ -153,8 +148,8 @@
       display: inline-flex;
       padding: 4px;
       border-radius: 999px;
-      background: rgba(14, 31, 48, 0.94);
-      border: 1px solid rgba(103, 132, 162, 0.24);
+      background: rgba(239, 244, 251, 0.94);
+      border: 1px solid rgba(213, 221, 232, 0.95);
     }
 
     .seat-toggle button {
@@ -188,8 +183,8 @@
 
     .lobby-field input {
       width: 100%;
-      border: 1px solid rgba(103, 132, 162, 0.3);
-      background: rgba(7, 19, 31, 0.9);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(255, 255, 255, 0.96);
       color: var(--ink);
       border-radius: 14px;
       padding: 12px 14px;
@@ -201,7 +196,7 @@
       min-height: 42px;
       padding: 12px 14px;
       border-radius: 16px;
-      background: rgba(14, 31, 48, 0.92);
+      background: rgba(237, 242, 248, 0.92);
       color: var(--muted);
       font-size: 13px;
       line-height: 1.5;
@@ -210,13 +205,13 @@
 
     .topbar {
       display: grid;
-      grid-template-columns: minmax(250px, 1fr) minmax(320px, auto) minmax(320px, 1fr);
-      gap: 16px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
       align-items: center;
-      padding: 16px 22px 14px;
-      border-bottom: 1px solid rgba(103, 132, 162, 0.24);
-      background: rgba(7, 19, 31, 0.92);
-      backdrop-filter: blur(16px);
+      padding: 18px 24px 16px;
+      border-bottom: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(252, 254, 255, 0.92);
+      backdrop-filter: blur(14px);
       position: sticky;
       top: 0;
       z-index: 10;
@@ -224,65 +219,16 @@
 
     .brand h1 {
       margin: 0;
-      font-size: 30px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      font-size: 32px;
+      letter-spacing: 0.03em;
     }
 
     .brand p {
       margin: 6px 0 0;
-      font-size: 12px;
+      font-size: 13px;
       line-height: 1.5;
       color: var(--muted);
-      max-width: 44ch;
-    }
-
-    .command-center {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 6px;
-      padding: 12px 18px;
-      border-radius: 22px;
-      border: 1px solid rgba(103, 132, 162, 0.28);
-      background: linear-gradient(180deg, rgba(13, 29, 44, 0.98), rgba(9, 22, 35, 0.96));
-      box-shadow: var(--shadow-soft);
-      text-align: center;
-    }
-
-    .command-meta {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.16em;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-
-    .command-time {
-      font-size: 40px;
-      line-height: 1;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .command-phase {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .phase-chip {
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(46, 140, 255, 0.16);
-      color: #c3e0ff;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      max-width: 860px;
     }
 
     .toolbar {
@@ -298,7 +244,7 @@
       padding: 4px;
       border-radius: 999px;
       background: rgba(255,255,255,0.86);
-      border: 1px solid rgba(103, 132, 162, 0.22);
+      border: 1px solid rgba(213, 221, 232, 0.95);
       box-shadow: var(--shadow-soft);
     }
 
@@ -329,21 +275,17 @@
     }
 
     .mode-toggle button.active.runner {
-      background: var(--runner);
-      color: #072132;
-      font-weight: 900;
+      background: #dc4d62;
+      color: white;
     }
 
     .mode-toggle button.active.hunter {
-      background: var(--hunter);
-      color: #231306;
-      font-weight: 900;
+      background: #2d6cdf;
+      color: white;
     }
 
     button.secondary {
-      background: rgba(255,255,255,0.08);
-      color: var(--ink);
-      border: 1px solid rgba(103, 132, 162, 0.18);
+      background: #edf2f8;
     }
 
     button.primary {
@@ -352,12 +294,12 @@
     }
 
     .pill {
-      padding: 10px 12px;
+      padding: 12px 14px;
       border-radius: 16px;
-      background: var(--panel-soft);
-      border: 1px solid rgba(103, 132, 162, 0.22);
+      background: var(--panel);
+      border: 1px solid rgba(213, 221, 232, 0.95);
       box-shadow: var(--shadow-soft);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--muted);
       white-space: nowrap;
@@ -367,13 +309,13 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) 390px;
       gap: 20px;
-      padding: 18px 20px 20px;
+      padding: 20px 24px 24px;
       height: 100%;
       min-height: 0;
     }
 
     .panel {
-      border: 1px solid rgba(103, 132, 162, 0.18);
+      border: 1px solid rgba(213, 221, 232, 0.95);
       border-radius: 28px;
       background: var(--panel);
       box-shadow: var(--shadow);
@@ -385,8 +327,8 @@
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) 280px;
       background:
-        radial-gradient(circle at 16% 12%, rgba(46, 140, 255, 0.09), transparent 20%),
-        linear-gradient(180deg, rgba(10, 24, 39, 0.98), rgba(8, 18, 29, 0.98));
+        radial-gradient(circle at 16% 12%, rgba(21, 101, 192, 0.08), transparent 20%),
+        linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(241, 246, 251, 0.98));
     }
 
     .map-head {
@@ -400,8 +342,6 @@
     .map-head h2 {
       margin: 0;
       font-size: 24px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
     }
 
     .map-head p {
@@ -454,15 +394,15 @@
       min-height: 0;
       border-radius: 20px;
       overflow: hidden;
-      border: 1px solid rgba(103, 132, 162, 0.18);
-      background: rgba(13, 29, 44, 0.8);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(255,255,255,0.72);
       box-shadow: var(--shadow-soft);
     }
 
     #diagram {
       cursor: default;
       background:
-        linear-gradient(180deg, rgba(17, 37, 58, 0.96), rgba(10, 24, 39, 0.98));
+        linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248, 251, 255, 0.98));
     }
 
     svg {
@@ -471,8 +411,8 @@
       display: block;
       border-radius: 22px;
       background:
-        radial-gradient(circle at 18% 16%, rgba(46, 140, 255, 0.08), transparent 18%),
-        linear-gradient(180deg, rgba(17, 37, 58, 0.96), rgba(9, 21, 33, 0.98));
+        radial-gradient(circle at 18% 16%, rgba(21, 101, 192, 0.06), transparent 18%),
+        linear-gradient(180deg, rgba(255,255,255,0.9), rgba(246, 249, 253, 0.96));
       cursor: grab;
       user-select: none;
       touch-action: none;
@@ -481,16 +421,14 @@
     svg.dragging { cursor: grabbing; }
 
     .sidebar {
-      display: grid;
-      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      display: block;
       min-height: 0;
-      overflow: hidden;
-      background: linear-gradient(180deg, rgba(10, 24, 39, 0.98), rgba(8, 18, 29, 0.98));
+      overflow: auto;
     }
 
     .sidebar section {
       padding: 18px 20px;
-      border-bottom: 1px solid rgba(103, 132, 162, 0.15);
+      border-bottom: 1px solid rgba(213, 221, 232, 0.92);
     }
 
     .sidebar section:last-child {
@@ -516,7 +454,7 @@
       padding: 12px;
       border-radius: 18px;
       background: var(--panel-strong);
-      border: 1px solid rgba(103, 132, 162, 0.18);
+      border: 1px solid rgba(213, 221, 232, 0.95);
       box-shadow: var(--shadow-soft);
     }
 
@@ -539,7 +477,7 @@
       padding: 14px 16px;
       border-radius: 18px;
       background: var(--panel-strong);
-      border: 1px solid rgba(103, 132, 162, 0.18);
+      border: 1px solid rgba(213, 221, 232, 0.95);
       box-shadow: var(--shadow-soft);
       display: grid;
       gap: 8px;
@@ -567,7 +505,7 @@
       padding: 6px 10px;
       border-radius: 999px;
       background: var(--accent-soft);
-      color: #c8e3ff;
+      color: var(--accent);
       font-size: 12px;
       font-weight: 800;
     }
@@ -589,7 +527,7 @@
       padding: 12px 14px;
       border-radius: 18px;
       background: var(--panel-strong);
-      border: 1px solid rgba(103, 132, 162, 0.18);
+      border: 1px solid rgba(213, 221, 232, 0.95);
       box-shadow: var(--shadow-soft);
       display: grid;
       gap: 6px;
@@ -633,8 +571,8 @@
     .diagram-chip {
       padding: 8px 10px;
       border-radius: 999px;
-      background: rgba(46, 140, 255, 0.16);
-      color: #d2e8ff;
+      background: rgba(21, 101, 192, 0.08);
+      color: var(--accent);
       font-size: 11px;
       font-weight: 800;
       letter-spacing: 0.06em;
@@ -665,8 +603,8 @@
 
     .info-box {
       border-radius: 18px;
-      border: 1px solid rgba(103, 132, 162, 0.18);
-      background: rgba(14, 31, 48, 0.92);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      background: #fffdf8;
       padding: 14px;
       font-size: 13px;
       line-height: 1.55;
@@ -677,8 +615,8 @@
 
     .empty {
       border-radius: 16px;
-      border: 1px dashed rgba(103, 132, 162, 0.28);
-      background: rgba(14, 31, 48, 0.74);
+      border: 1px dashed rgba(213, 221, 232, 0.95);
+      background: rgba(255, 253, 248, 0.78);
       padding: 12px 14px;
       font-size: 12px;
       color: var(--muted);
@@ -696,7 +634,7 @@
       padding: 9px 11px;
       border-radius: 12px;
       font-size: 12px;
-      background: rgba(255,255,255,0.08);
+      background: #eef4fb;
       color: var(--ink);
       box-shadow: none;
       border: 1px solid rgba(213, 221, 232, 0.95);
@@ -708,13 +646,13 @@
     }
 
     .tiny-button.runner {
-      background: rgba(85, 225, 203, 0.16);
-      color: #b9fff4;
+      background: rgba(220, 77, 98, 0.12);
+      color: #8a2334;
     }
 
     .tiny-button.hunter {
-      background: rgba(255, 156, 72, 0.16);
-      color: #ffe0bf;
+      background: rgba(45, 108, 223, 0.12);
+      color: #1d4d9c;
     }
 
     .outlook-list {
@@ -727,7 +665,7 @@
       grid-template-columns: 74px 1fr;
       gap: 10px;
       padding: 9px 0;
-      border-bottom: 1px dashed rgba(103, 132, 162, 0.28);
+      border-bottom: 1px dashed rgba(213, 221, 232, 0.9);
       font-size: 13px;
     }
 
@@ -741,7 +679,7 @@
     }
 
     .marker-box {
-      fill: rgba(7, 19, 31, 0.96);
+      fill: #fffaf3;
     }
 
     .marker-label {
@@ -754,256 +692,11 @@
     }
 
     .future-stop-ring {
-      fill: rgba(46, 140, 255, 0.14);
-      stroke: rgba(46, 140, 255, 0.84);
+      fill: rgba(21, 101, 192, 0.12);
+      stroke: rgba(21, 101, 192, 0.82);
       stroke-width: 1.9;
       stroke-dasharray: 4 4;
       pointer-events: none;
-    }
-
-    .sidebar-main {
-      min-height: 0;
-      overflow: auto;
-      display: grid;
-      align-content: start;
-    }
-
-    .planner-rail-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 12px;
-    }
-
-    .planner-rail-header h3 {
-      margin: 0;
-      font-size: 24px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .planner-rail-header p {
-      margin: 6px 0 0;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.5;
-      max-width: 32ch;
-    }
-
-    .plan-board-section {
-      border-top: 1px solid rgba(103, 132, 162, 0.16);
-      background: rgba(6, 15, 24, 0.72);
-    }
-
-    .planner-block {
-      display: grid;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .planner-block h4 {
-      margin: 0;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .state-ribbon {
-      display: grid;
-      gap: 10px;
-      padding: 14px;
-      border-radius: 18px;
-      border: 1px solid rgba(103, 132, 162, 0.18);
-      background: linear-gradient(180deg, rgba(17, 37, 58, 0.96), rgba(12, 28, 44, 0.96));
-      box-shadow: var(--shadow-soft);
-    }
-
-    .state-ribbon strong {
-      font-size: 18px;
-      letter-spacing: 0.02em;
-    }
-
-    .state-ribbon span,
-    .state-ribbon small {
-      color: var(--muted);
-      line-height: 1.45;
-    }
-
-    .departure-board {
-      display: grid;
-      gap: 10px;
-    }
-
-    .departure-card {
-      display: grid;
-      grid-template-columns: 72px 1fr;
-      gap: 12px;
-      align-items: start;
-      padding: 14px;
-      border-radius: 20px;
-      border: 1px solid rgba(103, 132, 162, 0.18);
-      background: rgba(14, 31, 48, 0.94);
-      box-shadow: var(--shadow-soft);
-    }
-
-    .departure-time {
-      font-size: 20px;
-      line-height: 1;
-      font-weight: 900;
-      letter-spacing: 0.04em;
-      color: #fff2cf;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .departure-main {
-      display: grid;
-      gap: 6px;
-    }
-
-    .departure-main strong {
-      font-size: 16px;
-    }
-
-    .departure-main span,
-    .departure-main small {
-      color: var(--muted);
-      line-height: 1.45;
-    }
-
-    .stop-ladder {
-      display: grid;
-      gap: 8px;
-    }
-
-    .stop-row {
-      display: grid;
-      grid-template-columns: 68px 10px 1fr auto;
-      gap: 10px;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px dashed rgba(103, 132, 162, 0.22);
-    }
-
-    .stop-row:last-child {
-      border-bottom: 0;
-      padding-bottom: 0;
-    }
-
-    .stop-time {
-      font-size: 13px;
-      font-weight: 800;
-      color: #d7e8ff;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .stop-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(46, 140, 255, 0.9);
-      box-shadow: 0 0 0 4px rgba(46, 140, 255, 0.14);
-    }
-
-    .stop-label {
-      display: grid;
-      gap: 2px;
-      color: var(--ink);
-      line-height: 1.35;
-    }
-
-    .stop-label small {
-      color: var(--muted);
-    }
-
-    .plan-chain {
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-    }
-
-    .plan-leg {
-      min-width: 250px;
-      max-width: 290px;
-      display: grid;
-      gap: 10px;
-      padding: 14px;
-      border-radius: 22px;
-      border: 1px solid rgba(103, 132, 162, 0.18);
-      background: linear-gradient(180deg, rgba(16, 35, 54, 0.98), rgba(10, 24, 39, 0.96));
-      box-shadow: var(--shadow-soft);
-    }
-
-    .plan-leg.wait {
-      background: linear-gradient(180deg, rgba(36, 42, 56, 0.98), rgba(22, 28, 39, 0.96));
-    }
-
-    .plan-leg.current {
-      border-color: rgba(46, 140, 255, 0.45);
-      box-shadow: 0 0 0 2px rgba(46, 140, 255, 0.12), var(--shadow-soft);
-    }
-
-    .plan-leg.done {
-      opacity: 0.65;
-    }
-
-    .leg-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .leg-badge {
-      padding: 5px 9px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      background: rgba(46, 140, 255, 0.14);
-      color: #cce5ff;
-    }
-
-    .leg-window {
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--muted);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .leg-route {
-      display: grid;
-      gap: 8px;
-    }
-
-    .leg-route strong {
-      font-size: 17px;
-    }
-
-    .leg-stations {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-      flex-wrap: wrap;
-    }
-
-    .leg-arrow {
-      color: rgba(255,255,255,0.34);
-      font-weight: 900;
-    }
-
-    .app[data-phase="planning"] .map-panel {
-      box-shadow: 0 0 0 1px rgba(255, 102, 121, 0.12), var(--shadow);
-    }
-
-    .app[data-phase="live"] .map-panel {
-      box-shadow: 0 0 0 1px rgba(85, 225, 203, 0.12), var(--shadow);
     }
 
     @media (max-width: 1100px) {
@@ -1021,16 +714,11 @@
         grid-template-columns: 1fr;
         height: auto;
       }
-      .topbar {
-        grid-template-columns: 1fr;
-      }
       .panel {
         min-height: 560px;
       }
       .sidebar {
         min-height: 620px;
-        display: block;
-        overflow: auto;
       }
     }
   </style>
@@ -1089,21 +777,14 @@
     <header class="topbar">
       <div class="brand">
         <h1>OniChase V2</h1>
-        <p>Japanese Shinkansen wayfinding, rebuilt as a high-pressure two-player pursuit board.</p>
-      </div>
-      <div class="command-center">
-        <div class="command-meta">Game Clock</div>
-        <div class="command-time" id="commandTimeDisplay">06:00</div>
-        <div class="command-phase">
-          <span class="phase-chip" id="phaseChip">Planning</span>
-          <span id="phaseClock">PLANNING 60s · Game starts 06:00</span>
-        </div>
+        <p>Nationwide Shinkansen playable map with a cleaner in-game board. Enter through the lobby, then use the main view for planning, live play, simulation, and replay.</p>
       </div>
       <div class="toolbar">
         <div class="mode-toggle">
           <button id="runnerModeButton" class="active runner">Runner</button>
           <button id="hunterModeButton">Hunter</button>
         </div>
+        <div class="pill" id="phaseClock">PLANNING 60s<br/>Game starts 06:00</div>
         <button id="loadPresetButton" class="secondary">Load Test Preset</button>
         <button id="startGameButton" class="primary">Start Game</button>
         <button id="pauseGameButton" class="secondary">Pause/Resume</button>
@@ -1144,17 +825,6 @@
       </section>
 
       <aside class="panel sidebar">
-        <section>
-          <div class="planner-rail-header">
-            <div>
-              <div class="section-label">Planning Rail</div>
-              <h3>Command Rail</h3>
-              <p>Choose the next real train, inspect its stop ladder, and lock the next leg into the pursuit plan.</p>
-            </div>
-          </div>
-        </section>
-
-        <div class="sidebar-main">
         <section>
           <div class="section-label">Session</div>
           <div id="roomStatus" class="info-box">Single-player local mode.</div>
@@ -1229,7 +899,6 @@
           <div class="section-label">Legend</div>
           <div class="legend" id="legend"></div>
         </section>
-        </div>
       </aside>
     </section>
   </main>
@@ -1320,8 +989,6 @@
     const resultDetailEl = document.getElementById('result-detail');
     const legendEl = document.getElementById('legend');
     const phaseClockEl = document.getElementById('phaseClock');
-    const commandTimeDisplayEl = document.getElementById('commandTimeDisplay');
-    const phaseChipEl = document.getElementById('phaseChip');
     const lobbyEl = document.getElementById('lobby');
     const appEl = document.getElementById('app');
     const roomIdInput = document.getElementById('roomIdInput');
@@ -2967,210 +2634,115 @@
       const pending = pendingDepartureContext(preview);
       let rows = [];
       let title = 'No train selected';
-      let description = 'Choose a departure to inspect the stop ladder.';
       if (pending) {
         title = formatTripLabel(pending.trip);
-        description = `Selected departure from ${stationGroupLabel(pending.boardStop.stationGroupId)}.`;
         rows = [
-          { time: secToClock(pending.boardStop.departureTimeSec ?? pending.boardStop.arrivalTimeSec), label: stationGroupLabel(pending.boardStop.stationGroupId), meta: 'Board here' },
-          ...pending.destinations.slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label, meta: 'Downstream stop' }))
+          { time: secToClock(pending.boardStop.departureTimeSec ?? pending.boardStop.arrivalTimeSec), label: `Board ${stationGroupLabel(pending.boardStop.stationGroupId)}` },
+          ...pending.destinations.slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label }))
         ];
       } else if (preview.currentState.kind === 'TRAIN') {
         title = formatTripLabel(preview.currentTrip || { serviceName: preview.currentState.tripId, serviceNumber: '' });
-        description = 'Current onboard stop ladder.';
-        rows = availableDestinations(preview).slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label, meta: 'Eligible alight stop' }));
+        rows = availableDestinations(preview).slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label }));
       }
       trainOutlookEl.innerHTML = `
         <div class="selected-card">
           <h3>${title}</h3>
-          <p>${description}</p>
+          <p>${pending ? 'Selected service preview' : preview.currentState.kind === 'TRAIN' ? 'Current onboard route' : 'Choose a train to preview later stops'}</p>
         </div>
-        <div class="planner-block">
-          <h4>Stop Ladder</h4>
-          <div class="stop-ladder">
-            ${rows.length ? rows.map((row) => `
-              <div class="stop-row">
-                <div class="stop-time">${row.time}</div>
-                <div class="stop-dot"></div>
-                <div class="stop-label">
-                  <strong>${row.label}</strong>
-                  <small>${row.meta}</small>
-                </div>
-              </div>
-            `).join('') : `<div class="empty">Not currently on a train.</div>`}
-          </div>
+        <div class="outlook-list" style="margin-top:12px;">
+          ${rows.length ? rows.map((row) => `<div class="outlook-row"><div>${row.time}</div><div>${row.label}</div></div>`).join('') : `<div class="empty">Not currently on a train.</div>`}
         </div>
       `;
-    }
-
-    function buildPlanBoardCards() {
-      const steps = state.players[state.activeMode].steps;
-      const startStationId = state.players[state.activeMode].start_station_id;
-      if (!steps.length) return [];
-      let chainStation = startStationId;
-      let pendingTrip = null;
-      let pendingBoardTime = null;
-      const cards = [];
-      steps.forEach((step) => {
-        if (step.type === 'WAIT_UNTIL') {
-          cards.push({
-            type: 'WAIT',
-            from: null,
-            to: null,
-            trip: null,
-            fromTime: null,
-            toTime: step.until_hhmm,
-            title: `Wait until ${step.until_hhmm}`,
-          });
-          return;
-        }
-        if (step.type === 'BOARD_TRAIN') {
-          pendingTrip = state.bundle.tripInstances.find((item) => item.id === step.trip_id);
-          const boardStop = pendingTrip ? findBoardingStop(pendingTrip, chainStation, 0) : null;
-          pendingBoardTime = boardStop ? secToClock(boardStop.departureTimeSec ?? boardStop.arrivalTimeSec) : null;
-          return;
-        }
-        if (step.type === 'RIDE_TO_STATION') {
-          const alightStop = pendingTrip ? findAlightStop(pendingTrip, 0, step.station_id) : null;
-          const arrivalTime = alightStop ? secToClock(alightStop.arrivalTimeSec ?? alightStop.departureTimeSec) : null;
-          cards.push({
-            type: 'LEG',
-            from: chainStation,
-            to: step.station_id,
-            trip: pendingTrip,
-            fromTime: pendingBoardTime,
-            toTime: arrivalTime,
-            title: pendingTrip ? formatTripLabel(pendingTrip) : 'Train leg',
-          });
-          chainStation = step.station_id;
-          pendingTrip = null;
-          pendingBoardTime = null;
-        }
-      });
-      return cards;
     }
 
     function renderPlanBoard() {
-      const cards = buildPlanBoardCards();
-      if (!cards.length) {
-        planBoardInfoEl.innerHTML = '<div class="empty">No legs yet. Select a station, choose a departure, then choose a destination stop.</div>';
+      const steps = state.players[state.activeMode].steps;
+      if (!steps.length) {
+        planBoardInfoEl.textContent = 'No legs yet.\nSelect a station, choose a departure, then choose a destination stop.';
         return;
       }
-      planBoardInfoEl.innerHTML = `
-        <div class="plan-chain">
-          ${cards.map((card, index) => `
-            <div class="plan-leg ${card.type === 'WAIT' ? 'wait' : ''} ${index === cards.length - 1 ? 'current' : ''}">
-              <div class="leg-top">
-                <span class="leg-badge">${card.type === 'WAIT' ? 'Wait' : `Leg ${index + 1}`}</span>
-                <span class="leg-window">${card.fromTime ? `${card.fromTime} → ${card.toTime || '--:--'}` : (card.toTime || '')}</span>
-              </div>
-              <div class="leg-route">
-                <strong>${card.title}</strong>
-                ${card.type === 'WAIT'
-                  ? `<div class="leg-stations"><span>Hold position and reassess at the next lock point.</span></div>`
-                  : `<div class="leg-stations">
-                      <span>${stationGroupLabel(card.from)}</span>
-                      <span class="leg-arrow">→</span>
-                      <span>${stationGroupLabel(card.to)}</span>
-                    </div>`}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
+      let chainStation = state.players[state.activeMode].start_station_id;
+      let pendingTrip = null;
+      let legIndex = 1;
+      const lines = [];
+      for (const step of steps) {
+        if (step.type === 'WAIT_UNTIL') {
+          lines.push(`WAIT until ${step.until_hhmm}`);
+          continue;
+        }
+        if (step.type === 'BOARD_TRAIN') {
+          pendingTrip = state.bundle.tripInstances.find((item) => item.id === step.trip_id);
+          continue;
+        }
+        if (step.type === 'RIDE_TO_STATION') {
+          lines.push(`LEG ${legIndex}. ${stationGroupLabel(chainStation)} -> ${formatTripLabel(pendingTrip || { serviceName: 'Trip', serviceNumber: '' })} -> ${stationGroupLabel(step.station_id)}`);
+          chainStation = step.station_id;
+          pendingTrip = null;
+          legIndex += 1;
+        }
+      }
+      planBoardInfoEl.textContent = lines.join('\n\n');
     }
 
     function renderActionRegion() {
       const preview = planCursorPreview(state.activeMode);
       const pending = pendingDepartureContext(preview);
       let html = `
-        <div class="planner-block">
-          <h4>Current State</h4>
-          <div class="state-ribbon">
-            <strong>${preview.currentState.kind === 'NODE' ? stationGroupLabel(preview.currentState.stationGroupId) : formatTripLabel(preview.currentTrip || { serviceName: preview.currentState.tripId, serviceNumber: '' })}</strong>
-            <span>${preview.currentState.kind === 'NODE' ? `Station cursor at ${preview.currentTime}` : `Onboard at ${preview.currentTime}`}</span>
-            <div class="tiny-actions">
-              <button class="tiny-button" data-action="set-start">Set Start To Selected Station</button>
-              <button class="tiny-button" data-action="wait">Wait +5 minutes</button>
-              <button class="tiny-button" data-action="undo">Undo Step</button>
-              <button class="tiny-button" data-action="clear">Clear Plan</button>
-            </div>
-          </div>
+        <div class="tiny-actions">
+          <button class="tiny-button" data-action="set-start">Set Start To Selected Station</button>
+          <button class="tiny-button" data-action="wait">Wait +5 minutes</button>
+          <button class="tiny-button" data-action="undo">Undo Step</button>
+          <button class="tiny-button" data-action="clear">Clear Plan</button>
         </div>
       `;
 
       if (preview.currentState.kind === 'NODE' && !pending) {
         const departures = availableDepartures(preview);
         html += `
-          <div class="planner-block">
-            <h4>Departure Board</h4>
-            <div class="departure-board">
+          <div style="margin-top:12px;" class="card-list">
             ${departures.length ? departures.map((entry) => `
-              <div class="departure-card">
-                <div class="departure-time">${entry.departureHhmm}</div>
-                <div class="departure-main">
-                  <strong>${formatTripLabel(entry.trip)}</strong>
-                  <span>${trainPreviewText(entry.trip, entry.boardStop)}</span>
-                  <small>${entry.trip.routeId.replace(/_/g, ' ')}</small>
+              <div class="mini-card">
+                <strong>${entry.departureHhmm} · ${formatTripLabel(entry.trip)}</strong>
+                <span>${trainPreviewText(entry.trip, entry.boardStop)}</span>
                 <div class="tiny-actions">
                   <button class="tiny-button ${state.activeMode}" data-trip-id="${entry.trip.id}" data-action="choose-trip">Choose This Train</button>
                 </div>
               </div>
             `).join('') : `<div class="empty">No catchable departures from ${stationGroupLabel(preview.currentState.stationGroupId)} after ${preview.currentTime}.</div>`}
-            </div>
           </div>
         `;
       } else if (pending) {
         html += `
-          <div class="planner-block">
-            <h4>Selected Departure</h4>
-            <div class="state-ribbon">
+          <div style="margin-top:12px;" class="card-list">
+            <div class="mini-card">
               <strong>${formatTripLabel(pending.trip)}</strong>
               <span>${secToClock(pending.boardStop.departureTimeSec ?? pending.boardStop.arrivalTimeSec)} · ${stationGroupLabel(pending.boardStop.stationGroupId)}</span>
               <div class="tiny-actions">
                 <button class="tiny-button" data-action="choose-another">Choose Another Train</button>
               </div>
             </div>
-          </div>
-          <div class="planner-block">
-            <h4>Stop Ladder</h4>
-            <div class="stop-ladder">
             ${pending.destinations.map((item) => `
-              <div class="stop-row">
-                <div class="stop-time">${item.arrivalHhmm}</div>
-                <div class="stop-dot"></div>
-                <div class="stop-label">
-                  <strong>${item.label}</strong>
-                  <small>Available destination</small>
-                </div>
+              <div class="mini-card">
+                <strong>${item.arrivalHhmm} · ${item.label}</strong>
                 <div class="tiny-actions">
                   <button class="tiny-button good" data-trip-id="${pending.trip.id}" data-station-group-id="${item.stationGroupId}" data-action="ride-here">Ride Here</button>
                 </div>
               </div>
             `).join('')}
-            </div>
           </div>
         `;
       } else if (preview.currentState.kind === 'TRAIN') {
         const destinations = availableDestinations(preview);
         html += `
-          <div class="planner-block">
-            <h4>Stop Ladder</h4>
-            <div class="stop-ladder">
+          <div style="margin-top:12px;" class="card-list">
             ${destinations.length ? destinations.map((item) => `
-              <div class="stop-row">
-                <div class="stop-time">${item.arrivalHhmm}</div>
-                <div class="stop-dot"></div>
-                <div class="stop-label">
-                  <strong>${item.label}</strong>
-                  <small>Eligible alight stop</small>
-                </div>
+              <div class="mini-card">
+                <strong>${item.arrivalHhmm} · ${item.label}</strong>
                 <div class="tiny-actions">
                   <button class="tiny-button good" data-station-group-id="${item.stationGroupId}" data-action="ride-direct">Ride Here</button>
                 </div>
               </div>
             `).join('') : `<div class="empty">No downstream stops available from the current on-train state.</div>`}
-            </div>
           </div>
         `;
       }
@@ -3197,28 +2769,16 @@
       const activePreview = planCursorPreview(state.activeMode);
       const runnerPreview = currentMapPreview('runner');
       const hunterPreview = currentMapPreview('hunter');
-      const currentTime = minutesToHhmm(state.currentGameMinute);
-      const planningCountdown = `Next Planning ${minutesToHhmm(state.nextPlanningMinute)} · ${Math.max(0, state.nextPlanningMinute - state.currentGameMinute)} min`;
-
-      commandTimeDisplayEl.textContent = currentTime;
-      phaseChipEl.textContent = state.phase;
-      phaseChipEl.style.background = state.phase === 'PLANNING'
-        ? 'rgba(255, 102, 121, 0.16)'
-        : (state.phase === 'LIVE' ? 'rgba(85, 225, 203, 0.16)' : 'rgba(255, 156, 72, 0.18)');
-      phaseChipEl.style.color = state.phase === 'PLANNING'
-        ? '#ffd0d7'
-        : (state.phase === 'LIVE' ? '#c7fff6' : '#ffe0bf');
 
       phaseClockEl.innerHTML = state.phase === 'PLANNING'
         ? (onlineActive()
-            ? `Room ${state.online.roomId || 'local'} · ${planningCountdown}`
-            : `Planning lock ${String(state.planningSecondsRemaining).padStart(2, '0')}s · Match ${state.startTime} -> ${state.endTime}`)
+            ? `PLANNING ${minutesToHhmm(state.currentGameMinute)}<br/>Room ${state.online.roomId || 'local'}`
+            : `PLANNING ${String(state.planningSecondsRemaining).padStart(2, '0')}s<br/>Game starts ${state.startTime}`)
         : state.phase === 'LIVE'
-          ? `${planningCountdown} · Window ${state.startTime} -> ${state.endTime}`
-          : `Match closed at ${currentTime} · Window ${state.startTime} -> ${state.endTime}`;
-      phaseClockEl.style.background = 'transparent';
-      phaseClockEl.style.color = 'var(--muted)';
-      appEl.dataset.phase = String(state.phase || '').toLowerCase();
+          ? `LIVE ${minutesToHhmm(state.currentGameMinute)}<br/>Window ${state.startTime} -> ${state.endTime}`
+          : `ENDED ${minutesToHhmm(state.currentGameMinute)}<br/>Window ${state.startTime} -> ${state.endTime}`;
+      phaseClockEl.style.background = state.phase === 'PLANNING' ? '#b8441f' : (state.phase === 'LIVE' ? '#163d2c' : '#2a2f38');
+      phaseClockEl.style.color = 'white';
       document.getElementById('runnerModeButton').className = state.activeMode === 'runner' ? 'active runner' : '';
       document.getElementById('hunterModeButton').className = state.activeMode === 'hunter' ? 'active hunter' : '';
       document.getElementById('pauseGameButton').disabled = onlineActive();
