@@ -932,7 +932,7 @@
       viewMode: 'corridor',
       zoom: 1,
       minZoom: 0.85,
-      maxZoom: 9,
+      maxZoom: 16,
       panX: 0,
       panY: 0,
       projection: null,
@@ -1319,21 +1319,22 @@
       if (state.selectedStationGroupId === entry.stationGroupId) return true;
       if (state.selectedRouteId) {
         const routeStations = getRouteStationSet(state.selectedRouteId);
-        if (routeStations.has(entry.stationGroupId) && state.zoom >= 3.2) return true;
+        if (routeStations.has(entry.stationGroupId) && state.zoom >= 4.2) return true;
       }
       const rank = entry.labelRank || 0;
-      if (state.zoom >= 6.2) return true;
-      if (state.zoom >= 4.2) return rank >= 92;
-      if (state.zoom >= 3.0) return rank >= 97;
+      if (state.zoom >= 10.5) return true;
+      if (state.zoom >= 7.2) return rank >= 88;
+      if (state.zoom >= 5.2) return rank >= 94;
+      if (state.zoom >= 3.4) return rank >= 98;
       return rank >= 99;
     }
 
     function mapLabelFontSize(baseSize) {
-      return (baseSize / Math.max(1, state.zoom)).toFixed(2);
+      return (baseSize / Math.pow(Math.max(1, state.zoom), 1.16)).toFixed(2);
     }
 
     function mapLabelStrokeWidth(baseWidth) {
-      return (baseWidth / Math.max(1, state.zoom)).toFixed(2);
+      return (baseWidth / Math.pow(Math.max(1, state.zoom), 1.08)).toFixed(2);
     }
 
     function makeProjection(bundle) {
@@ -1376,8 +1377,9 @@
     function tileZoomForCurrentView() {
       if (state.zoom < 1.35) return 3;
       if (state.zoom < 2.1) return 4;
-      if (state.zoom < 3.6) return 5;
-      return 6;
+      if (state.zoom < 3.8) return 5;
+      if (state.zoom < 7.5) return 6;
+      return 7;
     }
 
     function visibleGeoBounds() {
@@ -1893,7 +1895,7 @@
         };
       });
 
-      const stationRadius = clamp(4.4 / Math.sqrt(state.zoom), 2.3, 5.2);
+      const stationRadius = clamp(4.8 / Math.pow(Math.max(1, state.zoom), 1.18), 0.7, 4.8);
 
       state.stationPoints.forEach((station) => {
         const selected = station.stationGroupId === selectedId;
