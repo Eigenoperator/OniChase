@@ -760,7 +760,7 @@
           <div class="lobby-fields">
             <div class="lobby-field">
               <label for="roomIdInput">Room ID</label>
-              <input id="roomIdInput" placeholder="ROOM ID" aria-label="Room ID" />
+              <input id="roomIdInput" placeholder="ROOM ID" aria-label="Room ID" autocomplete="off" autocapitalize="characters" spellcheck="false" />
             </div>
           </div>
           <div class="lobby-actions">
@@ -1071,6 +1071,7 @@
     function openLobby() {
       lobbyEl.classList.remove('hidden');
       appEl.classList.add('hidden');
+      if (!state.online.roomId) roomIdInput.value = '';
       if (onlineActive()) {
         lobbyStatusEl.textContent = `Reconnect as ${state.online.seat?.toUpperCase() || 'seat'} in room ${state.online.roomId}.`;
       } else {
@@ -2981,6 +2982,7 @@
         hunter: { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: '18:00' }] },
       };
       state.online.serverUrl = configuredServerUrl();
+      roomIdInput.value = '';
       setLobbySeat(state.activeMode);
       state.selectedStationGroupId = state.players.runner.start_station_id;
       state.currentGameMinute = hhmmToMinutes(state.startTime);
