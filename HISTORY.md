@@ -214,3 +214,6 @@
 - Refactored the public `v2` web entry into a dedicated lobby flow: players now choose single-player or multiplayer before entering the board, and the oversized room controls were removed from the gameplay top bar into the lobby/session surfaces.
 - Hid the raw `room server URL` from the public `v2` lobby so players only see seat selection and room code, while development can still override the backend through query params or local storage.
 - Added the first public-room deployment scaffold: `render.yaml`, `ONLINE_DEPLOYMENT.md`, and `docs/data/v2_online_config.json`; the public `v2` page now reads its multiplayer backend from config and shows a clear “not configured yet” message instead of silently falling back to localhost.
+## 2026-04-07
+
+- Connected the public `v2` multiplayer client to the deployed Render room server at `https://onichase.onrender.com` by updating `docs/data/v2_online_config.json`.

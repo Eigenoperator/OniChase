@@ -20,7 +20,6 @@
 - 已修正 `v2` 固定页面后的右栏交互问题：右侧面板恢复为整栏可滚动，同时保留内部列表滚动，不再因为固定高度而把下半部分裁死。
 - 已把 `v2` 网页端的右侧 planning 交互切换为和 `v1` 同一条主流程：统一的 `Planning Actions` + `Train Outlook`，支持 `选车 -> 选目标站`，并让地图点击与右侧动作区共用同一套逻辑。
 - 已继续收 `v2` 网页地图观感：缩小默认站名字号，并在选中一趟车后把后续停站直接高亮在地图上，方便不看右侧也能判断路线。
-- 已把 `v3` 的线路联动思路合并进 `v2` 网页端：新增 `ROUTE FOCUS` 面板、线路卡片、地图线条点击高亮、选中线路停靠站高亮，以及路线级别的标签增强。
 - 已修正 `v2` 抓捕边界：同分钟里若是一人下车到站、另一人从同站上不同列车离开，则不再误判 `same_node`；回归确认 `same_node`、`same_train` 和“异车交错未抓”三类判定都成立。
 - 已启动并打通 `v2` 多人联机底座：新增 `ONLINE_ARCHITECTURE.md`、`ONLINE_PROTOCOL.md`、`scripts/engine/v2_online_room_server.py` 和 `START_ONICHASE_V2_SERVER.sh`，网页端也已接上建房/入房/submit plan/ready；当前联机版已补上 seat token / seat lock，并确认 `create room -> join runner/hunter -> submit plan -> ready/start -> LIVE 推进 -> authoritative capture` 全部跑通，同时已补 `render.yaml`、`ONLINE_DEPLOYMENT.md` 和 `docs/data/v2_online_config.json` 作为公网部署入口。
 - 已完成 `v3` 第一版 GIS Shinkansen pilot：包括架构/Schema、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json`、`visuals/v3_shinkansen_multiscale_map.svg`、`ui/v3_web_client.html`、`docs/v3.html`、`data/v3_gis/*.geojson`、`docs/data/v3_tiles/` tile-ready GeoJSON 金字塔、地图 + route timetable diagram 的同源联动，以及开始直接消费 `v3_tiles` 的 tile-driven 地图层。
@@ -29,6 +28,7 @@
 - 已完成版本迁移：原 `v3` GIS-first 新干线玩法页已提升为新的主 `v2`；公开网站现只保留 `v1` 和主 `v2`，不再公开 `v2-legacy` 与 `v3` 页面。
 ## In Progress
 - 正在继续把新的主 `v2` 收成稳定版本：一方面保留 GIS-first 地图/diagram 联动，另一方面把联机页面细节和单机页面体验继续对齐。
+- 已把公开 `v2` 网页的多人配置接到 Render 房间服务器 `https://onichase.onrender.com`，现在公开网页会默认尝试连公网联机后端。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
 
 ## Blockers
