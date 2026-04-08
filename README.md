@@ -77,6 +77,7 @@ Local testing and setup:
 - protocol: [ONLINE_PROTOCOL.md](/home/xincheng/toy/Chase/ONLINE_PROTOCOL.md)
 - room server: [scripts/engine/v2_online_room_server.py](/home/xincheng/toy/Chase/scripts/engine/v2_online_room_server.py)
 - web client: [ui/v2_web_client.html](/home/xincheng/toy/Chase/ui/v2_web_client.html)
+- deployment: [ONLINE_DEPLOYMENT.md](/home/xincheng/toy/Chase/ONLINE_DEPLOYMENT.md)
 
 Quick start:
 
@@ -94,3 +95,8 @@ Current multiplayer flow:
 - the second player opens `v2`, chooses `Hunter`, enters the room code, and clicks `Join Room`
 - both players build plans, click `Ready`, then either side can click `Start Game`
 - the room server is authoritative for phase changes, live time progression, hourly replanning, and capture
+
+Public multiplayer note:
+
+- the public `v2` page reads its default room-server URL from [docs/data/v2_online_config.json](/home/xincheng/toy/Chase/docs/data/v2_online_config.json)
+- until that file points to a public deployment, single-player works immediately but multiplayer room creation will remain unconfigured on the public site

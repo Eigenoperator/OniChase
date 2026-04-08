@@ -907,6 +907,9 @@
     const DATA_URL = window.location.pathname.includes('/ui/')
       ? '../data/v3_shinkansen_bundle.json'
       : './data/v3_shinkansen_bundle.json';
+    const ONLINE_CONFIG_URL = window.location.pathname.includes('/ui/')
+      ? '../docs/data/v2_online_config.json'.replace('../docs/', '../')
+      : './data/v2_online_config.json';
     const TILE_MANIFEST_URL = window.location.pathname.includes('/ui/')
       ? '../docs/data/v3_tiles/manifest.json'.replace('../docs/', '../')
       : './data/v3_tiles/manifest.json';
@@ -1100,7 +1103,7 @@
     function configuredServerUrl() {
       const queryValue = new URLSearchParams(window.location.search).get('server');
       const storedValue = window.localStorage.getItem('onichase-v2-room-server-url');
-      const candidate = queryValue || storedValue || 'http://127.0.0.1:8765';
+      const candidate = queryValue || storedValue || state.online.serverUrl || '';
       return candidate.trim().replace(/\/+$/, '');
     }
 
@@ -1230,6 +1233,10 @@
 
     async function createRoomAndJoinSeat() {
       state.online.serverUrl = configuredServerUrl();
+      if (!state.online.serverUrl) {
+        lobbyStatusEl.textContent = 'Multiplayer server is not configured yet.';
+        return;
+      }
       const created = await apiJson(`${state.online.serverUrl}/api/rooms`, {
         method: 'POST',
         body: JSON.stringify({ start_time_hhmm: state.startTime, end_time_hhmm: state.endTime }),
@@ -1241,6 +1248,10 @@
 
     async function joinExistingRoom() {
       state.online.serverUrl = configuredServerUrl();
+      if (!state.online.serverUrl) {
+        lobbyStatusEl.textContent = 'Multiplayer server is not configured yet.';
+        return;
+      }
       state.online.roomId = roomIdInput.value.trim().toUpperCase();
       if (!state.online.roomId) return;
       state.online.token = loadOnlineToken(state.online.roomId, state.activeMode);
@@ -2971,6 +2982,15 @@
     async function init() {
       const response = await fetch(DATA_URL);
       const bundle = await response.json();
+      try {
+        const onlineConfigResponse = await fetch(ONLINE_CONFIG_URL);
+        if (onlineConfigResponse.ok) {
+          const onlineConfig = await onlineConfigResponse.json();
+          state.online.serverUrl = (onlineConfig.server_url || '').trim().replace(/\/+$/, '');
+        }
+      } catch (_error) {
+        state.online.serverUrl = '';
+      }
       const tileManifestResponse = await fetch(TILE_MANIFEST_URL);
       const tileManifest = await tileManifestResponse.json();
       state.bundle = bundle;
