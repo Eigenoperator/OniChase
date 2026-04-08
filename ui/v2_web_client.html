@@ -231,6 +231,56 @@
       max-width: 860px;
     }
 
+    .command-center {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding: 10px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow-soft);
+      text-align: center;
+      min-width: 260px;
+    }
+
+    .command-meta {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .command-time {
+      font-size: 34px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+    }
+
+    .command-phase {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .phase-chip {
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(21, 101, 192, 0.12);
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
     .toolbar {
       display: flex;
       gap: 10px;
@@ -779,12 +829,19 @@
         <h1>OniChase V2</h1>
         <p>Nationwide Shinkansen playable map with a cleaner in-game board. Enter through the lobby, then use the main view for planning, live play, simulation, and replay.</p>
       </div>
+      <div class="command-center">
+        <div class="command-meta">Game Clock</div>
+        <div class="command-time" id="commandTimeDisplay">06:00</div>
+        <div class="command-phase">
+          <span class="phase-chip" id="phaseChip">Planning</span>
+          <span id="phaseClock">PLANNING 60s · Game starts 06:00</span>
+        </div>
+      </div>
       <div class="toolbar">
         <div class="mode-toggle">
           <button id="runnerModeButton" class="active runner">Runner</button>
           <button id="hunterModeButton">Hunter</button>
         </div>
-        <div class="pill" id="phaseClock">PLANNING 60s<br/>Game starts 06:00</div>
         <button id="loadPresetButton" class="secondary">Load Test Preset</button>
         <button id="startGameButton" class="primary">Start Game</button>
         <button id="pauseGameButton" class="secondary">Pause/Resume</button>
@@ -989,6 +1046,8 @@
     const resultDetailEl = document.getElementById('result-detail');
     const legendEl = document.getElementById('legend');
     const phaseClockEl = document.getElementById('phaseClock');
+    const commandTimeDisplayEl = document.getElementById('commandTimeDisplay');
+    const phaseChipEl = document.getElementById('phaseChip');
     const lobbyEl = document.getElementById('lobby');
     const appEl = document.getElementById('app');
     const roomIdInput = document.getElementById('roomIdInput');
@@ -2769,16 +2828,25 @@
       const activePreview = planCursorPreview(state.activeMode);
       const runnerPreview = currentMapPreview('runner');
       const hunterPreview = currentMapPreview('hunter');
+      const currentTime = minutesToHhmm(state.currentGameMinute);
+      const nextPlanningDelta = Math.max(0, state.nextPlanningMinute - state.currentGameMinute);
+
+      commandTimeDisplayEl.textContent = currentTime;
+      phaseChipEl.textContent = state.phase;
+      phaseChipEl.style.background = state.phase === 'PLANNING'
+        ? 'rgba(220, 77, 98, 0.12)'
+        : (state.phase === 'LIVE' ? 'rgba(21, 101, 192, 0.12)' : 'rgba(88, 101, 122, 0.16)');
+      phaseChipEl.style.color = state.phase === 'PLANNING'
+        ? '#a03145'
+        : (state.phase === 'LIVE' ? '#1565c0' : '#5e6d80');
 
       phaseClockEl.innerHTML = state.phase === 'PLANNING'
         ? (onlineActive()
-            ? `PLANNING ${minutesToHhmm(state.currentGameMinute)}<br/>Room ${state.online.roomId || 'local'}`
-            : `PLANNING ${String(state.planningSecondsRemaining).padStart(2, '0')}s<br/>Game starts ${state.startTime}`)
+            ? `Room ${state.online.roomId || 'local'} · Next Planning ${minutesToHhmm(state.nextPlanningMinute)}`
+            : `Planning lock ${String(state.planningSecondsRemaining).padStart(2, '0')}s · Match ${state.startTime} → ${state.endTime}`)
         : state.phase === 'LIVE'
-          ? `LIVE ${minutesToHhmm(state.currentGameMinute)}<br/>Window ${state.startTime} -> ${state.endTime}`
-          : `ENDED ${minutesToHhmm(state.currentGameMinute)}<br/>Window ${state.startTime} -> ${state.endTime}`;
-      phaseClockEl.style.background = state.phase === 'PLANNING' ? '#b8441f' : (state.phase === 'LIVE' ? '#163d2c' : '#2a2f38');
-      phaseClockEl.style.color = 'white';
+          ? `Next Planning ${minutesToHhmm(state.nextPlanningMinute)} · ${nextPlanningDelta} min left`
+          : `Match closed at ${currentTime} · Window ${state.startTime} → ${state.endTime}`;
       document.getElementById('runnerModeButton').className = state.activeMode === 'runner' ? 'active runner' : '';
       document.getElementById('hunterModeButton').className = state.activeMode === 'hunter' ? 'active hunter' : '';
       document.getElementById('pauseGameButton').disabled = onlineActive();
