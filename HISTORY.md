@@ -223,3 +223,4 @@
 - Continued the main `v2` UI redesign by turning the lower plan area into route-leg cards and refactoring the right rail into a more railway-like current-state / departure-board / stop-ladder structure.
 - Rolled the public `v2` web shell back to the earlier stable sidebar layout and light palette after feedback that the redesigned planning rail and overall color treatment were worse for play.
 - Reintroduced the stronger top time layer from the redesign while keeping the restored stable right sidebar layout and the lighter color palette.
+- Removed the left-side route diagram from the main `v2` board so the map panel returns to a single-stage gameplay canvas without the extra lower visualization block.
