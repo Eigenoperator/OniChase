@@ -4,7 +4,7 @@
 把新的主 `v2` 收成可联机试玩版本：保留 GIS-first 新干线地图/diagram 联动，同时打通双浏览器房间制对局。
 
 ## Done
-- 已补写 `diary/DIARY-2026-04-06.md`，并创建 `memory/MEMORY-2026-04-07.md` 作为今天的 raw memory。
+- 已补写 `diary/DIARY-2026-04-06.md` 与 `diary/DIARY-2026-04-07.md`，并创建 `memory/MEMORY-2026-04-07.md`、`memory/MEMORY-2026-04-08.md` 作为对应 raw memory。
 - 已完成 `v1` 山手线真实站点、weekday 时刻表、合并列车实例、可视化与第一版可玩客户端。
 - 已完成 `v1` hunter mode 第一轮开发：信息限制、live 抓捕判定、结束标记、抓捕说明卡。
 - 已完成 `v2` 新干线全图的数据驱动地图底座与多源官方 train-detail 抓取链：真实站点、真实线路顺序、真实坐标、自动标签避让、地图渲染脚本、`JR East / JR West / JR Kyushu` 官方时刻表入口。
