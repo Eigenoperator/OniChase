@@ -6,18 +6,23 @@
   <title>OniChase V2 GIS Shinkansen</title>
   <style>
     :root {
-      --bg: #eef2f7;
-      --panel: rgba(250, 252, 255, 0.96);
-      --panel-strong: rgba(244, 248, 252, 0.98);
-      --line: #d5dde8;
-      --ink: #1f2a37;
-      --muted: #667487;
-      --accent: #1565c0;
-      --accent-soft: rgba(21, 101, 192, 0.12);
-      --corridor: #b7c3d8;
-      --station: #203247;
-      --shadow: 0 20px 44px rgba(21, 33, 52, 0.12);
-      --shadow-soft: 0 10px 24px rgba(21, 33, 52, 0.08);
+      --bg: #07131f;
+      --bg-2: #0d1d2c;
+      --panel: rgba(10, 24, 39, 0.92);
+      --panel-strong: rgba(14, 31, 48, 0.96);
+      --panel-soft: rgba(17, 37, 58, 0.88);
+      --line: rgba(103, 132, 162, 0.34);
+      --ink: #eef6ff;
+      --muted: #96aabe;
+      --accent: #2e8cff;
+      --accent-soft: rgba(46, 140, 255, 0.18);
+      --runner: #55e1cb;
+      --hunter: #ff9c48;
+      --danger: #ff6679;
+      --corridor: #6a829a;
+      --station: #d6e5f5;
+      --shadow: 0 24px 56px rgba(0, 0, 0, 0.34);
+      --shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.22);
     }
 
     * { box-sizing: border-box; }
@@ -26,12 +31,12 @@
       margin: 0;
       height: 100vh;
       overflow: hidden;
-      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      font-family: "Avenir Next", "Segoe UI", "Noto Sans JP", sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(circle at 12% 14%, rgba(21, 101, 192, 0.16), transparent 24%),
-        radial-gradient(circle at 85% 16%, rgba(126, 87, 194, 0.12), transparent 22%),
-        linear-gradient(180deg, #f8fbff 0%, #edf2f8 100%);
+        radial-gradient(circle at 14% 12%, rgba(46, 140, 255, 0.16), transparent 22%),
+        radial-gradient(circle at 82% 10%, rgba(255, 158, 72, 0.13), transparent 20%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
     }
 
     .app {
@@ -53,9 +58,9 @@
       place-items: center;
       padding: 28px;
       background:
-        radial-gradient(circle at 18% 20%, rgba(21, 101, 192, 0.2), transparent 24%),
-        radial-gradient(circle at 82% 16%, rgba(220, 77, 98, 0.14), transparent 20%),
-        linear-gradient(180deg, rgba(245, 249, 255, 0.98), rgba(234, 241, 249, 0.98));
+        radial-gradient(circle at 18% 20%, rgba(46, 140, 255, 0.18), transparent 24%),
+        radial-gradient(circle at 82% 16%, rgba(255, 158, 72, 0.15), transparent 20%),
+        linear-gradient(180deg, rgba(7, 19, 31, 0.98), rgba(13, 29, 44, 0.98));
       backdrop-filter: blur(10px);
     }
 
@@ -71,9 +76,9 @@
     }
 
     .lobby-panel {
-      border: 1px solid rgba(213, 221, 232, 0.95);
+      border: 1px solid rgba(103, 132, 162, 0.28);
       border-radius: 30px;
-      background: rgba(250, 252, 255, 0.96);
+      background: rgba(11, 24, 39, 0.92);
       box-shadow: var(--shadow);
       padding: 28px;
     }
@@ -102,9 +107,9 @@
     .lobby-badge {
       padding: 10px 12px;
       border-radius: 999px;
-      background: rgba(21, 101, 192, 0.08);
-      border: 1px solid rgba(21, 101, 192, 0.14);
-      color: var(--accent);
+      background: rgba(46, 140, 255, 0.12);
+      border: 1px solid rgba(46, 140, 255, 0.22);
+      color: #b7d9ff;
       font-size: 12px;
       font-weight: 800;
       letter-spacing: 0.04em;
@@ -117,9 +122,9 @@
     }
 
     .lobby-card {
-      border: 1px solid rgba(213, 221, 232, 0.95);
+      border: 1px solid rgba(103, 132, 162, 0.24);
       border-radius: 24px;
-      background: rgba(255, 255, 255, 0.86);
+      background: rgba(17, 37, 58, 0.84);
       padding: 20px;
       box-shadow: var(--shadow-soft);
     }
@@ -148,8 +153,8 @@
       display: inline-flex;
       padding: 4px;
       border-radius: 999px;
-      background: rgba(239, 244, 251, 0.94);
-      border: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(14, 31, 48, 0.94);
+      border: 1px solid rgba(103, 132, 162, 0.24);
     }
 
     .seat-toggle button {
@@ -183,8 +188,8 @@
 
     .lobby-field input {
       width: 100%;
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(103, 132, 162, 0.3);
+      background: rgba(7, 19, 31, 0.9);
       color: var(--ink);
       border-radius: 14px;
       padding: 12px 14px;
@@ -196,7 +201,7 @@
       min-height: 42px;
       padding: 12px 14px;
       border-radius: 16px;
-      background: rgba(237, 242, 248, 0.92);
+      background: rgba(14, 31, 48, 0.92);
       color: var(--muted);
       font-size: 13px;
       line-height: 1.5;
@@ -205,13 +210,13 @@
 
     .topbar {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 18px;
+      grid-template-columns: minmax(250px, 1fr) minmax(320px, auto) minmax(320px, 1fr);
+      gap: 16px;
       align-items: center;
-      padding: 18px 24px 16px;
-      border-bottom: 1px solid rgba(213, 221, 232, 0.95);
-      background: rgba(252, 254, 255, 0.92);
-      backdrop-filter: blur(14px);
+      padding: 16px 22px 14px;
+      border-bottom: 1px solid rgba(103, 132, 162, 0.24);
+      background: rgba(7, 19, 31, 0.92);
+      backdrop-filter: blur(16px);
       position: sticky;
       top: 0;
       z-index: 10;
@@ -219,16 +224,65 @@
 
     .brand h1 {
       margin: 0;
-      font-size: 32px;
-      letter-spacing: 0.03em;
+      font-size: 30px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .brand p {
       margin: 6px 0 0;
-      font-size: 13px;
+      font-size: 12px;
       line-height: 1.5;
       color: var(--muted);
-      max-width: 860px;
+      max-width: 44ch;
+    }
+
+    .command-center {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      padding: 12px 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(103, 132, 162, 0.28);
+      background: linear-gradient(180deg, rgba(13, 29, 44, 0.98), rgba(9, 22, 35, 0.96));
+      box-shadow: var(--shadow-soft);
+      text-align: center;
+    }
+
+    .command-meta {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .command-time {
+      font-size: 40px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .command-phase {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .phase-chip {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(46, 140, 255, 0.16);
+      color: #c3e0ff;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .toolbar {
@@ -244,7 +298,7 @@
       padding: 4px;
       border-radius: 999px;
       background: rgba(255,255,255,0.86);
-      border: 1px solid rgba(213, 221, 232, 0.95);
+      border: 1px solid rgba(103, 132, 162, 0.22);
       box-shadow: var(--shadow-soft);
     }
 
@@ -275,17 +329,21 @@
     }
 
     .mode-toggle button.active.runner {
-      background: #dc4d62;
-      color: white;
+      background: var(--runner);
+      color: #072132;
+      font-weight: 900;
     }
 
     .mode-toggle button.active.hunter {
-      background: #2d6cdf;
-      color: white;
+      background: var(--hunter);
+      color: #231306;
+      font-weight: 900;
     }
 
     button.secondary {
-      background: #edf2f8;
+      background: rgba(255,255,255,0.08);
+      color: var(--ink);
+      border: 1px solid rgba(103, 132, 162, 0.18);
     }
 
     button.primary {
@@ -294,12 +352,12 @@
     }
 
     .pill {
-      padding: 12px 14px;
+      padding: 10px 12px;
       border-radius: 16px;
-      background: var(--panel);
-      border: 1px solid rgba(213, 221, 232, 0.95);
+      background: var(--panel-soft);
+      border: 1px solid rgba(103, 132, 162, 0.22);
       box-shadow: var(--shadow-soft);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--muted);
       white-space: nowrap;
@@ -309,13 +367,13 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) 390px;
       gap: 20px;
-      padding: 20px 24px 24px;
+      padding: 18px 20px 20px;
       height: 100%;
       min-height: 0;
     }
 
     .panel {
-      border: 1px solid rgba(213, 221, 232, 0.95);
+      border: 1px solid rgba(103, 132, 162, 0.18);
       border-radius: 28px;
       background: var(--panel);
       box-shadow: var(--shadow);
@@ -327,8 +385,8 @@
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) 280px;
       background:
-        radial-gradient(circle at 16% 12%, rgba(21, 101, 192, 0.08), transparent 20%),
-        linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(241, 246, 251, 0.98));
+        radial-gradient(circle at 16% 12%, rgba(46, 140, 255, 0.09), transparent 20%),
+        linear-gradient(180deg, rgba(10, 24, 39, 0.98), rgba(8, 18, 29, 0.98));
     }
 
     .map-head {
@@ -342,6 +400,8 @@
     .map-head h2 {
       margin: 0;
       font-size: 24px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     .map-head p {
@@ -394,15 +454,15 @@
       min-height: 0;
       border-radius: 20px;
       overflow: hidden;
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(103, 132, 162, 0.18);
+      background: rgba(13, 29, 44, 0.8);
       box-shadow: var(--shadow-soft);
     }
 
     #diagram {
       cursor: default;
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248, 251, 255, 0.98));
+        linear-gradient(180deg, rgba(17, 37, 58, 0.96), rgba(10, 24, 39, 0.98));
     }
 
     svg {
@@ -411,8 +471,8 @@
       display: block;
       border-radius: 22px;
       background:
-        radial-gradient(circle at 18% 16%, rgba(21, 101, 192, 0.06), transparent 18%),
-        linear-gradient(180deg, rgba(255,255,255,0.9), rgba(246, 249, 253, 0.96));
+        radial-gradient(circle at 18% 16%, rgba(46, 140, 255, 0.08), transparent 18%),
+        linear-gradient(180deg, rgba(17, 37, 58, 0.96), rgba(9, 21, 33, 0.98));
       cursor: grab;
       user-select: none;
       touch-action: none;
@@ -421,14 +481,16 @@
     svg.dragging { cursor: grabbing; }
 
     .sidebar {
-      display: block;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
       min-height: 0;
-      overflow: auto;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(10, 24, 39, 0.98), rgba(8, 18, 29, 0.98));
     }
 
     .sidebar section {
       padding: 18px 20px;
-      border-bottom: 1px solid rgba(213, 221, 232, 0.92);
+      border-bottom: 1px solid rgba(103, 132, 162, 0.15);
     }
 
     .sidebar section:last-child {
@@ -454,7 +516,7 @@
       padding: 12px;
       border-radius: 18px;
       background: var(--panel-strong);
-      border: 1px solid rgba(213, 221, 232, 0.95);
+      border: 1px solid rgba(103, 132, 162, 0.18);
       box-shadow: var(--shadow-soft);
     }
 
@@ -477,7 +539,7 @@
       padding: 14px 16px;
       border-radius: 18px;
       background: var(--panel-strong);
-      border: 1px solid rgba(213, 221, 232, 0.95);
+      border: 1px solid rgba(103, 132, 162, 0.18);
       box-shadow: var(--shadow-soft);
       display: grid;
       gap: 8px;
@@ -505,7 +567,7 @@
       padding: 6px 10px;
       border-radius: 999px;
       background: var(--accent-soft);
-      color: var(--accent);
+      color: #c8e3ff;
       font-size: 12px;
       font-weight: 800;
     }
@@ -527,7 +589,7 @@
       padding: 12px 14px;
       border-radius: 18px;
       background: var(--panel-strong);
-      border: 1px solid rgba(213, 221, 232, 0.95);
+      border: 1px solid rgba(103, 132, 162, 0.18);
       box-shadow: var(--shadow-soft);
       display: grid;
       gap: 6px;
@@ -571,8 +633,8 @@
     .diagram-chip {
       padding: 8px 10px;
       border-radius: 999px;
-      background: rgba(21, 101, 192, 0.08);
-      color: var(--accent);
+      background: rgba(46, 140, 255, 0.16);
+      color: #d2e8ff;
       font-size: 11px;
       font-weight: 800;
       letter-spacing: 0.06em;
@@ -603,8 +665,8 @@
 
     .info-box {
       border-radius: 18px;
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      background: #fffdf8;
+      border: 1px solid rgba(103, 132, 162, 0.18);
+      background: rgba(14, 31, 48, 0.92);
       padding: 14px;
       font-size: 13px;
       line-height: 1.55;
@@ -615,8 +677,8 @@
 
     .empty {
       border-radius: 16px;
-      border: 1px dashed rgba(213, 221, 232, 0.95);
-      background: rgba(255, 253, 248, 0.78);
+      border: 1px dashed rgba(103, 132, 162, 0.28);
+      background: rgba(14, 31, 48, 0.74);
       padding: 12px 14px;
       font-size: 12px;
       color: var(--muted);
@@ -634,7 +696,7 @@
       padding: 9px 11px;
       border-radius: 12px;
       font-size: 12px;
-      background: #eef4fb;
+      background: rgba(255,255,255,0.08);
       color: var(--ink);
       box-shadow: none;
       border: 1px solid rgba(213, 221, 232, 0.95);
@@ -646,13 +708,13 @@
     }
 
     .tiny-button.runner {
-      background: rgba(220, 77, 98, 0.12);
-      color: #8a2334;
+      background: rgba(85, 225, 203, 0.16);
+      color: #b9fff4;
     }
 
     .tiny-button.hunter {
-      background: rgba(45, 108, 223, 0.12);
-      color: #1d4d9c;
+      background: rgba(255, 156, 72, 0.16);
+      color: #ffe0bf;
     }
 
     .outlook-list {
@@ -665,7 +727,7 @@
       grid-template-columns: 74px 1fr;
       gap: 10px;
       padding: 9px 0;
-      border-bottom: 1px dashed rgba(213, 221, 232, 0.9);
+      border-bottom: 1px dashed rgba(103, 132, 162, 0.28);
       font-size: 13px;
     }
 
@@ -679,7 +741,7 @@
     }
 
     .marker-box {
-      fill: #fffaf3;
+      fill: rgba(7, 19, 31, 0.96);
     }
 
     .marker-label {
@@ -692,11 +754,45 @@
     }
 
     .future-stop-ring {
-      fill: rgba(21, 101, 192, 0.12);
-      stroke: rgba(21, 101, 192, 0.82);
+      fill: rgba(46, 140, 255, 0.14);
+      stroke: rgba(46, 140, 255, 0.84);
       stroke-width: 1.9;
       stroke-dasharray: 4 4;
       pointer-events: none;
+    }
+
+    .sidebar-main {
+      min-height: 0;
+      overflow: auto;
+      display: grid;
+      align-content: start;
+    }
+
+    .planner-rail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+    }
+
+    .planner-rail-header h3 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .planner-rail-header p {
+      margin: 6px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 32ch;
+    }
+
+    .plan-board-section {
+      border-top: 1px solid rgba(103, 132, 162, 0.16);
+      background: rgba(6, 15, 24, 0.72);
     }
 
     @media (max-width: 1100px) {
@@ -714,11 +810,16 @@
         grid-template-columns: 1fr;
         height: auto;
       }
+      .topbar {
+        grid-template-columns: 1fr;
+      }
       .panel {
         min-height: 560px;
       }
       .sidebar {
         min-height: 620px;
+        display: block;
+        overflow: auto;
       }
     }
   </style>
@@ -777,14 +878,21 @@
     <header class="topbar">
       <div class="brand">
         <h1>OniChase V2</h1>
-        <p>Nationwide Shinkansen playable map with a cleaner in-game board. Enter through the lobby, then use the main view for planning, live play, simulation, and replay.</p>
+        <p>Japanese Shinkansen wayfinding, rebuilt as a high-pressure two-player pursuit board.</p>
+      </div>
+      <div class="command-center">
+        <div class="command-meta">Game Clock</div>
+        <div class="command-time" id="commandTimeDisplay">06:00</div>
+        <div class="command-phase">
+          <span class="phase-chip" id="phaseChip">Planning</span>
+          <span id="phaseClock">PLANNING 60s · Game starts 06:00</span>
+        </div>
       </div>
       <div class="toolbar">
         <div class="mode-toggle">
           <button id="runnerModeButton" class="active runner">Runner</button>
           <button id="hunterModeButton">Hunter</button>
         </div>
-        <div class="pill" id="phaseClock">PLANNING 60s<br/>Game starts 06:00</div>
         <button id="loadPresetButton" class="secondary">Load Test Preset</button>
         <button id="startGameButton" class="primary">Start Game</button>
         <button id="pauseGameButton" class="secondary">Pause/Resume</button>
@@ -825,6 +933,17 @@
       </section>
 
       <aside class="panel sidebar">
+        <section>
+          <div class="planner-rail-header">
+            <div>
+              <div class="section-label">Planning Rail</div>
+              <h3>Command Rail</h3>
+              <p>Choose the next real train, inspect its stop ladder, and lock the next leg into the pursuit plan.</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="sidebar-main">
         <section>
           <div class="section-label">Session</div>
           <div id="roomStatus" class="info-box">Single-player local mode.</div>
@@ -899,6 +1018,7 @@
           <div class="section-label">Legend</div>
           <div class="legend" id="legend"></div>
         </section>
+        </div>
       </aside>
     </section>
   </main>
@@ -989,6 +1109,8 @@
     const resultDetailEl = document.getElementById('result-detail');
     const legendEl = document.getElementById('legend');
     const phaseClockEl = document.getElementById('phaseClock');
+    const commandTimeDisplayEl = document.getElementById('commandTimeDisplay');
+    const phaseChipEl = document.getElementById('phaseChip');
     const lobbyEl = document.getElementById('lobby');
     const appEl = document.getElementById('app');
     const roomIdInput = document.getElementById('roomIdInput');
@@ -2769,16 +2891,27 @@
       const activePreview = planCursorPreview(state.activeMode);
       const runnerPreview = currentMapPreview('runner');
       const hunterPreview = currentMapPreview('hunter');
+      const currentTime = minutesToHhmm(state.currentGameMinute);
+      const planningCountdown = `Next Planning ${minutesToHhmm(state.nextPlanningMinute)} · ${Math.max(0, state.nextPlanningMinute - state.currentGameMinute)} min`;
+
+      commandTimeDisplayEl.textContent = currentTime;
+      phaseChipEl.textContent = state.phase;
+      phaseChipEl.style.background = state.phase === 'PLANNING'
+        ? 'rgba(255, 102, 121, 0.16)'
+        : (state.phase === 'LIVE' ? 'rgba(85, 225, 203, 0.16)' : 'rgba(255, 156, 72, 0.18)');
+      phaseChipEl.style.color = state.phase === 'PLANNING'
+        ? '#ffd0d7'
+        : (state.phase === 'LIVE' ? '#c7fff6' : '#ffe0bf');
 
       phaseClockEl.innerHTML = state.phase === 'PLANNING'
         ? (onlineActive()
-            ? `PLANNING ${minutesToHhmm(state.currentGameMinute)}<br/>Room ${state.online.roomId || 'local'}`
-            : `PLANNING ${String(state.planningSecondsRemaining).padStart(2, '0')}s<br/>Game starts ${state.startTime}`)
+            ? `Room ${state.online.roomId || 'local'} · ${planningCountdown}`
+            : `Planning lock ${String(state.planningSecondsRemaining).padStart(2, '0')}s · Match ${state.startTime} -> ${state.endTime}`)
         : state.phase === 'LIVE'
-          ? `LIVE ${minutesToHhmm(state.currentGameMinute)}<br/>Window ${state.startTime} -> ${state.endTime}`
-          : `ENDED ${minutesToHhmm(state.currentGameMinute)}<br/>Window ${state.startTime} -> ${state.endTime}`;
-      phaseClockEl.style.background = state.phase === 'PLANNING' ? '#b8441f' : (state.phase === 'LIVE' ? '#163d2c' : '#2a2f38');
-      phaseClockEl.style.color = 'white';
+          ? `${planningCountdown} · Window ${state.startTime} -> ${state.endTime}`
+          : `Match closed at ${currentTime} · Window ${state.startTime} -> ${state.endTime}`;
+      phaseClockEl.style.background = 'transparent';
+      phaseClockEl.style.color = 'var(--muted)';
       document.getElementById('runnerModeButton').className = state.activeMode === 'runner' ? 'active runner' : '';
       document.getElementById('hunterModeButton').className = state.activeMode === 'hunter' ? 'active hunter' : '';
       document.getElementById('pauseGameButton').disabled = onlineActive();

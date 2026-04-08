@@ -217,3 +217,4 @@
 ## 2026-04-07
 
 - Connected the public `v2` multiplayer client to the deployed Render room server at `https://onichase.onrender.com` by updating `docs/data/v2_online_config.json`.
+- Added `UI_BRIEF_V2.md` and rebuilt the main `v2` page shell around a darker Shinkansen control-room look with a stronger top time layer and a dedicated Planning Rail.

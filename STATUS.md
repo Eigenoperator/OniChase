@@ -15,7 +15,7 @@
 - 已开始 `v2` 游戏层：新增 `data/shinkansen_v2_bundle.json` 和第一版 `app/v2_local_client.py`，现在可以在全国新干线图上点站、浏览真实发车，并把列车段接进 plan board。
 - 已把 `v2` 本地端和网页端都推进到“选车后选目标站”，并补上 `runner / hunter`、phase 时钟、`Start Game`、live 地图位置、`06:00 -> 18:00` 时间窗、每过 `1` 小时自动重新进入 `PLANNING`，以及中途重进 `PLANNING` 时按“当前时刻位置”继续规划而不是误跳到整条计划终点。
 - 已继续把 `v2` 网页端往本地端收齐：补上 `Run Simulation`、结果摘要、replay 事件列表、事件详情，以及地图随选中事件跳到对应状态。
-- 已把 `v2` 网页端地图改成可缩放/拖拽，并按缩放级别动态显示站名；页面也已收成“先进独立大厅、再进固定视口主游戏页”的结构，原来把顶栏挤爆的房间控件已从游戏主界面拆出，公开大厅不再直接暴露 `room server URL`。
+- 已把 `v2` 网页端地图改成可缩放/拖拽，并按缩放级别动态显示站名；页面也已收成“先进独立大厅、再进固定视口主游戏页”的结构，原来把顶栏挤爆的房间控件已从游戏主界面拆出，公开大厅不再直接暴露 `room server URL`，并已接入公网 Render 房间服务器默认配置。
 - 已继续修正 `v2` 网页端地图交互：站点圆点现在会随缩放更合理地缩放，放大后不会显得过大，同时拖拽边界已改成按真实地图内容范围动态计算。
 - 已修正 `v2` 固定页面后的右栏交互问题：右侧面板恢复为整栏可滚动，同时保留内部列表滚动，不再因为固定高度而把下半部分裁死。
 - 已把 `v2` 网页端的右侧 planning 交互切换为和 `v1` 同一条主流程：统一的 `Planning Actions` + `Train Outlook`，支持 `选车 -> 选目标站`，并让地图点击与右侧动作区共用同一套逻辑。
@@ -24,10 +24,10 @@
 - 已启动并打通 `v2` 多人联机底座：新增 `ONLINE_ARCHITECTURE.md`、`ONLINE_PROTOCOL.md`、`scripts/engine/v2_online_room_server.py` 和 `START_ONICHASE_V2_SERVER.sh`，网页端也已接上建房/入房/submit plan/ready；当前联机版已补上 seat token / seat lock，并确认 `create room -> join runner/hunter -> submit plan -> ready/start -> LIVE 推进 -> authoritative capture` 全部跑通，同时已补 `render.yaml`、`ONLINE_DEPLOYMENT.md` 和 `docs/data/v2_online_config.json` 作为公网部署入口。
 - 已完成 `v3` 第一版 GIS Shinkansen pilot：包括架构/Schema、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json`、`visuals/v3_shinkansen_multiscale_map.svg`、`ui/v3_web_client.html`、`docs/v3.html`、`data/v3_gis/*.geojson`、`docs/data/v3_tiles/` tile-ready GeoJSON 金字塔、地图 + route timetable diagram 的同源联动，以及开始直接消费 `v3_tiles` 的 tile-driven 地图层。
 - 已继续推进 `v3` 地图/diagram 联动：diagram hover 现可同步高亮地图上的具体 trip 路径；点选站点时，右栏会额外显示“当前选中线路在该站的真实发车集合”。
-- 已把 `v1` 的核心游戏逻辑接入 `v3` 网页端：补上 `runner / hunter` 模式、`PLANNING / LIVE / ENDED`、`Load Test Preset`、`Start Game`、`Run Simulation`、plan board、实时地图玩家位置和 `same_node / same_train` 抓捕。
+- 已根据新的 `UI_BRIEF_V2.md` 开始重做主 `v2` 网页 UI：当前已换成深色交通导视风格，并重构为“顶部强时间层 + 左侧地图主舞台 + 右侧 Planning Rail”的主布局。
 - 已完成版本迁移：原 `v3` GIS-first 新干线玩法页已提升为新的主 `v2`；公开网站现只保留 `v1` 和主 `v2`，不再公开 `v2-legacy` 与 `v3` 页面。
 ## In Progress
-- 正在继续把新的主 `v2` 收成稳定版本：一方面保留 GIS-first 地图/diagram 联动，另一方面把联机页面细节和单机页面体验继续对齐。
+- 正在继续把新的主 `v2` 收成稳定版本：一方面保留 GIS-first 地图/diagram 联动，另一方面把联机页面细节、单机页面体验和新的 UI brief 继续对齐。
 - 已把公开 `v2` 网页的多人配置接到 Render 房间服务器 `https://onichase.onrender.com`，现在公开网页会默认尝试连公网联机后端。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
 
