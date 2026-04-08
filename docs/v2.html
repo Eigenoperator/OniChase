@@ -1351,6 +1351,35 @@
       const lonSpan = Math.max(maxLon - minLon, 0.0001);
       const latSpan = Math.max(maxLat - minLat, 0.0001);
       const scale = Math.min(usableWidth / lonSpan, usableHeight / latSpan);
+      const tokyoWarpAnchors = [
+        { lat: 35.681236, lon: 139.767125, radius: 118, strength: 1.95 },
+        { lat: 35.628471, lon: 139.73876, radius: 108, strength: 1.55 },
+        { lat: 35.713768, lon: 139.777254, radius: 92, strength: 1.35 },
+        { lat: 35.698683, lon: 139.773109, radius: 82, strength: 1.1 },
+      ];
+
+      function baseProject(lat, lon) {
+        const x = padding + (lon - minLon) * scale;
+        const y = height - padding - (lat - minLat) * scale;
+        return { x, y };
+      }
+
+      function applyTokyoWarp(point) {
+        let x = point.x;
+        let y = point.y;
+        tokyoWarpAnchors.forEach((anchor) => {
+          const anchorPoint = baseProject(anchor.lat, anchor.lon);
+          const dx = x - anchorPoint.x;
+          const dy = y - anchorPoint.y;
+          const distance = Math.hypot(dx, dy) || 0.0001;
+          if (distance > anchor.radius) return;
+          const t = 1 - (distance / anchor.radius);
+          const push = anchor.strength * t * t * anchor.radius * 0.24;
+          x += (dx / distance) * push;
+          y += (dy / distance) * push * 0.92;
+        });
+        return { x, y };
+      }
 
       return {
         width,
@@ -1362,9 +1391,7 @@
         padding,
         scale,
         project(lat, lon) {
-          const x = padding + (lon - minLon) * scale;
-          const y = height - padding - (lat - minLat) * scale;
-          return { x, y };
+          return applyTokyoWarp(baseProject(lat, lon));
         },
         invert(x, y) {
           const lon = minLon + ((x - padding) / scale);
@@ -1793,16 +1820,16 @@
       const labelSvg = [];
       const hoverSvg = [];
       const zoomScale = Math.max(1, state.zoom);
-      const corridorOuterWidth = clamp((state.viewMode === 'corridor' ? 10 : 7) / Math.pow(zoomScale, 0.72), 0.7, state.viewMode === 'corridor' ? 10 : 7);
-      const corridorOuterSelectedWidth = clamp((state.viewMode === 'corridor' ? 11.5 : 7.8) / Math.pow(zoomScale, 0.72), 0.8, state.viewMode === 'corridor' ? 11.5 : 7.8);
-      const corridorInnerWidth = clamp((state.viewMode === 'corridor' ? 5.2 : 3.4) / Math.pow(zoomScale, 0.72), 0.5, state.viewMode === 'corridor' ? 5.2 : 3.4);
-      const corridorInnerSelectedWidth = clamp((state.viewMode === 'corridor' ? 6.6 : 4.2) / Math.pow(zoomScale, 0.72), 0.6, state.viewMode === 'corridor' ? 6.6 : 4.2);
-      const serviceOuterSelectedWidth = clamp(8.4 / Math.pow(zoomScale, 0.72), 0.8, 8.4);
-      const serviceOuterWidth = clamp(7 / Math.pow(zoomScale, 0.72), 0.7, 7);
-      const serviceInnerSelectedWidth = clamp(5.4 / Math.pow(zoomScale, 0.72), 0.55, 5.4);
-      const serviceInnerWidth = clamp(3.6 / Math.pow(zoomScale, 0.72), 0.4, 3.6);
-      const hoverOuterWidth = clamp((state.viewMode === 'service' ? 12 : 10) / Math.pow(zoomScale, 0.72), 0.9, state.viewMode === 'service' ? 12 : 10);
-      const hoverInnerWidth = clamp((state.viewMode === 'service' ? 7.2 : 6.2) / Math.pow(zoomScale, 0.72), 0.6, state.viewMode === 'service' ? 7.2 : 6.2);
+      const corridorOuterWidth = clamp((state.viewMode === 'corridor' ? 10 : 7) / Math.pow(zoomScale, 1.02), 0.32, state.viewMode === 'corridor' ? 10 : 7);
+      const corridorOuterSelectedWidth = clamp((state.viewMode === 'corridor' ? 11.5 : 7.8) / Math.pow(zoomScale, 1.02), 0.36, state.viewMode === 'corridor' ? 11.5 : 7.8);
+      const corridorInnerWidth = clamp((state.viewMode === 'corridor' ? 5.2 : 3.4) / Math.pow(zoomScale, 1.02), 0.22, state.viewMode === 'corridor' ? 5.2 : 3.4);
+      const corridorInnerSelectedWidth = clamp((state.viewMode === 'corridor' ? 6.6 : 4.2) / Math.pow(zoomScale, 1.02), 0.26, state.viewMode === 'corridor' ? 6.6 : 4.2);
+      const serviceOuterSelectedWidth = clamp(8.4 / Math.pow(zoomScale, 1.02), 0.34, 8.4);
+      const serviceOuterWidth = clamp(7 / Math.pow(zoomScale, 1.02), 0.3, 7);
+      const serviceInnerSelectedWidth = clamp(5.4 / Math.pow(zoomScale, 1.02), 0.24, 5.4);
+      const serviceInnerWidth = clamp(3.6 / Math.pow(zoomScale, 1.02), 0.2, 3.6);
+      const hoverOuterWidth = clamp((state.viewMode === 'service' ? 12 : 10) / Math.pow(zoomScale, 1.04), 0.42, state.viewMode === 'service' ? 12 : 10);
+      const hoverInnerWidth = clamp((state.viewMode === 'service' ? 7.2 : 6.2) / Math.pow(zoomScale, 1.04), 0.28, state.viewMode === 'service' ? 7.2 : 6.2);
       const selectedRouteStations = state.selectedRouteId ? getRouteStationSet(state.selectedRouteId) : new Set();
       const activePreview = planCursorPreview(state.activeMode);
       const pending = pendingDepartureContext(activePreview);
@@ -1967,21 +1994,31 @@
         if (!preview?.mapPosition) continue;
         const color = playerId === 'runner' ? '#dc4d62' : '#2d6cdf';
         const { x, y } = preview.mapPosition;
-        const markerScale = clamp(1 / Math.pow(zoomScale, 0.95), 0.16, 1);
+        const markerScale = clamp(1 / Math.pow(zoomScale, 1.45), 0.035, 1);
         const markerRadius = 10;
         const markerStroke = 3;
         const markerBoxWidth = 170;
         const markerBoxHeight = 36;
         const markerOffsetX = 14;
         const markerOffsetY = -20;
-        playerSvg.push(`
-          <g class="player-marker" transform="translate(${x} ${y}) scale(${markerScale}) translate(${-x} ${-y})">
-            <circle cx="${x}" cy="${y}" r="${markerRadius}" fill="${color}" stroke="white" stroke-width="${markerStroke}" />
-            <rect x="${x + markerOffsetX}" y="${y + markerOffsetY}" width="${markerBoxWidth}" height="${markerBoxHeight}" rx="8" class="marker-box" stroke="${color}" stroke-width="2" />
-            <text x="${x + 22}" y="${y - 6}" class="marker-label" fill="${color}">${playerId.toUpperCase()}</text>
-            <text x="${x + 22}" y="${y + 10}" class="marker-sub" fill="#1f2a37">${preview.currentState.kind === 'NODE' ? stationGroupLabel(preview.currentState.stationGroupId) : formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: '' })}</text>
-          </g>
-        `);
+        if (zoomScale >= 6) {
+          const compactRadius = clamp(5.4 / Math.pow(zoomScale, 1.1), 0.12, 1.1);
+          const compactStroke = clamp(1.2 / Math.pow(zoomScale, 0.6), 0.14, 0.4);
+          playerSvg.push(`
+            <g class="player-marker">
+              <circle cx="${x}" cy="${y}" r="${compactRadius}" fill="${color}" stroke="white" stroke-width="${compactStroke}" />
+            </g>
+          `);
+        } else {
+          playerSvg.push(`
+            <g class="player-marker" transform="translate(${x} ${y}) scale(${markerScale}) translate(${-x} ${-y})">
+              <circle cx="${x}" cy="${y}" r="${markerRadius}" fill="${color}" stroke="white" stroke-width="${markerStroke}" />
+              <rect x="${x + markerOffsetX}" y="${y + markerOffsetY}" width="${markerBoxWidth}" height="${markerBoxHeight}" rx="8" class="marker-box" stroke="${color}" stroke-width="2" />
+              <text x="${x + 22}" y="${y - 6}" class="marker-label" fill="${color}">${playerId.toUpperCase()}</text>
+              <text x="${x + 22}" y="${y + 10}" class="marker-sub" fill="#1f2a37">${preview.currentState.kind === 'NODE' ? stationGroupLabel(preview.currentState.stationGroupId) : formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: '' })}</text>
+            </g>
+          `);
+        }
       }
 
       svg.innerHTML = `
