@@ -759,10 +759,6 @@
           </div>
           <div class="lobby-fields">
             <div class="lobby-field">
-              <label for="serverUrlInput">Room Server URL</label>
-              <input id="serverUrlInput" value="http://127.0.0.1:8765" aria-label="Room server URL" />
-            </div>
-            <div class="lobby-field">
               <label for="roomIdInput">Room ID</label>
               <input id="roomIdInput" placeholder="ROOM ID" aria-label="Room ID" />
             </div>
@@ -957,7 +953,7 @@
       panStartX: 0,
       panStartY: 0,
       online: {
-        serverUrl: 'http://127.0.0.1:8765',
+        serverUrl: '',
         roomId: '',
         seat: null,
         token: '',
@@ -992,7 +988,6 @@
     const phaseClockEl = document.getElementById('phaseClock');
     const lobbyEl = document.getElementById('lobby');
     const appEl = document.getElementById('app');
-    const serverUrlInput = document.getElementById('serverUrlInput');
     const roomIdInput = document.getElementById('roomIdInput');
     const roomStatusEl = document.getElementById('roomStatus');
     const lobbyStatusEl = document.getElementById('lobbyStatus');
@@ -1016,10 +1011,6 @@
     document.getElementById('pauseGameButton').addEventListener('click', toggleClock);
     document.getElementById('runSimulationButton').addEventListener('click', runSimulation);
     document.getElementById('resetPlanButton').addEventListener('click', resetPlan);
-
-    serverUrlInput.addEventListener('change', () => {
-      state.online.serverUrl = serverUrlInput.value.trim() || 'http://127.0.0.1:8765';
-    });
 
     svg.addEventListener('mousedown', (event) => {
       state.dragging = true;
@@ -1103,6 +1094,13 @@
 
     function roomTokenStorageKey(roomId, seat) {
       return `onichase-v2-room-token:${roomId}:${seat}`;
+    }
+
+    function configuredServerUrl() {
+      const queryValue = new URLSearchParams(window.location.search).get('server');
+      const storedValue = window.localStorage.getItem('onichase-v2-room-server-url');
+      const candidate = queryValue || storedValue || 'http://127.0.0.1:8765';
+      return candidate.trim().replace(/\/+$/, '');
     }
 
     function saveOnlineToken(roomId, seat, token) {
@@ -1230,7 +1228,7 @@
     }
 
     async function createRoomAndJoinSeat() {
-      state.online.serverUrl = serverUrlInput.value.trim() || 'http://127.0.0.1:8765';
+      state.online.serverUrl = configuredServerUrl();
       const created = await apiJson(`${state.online.serverUrl}/api/rooms`, {
         method: 'POST',
         body: JSON.stringify({ start_time_hhmm: state.startTime, end_time_hhmm: state.endTime }),
@@ -1241,7 +1239,7 @@
     }
 
     async function joinExistingRoom() {
-      state.online.serverUrl = serverUrlInput.value.trim() || 'http://127.0.0.1:8765';
+      state.online.serverUrl = configuredServerUrl();
       state.online.roomId = roomIdInput.value.trim().toUpperCase();
       if (!state.online.roomId) return;
       state.online.token = loadOnlineToken(state.online.roomId, state.activeMode);
@@ -2982,7 +2980,7 @@
         runner: { start_station_id: 'SG_TOKYO', input_mode: 'plan', steps: [] },
         hunter: { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: '18:00' }] },
       };
-      serverUrlInput.value = state.online.serverUrl;
+      state.online.serverUrl = configuredServerUrl();
       setLobbySeat(state.activeMode);
       state.selectedStationGroupId = state.players.runner.start_station_id;
       state.currentGameMinute = hhmmToMinutes(state.startTime);

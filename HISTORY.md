@@ -212,3 +212,4 @@
 - Added seat-token and seat-lock flow to the online room server and `v2` web client, preventing a second browser from hijacking an occupied seat and requiring the correct token for plan, ready, start, and state fetches.
 - Revalidated the online room flow end-to-end against the local server: `create room -> join runner/hunter -> submit plan -> ready/start -> live time progression -> authoritative capture -> hourly replanning` all now run through the authoritative room server.
 - Refactored the public `v2` web entry into a dedicated lobby flow: players now choose single-player or multiplayer before entering the board, and the oversized room controls were removed from the gameplay top bar into the lobby/session surfaces.
+- Hid the raw `room server URL` from the public `v2` lobby so players only see seat selection and room code, while development can still override the backend through query params or local storage.
