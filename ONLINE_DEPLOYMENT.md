@@ -33,6 +33,10 @@ bash -lc "python3 scripts/engine/v2_online_room_server.py --host 0.0.0.0 --port 
 
 4. After Render gives you a public URL, copy it.
 
+Render note:
+
+- The repository includes a minimal [requirements.txt](/home/xincheng/toy/Chase/requirements.txt) so Render's default Python build step can succeed even though the room server itself only uses the Python standard library.
+
 ## Final Client Switch
 
 After the public room server URL exists, edit:
