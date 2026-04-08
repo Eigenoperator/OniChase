@@ -1792,6 +1792,17 @@
       const stationSvg = [];
       const labelSvg = [];
       const hoverSvg = [];
+      const zoomScale = Math.max(1, state.zoom);
+      const corridorOuterWidth = clamp((state.viewMode === 'corridor' ? 10 : 7) / Math.pow(zoomScale, 0.72), 0.7, state.viewMode === 'corridor' ? 10 : 7);
+      const corridorOuterSelectedWidth = clamp((state.viewMode === 'corridor' ? 11.5 : 7.8) / Math.pow(zoomScale, 0.72), 0.8, state.viewMode === 'corridor' ? 11.5 : 7.8);
+      const corridorInnerWidth = clamp((state.viewMode === 'corridor' ? 5.2 : 3.4) / Math.pow(zoomScale, 0.72), 0.5, state.viewMode === 'corridor' ? 5.2 : 3.4);
+      const corridorInnerSelectedWidth = clamp((state.viewMode === 'corridor' ? 6.6 : 4.2) / Math.pow(zoomScale, 0.72), 0.6, state.viewMode === 'corridor' ? 6.6 : 4.2);
+      const serviceOuterSelectedWidth = clamp(8.4 / Math.pow(zoomScale, 0.72), 0.8, 8.4);
+      const serviceOuterWidth = clamp(7 / Math.pow(zoomScale, 0.72), 0.7, 7);
+      const serviceInnerSelectedWidth = clamp(5.4 / Math.pow(zoomScale, 0.72), 0.55, 5.4);
+      const serviceInnerWidth = clamp(3.6 / Math.pow(zoomScale, 0.72), 0.4, 3.6);
+      const hoverOuterWidth = clamp((state.viewMode === 'service' ? 12 : 10) / Math.pow(zoomScale, 0.72), 0.9, state.viewMode === 'service' ? 12 : 10);
+      const hoverInnerWidth = clamp((state.viewMode === 'service' ? 7.2 : 6.2) / Math.pow(zoomScale, 0.72), 0.6, state.viewMode === 'service' ? 7.2 : 6.2);
       const selectedRouteStations = state.selectedRouteId ? getRouteStationSet(state.selectedRouteId) : new Set();
       const activePreview = planCursorPreview(state.activeMode);
       const pending = pendingDepartureContext(activePreview);
@@ -1838,12 +1849,12 @@
         const lineTouchesSelectedRoute = state.selectedRouteId && stationGroupIds.some((id) => selectedRouteStations.has(id));
         centerlineSvg.push(drawPath(points, {
           stroke: state.viewMode === 'corridor' ? '#ffffff' : 'rgba(255,255,255,0.75)',
-          width: state.viewMode === 'corridor' ? (lineTouchesSelectedRoute ? 11.5 : 10) : 7,
+          width: lineTouchesSelectedRoute ? corridorOuterSelectedWidth : corridorOuterWidth,
           opacity: lineTouchesSelectedRoute ? 1 : 0.95
         }));
         centerlineSvg.push(drawPath(points, {
           stroke: lineTouchesSelectedRoute ? '#8aa4c8' : (state.viewMode === 'corridor' ? '#c5d0df' : '#d8dee8'),
-          width: state.viewMode === 'corridor' ? (lineTouchesSelectedRoute ? 6.6 : 5.2) : 3.4,
+          width: lineTouchesSelectedRoute ? corridorInnerSelectedWidth : corridorInnerWidth,
           opacity: lineTouchesSelectedRoute ? 1 : (state.viewMode === 'corridor' ? 1 : 0.88)
         }));
       });
@@ -1867,12 +1878,12 @@
           });
           serviceSvg.push(drawPath(offsetPoints, {
             stroke: '#ffffff',
-            width: selected ? 8.4 : 7,
+            width: selected ? serviceOuterSelectedWidth : serviceOuterWidth,
             opacity: selected ? 0.95 : 0.55
           }));
           serviceSvg.push(drawPath(offsetPoints, {
             stroke: color,
-            width: selected ? 5.4 : 3.6,
+            width: selected ? serviceInnerSelectedWidth : serviceInnerWidth,
             opacity: selected ? 0.98 : 0.34
           }));
         });
@@ -1913,7 +1924,9 @@
           stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(21,101,192,0.12)" />`);
         }
         if (onFutureTrip) {
-          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${Math.max(haloRadius + 1.2, stationRadius + 2.6)}" class="future-stop-ring" />`);
+          const futureRingRadius = Math.max(haloRadius + 1.2, stationRadius + 2.6);
+          const futureRingStroke = clamp(1.4 / Math.pow(zoomScale, 0.5), 0.28, 1.4);
+          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${futureRingRadius}" class="future-stop-ring" style="stroke-width:${futureRingStroke};stroke-dasharray:${Math.max(1.3, 4 / Math.pow(zoomScale, 0.35)).toFixed(2)} ${Math.max(1.3, 4 / Math.pow(zoomScale, 0.35)).toFixed(2)}" />`);
         }
         stationSvg.push(`<circle data-station-group-id="${station.stationGroupId}" cx="${station.x}" cy="${station.y}" r="${stationRadius}" fill="${onSelectedRoute && !selected ? '#2f5d97' : fill}" stroke="${selected ? stroke : onSelectedRoute ? '#dbeafe' : stroke}" stroke-width="${selected ? selectedStrokeWidth : onSelectedRoute ? routeStrokeWidth : stationStrokeWidth}" style="cursor:pointer" />`);
       });
@@ -1932,16 +1945,18 @@
       if (hoveredPoints.length >= 2) {
         hoverSvg.push(drawPath(hoveredPoints, {
           stroke: '#ffffff',
-          width: state.viewMode === 'service' ? 12 : 10,
+          width: hoverOuterWidth,
           opacity: 0.95
         }));
         hoverSvg.push(drawPath(hoveredPoints, {
           stroke: '#0f172a',
-          width: state.viewMode === 'service' ? 7.2 : 6.2,
+          width: hoverInnerWidth,
           opacity: 0.92
         }));
         hoveredPoints.forEach((point) => {
-          hoverSvg.push(`<circle cx="${point.x}" cy="${point.y}" r="5.2" fill="#0f172a" stroke="rgba(255,255,255,0.95)" stroke-width="2" />`);
+          const hoverPointRadius = clamp(5.2 / Math.pow(zoomScale, 0.8), 0.5, 5.2);
+          const hoverPointStroke = clamp(2 / Math.pow(zoomScale, 0.5), 0.35, 2);
+          hoverSvg.push(`<circle cx="${point.x}" cy="${point.y}" r="${hoverPointRadius}" fill="#0f172a" stroke="rgba(255,255,255,0.95)" stroke-width="${hoverPointStroke}" />`);
         });
       }
 
@@ -1952,10 +1967,17 @@
         if (!preview?.mapPosition) continue;
         const color = playerId === 'runner' ? '#dc4d62' : '#2d6cdf';
         const { x, y } = preview.mapPosition;
+        const markerScale = clamp(1 / Math.pow(zoomScale, 0.95), 0.16, 1);
+        const markerRadius = 10;
+        const markerStroke = 3;
+        const markerBoxWidth = 170;
+        const markerBoxHeight = 36;
+        const markerOffsetX = 14;
+        const markerOffsetY = -20;
         playerSvg.push(`
-          <g class="player-marker">
-            <circle cx="${x}" cy="${y}" r="10" fill="${color}" stroke="white" stroke-width="3" />
-            <rect x="${x + 14}" y="${y - 20}" width="170" height="36" rx="8" class="marker-box" stroke="${color}" stroke-width="2" />
+          <g class="player-marker" transform="translate(${x} ${y}) scale(${markerScale}) translate(${-x} ${-y})">
+            <circle cx="${x}" cy="${y}" r="${markerRadius}" fill="${color}" stroke="white" stroke-width="${markerStroke}" />
+            <rect x="${x + markerOffsetX}" y="${y + markerOffsetY}" width="${markerBoxWidth}" height="${markerBoxHeight}" rx="8" class="marker-box" stroke="${color}" stroke-width="2" />
             <text x="${x + 22}" y="${y - 6}" class="marker-label" fill="${color}">${playerId.toUpperCase()}</text>
             <text x="${x + 22}" y="${y + 10}" class="marker-sub" fill="#1f2a37">${preview.currentState.kind === 'NODE' ? stationGroupLabel(preview.currentState.stationGroupId) : formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: '' })}</text>
           </g>
