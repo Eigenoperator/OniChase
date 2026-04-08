@@ -1337,6 +1337,30 @@
       return (baseWidth / Math.pow(Math.max(1, state.zoom), 1.26)).toFixed(2);
     }
 
+    function labelAnchorPoint(entry) {
+      const labelPoint = state.projection.project(entry.labelPoint.lat, entry.labelPoint.lon);
+      const stationPoint = stationPointByGroupId(entry.stationGroupId) || labelPoint;
+      if (state.zoom >= 8) return stationPoint;
+      if (state.zoom >= 5) {
+        const t = (state.zoom - 5) / 3;
+        return {
+          x: labelPoint.x * (1 - t) + stationPoint.x * t,
+          y: labelPoint.y * (1 - t) + stationPoint.y * t,
+        };
+      }
+      return labelPoint;
+    }
+
+    function labelOffset(entry) {
+      const zoomScale = Math.max(1, state.zoom);
+      const baseX = entry.labelRank >= 99 ? 7 : entry.labelRank >= 95 ? 6 : 5;
+      const baseY = entry.labelRank >= 99 ? -6 : -5;
+      return {
+        x: baseX / Math.pow(zoomScale, 0.9),
+        y: baseY / Math.pow(zoomScale, 0.9),
+      };
+    }
+
     function makeProjection(bundle) {
       const stations = bundle.physicalStations.filter((s) => Number.isFinite(s.lon) && Number.isFinite(s.lat));
       const minLon = Math.min(...stations.map((s) => s.lon));
@@ -1933,11 +1957,12 @@
 
       state.labelEntries.forEach((entry) => {
         if (!shouldShowLabel(entry)) return;
-        const point = projection.project(entry.labelPoint.lat, entry.labelPoint.lon);
+        const point = labelAnchorPoint(entry);
+        const offset = labelOffset(entry);
         const fontSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
         const displayName = entry.displayNameEn || entry.displayNameJa || niceName(entry.stationGroupId);
         labelSvg.push(
-          `<text x="${point.x + 8}" y="${point.y - 8}" font-size="${mapLabelFontSize(fontSize)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${mapLabelStrokeWidth(4.2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`
+          `<text x="${point.x + offset.x}" y="${point.y + offset.y}" font-size="${mapLabelFontSize(fontSize)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${mapLabelStrokeWidth(4.2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`
         );
       });
 
