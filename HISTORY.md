@@ -225,3 +225,4 @@
 - Reintroduced the stronger top time layer from the redesign while keeping the restored stable right sidebar layout and the lighter color palette.
 - Removed the left-side route diagram from the main `v2` board so the map panel returns to a single-stage gameplay canvas without the extra lower visualization block.
 - Compressed the public `v2` top bar so the game clock sits in the center and only the core Runner/Hunter, Start, and Pause controls remain there; moved the extra testing and view buttons into the right-side Session panel.
+- Temporarily hid the `Session` and `Bundle` sections from the public `v2` sidebar to declutter the board without removing the underlying multiplayer and bundle logic.
