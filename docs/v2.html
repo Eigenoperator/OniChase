@@ -1319,24 +1319,24 @@
       if (state.selectedStationGroupId === entry.stationGroupId) return true;
       if (state.selectedRouteId) {
         const routeStations = getRouteStationSet(state.selectedRouteId);
-        if (routeStations.has(entry.stationGroupId) && state.zoom >= 5.8) return true;
+        if (routeStations.has(entry.stationGroupId) && state.zoom >= 4.8) return true;
       }
       const rank = entry.labelRank || 0;
-      if (state.zoom >= 16) return true;
-      if (state.zoom >= 11) return rank >= 90;
-      if (state.zoom >= 7.5) return rank >= 95;
-      if (state.zoom >= 4.8) return rank >= 98;
+      if (state.zoom >= 14) return true;
+      if (state.zoom >= 9.5) return rank >= 90;
+      if (state.zoom >= 6.4) return rank >= 95;
+      if (state.zoom >= 4.0) return rank >= 98;
       return rank >= 99;
     }
 
     function mapLabelFontSize(baseSize) {
       const zoomScale = Math.max(1, state.zoom);
-      return clamp(baseSize / (1 + 0.4 * Math.log2(zoomScale)), 6.2, 9.2).toFixed(2);
+      return clamp(baseSize / (1 + 0.34 * Math.log2(zoomScale)), 7.4, 11.2).toFixed(2);
     }
 
     function mapLabelStrokeWidth(baseWidth) {
       const zoomScale = Math.max(1, state.zoom);
-      return clamp(baseWidth / (1 + 0.6 * Math.log2(zoomScale)), 0.58, 1.8).toFixed(2);
+      return clamp(baseWidth / (1 + 0.52 * Math.log2(zoomScale)), 0.74, 2.2).toFixed(2);
     }
 
     function labelAnchorPoint(entry) {
