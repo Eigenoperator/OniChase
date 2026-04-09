@@ -923,6 +923,13 @@
         <h2>Seats</h2>
         <p>Use this waiting room before entering the main map. You can safely wait here until both players are connected and ready.</p>
         <div class="ready-grid">
+          <div>
+            <div class="section-label">Your Seat</div>
+            <div class="seat-toggle">
+              <button id="readyRunnerSeatButton" class="active">Runner</button>
+              <button id="readyHunterSeatButton">Hunter</button>
+            </div>
+          </div>
           <div id="readyRunnerCard" class="ready-seat-card">
             <strong>Runner</strong>
             <span>Waiting for player.</span>
@@ -1179,6 +1186,8 @@
     document.getElementById('singleHunterButton').addEventListener('click', () => enterSinglePlayer('hunter'));
     document.getElementById('lobbyRunnerSeatButton').addEventListener('click', () => setLobbySeat('runner'));
     document.getElementById('lobbyHunterSeatButton').addEventListener('click', () => setLobbySeat('hunter'));
+    document.getElementById('readyRunnerSeatButton').addEventListener('click', () => switchReadyRoomSeat('runner'));
+    document.getElementById('readyHunterSeatButton').addEventListener('click', () => switchReadyRoomSeat('hunter'));
     document.getElementById('createRoomButton').addEventListener('click', createRoomAndJoinSeat);
     document.getElementById('joinRoomButton').addEventListener('click', joinExistingRoom);
     document.getElementById('copyRoomCodeButton').addEventListener('click', copyCurrentRoomId);
@@ -1331,21 +1340,44 @@
       const bothJoined = Boolean(runner?.connected && hunter?.connected);
       const bothReady = Boolean(runner?.ready && hunter?.ready);
       const youReady = room.self?.ready;
+      setLobbySeat(room.self?.seat || state.activeMode);
       readyRoomStatusEl.textContent = bothReady
         ? 'Both players are ready. Starting match...'
         : bothJoined
           ? `Room ${room.room_id} is full. ${youReady ? 'You are ready. Waiting for the other player.' : 'Choose ready when you are set.'}`
-          : `Room ${room.room_id} created. Share the room code and wait for the other player to join.`;
-      document.getElementById('readyRoomReadyButton').disabled = !bothJoined || !!youReady;
-      document.getElementById('readyRoomUnreadyButton').disabled = !bothJoined || !youReady;
+          : `${seatStatusLine(room.self, room.self?.seat || state.activeMode)}. You can ready now and wait for the other player to join.`;
+      document.getElementById('readyRoomReadyButton').disabled = !!youReady;
+      document.getElementById('readyRoomUnreadyButton').disabled = !youReady;
     }
 
     function setLobbySeat(seat) {
       state.activeMode = seat;
       document.getElementById('lobbyRunnerSeatButton').className = seat === 'runner' ? 'active' : '';
       document.getElementById('lobbyHunterSeatButton').className = seat === 'hunter' ? 'active' : '';
+      document.getElementById('readyRunnerSeatButton').className = seat === 'runner' ? 'active' : '';
+      document.getElementById('readyHunterSeatButton').className = seat === 'hunter' ? 'active' : '';
       document.getElementById('runnerModeButton').className = seat === 'runner' ? 'active runner' : '';
       document.getElementById('hunterModeButton').className = seat === 'hunter' ? 'active hunter' : '';
+    }
+
+    async function switchReadyRoomSeat(seat) {
+      setLobbySeat(seat);
+      if (!state.online.roomId || !state.online.serverUrl) return;
+      if (state.online.seat === seat) return;
+      try {
+        state.online.token = loadOnlineToken(state.online.roomId, seat);
+        const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/join`, {
+          method: 'POST',
+          body: JSON.stringify({ seat, display_name: seat.toUpperCase(), token: state.online.token || null }),
+        });
+        if (data.token) {
+          state.online.token = data.token;
+          saveOnlineToken(state.online.roomId, seat, data.token);
+        }
+        syncStateFromRoom(data.room);
+      } catch (error) {
+        readyRoomStatusEl.textContent = `Could not switch to ${seat.toUpperCase()}: ${String(error)}`;
+      }
     }
 
     function closeLobby() {
