@@ -1892,8 +1892,9 @@
           }));
 
       trackFeatures.forEach((feature) => {
-        const points = feature.geometry.coordinates.map(([lon, lat]) => projection.project(lat, lon));
-        const stationGroupIds = feature.properties.station_group_ids || [];
+        const trimmed = trimNishiKyushuGeometry(feature.properties.id, feature.geometry.coordinates, feature.properties.station_group_ids || []);
+        const points = trimmed.coordinates.map(([lon, lat]) => projection.project(lat, lon));
+        const stationGroupIds = trimmed.stationGroupIds || [];
         const lineTouchesSelectedRoute = state.selectedRouteId && stationGroupIds.some((id) => selectedRouteStations.has(id));
         centerlineSvg.push(drawPath(points, {
           stroke: state.viewMode === 'corridor' ? '#ffffff' : 'rgba(255,255,255,0.75)',
@@ -1907,30 +1908,13 @@
         }));
       });
 
-      const nishiKyushuConnector = [
-        stationGroupCentroidPoint('SG_SHIN_TOSU'),
-        stationGroupCentroidPoint('SG_TAKEO_ONSEN'),
-      ].filter(Boolean);
-      if (nishiKyushuConnector.length === 2) {
-        const selected = !state.selectedRouteId || state.selectedRouteId === 'NISHI_KYUSHU';
-        centerlineSvg.push(drawPath(nishiKyushuConnector, {
-          stroke: '#ffffff',
-          width: selected ? corridorOuterSelectedWidth : corridorOuterWidth,
-          opacity: selected ? 0.96 : 0.92
-        }));
-        centerlineSvg.push(drawPath(nishiKyushuConnector, {
-          stroke: selected ? '#8aa4c8' : (state.viewMode === 'corridor' ? '#c5d0df' : '#d8dee8'),
-          width: selected ? corridorInnerSelectedWidth : corridorInnerWidth,
-          opacity: selected ? 1 : (state.viewMode === 'corridor' ? 1 : 0.86)
-        }));
-      }
-
       if (state.viewMode === 'service') {
         serviceFeatures.forEach((feature) => {
           const routeId = feature.properties.route_id;
           const color = feature.properties.route_color || '#666';
           const selected = !state.selectedRouteId || routeId === state.selectedRouteId;
-          const points = feature.geometry.coordinates.map(([lon, lat]) => projection.project(lat, lon));
+          const trimmed = trimNishiKyushuGeometry(routeId, feature.geometry.coordinates);
+          const points = trimmed.coordinates.map(([lon, lat]) => projection.project(lat, lon));
           const offset = (feature.properties.offset_rank || 0) * 0.8;
           const offsetPoints = points.map((point, index) => {
             const prev = points[Math.max(index - 1, 0)];
@@ -1953,20 +1937,6 @@
             opacity: selected ? 0.98 : 0.34
           }));
         });
-
-        if (nishiKyushuConnector.length === 2) {
-          const selected = !state.selectedRouteId || state.selectedRouteId === 'NISHI_KYUSHU';
-          serviceSvg.push(drawPath(nishiKyushuConnector, {
-            stroke: '#ffffff',
-            width: selected ? serviceOuterSelectedWidth : serviceOuterWidth,
-            opacity: selected ? 0.95 : 0.55
-          }));
-          serviceSvg.push(drawPath(nishiKyushuConnector, {
-            stroke: '#7c4dff',
-            width: selected ? serviceInnerSelectedWidth : serviceInnerWidth,
-            opacity: selected ? 0.98 : 0.34
-          }));
-        }
       }
 
       const physicalStationMap = new Map(bundle.physicalStations.map((station) => [station.stationGroupId, station]));
@@ -2966,10 +2936,14 @@
       return set;
     }
 
-    function stationGroupCentroidPoint(stationGroupId) {
-      const group = state.bundle.stationGroups.find((item) => item.id === stationGroupId);
-      if (!group?.centroid) return null;
-      return state.projection.project(group.centroid.lat, group.centroid.lon);
+    function trimNishiKyushuGeometry(routeOrLineId, coordinates, stationGroupIds = []) {
+      if (routeOrLineId !== 'NISHI_KYUSHU' && routeOrLineId !== 'TRACK_NISHI_KYUSHU') {
+        return { coordinates, stationGroupIds };
+      }
+      if (coordinates.length <= 1) return { coordinates, stationGroupIds };
+      const trimmedCoordinates = coordinates.slice(1);
+      const trimmedStationIds = stationGroupIds.length ? stationGroupIds.slice(1) : stationGroupIds;
+      return { coordinates: trimmedCoordinates, stationGroupIds: trimmedStationIds };
     }
 
     function bindRouteClickTargets() {
