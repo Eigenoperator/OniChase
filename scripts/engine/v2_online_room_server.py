@@ -374,6 +374,13 @@ class RoomRegistry:
             room = self._rooms[room_id]
             advance_room(room)
             room.players[seat].ready = ready
+            if room.phase == "PLANNING" and all(player.ready for player in room.players.values()):
+                room.phase = "LIVE"
+                room.phase_started_monotonic = time.monotonic()
+                room.match_started = True
+                room.live_capture = detect_capture_at_minute(room, room.current_game_minute)
+                if room.live_capture:
+                    room.phase = "ENDED"
             return room
 
     def try_start(self, room_id: str, seat: str) -> RoomState:

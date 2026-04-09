@@ -63,6 +63,90 @@
       display: none;
     }
 
+    .ready-room {
+      position: fixed;
+      inset: 0;
+      z-index: 35;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      background:
+        radial-gradient(circle at 16% 20%, rgba(21, 101, 192, 0.16), transparent 24%),
+        radial-gradient(circle at 82% 18%, rgba(220, 77, 98, 0.14), transparent 22%),
+        linear-gradient(180deg, rgba(246, 250, 255, 0.97), rgba(236, 242, 249, 0.97));
+      backdrop-filter: blur(10px);
+    }
+
+    .ready-room.hidden {
+      display: none;
+    }
+
+    .ready-shell {
+      width: min(900px, 100%);
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 20px;
+    }
+
+    .ready-panel {
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      border-radius: 30px;
+      background: rgba(250, 252, 255, 0.96);
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    .ready-panel h2 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .ready-panel p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .ready-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .ready-seat-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .ready-seat-card strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .ready-seat-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .ready-seat-card.ready {
+      border-color: rgba(21, 101, 192, 0.42);
+      background: rgba(232, 240, 252, 0.95);
+    }
+
+    .ready-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
     .lobby-shell {
       width: min(1120px, 100%);
       display: grid;
@@ -821,6 +905,42 @@
     </div>
   </section>
 
+  <section id="readyRoom" class="ready-room hidden">
+    <div class="ready-shell">
+      <section class="ready-panel">
+        <h2>Match Room</h2>
+        <p>
+          Share the room code, wait for both seats to join, then both players choose ready. The match will start automatically once both sides are ready.
+        </p>
+        <div class="room-code-row">
+          <div id="readyRoomCodePill" class="room-code-pill empty">No Room Yet</div>
+          <button id="copyReadyRoomCodeButton" class="secondary">Copy Room ID</button>
+        </div>
+        <div id="readyRoomStatus" class="lobby-status" style="margin-top:18px;">Waiting for room status.</div>
+      </section>
+
+      <section class="ready-panel">
+        <h2>Seats</h2>
+        <p>Use this waiting room before entering the main map. You can safely wait here until both players are connected and ready.</p>
+        <div class="ready-grid">
+          <div id="readyRunnerCard" class="ready-seat-card">
+            <strong>Runner</strong>
+            <span>Waiting for player.</span>
+          </div>
+          <div id="readyHunterCard" class="ready-seat-card">
+            <strong>Hunter</strong>
+            <span>Waiting for player.</span>
+          </div>
+        </div>
+        <div class="ready-actions">
+          <button id="readyRoomReadyButton" class="primary">Ready</button>
+          <button id="readyRoomUnreadyButton" class="secondary">Unready</button>
+          <button id="readyRoomLobbyButton" class="secondary">Back to Lobby</button>
+        </div>
+      </section>
+    </div>
+  </section>
+
   <main id="app" class="app hidden">
     <header class="topbar">
       <div class="topbar-spacer"></div>
@@ -1037,6 +1157,7 @@
     const commandTimeDisplayEl = document.getElementById('commandTimeDisplay');
     const phaseChipEl = document.getElementById('phaseChip');
     const lobbyEl = document.getElementById('lobby');
+    const readyRoomEl = document.getElementById('readyRoom');
     const appEl = document.getElementById('app');
     const roomIdInput = document.getElementById('roomIdInput');
     const roomStatusEl = document.getElementById('roomStatus');
@@ -1044,6 +1165,10 @@
     const roomInfoCodePillEl = document.getElementById('roomInfoCodePill');
     const lobbyStatusEl = document.getElementById('lobbyStatus');
     const lobbyRoomCodePillEl = document.getElementById('lobbyRoomCodePill');
+    const readyRoomCodePillEl = document.getElementById('readyRoomCodePill');
+    const readyRoomStatusEl = document.getElementById('readyRoomStatus');
+    const readyRunnerCardEl = document.getElementById('readyRunnerCard');
+    const readyHunterCardEl = document.getElementById('readyHunterCard');
 
     document.getElementById('corridor-btn').addEventListener('click', () => setViewMode('corridor'));
     document.getElementById('service-btn').addEventListener('click', () => setViewMode('service'));
@@ -1058,9 +1183,13 @@
     document.getElementById('joinRoomButton').addEventListener('click', joinExistingRoom);
     document.getElementById('copyRoomCodeButton').addEventListener('click', copyCurrentRoomId);
     document.getElementById('copyRoomCodeInGameButton').addEventListener('click', copyCurrentRoomId);
+    document.getElementById('copyReadyRoomCodeButton').addEventListener('click', copyCurrentRoomId);
     document.getElementById('submitPlanButton').addEventListener('click', submitCurrentPlanToRoom);
     document.getElementById('readyButton').addEventListener('click', markSeatReady);
     document.getElementById('openLobbyButton').addEventListener('click', openLobby);
+    document.getElementById('readyRoomReadyButton').addEventListener('click', markSeatReady);
+    document.getElementById('readyRoomUnreadyButton').addEventListener('click', markSeatUnready);
+    document.getElementById('readyRoomLobbyButton').addEventListener('click', openLobby);
     document.getElementById('loadPresetButton').addEventListener('click', applyTestPreset);
     document.getElementById('startGameButton').addEventListener('click', startGameNow);
     document.getElementById('pauseGameButton').addEventListener('click', toggleClock);
@@ -1115,10 +1244,14 @@
       if (!value) {
         lobbyRoomCodePillEl.textContent = 'No Room Yet';
         lobbyRoomCodePillEl.className = 'room-code-pill empty';
+        readyRoomCodePillEl.textContent = 'No Room Yet';
+        readyRoomCodePillEl.className = 'room-code-pill empty';
         return;
       }
       lobbyRoomCodePillEl.textContent = value;
       lobbyRoomCodePillEl.className = 'room-code-pill';
+      readyRoomCodePillEl.textContent = value;
+      readyRoomCodePillEl.className = 'room-code-pill';
     }
 
     function updateInGameRoomCode(roomId) {
@@ -1174,6 +1307,39 @@
       };
     }
 
+    function seatStatusLine(player, seat) {
+      if (!player?.connected) return `${seat.toUpperCase()} · waiting for player`;
+      return `${seat.toUpperCase()} · ${player.ready ? 'ready' : 'not ready'}`;
+    }
+
+    function renderReadyRoom(room) {
+      if (!room) return;
+      const runner = room.players.runner;
+      const hunter = room.players.hunter;
+      readyRunnerCardEl.className = `ready-seat-card${runner?.ready ? ' ready' : ''}`;
+      readyHunterCardEl.className = `ready-seat-card${hunter?.ready ? ' ready' : ''}`;
+      readyRunnerCardEl.innerHTML = `
+        <strong>Runner</strong>
+        <span>${runner?.connected ? 'Player joined.' : 'Waiting for player.'}</span>
+        <span>${runner?.ready ? 'Ready to start.' : 'Not ready yet.'}</span>
+      `;
+      readyHunterCardEl.innerHTML = `
+        <strong>Hunter</strong>
+        <span>${hunter?.connected ? 'Player joined.' : 'Waiting for player.'}</span>
+        <span>${hunter?.ready ? 'Ready to start.' : 'Not ready yet.'}</span>
+      `;
+      const bothJoined = Boolean(runner?.connected && hunter?.connected);
+      const bothReady = Boolean(runner?.ready && hunter?.ready);
+      const youReady = room.self?.ready;
+      readyRoomStatusEl.textContent = bothReady
+        ? 'Both players are ready. Starting match...'
+        : bothJoined
+          ? `Room ${room.room_id} is full. ${youReady ? 'You are ready. Waiting for the other player.' : 'Choose ready when you are set.'}`
+          : `Room ${room.room_id} created. Share the room code and wait for the other player to join.`;
+      document.getElementById('readyRoomReadyButton').disabled = !bothJoined || !!youReady;
+      document.getElementById('readyRoomUnreadyButton').disabled = !bothJoined || !youReady;
+    }
+
     function setLobbySeat(seat) {
       state.activeMode = seat;
       document.getElementById('lobbyRunnerSeatButton').className = seat === 'runner' ? 'active' : '';
@@ -1184,11 +1350,27 @@
 
     function closeLobby() {
       lobbyEl.classList.add('hidden');
+    }
+
+    function openReadyRoom() {
+      lobbyEl.classList.add('hidden');
+      readyRoomEl.classList.remove('hidden');
+      appEl.classList.add('hidden');
+    }
+
+    function closeReadyRoom() {
+      readyRoomEl.classList.add('hidden');
+    }
+
+    function openApp() {
+      lobbyEl.classList.add('hidden');
+      readyRoomEl.classList.add('hidden');
       appEl.classList.remove('hidden');
     }
 
     function openLobby() {
       lobbyEl.classList.remove('hidden');
+      readyRoomEl.classList.add('hidden');
       appEl.classList.add('hidden');
       if (!state.online.roomId) roomIdInput.value = '';
       updateLobbyRoomCode(state.online.roomId || roomIdInput.value || '');
@@ -1212,7 +1394,7 @@
       updateLobbyRoomCode('');
       setActiveMode(seat);
       applyTestPreset();
-      closeLobby();
+      openApp();
       render();
     }
 
@@ -1342,9 +1524,14 @@
       roomStatusEl.textContent = roomSummary.short;
       roomInfoEl.textContent = roomSummary.detailed;
       lobbyStatusEl.textContent = `Connected to room ${room.room_id} as ${state.online.seat?.toUpperCase() || 'seat'}. ${room.opponent ? 'Opponent present.' : 'Waiting for opponent.'}`;
+      renderReadyRoom(room);
       if (!state.selectedStationGroupId && room.self?.start_station_id) state.selectedStationGroupId = room.self.start_station_id;
-      closeLobby();
-      render();
+      if (room.match_started || room.phase === 'LIVE' || room.phase === 'ENDED') {
+        openApp();
+        render();
+      } else {
+        openReadyRoom();
+      }
       scheduleOnlinePoll();
     }
 
@@ -1413,6 +1600,15 @@
       const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/ready`, {
         method: 'POST',
         body: JSON.stringify({ seat: state.online.seat, token: state.online.token, ready: true }),
+      });
+      syncStateFromRoom(data.room);
+    }
+
+    async function markSeatUnready() {
+      if (!onlineActive()) return;
+      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/ready`, {
+        method: 'POST',
+        body: JSON.stringify({ seat: state.online.seat, token: state.online.token, ready: false }),
       });
       syncStateFromRoom(data.room);
     }
@@ -2325,12 +2521,7 @@
 
     function startGameNow() {
       if (onlineActive()) {
-        apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/start`, {
-          method: 'POST',
-          body: JSON.stringify({ seat: state.online.seat, token: state.online.token }),
-        }).then((data) => syncStateFromRoom(data.room)).catch((error) => {
-          roomStatusEl.textContent = `Start failed: ${String(error)}`;
-        });
+        roomStatusEl.textContent = 'Online rooms start automatically once both players are ready.';
         return;
       }
       if (state.phase !== 'PLANNING') return;
@@ -2894,6 +3085,7 @@
           : `Match closed at ${currentTime} · Window ${state.startTime} → ${state.endTime}`;
       document.getElementById('runnerModeButton').className = state.activeMode === 'runner' ? 'active runner' : '';
       document.getElementById('hunterModeButton').className = state.activeMode === 'hunter' ? 'active hunter' : '';
+      document.getElementById('startGameButton').disabled = onlineActive();
       document.getElementById('pauseGameButton').disabled = onlineActive();
       document.getElementById('runSimulationButton').disabled = onlineActive();
 
