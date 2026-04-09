@@ -203,6 +203,34 @@
       font-weight: 700;
     }
 
+    .room-code-row {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .room-code-pill {
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      background: rgba(255, 255, 255, 0.96);
+      color: var(--ink);
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      min-width: 132px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .room-code-pill.empty {
+      letter-spacing: 0.04em;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
     .topbar {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -614,6 +642,13 @@
       overflow: auto;
     }
 
+    .room-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
     .empty {
       border-radius: 16px;
       border: 1px dashed rgba(213, 221, 232, 0.95);
@@ -768,6 +803,10 @@
             <button id="createRoomButton" class="primary">Create Room</button>
             <button id="joinRoomButton" class="secondary">Join Room</button>
           </div>
+          <div class="room-code-row">
+            <div id="lobbyRoomCodePill" class="room-code-pill empty">No Room Yet</div>
+            <button id="copyRoomCodeButton" class="secondary">Copy Room ID</button>
+          </div>
           <div id="lobbyStatus" class="lobby-status">Choose a seat, then create a room or enter an existing room code.</div>
         </div>
       </section>
@@ -822,15 +861,23 @@
               <button id="service-btn">Service</button>
             </div>
             <button id="fit-btn" class="secondary">Fit Map</button>
-            <button id="submitPlanButton" class="secondary">Submit Plan</button>
-            <button id="readyButton" class="secondary">Ready</button>
-            <button id="openLobbyButton" class="secondary">Lobby</button>
           </div>
         </section>
 
         <section class="temporarily-hidden">
           <div class="section-label">Bundle</div>
           <div class="overview-grid" id="overview-grid"></div>
+        </section>
+
+        <section>
+          <div class="section-label">Room</div>
+          <div id="roomInfo" class="info-box">Single-player local mode.</div>
+          <div class="room-actions">
+            <button id="copyRoomCodeInGameButton" class="secondary">Copy Room ID</button>
+            <button id="submitPlanButton" class="secondary">Submit Plan</button>
+            <button id="readyButton" class="secondary">Ready</button>
+            <button id="openLobbyButton" class="secondary">Lobby</button>
+          </div>
         </section>
 
         <section>
@@ -984,7 +1031,9 @@
     const appEl = document.getElementById('app');
     const roomIdInput = document.getElementById('roomIdInput');
     const roomStatusEl = document.getElementById('roomStatus');
+    const roomInfoEl = document.getElementById('roomInfo');
     const lobbyStatusEl = document.getElementById('lobbyStatus');
+    const lobbyRoomCodePillEl = document.getElementById('lobbyRoomCodePill');
 
     document.getElementById('corridor-btn').addEventListener('click', () => setViewMode('corridor'));
     document.getElementById('service-btn').addEventListener('click', () => setViewMode('service'));
@@ -997,6 +1046,8 @@
     document.getElementById('lobbyHunterSeatButton').addEventListener('click', () => setLobbySeat('hunter'));
     document.getElementById('createRoomButton').addEventListener('click', createRoomAndJoinSeat);
     document.getElementById('joinRoomButton').addEventListener('click', joinExistingRoom);
+    document.getElementById('copyRoomCodeButton').addEventListener('click', copyCurrentRoomId);
+    document.getElementById('copyRoomCodeInGameButton').addEventListener('click', copyCurrentRoomId);
     document.getElementById('submitPlanButton').addEventListener('click', submitCurrentPlanToRoom);
     document.getElementById('readyButton').addEventListener('click', markSeatReady);
     document.getElementById('openLobbyButton').addEventListener('click', openLobby);
@@ -1049,6 +1100,59 @@
       return Boolean(state.online.roomId && state.online.seat && state.online.token);
     }
 
+    function updateLobbyRoomCode(roomId) {
+      const value = (roomId || '').trim().toUpperCase();
+      if (!value) {
+        lobbyRoomCodePillEl.textContent = 'No Room Yet';
+        lobbyRoomCodePillEl.className = 'room-code-pill empty';
+        return;
+      }
+      lobbyRoomCodePillEl.textContent = value;
+      lobbyRoomCodePillEl.className = 'room-code-pill';
+    }
+
+    async function copyCurrentRoomId() {
+      const value = (state.online.roomId || roomIdInput.value || '').trim().toUpperCase();
+      if (!value) {
+        lobbyStatusEl.textContent = 'No room id to copy yet.';
+        return;
+      }
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(value);
+        } else {
+          roomIdInput.focus();
+          roomIdInput.select();
+          document.execCommand('copy');
+        }
+        lobbyStatusEl.textContent = `Copied room ${value}. Share it with your opponent.`;
+      } catch (_error) {
+        lobbyStatusEl.textContent = `Copy failed. Room code: ${value}`;
+      }
+    }
+
+    function roomStatusSummary(room) {
+      const selfSeat = room.self?.seat || state.online.seat || state.activeMode;
+      const opponentSeat = selfSeat === 'runner' ? 'hunter' : 'runner';
+      const selfReady = room.self?.ready ? 'ready' : 'not ready';
+      const opponentJoined = Boolean(room.opponent);
+      const opponentReady = room.opponent?.ready ? 'ready' : 'not ready';
+      const joinedText = opponentJoined ? `${opponentSeat.toUpperCase()} joined` : `Waiting for ${opponentSeat.toUpperCase()}`;
+      const readyText = opponentJoined ? `${opponentSeat.toUpperCase()} ${opponentReady}` : 'No opponent yet';
+      return {
+        short: `Room ${room.room_id} · ${selfSeat.toUpperCase()} ${selfReady} · ${joinedText}`,
+        detailed: [
+          `Room: ${room.room_id}`,
+          `Seat: ${selfSeat.toUpperCase()}`,
+          `You: ${selfReady}`,
+          `Opponent: ${joinedText}`,
+          `Opponent status: ${readyText}`,
+          `Phase: ${room.phase}`,
+          `Time: ${minutesToHhmm(room.current_game_minute)}`,
+        ].join('\n'),
+      };
+    }
+
     function setLobbySeat(seat) {
       state.activeMode = seat;
       document.getElementById('lobbyRunnerSeatButton').className = seat === 'runner' ? 'active' : '';
@@ -1066,6 +1170,7 @@
       lobbyEl.classList.remove('hidden');
       appEl.classList.add('hidden');
       if (!state.online.roomId) roomIdInput.value = '';
+      updateLobbyRoomCode(state.online.roomId || roomIdInput.value || '');
       if (onlineActive()) {
         lobbyStatusEl.textContent = `Reconnect as ${state.online.seat?.toUpperCase() || 'seat'} in room ${state.online.roomId}.`;
       } else {
@@ -1081,6 +1186,8 @@
       state.online.lastRoom = null;
       state.online.presences = { runner: null, hunter: null };
       roomStatusEl.textContent = 'Single-player local mode.';
+      roomInfoEl.textContent = 'Single-player local mode.\nNo room code needed.\nUse Start Game after planning your route.';
+      updateLobbyRoomCode('');
       setActiveMode(seat);
       applyTestPreset();
       closeLobby();
@@ -1173,6 +1280,7 @@
       state.online.lastRoom = room;
       state.online.roomId = room.room_id;
       roomIdInput.value = room.room_id;
+      updateLobbyRoomCode(room.room_id);
       state.phase = room.phase;
       state.startTime = room.start_time_hhmm;
       state.endTime = room.end_time_hhmm;
@@ -1207,9 +1315,10 @@
         };
         state.online.presences[opponentSeat] = room.opponent.presence || null;
       }
-      const selfReady = room.self?.ready ? 'ready' : 'not ready';
-      roomStatusEl.textContent = `Room ${room.room_id} · ${state.online.seat || 'viewer'} · ${room.phase} · ${selfReady}`;
-      lobbyStatusEl.textContent = `Connected to room ${room.room_id} as ${state.online.seat?.toUpperCase() || 'seat'}.`;
+      const roomSummary = roomStatusSummary(room);
+      roomStatusEl.textContent = roomSummary.short;
+      roomInfoEl.textContent = roomSummary.detailed;
+      lobbyStatusEl.textContent = `Connected to room ${room.room_id} as ${state.online.seat?.toUpperCase() || 'seat'}. ${room.opponent ? 'Opponent present.' : 'Waiting for opponent.'}`;
       if (!state.selectedStationGroupId && room.self?.start_station_id) state.selectedStationGroupId = room.self.start_station_id;
       closeLobby();
       render();
@@ -1234,6 +1343,8 @@
       });
       state.online.roomId = created.room.room_id;
       roomIdInput.value = created.room.room_id;
+      updateLobbyRoomCode(created.room.room_id);
+      lobbyStatusEl.textContent = `Room ${created.room.room_id} created. Share this code, then claim your ${state.activeMode.toUpperCase()} seat.`;
       await joinExistingRoom();
     }
 
@@ -1245,6 +1356,7 @@
       }
       state.online.roomId = roomIdInput.value.trim().toUpperCase();
       if (!state.online.roomId) return;
+      updateLobbyRoomCode(state.online.roomId);
       state.online.token = loadOnlineToken(state.online.roomId, state.activeMode);
       const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/join`, {
         method: 'POST',
@@ -2741,10 +2853,20 @@
 
       phaseClockEl.innerHTML = state.phase === 'PLANNING'
         ? (onlineActive()
-            ? `Room ${state.online.roomId || 'local'} · Next Planning ${minutesToHhmm(state.nextPlanningMinute)}`
+            ? (() => {
+                const room = state.online.lastRoom;
+                const opponentText = room?.opponent ? `${room.opponent.seat.toUpperCase()} ${room.opponent.ready ? 'ready' : 'not ready'}` : 'Waiting for opponent';
+                return `Room ${state.online.roomId || 'local'} · ${opponentText} · Next Planning ${minutesToHhmm(state.nextPlanningMinute)}`;
+              })()
             : `Planning lock ${String(state.planningSecondsRemaining).padStart(2, '0')}s · Match ${state.startTime} → ${state.endTime}`)
         : state.phase === 'LIVE'
-          ? `Next Planning ${minutesToHhmm(state.nextPlanningMinute)} · ${nextPlanningDelta} min left`
+          ? (onlineActive()
+              ? (() => {
+                  const room = state.online.lastRoom;
+                  const opponentText = room?.opponent ? `${room.opponent.seat.toUpperCase()} ${room.opponent.ready ? 'ready' : 'locked in'}` : 'Waiting for opponent';
+                  return `${opponentText} · Next Planning ${minutesToHhmm(state.nextPlanningMinute)} · ${nextPlanningDelta} min left`;
+                })()
+              : `Next Planning ${minutesToHhmm(state.nextPlanningMinute)} · ${nextPlanningDelta} min left`)
           : `Match closed at ${currentTime} · Window ${state.startTime} → ${state.endTime}`;
       document.getElementById('runnerModeButton').className = state.activeMode === 'runner' ? 'active runner' : '';
       document.getElementById('hunterModeButton').className = state.activeMode === 'hunter' ? 'active hunter' : '';

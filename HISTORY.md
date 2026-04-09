@@ -227,3 +227,4 @@
 - Compressed the public `v2` top bar so the game clock sits in the center and only the core Runner/Hunter, Start, and Pause controls remain there; moved the extra testing and view buttons into the right-side Session panel.
 - Temporarily hid the `Session` and `Bundle` sections from the public `v2` sidebar to declutter the board without removing the underlying multiplayer and bundle logic.
 - Increased the public `v2` map zoom ceiling and changed station-circle / label scaling so dense areas like Tokyo can be zoomed further while labels and station dots shrink with zoom instead of overwhelming the view.
+- Improved the public `v2` multiplayer UX by adding copyable room-code surfaces in both the lobby and main board, surfacing opponent joined/ready status much more clearly, and moving essential online actions into a visible dedicated `Room` panel instead of the hidden temporary session area.
