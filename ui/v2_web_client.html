@@ -1477,6 +1477,23 @@
       return data;
     }
 
+    function describeRoomError(error) {
+      const text = String(error || '');
+      if (text.includes('seat_occupied')) {
+        return `That seat is already occupied. Switch to the other seat and try Join Room again.`;
+      }
+      if (text.includes('room_not_found')) {
+        return 'Room not found. Check the room id and try again.';
+      }
+      if (text.includes('invalid_token')) {
+        return 'This browser does not own that seat. Switch seat or rejoin the room.';
+      }
+      if (text.includes('Failed to fetch')) {
+        return 'Could not reach the multiplayer server. Please try again in a moment.';
+      }
+      return text;
+    }
+
     function presenceToPreview(playerId, presence) {
       if (!presence || presence.kind === 'HIDDEN') return null;
       let mapPosition = null;
@@ -1574,42 +1591,53 @@
     }
 
     async function createRoomAndJoinSeat() {
-      state.online.serverUrl = configuredServerUrl();
-      if (!state.online.serverUrl) {
-        lobbyStatusEl.textContent = 'Multiplayer server is not configured yet.';
-        return;
+      try {
+        state.online.serverUrl = configuredServerUrl();
+        if (!state.online.serverUrl) {
+          lobbyStatusEl.textContent = 'Multiplayer server is not configured yet.';
+          return;
+        }
+        const created = await apiJson(`${state.online.serverUrl}/api/rooms`, {
+          method: 'POST',
+          body: JSON.stringify({ start_time_hhmm: state.startTime, end_time_hhmm: state.endTime }),
+        });
+        state.online.roomId = created.room.room_id;
+        roomIdInput.value = created.room.room_id;
+        updateLobbyRoomCode(created.room.room_id);
+        await copyCurrentRoomId();
+        lobbyStatusEl.textContent = `Room ${created.room.room_id} created and copied. Share this code, then claim your ${state.activeMode.toUpperCase()} seat.`;
+        await joinExistingRoom();
+      } catch (error) {
+        lobbyStatusEl.textContent = `Create room failed: ${describeRoomError(error)}`;
       }
-      const created = await apiJson(`${state.online.serverUrl}/api/rooms`, {
-        method: 'POST',
-        body: JSON.stringify({ start_time_hhmm: state.startTime, end_time_hhmm: state.endTime }),
-      });
-      state.online.roomId = created.room.room_id;
-      roomIdInput.value = created.room.room_id;
-      updateLobbyRoomCode(created.room.room_id);
-      await copyCurrentRoomId();
-      lobbyStatusEl.textContent = `Room ${created.room.room_id} created and copied. Share this code, then claim your ${state.activeMode.toUpperCase()} seat.`;
-      await joinExistingRoom();
     }
 
     async function joinExistingRoom() {
-      state.online.serverUrl = configuredServerUrl();
-      if (!state.online.serverUrl) {
-        lobbyStatusEl.textContent = 'Multiplayer server is not configured yet.';
-        return;
+      try {
+        state.online.serverUrl = configuredServerUrl();
+        if (!state.online.serverUrl) {
+          lobbyStatusEl.textContent = 'Multiplayer server is not configured yet.';
+          return;
+        }
+        state.online.roomId = roomIdInput.value.trim().toUpperCase();
+        if (!state.online.roomId) {
+          lobbyStatusEl.textContent = 'Enter a room id first.';
+          return;
+        }
+        updateLobbyRoomCode(state.online.roomId);
+        state.online.token = loadOnlineToken(state.online.roomId, state.activeMode);
+        const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/join`, {
+          method: 'POST',
+          body: JSON.stringify({ seat: state.activeMode, display_name: state.activeMode.toUpperCase(), token: state.online.token || null }),
+        });
+        if (data.token) {
+          state.online.token = data.token;
+          saveOnlineToken(state.online.roomId, state.activeMode, data.token);
+        }
+        syncStateFromRoom(data.room);
+      } catch (error) {
+        lobbyStatusEl.textContent = `Join room failed: ${describeRoomError(error)}`;
       }
-      state.online.roomId = roomIdInput.value.trim().toUpperCase();
-      if (!state.online.roomId) return;
-      updateLobbyRoomCode(state.online.roomId);
-      state.online.token = loadOnlineToken(state.online.roomId, state.activeMode);
-      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/join`, {
-        method: 'POST',
-        body: JSON.stringify({ seat: state.activeMode, display_name: state.activeMode.toUpperCase(), token: state.online.token || null }),
-      });
-      if (data.token) {
-        state.online.token = data.token;
-        saveOnlineToken(state.online.roomId, state.activeMode, data.token);
-      }
-      syncStateFromRoom(data.room);
     }
 
     async function submitCurrentPlanToRoom() {
