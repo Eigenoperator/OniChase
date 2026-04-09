@@ -1331,12 +1331,12 @@
 
     function mapLabelFontSize(baseSize) {
       const zoomScale = Math.max(1, state.zoom);
-      return clamp(baseSize / (1 + 0.56 * Math.log2(zoomScale)), 4.4, 7.2).toFixed(2);
+      return clamp(baseSize / (1 + 0.44 * Math.log2(zoomScale)), 5.4, 8.6).toFixed(2);
     }
 
     function mapLabelStrokeWidth(baseWidth) {
       const zoomScale = Math.max(1, state.zoom);
-      return clamp(baseWidth / (1 + 0.72 * Math.log2(zoomScale)), 0.48, 1.5).toFixed(2);
+      return clamp(baseWidth / (1 + 0.6 * Math.log2(zoomScale)), 0.58, 1.8).toFixed(2);
     }
 
     function labelAnchorPoint(entry) {
@@ -1354,12 +1354,11 @@
     }
 
     function labelOffset(entry) {
-      const zoomScale = Math.max(1, state.zoom);
-      const baseX = entry.labelRank >= 99 ? 7 : entry.labelRank >= 95 ? 6 : 5;
-      const baseY = entry.labelRank >= 99 ? -6 : -5;
+      const baseX = entry.labelRank >= 99 ? 8 : entry.labelRank >= 95 ? 7 : 6;
+      const baseY = entry.labelRank >= 99 ? -7 : -6;
       return {
-        x: baseX / Math.pow(zoomScale, 0.9),
-        y: baseY / Math.pow(zoomScale, 0.9),
+        x: baseX,
+        y: baseY,
       };
     }
 
