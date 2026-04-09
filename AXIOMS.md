@@ -13,6 +13,7 @@
 - `MEMORY.md` is curated long-term memory, not a raw log.
 - Daily memory files must use the header format `# Daily Memory - YYYY-MM-DD`.
 - Each daily memory entry must use the format `- YYYY-MM-DD HH:MM:SS ZZZ - ...`.
+- Daily memory timestamps must be exact to the second; never use rounded, placeholder, or invented times.
 
 ## 3. Status Discipline
 
