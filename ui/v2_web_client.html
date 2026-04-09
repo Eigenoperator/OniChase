@@ -231,6 +231,14 @@
       text-transform: uppercase;
     }
 
+    .room-code-pill.in-panel {
+      width: 100%;
+      min-width: 0;
+      margin-bottom: 10px;
+      text-align: left;
+      letter-spacing: 0.14em;
+    }
+
     .topbar {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -871,6 +879,7 @@
 
         <section>
           <div class="section-label">Room</div>
+          <div id="roomInfoCodePill" class="room-code-pill in-panel empty">Local Session</div>
           <div id="roomInfo" class="info-box">Single-player local mode.</div>
           <div class="room-actions">
             <button id="copyRoomCodeInGameButton" class="secondary">Copy Room ID</button>
@@ -1032,6 +1041,7 @@
     const roomIdInput = document.getElementById('roomIdInput');
     const roomStatusEl = document.getElementById('roomStatus');
     const roomInfoEl = document.getElementById('roomInfo');
+    const roomInfoCodePillEl = document.getElementById('roomInfoCodePill');
     const lobbyStatusEl = document.getElementById('lobbyStatus');
     const lobbyRoomCodePillEl = document.getElementById('lobbyRoomCodePill');
 
@@ -1111,6 +1121,17 @@
       lobbyRoomCodePillEl.className = 'room-code-pill';
     }
 
+    function updateInGameRoomCode(roomId) {
+      const value = (roomId || '').trim().toUpperCase();
+      if (!value) {
+        roomInfoCodePillEl.textContent = 'Local Session';
+        roomInfoCodePillEl.className = 'room-code-pill in-panel empty';
+        return;
+      }
+      roomInfoCodePillEl.textContent = `ROOM ${value}`;
+      roomInfoCodePillEl.className = 'room-code-pill in-panel';
+    }
+
     async function copyCurrentRoomId() {
       const value = (state.online.roomId || roomIdInput.value || '').trim().toUpperCase();
       if (!value) {
@@ -1186,6 +1207,7 @@
       state.online.lastRoom = null;
       state.online.presences = { runner: null, hunter: null };
       roomStatusEl.textContent = 'Single-player local mode.';
+      updateInGameRoomCode('');
       roomInfoEl.textContent = 'Single-player local mode.\nNo room code needed.\nUse Start Game after planning your route.';
       updateLobbyRoomCode('');
       setActiveMode(seat);
@@ -1281,6 +1303,7 @@
       state.online.roomId = room.room_id;
       roomIdInput.value = room.room_id;
       updateLobbyRoomCode(room.room_id);
+      updateInGameRoomCode(room.room_id);
       state.phase = room.phase;
       state.startTime = room.start_time_hhmm;
       state.endTime = room.end_time_hhmm;
@@ -1344,7 +1367,8 @@
       state.online.roomId = created.room.room_id;
       roomIdInput.value = created.room.room_id;
       updateLobbyRoomCode(created.room.room_id);
-      lobbyStatusEl.textContent = `Room ${created.room.room_id} created. Share this code, then claim your ${state.activeMode.toUpperCase()} seat.`;
+      await copyCurrentRoomId();
+      lobbyStatusEl.textContent = `Room ${created.room.room_id} created and copied. Share this code, then claim your ${state.activeMode.toUpperCase()} seat.`;
       await joinExistingRoom();
     }
 
