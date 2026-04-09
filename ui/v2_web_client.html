@@ -1330,11 +1330,13 @@
     }
 
     function mapLabelFontSize(baseSize) {
-      return clamp(baseSize / Math.pow(Math.max(1, state.zoom), 1.34), 4.6, baseSize).toFixed(2);
+      const zoomScale = Math.max(1, state.zoom);
+      return clamp(baseSize / (1 + 0.56 * Math.log2(zoomScale)), 4.4, 7.2).toFixed(2);
     }
 
     function mapLabelStrokeWidth(baseWidth) {
-      return clamp(baseWidth / Math.pow(Math.max(1, state.zoom), 1.26), 0.42, baseWidth).toFixed(2);
+      const zoomScale = Math.max(1, state.zoom);
+      return clamp(baseWidth / (1 + 0.72 * Math.log2(zoomScale)), 0.48, 1.5).toFixed(2);
     }
 
     function labelAnchorPoint(entry) {
@@ -1961,8 +1963,10 @@
         const offset = labelOffset(entry);
         const fontSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
         const displayName = entry.displayNameEn || entry.displayNameJa || niceName(entry.stationGroupId);
+        const screenX = point.x * state.zoom + state.panX + offset.x;
+        const screenY = point.y * state.zoom + state.panY + offset.y;
         labelSvg.push(
-          `<text x="${point.x + offset.x}" y="${point.y + offset.y}" font-size="${mapLabelFontSize(fontSize)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${mapLabelStrokeWidth(4.2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`
+          `<text x="${screenX}" y="${screenY}" font-size="${mapLabelFontSize(fontSize)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${mapLabelStrokeWidth(4.2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`
         );
       });
 
@@ -2027,8 +2031,8 @@
           <g id="station-layer">${stationSvg.join('')}</g>
           <g id="hovered-trip-layer">${hoverSvg.join('')}</g>
           <g id="player-layer">${playerSvg.join('')}</g>
-          <g id="label-layer">${labelSvg.join('')}</g>
         </g>
+        <g id="label-layer">${labelSvg.join('')}</g>
       `;
 
       svg.querySelectorAll('[data-station-group-id]').forEach((node) => {
