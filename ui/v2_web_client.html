@@ -1362,6 +1362,29 @@
       };
     }
 
+    function buildLabelMarkup() {
+      const labelSvg = [];
+      state.labelEntries.forEach((entry) => {
+        if (!shouldShowLabel(entry)) return;
+        const point = labelAnchorPoint(entry);
+        const offset = labelOffset(entry);
+        const fontSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
+        const displayName = entry.displayNameEn || entry.displayNameJa || niceName(entry.stationGroupId);
+        const screenX = point.x * state.zoom + state.panX + offset.x;
+        const screenY = point.y * state.zoom + state.panY + offset.y;
+        labelSvg.push(
+          `<text x="${screenX}" y="${screenY}" font-size="${mapLabelFontSize(fontSize)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${mapLabelStrokeWidth(4.2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`
+        );
+      });
+      return labelSvg.join('');
+    }
+
+    function updateLabelLayer() {
+      const labelLayer = document.getElementById('label-layer');
+      if (!labelLayer || !state.projection || !state.bundle) return;
+      labelLayer.innerHTML = buildLabelMarkup();
+    }
+
     function makeProjection(bundle) {
       const stations = bundle.physicalStations.filter((s) => Number.isFinite(s.lon) && Number.isFinite(s.lat));
       const minLon = Math.min(...stations.map((s) => s.lon));
@@ -1956,18 +1979,7 @@
         stationSvg.push(`<circle data-station-group-id="${station.stationGroupId}" cx="${station.x}" cy="${station.y}" r="${stationRadius}" fill="${onSelectedRoute && !selected ? '#2f5d97' : fill}" stroke="${selected ? stroke : onSelectedRoute ? '#dbeafe' : stroke}" stroke-width="${selected ? selectedStrokeWidth : onSelectedRoute ? routeStrokeWidth : stationStrokeWidth}" style="cursor:pointer" />`);
       });
 
-      state.labelEntries.forEach((entry) => {
-        if (!shouldShowLabel(entry)) return;
-        const point = labelAnchorPoint(entry);
-        const offset = labelOffset(entry);
-        const fontSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
-        const displayName = entry.displayNameEn || entry.displayNameJa || niceName(entry.stationGroupId);
-        const screenX = point.x * state.zoom + state.panX + offset.x;
-        const screenY = point.y * state.zoom + state.panY + offset.y;
-        labelSvg.push(
-          `<text x="${screenX}" y="${screenY}" font-size="${mapLabelFontSize(fontSize)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${mapLabelStrokeWidth(4.2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`
-        );
-      });
+      labelSvg.push(buildLabelMarkup());
 
       const hoveredPoints = hoveredTripPathPoints();
       if (hoveredPoints.length >= 2) {
@@ -2070,6 +2082,7 @@
       const viewport = document.getElementById('viewport');
       if (!viewport || !state.projection) return;
       viewport.setAttribute('transform', `translate(${state.panX.toFixed(2)} ${state.panY.toFixed(2)}) scale(${state.zoom.toFixed(4)})`);
+      updateLabelLayer();
       refreshVisibleTiles();
     }
 
