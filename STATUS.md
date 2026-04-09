@@ -23,7 +23,6 @@
 - 已修正 `v2` 抓捕边界：同分钟里若是一人下车到站、另一人从同站上不同列车离开，则不再误判 `same_node`；回归确认 `same_node`、`same_train` 和“异车交错未抓”三类判定都成立。
 - 已启动并打通 `v2` 多人联机底座：新增 `ONLINE_ARCHITECTURE.md`、`ONLINE_PROTOCOL.md`、`scripts/engine/v2_online_room_server.py` 和 `START_ONICHASE_V2_SERVER.sh`，网页端也已接上建房/入房/submit plan/ready；当前联机版已补上 seat token / seat lock，并确认 `create room -> join runner/hunter -> submit plan -> ready/start -> LIVE 推进 -> authoritative capture` 全部跑通，同时已补 `render.yaml`、`ONLINE_DEPLOYMENT.md` 和 `docs/data/v2_online_config.json` 作为公网部署入口。
 - 已完成 `v3` 第一版 GIS Shinkansen pilot：包括架构/Schema、`V3_PILOT_BUNDLE_PLAN.md`、`data/v3_shinkansen_bundle.json`、`visuals/v3_shinkansen_multiscale_map.svg`、`ui/v3_web_client.html`、`docs/v3.html`、`data/v3_gis/*.geojson`、`docs/data/v3_tiles/` tile-ready GeoJSON 金字塔、地图 + route timetable diagram 的同源联动，以及开始直接消费 `v3_tiles` 的 tile-driven 地图层。
-- 已继续推进 `v3` 地图/diagram 联动：diagram hover 现可同步高亮地图上的具体 trip 路径；点选站点时，右栏会额外显示“当前选中线路在该站的真实发车集合”。
 - 已根据 `UI_BRIEF_V2.md` 试做过一轮更激进的主 `v2` UI 重构；当前已按反馈把网页壳层退回到重做前的稳定布局与浅色配色，保留玩法和联机逻辑不变。
 - 已完成版本迁移：原 `v3` GIS-first 新干线玩法页已提升为新的主 `v2`；公开网站现只保留 `v1` 和主 `v2`，不再公开 `v2-legacy` 与 `v3` 页面。
 - 已继续收 `v2` 多人体验：大厅里新增了可复制的房间号显示，主游戏页新增轻量 `Room` 区来承载复制房间号、`Submit Plan`、`Ready`、返回大厅等关键联机动作，同时把对手是否已加入、是否 ready 的状态压进大厅状态文案、房间状态卡和顶部时间条。
