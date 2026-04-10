@@ -797,6 +797,31 @@
       font-size: 13px;
     }
 
+    .outlook-row.clickable {
+      cursor: pointer;
+      border-radius: 10px;
+      padding: 10px 8px;
+      margin: 0 -8px;
+      transition: background 120ms ease;
+    }
+
+    .outlook-row.clickable:hover {
+      background: rgba(21, 101, 192, 0.08);
+    }
+
+    .outlook-row strong {
+      display: block;
+      font-size: 13px;
+      color: #203247;
+    }
+
+    .outlook-row span {
+      display: block;
+      margin-top: 2px;
+      font-size: 11px;
+      color: #556476;
+    }
+
     .outlook-row:last-child {
       border-bottom: 0;
       padding-bottom: 0;
@@ -1054,11 +1079,6 @@
           <div id="train-outlook" class="info-box">No train selected yet.</div>
         </section>
 
-        <section>
-          <div class="section-label">Planning Actions</div>
-          <div id="action-region" class="info-box"></div>
-        </section>
-
         <section class="temporarily-hidden">
           <div class="section-label">Plan Board</div>
           <div id="plan-board-info" class="info-box">No legs yet.</div>
@@ -1169,7 +1189,6 @@
     const selectedRouteEl = document.getElementById('selected-route');
     const cursorInfoEl = document.getElementById('cursor-info');
     const trainOutlookEl = document.getElementById('train-outlook');
-    const actionRegionEl = document.getElementById('action-region');
     const planBoardInfoEl = document.getElementById('plan-board-info');
     const visibleServicesEl = document.getElementById('visible-services');
     const stationTripsEl = document.getElementById('station-trips');
@@ -3114,25 +3133,82 @@
       const pending = pendingDepartureContext(preview);
       let rows = [];
       let title = 'No train selected';
+      let subtitle = 'Choose a train to preview later stops';
+      let listHtml = '';
       if (pending) {
         title = formatTripLabel(pending.trip);
-        rows = [
-          { time: secToClock(pending.boardStop.departureTimeSec ?? pending.boardStop.arrivalTimeSec), label: `Board ${stationGroupLabel(pending.boardStop.stationGroupId)}` },
-          ...pending.destinations.slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label }))
-        ];
+        subtitle = 'Selected service preview';
+        rows = pending.destinations.slice(0, 18).map((item) => ({
+          time: item.arrivalHhmm,
+          title: item.label,
+          sub: 'Click to add this ride leg',
+          action: 'ride-here',
+          stationGroupId: item.stationGroupId,
+          tripId: pending.trip.id
+        }));
       } else if (preview.currentState.kind === 'TRAIN') {
         title = formatTripLabel(preview.currentTrip || { serviceName: preview.currentState.tripId, serviceNumber: '' });
-        rows = availableDestinations(preview).slice(0, 18).map((item) => ({ time: item.arrivalHhmm, label: item.label }));
+        subtitle = 'Current onboard route';
+        rows = availableDestinations(preview).slice(0, 18).map((item) => ({
+          time: item.arrivalHhmm,
+          title: item.label,
+          sub: 'Click to get off here',
+          action: 'ride-direct',
+          stationGroupId: item.stationGroupId
+        }));
+      } else if (preview.currentState.kind === 'NODE') {
+        const departures = availableDepartures(preview);
+        rows = departures.map((entry) => ({
+          time: entry.departureHhmm,
+          title: formatTripLabel(entry.trip),
+          sub: trainPreviewText(entry.trip, entry.boardStop),
+          action: 'choose-trip',
+          tripId: entry.trip.id
+        }));
+      }
+      if (rows.length) {
+        listHtml = rows.map((row) => `
+          <div class="outlook-row clickable" data-action="${row.action}" ${row.tripId ? `data-trip-id="${row.tripId}"` : ''} ${row.stationGroupId ? `data-station-group-id="${row.stationGroupId}"` : ''}>
+            <div>${row.time}</div>
+            <div><strong>${row.title}</strong><span>${row.sub}</span></div>
+          </div>
+        `).join('');
+      } else if (preview.currentState.kind === 'TRAIN') {
+        listHtml = `<div class="empty">No downstream stops available from the current on-train state.</div>`;
+      } else if (pending) {
+        listHtml = `<div class="empty">No downstream stops available for the selected train.</div>`;
+      } else {
+        listHtml = `<div class="empty">No catchable departures from ${stationGroupLabel(preview.currentState.stationGroupId)} after ${preview.currentTime}.</div>`;
       }
       trainOutlookEl.innerHTML = `
+        <div class="tiny-actions">
+          <button class="tiny-button" data-action="set-start">Set Start To Selected Station</button>
+          <button class="tiny-button" data-action="wait">Wait +5 minutes</button>
+          <button class="tiny-button" data-action="undo">Undo Step</button>
+          <button class="tiny-button" data-action="clear">Clear Plan</button>
+          ${pending ? `<button class="tiny-button" data-action="choose-another">Choose Another Train</button>` : ''}
+        </div>
         <div class="selected-card">
           <h3>${title}</h3>
-          <p>${pending ? 'Selected service preview' : preview.currentState.kind === 'TRAIN' ? 'Current onboard route' : 'Choose a train to preview later stops'}</p>
+          <p>${subtitle}</p>
         </div>
         <div class="outlook-list" style="margin-top:12px;">
-          ${rows.length ? rows.map((row) => `<div class="outlook-row"><div>${row.time}</div><div>${row.label}</div></div>`).join('') : `<div class="empty">Not currently on a train.</div>`}
+          ${listHtml}
         </div>
       `;
+      trainOutlookEl.querySelectorAll('[data-action]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const action = button.dataset.action;
+          if (action === 'set-start') setStartToSelected();
+          else if (action === 'wait') addWaitStep();
+          else if (action === 'undo') undoLastStep();
+          else if (action === 'clear') resetPlan();
+          else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
+          else if (action === 'choose-another') chooseAnotherTrip();
+          else if (action === 'ride-here') addBoardAndRide(button.dataset.tripId, button.dataset.stationGroupId);
+          else if (action === 'ride-direct') addRideToStation(button.dataset.stationGroupId);
+        });
+      });
     }
 
     function renderPlanBoard() {
@@ -3193,85 +3269,6 @@
       }
       const currentLine = `Now: ${formatState(preview)}`;
       cursorInfoEl.textContent = [currentLine, ...items.slice(0, 4)].join('\n');
-    }
-
-    function renderActionRegion() {
-      const preview = planCursorPreview(state.activeMode);
-      const pending = pendingDepartureContext(preview);
-      let html = `
-        <div class="tiny-actions">
-          <button class="tiny-button" data-action="set-start">Set Start To Selected Station</button>
-          <button class="tiny-button" data-action="wait">Wait +5 minutes</button>
-          <button class="tiny-button" data-action="undo">Undo Step</button>
-          <button class="tiny-button" data-action="clear">Clear Plan</button>
-        </div>
-      `;
-
-      if (preview.currentState.kind === 'NODE' && !pending) {
-        const departures = availableDepartures(preview);
-        html += `
-          <div style="margin-top:12px;" class="card-list">
-            ${departures.length ? departures.map((entry) => `
-              <div class="mini-card">
-                <strong>${entry.departureHhmm} · ${formatTripLabel(entry.trip)}</strong>
-                <span>${trainPreviewText(entry.trip, entry.boardStop)}</span>
-                <div class="tiny-actions">
-                  <button class="tiny-button ${state.activeMode}" data-trip-id="${entry.trip.id}" data-action="choose-trip">Choose This Train</button>
-                </div>
-              </div>
-            `).join('') : `<div class="empty">No catchable departures from ${stationGroupLabel(preview.currentState.stationGroupId)} after ${preview.currentTime}.</div>`}
-          </div>
-        `;
-      } else if (pending) {
-        html += `
-          <div style="margin-top:12px;" class="card-list">
-            <div class="mini-card">
-              <strong>${formatTripLabel(pending.trip)}</strong>
-              <span>${secToClock(pending.boardStop.departureTimeSec ?? pending.boardStop.arrivalTimeSec)} · ${stationGroupLabel(pending.boardStop.stationGroupId)}</span>
-              <div class="tiny-actions">
-                <button class="tiny-button" data-action="choose-another">Choose Another Train</button>
-              </div>
-            </div>
-            ${pending.destinations.map((item) => `
-              <div class="mini-card">
-                <strong>${item.arrivalHhmm} · ${item.label}</strong>
-                <div class="tiny-actions">
-                  <button class="tiny-button good" data-trip-id="${pending.trip.id}" data-station-group-id="${item.stationGroupId}" data-action="ride-here">Ride Here</button>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      } else if (preview.currentState.kind === 'TRAIN') {
-        const destinations = availableDestinations(preview);
-        html += `
-          <div style="margin-top:12px;" class="card-list">
-            ${destinations.length ? destinations.map((item) => `
-              <div class="mini-card">
-                <strong>${item.arrivalHhmm} · ${item.label}</strong>
-                <div class="tiny-actions">
-                  <button class="tiny-button good" data-station-group-id="${item.stationGroupId}" data-action="ride-direct">Ride Here</button>
-                </div>
-              </div>
-            `).join('') : `<div class="empty">No downstream stops available from the current on-train state.</div>`}
-          </div>
-        `;
-      }
-
-      actionRegionEl.innerHTML = html;
-      actionRegionEl.querySelectorAll('[data-action]').forEach((button) => {
-        button.addEventListener('click', () => {
-          const action = button.dataset.action;
-          if (action === 'set-start') setStartToSelected();
-          else if (action === 'wait') addWaitStep();
-          else if (action === 'undo') undoLastStep();
-          else if (action === 'clear') resetPlan();
-          else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
-          else if (action === 'choose-another') chooseAnotherTrip();
-          else if (action === 'ride-here') addBoardAndRide(button.dataset.tripId, button.dataset.stationGroupId);
-          else if (action === 'ride-direct') addRideToStation(button.dataset.stationGroupId);
-        });
-      });
     }
 
     function renderSidebar() {
@@ -3337,7 +3334,6 @@
       renderUpcomingPlanSummary(activePreview);
 
       renderTrainOutlook();
-      renderActionRegion();
       renderPlanBoard();
       renderReplayList();
 
