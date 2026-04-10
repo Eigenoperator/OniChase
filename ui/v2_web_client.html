@@ -1804,7 +1804,6 @@
 
     function buildPlayerOverlayMarkup() {
       const overlaySvg = [];
-      if (state.zoom < 5.5) return '';
       for (const playerId of ['runner', 'hunter']) {
         if (!shouldShowPlayer(playerId)) continue;
         const preview = currentMapPreview(playerId);
@@ -1813,19 +1812,19 @@
         const { x, y } = preview.mapPosition;
         const screenX = x * state.zoom + state.panX;
         const screenY = y * state.zoom + state.panY;
-        const boxWidth = 148;
-        const boxHeight = 32;
-        const offsetX = 9;
-        const offsetY = -18;
+        const boxWidth = 170;
+        const boxHeight = 36;
+        const offsetX = 14;
+        const offsetY = -20;
         const currentText = preview.currentState.kind === 'NODE'
           ? stationGroupLabel(preview.currentState.stationGroupId)
           : formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: '' });
         overlaySvg.push(`
           <g class="player-overlay-marker">
-            <circle cx="${screenX}" cy="${screenY}" r="2.1" fill="${color}" stroke="white" stroke-width="0.9" />
-            <rect x="${screenX + offsetX}" y="${screenY + offsetY}" width="${boxWidth}" height="${boxHeight}" rx="7" class="player-overlay-box" stroke="${color}" stroke-width="1.35" />
-            <text x="${screenX + offsetX + 9}" y="${screenY + offsetY + 13}" class="player-overlay-label" fill="${color}">${playerId.toUpperCase()}</text>
-            <text x="${screenX + offsetX + 9}" y="${screenY + offsetY + 25}" class="player-overlay-sub" fill="#203247">${currentText}</text>
+            <circle cx="${screenX}" cy="${screenY}" r="10" fill="${color}" stroke="white" stroke-width="3" />
+            <rect x="${screenX + offsetX}" y="${screenY + offsetY}" width="${boxWidth}" height="${boxHeight}" rx="8" class="player-overlay-box" stroke="${color}" stroke-width="2" />
+            <text x="${screenX + 22}" y="${screenY - 6}" class="player-overlay-label" fill="${color}">${playerId.toUpperCase()}</text>
+            <text x="${screenX + 22}" y="${screenY + 10}" class="player-overlay-sub" fill="#203247">${currentText}</text>
           </g>
         `);
       }
@@ -2546,31 +2545,13 @@
         if (!preview?.mapPosition) continue;
         const color = playerId === 'runner' ? '#dc4d62' : '#2d6cdf';
         const { x, y } = preview.mapPosition;
-        const markerScale = clamp(1 / Math.pow(zoomScale, 1.45), 0.04, 1);
-        const markerRadius = 10;
-        const markerStroke = 3;
-        const markerBoxWidth = 170;
-        const markerBoxHeight = 36;
-        const markerOffsetX = 14;
-        const markerOffsetY = -20;
-        if (zoomScale >= 5.5) {
-          const compactRadius = clamp(4.4 / Math.pow(zoomScale, 1.2), 0.22, 0.95);
-          const compactStroke = clamp(1.1 / Math.pow(zoomScale, 0.7), 0.14, 0.32);
-          playerSvg.push(`
-            <g class="player-marker">
-              <circle cx="${x}" cy="${y}" r="${compactRadius}" fill="${color}" stroke="white" stroke-width="${compactStroke}" />
-            </g>
-          `);
-        } else {
-          playerSvg.push(`
-            <g class="player-marker" transform="translate(${x} ${y}) scale(${markerScale}) translate(${-x} ${-y})">
-              <circle cx="${x}" cy="${y}" r="${markerRadius}" fill="${color}" stroke="white" stroke-width="${markerStroke}" />
-              <rect x="${x + markerOffsetX}" y="${y + markerOffsetY}" width="${markerBoxWidth}" height="${markerBoxHeight}" rx="8" class="marker-box" stroke="${color}" stroke-width="2" />
-              <text x="${x + 22}" y="${y - 6}" class="marker-label" fill="${color}">${playerId.toUpperCase()}</text>
-              <text x="${x + 22}" y="${y + 10}" class="marker-sub" fill="#1f2a37">${preview.currentState.kind === 'NODE' ? stationGroupLabel(preview.currentState.stationGroupId) : formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: '' })}</text>
-            </g>
-          `);
-        }
+        const anchorRadius = clamp(4.4 / Math.pow(zoomScale, 1.2), 0.22, 0.95);
+        const anchorStroke = clamp(1.1 / Math.pow(zoomScale, 0.7), 0.14, 0.32);
+        playerSvg.push(`
+          <g class="player-marker">
+            <circle cx="${x}" cy="${y}" r="${anchorRadius}" fill="${color}" stroke="white" stroke-width="${anchorStroke}" />
+          </g>
+        `);
       }
 
       svg.innerHTML = `
