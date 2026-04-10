@@ -1352,6 +1352,10 @@
 
     function setLobbySeat(seat) {
       state.activeMode = seat;
+      if (!state.online.roomId) {
+        state.startTime = seat === 'hunter' ? '07:00' : '06:00';
+        state.endTime = '18:00';
+      }
       document.getElementById('lobbyRunnerSeatButton').className = seat === 'runner' ? 'active' : '';
       document.getElementById('lobbyHunterSeatButton').className = seat === 'hunter' ? 'active' : '';
       document.getElementById('readyRunnerSeatButton').className = seat === 'runner' ? 'active' : '';
@@ -2606,7 +2610,7 @@
         state.startTime = '07:00';
         state.endTime = '18:00';
         state.players.runner = { start_station_id: 'SG_TOKYO', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: state.endTime }] };
-        state.players.hunter = { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', steps: [] };
+        state.players.hunter = { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'plan', steps: [] };
       } else {
         state.startTime = '06:00';
         state.endTime = '18:00';
