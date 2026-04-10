@@ -83,6 +83,7 @@ class RoomState:
         }
     )
     phase_started_monotonic: float = field(default_factory=time.monotonic)
+    planning_deadline_monotonic: float | None = None
     match_started: bool = False
     live_capture: dict[str, Any] | None = None
 
@@ -278,6 +279,16 @@ def project_presence_for_viewer(room: RoomState, target_seat: str, viewer_seat: 
 
 
 def advance_room(room: RoomState) -> None:
+    if room.phase == "PLANNING" and room.match_started and room.planning_deadline_monotonic is not None:
+        now = time.monotonic()
+        if now >= room.planning_deadline_monotonic:
+            room.phase = "LIVE"
+            room.phase_started_monotonic = now
+            room.planning_deadline_monotonic = None
+            room.live_capture = detect_capture_at_minute(room, room.current_game_minute)
+            if room.live_capture:
+                room.phase = "ENDED"
+        return
     if room.phase != "LIVE":
         return
     now = time.monotonic()
@@ -303,6 +314,7 @@ def advance_room(room: RoomState) -> None:
         if room.current_game_minute >= room.next_planning_minute:
             room.phase = "PLANNING"
             room.reset_ready()
+            room.planning_deadline_monotonic = time.monotonic() + 60
             room.next_planning_minute = min(room.next_planning_minute + 60, end_minute)
             return
 
@@ -374,13 +386,22 @@ class RoomRegistry:
             room = self._rooms[room_id]
             advance_room(room)
             room.players[seat].ready = ready
-            if room.phase == "PLANNING" and all(player.ready for player in room.players.values()):
-                room.phase = "LIVE"
-                room.phase_started_monotonic = time.monotonic()
-                room.match_started = True
-                room.live_capture = detect_capture_at_minute(room, room.current_game_minute)
-                if room.live_capture:
-                    room.phase = "ENDED"
+            if all(player.ready for player in room.players.values()):
+                now = time.monotonic()
+                if not room.match_started:
+                    room.match_started = True
+                    room.phase = "PLANNING"
+                    room.phase_started_monotonic = now
+                    room.planning_deadline_monotonic = now + 60
+                    room.live_capture = None
+                    room.reset_ready()
+                elif room.phase == "PLANNING":
+                    room.phase = "LIVE"
+                    room.phase_started_monotonic = now
+                    room.planning_deadline_monotonic = None
+                    room.live_capture = detect_capture_at_minute(room, room.current_game_minute)
+                    if room.live_capture:
+                        room.phase = "ENDED"
             return room
 
     def try_start(self, room_id: str, seat: str) -> RoomState:
@@ -388,10 +409,10 @@ class RoomRegistry:
             room = self._rooms[room_id]
             advance_room(room)
             room.players[seat].ready = True
-            if room.phase == "PLANNING" and all(player.ready for player in room.players.values()):
+            if room.phase == "PLANNING" and room.match_started and all(player.ready for player in room.players.values()):
                 room.phase = "LIVE"
                 room.phase_started_monotonic = time.monotonic()
-                room.match_started = True
+                room.planning_deadline_monotonic = None
                 room.live_capture = detect_capture_at_minute(room, room.current_game_minute)
                 if room.live_capture:
                     room.phase = "ENDED"
@@ -422,6 +443,11 @@ def room_payload(room: RoomState, viewer_seat: str | None = None) -> dict[str, A
         "next_planning_hhmm": minutes_to_hhmm(room.next_planning_minute),
         "match_started": room.match_started,
         "capture": room.live_capture,
+        "planning_seconds_remaining": (
+            max(0, int(room.planning_deadline_monotonic - time.monotonic()))
+            if room.phase == "PLANNING" and room.match_started and room.planning_deadline_monotonic is not None
+            else None
+        ),
         "players": players_summary,
         "viewer_seat": viewer_seat,
     }

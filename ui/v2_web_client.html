@@ -1464,7 +1464,7 @@
           roomStatusEl.textContent = `Room sync failed: ${String(error)}`;
           lobbyStatusEl.textContent = `Room sync failed: ${String(error)}`;
         });
-      }, 1200);
+      }, 500);
     }
 
     async function apiJson(url, options = {}) {
@@ -1496,22 +1496,29 @@
 
     function presenceToPreview(playerId, presence) {
       if (!presence || presence.kind === 'HIDDEN') return null;
+      const currentTrip = presence.trip_id ? state.bundle.tripInstances.find((item) => item.id === presence.trip_id) || null : null;
       let mapPosition = null;
       let mapStationGroupId = null;
       if (presence.map_position?.kind === 'STATION') {
         mapStationGroupId = presence.map_position.station_group_id;
         mapPosition = stationPointByGroupId(mapStationGroupId);
       } else if (presence.map_position?.kind === 'SEGMENT') {
-        const from = stationPointByGroupId(presence.map_position.from_station_group_id);
-        const to = stationPointByGroupId(presence.map_position.to_station_group_id);
-        if (from && to) {
-          const progress = presence.map_position.progress ?? 0;
-          mapPosition = {
-            x: from.x + (to.x - from.x) * progress,
-            y: from.y + (to.y - from.y) * progress,
-          };
-          mapStationGroupId = presence.map_position.to_station_group_id;
+        const progress = presence.map_position.progress ?? 0;
+        const routeId = currentTrip?.routeId || null;
+        mapPosition = routeId
+          ? routePositionAlongPath(routeId, presence.map_position.from_station_group_id, presence.map_position.to_station_group_id, progress)
+          : null;
+        if (!mapPosition) {
+          const from = stationPointByGroupId(presence.map_position.from_station_group_id);
+          const to = stationPointByGroupId(presence.map_position.to_station_group_id);
+          if (from && to) {
+            mapPosition = {
+              x: from.x + (to.x - from.x) * progress,
+              y: from.y + (to.y - from.y) * progress,
+            };
+          }
         }
+        mapStationGroupId = presence.map_position.to_station_group_id;
       }
       return {
         currentMinute: hhmmToMinutes(presence.time_hhmm),
@@ -1519,7 +1526,7 @@
         currentState: presence.kind === 'NODE'
           ? { kind: 'NODE', stationGroupId: presence.station_group_id }
           : { kind: 'TRAIN', tripId: presence.trip_id || null },
-        currentTrip: presence.trip_id ? state.bundle.tripInstances.find((item) => item.id === presence.trip_id) || null : null,
+        currentTrip,
         currentBoardStop: null,
         resolvedSteps: [],
         mapPosition,
@@ -1540,6 +1547,9 @@
       state.endTime = room.end_time_hhmm;
       state.currentGameMinute = room.current_game_minute;
       state.nextPlanningMinute = room.next_planning_minute;
+      if (room.planning_seconds_remaining !== null && room.planning_seconds_remaining !== undefined) {
+        state.planningSecondsRemaining = room.planning_seconds_remaining;
+      }
       state.clockRunning = false;
       if (state.tickHandle) {
         window.clearTimeout(state.tickHandle);
@@ -2165,10 +2175,17 @@
           const nextStop = stops[i + 1];
           const nextArr = stopArrivalMinutes(nextStop);
           if (dep <= timeMinute && timeMinute <= nextArr) {
+            const ratio = nextArr === dep ? 1 : ((timeMinute - dep) / (nextArr - dep));
+            const curvedPosition = routePositionAlongPath(trip.routeId, stop.stationGroupId, nextStop.stationGroupId, ratio);
+            if (curvedPosition) {
+              return {
+                anchorStationGroupId: nextStop.stationGroupId,
+                position: curvedPosition,
+              };
+            }
             const a = stationPointByGroupId(stop.stationGroupId);
             const b = stationPointByGroupId(nextStop.stationGroupId);
             if (!a || !b) return null;
-            const ratio = nextArr === dep ? 1 : ((timeMinute - dep) / (nextArr - dep));
             return {
               anchorStationGroupId: nextStop.stationGroupId,
               position: { x: a.x + (b.x - a.x) * ratio, y: a.y + (b.y - a.y) * ratio },
@@ -2210,6 +2227,77 @@
       if (!group?.centroid) return null;
       const point = state.projection.project(group.centroid.lat, group.centroid.lon);
       return { stationGroupId, x: point.x, y: point.y, lat: group.centroid.lat, lon: group.centroid.lon };
+    }
+
+    function serviceGeometryForRoute(routeId) {
+      if (!state.bundle || !routeId) return null;
+      const candidates = state.bundle.serviceGeometry
+        .filter((item) => item.routeId === routeId)
+        .sort((a, b) => {
+          if (a.representation === 'service_path' && b.representation !== 'service_path') return -1;
+          if (b.representation === 'service_path' && a.representation !== 'service_path') return 1;
+          return (b.maxZoom || 0) - (a.maxZoom || 0);
+        });
+      return candidates[0] || null;
+    }
+
+    function nearestPolylineIndex(polyline, stationGroupId) {
+      const station = stationGroupById(stationGroupId);
+      if (!station?.centroid || !polyline?.length) return -1;
+      let bestIndex = 0;
+      let bestDistance = Number.POSITIVE_INFINITY;
+      polyline.forEach((point, index) => {
+        const dx = point.lon - station.centroid.lon;
+        const dy = point.lat - station.centroid.lat;
+        const distance = dx * dx + dy * dy;
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestIndex = index;
+        }
+      });
+      return bestIndex;
+    }
+
+    function interpolateProjectedPolyline(points, progress) {
+      if (!points.length) return null;
+      if (points.length === 1) return points[0];
+      const clampedProgress = clamp(progress, 0, 1);
+      let total = 0;
+      const lengths = [];
+      for (let i = 1; i < points.length; i += 1) {
+        const seg = Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+        lengths.push(seg);
+        total += seg;
+      }
+      if (total <= 0) return points[points.length - 1];
+      let remaining = total * clampedProgress;
+      for (let i = 1; i < points.length; i += 1) {
+        const seg = lengths[i - 1];
+        if (remaining <= seg) {
+          const ratio = seg <= 0 ? 1 : remaining / seg;
+          return {
+            x: points[i - 1].x + (points[i].x - points[i - 1].x) * ratio,
+            y: points[i - 1].y + (points[i].y - points[i - 1].y) * ratio,
+          };
+        }
+        remaining -= seg;
+      }
+      return points[points.length - 1];
+    }
+
+    function routePositionAlongPath(routeId, fromStationGroupId, toStationGroupId, progress) {
+      const geometry = serviceGeometryForRoute(routeId);
+      if (!geometry?.polyline?.length || !state.projection) return null;
+      const fromIndex = nearestPolylineIndex(geometry.polyline, fromStationGroupId);
+      const toIndex = nearestPolylineIndex(geometry.polyline, toStationGroupId);
+      if (fromIndex < 0 || toIndex < 0) return null;
+      const start = Math.min(fromIndex, toIndex);
+      const end = Math.max(fromIndex, toIndex);
+      let slice = geometry.polyline.slice(start, end + 1);
+      if (!slice.length) return null;
+      if (fromIndex > toIndex) slice = slice.reverse();
+      const projected = slice.map((point) => state.projection.project(point.lat, point.lon));
+      return interpolateProjectedPolyline(projected, progress);
     }
 
     function hoveredTripPathPoints() {
@@ -2581,7 +2669,14 @@
 
     function startGameNow() {
       if (onlineActive()) {
-        roomStatusEl.textContent = 'Online rooms start automatically once both players are ready.';
+        apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/start`, {
+          method: 'POST',
+          body: JSON.stringify({ seat: state.online.seat, token: state.online.token }),
+        }).then((data) => {
+          syncStateFromRoom(data.room);
+        }).catch((error) => {
+          roomStatusEl.textContent = `Start failed: ${describeRoomError(error)}`;
+        });
         return;
       }
       if (state.phase !== 'PLANNING') return;
@@ -3131,7 +3226,7 @@
             ? (() => {
                 const room = state.online.lastRoom;
                 const opponentText = room?.opponent ? `${room.opponent.seat.toUpperCase()} ${room.opponent.ready ? 'ready' : 'not ready'}` : 'Waiting for opponent';
-                return `Room ${state.online.roomId || 'local'} · ${opponentText} · Next Planning ${minutesToHhmm(state.nextPlanningMinute)}`;
+                return `Planning lock ${String(state.planningSecondsRemaining).padStart(2, '0')}s · ${opponentText}`;
               })()
             : `Planning lock ${String(state.planningSecondsRemaining).padStart(2, '0')}s · Match ${state.startTime} → ${state.endTime}`)
         : state.phase === 'LIVE'
@@ -3145,7 +3240,7 @@
           : `Match closed at ${currentTime} · Window ${state.startTime} → ${state.endTime}`;
       document.getElementById('runnerModeButton').className = state.activeMode === 'runner' ? 'active runner' : '';
       document.getElementById('hunterModeButton').className = state.activeMode === 'hunter' ? 'active hunter' : '';
-      document.getElementById('startGameButton').disabled = onlineActive();
+      document.getElementById('startGameButton').disabled = state.phase !== 'PLANNING';
       document.getElementById('pauseGameButton').disabled = onlineActive();
       document.getElementById('runSimulationButton').disabled = onlineActive();
 
