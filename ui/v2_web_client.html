@@ -1004,7 +1004,7 @@
           <div class="overview-grid" id="overview-grid"></div>
         </section>
 
-        <section>
+        <section class="temporarily-hidden">
           <div class="section-label">Room</div>
           <div id="roomInfoCodePill" class="room-code-pill in-panel empty">Local Session</div>
           <div id="roomInfo" class="info-box">Single-player local mode.</div>
@@ -1017,11 +1017,11 @@
         </section>
 
         <section>
-          <div class="section-label">Plan Cursor</div>
+          <div class="section-label">Next Plan</div>
           <div id="cursor-info" class="info-box"></div>
         </section>
 
-        <section>
+        <section class="temporarily-hidden">
           <div class="section-label">Selected Station</div>
           <div id="selected-station" class="empty">Click a station to inspect its station group, connected lines, and service footprint.</div>
         </section>
@@ -1041,7 +1041,7 @@
           <div id="action-region" class="info-box"></div>
         </section>
 
-        <section>
+        <section class="temporarily-hidden">
           <div class="section-label">Plan Board</div>
           <div id="plan-board-info" class="info-box">No legs yet.</div>
         </section>
@@ -3128,6 +3128,37 @@
       planBoardInfoEl.textContent = lines.join('\n\n');
     }
 
+    function renderUpcomingPlanSummary(preview) {
+      const steps = state.players[state.activeMode].steps;
+      if (!steps.length) {
+        cursorInfoEl.textContent = 'No plan yet.\nChoose a train, then choose where to get off.';
+        return;
+      }
+      const items = [];
+      let chainStation = state.players[state.activeMode].start_station_id;
+      let pendingTrip = null;
+      for (const step of steps) {
+        if (step.type === 'WAIT_UNTIL') {
+          items.push(`Wait until ${step.until_hhmm}`);
+          continue;
+        }
+        if (step.type === 'BOARD_TRAIN') {
+          pendingTrip = state.bundle.tripInstances.find((item) => item.id === step.trip_id) || null;
+          continue;
+        }
+        if (step.type === 'RIDE_TO_STATION') {
+          const fromLabel = stationGroupLabel(chainStation);
+          const toLabel = stationGroupLabel(step.station_id);
+          const tripLabel = formatTripLabel(pendingTrip || { serviceName: 'Trip', serviceNumber: '' });
+          items.push(`${tripLabel}: ${fromLabel} -> ${toLabel}`);
+          chainStation = step.station_id;
+          pendingTrip = null;
+        }
+      }
+      const currentLine = `Now: ${formatState(preview)}`;
+      cursorInfoEl.textContent = [currentLine, ...items.slice(0, 4)].join('\n');
+    }
+
     function renderActionRegion() {
       const preview = planCursorPreview(state.activeMode);
       const pending = pendingDepartureContext(preview);
@@ -3267,12 +3298,7 @@
         </div>
       `).join('');
 
-      cursorInfoEl.textContent = [
-        `Mode: ${state.activeMode.toUpperCase()}`,
-        `Current: ${formatState(activePreview)}`,
-        `Match window: ${state.startTime} -> ${state.endTime}`,
-        `Planned steps: ${state.players[state.activeMode].steps.length}`,
-      ].join('\n');
+      renderUpcomingPlanSummary(activePreview);
 
       renderTrainOutlook();
       renderActionRegion();
