@@ -1588,7 +1588,6 @@
       roomInfoEl.textContent = roomSummary.detailed;
       lobbyStatusEl.textContent = `Connected to room ${room.room_id} as ${state.online.seat?.toUpperCase() || 'seat'}. ${room.opponent ? 'Opponent present.' : 'Waiting for opponent.'}`;
       renderReadyRoom(room);
-      if (!state.selectedStationGroupId && room.self?.start_station_id) state.selectedStationGroupId = room.self.start_station_id;
       if (room.match_started || room.phase === 'LIVE' || room.phase === 'ENDED') {
         openApp();
         render();
@@ -2136,7 +2135,7 @@
     function currentMapPreview(playerId) {
       if (onlineActive() && state.online.presences[playerId]) {
         const preview = presenceToPreview(playerId, state.online.presences[playerId]);
-        if (preview) return preview;
+        if (preview && (preview.mapPosition || preview.currentState.kind === 'NODE')) return preview;
       }
       const event = currentReplayEvent();
       if (event?.state_after?.[playerId]) return replayPreviewFromState(playerId, event.state_after[playerId], event);
@@ -2593,7 +2592,7 @@
     function setActiveMode(mode) {
       if (onlineActive() && state.online.seat && mode !== state.online.seat) return;
       state.activeMode = mode;
-      state.selectedStationGroupId = state.players[mode].start_station_id;
+      state.selectedStationGroupId = null;
       state.hoveredTripId = null;
       render();
     }
@@ -2617,7 +2616,7 @@
         state.players.runner = { start_station_id: 'SG_TOKYO', input_mode: 'plan', steps: [] };
         state.players.hunter = { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: state.endTime }] };
       }
-      state.selectedStationGroupId = state.players[state.activeMode].start_station_id;
+      state.selectedStationGroupId = null;
       state.phase = 'PLANNING';
       state.planningSecondsRemaining = 60;
       state.currentGameMinute = hhmmToMinutes(state.startTime);
@@ -3504,7 +3503,7 @@
       state.online.serverUrl = configuredServerUrl();
       roomIdInput.value = '';
       setLobbySeat(state.activeMode);
-      state.selectedStationGroupId = state.players.runner.start_station_id;
+      state.selectedStationGroupId = null;
       state.currentGameMinute = hhmmToMinutes(state.startTime);
       state.projection = makeProjection(bundle);
       SERVICE_COLORS.clear?.();
