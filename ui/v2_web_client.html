@@ -822,6 +822,49 @@
       color: #556476;
     }
 
+    .plan-summary-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .plan-summary-row {
+      padding: 8px 10px;
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      border-radius: 10px;
+      background: #ffffff;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .plan-summary-row.current {
+      border-color: rgba(21, 101, 192, 0.42);
+      background: rgba(21, 101, 192, 0.06);
+    }
+
+    .plan-summary-row.clickable {
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease;
+    }
+
+    .plan-summary-row.clickable:hover {
+      background: rgba(21, 101, 192, 0.1);
+      border-color: rgba(21, 101, 192, 0.5);
+    }
+
+    .plan-summary-title {
+      display: block;
+      font-weight: 700;
+      color: #203247;
+    }
+
+    .plan-summary-sub {
+      display: block;
+      margin-top: 2px;
+      color: #556476;
+      font-size: 11px;
+    }
+
     .outlook-row:last-child {
       border-bottom: 0;
       padding-bottom: 0;
@@ -2661,10 +2704,7 @@
     }
 
     function resetPlan() {
-      state.players[state.activeMode].steps = [];
-      clearPendingTrip();
-      invalidateSimulation();
-      render();
+      truncateFuturePlan({ preserveCurrentRide: true });
     }
 
     function applyTestPreset() {
@@ -2775,6 +2815,40 @@
       render();
     }
 
+    function currentEditableRideIndex(preview, playerId = state.activeMode) {
+      if (!preview || preview.currentState.kind !== 'TRAIN') return -1;
+      const steps = state.players[playerId].steps;
+      const candidateIndex = preview.resolvedSteps.length;
+      return steps[candidateIndex]?.type === 'RIDE_TO_STATION' ? candidateIndex : -1;
+    }
+
+    function truncateFuturePlan({ preserveCurrentRide = false } = {}) {
+      const preview = planCursorPreview(state.activeMode);
+      const steps = state.players[state.activeMode].steps;
+      const keep = steps.slice(0, preview.resolvedSteps.length);
+      const editableRideIndex = currentEditableRideIndex(preview);
+      if (preserveCurrentRide && editableRideIndex >= 0) {
+        keep.push(steps[editableRideIndex]);
+      }
+      state.players[state.activeMode].steps = keep;
+      clearPendingTrip();
+      invalidateSimulation();
+      render();
+      submitCurrentPlanToRoom().catch(() => {});
+      return preview;
+    }
+
+    function beginEditCurrentRide() {
+      const preview = planCursorPreview(state.activeMode);
+      const editableRideIndex = currentEditableRideIndex(preview);
+      if (editableRideIndex < 0) return;
+      state.players[state.activeMode].steps = state.players[state.activeMode].steps.slice(0, editableRideIndex);
+      clearPendingTrip();
+      invalidateSimulation();
+      render();
+      submitCurrentPlanToRoom().catch(() => {});
+    }
+
     function setStartToSelected() {
       if (!state.selectedStationGroupId) return;
       state.players[state.activeMode].start_station_id = state.selectedStationGroupId;
@@ -2786,7 +2860,7 @@
     }
 
     function addWaitStep() {
-      const preview = planCursorPreview(state.activeMode);
+      const preview = truncateFuturePlan();
       if (preview.currentState.kind !== 'NODE') return;
       const targetMinute = Math.min(preview.currentMinute + 5, hhmmToMinutes(state.endTime));
       state.players[state.activeMode].steps.push({ type: 'WAIT_UNTIL', until_hhmm: minutesToHhmm(targetMinute) });
@@ -2807,7 +2881,7 @@
     }
 
     function addBoardAndRide(tripId, stationGroupId) {
-      const preview = planCursorPreview(state.activeMode);
+      const preview = truncateFuturePlan();
       if (preview.currentState.kind !== 'NODE') return;
       state.players[state.activeMode].steps.push({ type: 'BOARD_TRAIN', trip_id: tripId });
       state.players[state.activeMode].steps.push({ type: 'RIDE_TO_STATION', station_id: stationGroupId });
@@ -2820,6 +2894,12 @@
     function addRideToStation(stationGroupId) {
       const preview = planCursorPreview(state.activeMode);
       if (preview.currentState.kind !== 'TRAIN') return;
+      const editableRideIndex = currentEditableRideIndex(preview);
+      if (editableRideIndex >= 0) {
+        state.players[state.activeMode].steps = state.players[state.activeMode].steps.slice(0, editableRideIndex);
+      } else {
+        state.players[state.activeMode].steps = state.players[state.activeMode].steps.slice(0, preview.resolvedSteps.length);
+      }
       state.players[state.activeMode].steps.push({ type: 'RIDE_TO_STATION', station_id: stationGroupId });
       clearPendingTrip();
       invalidateSimulation();
@@ -3256,9 +3336,14 @@
       const items = [];
       let chainStation = state.players[state.activeMode].start_station_id;
       let pendingTrip = null;
+      const editableRideIndex = currentEditableRideIndex(preview);
       for (const step of steps) {
         if (step.type === 'WAIT_UNTIL') {
-          items.push(`Wait until ${step.until_hhmm}`);
+          items.push({
+            title: `Wait until ${step.until_hhmm}`,
+            sub: 'Hold at station',
+            editable: false,
+          });
           continue;
         }
         if (step.type === 'BOARD_TRAIN') {
@@ -3269,13 +3354,34 @@
           const fromLabel = stationGroupLabel(chainStation);
           const toLabel = stationGroupLabel(step.station_id);
           const tripLabel = formatTripLabel(pendingTrip || { serviceName: 'Trip', serviceNumber: '' });
-          items.push(`${tripLabel}: ${fromLabel} -> ${toLabel}`);
+          const stepIndex = steps.indexOf(step);
+          const isCurrentRide = stepIndex === editableRideIndex;
+          items.push({
+            title: `${tripLabel}: ${fromLabel} -> ${toLabel}`,
+            sub: isCurrentRide ? 'Click to change this drop-off station' : 'Planned travel leg',
+            editable: isCurrentRide,
+          });
           chainStation = step.station_id;
           pendingTrip = null;
         }
       }
-      const currentLine = `Now: ${formatState(preview)}`;
-      cursorInfoEl.textContent = [currentLine, ...items].join('\n');
+      cursorInfoEl.innerHTML = `
+        <div class="plan-summary-row current">
+          <span class="plan-summary-title">Now: ${formatState(preview)}</span>
+          <span class="plan-summary-sub">${preview.currentState.kind === 'TRAIN' ? 'You are currently on board. Future edits should keep this running leg.' : 'Future edits start from this state.'}</span>
+        </div>
+        <div class="plan-summary-list">
+          ${items.map((item) => `
+            <div class="plan-summary-row ${item.editable ? 'clickable current' : ''}" ${item.editable ? 'data-action="edit-current-ride"' : ''}>
+              <span class="plan-summary-title">${item.title}</span>
+              <span class="plan-summary-sub">${item.sub}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      cursorInfoEl.querySelectorAll('[data-action="edit-current-ride"]').forEach((node) => {
+        node.addEventListener('click', () => beginEditCurrentRide());
+      });
     }
 
     function renderSidebar() {
