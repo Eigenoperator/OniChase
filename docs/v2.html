@@ -1953,8 +1953,7 @@
       if (state.zoom < 1.35) return 3;
       if (state.zoom < 2.1) return 4;
       if (state.zoom < 3.8) return 5;
-      if (state.zoom < 7.5) return 6;
-      return 7;
+      return 6;
     }
 
     function visibleGeoBounds() {
@@ -2005,9 +2004,22 @@
       return tiles;
     }
 
+    function tileExists(layer, tile) {
+      const layerMeta = state.tileManifest?.layers?.[layer];
+      const zoomMeta = layerMeta?.zooms?.[String(tile.z)];
+      if (!zoomMeta) return false;
+      const availableTiles = zoomMeta.tiles || [];
+      return availableTiles.includes(`${tile.x}/${tile.y}`);
+    }
+
     async function fetchTileLayer(layer, tile) {
       const key = `${layer}:${tile.z}/${tile.x}/${tile.y}`;
       if (state.tileCache.has(key)) return state.tileCache.get(key);
+      if (!tileExists(layer, tile)) {
+        const empty = Promise.resolve({ features: [] });
+        state.tileCache.set(key, empty);
+        return empty;
+      }
       const url = `${TILE_BASE_URL}${layer}/${tile.z}/${tile.x}/${tile.y}.geojson`;
       const promise = fetch(url)
         .then((response) => {

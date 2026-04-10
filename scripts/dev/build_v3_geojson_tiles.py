@@ -70,6 +70,7 @@ def main() -> None:
         for z in range(args.min_zoom, args.max_zoom + 1):
             cols = rows = 2 ** z
             count = 0
+            existing_tiles: list[str] = []
             for x in range(cols):
                 for y in range(rows):
                     bounds = tile_bounds(z, x, y)
@@ -81,7 +82,11 @@ def main() -> None:
                     tile_path = tile_dir / f"{y}.geojson"
                     tile_path.write_text(json.dumps({"type": "FeatureCollection", "features": included}, ensure_ascii=False), encoding="utf-8")
                     count += 1
-            manifest["layers"][layer_name]["zooms"][str(z)] = {"tileCount": count}
+                    existing_tiles.append(f"{x}/{y}")
+            manifest["layers"][layer_name]["zooms"][str(z)] = {
+                "tileCount": count,
+                "tiles": existing_tiles,
+            }
 
     (args.output_dir / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Wrote tile-ready GeoJSON pyramid to {args.output_dir}")
