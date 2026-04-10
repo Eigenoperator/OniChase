@@ -2094,9 +2094,15 @@
       return rows.slice(0, 36);
     }
 
-    function availableDepartures(preview) {
+    function effectiveDepartureMinute(playerId, previewMinute) {
+      const minute = Number.isFinite(previewMinute) ? previewMinute : hhmmToMinutes(state.startTime);
+      if (playerId === 'hunter') return Math.max(minute, 420);
+      return minute;
+    }
+
+    function availableDepartures(preview, playerId = state.activeMode) {
       if (preview.currentState.kind !== 'NODE') return [];
-      return departuresForStationGroup(preview.currentState.stationGroupId, preview.currentMinute).map((row) => ({
+      return departuresForStationGroup(preview.currentState.stationGroupId, effectiveDepartureMinute(playerId, preview.currentMinute)).map((row) => ({
         trip: row.trip,
         boardStop: row.stop,
         departureMinute: row.departureMinute,
@@ -2122,7 +2128,7 @@
     function pendingDepartureContext(preview, playerId = state.activeMode) {
       const tripId = pendingTripId(playerId);
       if (!tripId || preview.currentState.kind !== 'NODE') return null;
-      const departures = departuresForStationGroup(preview.currentState.stationGroupId, preview.currentMinute);
+      const departures = departuresForStationGroup(preview.currentState.stationGroupId, effectiveDepartureMinute(playerId, preview.currentMinute));
       const match = departures.find((row) => row.trip.id === tripId);
       if (!match) return null;
       return {
