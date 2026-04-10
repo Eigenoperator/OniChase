@@ -806,8 +806,26 @@
       pointer-events: none;
     }
 
+    .player-overlay-marker {
+      pointer-events: none;
+    }
+
     .marker-box {
       fill: #fffaf3;
+    }
+
+    .player-overlay-box {
+      fill: rgba(255, 250, 243, 0.96);
+    }
+
+    .player-overlay-label {
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .player-overlay-sub {
+      font-size: 11px;
+      font-weight: 700;
     }
 
     .marker-label {
@@ -1784,10 +1802,46 @@
       return labelSvg.join('');
     }
 
+    function buildPlayerOverlayMarkup() {
+      const overlaySvg = [];
+      if (state.zoom < 5.5) return '';
+      for (const playerId of ['runner', 'hunter']) {
+        if (!shouldShowPlayer(playerId)) continue;
+        const preview = currentMapPreview(playerId);
+        if (!preview?.mapPosition) continue;
+        const color = playerId === 'runner' ? '#dc4d62' : '#2d6cdf';
+        const { x, y } = preview.mapPosition;
+        const screenX = x * state.zoom + state.panX;
+        const screenY = y * state.zoom + state.panY;
+        const boxWidth = 148;
+        const boxHeight = 32;
+        const offsetX = 9;
+        const offsetY = -18;
+        const currentText = preview.currentState.kind === 'NODE'
+          ? stationGroupLabel(preview.currentState.stationGroupId)
+          : formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: '' });
+        overlaySvg.push(`
+          <g class="player-overlay-marker">
+            <circle cx="${screenX}" cy="${screenY}" r="2.1" fill="${color}" stroke="white" stroke-width="0.9" />
+            <rect x="${screenX + offsetX}" y="${screenY + offsetY}" width="${boxWidth}" height="${boxHeight}" rx="7" class="player-overlay-box" stroke="${color}" stroke-width="1.35" />
+            <text x="${screenX + offsetX + 9}" y="${screenY + offsetY + 13}" class="player-overlay-label" fill="${color}">${playerId.toUpperCase()}</text>
+            <text x="${screenX + offsetX + 9}" y="${screenY + offsetY + 25}" class="player-overlay-sub" fill="#203247">${currentText}</text>
+          </g>
+        `);
+      }
+      return overlaySvg.join('');
+    }
+
     function updateLabelLayer() {
       const labelLayer = document.getElementById('label-layer');
       if (!labelLayer || !state.projection || !state.bundle) return;
       labelLayer.innerHTML = buildLabelMarkup();
+    }
+
+    function updatePlayerOverlayLayer() {
+      const playerOverlayLayer = document.getElementById('player-overlay-layer');
+      if (!playerOverlayLayer || !state.projection || !state.bundle) return;
+      playerOverlayLayer.innerHTML = buildPlayerOverlayMarkup();
     }
 
     function makeProjection(bundle) {
@@ -2500,8 +2554,8 @@
         const markerOffsetX = 14;
         const markerOffsetY = -20;
         if (zoomScale >= 5.5) {
-          const compactRadius = clamp(4.4 / Math.pow(zoomScale, 1.2), 0.12, 0.95);
-          const compactStroke = clamp(1.1 / Math.pow(zoomScale, 0.7), 0.08, 0.28);
+          const compactRadius = clamp(4.4 / Math.pow(zoomScale, 1.2), 0.22, 0.95);
+          const compactStroke = clamp(1.1 / Math.pow(zoomScale, 0.7), 0.14, 0.32);
           playerSvg.push(`
             <g class="player-marker">
               <circle cx="${x}" cy="${y}" r="${compactRadius}" fill="${color}" stroke="white" stroke-width="${compactStroke}" />
@@ -2529,6 +2583,7 @@
           <g id="player-layer">${playerSvg.join('')}</g>
         </g>
         <g id="label-layer">${labelSvg.join('')}</g>
+        <g id="player-overlay-layer">${buildPlayerOverlayMarkup()}</g>
       `;
 
       svg.querySelectorAll('[data-station-group-id]').forEach((node) => {
@@ -2568,6 +2623,7 @@
       if (!viewport || !state.projection) return;
       viewport.setAttribute('transform', `translate(${state.panX.toFixed(2)} ${state.panY.toFixed(2)}) scale(${state.zoom.toFixed(4)})`);
       updateLabelLayer();
+      updatePlayerOverlayLayer();
       refreshVisibleTiles();
     }
 
