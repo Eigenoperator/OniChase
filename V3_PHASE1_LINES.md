@@ -58,42 +58,26 @@ Reason:
 
 ## Private Rail
 
-### Tokyu
+Under the current project rule, private rail scope should be decided at the company level:
 
-- `Tokyu` - Toyoko Line
-- `Tokyu` - Den-en-toshi Line
+- if we include a private-rail company, we should intend to include that operator's whole rail network
+- phase 1 should therefore be very selective about which private-rail companies enter at all
 
-### Odakyu
+### Private-Rail Companies Proposed For Phase 1
 
-- `Odakyu` - Odawara Line
-
-### Keio
-
-- `Keio` - Keio Line
-- `Keio` - Keio New Line
-
-### Keikyu
-
-- `Keikyu` - Main Line
-
-### Tobu
-
-- `Tobu` - Tojo Line
-- `Tobu` - Isesaki Line (Tokyo Skytree / Asakusa side trunk)
-
-### Seibu
-
-- `Seibu` - Ikebukuro Line
-- `Seibu` - Shinjuku Line
-
-### Keisei
-
-- `Keisei` - Main Line
+- `Tokyu` - whole Tokyu rail network
+- `Odakyu` - whole Odakyu rail network
+- `Keio` - whole Keio rail network
+- `Keikyu` - whole Keikyu rail network
+- `Tobu` - whole Tobu rail network
+- `Seibu` - whole Seibu rail network
+- `Keisei` - whole Keisei rail network
 
 Reason:
 
-- these are the first private-rail trunks that materially affect the Tokyo core and major transfer strategy
-- phase 1 should show that OniChase can move beyond JR-only logic without immediately requiring every suburban branch in Kanto
+- these operators are the first private-rail companies that materially affect the Tokyo core and major transfer strategy
+- because scope should not cherry-pick only one or two lines from a private-rail company, the real phase-1 decision is whether to include the company at all
+- this makes operator/data-source planning cleaner than pretending that a company is “partly in”
 
 ## Explicitly Deferred From Phase 1
 
@@ -107,10 +91,8 @@ Reason:
 
 ### Other Private Railways
 
-- Keisei branch families beyond the main trunk
-- Tobu branch families beyond the main trunks
-- Seibu branch families beyond the main trunks
-- other suburban operators not yet central to the first Tokyo-core pilot
+- private-rail companies not yet selected for phase 1
+- any selected private-rail company branch families that remain technically pending should still be treated as part of intended scope, not as a different scope decision
 
 ### Other JR Lines
 
