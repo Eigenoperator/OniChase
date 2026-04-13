@@ -100,6 +100,10 @@ We need four source types in parallel:
 
 ### Source A: MLIT N02 Rail Geometry
 
+Current chosen release for Shinkansen real-geometry extraction:
+
+- `N02-24`
+
 Use as the first nationwide geometry baseline for:
 
 - line centerlines

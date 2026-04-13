@@ -137,6 +137,13 @@ def route_polyline(route_id: str, station_map: dict[str, dict[str, Any]], route_
     return station_polyline_from_ids(station_map, route_map[route_id]["station_ids"])
 
 
+def route_station_ids(route_id: str, route_map: dict[str, dict[str, Any]], geometry_routes: dict[str, dict[str, Any]]) -> list[str]:
+    geometry = geometry_routes.get(route_id)
+    if geometry and geometry.get("station_ids"):
+        return geometry["station_ids"]
+    return route_map[route_id]["station_ids"]
+
+
 def combined_route_polyline(
     route_ids: list[str],
     station_map: dict[str, dict[str, Any]],
@@ -219,6 +226,7 @@ def build_bundle(stations: list[dict[str, Any]], routes: list[dict[str, Any]], t
     track_centerlines = []
     for route in routes:
         polyline = route_polyline(route["id"], station_map, route_map, geometry_routes)
+        station_ids = route_station_ids(route["id"], route_map, geometry_routes)
         track_centerlines.append(
             {
                 "id": f"TRACK_{route['id']}",
@@ -226,7 +234,7 @@ def build_bundle(stations: list[dict[str, Any]], routes: list[dict[str, Any]], t
                 "lineName": route["name"],
                 "mode": "shinkansen",
                 "polyline": polyline,
-                "stationGroupIds": [station_group_id(sid) for sid in route["station_ids"]],
+                "stationGroupIds": [station_group_id(sid) for sid in station_ids],
                 "tags": ["track_centerline"],
             }
         )

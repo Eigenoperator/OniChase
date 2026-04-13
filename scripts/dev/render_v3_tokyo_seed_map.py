@@ -7,140 +7,139 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-STATIONS_PATH = ROOT / "data" / "shinkansen_v2_stations.json"
-ROUTES_PATH = ROOT / "data" / "shinkansen_v2_routes.json"
+BUNDLE_PATH = ROOT / "data" / "v3_shinkansen_bundle.json"
 OUTPUT_DATA_PATH = ROOT / "data" / "v3_tokyo_phase1_seed.json"
 OUTPUT_SVG_PATH = ROOT / "visuals" / "v3_tokyo_phase1_seed_map.svg"
 
-INCLUDED_STATIONS = [
-    "TOKYO",
-    "UENO",
-    "OMIYA",
-    "SHINAGAWA",
-    "SHIN_YOKOHAMA",
-]
+TOKYO_BOUNDS = {
+    "min_lon": 139.55,
+    "max_lon": 139.92,
+    "min_lat": 35.47,
+    "max_lat": 35.90,
+}
 
-INCLUDED_ROUTES = [
-    "TOHOKU",
-    "HOKKAIDO",
-    "YAMAGATA",
-    "AKITA",
-    "JOETSU",
-    "HOKURIKU",
-    "TOKAIDO",
-]
-
-ROUTE_LABELS = {
-    "TOHOKU": "Tohoku / Hokkaido",
-    "HOKKAIDO": "Tohoku / Hokkaido",
-    "YAMAGATA": "Yamagata",
-    "AKITA": "Akita",
-    "JOETSU": "Joetsu",
-    "HOKURIKU": "Hokuriku",
-    "TOKAIDO": "Tokaido",
+ROUTE_COLORS = {
+    "Tokaido": "#1f78ff",
+    "Sanyo": "#1263d6",
+    "Kyushu": "#de4b39",
+    "Nishi-Kyushu": "#7c4dff",
+    "Tohoku": "#2d9c5b",
+    "Hokkaido": "#2d9c5b",
+    "Joetsu": "#e65045",
+    "Hokuriku": "#2c62c9",
+    "Yamagata": "#f09b20",
+    "Akita": "#d54a96",
 }
 
 
-def load_json(path: Path) -> list[dict]:
+def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def project(lon: float, lat: float, bounds: tuple[float, float, float, float], width: int, height: int, pad: int) -> tuple[float, float]:
-    min_lon, min_lat, max_lon, max_lat = bounds
+def project(lon: float, lat: float, bounds: dict[str, float], width: int, height: int, pad: int) -> tuple[float, float]:
     usable_w = width - pad * 2
     usable_h = height - pad * 2
-    x = pad + ((lon - min_lon) / (max_lon - min_lon)) * usable_w
-    # keep north upward
-    y = pad + ((max_lat - lat) / (max_lat - min_lat)) * usable_h
+    x = pad + ((lon - bounds["min_lon"]) / (bounds["max_lon"] - bounds["min_lon"])) * usable_w
+    y = pad + ((bounds["max_lat"] - lat) / (bounds["max_lat"] - bounds["min_lat"])) * usable_h
     return x, y
 
 
+def in_bounds(lat: float, lon: float) -> bool:
+    return TOKYO_BOUNDS["min_lon"] <= lon <= TOKYO_BOUNDS["max_lon"] and TOKYO_BOUNDS["min_lat"] <= lat <= TOKYO_BOUNDS["max_lat"]
+
+
 def render() -> None:
-    stations = {entry["id"]: entry for entry in load_json(STATIONS_PATH)}
-    routes = {entry["id"]: entry for entry in load_json(ROUTES_PATH)}
+    bundle = load_json(BUNDLE_PATH)
+    station_groups = {entry["id"]: entry for entry in bundle["stationGroups"]}
 
-    selected_stations = [stations[station_id] for station_id in INCLUDED_STATIONS]
+    selected_stations = {
+        station["id"]: station
+        for station in bundle["stationGroups"]
+        if in_bounds(station["centroid"]["lat"], station["centroid"]["lon"])
+    }
 
-    min_lon = min(station["lon"] for station in selected_stations) - 0.06
-    max_lon = max(station["lon"] for station in selected_stations) + 0.06
-    min_lat = min(station["lat"] for station in selected_stations) - 0.05
-    max_lat = max(station["lat"] for station in selected_stations) + 0.05
-    bounds = (min_lon, min_lat, max_lon, max_lat)
-
-    width = 1400
-    height = 900
+    width = 1500
+    height = 980
     pad = 72
 
     projected = {
-        station["id"]: project(station["lon"], station["lat"], bounds, width, height, pad)
-        for station in selected_stations
+        station_id: project(station["centroid"]["lon"], station["centroid"]["lat"], TOKYO_BOUNDS, width, height, pad)
+        for station_id, station in selected_stations.items()
     }
 
+    route_entries = []
+    for track in bundle["trackCenterlines"]:
+        polyline = [
+            project(point["lon"], point["lat"], TOKYO_BOUNDS, width, height, pad)
+            for point in track["polyline"]
+            if in_bounds(point["lat"], point["lon"])
+        ]
+        if len(polyline) < 2:
+            continue
+        route_entries.append(
+            {
+                "id": track["id"],
+                "lineName": track["lineName"],
+                "color": ROUTE_COLORS.get(track["lineName"], "#526173"),
+                "polyline": polyline,
+            }
+        )
+
     seed_bundle = {
-        "id": "v3_tokyo_phase1_seed_v0_1",
-        "scope": "tokyo_shinkansen_core_seed",
-        "note": "First v3 Tokyo seed map using real station positions from the proven v2 Shinkansen dataset.",
+        "id": "v3_tokyo_phase1_seed_v0_2",
+        "scope": "tokyo_shinkansen_core_from_bundle",
+        "note": "Current Tokyo map rendered from the v3 Shinkansen bundle and its current real-geometry pipeline state.",
+        "bounds": TOKYO_BOUNDS,
         "stations": [
             {
-                "id": station["id"],
-                "name_en": station["names"].get("en", station["name"]),
-                "name_ja": station["names"].get("ja", station["name"]),
-                "lat": station["lat"],
-                "lon": station["lon"],
+                "id": station_id,
+                "name_en": station["names"].get("en", station["primaryName"]),
+                "name_ja": station["names"].get("ja", station["primaryName"]),
+                "lat": station["centroid"]["lat"],
+                "lon": station["centroid"]["lon"],
                 "category": station["category"],
             }
-            for station in selected_stations
+            for station_id, station in sorted(selected_stations.items())
         ],
         "routes": [
             {
-                "id": route_id,
-                "label": ROUTE_LABELS[route_id],
-                "color": routes[route_id]["color"],
-                "station_ids": [station_id for station_id in routes[route_id]["station_ids"] if station_id in INCLUDED_STATIONS],
+                "id": route["id"],
+                "label": route["lineName"],
+                "color": route["color"],
             }
-            for route_id in INCLUDED_ROUTES
+            for route in route_entries
         ],
-        "bounds": {
-            "min_lon": min_lon,
-            "min_lat": min_lat,
-            "max_lon": max_lon,
-            "max_lat": max_lat,
-        },
     }
     OUTPUT_DATA_PATH.write_text(json.dumps(seed_bundle, ensure_ascii=False, indent=2), encoding="utf-8")
 
     route_paths = []
     route_legend = []
-    for idx, route_id in enumerate(INCLUDED_ROUTES):
-        route = routes[route_id]
-        station_ids = [station_id for station_id in route["station_ids"] if station_id in INCLUDED_STATIONS]
-        if len(station_ids) < 2:
-            continue
-        points = [projected[station_id] for station_id in station_ids]
+    for idx, route in enumerate(route_entries):
+        points = route["polyline"]
         first_x, first_y = points[0]
         rest = " ".join([f"L {x:.2f},{y:.2f}" for x, y in points[1:]])
         path_d = f"M {first_x:.2f},{first_y:.2f} {rest}"
         route_paths.append(
-            f'<path d="{path_d}" fill="none" stroke="{route["color"]}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.92" />'
+            f'<path d="{path_d}" fill="none" stroke="{route["color"]}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />'
         )
         route_legend.append(
             f'''
-            <g transform="translate(0,{idx * 26})">
-              <line x1="0" y1="0" x2="22" y2="0" stroke="{route["color"]}" stroke-width="6" stroke-linecap="round" />
-              <text x="32" y="5" class="legend">{ROUTE_LABELS[route_id]}</text>
+            <g transform="translate(0,{idx * 24})">
+              <line x1="0" y1="0" x2="20" y2="0" stroke="{route["color"]}" stroke-width="5" stroke-linecap="round" />
+              <text x="30" y="5" class="legend">{route["lineName"]}</text>
             </g>
             '''
         )
 
     station_labels = []
-    for station in selected_stations:
-        x, y = projected[station["id"]]
+    for station_id, station in sorted(selected_stations.items()):
+        x, y = projected[station_id]
         station_labels.append(
             f'''
             <g>
-              <circle cx="{x:.2f}" cy="{y:.2f}" r="7" class="station" />
-              <text x="{x + 12:.2f}" y="{y - 10:.2f}" class="station-ja">{station["names"].get("ja", station["name"])}</text>
-              <text x="{x + 12:.2f}" y="{y + 10:.2f}" class="station-en">{station["names"].get("en", station["name"])}</text>
+              <circle cx="{x:.2f}" cy="{y:.2f}" r="5.5" class="station" />
+              <text x="{x + 10:.2f}" y="{y - 8:.2f}" class="station-ja">{station["names"].get("ja", station["primaryName"])}</text>
+              <text x="{x + 10:.2f}" y="{y + 8:.2f}" class="station-en">{station["names"].get("en", station["primaryName"])}</text>
             </g>
             '''
         )
@@ -153,18 +152,18 @@ def render() -> None:
   </defs>
   <style>
     .bg {{ fill: #f6f8fb; }}
-    .panel {{ fill: rgba(255,255,255,0.88); stroke: #d5deea; stroke-width: 1.2; }}
+    .panel {{ fill: rgba(255,255,255,0.90); stroke: #d5deea; stroke-width: 1.2; }}
     .title {{ font: 700 28px 'Noto Sans', 'Segoe UI', sans-serif; fill: #182534; }}
     .subtitle {{ font: 500 14px 'Noto Sans', 'Segoe UI', sans-serif; fill: #5c6c80; }}
-    .station {{ fill: #ffffff; stroke: #17324d; stroke-width: 2; }}
-    .station-ja {{ font: 700 17px 'Noto Sans JP', 'Segoe UI', sans-serif; fill: #13283f; }}
-    .station-en {{ font: 500 12px 'Noto Sans', 'Segoe UI', sans-serif; fill: #56677d; }}
-    .legend {{ font: 600 14px 'Noto Sans', 'Segoe UI', sans-serif; fill: #274058; }}
+    .station {{ fill: #ffffff; stroke: #17324d; stroke-width: 1.8; }}
+    .station-ja {{ font: 700 14px 'Noto Sans JP', 'Segoe UI', sans-serif; fill: #13283f; }}
+    .station-en {{ font: 500 11px 'Noto Sans', 'Segoe UI', sans-serif; fill: #56677d; }}
+    .legend {{ font: 600 13px 'Noto Sans', 'Segoe UI', sans-serif; fill: #274058; }}
   </style>
   <rect class="bg" x="0" y="0" width="{width}" height="{height}" />
   <rect class="panel" x="36" y="28" width="{width - 72}" height="{height - 56}" rx="24" filter="url(#shadow)" />
-  <text x="72" y="88" class="title">V3 Tokyo Phase 1 Seed Map</text>
-  <text x="72" y="115" class="subtitle">Current Tokyo Shinkansen core seed using real station positions. This is the first step, not the final v3 rail scope.</text>
+  <text x="72" y="88" class="title">V3 Current Tokyo Map</text>
+  <text x="72" y="115" class="subtitle">Current Tokyo-area Shinkansen view rendered from the v3 bundle. Station positions are real; line geometry reflects the current real-geometry pipeline state.</text>
 
   <g>
     {"".join(route_paths)}
@@ -173,8 +172,8 @@ def render() -> None:
     {"".join(station_labels)}
   </g>
 
-  <g transform="translate({width - 310}, 104)">
-    <text x="0" y="0" class="title" style="font-size:20px;">Current Routes</text>
+  <g transform="translate({width - 280}, 104)">
+    <text x="0" y="0" class="title" style="font-size:20px;">Current Lines</text>
     <g transform="translate(0,28)">
       {"".join(route_legend)}
     </g>
