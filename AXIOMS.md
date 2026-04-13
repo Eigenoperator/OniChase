@@ -89,3 +89,8 @@
 - When a meaningful playtest-facing feature is added to one primary client, evaluate whether the other primary client should receive the same gameplay capability or an explicitly documented temporary gap.
 - Single-player mode and multiplayer mode must preserve the same core gameplay loop, timing rules, and planning/live/capture logic.
 - Single-player mode should be treated as the same game against an AI or automated opponent, not as a separate ruleset or simplified variant.
+
+## 13. Line Scope Completeness
+
+- If a line is added to a version scope, add the whole line rather than only an arbitrary partial segment.
+- Temporary implementation limits may still delay some data ingestion, but the intended version scope should not define a line as “partially included” unless the line itself is formally split into different services or route families.
