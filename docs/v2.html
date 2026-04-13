@@ -2428,29 +2428,60 @@
       return points[points.length - 1];
     }
 
-    function routePositionAlongPath(routeId, fromStationGroupId, toStationGroupId, progress) {
+    function routeSliceProjectedPoints(routeId, fromStationGroupId, toStationGroupId) {
       const geometry = serviceGeometryForRoute(routeId);
-      if (!geometry?.polyline?.length || !state.projection) return null;
+      if (!geometry?.polyline?.length || !state.projection) return [];
       const fromIndex = nearestPolylineIndex(geometry.polyline, fromStationGroupId);
       const toIndex = nearestPolylineIndex(geometry.polyline, toStationGroupId);
-      if (fromIndex < 0 || toIndex < 0) return null;
+      if (fromIndex < 0 || toIndex < 0) return [];
       const start = Math.min(fromIndex, toIndex);
       const end = Math.max(fromIndex, toIndex);
       let slice = geometry.polyline.slice(start, end + 1);
-      if (!slice.length) return null;
+      if (!slice.length) return [];
       if (fromIndex > toIndex) slice = slice.reverse();
-      const projected = slice.map((point) => state.projection.project(point.lat, point.lon));
+      return slice.map((point) => state.projection.project(point.lat, point.lon));
+    }
+
+    function routePositionAlongPath(routeId, fromStationGroupId, toStationGroupId, progress) {
+      const projected = routeSliceProjectedPoints(routeId, fromStationGroupId, toStationGroupId);
+      if (!projected.length) return null;
       return interpolateProjectedPolyline(projected, progress);
+    }
+
+    function tripPolylinePoints(trip) {
+      if (!trip || !trip.stopTimes?.length) return [];
+      const points = [];
+      for (let index = 0; index < trip.stopTimes.length - 1; index += 1) {
+        const currentStop = trip.stopTimes[index];
+        const nextStop = trip.stopTimes[index + 1];
+        const segment = routeSliceProjectedPoints(trip.routeId, currentStop.stationGroupId, nextStop.stationGroupId);
+        if (!segment.length) {
+          const fallback = [
+            stationPointByGroupId(currentStop.stationGroupId),
+            stationPointByGroupId(nextStop.stationGroupId),
+          ].filter(Boolean).map((station) => ({ x: station.x, y: station.y }));
+          if (!fallback.length) continue;
+          if (points.length && fallback.length && points[points.length - 1].x === fallback[0].x && points[points.length - 1].y === fallback[0].y) {
+            points.push(...fallback.slice(1));
+          } else {
+            points.push(...fallback);
+          }
+          continue;
+        }
+        if (points.length && segment.length && points[points.length - 1].x === segment[0].x && points[points.length - 1].y === segment[0].y) {
+          points.push(...segment.slice(1));
+        } else {
+          points.push(...segment);
+        }
+      }
+      return points;
     }
 
     function hoveredTripPathPoints() {
       if (!state.hoveredTripId || !state.bundle) return [];
       const trip = state.bundle.tripInstances.find((item) => item.id === state.hoveredTripId);
       if (!trip) return [];
-      return trip.stopTimes
-        .map((stop) => stationPointByGroupId(stop.stationGroupId))
-        .filter(Boolean)
-        .map((station) => ({ x: station.x, y: station.y }));
+      return tripPolylinePoints(trip);
     }
 
     function render() {
