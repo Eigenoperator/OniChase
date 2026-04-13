@@ -159,6 +159,11 @@
 - Re-merged the nationwide weekday `v2` train-instance bundle after the parser fix; `data/shinkansen_v2_weekday_train_instances_merged.json` now contains `1180` validated real Shinkansen train instances.
 - Verified that `Kamome` services now survive the national merge in both directions, with `22` starts from `Takeo-Onsen` and `23` starts from `Nagasaki`, and rerendered `visuals/shinkansen_v2_weekday_timetable.svg` to reflect the corrected nationwide timetable.
 
+## 2026-04-13
+
+- Refocused `v3 phase 1` into a concrete scope definition instead of a vague “future version” idea: the first goal is now to enlarge the map beyond Shinkansen-only coverage and start the real Tokyo-area rail foundation with real station positions and real train/service data.
+- Added `V3_PHASE1_SCOPE.md` to define the first Tokyo-area pilot boundary, first operator list (`JR`, selected private railways, and Shinkansen approach lines), first line families, required physical/service data outputs, and the rule that no fake station relocation is allowed to solve dense-map rendering.
+
 ## 2026-04-06
 
 - Continued the `v3` GIS-first Shinkansen pilot by wiring deeper map/diagram interaction into `ui/v3_web_client.html`: hovering a trip in the route diagram now highlights that specific service path on the map, and selecting a station now also shows the actual departures for the currently selected route at that station.
