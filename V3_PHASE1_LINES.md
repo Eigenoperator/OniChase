@@ -14,17 +14,19 @@ Some lines may take longer to ingest, but the intended phase-1 line set should a
 
 ## Included In V3 Phase 1
 
+Each line should be read together with its operator / system tag.
+
 ## JR / Shinkansen
 
 ### Shinkansen
 
-- Tokaido Shinkansen
-- Tohoku Shinkansen
-- Hokkaido Shinkansen
-- Joetsu Shinkansen
-- Hokuriku Shinkansen
-- Yamagata Shinkansen
-- Akita Shinkansen
+- `Shinkansen / JR Central` - Tokaido Shinkansen
+- `Shinkansen / JR East` - Tohoku Shinkansen
+- `Shinkansen / JR Hokkaido` - Hokkaido Shinkansen
+- `Shinkansen / JR East` - Joetsu Shinkansen
+- `Shinkansen / JR East + JR West` - Hokuriku Shinkansen
+- `Shinkansen / JR East` - Yamagata Shinkansen
+- `Shinkansen / JR East` - Akita Shinkansen
 
 Reason:
 
@@ -34,19 +36,19 @@ Reason:
 
 ### JR East Conventional Rail
 
-- Yamanote Line
-- Keihin-Tohoku Line
-- Chuo Line (Rapid)
-- Chuo-Sobu Line (local through the Tokyo core)
-- Sobu Rapid Line
-- Yokosuka Line
-- Tokaido Line
-- Ueno-Tokyo Line
-- Saikyo Line
-- Shonan-Shinjuku Line
-- Joban Line (Rapid)
-- Joban Line (Local)
-- Keiyo Line
+- `JR East` - Yamanote Line
+- `JR East` - Keihin-Tohoku Line
+- `JR East` - Chuo Line (Rapid)
+- `JR East` - Chuo-Sobu Line (local through the Tokyo core)
+- `JR East` - Sobu Rapid Line
+- `JR East` - Yokosuka Line
+- `JR East + JR Central` - Tokaido Line
+- `JR East` - Ueno-Tokyo Line
+- `JR East` - Saikyo Line
+- `JR East` - Shonan-Shinjuku Line
+- `JR East` - Joban Line (Rapid)
+- `JR East` - Joban Line (Local)
+- `JR East` - Keiyo Line
 
 Reason:
 
@@ -58,35 +60,35 @@ Reason:
 
 ### Tokyu
 
-- Toyoko Line
-- Den-en-toshi Line
+- `Tokyu` - Toyoko Line
+- `Tokyu` - Den-en-toshi Line
 
 ### Odakyu
 
-- Odawara Line
+- `Odakyu` - Odawara Line
 
 ### Keio
 
-- Keio Line
-- Keio New Line
+- `Keio` - Keio Line
+- `Keio` - Keio New Line
 
 ### Keikyu
 
-- Main Line
+- `Keikyu` - Main Line
 
 ### Tobu
 
-- Tojo Line
-- Isesaki Line (Tokyo Skytree / Asakusa side trunk)
+- `Tobu` - Tojo Line
+- `Tobu` - Isesaki Line (Tokyo Skytree / Asakusa side trunk)
 
 ### Seibu
 
-- Ikebukuro Line
-- Shinjuku Line
+- `Seibu` - Ikebukuro Line
+- `Seibu` - Shinjuku Line
 
 ### Keisei
 
-- Main Line
+- `Keisei` - Main Line
 
 Reason:
 
@@ -138,6 +140,7 @@ This line list means:
 - map scope should include these whole lines
 - geometry scope should include these whole lines
 - service-data planning should assume these whole lines are eventual targets
+- every included line should carry an explicit operator/system tag in planning and ingestion discussions
 
 It does **not** mean:
 
