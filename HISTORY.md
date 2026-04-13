@@ -163,6 +163,7 @@
 
 - Refocused `v3 phase 1` into a concrete scope definition instead of a vague “future version” idea: the first goal is now to enlarge the map beyond Shinkansen-only coverage and start the real Tokyo-area rail foundation with real station positions and real train/service data.
 - Added `V3_PHASE1_SCOPE.md` to define the first Tokyo-area pilot boundary, first operator list (`JR`, selected private railways, and Shinkansen approach lines), first line families, required physical/service data outputs, and the rule that no fake station relocation is allowed to solve dense-map rendering.
+- Continued turning `v3 phase 1` into an executable scope by adding `V3_PHASE1_LINES.md` and `V3_PHASE1_STATIONS.md`, so the Tokyo-area pilot now has explicit whole-line inclusion rules and a first key-station priority set instead of relying on vague “core area” descriptions.
 
 ## 2026-04-06
 
