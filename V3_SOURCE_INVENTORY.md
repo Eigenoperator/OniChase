@@ -119,6 +119,7 @@ Phase-1 usage:
 - first-pass `physical_station`
 - first-pass `track_centerline`
 - first-pass operator / line naming normalization
+- first-pass `real route polyline` import into `data/v3_real_geometry_routes.json`
 
 ## 2. Station Identity / Stop Sources
 
@@ -379,6 +380,19 @@ Station / service:
    - Yokohama
 4. add the first private-rail company station groups
 5. attach service data company by company
+
+## First Geometry Integration Status
+
+The `v3` builder now has a dedicated real-geometry override slot:
+
+- `data/v3_real_geometry_routes.json`
+
+Meaning:
+
+- if a route appears there with a real `polyline`, bundle generation should use that geometry
+- if a route is still missing there, bundle generation falls back to the older station-sequence polyline
+
+This lets us upgrade to real geometry incrementally without breaking the existing pipeline.
 
 ## Immediate Questions To Resolve
 

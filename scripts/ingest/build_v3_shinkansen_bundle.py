@@ -9,6 +9,9 @@ from pathlib import Path
 from typing import Any
 
 
+REAL_GEOMETRY_PATH = Path(__file__).resolve().parents[2] / "data" / "v3_real_geometry_routes.json"
+
+
 SERVICE_ROUTE_DEFS = {
     "SHINKANSEN_TOKAIDO_SANYO": {
         "id": "TOKAIDO_SANYO",
@@ -115,9 +118,47 @@ def combined_route_station_ids(route_map: dict[str, dict[str, Any]], route_ids: 
     return dedupe_station_sequence(result)
 
 
+def load_real_geometry_routes() -> dict[str, dict[str, Any]]:
+    if not REAL_GEOMETRY_PATH.exists():
+        return {}
+    payload = load_json(REAL_GEOMETRY_PATH)
+    routes = payload.get("routes", [])
+    return {route["id"]: route for route in routes}
+
+
+def station_polyline_from_ids(station_map: dict[str, dict[str, Any]], station_ids: list[str]) -> list[dict[str, float]]:
+    return [{"lat": station_map[sid]["lat"], "lon": station_map[sid]["lon"]} for sid in station_ids]
+
+
+def route_polyline(route_id: str, station_map: dict[str, dict[str, Any]], route_map: dict[str, dict[str, Any]], geometry_routes: dict[str, dict[str, Any]]) -> list[dict[str, float]]:
+    geometry = geometry_routes.get(route_id)
+    if geometry and geometry.get("polyline"):
+        return geometry["polyline"]
+    return station_polyline_from_ids(station_map, route_map[route_id]["station_ids"])
+
+
+def combined_route_polyline(
+    route_ids: list[str],
+    station_map: dict[str, dict[str, Any]],
+    route_map: dict[str, dict[str, Any]],
+    geometry_routes: dict[str, dict[str, Any]],
+) -> list[dict[str, float]]:
+    output: list[dict[str, float]] = []
+    for route_id in route_ids:
+        polyline = route_polyline(route_id, station_map, route_map, geometry_routes)
+        if not polyline:
+            continue
+        if output and output[-1] == polyline[0]:
+            output.extend(polyline[1:])
+        else:
+            output.extend(polyline)
+    return output
+
+
 def build_bundle(stations: list[dict[str, Any]], routes: list[dict[str, Any]], trains_dataset: dict[str, Any]) -> dict[str, Any]:
     station_map = {station["id"]: station for station in stations}
     route_map = {route["id"]: route for route in routes}
+    geometry_routes = load_real_geometry_routes()
 
     physical_stations = []
     station_groups = []
@@ -177,7 +218,7 @@ def build_bundle(stations: list[dict[str, Any]], routes: list[dict[str, Any]], t
 
     track_centerlines = []
     for route in routes:
-        polyline = [{"lat": station_map[sid]["lat"], "lon": station_map[sid]["lon"]} for sid in route["station_ids"]]
+        polyline = route_polyline(route["id"], station_map, route_map, geometry_routes)
         track_centerlines.append(
             {
                 "id": f"TRACK_{route['id']}",
@@ -218,7 +259,7 @@ def build_bundle(stations: list[dict[str, Any]], routes: list[dict[str, Any]], t
                 "tags": ["pilot_pattern"],
             }
         )
-        polyline = [{"lat": station_map[sid]["lat"], "lon": station_map[sid]["lon"]} for sid in station_ids]
+        polyline = combined_route_polyline(cfg["physical_routes"], station_map, route_map, geometry_routes)
         service_geometry.append(
             {
                 "id": f"GEOM_CORRIDOR_{cfg['id']}",
@@ -294,10 +335,13 @@ def build_bundle(stations: list[dict[str, Any]], routes: list[dict[str, Any]], t
         "metadata": {
             "label": "OniChase v3 nationwide Shinkansen pilot bundle",
             "sourceVersion": "v2-shinkansen-upgrade",
+            "realGeometrySourcePath": str(REAL_GEOMETRY_PATH.relative_to(Path(__file__).resolve().parents[2])),
+            "realGeometryRoutesLoaded": sorted(geometry_routes.keys()),
             "notes": [
                 "First v3 pilot bundle built from existing nationwide Shinkansen data.",
                 "Station groups remain one-to-one with physical stations in this pilot.",
                 "Service geometry is route-family based and multi-scale ready.",
+                "If real route geometry exists in data/v3_real_geometry_routes.json, it overrides station-sequence polylines.",
             ],
         },
         "physicalStations": physical_stations,
