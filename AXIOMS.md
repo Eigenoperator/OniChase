@@ -95,3 +95,9 @@
 - If a line is added to a version scope, add the whole line rather than only an arbitrary partial segment.
 - Temporary implementation limits may still delay some data ingestion, but the intended version scope should not define a line as “partially included” unless the line itself is formally split into different services or route families.
 - For private rail operators, if one line from that company is added to scope, the intended scope should include that company's whole rail network rather than only a hand-picked subset of lines.
+
+## 14. Interchange Geometry Must Stay Physical
+
+- Do not collapse distinct physical interchange stations into one fake shared latitude/longitude point just because gameplay allows transfers there.
+- This is especially important when the interchange spans different operators or companies.
+- Gameplay may still group nearby physical stations into one transfer-capable station group, but the map and physical-network layers must preserve the distinct real station locations and distinct real line geometry.

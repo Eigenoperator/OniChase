@@ -32,6 +32,9 @@ It is the internal normalized model that should sit between:
 
 Represents one physical station object as it exists in source geometry.
 
+This layer must stay physically truthful.
+Even when gameplay groups multiple nearby stations into one transfer-capable complex, distinct operator-owned or separately located interchange stations must remain separate physical stations with their own real coordinates.
+
 ```ts
 type PhysicalStationId = string;
 
@@ -61,6 +64,12 @@ Examples:
 - one simple station
 - a multi-operator transfer hub
 - nearby same-name entrances grouped as one complex
+
+Important:
+
+- `StationGroup` is allowed to simplify transfer logic for gameplay and UI.
+- `StationGroup` must not erase the underlying physical truth of distinct stations on the map.
+- A grouped interchange can still contain multiple separately drawn physical stations, especially across different companies.
 
 ```ts
 type StationGroupId = string;
@@ -195,6 +204,7 @@ Important:
 - `stationGroupId` is the minimum authoritative join for gameplay and UI
 - `physicalStationId` is optional but useful later for detailed station logic
 - `shapeDistTraveled` is the main bridge to map/timetable synchronization
+- gameplay may join trips at the `stationGroup` level, but service drawing and physical placement must continue to respect the distinct underlying `physicalStationId` geometry whenever that distinction exists
 
 ## 8. Service Geometry
 
