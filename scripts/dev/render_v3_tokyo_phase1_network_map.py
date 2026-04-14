@@ -12,7 +12,7 @@ N02_STATION_PATH = ROOT / "data" / "raw_n02_24" / "UTF-8" / "N02-24_Station.geoj
 OUTPUT_DATA_PATH = ROOT / "data" / "v3_tokyo_phase1_network_seed.json"
 OUTPUT_SVG_PATH = ROOT / "visuals" / "v3_tokyo_phase1_network_map.svg"
 
-TOKYO_BOUNDS = {
+BASE_BOUNDS = {
     "min_lon": 138.75,
     "max_lon": 140.55,
     "min_lat": 35.00,
@@ -72,15 +72,8 @@ def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def in_bounds(lon: float, lat: float) -> bool:
-    return TOKYO_BOUNDS["min_lon"] <= lon <= TOKYO_BOUNDS["max_lon"] and TOKYO_BOUNDS["min_lat"] <= lat <= TOKYO_BOUNDS["max_lat"]
-
-
-def feature_in_bounds(feature: dict) -> bool:
-    for lon, lat in feature["geometry"]["coordinates"]:
-        if in_bounds(lon, lat):
-            return True
-    return False
+def in_bounds(lon: float, lat: float, bounds: dict[str, float]) -> bool:
+    return bounds["min_lon"] <= lon <= bounds["max_lon"] and bounds["min_lat"] <= lat <= bounds["max_lat"]
 
 
 def midpoint(coords: list[list[float]]) -> tuple[float, float]:
@@ -89,11 +82,11 @@ def midpoint(coords: list[list[float]]) -> tuple[float, float]:
     return (first[0] + last[0]) / 2.0, (first[1] + last[1]) / 2.0
 
 
-def project(lon: float, lat: float, width: int, height: int, pad: int) -> tuple[float, float]:
+def project(lon: float, lat: float, bounds: dict[str, float], width: int, height: int, pad: int) -> tuple[float, float]:
     usable_w = width - pad * 2
     usable_h = height - pad * 2
-    x = pad + ((lon - TOKYO_BOUNDS["min_lon"]) / (TOKYO_BOUNDS["max_lon"] - TOKYO_BOUNDS["min_lon"])) * usable_w
-    y = pad + ((TOKYO_BOUNDS["max_lat"] - lat) / (TOKYO_BOUNDS["max_lat"] - TOKYO_BOUNDS["min_lat"])) * usable_h
+    x = pad + ((lon - bounds["min_lon"]) / (bounds["max_lon"] - bounds["min_lon"])) * usable_w
+    y = pad + ((bounds["max_lat"] - lat) / (bounds["max_lat"] - bounds["min_lat"])) * usable_h
     return x, y
 
 
@@ -121,8 +114,6 @@ def render() -> None:
         classification = classify_line(feature["properties"])
         if not classification:
             continue
-        if not feature_in_bounds(feature):
-            continue
         kind, label, color = classification
         visible_lines.append(
             {
@@ -135,6 +126,17 @@ def render() -> None:
             }
         )
 
+    line_points = [point for line in visible_lines for point in line["coordinates"]]
+    if line_points:
+        bounds = {
+            "min_lon": min(BASE_BOUNDS["min_lon"], min(lon for lon, _ in line_points) - 0.08),
+            "max_lon": max(BASE_BOUNDS["max_lon"], max(lon for lon, _ in line_points) + 0.08),
+            "min_lat": min(BASE_BOUNDS["min_lat"], min(lat for _, lat in line_points) - 0.08),
+            "max_lat": max(BASE_BOUNDS["max_lat"], max(lat for _, lat in line_points) + 0.08),
+        }
+    else:
+        bounds = dict(BASE_BOUNDS)
+
     visible_stations = []
     seen_station_keys = set()
     for feature in stations["features"]:
@@ -142,7 +144,7 @@ def render() -> None:
         if not classification:
             continue
         lon, lat = midpoint(feature["geometry"]["coordinates"])
-        if not in_bounds(lon, lat):
+        if not in_bounds(lon, lat, bounds):
             continue
         name = feature["properties"].get("N02_005")
         station_key = (
@@ -169,8 +171,8 @@ def render() -> None:
     payload = {
         "id": "v3_tokyo_phase1_network_seed_v0_1",
         "scope": "tokyo_jr_private_shinkansen_network_seed",
-        "note": "Current Tokyo-area real-geometry network seed drawn directly from MLIT N02-24. Station positions and line geometry are real. This is a physical network view, not the final service-layer map.",
-        "bounds": TOKYO_BOUNDS,
+        "note": "Current Tokyo-area real-geometry network seed drawn directly from MLIT N02-24. Station positions and line geometry are real. Bounds expand to fit the currently included whole-line and whole-company scope.",
+        "bounds": bounds,
         "visibleLines": visible_lines,
         "visibleStations": visible_stations,
     }
@@ -182,7 +184,7 @@ def render() -> None:
 
     line_paths = []
     for line in visible_lines:
-        points = [project(lon, lat, width, height, pad) for lon, lat in line["coordinates"] if in_bounds(lon, lat)]
+        points = [project(lon, lat, bounds, width, height, pad) for lon, lat in line["coordinates"] if in_bounds(lon, lat, bounds)]
         if len(points) < 2:
             continue
         first_x, first_y = points[0]
@@ -196,7 +198,7 @@ def render() -> None:
 
     station_rows = []
     for station in visible_stations:
-        x, y = project(station["lon"], station["lat"], width, height, pad)
+        x, y = project(station["lon"], station["lat"], bounds, width, height, pad)
         r = 3.8 if station["is_priority"] else 2.1
         ja_size = 13 if station["is_priority"] else 10
         station_rows.append(
