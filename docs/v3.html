@@ -501,7 +501,7 @@
       state.zoom = 1;
       state.panX = 0;
       state.panY = 0;
-      applyViewport();
+      render();
     }
 
     function setViewMode(mode) {
@@ -541,7 +541,7 @@
       const scaleChange = state.zoom / prevZoom;
       state.panX = mouseX - (mouseX - state.panX) * scaleChange;
       state.panY = mouseY - (mouseY - state.panY) * scaleChange;
-      applyViewport();
+      render();
     }, { passive: false });
 
     async function init() {
