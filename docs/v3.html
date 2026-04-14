@@ -363,6 +363,12 @@
       return false;
     }
 
+    function stationTouchesShinkansen(station) {
+      return state.data.physicalLines
+        .filter((line) => line.kind === 'shinkansen')
+        .some((line) => stationTouchesPhysicalLine(station, line));
+    }
+
     function makeProjection(bounds) {
       const width = 1200;
       const height = 920;
@@ -398,6 +404,8 @@
     }
 
     function shouldShowStationMarker(station) {
+      const touchesShinkansen = stationTouchesShinkansen(station);
+      if (state.zoom < 2.8) return touchesShinkansen;
       if (state.zoom < 4.8) return false;
       const lineTouchCount = state.data.physicalLines.filter((line) => stationTouchesPhysicalLine(station, line)).length;
       const family = familyById(state.selectedFamilyId);
@@ -454,10 +462,12 @@
 
     function shouldShowLabel(entry) {
       if (!entry) return false;
+      const shinkansenRelevant = stationTouchesShinkansen({ lat: entry.lat, lon: entry.lon });
       const family = familyById(state.selectedFamilyId);
       const familyRelevant = stationTouchesFamily({ lat: entry.lat, lon: entry.lon }, family);
       const interchangeBoost = entry.lineTouchCount >= 4 ? 6 : entry.lineTouchCount >= 3 ? 4 : entry.lineTouchCount >= 2 ? 2 : 0;
       const rank = (entry.labelRank || 0) + interchangeBoost + (familyRelevant ? 8 : 0);
+      if (state.zoom < 2.8) return shinkansenRelevant;
       if (state.zoom < 1.8) return entry.isPriority && entry.lineTouchCount >= 4;
       if (state.zoom < 2.6) return (entry.isPriority && entry.lineTouchCount >= 3) || (familyRelevant && entry.lineTouchCount >= 2);
       if (entry.isPriority && state.zoom >= 2.6) return true;
