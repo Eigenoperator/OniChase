@@ -397,9 +397,16 @@
       return 0;
     }
 
+    function shouldShowStationMarker(station) {
+      if (station.is_priority) return true;
+      if (state.selectedFamilyId && stationTouchesFamily(station, familyById(state.selectedFamilyId)) && state.zoom >= 3.4) return true;
+      if (state.zoom >= 4.8) return true;
+      return false;
+    }
+
     function stationMarkerEntries() {
       const threshold = stationDensityThresholdPx();
-      const stations = visibleStations();
+      const stations = visibleStations().filter((station) => shouldShowStationMarker(station));
       if (threshold <= 0) return stations;
       const candidates = stations.map((station, index) => {
         const point = state.projection.project(station.lat, station.lon);
