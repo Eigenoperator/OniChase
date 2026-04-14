@@ -120,6 +120,13 @@ def set_query(url: str, **updates: str) -> str:
     return urlunparse(parsed._replace(query=new_query))
 
 
+def official_page_key(url: str) -> str:
+    parsed = urlparse(url)
+    qs = parse_qs(parsed.query)
+    start_id = qs.get("startId", [""])[0]
+    return f"{parsed.path}?startId={start_id}"
+
+
 def parse_official_station_page(page_url: str) -> dict | None:
     text = fetch_text(page_url)
     iframe_match = re.search(
@@ -248,9 +255,10 @@ def main() -> int:
 
     while queue:
         official_page = queue.popleft()
-        if official_page in seen_official_pages:
+        page_key = official_page_key(official_page)
+        if page_key in seen_official_pages:
             continue
-        seen_official_pages.add(official_page)
+        seen_official_pages.add(page_key)
 
         page_info = parse_official_station_page(official_page)
         if page_info is None:
@@ -289,6 +297,27 @@ def main() -> int:
                     continue
                 seen_instances.add(key)
                 train_instances.append(train)
+                if len(train_instances) % 500 == 0:
+                    OUTPUT_PATH.write_text(
+                        json.dumps(
+                            {
+                                "id": "v3_tokyo_odakyu_weekday_train_instances_v0_1",
+                                "label": "v3 Tokyo Odakyu Weekday Train Instances",
+                                "version": 1,
+                                "service_day": SERVICE_DAY,
+                                "station_seed": station_seed,
+                                "source_pages": source_reports,
+                                "train_instances": train_instances,
+                            },
+                            ensure_ascii=False,
+                            indent=2,
+                        ),
+                        encoding="utf-8",
+                    )
+                    print(
+                        f"[odakyu] checkpoint trains={len(train_instances)} "
+                        f"stations={len(seen_official_pages)} stop_pages={len(seen_stop_urls)}"
+                    )
 
     output = {
         "id": "v3_tokyo_odakyu_weekday_train_instances_v0_1",

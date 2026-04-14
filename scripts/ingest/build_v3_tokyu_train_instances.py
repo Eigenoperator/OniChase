@@ -136,6 +136,24 @@ def extract_station_codes_from_stop_page(html_text: str) -> list[str]:
     return re.findall(r'stationimg-(\d+)\.png', html_text)
 
 
+def extract_tokyu_station_codes_from_stop_page(html_text: str, station_lookup: dict[str, dict]) -> list[str]:
+    codes: list[str] = []
+    seen: set[str] = set()
+    for code, raw_name in re.findall(
+        r'stationimg-(\d+)\.png.*?<div class="name">(.*?)</div>',
+        html_text,
+        re.S,
+    ):
+        station_name = normalize_station_name(html.unescape(re.sub(r"<.*?>", " ", raw_name)).strip())
+        if station_name not in station_lookup:
+            continue
+        if code in seen:
+            continue
+        seen.add(code)
+        codes.append(code)
+    return codes
+
+
 def parse_stop_page(url: str, station_lookup: dict[str, dict]) -> dict | None:
     html_text = fetch_text(url)
     title_match = re.search(r"<title>\s*(.*?)\s*</title>", html_text, re.S)
@@ -204,7 +222,7 @@ def parse_stop_page(url: str, station_lookup: dict[str, dict]) -> dict | None:
     }
 
 
-def crawl_tokyu_pages() -> tuple[set[str], list[dict]]:
+def crawl_tokyu_pages(station_lookup: dict[str, dict]) -> tuple[set[str], list[dict]]:
     queue = deque(canonical_line_page(url) for url in SEED_LINE_PAGES)
     seen_pages: set[str] = set()
     train_links: set[str] = set()
@@ -235,7 +253,7 @@ def crawl_tokyu_pages() -> tuple[set[str], list[dict]]:
                 continue
             line_query = parse_qs(urlparse(page_url).query)
             rr = line_query.get("rrCd", [""])[0]
-            for station_code in extract_station_codes_from_stop_page(stop_html):
+            for station_code in extract_tokyu_station_codes_from_stop_page(stop_html, station_lookup):
                 queue.append(canonical_line_page(f"https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd={station_code}&rrCd={rr}&updown=0"))
                 queue.append(canonical_line_page(f"https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd={station_code}&rrCd={rr}&updown=1"))
         page_reports.append(
@@ -251,7 +269,7 @@ def crawl_tokyu_pages() -> tuple[set[str], list[dict]]:
 def main() -> int:
     station_seed = load_station_seed()
     station_lookup = {entry["name_ja"]: entry for entry in station_seed}
-    train_links, page_reports = crawl_tokyu_pages()
+    train_links, page_reports = crawl_tokyu_pages(station_lookup)
     train_instances = []
     seen_instances: set[str] = set()
     for train_url in sorted(train_links):
@@ -262,6 +280,31 @@ def main() -> int:
             continue
         seen_instances.add(train["service_instance_id"])
         train_instances.append(train)
+        if len(train_instances) % 500 == 0:
+            OUTPUT_PATH.write_text(
+                json.dumps(
+                    {
+                        "id": "v3_tokyo_tokyu_weekday_train_instances_v0_1",
+                        "label": "V3 Tokyu weekday train instances from official train detail pages",
+                        "version": "0.1.0",
+                        "service_day": SERVICE_DAY,
+                        "station_seed": station_seed,
+                        "source_reports": page_reports,
+                        "train_instances": sorted(
+                            train_instances,
+                            key=lambda item: (
+                                item["stop_times"][0]["departure_hhmm"],
+                                item["train_number"],
+                            ),
+                        ),
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            print(f"[tokyu] checkpoint trains={len(train_instances)} pages={len(page_reports)} details={len(train_links)}")
     output = {
         "id": "v3_tokyo_tokyu_weekday_train_instances_v0_1",
         "label": "V3 Tokyu weekday train instances from official train detail pages",
