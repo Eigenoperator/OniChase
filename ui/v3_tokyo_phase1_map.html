@@ -398,12 +398,11 @@
     }
 
     function shouldShowStationMarker(station) {
-      if (state.zoom < 3.2) return false;
+      if (state.zoom < 4.8) return false;
       const lineTouchCount = state.data.physicalLines.filter((line) => stationTouchesPhysicalLine(station, line)).length;
       const family = familyById(state.selectedFamilyId);
       const familyRelevant = state.selectedFamilyId && stationTouchesFamily(station, family);
-      if (state.zoom < 3.4) return station.is_priority || familyRelevant || lineTouchCount >= 3;
-      if (familyRelevant && state.zoom >= 3.4) return true;
+      if (familyRelevant && state.zoom >= 4.8) return true;
       if (state.zoom >= 4.8) return true;
       return false;
     }
