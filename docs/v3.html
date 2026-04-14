@@ -299,8 +299,12 @@
       panStartX: 0,
       panStartY: 0,
       labelEntries: [],
+      labelEntryByKey: new Map(),
       renderScheduled: false,
       redrawTimer: null,
+      markerCache: new Map(),
+      labelSelectionCache: new Map(),
+      pathMarkupCache: new Map(),
     };
 
     const svg = document.getElementById('map');
@@ -393,6 +397,14 @@
       return state.data.serviceFamilies.find((item) => item.id === id) || null;
     }
 
+    function zoomBucket() {
+      return state.zoom < 6 ? state.zoom.toFixed(1) : state.zoom.toFixed(0);
+    }
+
+    function visibilityCacheKey() {
+      return `${state.viewMode}|${state.selectedFamilyId || ''}|${zoomBucket()}`;
+    }
+
     function visibleStations() {
       return state.data.visibleStations;
     }
@@ -418,12 +430,19 @@
     }
 
     function stationMarkerEntries() {
+      const cacheKey = visibilityCacheKey();
+      if (state.markerCache.has(cacheKey)) {
+        return state.markerCache.get(cacheKey);
+      }
       const threshold = stationDensityThresholdPx();
       const stations = visibleStations().filter((station) => shouldShowStationMarker(station));
-      if (threshold <= 0) return stations;
+      if (threshold <= 0) {
+        state.markerCache.set(cacheKey, stations);
+        return stations;
+      }
       const candidates = stations.map((station, index) => {
         const key = `${station.name_ja}_${station.lon}_${station.lat}`;
-        const point = state.labelEntries.find((entry) => entry.stationId === key)?.point || state.projection.project(station.lat, station.lon);
+        const point = state.labelEntryByKey.get(key)?.point || state.projection.project(station.lat, station.lon);
         return { station, index, point };
       }).sort((a, b) => {
         if (!!b.station.is_priority !== !!a.station.is_priority) {
@@ -445,9 +464,11 @@
           kept.push({ ...candidate, screenX, screenY });
         }
       }
-      return kept
+      const result = kept
         .sort((a, b) => a.index - b.index)
         .map((entry) => entry.station);
+      state.markerCache.set(cacheKey, result);
+      return result;
     }
 
     function buildLabelEntries() {
@@ -463,6 +484,7 @@
         labelRank: station.is_priority ? 100 : 86,
         isPriority: !!station.is_priority,
       }));
+      state.labelEntryByKey = new Map(state.labelEntries.map((entry) => [entry.stationId, entry]));
     }
 
     function shouldShowLabel(entry) {
@@ -501,7 +523,10 @@
     }
 
     function buildLabelMarkup() {
-      const candidates = state.labelEntries
+      const cacheKey = visibilityCacheKey();
+      let acceptedEntries = state.labelSelectionCache.get(cacheKey);
+      if (!acceptedEntries) {
+        const candidates = state.labelEntries
         .filter((entry) => shouldShowLabel(entry))
         .map((entry, index) => {
           const point = entry.point;
@@ -540,24 +565,36 @@
           return a.index - b.index;
         });
 
-      const placed = [];
-      const accepted = [];
-      for (const candidate of candidates) {
-        const overlaps = placed.some((box) => !(
-          candidate.bbox.right < box.left ||
-          candidate.bbox.left > box.right ||
-          candidate.bbox.bottom < box.top ||
-          candidate.bbox.top > box.bottom
-        ));
-        if (!overlaps) {
-          placed.push(candidate.bbox);
-          accepted.push(candidate);
+        const placed = [];
+        const accepted = [];
+        for (const candidate of candidates) {
+          const overlaps = placed.some((box) => !(
+            candidate.bbox.right < box.left ||
+            candidate.bbox.left > box.right ||
+            candidate.bbox.bottom < box.top ||
+            candidate.bbox.top > box.bottom
+          ));
+          if (!overlaps) {
+            placed.push(candidate.bbox);
+            accepted.push(candidate);
+          }
         }
+        accepted.sort((a, b) => a.index - b.index);
+        acceptedEntries = accepted.map((item) => item.entry.stationId);
+        state.labelSelectionCache.set(cacheKey, acceptedEntries);
       }
-
-      accepted.sort((a, b) => a.index - b.index);
-      return accepted.map((item) => {
-        return `<text x="${item.screenX.toFixed(2)}" y="${item.screenY.toFixed(2)}" font-size="${item.fontSize.toFixed(2)}" font-weight="${item.entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${item.strokeWidth.toFixed(2)}" paint-order="stroke" style="pointer-events:none">${item.displayName}</text>`;
+      return acceptedEntries.map((stationId) => {
+        const entry = state.labelEntryByKey.get(stationId);
+        if (!entry) return '';
+        const point = entry.point;
+        const offset = labelOffset(entry);
+        const baseSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
+        const fontSize = Number(mapLabelFontSize(baseSize));
+        const strokeWidth = Number(mapLabelStrokeWidth(4.2));
+        const displayName = entry.displayNameEn || entry.displayNameJa;
+        const screenX = point.x * state.zoom + state.panX + offset.x;
+        const screenY = point.y * state.zoom + state.panY + offset.y;
+        return `<text x="${screenX.toFixed(2)}" y="${screenY.toFixed(2)}" font-size="${fontSize.toFixed(2)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${strokeWidth.toFixed(2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`;
       }).join('');
     }
 
@@ -574,6 +611,24 @@
     }
 
     function buildViewportMarkup() {
+      const cacheKey = visibilityCacheKey();
+      if (state.pathMarkupCache.has(cacheKey)) {
+        const cached = state.pathMarkupCache.get(cacheKey);
+        const stationMarkup = stationMarkerEntries().map((station) => {
+          const key = `${station.name_ja}_${station.lon}_${station.lat}`;
+          const point = state.labelEntryByKey.get(key)?.point || state.projection.project(station.lat, station.lon);
+          const zoomScale = Math.max(1, state.zoom);
+          const radius = clamp((station.is_priority ? 0.78 : 0.58) / Math.pow(zoomScale, 0.95), 0.05, station.is_priority ? 0.78 : 0.58);
+          const strokeWidth = clamp((station.is_priority ? 0.28 : 0.22) / Math.pow(zoomScale, 0.42), 0.04, station.is_priority ? 0.28 : 0.22);
+          return `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="${radius.toFixed(2)}" fill="#ffffff" stroke="#17324d" stroke-width="${strokeWidth.toFixed(2)}" />`;
+        }).join('');
+        return [
+          `<rect x="0" y="0" width="${state.projection.width}" height="${state.projection.height}" fill="transparent" />`,
+          `<g>${cached.physicalPaths}</g>`,
+          `<g>${cached.servicePaths}</g>`,
+          `<g>${stationMarkup}</g>`
+        ].join('');
+      }
       const zoomScale = Math.max(1, state.zoom);
       const family = familyById(state.selectedFamilyId);
       const familyLineNames = new Set(family ? (family.member_physical_lines_ja || []) : []);
@@ -606,12 +661,13 @@
 
       const stationMarkup = stationMarkerEntries().map((station) => {
         const key = `${station.name_ja}_${station.lon}_${station.lat}`;
-        const point = state.labelEntries.find((entry) => entry.stationId === key)?.point || state.projection.project(station.lat, station.lon);
+        const point = state.labelEntryByKey.get(key)?.point || state.projection.project(station.lat, station.lon);
         const radius = clamp((station.is_priority ? 0.78 : 0.58) / Math.pow(zoomScale, 0.95), 0.05, station.is_priority ? 0.78 : 0.58);
         const strokeWidth = clamp((station.is_priority ? 0.28 : 0.22) / Math.pow(zoomScale, 0.42), 0.04, station.is_priority ? 0.28 : 0.22);
         return `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="${radius.toFixed(2)}" fill="#ffffff" stroke="#17324d" stroke-width="${strokeWidth.toFixed(2)}" />`;
       }).join('');
 
+      state.pathMarkupCache.set(cacheKey, { physicalPaths, servicePaths });
       return [
         `<rect x="0" y="0" width="${state.projection.width}" height="${state.projection.height}" fill="transparent" />`,
         `<g>${physicalPaths}</g>`,
@@ -749,6 +805,9 @@
           segment.projectedD = projectPath(segment.coordinates);
         });
       });
+      state.markerCache.clear();
+      state.labelSelectionCache.clear();
+      state.pathMarkupCache.clear();
     }
 
     async function init() {
