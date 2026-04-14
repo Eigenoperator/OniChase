@@ -357,30 +357,31 @@
     }
 
     function shouldShowLabel(entry) {
-      if (entry.isPriority) {
-        if (state.zoom >= 1.5) return true;
-      }
-      if (state.selectedFamilyId && state.zoom >= 2.4) return true;
-      if (state.zoom >= 10) return true;
-      if (state.zoom >= 6.5) return entry.labelRank >= 92;
-      if (state.zoom >= 4.2) return entry.labelRank >= 96;
-      if (state.zoom >= 2.4) return entry.labelRank >= 99;
-      return false;
+      if (!entry) return false;
+      if (entry.isPriority) return true;
+      if (state.selectedFamilyId && state.zoom >= 4.8) return true;
+      const rank = entry.labelRank || 0;
+      if (state.zoom >= 14) return true;
+      if (state.zoom >= 9.5) return rank >= 90;
+      if (state.zoom >= 6.4) return rank >= 95;
+      if (state.zoom >= 4.0) return rank >= 98;
+      return rank >= 99;
     }
 
     function mapLabelFontSize(baseSize) {
       const zoomScale = Math.max(1, state.zoom);
-      return clamp(baseSize / (1 + 0.14 * Math.log2(zoomScale)), 13.5, 24).toFixed(2);
+      return clamp(baseSize / (1 + 0.2 * Math.log2(zoomScale)), 12.6, 18.2).toFixed(2);
     }
 
     function mapLabelStrokeWidth(baseWidth) {
       const zoomScale = Math.max(1, state.zoom);
-      return clamp(baseWidth / (1 + 0.36 * Math.log2(zoomScale)), 1.0, 2.8).toFixed(2);
+      return clamp(baseWidth / (1 + 0.44 * Math.log2(zoomScale)), 0.86, 2.4).toFixed(2);
     }
 
     function labelOffset(entry) {
-      if (entry.labelRank >= 100) return { x: 8, y: -8 };
-      return { x: 6, y: -6 };
+      const baseX = entry.labelRank >= 99 ? 8 : entry.labelRank >= 95 ? 7 : 6;
+      const baseY = entry.labelRank >= 99 ? -7 : -6;
+      return { x: baseX, y: baseY };
     }
 
     function buildLabelMarkup() {
@@ -388,11 +389,11 @@
         if (!shouldShowLabel(entry)) return '';
         const point = state.projection.project(entry.lat, entry.lon);
         const offset = labelOffset(entry);
-        const baseSize = entry.isPriority ? 18 : 15;
+        const baseSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
         const screenX = point.x * state.zoom + state.panX + offset.x;
         const screenY = point.y * state.zoom + state.panY + offset.y;
-        const displayName = entry.displayNameJa;
-        return `<text x="${screenX.toFixed(2)}" y="${screenY.toFixed(2)}" font-size="${mapLabelFontSize(baseSize)}" font-weight="${entry.isPriority ? 800 : 700}" fill="#17324d" stroke="rgba(255,255,255,0.95)" stroke-width="${mapLabelStrokeWidth(4.4)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`;
+        const displayName = entry.displayNameEn || entry.displayNameJa;
+        return `<text x="${screenX.toFixed(2)}" y="${screenY.toFixed(2)}" font-size="${mapLabelFontSize(baseSize)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${mapLabelStrokeWidth(4.2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`;
       }).join('');
     }
 
@@ -426,23 +427,23 @@
           opacity = 0.9;
         }
 
-        const outerWidth = clamp((line.kind === 'shinkansen' ? 8.5 : 5.8) / Math.pow(zoomScale, 1.08), 0.18, line.kind === 'shinkansen' ? 8.5 : 5.8);
-        const innerWidth = clamp((line.kind === 'shinkansen' ? 4.6 : 2.8) / Math.pow(zoomScale, 1.08), 0.1, line.kind === 'shinkansen' ? 4.6 : 2.8);
+        const outerWidth = clamp((state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 10 : 7) : 7) / Math.pow(zoomScale, 1.08), 0.22, state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 10 : 7) : 7);
+        const innerWidth = clamp((state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 5.2 : 3.4) : 3.4) / Math.pow(zoomScale, 1.08), 0.12, state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 5.2 : 3.4) : 3.4);
         return drawPath(line.coordinates, color, outerWidth, innerWidth, opacity);
       }).join('');
 
       const servicePaths = state.viewMode === 'service' && family
         ? family.segments.map((segment) => {
-            const outerWidth = clamp(8.4 / Math.pow(zoomScale, 1.06), 0.22, 8.4);
-            const innerWidth = clamp(5.2 / Math.pow(zoomScale, 1.06), 0.14, 5.2);
+            const outerWidth = clamp(8.4 / Math.pow(zoomScale, 1.08), 0.24, 8.4);
+            const innerWidth = clamp(5.4 / Math.pow(zoomScale, 1.08), 0.16, 5.4);
             return drawPath(segment.coordinates, family.color, outerWidth, innerWidth, 0.94);
           }).join('')
         : '';
 
       const stationMarkup = visibleStations().map((station) => {
         const point = state.projection.project(station.lat, station.lon);
-        const radius = clamp((station.is_priority ? 4.0 : 2.6) / Math.pow(zoomScale, 1.45), 0.16, station.is_priority ? 4.0 : 2.6);
-        const strokeWidth = clamp((station.is_priority ? 1.2 : 0.9) / Math.pow(zoomScale, 0.42), 0.25, station.is_priority ? 1.2 : 0.9);
+        const radius = clamp((station.is_priority ? 3.8 : 3.8) / Math.pow(zoomScale, 1.45), 0.22, 3.8);
+        const strokeWidth = clamp((station.is_priority ? 1.15 : 1.15) / Math.pow(zoomScale, 0.42), 0.3, 1.15);
         return `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="${radius.toFixed(2)}" fill="#ffffff" stroke="#17324d" stroke-width="${strokeWidth.toFixed(2)}" />`;
       }).join('');
 
