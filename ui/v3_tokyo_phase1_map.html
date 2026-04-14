@@ -299,6 +299,7 @@
       panStartX: 0,
       panStartY: 0,
       labelEntries: [],
+      renderScheduled: false,
     };
 
     const svg = document.getElementById('map');
@@ -660,6 +661,15 @@
       applyViewport();
     }
 
+    function scheduleRender() {
+      if (state.renderScheduled) return;
+      state.renderScheduled = true;
+      window.requestAnimationFrame(() => {
+        state.renderScheduled = false;
+        render();
+      });
+    }
+
     function resetViewport() {
       state.zoom = 1;
       state.panX = 0;
@@ -699,12 +709,12 @@
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
       const prevZoom = state.zoom;
-      const factor = event.deltaY < 0 ? 1.12 : 0.9;
+      const factor = Math.exp(-event.deltaY * 0.0018);
       state.zoom = clamp(state.zoom * factor, state.minZoom, state.maxZoom);
       const scaleChange = state.zoom / prevZoom;
       state.panX = mouseX - (mouseX - state.panX) * scaleChange;
       state.panY = mouseY - (mouseY - state.panY) * scaleChange;
-      render();
+      scheduleRender();
     }, { passive: false });
 
     async function init() {
