@@ -140,6 +140,15 @@ This is where future high-detail interchange complexity can live without polluti
 
 Represents a named service family or display route.
 
+For Tokyo-area `JR`, this should usually mean the rider-facing service family rather than the raw physical-line name.  
+Examples:
+
+- `Yamanote Line`
+- `Keihin-Tohoku・Negishi Line`
+- `Ueno-Tokyo Line`
+- `Shonan-Shinjuku Line`
+- `Saikyo・Kawagoe Line`
+
 ```ts
 type ServiceRouteId = string;
 
@@ -157,6 +166,18 @@ type ServiceRoute = {
 ## 6. Service Pattern
 
 Represents one reusable stop pattern before expansion into concrete trip instances.
+
+For `JR` specifically, `ServicePattern` is where we should distinguish:
+
+- one rider-facing service family
+- multiple concrete through-running patterns on top of different physical lines
+
+Examples:
+
+- `Takasaki -> Ueno-Tokyo -> Tokaido`
+- `Joban -> Ueno-Tokyo -> Tokaido`
+- `Takasaki -> Shonan-Shinjuku -> Yokosuka`
+- `Tohoku -> Shonan-Shinjuku -> Tokaido`
 
 ```ts
 type ServicePatternId = string;

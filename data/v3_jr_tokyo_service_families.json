@@ -1,0 +1,224 @@
+{
+  "id": "v3_jr_tokyo_service_families_v0_1",
+  "note": "Tokyo-core JR naming model for v3. Distinguishes physical lines from rider-facing service families and from concrete through-running patterns.",
+  "operator": "JR East / JR Central",
+  "physical_line_basis": [
+    "山手線",
+    "中央線",
+    "総武線",
+    "横須賀線",
+    "東海道線",
+    "東北線",
+    "常磐線",
+    "京葉線",
+    "赤羽線",
+    "川越線",
+    "高崎線",
+    "根岸線",
+    "武蔵野線"
+  ],
+  "service_families": [
+    {
+      "id": "JR_YAMANOTE",
+      "display_name_en": "Yamanote Line",
+      "display_name_ja": "山手線",
+      "family_type": "loop_service",
+      "member_physical_lines_ja": ["山手線"],
+      "notes": "This is both a rider-facing service name and a physical line in the current Tokyo-core model."
+    },
+    {
+      "id": "JR_KEIHIN_TOHOKU_NEGISHI",
+      "display_name_en": "Keihin-Tohoku・Negishi Line",
+      "display_name_ja": "京浜東北・根岸線",
+      "family_type": "through_service_family",
+      "member_physical_lines_ja": ["東北線", "根岸線"],
+      "notes": "Rider-facing family spanning the north-south urban corridor; should not be stored as a single physical line."
+    },
+    {
+      "id": "JR_CHUO_RAPID",
+      "display_name_en": "Chuo Line (Rapid)",
+      "display_name_ja": "中央線快速",
+      "family_type": "service_family",
+      "member_physical_lines_ja": ["中央線"],
+      "notes": "Rapid-service family on the Chuo physical corridor."
+    },
+    {
+      "id": "JR_CHUO_SOBU_LOCAL",
+      "display_name_en": "Chuo・Sobu Line (Local)",
+      "display_name_ja": "中央・総武線各駅停車",
+      "family_type": "through_service_family",
+      "member_physical_lines_ja": ["中央線", "総武線"],
+      "notes": "Local cross-Tokyo family that spans both the Chuo and Sobu physical corridors."
+    },
+    {
+      "id": "JR_SOBU_RAPID",
+      "display_name_en": "Sobu Line (Rapid)",
+      "display_name_ja": "総武快速線",
+      "family_type": "service_family",
+      "member_physical_lines_ja": ["総武線"],
+      "notes": "Passenger-facing rapid family distinct from Chuo・Sobu local even though both touch the Sobu physical corridor."
+    },
+    {
+      "id": "JR_YOKOSUKA",
+      "display_name_en": "Yokosuka Line",
+      "display_name_ja": "横須賀線",
+      "family_type": "service_family",
+      "member_physical_lines_ja": ["横須賀線"],
+      "notes": "Passenger-facing service family on the Yokosuka physical corridor."
+    },
+    {
+      "id": "JR_TOKAIDO",
+      "display_name_en": "Tokaido Line",
+      "display_name_ja": "東海道線",
+      "family_type": "service_family",
+      "member_physical_lines_ja": ["東海道線"],
+      "notes": "Passenger-facing service family on the Tokaido physical corridor. Distinct from Shinkansen."
+    },
+    {
+      "id": "JR_UENO_TOKYO",
+      "display_name_en": "Ueno-Tokyo Line",
+      "display_name_ja": "上野東京ライン",
+      "family_type": "corridor_service_family",
+      "member_physical_lines_ja": ["東北線", "高崎線", "常磐線", "東海道線"],
+      "notes": "Rider-facing corridor name. Not a single physical line. Represents through-running between north-side JR corridors and the Tokaido corridor via central Tokyo."
+    },
+    {
+      "id": "JR_SAIKYO_KAWAGOE",
+      "display_name_en": "Saikyo・Kawagoe Line",
+      "display_name_ja": "埼京・川越線",
+      "family_type": "through_service_family",
+      "member_physical_lines_ja": ["赤羽線", "川越線"],
+      "notes": "Passenger-facing family joining the Saikyo corridor with the Kawagoe extension."
+    },
+    {
+      "id": "JR_SHONAN_SHINJUKU",
+      "display_name_en": "Shonan-Shinjuku Line",
+      "display_name_ja": "湘南新宿ライン",
+      "family_type": "corridor_service_family",
+      "member_physical_lines_ja": ["東海道線", "横須賀線", "東北線", "高崎線", "赤羽線"],
+      "notes": "Rider-facing through-running family across north/south JR corridors via the central Saikyo/Shinjuku corridor."
+    },
+    {
+      "id": "JR_JOBAN_RAPID",
+      "display_name_en": "Joban Line (Rapid)",
+      "display_name_ja": "常磐線快速",
+      "family_type": "service_family",
+      "member_physical_lines_ja": ["常磐線"],
+      "notes": "Passenger-facing rapid family on the Joban corridor."
+    },
+    {
+      "id": "JR_JOBAN_LOCAL",
+      "display_name_en": "Joban Line (Local)",
+      "display_name_ja": "常磐線各駅停車",
+      "family_type": "service_family",
+      "member_physical_lines_ja": ["常磐線"],
+      "notes": "Local family on the Joban corridor. Remains distinct from Joban Rapid at the service layer even when they share physical corridor segments."
+    },
+    {
+      "id": "JR_KEIYO",
+      "display_name_en": "Keiyo Line",
+      "display_name_ja": "京葉線",
+      "family_type": "service_family",
+      "member_physical_lines_ja": ["京葉線"],
+      "notes": "Passenger-facing service family on the Keiyo corridor."
+    }
+  ],
+  "through_patterns": [
+    {
+      "id": "TP_UTSUNOMIYA_TO_TOKAIDO_VIA_UENO_TOKYO",
+      "service_family_id": "JR_UENO_TOKYO",
+      "display_name_en": "Utsunomiya / Tohoku -> Ueno-Tokyo -> Tokaido",
+      "display_name_ja": "宇都宮・東北方面→上野東京ライン→東海道方面",
+      "physical_line_sequence_ja": ["東北線", "東海道線"]
+    },
+    {
+      "id": "TP_TAKASAKI_TO_TOKAIDO_VIA_UENO_TOKYO",
+      "service_family_id": "JR_UENO_TOKYO",
+      "display_name_en": "Takasaki -> Ueno-Tokyo -> Tokaido",
+      "display_name_ja": "高崎方面→上野東京ライン→東海道方面",
+      "physical_line_sequence_ja": ["高崎線", "東北線", "東海道線"]
+    },
+    {
+      "id": "TP_JOBAN_TO_TOKAIDO_VIA_UENO_TOKYO",
+      "service_family_id": "JR_UENO_TOKYO",
+      "display_name_en": "Joban -> Ueno-Tokyo -> Tokaido",
+      "display_name_ja": "常磐方面→上野東京ライン→東海道方面",
+      "physical_line_sequence_ja": ["常磐線", "東北線", "東海道線"]
+    },
+    {
+      "id": "TP_TAKASAKI_TO_TOKAIDO_VIA_SHONAN_SHINJUKU",
+      "service_family_id": "JR_SHONAN_SHINJUKU",
+      "display_name_en": "Takasaki -> Shonan-Shinjuku -> Tokaido",
+      "display_name_ja": "高崎方面→湘南新宿ライン→東海道方面",
+      "physical_line_sequence_ja": ["高崎線", "赤羽線", "東海道線"]
+    },
+    {
+      "id": "TP_TAKASAKI_TO_YOKOSUKA_VIA_SHONAN_SHINJUKU",
+      "service_family_id": "JR_SHONAN_SHINJUKU",
+      "display_name_en": "Takasaki -> Shonan-Shinjuku -> Yokosuka",
+      "display_name_ja": "高崎方面→湘南新宿ライン→横須賀方面",
+      "physical_line_sequence_ja": ["高崎線", "赤羽線", "横須賀線"]
+    },
+    {
+      "id": "TP_TOHOKU_TO_TOKAIDO_VIA_SHONAN_SHINJUKU",
+      "service_family_id": "JR_SHONAN_SHINJUKU",
+      "display_name_en": "Tohoku -> Shonan-Shinjuku -> Tokaido",
+      "display_name_ja": "東北方面→湘南新宿ライン→東海道方面",
+      "physical_line_sequence_ja": ["東北線", "赤羽線", "東海道線"]
+    },
+    {
+      "id": "TP_TOHOKU_TO_YOKOSUKA_VIA_SHONAN_SHINJUKU",
+      "service_family_id": "JR_SHONAN_SHINJUKU",
+      "display_name_en": "Tohoku -> Shonan-Shinjuku -> Yokosuka",
+      "display_name_ja": "東北方面→湘南新宿ライン→横須賀方面",
+      "physical_line_sequence_ja": ["東北線", "赤羽線", "横須賀線"]
+    },
+    {
+      "id": "TP_SAIKYO_TO_KAWAGOE",
+      "service_family_id": "JR_SAIKYO_KAWAGOE",
+      "display_name_en": "Saikyo -> Kawagoe",
+      "display_name_ja": "埼京線→川越線",
+      "physical_line_sequence_ja": ["赤羽線", "川越線"]
+    },
+    {
+      "id": "TP_CHUO_TO_SOBU_LOCAL",
+      "service_family_id": "JR_CHUO_SOBU_LOCAL",
+      "display_name_en": "Chuo -> Sobu Local Through Service",
+      "display_name_ja": "中央・総武各駅停車 直通",
+      "physical_line_sequence_ja": ["中央線", "総武線"]
+    },
+    {
+      "id": "TP_KEIHIN_TOHOKU_TO_NEGISHI",
+      "service_family_id": "JR_KEIHIN_TOHOKU_NEGISHI",
+      "display_name_en": "Keihin-Tohoku -> Negishi Through Service",
+      "display_name_ja": "京浜東北・根岸線 直通",
+      "physical_line_sequence_ja": ["東北線", "根岸線"]
+    }
+  ],
+  "official_naming_references": [
+    {
+      "topic": "Ueno-Tokyo Line rider-facing naming on JR East timetable pages",
+      "url": "https://timetables.jreast.co.jp/en/timetable/list0204.html"
+    },
+    {
+      "topic": "Shonan-Shinjuku Line rider-facing naming on JR East timetable pages",
+      "url": "https://timetables.jreast.co.jp/en/2602/timetable/tt0866/0866081.html"
+    },
+    {
+      "topic": "Saikyo・Kawagoe Line rider-facing naming on JR East timetable pages",
+      "url": "https://timetables.jreast.co.jp/en/2603/timetable/tt0034/0034041.html"
+    },
+    {
+      "topic": "Keihin-Tohoku・Negishi Line rider-facing naming on JR East timetable pages",
+      "url": "https://timetables.jreast.co.jp/en/timetable/list0301.html"
+    },
+    {
+      "topic": "Chuo・Sobu Line (Local) and Sobu Line (Rapid) rider-facing naming on JR East timetable pages",
+      "url": "https://timetables.jreast.co.jp/en/timetable/list0136.html"
+    },
+    {
+      "topic": "JR East train-information naming list that includes Ueno-Tokyo Line and Shonan-Shinjuku Line as passenger-facing operational entities",
+      "url": "https://www.jreast.co.jp/en/t_i/"
+    }
+  ]
+}
