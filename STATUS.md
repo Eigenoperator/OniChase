@@ -1,8 +1,7 @@
 # STATUS
 
 ## Current Focus
-继续收新的主 `v2` 联机试玩稳定性，同时开始把 `v3` 第一阶段正式拆成“东京周边真实地图 + 真实车次数据”的范围定义。
-
+继续收新的主 `v2` 联机试玩稳定性，同时推进 `v3` 第一阶段的真实东京线网与真实车次数据底座。
 ## Done
 - 已补写 `diary/DIARY-2026-04-06.md` 与 `diary/DIARY-2026-04-07.md`，并创建 `memory/MEMORY-2026-04-07.md`、`memory/MEMORY-2026-04-08.md` 作为对应 raw memory。
 - 已完成 `v1` 山手线真实站点、weekday 时刻表、合并列车实例、可视化与第一版可玩客户端。
@@ -31,12 +30,10 @@
 - 已把公开 `v2` 网页的多人配置接到 Render 房间服务器 `https://onichase.onrender.com`，现在公开网页会默认尝试连公网联机后端。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
 - 已明确 `v3` 第一阶段只做两件事：增大地图范围、准备东京周边 `JR / 私铁 / 新干线` 的真实数据底座，不急于先把新范围做成完整可玩版。
-- 正在把 `v3 phase 1` 继续拆成可执行清单：已开始把整线范围和关键站点优先级明确写死，避免后续 scope 漂移。
-
+- 已完成全新干线真实 geometry、东京周边真实物理线网图、`JR service_family` 命名模型，以及 `JR East / Toei / Rinkai / Yurikamome` 第一批真实 weekday train instances。
 ## Blockers
 - 当前仓库和本会话里没有可用的 Notion 工具、脚本或配置，所以无法直接完成真正的 Notion 更新。
 - `JR Central` 仍没有像 `JR East / JR West` 那样直接暴露单趟 train-detail 页，所以后面若要进一步精细化，仍需继续完善“按全站 departure grid 聚合 train instances”的逻辑。
-
 ## Decisions
 - [2026-03-30] 主测试主线使用“真实山手线 + 真实站点 + 真实时刻表”。
 - [2026-04-03] 不再为每个小改动都 commit / push；只在显著变化时同步，但有实质工作的一天仍需至少同步一次。
@@ -49,5 +46,5 @@
 
 ## Next
 1. 继续收主 `v2` 联机页面细节，例如房间状态、ready / planning / live 同步，以及单人/多人一致性。
-2. 按 `V3_PHASE1_LINES.md` 和 `V3_PHASE1_STATIONS.md` 锁东京周边第一阶段的整线范围与关键站点优先级。
-3. 为 `v3 phase 1` 准备真实物理地图与真实列车数据的输入链，不急于先做完整玩法迁移。
+2. 继续收 `v3` 东京周边剩余系统的真实车次数据，优先 `Tokyo Metro`、`Tokyo Monorail`、`Tama Monorail`、`Tsukuba Express` 与各私铁。
+3. 在 `v3` 的真实物理网络上继续做 `physical_station / station_group` 拆分，为之后的玩法和换乘逻辑打底。

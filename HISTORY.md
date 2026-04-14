@@ -235,3 +235,8 @@
 - Increased the public `v2` map zoom ceiling and changed station-circle / label scaling so dense areas like Tokyo can be zoomed further while labels and station dots shrink with zoom instead of overwhelming the view.
 - Improved the public `v2` multiplayer UX by adding copyable room-code surfaces in both the lobby and main board, surfacing opponent joined/ready status much more clearly, and moving essential online actions into a visible dedicated `Room` panel instead of the hidden temporary session area.
 - Reworked public `v2` multiplayer into a true pre-game ready room: players now create/join first, wait in a dedicated room with copyable room code and seat presence cards, and only enter the main game after both sides mark ready.
+
+## 2026-04-13
+
+- Turned `v3` from scope discussion into a real data-foundation build: completed full nationwide Shinkansen real geometry, expanded the Tokyo real-position network to include JR, private rail, metro, monorail, and other urban rail systems, and published the first online `v3` Tokyo map page.
+- Began collecting real Tokyo-area train data for `v3`, producing the first weekday train-instance batches for `JR East` Tokyo core, `Toei`, `Rinkai`, and `Yurikamome`.
