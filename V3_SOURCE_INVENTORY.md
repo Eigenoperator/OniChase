@@ -17,6 +17,13 @@ Current machine-readable output generated from this source plan:
 
 - `data/v3_tokyo_timetable_source_registry.json`
 
+Recent collected batches already produced from this source plan:
+
+- `data/v3_tokyo_jreast_core_weekday_train_instances.json`
+- `data/v3_tokyo_toei_weekday_train_instances.json`
+- `data/v3_tokyo_rinkai_weekday_train_instances.json`
+- `data/v3_tokyo_yurikamome_weekday_train_instances.json`
+
 ## Phase 1 Rule
 
 `v3 phase 1` is still about two things first:
