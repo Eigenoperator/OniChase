@@ -344,6 +344,46 @@
       return state.data.visibleStations;
     }
 
+    function stationDensityThresholdPx() {
+      if (state.zoom < 1.35) return 34;
+      if (state.zoom < 2.1) return 24;
+      if (state.zoom < 3.8) return 16;
+      if (state.zoom < 6.0) return 8;
+      return 0;
+    }
+
+    function stationMarkerEntries() {
+      const threshold = stationDensityThresholdPx();
+      const stations = visibleStations();
+      if (threshold <= 0) return stations;
+      const candidates = stations.map((station, index) => {
+        const point = state.projection.project(station.lat, station.lon);
+        return { station, index, point };
+      }).sort((a, b) => {
+        if (!!b.station.is_priority !== !!a.station.is_priority) {
+          return Number(!!b.station.is_priority) - Number(!!a.station.is_priority);
+        }
+        return a.index - b.index;
+      });
+      const kept = [];
+      for (const candidate of candidates) {
+        const screenX = candidate.point.x * state.zoom;
+        const screenY = candidate.point.y * state.zoom;
+        const limit = candidate.station.is_priority ? threshold * 0.65 : threshold;
+        const crowded = kept.some((existing) => {
+          const dx = screenX - existing.screenX;
+          const dy = screenY - existing.screenY;
+          return Math.hypot(dx, dy) < limit;
+        });
+        if (!crowded) {
+          kept.push({ ...candidate, screenX, screenY });
+        }
+      }
+      return kept
+        .sort((a, b) => a.index - b.index)
+        .map((entry) => entry.station);
+    }
+
     function buildLabelEntries() {
       state.labelEntries = visibleStations().map((station) => ({
         stationId: `${station.name_ja}_${station.lon}_${station.lat}`,
@@ -440,10 +480,10 @@
           }).join('')
         : '';
 
-      const stationMarkup = visibleStations().map((station) => {
+      const stationMarkup = stationMarkerEntries().map((station) => {
         const point = state.projection.project(station.lat, station.lon);
-        const radius = clamp((station.is_priority ? 3.8 : 3.8) / Math.pow(zoomScale, 1.45), 0.22, 3.8);
-        const strokeWidth = clamp((station.is_priority ? 1.15 : 1.15) / Math.pow(zoomScale, 0.42), 0.3, 1.15);
+        const radius = clamp((station.is_priority ? 3.2 : 2.3) / Math.pow(zoomScale, 1.7), 0.08, station.is_priority ? 3.2 : 2.3);
+        const strokeWidth = clamp((station.is_priority ? 1.0 : 0.82) / Math.pow(zoomScale, 0.62), 0.18, station.is_priority ? 1.0 : 0.82);
         return `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="${radius.toFixed(2)}" fill="#ffffff" stroke="#17324d" stroke-width="${strokeWidth.toFixed(2)}" />`;
       }).join('');
 
