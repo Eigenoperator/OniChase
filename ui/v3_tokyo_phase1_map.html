@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OniChase V3 Tokyo Phase 1 Map</title>
+  <style>
+    :root {
+      --bg: #eef3f8;
+      --panel: rgba(255,255,255,0.94);
+      --line: #d9e1eb;
+      --ink: #1d2a38;
+      --muted: #657587;
+      --accent: #1d5fbf;
+      --shadow: 0 18px 40px rgba(22, 34, 48, 0.12);
+      --shadow-soft: 0 10px 24px rgba(22, 34, 48, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 14% 14%, rgba(29,95,191,0.10), transparent 20%),
+        linear-gradient(180deg, #f8fbff 0%, #edf2f8 100%);
+    }
+
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      gap: 16px;
+      align-items: center;
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(217,225,235,0.95);
+      background: rgba(252,254,255,0.92);
+      backdrop-filter: blur(14px);
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0.02em;
+    }
+
+    .topbar p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      max-width: 860px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 800;
+      padding: 11px 14px;
+      border-radius: 14px;
+      color: var(--ink);
+      background: #edf3fb;
+      box-shadow: var(--shadow-soft);
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 20px;
+      padding: 20px 24px 24px;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .panel {
+      min-height: 0;
+      overflow: hidden;
+      border-radius: 26px;
+      background: var(--panel);
+      border: 1px solid rgba(217,225,235,0.95);
+      box-shadow: var(--shadow);
+    }
+
+    .map-panel {
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .map-head {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      gap: 12px;
+      align-items: end;
+      padding: 18px 20px 12px;
+      border-bottom: 1px solid rgba(217,225,235,0.92);
+    }
+
+    .map-head h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .map-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .stats {
+      text-align: right;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .map-wrap {
+      min-height: 0;
+      padding: 16px 18px 18px;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background:
+        radial-gradient(circle at 16% 12%, rgba(29,95,191,0.06), transparent 18%),
+        linear-gradient(180deg, rgba(255,255,255,0.95), rgba(245,249,252,0.98));
+      border-radius: 20px;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .sidebar {
+      overflow: auto;
+    }
+
+    .sidebar section {
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(217,225,235,0.92);
+    }
+
+    .sidebar section:last-child {
+      border-bottom: 0;
+    }
+
+    .section-label {
+      margin: 0 0 10px;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+    }
+
+    .info-box {
+      white-space: pre-wrap;
+      line-height: 1.55;
+      font-size: 13px;
+      color: var(--ink);
+      border-radius: 18px;
+      background: rgba(246,250,255,0.92);
+      border: 1px solid rgba(217,225,235,0.95);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .card-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-card {
+      width: 100%;
+      text-align: left;
+      border-radius: 16px;
+      border: 1px solid rgba(217,225,235,0.95);
+      background: rgba(246,250,255,0.98);
+      padding: 12px 14px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .mini-card.active {
+      border-color: rgba(29,95,191,0.34);
+      background: rgba(29,95,191,0.10);
+    }
+
+    .mini-card strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .mini-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .mini-card em {
+      display: block;
+      color: #2c4159;
+      font-style: normal;
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <h1>V3 Tokyo Phase 1 Map</h1>
+        <p>Real-position Tokyo rail pilot. Physical view keeps true infrastructure geometry; service view overlays JR rider-facing service families on the same map.</p>
+      </div>
+      <div class="toolbar">
+        <button id="physical-btn" class="primary">Physical View</button>
+        <button id="service-btn">JR Service View</button>
+      </div>
+    </header>
+
+    <section class="shell">
+      <section class="panel map-panel">
+        <div class="map-head">
+          <div>
+            <h2 id="map-title">Physical View</h2>
+            <p id="map-subtitle">Real Shinkansen, JR physical corridors, and whole-company private-rail geometry at true positions.</p>
+          </div>
+          <div class="stats" id="map-stats"></div>
+        </div>
+        <div class="map-wrap">
+          <svg id="map" viewBox="0 0 1200 920" aria-label="V3 Tokyo physical and service map"></svg>
+        </div>
+      </section>
+
+      <aside class="panel sidebar">
+        <section>
+          <div class="section-label">Selection</div>
+          <div id="selection-info" class="info-box">No JR service family selected.</div>
+        </section>
+
+        <section>
+          <div class="section-label">JR Service Families</div>
+          <div id="family-list" class="card-list"></div>
+        </section>
+
+        <section>
+          <div class="section-label">Through Patterns</div>
+          <div id="pattern-list" class="card-list"></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const DATA_URL = window.location.pathname.includes('/ui/')
+      ? '../data/v3_tokyo_phase1_service_views.json'
+      : './data/v3_tokyo_phase1_service_views.json';
+
+    const state = {
+      data: null,
+      viewMode: 'physical',
+      selectedFamilyId: null,
+      projection: null,
+      dragging: false,
+      zoom: 1,
+      minZoom: 0.8,
+      maxZoom: 14,
+      panX: 0,
+      panY: 0,
+      dragStartX: 0,
+      dragStartY: 0,
+      panStartX: 0,
+      panStartY: 0,
+    };
+
+    const svg = document.getElementById('map');
+    const mapTitle = document.getElementById('map-title');
+    const mapSubtitle = document.getElementById('map-subtitle');
+    const mapStats = document.getElementById('map-stats');
+    const selectionInfo = document.getElementById('selection-info');
+    const familyList = document.getElementById('family-list');
+    const patternList = document.getElementById('pattern-list');
+
+    document.getElementById('physical-btn').addEventListener('click', () => setViewMode('physical'));
+    document.getElementById('service-btn').addEventListener('click', () => setViewMode('service'));
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function makeProjection(bounds) {
+      const width = 1200;
+      const height = 920;
+      const padding = 56;
+      return {
+        width, height, padding,
+        minLon: bounds.min_lon,
+        maxLon: bounds.max_lon,
+        minLat: bounds.min_lat,
+        maxLat: bounds.max_lat,
+        project(lat, lon) {
+          const x = padding + ((lon - bounds.min_lon) / (bounds.max_lon - bounds.min_lon)) * (width - padding * 2);
+          const y = height - padding - ((lat - bounds.min_lat) / (bounds.max_lat - bounds.min_lat)) * (height - padding * 2);
+          return { x, y };
+        }
+      };
+    }
+
+    function drawPath(coords, color, width, opacity, dx = 0) {
+      if (!coords || coords.length < 2) return '';
+      const points = coords.map(([lon, lat]) => state.projection.project(lat, lon));
+      const d = points.map((pt, index) => `${index === 0 ? 'M' : 'L'} ${(pt.x + dx).toFixed(2)} ${pt.y.toFixed(2)}`).join(' ');
+      return `<path d="${d}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}" />`;
+    }
+
+    function stationGroupVisible() {
+      return state.data.visibleStations.filter((station) => station.is_priority || state.zoom >= 2.5);
+    }
+
+    function familyById(id) {
+      return state.data.serviceFamilies.find((item) => item.id === id) || null;
+    }
+
+    function selectedPatterns() {
+      if (!state.selectedFamilyId) return [];
+      return state.data.throughPatterns.filter((pattern) => pattern.service_family_id === state.selectedFamilyId);
+    }
+
+    function renderSidebar() {
+      const family = familyById(state.selectedFamilyId);
+      selectionInfo.textContent = family
+        ? `${family.display_name_en}\n${family.display_name_ja}\n\nPhysical lines: ${family.member_physical_lines_ja.join(' / ')}`
+        : 'No JR service family selected.';
+
+      familyList.innerHTML = state.data.serviceFamilies.map((familyItem) => `
+        <button class="mini-card ${familyItem.id === state.selectedFamilyId ? 'active' : ''}" data-family-id="${familyItem.id}">
+          <strong>${familyItem.display_name_en}</strong>
+          <span>${familyItem.display_name_ja}</span>
+          <em>${familyItem.member_physical_lines_ja.join(' / ')}</em>
+        </button>
+      `).join('');
+
+      familyList.querySelectorAll('[data-family-id]').forEach((node) => {
+        node.addEventListener('click', () => {
+          state.selectedFamilyId = node.getAttribute('data-family-id');
+          if (state.viewMode !== 'service') setViewMode('service');
+          else render();
+        });
+      });
+
+      const patterns = selectedPatterns();
+      patternList.innerHTML = patterns.length
+        ? patterns.map((pattern) => `
+          <div class="mini-card">
+            <strong>${pattern.display_name_en}</strong>
+            <span>${pattern.display_name_ja}</span>
+            <em>${pattern.physical_line_sequence_ja.join(' → ')}</em>
+          </div>
+        `).join('')
+        : '<div class="info-box">Select one JR service family to inspect its through-running patterns.</div>';
+    }
+
+    function render() {
+      if (!state.data) return;
+      const visibleStations = stationGroupVisible();
+      const family = familyById(state.selectedFamilyId);
+      const serviceSegments = family ? family.segments : [];
+      const priorityStationSet = new Set(
+        family
+          ? visibleStations.filter((station) => family.member_physical_lines_ja.includes(station.line_name_ja)).map((station) => station.name_ja)
+          : []
+      );
+
+      mapTitle.textContent = state.viewMode === 'physical' ? 'Physical View' : 'JR Service View';
+      mapSubtitle.textContent = state.viewMode === 'physical'
+        ? 'Real Shinkansen, JR physical corridors, and whole-company private-rail geometry at true positions.'
+        : 'JR rider-facing service families painted on top of the same real geometry. Private rail and Shinkansen stay visible as context.';
+      mapStats.textContent = `Physical sections: ${state.data.physicalLines.length}\nJR service families: ${state.data.serviceFamilies.length}\nThrough patterns: ${state.data.throughPatterns.length}`;
+
+      const physicalPaths = [];
+      state.data.physicalLines.forEach((line) => {
+        const isFamilyLine = family && family.member_physical_lines_ja.includes(line.line_name_ja);
+        const color = state.viewMode === 'physical'
+          ? line.color
+          : (line.kind === 'jr'
+            ? (isFamilyLine ? '#dbe4ef' : '#e6ecf4')
+            : line.color);
+        const width = line.kind === 'shinkansen' ? 3.8 : 2.2;
+        const opacity = state.viewMode === 'physical'
+          ? (line.kind === 'shinkansen' ? 0.92 : 0.74)
+          : (line.kind === 'jr' ? (isFamilyLine ? 0.42 : 0.18) : 0.36);
+        physicalPaths.push(drawPath(line.coordinates, color, width, opacity));
+      });
+
+      const servicePaths = [];
+      if (state.viewMode === 'service' && family) {
+        serviceSegments.forEach((segment) => {
+          servicePaths.push(drawPath(segment.coordinates, '#ffffff', 8.4, 0.96));
+          servicePaths.push(drawPath(segment.coordinates, family.color, 5.2, 0.92));
+        });
+      }
+
+      const stationsSvg = [];
+      visibleStations.forEach((station) => {
+        const point = state.projection.project(station.lat, station.lon);
+        const selected = priorityStationSet.has(station.name_ja);
+        const radius = station.is_priority ? 3.6 : 2.1;
+        if (selected && state.viewMode === 'service') {
+          stationsSvg.push(`<circle cx="${point.x}" cy="${point.y}" r="${radius + 2.5}" fill="rgba(21,95,191,0.12)" />`);
+        }
+        stationsSvg.push(`<circle cx="${point.x}" cy="${point.y}" r="${radius}" fill="#ffffff" stroke="#17324d" stroke-width="${selected ? 1.8 : 1.1}" />`);
+        if (station.is_priority || selected) {
+          stationsSvg.push(`<text x="${point.x + 7}" y="${point.y - 6}" font-size="12" font-weight="700" fill="#10253b" stroke="rgba(255,255,255,0.96)" stroke-width="3" paint-order="stroke">${station.name_ja}</text>`);
+        }
+      });
+
+      svg.innerHTML = `
+        <g id="viewport">
+          <rect x="0" y="0" width="${state.projection.width}" height="${state.projection.height}" fill="transparent" />
+          <g>${physicalPaths.join('')}</g>
+          <g>${servicePaths.join('')}</g>
+          <g>${stationsSvg.join('')}</g>
+        </g>
+      `;
+      applyViewport();
+      renderSidebar();
+    }
+
+    function applyViewport() {
+      const viewport = document.getElementById('viewport');
+      if (!viewport) return;
+      viewport.setAttribute('transform', `translate(${state.panX.toFixed(2)} ${state.panY.toFixed(2)}) scale(${state.zoom.toFixed(4)})`);
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      document.getElementById('physical-btn').classList.toggle('primary', mode === 'physical');
+      document.getElementById('service-btn').classList.toggle('primary', mode === 'service');
+      render();
+    }
+
+    svg.addEventListener('mousedown', (event) => {
+      state.dragging = true;
+      state.dragStartX = event.clientX;
+      state.dragStartY = event.clientY;
+      state.panStartX = state.panX;
+      state.panStartY = state.panY;
+    });
+
+    window.addEventListener('mouseup', () => {
+      state.dragging = false;
+    });
+
+    window.addEventListener('mousemove', (event) => {
+      if (!state.dragging) return;
+      state.panX = state.panStartX + (event.clientX - state.dragStartX);
+      state.panY = state.panStartY + (event.clientY - state.dragStartY);
+      applyViewport();
+    });
+
+    svg.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      const rect = svg.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+      const prevZoom = state.zoom;
+      const factor = event.deltaY < 0 ? 1.12 : 0.9;
+      state.zoom = clamp(state.zoom * factor, state.minZoom, state.maxZoom);
+      const scaleChange = state.zoom / prevZoom;
+      state.panX = mouseX - (mouseX - state.panX) * scaleChange;
+      state.panY = mouseY - (mouseY - state.panY) * scaleChange;
+      applyViewport();
+    }, { passive: false });
+
+    async function init() {
+      const response = await fetch(DATA_URL);
+      if (!response.ok) throw new Error(`Failed to load ${DATA_URL}`);
+      state.data = await response.json();
+      state.projection = makeProjection(state.data.bounds);
+      render();
+    }
+
+    init().catch((error) => {
+      selectionInfo.textContent = `Failed to load Tokyo phase 1 map.\n\n${String(error)}`;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+{
+  "id": "v3_tokyo_timetable_source_registry_v0_1",
+  "scope": "tokyo_phase1_jr_private_shinkansen_timetable_sources",
+  "note": "Machine-readable registry for the first real timetable collection phase of v3. This is the first concrete train-data intake layer for Tokyo-area JR and private operators. It records which operators are ready to collect now, which official sources to target first, and which existing v2 ingestion scripts can be reused.",
+  "operators": [
+    {
+      "id": "jr_east_conventional",
+      "display_name_en": "JR East Conventional",
+      "display_name_ja": "JR東日本 在来線",
+      "company_group": "JR East",
+      "collection_status": "ready_to_collect",
+      "source_kind": "official_station_timetable",
+      "official_domain": "https://timetables.jreast.co.jp",
+      "entry_urls": [
+        "https://timetables.jreast.co.jp/en/index.html"
+      ],
+      "service_families": [
+        "Yamanote Line",
+        "Keihin-Tohoku・Negishi Line",
+        "Chuo Line (Rapid)",
+        "Chuo・Sobu Line (Local)",
+        "Sobu Line (Rapid)",
+        "Yokosuka Line",
+        "Ueno-Tokyo Line",
+        "Saikyo・Kawagoe Line",
+        "Shonan-Shinjuku Line",
+        "Joban Line (Rapid)",
+        "Joban Line (Local)",
+        "Keiyo Line"
+      ],
+      "reusable_scripts": [
+        "scripts/ingest/discover_jreast_timetable.py",
+        "scripts/ingest/build_jreast_train_instances_from_station_timetable.py"
+      ],
+      "notes": "Highest-confidence first intake target for Tokyo conventional rail because official JR East timetable pages and parsing scripts already exist in the repo."
+    },
+    {
+      "id": "jr_central_shinkansen",
+      "display_name_en": "JR Central Shinkansen",
+      "display_name_ja": "JR東海 新幹線",
+      "company_group": "JR Central",
+      "collection_status": "already_ingested_in_v2",
+      "source_kind": "official_station_timetable_and_resultcontrol",
+      "official_domain": "https://global.jr-central.co.jp",
+      "entry_urls": [
+        "https://global.jr-central.co.jp/en/info/timetable/index.html",
+        "https://railway.jr-central.co.jp/time-schedule/"
+      ],
+      "service_families": [
+        "Tokaido Shinkansen"
+      ],
+      "reusable_scripts": [
+        "scripts/ingest/build_jrcentral_tokaido_supplement_from_station_guides.py"
+      ],
+      "notes": "Already proven in v2; remains the Tokyo Shinkansen-side timetable base for v3."
+    },
+    {
+      "id": "tokyu",
+      "display_name_en": "Tokyu",
+      "display_name_ja": "東急電鉄",
+      "company_group": "Tokyu",
+      "collection_status": "source_registry_ready",
+      "source_kind": "official_timetable_portal_or_gtfs_like",
+      "official_domain": "https://www.tokyu.co.jp",
+      "entry_urls": [
+        "https://www.tokyu.co.jp/railway/timetable/"
+      ],
+      "lines_scope_rule": "whole_company",
+      "notes": "All Tokyu lines should enter together if timetable intake starts. First expected focus: Toyoko, Den-en-toshi, Meguro, Oimachi, Shin-Yokohama."
+    },
+    {
+      "id": "odakyu",
+      "display_name_en": "Odakyu",
+      "display_name_ja": "小田急電鉄",
+      "company_group": "Odakyu",
+      "collection_status": "source_registry_ready",
+      "source_kind": "official_timetable_portal_or_gtfs_like",
+      "official_domain": "https://www.odakyu.jp",
+      "entry_urls": [
+        "https://www.odakyu.jp/station/timetable/"
+      ],
+      "lines_scope_rule": "whole_company",
+      "notes": "All Odakyu lines should enter together once private-rail timetable intake begins."
+    },
+    {
+      "id": "keio",
+      "display_name_en": "Keio",
+      "display_name_ja": "京王電鉄",
+      "company_group": "Keio",
+      "collection_status": "source_registry_ready",
+      "source_kind": "official_timetable_portal_or_gtfs_like",
+      "official_domain": "https://www.keio.co.jp",
+      "entry_urls": [
+        "https://www.keio.co.jp/train/timetable/"
+      ],
+      "lines_scope_rule": "whole_company",
+      "notes": "All Keio lines should be collected together if Keio enters timetable scope."
+    },
+    {
+      "id": "keikyu",
+      "display_name_en": "Keikyu",
+      "display_name_ja": "京浜急行電鉄",
+      "company_group": "Keikyu",
+      "collection_status": "source_registry_ready",
+      "source_kind": "official_station_portal_then_timetable_resolution",
+      "official_domain": "https://www.keikyu.co.jp",
+      "entry_urls": [
+        "https://www.keikyu.co.jp/ride/kakueki/"
+      ],
+      "lines_scope_rule": "whole_company",
+      "notes": "Keikyu should be collected company-wide. This is especially important for the Shinagawa and Haneda-side corridors."
+    },
+    {
+      "id": "tobu",
+      "display_name_en": "Tobu",
+      "display_name_ja": "東武鉄道",
+      "company_group": "Tobu",
+      "collection_status": "source_registry_ready",
+      "source_kind": "official_timetable_portal_or_gtfs_like",
+      "official_domain": "https://www.tobu.co.jp",
+      "entry_urls": [
+        "https://railway.tobu.co.jp/timetable/"
+      ],
+      "lines_scope_rule": "whole_company",
+      "notes": "Tobu enters as a whole company per axiom, not line by line."
+    },
+    {
+      "id": "seibu",
+      "display_name_en": "Seibu",
+      "display_name_ja": "西武鉄道",
+      "company_group": "Seibu",
+      "collection_status": "source_registry_ready",
+      "source_kind": "official_timetable_portal_or_gtfs_like",
+      "official_domain": "https://www.seiburailway.jp",
+      "entry_urls": [
+        "https://www.seiburailway.jp/railway/timetable/"
+      ],
+      "lines_scope_rule": "whole_company",
+      "notes": "Seibu enters as a whole-company timetable target once private-rail collection begins."
+    },
+    {
+      "id": "keisei",
+      "display_name_en": "Keisei",
+      "display_name_ja": "京成電鉄",
+      "company_group": "Keisei",
+      "collection_status": "source_registry_ready",
+      "source_kind": "official_timetable_portal_or_station_pages",
+      "official_domain": "https://www.keisei.co.jp",
+      "entry_urls": [
+        "https://www.keisei.co.jp"
+      ],
+      "lines_scope_rule": "whole_company",
+      "notes": "Keisei enters as a whole-company target; route-specific timetable discovery is still to be resolved into a stable canonical scraper path."
+    }
+  ]
+}

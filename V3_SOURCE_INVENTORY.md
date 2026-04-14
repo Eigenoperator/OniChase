@@ -13,6 +13,10 @@ It answers:
 
 This is an execution inventory, not a final completeness claim.
 
+Current machine-readable output generated from this source plan:
+
+- `data/v3_tokyo_timetable_source_registry.json`
+
 ## Phase 1 Rule
 
 `v3 phase 1` is still about two things first:
@@ -413,3 +417,17 @@ This file is good enough for phase 1 when:
 - every included operator has a planned service source
 - station collection fields are explicit
 - `physical_station` versus `station_group` responsibilities are explicit
+
+## Current Concrete Registry
+
+The first machine-readable timetable-source registry for `v3 phase 1` now exists at:
+
+- `data/v3_tokyo_timetable_source_registry.json`
+
+It records, per operator:
+
+- source readiness
+- source kind
+- official entry URL
+- whole-company scope rule
+- reusable ingestion scripts where already available
