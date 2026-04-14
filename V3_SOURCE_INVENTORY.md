@@ -218,6 +218,15 @@ For the Tokyo-area full urban rail phase, we should explicitly prepare collectio
 
 These systems should be treated as first-class phase-1 sources rather than deferred add-ons.
 
+Current collected weekday train batches:
+
+- `JR East Tokyo core`: `3747`
+- `Toei`: `2818`
+- `Rinkai`: `542`
+- `Yurikamome`: `483`
+- `Tokyo Monorail`: `429`
+- `Tama Monorail`: `507`
+
 ## 4. Validation Sources
 
 Use a second source whenever possible to validate:
@@ -327,6 +336,7 @@ Station / service:
 
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
+- first-batch ingestion in progress via official Navitime Biz route and train detail pages (`scripts/ingest/build_v3_tokyu_train_instances.py`)
 
 ### `Odakyu`
 
@@ -338,6 +348,7 @@ Station / service:
 
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
+- first-batch ingestion in progress via official station timetable pages plus embedded Navitime stop-list pages (`scripts/ingest/build_v3_odakyu_train_instances.py`)
 
 ### `Keio`
 
