@@ -425,15 +425,62 @@
     }
 
     function buildLabelMarkup() {
-      return state.labelEntries.map((entry) => {
-        if (!shouldShowLabel(entry)) return '';
-        const point = state.projection.project(entry.lat, entry.lon);
-        const offset = labelOffset(entry);
-        const baseSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
-        const screenX = point.x * state.zoom + state.panX + offset.x;
-        const screenY = point.y * state.zoom + state.panY + offset.y;
-        const displayName = entry.displayNameEn || entry.displayNameJa;
-        return `<text x="${screenX.toFixed(2)}" y="${screenY.toFixed(2)}" font-size="${mapLabelFontSize(baseSize)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${mapLabelStrokeWidth(4.2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`;
+      const candidates = state.labelEntries
+        .filter((entry) => shouldShowLabel(entry))
+        .map((entry, index) => {
+          const point = state.projection.project(entry.lat, entry.lon);
+          const offset = labelOffset(entry);
+          const baseSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
+          const fontSize = Number(mapLabelFontSize(baseSize));
+          const strokeWidth = Number(mapLabelStrokeWidth(4.2));
+          const displayName = entry.displayNameEn || entry.displayNameJa;
+          const screenX = point.x * state.zoom + state.panX + offset.x;
+          const screenY = point.y * state.zoom + state.panY + offset.y;
+          const approxWidth = displayName.length * fontSize * 0.62;
+          const approxHeight = fontSize * 1.15;
+          return {
+            entry,
+            index,
+            fontSize,
+            strokeWidth,
+            displayName,
+            screenX,
+            screenY,
+            bbox: {
+              left: screenX - strokeWidth,
+              right: screenX + approxWidth + strokeWidth,
+              top: screenY - approxHeight - strokeWidth,
+              bottom: screenY + strokeWidth,
+            },
+          };
+        })
+        .sort((a, b) => {
+          const aSelected = state.selectedFamilyId ? 1 : 0;
+          const bSelected = state.selectedFamilyId ? 1 : 0;
+          const aPriority = (a.entry.isPriority ? 1000 : 0) + a.entry.labelRank + aSelected;
+          const bPriority = (b.entry.isPriority ? 1000 : 0) + b.entry.labelRank + bSelected;
+          if (bPriority !== aPriority) return bPriority - aPriority;
+          return a.index - b.index;
+        });
+
+      const placed = [];
+      const accepted = [];
+      for (const candidate of candidates) {
+        const overlaps = placed.some((box) => !(
+          candidate.bbox.right < box.left ||
+          candidate.bbox.left > box.right ||
+          candidate.bbox.bottom < box.top ||
+          candidate.bbox.top > box.bottom
+        ));
+        if (!overlaps) {
+          placed.push(candidate.bbox);
+          accepted.push(candidate);
+        }
+      }
+
+      accepted.sort((a, b) => a.index - b.index);
+      return accepted.map((item) => {
+        return `<text x="${item.screenX.toFixed(2)}" y="${item.screenY.toFixed(2)}" font-size="${item.fontSize.toFixed(2)}" font-weight="${item.entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${item.strokeWidth.toFixed(2)}" paint-order="stroke" style="pointer-events:none">${item.displayName}</text>`;
       }).join('');
     }
 
