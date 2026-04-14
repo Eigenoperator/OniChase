@@ -59,7 +59,7 @@
       "display_name_en": "Tokyo Metro",
       "display_name_ja": "東京メトロ",
       "company_group": "Tokyo Metro",
-      "collection_status": "source_registry_ready",
+      "collection_status": "partial_batch_collecting",
       "source_kind": "official_timetable_portal_or_gtfs_like",
       "official_domain": "https://www.tokyometro.jp",
       "entry_urls": [
@@ -94,28 +94,28 @@
         "https://www.tokyu.co.jp/railway/timetable/"
       ],
       "lines_scope_rule": "whole_company",
-      "notes": "All Tokyu lines should enter together if timetable intake starts. First expected focus: Toyoko, Den-en-toshi, Meguro, Oimachi, Shin-Yokohama."
+      "notes": "All Tokyu lines should enter together if timetable intake starts. The current Navitime-backed collector is already writing a growing checkpoint to data/v3_tokyo_tokyu_weekday_train_instances.json while company-wide crawling continues."
     },
     {
       "id": "odakyu",
       "display_name_en": "Odakyu",
       "display_name_ja": "小田急電鉄",
       "company_group": "Odakyu",
-      "collection_status": "source_registry_ready",
+      "collection_status": "partial_batch_collecting",
       "source_kind": "official_timetable_portal_or_gtfs_like",
       "official_domain": "https://www.odakyu.jp",
       "entry_urls": [
         "https://www.odakyu.jp/station/timetable/"
       ],
       "lines_scope_rule": "whole_company",
-      "notes": "All Odakyu lines should enter together once private-rail timetable intake begins."
+      "notes": "All Odakyu lines should enter together once private-rail timetable intake begins. The official-station-page collector is already writing a growing company-wide checkpoint to data/v3_tokyo_odakyu_weekday_train_instances.json."
     },
     {
       "id": "keio",
       "display_name_en": "Keio",
       "display_name_ja": "京王電鉄",
       "company_group": "Keio",
-      "collection_status": "source_registry_ready",
+      "collection_status": "partial_batch_collecting",
       "source_kind": "official_timetable_portal_or_gtfs_like",
       "official_domain": "https://www.keio.co.jp",
       "entry_urls": [
@@ -136,7 +136,7 @@
         "https://www.keikyu.co.jp/ride/kakueki/"
       ],
       "lines_scope_rule": "whole_company",
-      "notes": "Keikyu should be collected company-wide. This is especially important for the Shinagawa and Haneda-side corridors."
+      "notes": "Keikyu should be collected company-wide. The collector now resolves official station pages into T5 hour tables and T7 single-train stop tables, and is writing a first growing checkpoint to data/v3_tokyo_keikyu_weekday_train_instances.json."
     },
     {
       "id": "tobu",

@@ -337,6 +337,7 @@ Station / service:
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
 - first-batch ingestion in progress via official Navitime Biz route and train detail pages (`scripts/ingest/build_v3_tokyu_train_instances.py`)
+- current checkpoint output is being written to `data/v3_tokyo_tokyu_weekday_train_instances.json`
 
 ### `Odakyu`
 
@@ -349,6 +350,7 @@ Station / service:
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
 - first-batch ingestion in progress via official station timetable pages plus embedded Navitime stop-list pages (`scripts/ingest/build_v3_odakyu_train_instances.py`)
+- current checkpoint output is being written to `data/v3_tokyo_odakyu_weekday_train_instances.json`
 
 ### `Keio`
 
@@ -371,6 +373,8 @@ Station / service:
 
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
+- first-batch ingestion in progress via official station pages, `T5` hour tables, and `T7` single-train stop pages (`scripts/ingest/build_v3_keikyu_train_instances.py`)
+- current checkpoint output is being written to `data/v3_tokyo_keikyu_weekday_train_instances.json`
 
 ### `Tobu`
 
