@@ -605,8 +605,8 @@
 
       const stationMarkup = stationMarkerEntries().map((station) => {
         const point = state.projection.project(station.lat, station.lon);
-        const radius = clamp((station.is_priority ? 1.85 : 1.45) / Math.pow(zoomScale, 0.95), 0.08, station.is_priority ? 1.85 : 1.45);
-        const strokeWidth = clamp((station.is_priority ? 0.6 : 0.48) / Math.pow(zoomScale, 0.42), 0.08, station.is_priority ? 0.6 : 0.48);
+        const radius = clamp((station.is_priority ? 0.78 : 0.58) / Math.pow(zoomScale, 0.95), 0.05, station.is_priority ? 0.78 : 0.58);
+        const strokeWidth = clamp((station.is_priority ? 0.28 : 0.22) / Math.pow(zoomScale, 0.42), 0.04, station.is_priority ? 0.28 : 0.22);
         return `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="${radius.toFixed(2)}" fill="#ffffff" stroke="#17324d" stroke-width="${strokeWidth.toFixed(2)}" />`;
       }).join('');
 
