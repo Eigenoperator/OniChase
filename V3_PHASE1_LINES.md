@@ -73,6 +73,34 @@ Under the current project rule, private rail scope should be decided at the comp
 - `Seibu` - whole Seibu rail network
 - `Keisei` - whole Keisei rail network
 
+## Metro / Urban Rail Systems
+
+### Tokyo Metro
+
+- `Tokyo Metro` - Ginza Line
+- `Tokyo Metro` - Marunouchi Line
+- `Tokyo Metro` - Hibiya Line
+- `Tokyo Metro` - Tozai Line
+- `Tokyo Metro` - Chiyoda Line
+- `Tokyo Metro` - Yurakucho Line
+- `Tokyo Metro` - Hanzomon Line
+- `Tokyo Metro` - Namboku Line
+- `Tokyo Metro` - Fukutoshin Line
+
+### Toei
+
+- `Toei` - Asakusa Line
+- `Toei` - Mita Line
+- `Toei` - Shinjuku Line
+- `Toei` - Oedo Line
+- `Toei` - Toden Arakawa Line
+
+### Other Tokyo Urban Rail
+
+- `TWR` - Rinkai Line
+- `Yurikamome` - Tokyo Waterfront New Transit Waterfront Line
+- `Tokyo Monorail` - Haneda Airport Line
+
 Reason:
 
 - these operators are the first private-rail companies that materially affect the Tokyo core and major transfer strategy
@@ -80,14 +108,6 @@ Reason:
 - this makes operator/data-source planning cleaner than pretending that a company is “partly in”
 
 ## Explicitly Deferred From Phase 1
-
-### Tokyo Metro
-
-- all Tokyo Metro lines are deferred from phase 1
-
-### Toei
-
-- all Toei lines are deferred from phase 1
 
 ### Other Private Railways
 
@@ -98,22 +118,18 @@ Reason:
 
 - very remote branch lines that do not materially change the first Tokyo-core transfer picture
 
-## Why Metro Is Deferred
+## Why Metro And Urban Rail Are Included
 
-Phase 1 already becomes much larger than `v2` once we add:
+The current `v3` direction is no longer “Tokyo core plus selected trunks”.
+It is the first truthful Tokyo-area full urban rail foundation.
 
-- the full Shinkansen backbone
-- the core JR Tokyo network
-- the first major private-rail trunks
+That means:
 
-Adding all subway lines at the same time would dramatically increase:
+- Tokyo Metro should enter as a full company network
+- Toei rail should enter as a full company/system network
+- Rinkai, Yurikamome, Tokyo Monorail, and Toden Arakawa should also be treated as first-class Tokyo urban rail systems
 
-- station density
-- interchange complexity
-- data-ingestion surface area
-- rendering and performance difficulty
-
-So phase 1 should prove the enlarged real-position rail map before going one layer denser.
+This will raise station density and rendering difficulty, but it matches the actual project direction more honestly than postponing the urban systems that define Tokyo transfer reality.
 
 ## Operational Meaning
 
@@ -133,8 +149,9 @@ It does **not** mean:
 
 1. Nationwide Shinkansen lines already proven in `v2`
 2. Yamanote / Keihin-Tohoku / Chuo / Sobu / Yokosuka / Tokaido JR core
-3. First private-rail trunks
-4. Remaining included JR conventional lines
+3. Tokyo Metro / Toei / Rinkai / Yurikamome / Tokyo Monorail / Toden Arakawa
+4. Included private-rail companies
+5. Remaining included JR conventional lines
 
 ## Definition Of Done For This File
 

@@ -33,7 +33,7 @@ Readability must come from:
 
 ## Geographic Scope
 
-`v3 phase 1` should cover the greater Tokyo approach area instead of only the nationwide Shinkansen network.
+`v3 phase 1` should cover the Tokyo-area full urban rail system instead of only the nationwide Shinkansen network.
 
 ### Included Region
 
@@ -51,7 +51,7 @@ The initial geography should include:
 - Chiba-side approach where needed for JR structure
 
 This is not yet “all of Kanto”.
-It is the first operational Tokyo-area rail core plus the Shinkansen approach spine.
+It is the first operational Tokyo-area full rail core plus the Shinkansen approach spine.
 
 ## Operator Scope
 
@@ -60,25 +60,24 @@ It is the first operational Tokyo-area rail core plus the Shinkansen approach sp
 - JR East
 - JR Central
 - JR East / JR Central Shinkansen approach sections
-
-### Included Selectively In Phase 1
-
-Only the private railways that matter directly for the Tokyo core transfer picture:
-
-- Keikyu
-- Keio
-- Odakyu
+- Tokyo Metro
+- Toei
 - Tokyu
+- Odakyu
+- Keio
+- Keikyu
 - Tobu
 - Seibu
 - Keisei
+- TWR (Rinkai Line)
+- Yurikamome
+- Tokyo Monorail
+- Toden Arakawa
 
 ### Deferred
 
-- full Tokyo Metro detail
-- full Toei detail
 - every suburban branch and rural continuation
-- bus, tram, or non-rail modes
+- bus or non-rail modes
 
 ## Line Scope
 
@@ -92,17 +91,23 @@ Only the private railways that matter directly for the Tokyo core transfer pictu
 - Sobu rapid / Yokosuka corridor through Tokyo
 - Ueno-Tokyo approach structure where relevant
 
-### Private Rail Lines That Should Enter Phase 1
+### Urban Rail Systems That Should Enter Phase 1
 
-Only the trunk segments needed to express real transfer and escape structure near the Tokyo core:
+The following whole-company or whole-system networks should enter phase 1:
 
-- Keikyu main approach into Shinagawa
-- Tokyu Toyoko / Den-en-toshi trunk approach
-- Odakyu trunk into Shinjuku
-- Keio trunk into Shinjuku
-- Tobu trunk into Ikebukuro / Asakusa-side approach as needed
-- Seibu trunk into Ikebukuro / Shinjuku-side approach as needed
-- Keisei trunk into Ueno / east approach as needed
+- all Tokyo Metro lines
+- all Toei rail lines
+- whole Tokyu rail network
+- whole Odakyu rail network
+- whole Keio rail network
+- whole Keikyu rail network
+- whole Tobu rail network
+- whole Seibu rail network
+- whole Keisei rail network
+- the full Rinkai Line
+- the full Yurikamome system
+- the full Tokyo Monorail system
+- the full Toden Arakawa line
 
 ## Station Scope
 
@@ -136,7 +141,7 @@ Stations that define corridor structure and realistic transfer opportunities, fo
 
 ### Tier C: Feeder / Private-Rail Anchors
 
-Only where needed to make the first Tokyo-area network readable and strategically meaningful.
+Stations from all included Tokyo-area rail systems that are needed to represent the real network truthfully and support future gameplay grouping.
 
 ## Data Scope
 
@@ -195,7 +200,7 @@ By the end of `v3 phase 1`, we should have:
 
 1. one real-position Tokyo-area rail map that is larger than `v2`
 2. one canonical map/data bundle for the Tokyo-area pilot
-3. one first service-data bundle for the included lines
+3. one first service-data bundle for the included Tokyo-area rail systems
 4. one multi-scale rendering pass that stays readable without moving stations
 
 ## Explicitly Out Of Scope
@@ -207,7 +212,6 @@ By the end of `v3 phase 1`, we should have:
 - AI opponent work
 - final visual polish
 - all Kanto lines
-- all Tokyo Metro / Toei detail
 - full station-internal platform modeling
 
 ## Recommended Build Order

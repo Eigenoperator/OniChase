@@ -196,6 +196,19 @@ Use for:
 - service pattern validation
 - line-specific edge cases
 
+### Source G: Tokyo Metro / Toei / Urban-Rail Official Sources
+
+For the Tokyo-area full urban rail phase, we should explicitly prepare collection paths for:
+
+- Tokyo Metro
+- Toei
+- Rinkai Line
+- Yurikamome
+- Tokyo Monorail
+- Toden Arakawa
+
+These systems should be treated as first-class phase-1 sources rather than deferred add-ons.
+
 ## 4. Validation Sources
 
 Use a second source whenever possible to validate:
