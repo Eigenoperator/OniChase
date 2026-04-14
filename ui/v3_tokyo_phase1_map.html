@@ -300,6 +300,7 @@
       panStartY: 0,
       labelEntries: [],
       renderScheduled: false,
+      redrawTimer: null,
     };
 
     const svg = document.getElementById('map');
@@ -421,7 +422,8 @@
       const stations = visibleStations().filter((station) => shouldShowStationMarker(station));
       if (threshold <= 0) return stations;
       const candidates = stations.map((station, index) => {
-        const point = state.projection.project(station.lat, station.lon);
+        const key = `${station.name_ja}_${station.lon}_${station.lat}`;
+        const point = state.labelEntries.find((entry) => entry.stationId === key)?.point || state.projection.project(station.lat, station.lon);
         return { station, index, point };
       }).sort((a, b) => {
         if (!!b.station.is_priority !== !!a.station.is_priority) {
@@ -455,7 +457,9 @@
         displayNameEn: station.name_en || station.name_ja,
         lat: station.lat,
         lon: station.lon,
+        point: state.projection.project(station.lat, station.lon),
         lineTouchCount: state.data.physicalLines.filter((line) => stationTouchesPhysicalLine(station, line)).length,
+        shinkansenRelevant: stationTouchesShinkansen(station),
         labelRank: station.is_priority ? 100 : 86,
         isPriority: !!station.is_priority,
       }));
@@ -463,7 +467,7 @@
 
     function shouldShowLabel(entry) {
       if (!entry) return false;
-      const shinkansenRelevant = stationTouchesShinkansen({ lat: entry.lat, lon: entry.lon });
+      const shinkansenRelevant = entry.shinkansenRelevant;
       const family = familyById(state.selectedFamilyId);
       const familyRelevant = stationTouchesFamily({ lat: entry.lat, lon: entry.lon }, family);
       const interchangeBoost = entry.lineTouchCount >= 4 ? 6 : entry.lineTouchCount >= 3 ? 4 : entry.lineTouchCount >= 2 ? 2 : 0;
@@ -500,7 +504,7 @@
       const candidates = state.labelEntries
         .filter((entry) => shouldShowLabel(entry))
         .map((entry, index) => {
-          const point = state.projection.project(entry.lat, entry.lon);
+          const point = entry.point;
           const offset = labelOffset(entry);
           const baseSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
           const fontSize = Number(mapLabelFontSize(baseSize));
@@ -557,12 +561,8 @@
       }).join('');
     }
 
-    function drawPath(coords, color, outerWidth, innerWidth, opacity) {
-      if (!coords || coords.length < 2) return '';
-      const d = coords.map(([lon, lat], index) => {
-        const pt = state.projection.project(lat, lon);
-        return `${index === 0 ? 'M' : 'L'} ${pt.x.toFixed(2)} ${pt.y.toFixed(2)}`;
-      }).join(' ');
+    function drawPath(d, color, outerWidth, innerWidth, opacity) {
+      if (!d) return '';
       const useCasing = state.zoom >= 4.8;
       const lowZoomWidth = innerWidth * 0.58;
       return [
@@ -593,19 +593,20 @@
 
         const outerWidth = clamp((state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 10 : 7) : 7) / Math.pow(zoomScale, 1.08), 0.22, state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 10 : 7) : 7);
         const innerWidth = clamp((state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 5.2 : 3.4) : 3.4) / Math.pow(zoomScale, 1.08), 0.12, state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 5.2 : 3.4) : 3.4);
-        return drawPath(line.coordinates, color, outerWidth, innerWidth, opacity);
+        return drawPath(line.projectedD, color, outerWidth, innerWidth, opacity);
       }).join('');
 
       const servicePaths = state.viewMode === 'service' && family
         ? family.segments.map((segment) => {
             const outerWidth = clamp(8.4 / Math.pow(zoomScale, 1.08), 0.24, 8.4);
             const innerWidth = clamp(5.4 / Math.pow(zoomScale, 1.08), 0.16, 5.4);
-            return drawPath(segment.coordinates, family.color, outerWidth, innerWidth, 0.94);
+            return drawPath(segment.projectedD, family.color, outerWidth, innerWidth, 0.94);
           }).join('')
         : '';
 
       const stationMarkup = stationMarkerEntries().map((station) => {
-        const point = state.projection.project(station.lat, station.lon);
+        const key = `${station.name_ja}_${station.lon}_${station.lat}`;
+        const point = state.labelEntries.find((entry) => entry.stationId === key)?.point || state.projection.project(station.lat, station.lon);
         const radius = clamp((station.is_priority ? 0.78 : 0.58) / Math.pow(zoomScale, 0.95), 0.05, station.is_priority ? 0.78 : 0.58);
         const strokeWidth = clamp((station.is_priority ? 0.28 : 0.22) / Math.pow(zoomScale, 0.42), 0.04, station.is_priority ? 0.28 : 0.22);
         return `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="${radius.toFixed(2)}" fill="#ffffff" stroke="#17324d" stroke-width="${strokeWidth.toFixed(2)}" />`;
@@ -649,6 +650,12 @@
       updateLabelLayer();
     }
 
+    function renderMap() {
+      if (!state.data || !state.projection) return;
+      viewport.innerHTML = buildViewportMarkup();
+      applyViewport();
+    }
+
     function render() {
       if (!state.data || !state.projection) return;
       mapTitle.textContent = state.viewMode === 'physical' ? 'Physical View' : 'JR Service View';
@@ -656,9 +663,8 @@
         ? 'True rail geometry, true station positions, and multiscale labels. No station positions are shifted.'
         : 'JR rider-facing service families highlighted on top of the same real geometry.';
       mapStats.textContent = `Physical sections: ${state.data.physicalLines.length}\nVisible stations: ${state.data.visibleStations.length}\nJR service families: ${state.data.serviceFamilies.length}\nZoom: ${state.zoom.toFixed(1)}x`;
-      viewport.innerHTML = buildViewportMarkup();
       renderSidebar();
-      applyViewport();
+      renderMap();
     }
 
     function scheduleRender() {
@@ -666,8 +672,16 @@
       state.renderScheduled = true;
       window.requestAnimationFrame(() => {
         state.renderScheduled = false;
-        render();
+        renderMap();
       });
+    }
+
+    function scheduleRefineRender() {
+      if (state.redrawTimer) window.clearTimeout(state.redrawTimer);
+      state.redrawTimer = window.setTimeout(() => {
+        state.redrawTimer = null;
+        renderMap();
+      }, 90);
     }
 
     function resetViewport() {
@@ -714,14 +728,35 @@
       const scaleChange = state.zoom / prevZoom;
       state.panX = mouseX - (mouseX - state.panX) * scaleChange;
       state.panY = mouseY - (mouseY - state.panY) * scaleChange;
-      scheduleRender();
+      applyViewport();
+      scheduleRefineRender();
     }, { passive: false });
+
+    function projectPath(coords) {
+      if (!coords || coords.length < 2) return '';
+      return coords.map(([lon, lat], index) => {
+        const pt = state.projection.project(lat, lon);
+        return `${index === 0 ? 'M' : 'L'} ${pt.x.toFixed(2)} ${pt.y.toFixed(2)}`;
+      }).join(' ');
+    }
+
+    function prepareGeometryCaches() {
+      state.data.physicalLines.forEach((line) => {
+        line.projectedD = projectPath(line.coordinates);
+      });
+      state.data.serviceFamilies.forEach((family) => {
+        (family.segments || []).forEach((segment) => {
+          segment.projectedD = projectPath(segment.coordinates);
+        });
+      });
+    }
 
     async function init() {
       const response = await fetch(DATA_URL);
       if (!response.ok) throw new Error(`Failed to load ${DATA_URL}`);
       state.data = await response.json();
       state.projection = makeProjection(state.data.bounds);
+      prepareGeometryCaches();
       buildLabelEntries();
       render();
     }
