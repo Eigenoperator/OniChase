@@ -17,11 +17,13 @@ The GitHub Pages site currently exposes only the active public playtest pages:
 - landing page: `https://eigenoperator.github.io/OniChase/`
 - `v1` Yamanote client: `https://eigenoperator.github.io/OniChase/v1.html`
 - `v2` GIS Shinkansen client: `https://eigenoperator.github.io/OniChase/v2.html`
+- `v3` Tokyo network map: `https://eigenoperator.github.io/OniChase/v3.html`
 
 Browser source pages:
 
 - `v1` source: [ui/web_client.html](/home/xincheng/toy/Chase/ui/web_client.html)
 - `v2` source: [ui/v2_web_client.html](/home/xincheng/toy/Chase/ui/v2_web_client.html)
+- `v3` source: [ui/v3_tokyo_phase1_map.html](/home/xincheng/toy/Chase/ui/v3_tokyo_phase1_map.html)
 - landing page output: [docs/index.html](/home/xincheng/toy/Chase/docs/index.html)
 - Pages workflow: [.github/workflows/deploy-pages.yml](/home/xincheng/toy/Chase/.github/workflows/deploy-pages.yml)
 
