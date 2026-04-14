@@ -397,9 +397,22 @@
       return 0;
     }
 
+    function shouldShowStationMarker(station) {
+      const lineTouchCount = state.data.physicalLines.filter((line) => stationTouchesPhysicalLine(station, line)).length;
+      const family = familyById(state.selectedFamilyId);
+      const familyRelevant = stationTouchesFamily(station, family);
+      if (station.is_priority) return true;
+      if (familyRelevant && state.zoom >= 2.2) return true;
+      if (lineTouchCount >= 4 && state.zoom >= 1.8) return true;
+      if (lineTouchCount >= 3 && state.zoom >= 2.6) return true;
+      if (lineTouchCount >= 2 && state.zoom >= 3.6) return true;
+      if (state.zoom >= 5.2) return true;
+      return false;
+    }
+
     function stationMarkerEntries() {
       const threshold = stationDensityThresholdPx();
-      const stations = visibleStations();
+      const stations = visibleStations().filter((station) => shouldShowStationMarker(station));
       if (threshold <= 0) return stations;
       const candidates = stations.map((station, index) => {
         const point = state.projection.project(station.lat, station.lon);
