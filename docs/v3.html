@@ -291,7 +291,7 @@
       dragging: false,
       zoom: 1,
       minZoom: 0.8,
-      maxZoom: 40,
+      maxZoom: 64,
       panX: 0,
       panY: 0,
       dragStartX: 0,
@@ -316,6 +316,51 @@
 
     function clamp(value, min, max) {
       return Math.max(min, Math.min(max, value));
+    }
+
+    function sqr(value) {
+      return value * value;
+    }
+
+    function pointSegmentDistanceSq(px, py, ax, ay, bx, by) {
+      const dx = bx - ax;
+      const dy = by - ay;
+      const lenSq = dx * dx + dy * dy;
+      if (lenSq === 0) return sqr(px - ax) + sqr(py - ay);
+      const t = clamp(((px - ax) * dx + (py - ay) * dy) / lenSq, 0, 1);
+      const cx = ax + dx * t;
+      const cy = ay + dy * t;
+      return sqr(px - cx) + sqr(py - cy);
+    }
+
+    function stationTouchesPhysicalLine(station, line) {
+      const thresholdSq = sqr(0.0035);
+      const coords = line.coordinates || [];
+      for (let i = 1; i < coords.length; i += 1) {
+        const [ax, ay] = coords[i - 1];
+        const [bx, by] = coords[i];
+        if (pointSegmentDistanceSq(station.lon, station.lat, ax, ay, bx, by) <= thresholdSq) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function stationTouchesFamily(station, family) {
+      if (!family) return false;
+      const thresholdSq = sqr(0.0035);
+      const segments = family.segments || [];
+      for (const segment of segments) {
+        const coords = segment.coordinates || [];
+        for (let i = 1; i < coords.length; i += 1) {
+          const [ax, ay] = coords[i - 1];
+          const [bx, by] = coords[i];
+          if (pointSegmentDistanceSq(station.lon, station.lat, ax, ay, bx, by) <= thresholdSq) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
 
     function makeProjection(bounds) {
@@ -391,6 +436,7 @@
         displayNameEn: station.name_en || station.name_ja,
         lat: station.lat,
         lon: station.lon,
+        lineTouchCount: state.data.physicalLines.filter((line) => stationTouchesPhysicalLine(station, line)).length,
         labelRank: station.is_priority ? 100 : 86,
         isPriority: !!station.is_priority,
       }));
@@ -399,8 +445,11 @@
     function shouldShowLabel(entry) {
       if (!entry) return false;
       if (entry.isPriority) return true;
-      if (state.selectedFamilyId && state.zoom >= 4.8) return true;
-      const rank = entry.labelRank || 0;
+      const family = familyById(state.selectedFamilyId);
+      const familyRelevant = stationTouchesFamily({ lat: entry.lat, lon: entry.lon }, family);
+      const interchangeBoost = entry.lineTouchCount >= 4 ? 6 : entry.lineTouchCount >= 3 ? 4 : entry.lineTouchCount >= 2 ? 2 : 0;
+      const rank = (entry.labelRank || 0) + interchangeBoost + (familyRelevant ? 8 : 0);
+      if (familyRelevant && state.zoom >= 3.6) return true;
       if (state.zoom >= 14) return true;
       if (state.zoom >= 9.5) return rank >= 90;
       if (state.zoom >= 6.4) return rank >= 95;
@@ -455,10 +504,11 @@
           };
         })
         .sort((a, b) => {
-          const aSelected = state.selectedFamilyId ? 1 : 0;
-          const bSelected = state.selectedFamilyId ? 1 : 0;
-          const aPriority = (a.entry.isPriority ? 1000 : 0) + a.entry.labelRank + aSelected;
-          const bPriority = (b.entry.isPriority ? 1000 : 0) + b.entry.labelRank + bSelected;
+          const family = familyById(state.selectedFamilyId);
+          const aSelected = stationTouchesFamily({ lat: a.entry.lat, lon: a.entry.lon }, family) ? 1 : 0;
+          const bSelected = stationTouchesFamily({ lat: b.entry.lat, lon: b.entry.lon }, family) ? 1 : 0;
+          const aPriority = (a.entry.isPriority ? 1000 : 0) + a.entry.labelRank + (a.entry.lineTouchCount || 0) * 10 + aSelected * 200;
+          const bPriority = (b.entry.isPriority ? 1000 : 0) + b.entry.labelRank + (b.entry.lineTouchCount || 0) * 10 + bSelected * 200;
           if (bPriority !== aPriority) return bPriority - aPriority;
           return a.index - b.index;
         });
