@@ -205,6 +205,8 @@ For the Tokyo-area full urban rail phase, we should explicitly prepare collectio
 - Rinkai Line
 - Yurikamome
 - Tokyo Monorail
+- Tama Monorail
+- Tsukuba Express
 - Toden Arakawa
 
 These systems should be treated as first-class phase-1 sources rather than deferred add-ons.

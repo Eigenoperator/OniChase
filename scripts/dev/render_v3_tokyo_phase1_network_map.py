@@ -29,6 +29,30 @@ PRIVATE_OPERATORS = {
     "京成電鉄": {"label": "Keisei", "color": "#2457c5"},
 }
 
+TOKYO_URBAN_LINE_REFS = {
+    ("3号線銀座線", "東京地下鉄"): {"label": "Tokyo Metro / Ginza", "color": "#f39700"},
+    ("4号線丸ノ内線", "東京地下鉄"): {"label": "Tokyo Metro / Marunouchi", "color": "#e60012"},
+    ("4号線丸ノ内線分岐線", "東京地下鉄"): {"label": "Tokyo Metro / Marunouchi Branch", "color": "#e60012"},
+    ("2号線日比谷線", "東京地下鉄"): {"label": "Tokyo Metro / Hibiya", "color": "#9caeb7"},
+    ("5号線東西線", "東京地下鉄"): {"label": "Tokyo Metro / Tozai", "color": "#00a7db"},
+    ("9号線千代田線", "東京地下鉄"): {"label": "Tokyo Metro / Chiyoda", "color": "#009944"},
+    ("8号線有楽町線", "東京地下鉄"): {"label": "Tokyo Metro / Yurakucho", "color": "#d7c447"},
+    ("11号線半蔵門線", "東京地下鉄"): {"label": "Tokyo Metro / Hanzomon", "color": "#9b7cb6"},
+    ("7号線南北線", "東京地下鉄"): {"label": "Tokyo Metro / Namboku", "color": "#00ada9"},
+    ("13号線副都心線", "東京地下鉄"): {"label": "Tokyo Metro / Fukutoshin", "color": "#bb641d"},
+    ("1号線浅草線", "東京都"): {"label": "Toei / Asakusa", "color": "#ec6e65"},
+    ("6号線三田線", "東京都"): {"label": "Toei / Mita", "color": "#0079c2"},
+    ("10号線新宿線", "東京都"): {"label": "Toei / Shinjuku", "color": "#6cbb5a"},
+    ("12号線大江戸線", "東京都"): {"label": "Toei / Oedo", "color": "#b6007a"},
+    ("日暮里・舎人ライナー", "東京都"): {"label": "Toei / Nippori-Toneri", "color": "#e45e12"},
+    ("荒川線", "東京都"): {"label": "Toei / Toden Arakawa", "color": "#66aa33"},
+    ("臨海副都心線", "東京臨海高速鉄道"): {"label": "TWR / Rinkai", "color": "#0068b7"},
+    ("東京臨海新交通臨海線", "ゆりかもめ"): {"label": "Yurikamome", "color": "#009ddc"},
+    ("東京モノレール羽田線", "東京モノレール"): {"label": "Tokyo Monorail", "color": "#007cc2"},
+    ("多摩都市モノレール線", "多摩都市モノレール"): {"label": "Tama Monorail", "color": "#f08200"},
+    ("常磐新線", "首都圏新都市鉄道"): {"label": "Tsukuba Express", "color": "#003f8c"},
+}
+
 JR_LINE_REFS = {
     ("山手線", "東日本旅客鉄道"): {"label": "JR East / Yamanote", "color": "#88c840"},
     ("中央線", "東日本旅客鉄道"): {"label": "JR East / Chuo", "color": "#f15a24"},
@@ -98,6 +122,9 @@ def classify_line(props: dict) -> tuple[str, str, str] | None:
     if key in JR_LINE_REFS:
         info = JR_LINE_REFS[key]
         return ("jr", info["label"], info["color"])
+    if key in TOKYO_URBAN_LINE_REFS:
+        info = TOKYO_URBAN_LINE_REFS[key]
+        return ("urban", info["label"], info["color"])
     operator = props.get("N02_004")
     if operator in PRIVATE_OPERATORS:
         info = PRIVATE_OPERATORS[operator]
@@ -190,8 +217,8 @@ def render() -> None:
         first_x, first_y = points[0]
         rest = " ".join(f"L {x:.2f},{y:.2f}" for x, y in points[1:])
         path_d = f"M {first_x:.2f},{first_y:.2f} {rest}"
-        width_px = 3.8 if line["kind"] == "shinkansen" else 2.4
-        opacity = 0.92 if line["kind"] == "shinkansen" else 0.72
+        width_px = 3.8 if line["kind"] == "shinkansen" else (2.7 if line["kind"] == "urban" else 2.4)
+        opacity = 0.92 if line["kind"] == "shinkansen" else (0.80 if line["kind"] == "urban" else 0.72)
         line_paths.append(
             f'<path d="{path_d}" fill="none" stroke="{line["color"]}" stroke-width="{width_px}" stroke-linecap="round" stroke-linejoin="round" opacity="{opacity}" />'
         )
@@ -213,6 +240,7 @@ def render() -> None:
     legend_entries = [
         ("Shinkansen", "#1f78ff"),
         ("JR", "#4f7a3f"),
+        ("Metro / Urban Rail", "#7a3fc7"),
         ("Private Rail", "#b63b5f"),
     ]
     legend_rows = []
@@ -239,7 +267,7 @@ def render() -> None:
   <rect class="bg" x="0" y="0" width="{width}" height="{height}" />
   <rect class="panel" x="24" y="22" width="{width - 48}" height="{height - 44}" rx="22" />
   <text x="56" y="70" class="title">V3 Tokyo Phase 1 Network Map</text>
-  <text x="56" y="96" class="subtitle">Current Tokyo-area real-geometry physical network from MLIT N02-24. This view now includes Shinkansen, first JR core lines, and the first private-rail company networks.</text>
+  <text x="56" y="96" class="subtitle">Current Tokyo-area real-geometry physical network from MLIT N02-24. This view now includes Shinkansen, core JR lines, Tokyo Metro, Toei, Rinkai, Yurikamome, Tokyo Monorail, Tama Monorail, Tsukuba Express, and the first full private-rail company networks.</text>
   <g>{"".join(line_paths)}</g>
   <g>{"".join(station_rows)}</g>
   <g transform="translate({width - 240}, 82)">

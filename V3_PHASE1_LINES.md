@@ -100,6 +100,8 @@ Under the current project rule, private rail scope should be decided at the comp
 - `TWR` - Rinkai Line
 - `Yurikamome` - Tokyo Waterfront New Transit Waterfront Line
 - `Tokyo Monorail` - Haneda Airport Line
+- `Tama Monorail` - Tama Toshi Monorail Line
+- `Tsukuba Express` - Joban New Line
 
 Reason:
 

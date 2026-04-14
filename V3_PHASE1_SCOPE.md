@@ -72,6 +72,8 @@ It is the first operational Tokyo-area full rail core plus the Shinkansen approa
 - TWR (Rinkai Line)
 - Yurikamome
 - Tokyo Monorail
+- Tama Monorail
+- Tsukuba Express
 - Toden Arakawa
 
 ### Deferred
@@ -107,6 +109,8 @@ The following whole-company or whole-system networks should enter phase 1:
 - the full Rinkai Line
 - the full Yurikamome system
 - the full Tokyo Monorail system
+- the full Tama Monorail system
+- the full Tsukuba Express system
 - the full Toden Arakawa line
 
 ## Station Scope
