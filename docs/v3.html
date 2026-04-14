@@ -398,8 +398,13 @@
     }
 
     function shouldShowStationMarker(station) {
-      if (station.is_priority) return true;
-      if (state.selectedFamilyId && stationTouchesFamily(station, familyById(state.selectedFamilyId)) && state.zoom >= 3.4) return true;
+      const lineTouchCount = state.data.physicalLines.filter((line) => stationTouchesPhysicalLine(station, line)).length;
+      const family = familyById(state.selectedFamilyId);
+      const familyRelevant = state.selectedFamilyId && stationTouchesFamily(station, family);
+      if (state.zoom < 1.6) return station.is_priority && lineTouchCount >= 4;
+      if (state.zoom < 2.4) return (station.is_priority && lineTouchCount >= 3) || (familyRelevant && lineTouchCount >= 2);
+      if (state.zoom < 3.4) return station.is_priority || familyRelevant || lineTouchCount >= 3;
+      if (familyRelevant && state.zoom >= 3.4) return true;
       if (state.zoom >= 4.8) return true;
       return false;
     }
@@ -451,11 +456,13 @@
 
     function shouldShowLabel(entry) {
       if (!entry) return false;
-      if (entry.isPriority) return true;
       const family = familyById(state.selectedFamilyId);
       const familyRelevant = stationTouchesFamily({ lat: entry.lat, lon: entry.lon }, family);
       const interchangeBoost = entry.lineTouchCount >= 4 ? 6 : entry.lineTouchCount >= 3 ? 4 : entry.lineTouchCount >= 2 ? 2 : 0;
       const rank = (entry.labelRank || 0) + interchangeBoost + (familyRelevant ? 8 : 0);
+      if (state.zoom < 1.8) return entry.isPriority && entry.lineTouchCount >= 4;
+      if (state.zoom < 2.6) return (entry.isPriority && entry.lineTouchCount >= 3) || (familyRelevant && entry.lineTouchCount >= 2);
+      if (entry.isPriority && state.zoom >= 2.6) return true;
       if (familyRelevant && state.zoom >= 3.6) return true;
       if (state.zoom >= 14) return true;
       if (state.zoom >= 9.5) return rank >= 90;
@@ -492,8 +499,8 @@
           const displayName = entry.displayNameEn || entry.displayNameJa;
           const screenX = point.x * state.zoom + state.panX + offset.x;
           const screenY = point.y * state.zoom + state.panY + offset.y;
-          const approxWidth = displayName.length * fontSize * 0.62;
-          const approxHeight = fontSize * 1.15;
+          const approxWidth = displayName.length * fontSize * 0.82;
+          const approxHeight = fontSize * 1.28;
           return {
             entry,
             index,
@@ -503,10 +510,10 @@
             screenX,
             screenY,
             bbox: {
-              left: screenX - strokeWidth,
-              right: screenX + approxWidth + strokeWidth,
-              top: screenY - approxHeight - strokeWidth,
-              bottom: screenY + strokeWidth,
+              left: screenX - (2 + strokeWidth),
+              right: screenX + approxWidth + 2 + strokeWidth,
+              top: screenY - approxHeight - 2 - strokeWidth,
+              bottom: screenY + 2 + strokeWidth,
             },
           };
         })
