@@ -18,12 +18,56 @@ AMBIGUOUS_STATION_BY_LINE = {
     ("sendai", "SHINKANSEN_KYUSHU"): "SENDAI_KYUSHU",
 }
 
+MANUAL_STATION_ALIASES = {
+    "akasaka": "JR_EAST_9940105",
+    "fujisan": "JR_EAST_9940116",
+    "fujikyuhighland": "JR_EAST_9940117",
+    "futamatagawa": "JR_EAST_2900110",
+    "gekkoji": "JR_EAST_9940115",
+    "hazawayokohamakokudai": "HAZAWAYOKOHAMAKOKUDAI",
+    "higashikatsura": "JR_EAST_9940110",
+    "jichimedicaluniversity": "JICHIIDAI",
+    "kamiotsuki": "JR_EAST_9940102",
+    "kannami": "JR_EAST_1150102",
+    "kasairinkaipark": "KASAIRINKAIKOEN",
+    "kasei": "JR_EAST_9940104",
+    "kashiwadai": "JR_EAST_2900117",
+    "kawaguchiko": "JR_EAST_9940118",
+    "kibogaoka": "JR_EAST_2900111",
+    "kokusaitenjijo": "KOKUSAITENJIJO",
+    "kotobuki": "JR_EAST_9940112",
+    "makuharitoyosuna": "MAKUHARITOYOSUNA",
+    "mishima": "JR_EAST_1150103",
+    "mitsukyo": "JR_EAST_2900112",
+    "mitsutoge": "JR_EAST_9940111",
+    "naritaairportterminal23": "NARITAAIRPORTTERMINAL2AND3",
+    "nishiya": "JR_EAST_2900108",
+    "numazu": "JR_EAST_1150104",
+    "ryugasakishi": "SANUKI",
+    "sagamiotsuka": "JR_EAST_2900115",
+    "sagamino": "JR_EAST_2900116",
+    "seya": "JR_EAST_2900113",
+    "shimoyoshida": "JR_EAST_9940114",
+    "shinagawaseaside": "SHINAGAWASEASIDE",
+    "shinonome": "SHINONOME_RINKAI",
+    "tanokura": "JR_EAST_9940103",
+    "tennozuairu": "TENNOZUAIRU_RINKAI",
+    "tokyoteleport": "TOKYOTELEPORT",
+    "tsurubunkadaigakumae": "JR_EAST_9940108",
+    "tsurushi": "JR_EAST_9940106",
+    "tsurugamine": "JR_EAST_2900109",
+    "yamato": "JR_EAST_1133909",
+    "yamuramachi": "JR_EAST_9940107",
+    "yoshiikeonsenmae": "JR_EAST_9940113",
+}
+
 
 def build_station_lookup(stations_data: dict[str, Any]) -> dict[str, str]:
     stations = stations_data["stations"] if isinstance(stations_data, dict) else stations_data
     lookup: dict[str, str] = {}
     for station in stations:
         station_id = station["id"]
+        lookup[normalize_name(station_id)] = station_id
         names = station.get("names", {})
         for value in [station.get("name"), names.get("en"), names.get("ja"), names.get("zh_hans")]:
             if value:
@@ -53,6 +97,9 @@ def resolve_station_id(raw_name: str, line_id: str | None, station_lookup: dict[
         keyed = AMBIGUOUS_STATION_BY_LINE.get((normalized, line_id))
         if keyed is not None:
             return keyed
+    manual = MANUAL_STATION_ALIASES.get(normalized)
+    if manual is not None:
+        return manual
     return station_lookup.get(normalized)
 
 
