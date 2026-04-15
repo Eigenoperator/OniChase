@@ -195,11 +195,15 @@ def parse_t7_page(t7_url: str, station_lookup: dict[str, dict]) -> dict | None:
 
     tx_match = re.search(r"[?&]tx=([^&]+)", t7_url)
     tm_match = re.search(r"[?&]tm=([^&]+)", t7_url)
+    date_match = re.search(r"[?&]date=([^&]*)", t7_url)
     train_number = tx_match.group(1) if tx_match else hashlib.sha1(t7_url.encode("utf-8")).hexdigest()[:12]
     departure_seed = tm_match.group(1) if tm_match else stop_times[0]["departure_hhmm"].replace(":", "")
+    date_value = date_match.group(1) if date_match else ""
+    if date_value and date_value != SERVICE_DAY:
+        return None
 
     return {
-        "service_instance_id": f"{train_number}_{SERVICE_DAY}_{departure_seed}",
+        "service_instance_id": f"{train_number}_{SERVICE_DAY}",
         "train_number": train_number,
         "service_name": "Keikyu",
         "headsign": headsign,
@@ -211,6 +215,23 @@ def parse_t7_page(t7_url: str, station_lookup: dict[str, dict]) -> dict | None:
 
 
 def write_output(station_seed: list[dict], source_reports: list[dict], train_instances: list[dict]) -> None:
+    deduped: dict[str, dict] = {}
+    for item in train_instances:
+        stop_times = item.get("stop_times", [])
+        if not stop_times:
+            continue
+        key = item.get("train_number") or (
+            item.get("service_name"),
+            item.get("headsign"),
+            item.get("train_type"),
+            stop_times[0].get("departure_hhmm", ""),
+            stop_times[-1].get("arrival_hhmm", ""),
+            tuple((s.get("station_id"), s.get("arrival_hhmm"), s.get("departure_hhmm")) for s in stop_times),
+        )
+        existing = deduped.get(key)
+        if existing is None or len(stop_times) > len(existing.get("stop_times", [])):
+            deduped[key] = item
+
     payload = {
         "id": "v3_tokyo_keikyu_weekday_train_instances_v0_1",
         "label": "v3 Tokyo Keikyu weekday train instances",
@@ -219,7 +240,7 @@ def write_output(station_seed: list[dict], source_reports: list[dict], train_ins
         "station_seed": station_seed,
         "source_reports": source_reports,
         "train_instances": sorted(
-            train_instances,
+            deduped.values(),
             key=lambda item: (
                 item["stop_times"][0]["departure_hhmm"],
                 item["train_number"],

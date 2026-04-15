@@ -178,7 +178,9 @@ def parse_stop_page(url: str, station_lookup: dict[str, dict]) -> dict | None:
     year = query.get("year", [""])[0]
     hour = query.get("hour", [""])[0]
     minute = query.get("minutes", [""])[0]
-    service_instance_id = f"{train_code}_{year}-{month}-{day}T{hour}:{minute}"
+    if f"{year}-{month}-{day}" != SERVICE_DAY:
+        return None
+    service_instance_id = f"{train_code}_{SERVICE_DAY}"
 
     title_clean = title.replace("停車駅 | 東急電鉄", "").strip()
     title_match = re.match(r"\((.+?)\)\s+(\d{2}:\d{2})発\s+(.+?)行き", title_clean)
@@ -324,6 +326,23 @@ def main() -> int:
                 encoding="utf-8",
             )
             print(f"[tokyu] checkpoint trains={len(train_instances)} pages={len(page_reports)} details={len(train_links)}")
+    deduped: dict[str, dict] = {}
+    for item in train_instances:
+        stop_times = item.get("stop_times", [])
+        if not stop_times:
+            continue
+        key = item.get("train_number") or (
+            item.get("service_name"),
+            item.get("headsign"),
+            item.get("train_type"),
+            stop_times[0].get("departure_hhmm", ""),
+            stop_times[-1].get("arrival_hhmm", ""),
+            tuple((s.get("station_id"), s.get("arrival_hhmm"), s.get("departure_hhmm")) for s in stop_times),
+        )
+        existing = deduped.get(key)
+        if existing is None or len(stop_times) > len(existing.get("stop_times", [])):
+            deduped[key] = item
+
     output = {
         "id": "v3_tokyo_tokyu_weekday_train_instances_v0_1",
         "label": "V3 Tokyu weekday train instances from official train detail pages",
@@ -332,7 +351,7 @@ def main() -> int:
         "station_seed": station_seed,
         "source_reports": page_reports,
         "train_instances": sorted(
-            train_instances,
+            deduped.values(),
             key=lambda item: (
                 item["stop_times"][0]["departure_hhmm"],
                 item["train_number"],
