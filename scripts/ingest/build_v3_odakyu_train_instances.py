@@ -200,6 +200,8 @@ def parse_stop_list(stop_list_url: str, station_lookup: dict[str, dict]) -> tupl
     url_query = parse_qs(urlparse(stop_list_url).query)
     tcode = url_query.get("tCode", [""])[0]
     dt = url_query.get("datetime", [""])[0]
+    if dt and not dt.startswith(f"{SERVICE_DAY}T"):
+        return None, []
     route_color = ROUTE_COLORS.get(url_query.get("linkId", [""])[0], "005BAC")
 
     station_page_urls: list[str] = []
@@ -240,7 +242,7 @@ def parse_stop_list(stop_list_url: str, station_lookup: dict[str, dict]) -> tupl
         return None, station_page_urls
 
     train_instance = {
-        "service_instance_id": f"{tcode}_{dt}",
+        "service_instance_id": f"{tcode}_{SERVICE_DAY}",
         "train_number": tcode,
         "service_name": line_name,
         "headsign": headsign,
@@ -356,6 +358,25 @@ def main() -> int:
                         f"stations={len(seen_official_pages)} stop_pages={len(seen_stop_urls)}"
                     )
 
+    deduped: dict[str, dict] = {}
+    for item in train_instances:
+        stop_times = item.get("stop_times", [])
+        if not stop_times:
+            continue
+        first_dep = stop_times[0].get("departure_hhmm", "")
+        last_arr = stop_times[-1].get("arrival_hhmm", "")
+        key = item.get("train_number") or (
+            item.get("service_name"),
+            item.get("headsign"),
+            item.get("train_type"),
+            first_dep,
+            last_arr,
+            tuple((s.get("station_id"), s.get("arrival_hhmm"), s.get("departure_hhmm")) for s in stop_times),
+        )
+        existing = deduped.get(key)
+        if existing is None or len(stop_times) > len(existing.get("stop_times", [])):
+            deduped[key] = item
+
     output = {
         "id": "v3_tokyo_odakyu_weekday_train_instances_v0_1",
         "label": "v3 Tokyo Odakyu Weekday Train Instances",
@@ -363,7 +384,7 @@ def main() -> int:
         "service_day": SERVICE_DAY,
         "station_seed": station_seed,
         "source_pages": source_reports,
-        "train_instances": train_instances,
+        "train_instances": list(deduped.values()),
     }
     OUTPUT_PATH.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Official pages: {len(seen_official_pages)}")
