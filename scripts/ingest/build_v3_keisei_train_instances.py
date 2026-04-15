@@ -192,8 +192,6 @@ def parse_detail_page(detail_url: str, station_lookup: dict[str, dict]) -> dict 
         return None
 
     params = dict(re.findall(r"[?&]([^=&]+)=([^&]+)", detail_url))
-    if params.get("date") and params.get("date") != SERVICE_DAY.replace("-", ""):
-        return None
     train_number = params.get("tx") or params.get("sf", hashlib.sha1(detail_url.encode("utf-8")).hexdigest()[:12])
     service_instance_id = f"KEISEI_{train_number}_{SERVICE_DAY}"
 
