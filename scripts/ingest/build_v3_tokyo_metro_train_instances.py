@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import gzip
 import json
 import re
 from collections import defaultdict
@@ -12,7 +13,7 @@ import requests
 
 ROOT = Path(__file__).resolve().parents[2]
 N02_STATION_PATH = ROOT / "data" / "raw_n02_24" / "UTF-8" / "N02-24_Station.geojson"
-OUTPUT_PATH = ROOT / "data" / "v3_tokyo_tokyo_metro_weekday_train_instances.json"
+OUTPUT_PATH = ROOT / "data" / "v3_tokyo_tokyo_metro_weekday_train_instances.json.gz"
 SERVICE_DAY = "2026-04-15"
 TIMEOUT = 30
 USER_AGENT = {"User-Agent": "Mozilla/5.0"}
@@ -20,6 +21,9 @@ LINE_PAGE_BASE = "https://www.tokyometro.jp/station"
 API_BASE = "https://transfer.tokyometro.jp/api"
 CHECKPOINT_OPERATIONS_EVERY = 100
 TIMETABLE_DISCOVERY_WORKERS = 12
+DETAIL_WORKERS = 4
+DETAIL_TIMEOUT = 5
+DETAIL_BATCH_SIZE = 20
 
 LINE_SLUGS = {
     "line_ginza": ("G", "3号線銀座線", "#FF9500"),
@@ -35,6 +39,22 @@ LINE_SLUGS = {
 BRANCH_PREFIXES = {
     "Mb": ("4号線丸ノ内線分岐線", "#E60012"),
 }
+
+
+def read_payload(path: Path) -> dict:
+    if path.suffix == ".gz":
+        with gzip.open(path, "rt", encoding="utf-8") as handle:
+            return json.load(handle)
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def write_payload(path: Path, payload: dict) -> None:
+    if path.suffix == ".gz":
+        with gzip.open(path, "wt", encoding="utf-8", compresslevel=9) as handle:
+            json.dump(payload, handle, ensure_ascii=False, indent=2)
+            handle.write("\n")
+        return
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def centroid(coords: list) -> tuple[float, float]:
@@ -216,9 +236,29 @@ def build_instances(
     station_lookup: dict[str, dict],
     all_by_name: dict[str, list[dict]],
 ) -> tuple[list[dict], list[dict]]:
-    source_reports: list[dict] = []
-    train_instances: list[dict] = []
-    operations: dict[tuple[str, str, str], dict] = {}
+    if OUTPUT_PATH.exists():
+        existing = read_payload(OUTPUT_PATH)
+        source_reports: list[dict] = existing.get("source_reports", [])
+        train_instances: list[dict] = existing.get("train_instances", [])
+        for entry in existing.get("station_seed", []):
+            name = normalize_station_name(entry["name_ja"])
+            station_lookup.setdefault(name, entry)
+        known_station_ids = {entry["station_id"] for entry in station_seed}
+        for entry in existing.get("station_seed", []):
+            if entry["station_id"] not in known_station_ids:
+                station_seed.append(entry)
+                known_station_ids.add(entry["station_id"])
+    else:
+        source_reports = []
+        train_instances = []
+
+    seen_instances: set[str] = {item["service_instance_id"] for item in train_instances}
+    completed_operation_ids: set[str] = set()
+    for instance_id in seen_instances:
+        parts = instance_id.split("_")
+        if len(parts) >= 3:
+            completed_operation_ids.add(parts[1])
+    operations: dict[tuple[str, str], dict] = {}
 
     numberings = discover_numberings()
     timetable_jobs = [(numbering, direction) for numbering in numberings for direction in ("0", "1")]
@@ -237,79 +277,139 @@ def build_instances(
             return numbering, direction, None
         return numbering, direction, payload
 
-    with ThreadPoolExecutor(max_workers=TIMETABLE_DISCOVERY_WORKERS) as executor:
-        future_map = {executor.submit(fetch_timetable, job): job for job in timetable_jobs}
-        for completed, future in enumerate(as_completed(future_map), start=1):
-            numbering, direction = future_map[future]
-            _, _, payload = future.result()
-            if payload is None:
-                continue
+    existing_report_keys = {(r["numbering"], r["direction"]) for r in source_reports}
+    pending_jobs = [job for job in timetable_jobs if job not in existing_report_keys]
+
+    if pending_jobs:
+        with ThreadPoolExecutor(max_workers=TIMETABLE_DISCOVERY_WORKERS) as executor:
+            future_map = {executor.submit(fetch_timetable, job): job for job in pending_jobs}
+            for completed, future in enumerate(as_completed(future_map), start=1):
+                numbering, direction = future_map[future]
+                _, _, payload = future.result()
+                if payload is None:
+                    continue
+                params = {
+                    "numbering": numbering,
+                    "direction": direction,
+                    "schedule": "weekday",
+                    "lang": "ja",
+                }
+                items = payload.get("timetable_items", [])
+                source_reports.append(
+                    {
+                        "numbering": numbering,
+                        "direction": direction,
+                        "source_url": request_url("/timetable", params),
+                        "item_count": len(items),
+                        "operation_count": sum(
+                            len(timetable.get("operations", []))
+                            for item in items
+                            for timetable in item.get("timetables", [])
+                        ),
+                    }
+                )
+                for item in items:
+                    line_info = item.get("line", {})
+                    route_color = (line_info.get("mark") or {}).get("color") or line_metadata_from_numbering(numbering)[1]
+                    station_info = item.get("station", {})
+                    for timetable in item.get("timetables", []):
+                        for op in timetable.get("operations", []):
+                            operation_id = op.get("id")
+                            time = op.get("time")
+                            train_no = op.get("train_no") or ""
+                            if not operation_id or not time:
+                                continue
+                            key = (operation_id, train_no)
+                            operations.setdefault(
+                                key,
+                                {
+                                    "operation_id": operation_id,
+                                    "numbering": numbering,
+                                    "station_numbering": next(
+                                        (
+                                            n.get("symbol")
+                                            for n in station_info.get("numberings", [])
+                                            if n.get("symbol")
+                                        ),
+                                        numbering,
+                                    ),
+                                    "train_number": train_no,
+                                    "time": time,
+                                    "train_type": op.get("type") or "",
+                                    "service_name": op.get("train_name") or line_info.get("name", "Tokyo Metro"),
+                                    "headsign": ", ".join(op.get("destinations") or []),
+                                    "route_color": route_color.lstrip("#"),
+                                    "line_name": line_info.get("name") or "",
+                                },
+                            )
+                if completed % 25 == 0:
+                    print(
+                        f"[tokyo_metro] timetable discovery {completed}/{len(pending_jobs)}: "
+                        f"{len(source_reports)} pages, {len(operations)} ops"
+                    )
+    else:
+        print("[tokyo_metro] source discovery already complete, resuming from checkpoint")
+
+    if not operations:
+        def rebuild_report(report: dict) -> tuple[dict, dict]:
             params = {
-                "numbering": numbering,
-                "direction": direction,
+                "numbering": report["numbering"],
+                "direction": report["direction"],
                 "schedule": "weekday",
                 "lang": "ja",
             }
-            items = payload.get("timetable_items", [])
-            source_reports.append(
-                {
-                    "numbering": numbering,
-                    "direction": direction,
-                    "source_url": request_url("/timetable", params),
-                    "item_count": len(items),
-                    "operation_count": sum(
-                        len(timetable.get("operations", []))
-                        for item in items
-                        for timetable in item.get("timetables", [])
-                    ),
-                }
-            )
-            for item in items:
-                line_info = item.get("line", {})
-                route_color = (line_info.get("mark") or {}).get("color") or line_metadata_from_numbering(numbering)[1]
-                station_info = item.get("station", {})
-                for timetable in item.get("timetables", []):
-                    for op in timetable.get("operations", []):
-                        operation_id = op.get("id")
-                        time = op.get("time")
-                        train_no = op.get("train_no") or ""
-                        if not operation_id or not time:
-                            continue
-                        key = (operation_id, train_no)
-                        operations.setdefault(
-                            key,
-                            {
-                                "operation_id": operation_id,
-                                "numbering": numbering,
-                                "station_numbering": next(
-                                    (
-                                        n.get("symbol")
-                                        for n in station_info.get("numberings", [])
-                                        if n.get("symbol")
+            payload = fetch_json("/timetable", params=params)
+            return report, payload
+
+        with ThreadPoolExecutor(max_workers=TIMETABLE_DISCOVERY_WORKERS) as executor:
+            future_map = {executor.submit(rebuild_report, report): report for report in source_reports}
+            for completed, future in enumerate(as_completed(future_map), start=1):
+                report, payload = future.result()
+                numbering = report["numbering"]
+                for item in payload.get("timetable_items", []):
+                    line_info = item.get("line", {})
+                    route_color = (line_info.get("mark") or {}).get("color") or line_metadata_from_numbering(numbering)[1]
+                    station_info = item.get("station", {})
+                    for timetable in item.get("timetables", []):
+                        for op in timetable.get("operations", []):
+                            operation_id = op.get("id")
+                            time = op.get("time")
+                            train_no = op.get("train_no") or ""
+                            if not operation_id or not time:
+                                continue
+                            key = (operation_id, train_no)
+                            operations.setdefault(
+                                key,
+                                {
+                                    "operation_id": operation_id,
+                                    "numbering": numbering,
+                                    "station_numbering": next(
+                                        (
+                                            n.get("symbol")
+                                            for n in station_info.get("numberings", [])
+                                            if n.get("symbol")
+                                        ),
+                                        numbering,
                                     ),
-                                    numbering,
-                                ),
-                                "train_number": train_no,
-                                "time": time,
-                                "train_type": op.get("type") or "",
-                                "service_name": op.get("train_name") or line_info.get("name", "Tokyo Metro"),
-                                "headsign": ", ".join(op.get("destinations") or []),
-                                "route_color": route_color.lstrip("#"),
-                                "line_name": line_info.get("name") or "",
-                            },
-                        )
-            if completed % 25 == 0:
-                print(
-                    f"[tokyo_metro] timetable discovery {completed}/{len(timetable_jobs)}: "
-                    f"{len(source_reports)} pages, {len(operations)} ops"
-                )
+                                    "train_number": train_no,
+                                    "time": time,
+                                    "train_type": op.get("type") or "",
+                                    "service_name": op.get("train_name") or line_info.get("name", "Tokyo Metro"),
+                                    "headsign": ", ".join(op.get("destinations") or []),
+                                    "route_color": route_color.lstrip("#"),
+                                    "line_name": line_info.get("name") or "",
+                                },
+                            )
+                if completed % 25 == 0:
+                    print(
+                        f"[tokyo_metro] rebuild {completed}/{len(source_reports)} source pages: "
+                        f"{len(operations)} ops"
+                    )
 
     print(
         f"[tokyo_metro] discovered {len(source_reports)} source pages and "
         f"{len(operations)} unique operations"
     )
-
-    seen_instances: set[str] = set()
 
     def write_checkpoint() -> None:
         payload = {
@@ -324,69 +424,104 @@ def build_instances(
                 key=lambda item: (item["stop_times"][0]["departure_hhmm"], item["train_number"]),
             ),
         }
-        OUTPUT_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        write_payload(OUTPUT_PATH, payload)
 
     write_checkpoint()
 
-    for index, op in enumerate(operations.values(), start=1):
-        detail = fetch_json(
-            "/stop",
-            params={
-                "numbering": op["station_numbering"],
-                "operation": op["operation_id"],
-                "datetime": op["time"],
-                "lang": "ja",
-            },
-        )
-        raw_stops = detail.get("stops", [])
-        stop_times = []
-        for entry in raw_stops:
-            station = resolve_station_seed(entry, station_lookup, station_seed, all_by_name)
-            stop_times.append(
-                {
-                    "sequence": len(stop_times) + 1,
-                    "station_name_raw": entry.get("name", station["name_ja"]),
-                    "station_id": station["station_id"],
-                    "line_id": station.get("line_id"),
-                    "arrival_hhmm": hhmm(entry.get("arrival_time") or entry.get("departure_time")),
-                    "departure_hhmm": hhmm(entry.get("departure_time") or entry.get("arrival_time")),
-                    "platform": None,
-                }
-            )
-        if len(stop_times) < 2:
+    pending_ops = []
+    for op in operations.values():
+        if op["operation_id"] in completed_operation_ids:
             continue
-        operation_id = op["operation_id"]
-        service_instance_id = f"TM_{operation_id}_{op['train_number']}_{stop_times[0]['departure_hhmm']}"
-        if service_instance_id in seen_instances:
-            continue
-        seen_instances.add(service_instance_id)
-        train_instances.append(
-            {
-                "service_instance_id": service_instance_id,
-                "train_number": op["train_number"],
-                "service_name": op["service_name"],
-                "headsign": detail.get("train_info", {}).get("destination") or op["headsign"],
-                "train_type": op["train_type"],
-                "route_color": op["route_color"],
-                "stop_times": stop_times,
-                "source_url": requests.Request(
-                    "GET",
-                    f"{API_BASE}/stop",
-                    params={
-                        "numbering": op["station_numbering"],
-                        "operation": operation_id,
-                        "datetime": op["time"],
-                        "lang": "ja",
-                    },
-                ).prepare().url,
-            }
+        pending_ops.append(op)
+
+    def fetch_detail(op: dict) -> tuple[dict, dict]:
+        params = {
+            "numbering": op["station_numbering"],
+            "operation": op["operation_id"],
+            "datetime": op["time"],
+            "lang": "ja",
+        }
+        response = requests.get(
+            f"{API_BASE}/stop",
+            params=params,
+            timeout=DETAIL_TIMEOUT,
+            headers=USER_AGENT,
         )
-        if index % CHECKPOINT_OPERATIONS_EVERY == 0:
-            write_checkpoint()
-            print(
-                f"[tokyo_metro] checkpoint {index}/{len(operations)} ops: "
-                f"{len(train_instances)} trains, {len(station_seed)} stations"
-            )
+        response.raise_for_status()
+        detail = response.json()
+        return op, detail
+
+    processed = 0
+    for batch_start in range(0, len(pending_ops), DETAIL_BATCH_SIZE):
+        batch = pending_ops[batch_start : batch_start + DETAIL_BATCH_SIZE]
+        print(
+            f"[tokyo_metro] detail batch "
+            f"{batch_start // DETAIL_BATCH_SIZE + 1}/"
+            f"{(len(pending_ops) + DETAIL_BATCH_SIZE - 1) // DETAIL_BATCH_SIZE} "
+            f"({len(batch)} ops)"
+        )
+        with ThreadPoolExecutor(max_workers=DETAIL_WORKERS) as executor:
+            future_map = {executor.submit(fetch_detail, op): op for op in batch}
+            for future in as_completed(future_map):
+                try:
+                    op, detail = future.result()
+                except Exception:
+                    processed += 1
+                    if processed % CHECKPOINT_OPERATIONS_EVERY == 0:
+                        write_checkpoint()
+                        print(
+                            f"[tokyo_metro] checkpoint {processed}/{len(pending_ops)} pending ops: "
+                            f"{len(train_instances)} trains, {len(station_seed)} stations"
+                        )
+                    continue
+                raw_stops = detail.get("stops", [])
+                stop_times = []
+                for entry in raw_stops:
+                    station = resolve_station_seed(entry, station_lookup, station_seed, all_by_name)
+                    stop_times.append(
+                        {
+                            "sequence": len(stop_times) + 1,
+                            "station_name_raw": entry.get("name", station["name_ja"]),
+                            "station_id": station["station_id"],
+                            "line_id": station.get("line_id"),
+                            "arrival_hhmm": hhmm(entry.get("arrival_time") or entry.get("departure_time")),
+                            "departure_hhmm": hhmm(entry.get("departure_time") or entry.get("arrival_time")),
+                            "platform": None,
+                        }
+                    )
+                if len(stop_times) >= 2:
+                    operation_id = op["operation_id"]
+                    service_instance_id = f"TM_{operation_id}_{op['train_number']}_{stop_times[0]['departure_hhmm']}"
+                    if service_instance_id not in seen_instances:
+                        seen_instances.add(service_instance_id)
+                        completed_operation_ids.add(operation_id)
+                        train_instances.append(
+                            {
+                                "service_instance_id": service_instance_id,
+                                "train_number": op["train_number"],
+                                "service_name": op["service_name"],
+                                "headsign": detail.get("train_info", {}).get("destination") or op["headsign"],
+                                "train_type": op["train_type"],
+                                "route_color": op["route_color"],
+                                "stop_times": stop_times,
+                                "source_url": request_url(
+                                    "/stop",
+                                    {
+                                        "numbering": op["station_numbering"],
+                                        "operation": operation_id,
+                                        "datetime": op["time"],
+                                        "lang": "ja",
+                                    },
+                                ),
+                            }
+                        )
+                processed += 1
+                if processed % CHECKPOINT_OPERATIONS_EVERY == 0:
+                    write_checkpoint()
+                    print(
+                        f"[tokyo_metro] checkpoint {processed}/{len(pending_ops)} pending ops: "
+                        f"{len(train_instances)} trains, {len(station_seed)} stations"
+                    )
 
     write_checkpoint()
     return source_reports, sorted(
@@ -407,7 +542,7 @@ def main() -> int:
         "source_reports": source_reports,
         "train_instances": train_instances,
     }
-    OUTPUT_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    write_payload(OUTPUT_PATH, payload)
     print(f"[tokyo_metro] wrote {len(train_instances)} train instances -> {OUTPUT_PATH}")
     return 0
 

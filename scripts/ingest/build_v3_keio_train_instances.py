@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -14,6 +15,7 @@ N02_STATION_PATH = ROOT / "data" / "raw_n02_24" / "UTF-8" / "N02-24_Station.geoj
 OUTPUT_PATH = ROOT / "data" / "v3_tokyo_keio_weekday_train_instances.json"
 CHECKPOINT_EVERY = 1
 CHECKPOINT_TRAINS_EVERY = 50
+DETAIL_WORKERS = 12
 SERVICE_DAY = "2026-04-15"
 TIMEOUT = 30
 USER_AGENT = {"User-Agent": "Mozilla/5.0"}
@@ -87,10 +89,17 @@ def station_name_to_seed_key(name: str) -> str:
 
 
 def build_instances(station_lookup: dict[str, dict]) -> tuple[list[dict], list[dict]]:
-    source_reports: list[dict] = []
-    train_instances: list[dict] = []
-    seen_instances: set[str] = set()
-    seen_timetables: set[tuple[str, str, str]] = set()
+    if OUTPUT_PATH.exists():
+        existing = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+        source_reports: list[dict] = existing.get("source_reports", [])
+        train_instances: list[dict] = existing.get("train_instances", [])
+    else:
+        source_reports = []
+        train_instances = []
+    seen_instances: set[str] = {item["service_instance_id"] for item in train_instances}
+    seen_timetables: set[tuple[str, str, str]] = {
+        (item["station_id"], item["line_id"], item["direction"]) for item in source_reports
+    }
 
     combos = official_combos()
     total = len(combos)
@@ -111,6 +120,8 @@ def build_instances(station_lookup: dict[str, dict]) -> tuple[list[dict], list[d
         OUTPUT_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     next_train_checkpoint = CHECKPOINT_TRAINS_EVERY
+    while next_train_checkpoint <= len(train_instances):
+        next_train_checkpoint += CHECKPOINT_TRAINS_EVERY
 
     for combo_index, (station_id, line_id, direction) in enumerate(combos, start=1):
         combo = (station_id, line_id, direction)
@@ -135,6 +146,7 @@ def build_instances(station_lookup: dict[str, dict]) -> tuple[list[dict], list[d
                 "operation_count": sum(len(hour.get("minutes", [])) for hour in operations),
             }
         )
+        detail_jobs = []
         for hour in operations:
             for minute in hour.get("minutes", []):
                 operation_id = minute.get("id")
@@ -142,12 +154,28 @@ def build_instances(station_lookup: dict[str, dict]) -> tuple[list[dict], list[d
                 depart_time = minute.get("time")
                 if not operation_id or not train_no or not depart_time:
                     continue
-                detail_url = (
-                    f"/stops/{station_id}/{line_id}?operation_id={operation_id}"
-                    f"&train_no={train_no}&datetime={depart_time.replace('+', '%2B')}"
-                    f"&all=1&lang=ja&direction={direction}"
-                )
-                detail = fetch_json(detail_url)
+                detail_jobs.append((minute, operation_id, train_no, depart_time))
+
+        def fetch_detail(job: tuple[dict, str, str, str]) -> tuple[dict, dict]:
+            minute, operation_id, train_no, depart_time = job
+            detail_url = (
+                f"/stops/{station_id}/{line_id}?operation_id={operation_id}"
+                f"&train_no={train_no}&datetime={depart_time.replace('+', '%2B')}"
+                f"&all=1&lang=ja&direction={direction}"
+            )
+            detail = fetch_json(detail_url)
+            return minute, {
+                "detail": detail,
+                "detail_url": detail_url,
+                "operation_id": operation_id,
+                "train_no": train_no,
+            }
+
+        with ThreadPoolExecutor(max_workers=DETAIL_WORKERS) as executor:
+            future_map = {executor.submit(fetch_detail, job): job for job in detail_jobs}
+            for future in as_completed(future_map):
+                minute, payload_detail = future.result()
+                detail = payload_detail["detail"]
                 raw_stops = detail.get("stops", [])
                 stop_times = []
                 for entry in raw_stops:
@@ -172,6 +200,8 @@ def build_instances(station_lookup: dict[str, dict]) -> tuple[list[dict], list[d
                     )
                 if len(stop_times) < 2:
                     continue
+                operation_id = payload_detail["operation_id"]
+                train_no = payload_detail["train_no"]
                 service_instance_id = f"KEIO_{operation_id}_{train_no}_{stop_times[0]['departure_hhmm']}"
                 if service_instance_id in seen_instances:
                     continue
@@ -187,7 +217,7 @@ def build_instances(station_lookup: dict[str, dict]) -> tuple[list[dict], list[d
                         "train_type": minute.get("type") or "",
                         "route_color": minute.get("color", "#d5007f").lstrip("#"),
                         "stop_times": stop_times,
-                        "source_url": f"{API_BASE}{detail_url}",
+                        "source_url": f"{API_BASE}{payload_detail['detail_url']}",
                     }
                 )
                 if len(train_instances) >= next_train_checkpoint:

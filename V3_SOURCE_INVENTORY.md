@@ -227,8 +227,8 @@ Current collected weekday train batches:
 - `Tokyo Monorail`: `429`
 - `Tama Monorail`: `507`
 - `Tsukuba Express`: `463`
-- `Keio`: current checkpoint `591`
-- `Tokyo Metro`: current checkpoint `200`
+- `Keio`: `1924`
+- `Tokyo Metro`: `17099`
 
 Current implementation notes:
 
