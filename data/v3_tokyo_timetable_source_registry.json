@@ -83,40 +83,40 @@
       "lines_scope_rule": "whole_company",
       "notes": "Public Toei GTFS has now been collected into data/v3_tokyo_toei_weekday_train_instances.json for a weekday service day (2026-04-13), producing 2818 train instances across Asakusa, Mita, Shinjuku, Oedo, Nippori-Toneri, and Toden Arakawa. A small fallback_physical_stations block is included for unresolved stop-name variants that still need merging back into the canonical station seed."
     },
-    {
-      "id": "tokyu",
+  {
+    "id": "tokyu",
       "display_name_en": "Tokyu",
       "display_name_ja": "東急電鉄",
       "company_group": "Tokyu",
-      "collection_status": "source_registry_ready",
+    "collection_status": "first_batch_collected_and_audited",
       "source_kind": "official_timetable_portal_or_gtfs_like",
       "official_domain": "https://www.tokyu.co.jp",
       "entry_urls": [
         "https://www.tokyu.co.jp/railway/timetable/"
       ],
       "lines_scope_rule": "whole_company",
-      "notes": "All Tokyu lines should enter together if timetable intake starts. The current Navitime-backed collector is already writing a growing checkpoint to data/v3_tokyo_tokyu_weekday_train_instances.json while company-wide crawling continues."
-    },
-    {
-      "id": "odakyu",
+    "notes": "All Tokyu lines enter together. The current Navitime-backed collector has produced an audited weekday batch of 1373 train instances in data/v3_tokyo_tokyu_weekday_train_instances.json, with no remaining stop-signature duplicates."
+  },
+  {
+    "id": "odakyu",
       "display_name_en": "Odakyu",
       "display_name_ja": "小田急電鉄",
       "company_group": "Odakyu",
-      "collection_status": "partial_batch_collecting",
+    "collection_status": "first_batch_collected_and_audited",
       "source_kind": "official_timetable_portal_or_gtfs_like",
       "official_domain": "https://www.odakyu.jp",
       "entry_urls": [
         "https://www.odakyu.jp/station/timetable/"
       ],
       "lines_scope_rule": "whole_company",
-      "notes": "All Odakyu lines should enter together once private-rail timetable intake begins. The official-station-page collector is already writing a growing company-wide checkpoint to data/v3_tokyo_odakyu_weekday_train_instances.json."
-    },
-    {
-      "id": "keio",
+    "notes": "All Odakyu lines enter together. The official station-page collector has produced an audited weekday batch of 1840 train instances in data/v3_tokyo_odakyu_weekday_train_instances.json, with duplicate stop-list overcount removed."
+  },
+  {
+    "id": "keio",
       "display_name_en": "Keio",
       "display_name_ja": "京王電鉄",
       "company_group": "Keio",
-      "collection_status": "partial_batch_collecting",
+    "collection_status": "first_batch_collected_and_audited",
       "source_kind": "official_timetable_portal_or_gtfs_like",
       "official_domain": "https://www.keio.co.jp",
       "entry_urls": [
@@ -125,62 +125,62 @@
       "lines_scope_rule": "whole_company",
       "notes": "All Keio lines should be collected together if Keio enters timetable scope. The official `/api/keio/timetable/{station}/{line}/{direction}` and `/api/keio/stops/{station}/{line}` endpoints are now verified, and the company-wide weekday collector has produced `1924` train instances across `70` source pages in data/v3_tokyo_keio_weekday_train_instances.json."
     },
-    {
-      "id": "keikyu",
+  {
+    "id": "keikyu",
       "display_name_en": "Keikyu",
       "display_name_ja": "京浜急行電鉄",
       "company_group": "Keikyu",
-      "collection_status": "source_registry_ready",
+    "collection_status": "first_batch_collected_and_audited",
       "source_kind": "official_station_portal_then_timetable_resolution",
       "official_domain": "https://www.keikyu.co.jp",
       "entry_urls": [
         "https://www.keikyu.co.jp/ride/kakueki/"
       ],
       "lines_scope_rule": "whole_company",
-      "notes": "Keikyu should be collected company-wide. The collector now resolves official station pages into T5 hour tables and T7 single-train stop tables, and is writing a first growing checkpoint to data/v3_tokyo_keikyu_weekday_train_instances.json."
-    },
-    {
-      "id": "tobu",
+    "notes": "Keikyu enters company-wide. The official station-page collector now resolves T5 hour tables and T7 single-train stop tables into an audited weekday batch of 1328 train instances in data/v3_tokyo_keikyu_weekday_train_instances.json."
+  },
+  {
+    "id": "tobu",
       "display_name_en": "Tobu",
       "display_name_ja": "東武鉄道",
       "company_group": "Tobu",
-      "collection_status": "source_registry_ready",
+    "collection_status": "first_batch_collected_and_audited",
       "source_kind": "official_timetable_portal_or_gtfs_like",
       "official_domain": "https://www.tobu.co.jp",
       "entry_urls": [
         "https://railway.tobu.co.jp/timetable/"
       ],
       "lines_scope_rule": "whole_company",
-      "notes": "Tobu enters as a whole company per axiom, not line by line."
-    },
-    {
-      "id": "seibu",
+    "notes": "Tobu enters as a whole company per axiom. The Navitime-backed collector has produced an audited weekday batch of 5958 train instances in data/v3_tokyo_tobu_weekday_train_instances.json after removing second-layer line-context duplicates."
+  },
+  {
+    "id": "seibu",
       "display_name_en": "Seibu",
       "display_name_ja": "西武鉄道",
       "company_group": "Seibu",
-      "collection_status": "source_registry_ready",
+    "collection_status": "first_batch_collected_and_audited",
       "source_kind": "official_timetable_portal_or_gtfs_like",
       "official_domain": "https://www.seiburailway.jp",
       "entry_urls": [
         "https://www.seiburailway.jp/railway/timetable/"
       ],
       "lines_scope_rule": "whole_company",
-      "notes": "Seibu enters as a whole-company timetable target once private-rail collection begins."
-    },
-    {
-      "id": "keisei",
+    "notes": "Seibu enters as a whole-company timetable target. The current collector has produced an audited weekday checkpoint of 1554 train instances in data/v3_tokyo_seibu_weekday_train_instances.json after stop-signature dedupe."
+  },
+  {
+    "id": "keisei",
       "display_name_en": "Keisei",
       "display_name_ja": "京成電鉄",
       "company_group": "Keisei",
-      "collection_status": "source_registry_ready",
+    "collection_status": "first_batch_collected_and_audited",
       "source_kind": "official_timetable_portal_or_station_pages",
       "official_domain": "https://www.keisei.co.jp",
       "entry_urls": [
         "https://www.keisei.co.jp"
       ],
       "lines_scope_rule": "whole_company",
-      "notes": "Keisei enters as a whole-company target; route-specific timetable discovery is still to be resolved into a stable canonical scraper path."
-    },
+    "notes": "Keisei enters as a whole-company target. The current official timetable collector has produced an audited weekday checkpoint of 1434 train instances in data/v3_tokyo_keisei_weekday_train_instances.json after stop-signature dedupe."
+  },
     {
       "id": "twr_rinkai",
       "display_name_en": "TWR Rinkai Line",

@@ -358,8 +358,8 @@ Station / service:
 
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
-- first-batch ingestion in progress via official Navitime Biz route and train detail pages (`scripts/ingest/build_v3_tokyu_train_instances.py`)
-- current checkpoint output is being written to `data/v3_tokyo_tokyu_weekday_train_instances.json`
+- official Navitime Biz route and train detail collector is now in place (`scripts/ingest/build_v3_tokyu_train_instances.py`)
+- current audited weekday batch: `1373` train instances in `data/v3_tokyo_tokyu_weekday_train_instances.json`
 
 ### `Odakyu`
 
@@ -371,8 +371,8 @@ Station / service:
 
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
-- first-batch ingestion in progress via official station timetable pages plus embedded Navitime stop-list pages (`scripts/ingest/build_v3_odakyu_train_instances.py`)
-- current checkpoint output is being written to `data/v3_tokyo_odakyu_weekday_train_instances.json`
+- official station timetable pages plus embedded Navitime stop-list collector is now in place (`scripts/ingest/build_v3_odakyu_train_instances.py`)
+- current audited weekday batch: `1840` train instances in `data/v3_tokyo_odakyu_weekday_train_instances.json`
 
 ### `Keio`
 
@@ -387,7 +387,7 @@ Station / service:
 - official timetable API chain now verified:
   - `/api/keio/timetable/{station}/{line}/{direction}`
   - `/api/keio/stops/{station}/{line}`
-- company-wide weekday collector is now writing checkpoints to `data/v3_tokyo_keio_weekday_train_instances.json`
+- current audited weekday batch: `1564` train instances in `data/v3_tokyo_keio_weekday_train_instances.json`
 
 ### `Keikyu`
 
@@ -399,8 +399,8 @@ Station / service:
 
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
-- first-batch ingestion in progress via official station pages, `T5` hour tables, and `T7` single-train stop pages (`scripts/ingest/build_v3_keikyu_train_instances.py`)
-- current checkpoint output is being written to `data/v3_tokyo_keikyu_weekday_train_instances.json`
+- official station pages, `T5` hour tables, and `T7` single-train stop collector is now in place (`scripts/ingest/build_v3_keikyu_train_instances.py`)
+- current audited weekday batch: `1328` train instances in `data/v3_tokyo_keikyu_weekday_train_instances.json`
 
 ### `Tobu`
 
@@ -412,6 +412,8 @@ Station / service:
 
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
+- Navitime-backed collector is now in place (`scripts/ingest/build_v3_tobu_train_instances.py`)
+- current audited weekday batch: `5958` train instances in `data/v3_tokyo_tobu_weekday_train_instances.json`
 
 ### `Seibu`
 
@@ -423,6 +425,8 @@ Station / service:
 
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
+- Ekitan-based collector is now in place (`scripts/ingest/build_v3_seibu_train_instances.py`)
+- current audited weekday checkpoint: `1554` train instances in `data/v3_tokyo_seibu_weekday_train_instances.json`
 
 ### `Keisei`
 
@@ -434,6 +438,8 @@ Station / service:
 
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
+- Ekitan-based collector is now in place (`scripts/ingest/build_v3_keisei_train_instances.py`)
+- current audited weekday checkpoint: `1434` train instances in `data/v3_tokyo_keisei_weekday_train_instances.json`
 
 ## Tokyo Urban-Rail Discovery Notes
 
@@ -443,7 +449,7 @@ Station / service:
   - `https://transfer.tokyometro.jp/website/timetable?numbering=...&direction=...&schedule=weekday`
 - the Metro timetable web app exposes:
   - `browserBaseURL = https://transfer.tokyometro.jp/api`
-- this means Metro service collection is not blocked by missing official data; the remaining task is to resolve the exact timetable and stop-detail API paths from the official web app chunks.
+- the official `/api/timetable` and `/api/stop` paths are now in use, and the current audited weekday batch is `13528` train instances in `data/v3_tokyo_tokyo_metro_weekday_train_instances.json.gz`
 
 ### `Tsukuba Express`
 
