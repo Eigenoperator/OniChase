@@ -67,7 +67,7 @@
         "https://transfer.tokyometro.jp/website/timetable"
       ],
       "lines_scope_rule": "whole_company",
-      "notes": "All Tokyo Metro lines should enter together in v3 phase 1. The public station site now confirms an official redirect chain into the Metro timetable web app at transfer.tokyometro.jp, and the Nuxt app exposes browserBaseURL=https://transfer.tokyometro.jp/api. The next collector step is to resolve concrete timetable and stop-detail endpoints from that API base."
+      "notes": "All Tokyo Metro lines should enter together in v3 phase 1. The public station site now confirms an official redirect chain into the Metro timetable web app at transfer.tokyometro.jp, and the official `/api/timetable` plus `/api/stop` endpoints are now verified. The first collector is actively running and has already written a first weekday checkpoint (`200` trains, `370` source pages)."
     },
     {
       "id": "toei",
@@ -123,7 +123,7 @@
         "https://www.keio.co.jp/train/timetable/"
       ],
       "lines_scope_rule": "whole_company",
-      "notes": "All Keio lines should be collected together if Keio enters timetable scope. The official `/api/keio/timetable/{station}/{line}/{direction}` and `/api/keio/stops/{station}/{line}` endpoints are now verified and the first company-wide weekday collector is actively writing checkpoints to data/v3_tokyo_keio_weekday_train_instances.json."
+      "notes": "All Keio lines should be collected together if Keio enters timetable scope. The official `/api/keio/timetable/{station}/{line}/{direction}` and `/api/keio/stops/{station}/{line}` endpoints are now verified and the first company-wide weekday collector is actively writing checkpoints to data/v3_tokyo_keio_weekday_train_instances.json (`591` trains across `7` source pages at the current checkpoint)."
     },
     {
       "id": "keikyu",

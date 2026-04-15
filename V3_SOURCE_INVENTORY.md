@@ -227,6 +227,27 @@ Current collected weekday train batches:
 - `Tokyo Monorail`: `429`
 - `Tama Monorail`: `507`
 - `Tsukuba Express`: `463`
+- `Keio`: current checkpoint `591`
+- `Tokyo Metro`: current checkpoint `200`
+
+Current implementation notes:
+
+- `Keio`
+  - public entry: `https://www.keio.co.jp/train/timetable/`
+  - confirmed API chain:
+    - `https://transfer-train.navitime.biz/api/keio/timetable/{station}/{line}/{direction}`
+    - `https://transfer-train.navitime.biz/api/keio/stops/{station}/{line}`
+  - collector:
+    - `scripts/ingest/build_v3_keio_train_instances.py`
+
+- `Tokyo Metro`
+  - station pages route into:
+    - `https://transfer.tokyometro.jp/website/timetable`
+  - confirmed API chain:
+    - `https://transfer.tokyometro.jp/api/timetable`
+    - `https://transfer.tokyometro.jp/api/stop`
+  - collector:
+    - `scripts/ingest/build_v3_tokyo_metro_train_instances.py`
 
 ## 4. Validation Sources
 
