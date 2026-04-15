@@ -285,12 +285,12 @@ def parse_stop_page(stop_url: str, station_lookup: dict[str, dict]) -> dict | No
 
 
 def write_output(station_seed: list[dict], source_reports: list[dict], train_instances: list[dict], node_seed: list[dict]) -> None:
-    deduped: dict[str | tuple, dict] = {}
+    deduped: dict[tuple, dict] = {}
     for item in train_instances:
         stop_times = item.get("stop_times", [])
         if not stop_times:
             continue
-        key = item.get("train_number") or (
+        key = (
             item.get("service_name"),
             item.get("headsign"),
             item.get("train_type"),
@@ -299,7 +299,13 @@ def write_output(station_seed: list[dict], source_reports: list[dict], train_ins
             tuple((s.get("station_id"), s.get("arrival_hhmm"), s.get("departure_hhmm")) for s in stop_times),
         )
         existing = deduped.get(key)
-        if existing is None or len(stop_times) > len(existing.get("stop_times", [])):
+        if existing is None or (
+            len(stop_times) > len(existing.get("stop_times", []))
+            or (
+                len(stop_times) == len(existing.get("stop_times", []))
+                and item.get("train_number", "") < existing.get("train_number", "")
+            )
+        ):
             deduped[key] = item
     payload = {
         "id": "v3_tokyo_tobu_weekday_train_instances_v0_1",
