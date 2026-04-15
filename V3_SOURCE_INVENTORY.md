@@ -226,6 +226,7 @@ Current collected weekday train batches:
 - `Yurikamome`: `483`
 - `Tokyo Monorail`: `429`
 - `Tama Monorail`: `507`
+- `Tsukuba Express`: `463`
 
 ## 4. Validation Sources
 
@@ -362,6 +363,10 @@ Station / service:
 
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
+- official timetable API chain now verified:
+  - `/api/keio/timetable/{station}/{line}/{direction}`
+  - `/api/keio/stops/{station}/{line}`
+- company-wide weekday collector is now writing checkpoints to `data/v3_tokyo_keio_weekday_train_instances.json`
 
 ### `Keikyu`
 
@@ -408,6 +413,23 @@ Station / service:
 
 - GTFS / GTFS-like feed where available
 - official route / station pages for validation
+
+## Tokyo Urban-Rail Discovery Notes
+
+### `Tokyo Metro`
+
+- public station pages do not expose raw timetable links directly, but their official station JavaScript routes timetable selection into:
+  - `https://transfer.tokyometro.jp/website/timetable?numbering=...&direction=...&schedule=weekday`
+- the Metro timetable web app exposes:
+  - `browserBaseURL = https://transfer.tokyometro.jp/api`
+- this means Metro service collection is not blocked by missing official data; the remaining task is to resolve the exact timetable and stop-detail API paths from the official web app chunks.
+
+### `Tsukuba Express`
+
+- official Navitime-powered endpoint is now confirmed:
+  - `https://transfer-train.navitime.biz/api/tx/trains/timetable/weekday/{direction}`
+- first weekday batch is already materialized at:
+  - `data/v3_tokyo_tsukuba_express_weekday_train_instances.json`
 
 ## First Build Order
 
