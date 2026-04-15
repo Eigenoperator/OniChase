@@ -107,11 +107,16 @@ def normalize_hhmm(value: str) -> str:
 
 def discover_station_pages() -> list[str]:
     text = fetch_text(TIME1_URL)
-    station_codes = sorted(set(re.findall(r'"(\d+-\d+)":\{station:\{A:\{code:"\d+-\d+"\}', text)))
     pages = []
-    for code in station_codes:
-        for direction in ("d1", "d2"):
-            pages.append(f"{BASE_URL}/search/timetable/station/{code}/{direction}?dw=0")
+    for code, payload in re.findall(r'"(\d+-\d+)":\{(.*?)\}(?=,\d+:|,\d+\}|}$)', text):
+        direction_codes = set(re.findall(r'direction:\[(.*?)\]', payload))
+        blob = direction_codes.pop() if direction_codes else payload
+        has_d1 = 'code:"1"' in blob
+        has_d2 = 'code:"2"' in blob
+        if has_d1:
+            pages.append(f"{BASE_URL}/search/timetable/station/{code}/d1?dw=0")
+        if has_d2:
+            pages.append(f"{BASE_URL}/search/timetable/station/{code}/d2?dw=0")
     return pages
 
 
@@ -243,10 +248,29 @@ def main() -> int:
     for station_index, station_page in enumerate(station_pages, start=1):
         if station_page in completed_station_pages:
             continue
-        detail_urls = discover_detail_urls(station_page)
+        try:
+            detail_urls = discover_detail_urls(station_page)
+        except Exception as exc:
+            source_reports.append(
+                {
+                    "station_page": station_page,
+                    "detail_count": 0,
+                    "new_trains": 0,
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            )
+            write_output(station_seed, source_reports, train_instances)
+            print(
+                f"[keisei] station error {station_index}/{len(station_pages)} "
+                f"{station_page} -> {type(exc).__name__}: {exc}"
+            )
+            continue
         added = 0
         for detail_url in detail_urls:
-            parsed = parse_detail_page(detail_url, station_lookup)
+            try:
+                parsed = parse_detail_page(detail_url, station_lookup)
+            except Exception:
+                continue
             if not parsed or parsed["service_instance_id"] in seen_instances:
                 continue
             seen_instances.add(parsed["service_instance_id"])

@@ -240,10 +240,29 @@ def main() -> int:
     for station_index, station_page in enumerate(station_pages, start=1):
         if station_page in completed_station_pages:
             continue
-        detail_urls = discover_detail_urls(station_page)
+        try:
+            detail_urls = discover_detail_urls(station_page)
+        except Exception as exc:
+            source_reports.append(
+                {
+                    "station_page": station_page,
+                    "detail_count": 0,
+                    "new_trains": 0,
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            )
+            write_output(station_seed, source_reports, train_instances)
+            print(
+                f"[seibu] station error {station_index}/{len(station_pages)} "
+                f"{station_page} -> {type(exc).__name__}: {exc}"
+            )
+            continue
         added = 0
         for detail_url in detail_urls:
-            parsed = parse_detail_page(detail_url, station_lookup)
+            try:
+                parsed = parse_detail_page(detail_url, station_lookup)
+            except Exception:
+                continue
             if not parsed or parsed["service_instance_id"] in seen_instances:
                 continue
             seen_instances.add(parsed["service_instance_id"])
