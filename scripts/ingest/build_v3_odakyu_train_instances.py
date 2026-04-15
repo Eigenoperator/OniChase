@@ -140,7 +140,10 @@ def official_page_key(url: str) -> str:
 
 
 def parse_official_station_page(page_url: str) -> dict | None:
-    text = fetch_text(page_url)
+    try:
+        text = fetch_text(page_url)
+    except requests.HTTPError:
+        return None
     iframe_match = re.search(
         r'(https://transfer\.navitime\.biz/odakyu-transit/smart/diagram/Search\?[^"]+)',
         text,
