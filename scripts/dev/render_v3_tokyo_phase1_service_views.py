@@ -24,6 +24,31 @@ PRIVATE_OPERATORS = {
     "京成電鉄": {"label": "Keisei", "color": "#2457c5"},
 }
 
+TOKYO_URBAN_LINE_REFS = {
+    ("3号線銀座線", "東京地下鉄"): {"label": "Tokyo Metro / Ginza", "color": "#f39700"},
+    ("4号線丸ノ内線", "東京地下鉄"): {"label": "Tokyo Metro / Marunouchi", "color": "#e60012"},
+    ("4号線丸ノ内線分岐線", "東京地下鉄"): {"label": "Tokyo Metro / Marunouchi Branch", "color": "#e60012"},
+    ("2号線日比谷線", "東京地下鉄"): {"label": "Tokyo Metro / Hibiya", "color": "#9caeb7"},
+    ("5号線東西線", "東京地下鉄"): {"label": "Tokyo Metro / Tozai", "color": "#00a7db"},
+    ("9号線千代田線", "東京地下鉄"): {"label": "Tokyo Metro / Chiyoda", "color": "#009944"},
+    ("8号線有楽町線", "東京地下鉄"): {"label": "Tokyo Metro / Yurakucho", "color": "#d7c447"},
+    ("11号線半蔵門線", "東京地下鉄"): {"label": "Tokyo Metro / Hanzomon", "color": "#9b7cb6"},
+    ("7号線南北線", "東京地下鉄"): {"label": "Tokyo Metro / Namboku", "color": "#00ada9"},
+    ("13号線副都心線", "東京地下鉄"): {"label": "Tokyo Metro / Fukutoshin", "color": "#bb641d"},
+    ("1号線浅草線", "東京都"): {"label": "Toei / Asakusa", "color": "#ec6e65"},
+    ("6号線三田線", "東京都"): {"label": "Toei / Mita", "color": "#0079c2"},
+    ("10号線新宿線", "東京都"): {"label": "Toei / Shinjuku", "color": "#6bbd45"},
+    ("12号線大江戸線", "東京都"): {"label": "Toei / Oedo", "color": "#b6007a"},
+    ("日暮里・舎人ライナー線", "東京都"): {"label": "Toei / Nippori-Toneri", "color": "#e86f2d"},
+    ("荒川線", "東京都"): {"label": "Toden Arakawa", "color": "#8b4c39"},
+    ("東京臨海新交通臨海線", "ゆりかもめ"): {"label": "Yurikamome", "color": "#4bbddf"},
+    ("東京モノレール羽田線", "東京モノレール"): {"label": "Tokyo Monorail", "color": "#4cc3e6"},
+    ("多摩都市モノレール線", "多摩都市モノレール"): {"label": "Tama Monorail", "color": "#54c0d8"},
+    ("常磐新線", "首都圏新都市鉄道"): {"label": "Tsukuba Express", "color": "#2bb673"},
+    ("臨海副都心線", "東京臨海高速鉄道"): {"label": "Rinkai Line", "color": "#1f5aa6"},
+    ("日暮里・舎人ライナー", "東京都"): {"label": "Toei / Nippori-Toneri", "color": "#e86f2d"},
+}
+
 JR_LINE_REFS = {
     ("山手線", "東日本旅客鉄道"): {"label": "JR East / Yamanote", "color": "#88c840"},
     ("中央線", "東日本旅客鉄道"): {"label": "JR East / Chuo", "color": "#f15a24"},
@@ -109,6 +134,9 @@ def classify_physical(props: dict) -> tuple[str, str, str] | None:
     if key in JR_LINE_REFS:
         info = JR_LINE_REFS[key]
         return ("jr", info["label"], info["color"])
+    if key in TOKYO_URBAN_LINE_REFS:
+        info = TOKYO_URBAN_LINE_REFS[key]
+        return ("urban", info["label"], info["color"])
     operator = props.get("N02_004")
     if operator in PRIVATE_OPERATORS:
         info = PRIVATE_OPERATORS[operator]
@@ -237,8 +265,8 @@ def render() -> None:
         d = path_from_coords(line["coordinates"], bounds, panel_w, panel_h, pad, left_x)
         if not d:
             continue
-        width_px = 3.8 if line["kind"] == "shinkansen" else 2.2
-        opacity = 0.9 if line["kind"] == "shinkansen" else 0.68
+        width_px = 3.8 if line["kind"] == "shinkansen" else (2.4 if line["kind"] == "urban" else 2.2)
+        opacity = 0.9 if line["kind"] == "shinkansen" else (0.78 if line["kind"] == "urban" else 0.68)
         physical_paths.append(
             f'<path d="{d}" fill="none" stroke="{line["color"]}" stroke-width="{width_px}" stroke-linecap="round" stroke-linejoin="round" opacity="{opacity}" />'
         )
