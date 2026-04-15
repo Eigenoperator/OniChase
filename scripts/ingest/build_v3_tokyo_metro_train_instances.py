@@ -6,7 +6,9 @@ import json
 import re
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import date, datetime, timedelta
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 import requests
 
@@ -15,6 +17,11 @@ ROOT = Path(__file__).resolve().parents[2]
 N02_STATION_PATH = ROOT / "data" / "raw_n02_24" / "UTF-8" / "N02-24_Station.geojson"
 OUTPUT_PATH = ROOT / "data" / "v3_tokyo_tokyo_metro_weekday_train_instances.json.gz"
 SERVICE_DAY = "2026-04-15"
+SERVICE_DATE = date.fromisoformat(SERVICE_DAY)
+ALLOWED_SOURCE_DATES = {
+    SERVICE_DATE.isoformat(),
+    (SERVICE_DATE + timedelta(days=1)).isoformat(),
+}
 TIMEOUT = 30
 USER_AGENT = {"User-Agent": "Mozilla/5.0"}
 LINE_PAGE_BASE = "https://www.tokyometro.jp/station"
@@ -186,6 +193,26 @@ def hhmm(value: str | None) -> str:
     return time_part[:5]
 
 
+def source_date_is_allowed(value: str | None) -> bool:
+    if not value:
+        return False
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return False
+    return parsed.date().isoformat() in ALLOWED_SOURCE_DATES
+
+
+def source_url_date_is_allowed(url: str | None) -> bool:
+    if not url:
+        return False
+    query = parse_qs(urlparse(url).query)
+    datetimes = query.get("datetime")
+    if not datetimes:
+        return False
+    return source_date_is_allowed(datetimes[0])
+
+
 def resolve_station_seed(
     stop: dict,
     station_lookup: dict[str, dict],
@@ -239,7 +266,11 @@ def build_instances(
     if OUTPUT_PATH.exists():
         existing = read_payload(OUTPUT_PATH)
         source_reports: list[dict] = existing.get("source_reports", [])
-        train_instances: list[dict] = existing.get("train_instances", [])
+        train_instances: list[dict] = [
+            item
+            for item in existing.get("train_instances", [])
+            if source_url_date_is_allowed(item.get("source_url"))
+        ]
         for entry in existing.get("station_seed", []):
             name = normalize_station_name(entry["name_ja"])
             station_lookup.setdefault(name, entry)
@@ -317,7 +348,7 @@ def build_instances(
                             operation_id = op.get("id")
                             time = op.get("time")
                             train_no = op.get("train_no") or ""
-                            if not operation_id or not time:
+                            if not operation_id or not time or not source_date_is_allowed(time):
                                 continue
                             key = (operation_id, train_no)
                             operations.setdefault(
@@ -375,7 +406,7 @@ def build_instances(
                             operation_id = op.get("id")
                             time = op.get("time")
                             train_no = op.get("train_no") or ""
-                            if not operation_id or not time:
+                            if not operation_id or not time or not source_date_is_allowed(time):
                                 continue
                             key = (operation_id, train_no)
                             operations.setdefault(
