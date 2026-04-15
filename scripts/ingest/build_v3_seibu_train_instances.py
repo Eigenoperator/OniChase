@@ -184,9 +184,10 @@ def parse_detail_page(detail_url: str, station_lookup: dict[str, dict]) -> dict 
         return None
 
     params = dict(re.findall(r"[?&]([^=&]+)=([^&]+)", detail_url))
-    train_number = params.get("sf", hashlib.sha1(detail_url.encode("utf-8")).hexdigest()[:12])
-    departure_seed = params.get("time", stop_times[0]["departure_hhmm"].replace(":", ""))
-    service_instance_id = f"SEIBU_{train_number}_{SERVICE_DAY}_{departure_seed}"
+    if params.get("date") and params.get("date") != SERVICE_DAY.replace("-", ""):
+        return None
+    train_number = params.get("tx") or params.get("sf", hashlib.sha1(detail_url.encode("utf-8")).hexdigest()[:12])
+    service_instance_id = f"SEIBU_{train_number}_{SERVICE_DAY}"
 
     return {
         "service_instance_id": service_instance_id,
@@ -201,6 +202,22 @@ def parse_detail_page(detail_url: str, station_lookup: dict[str, dict]) -> dict 
 
 
 def write_output(station_seed: list[dict], source_reports: list[dict], train_instances: list[dict]) -> None:
+    deduped: dict[str | tuple, dict] = {}
+    for item in train_instances:
+        stop_times = item.get("stop_times", [])
+        if not stop_times:
+            continue
+        key = item.get("train_number") or (
+            item.get("service_name"),
+            item.get("headsign"),
+            item.get("train_type"),
+            stop_times[0].get("departure_hhmm", ""),
+            stop_times[-1].get("arrival_hhmm", ""),
+            tuple((s.get("station_id"), s.get("arrival_hhmm"), s.get("departure_hhmm")) for s in stop_times),
+        )
+        existing = deduped.get(key)
+        if existing is None or len(stop_times) > len(existing.get("stop_times", [])):
+            deduped[key] = item
     payload = {
         "id": "v3_tokyo_seibu_weekday_train_instances_v0_1",
         "label": "v3 Tokyo Seibu weekday train instances",
@@ -209,7 +226,7 @@ def write_output(station_seed: list[dict], source_reports: list[dict], train_ins
         "station_seed": station_seed,
         "source_reports": source_reports,
         "train_instances": sorted(
-            train_instances,
+            deduped.values(),
             key=lambda item: (
                 item["stop_times"][0]["departure_hhmm"],
                 item["train_number"],

@@ -262,11 +262,19 @@ def parse_stop_page(stop_url: str, station_lookup: dict[str, dict]) -> dict | No
     if len(stop_times) < 2:
         return None
 
-    train_hash = hashlib.sha1(stop_url.encode("utf-8")).hexdigest()[:12]
-    departure_seed = stop_times[0]["departure_hhmm"].replace(":", "")
+    m = re.search(r"/diagram/stops/[^/]+/([^/?]+)/", stop_url)
+    train_code = m.group(1) if m else hashlib.sha1(stop_url.encode("utf-8")).hexdigest()[:12]
+    params = dict(re.findall(r"[?&]([^=&]+)=([^&]+)", stop_url))
+    year = params.get("year", "")
+    month = params.get("month", "")
+    day = params.get("day", "")
+    if year and month and day:
+        date_str = f"{year}-{month}-{day}"
+        if date_str != SERVICE_DAY:
+            return None
     return {
-        "service_instance_id": f"TOBU_{train_hash}_{SERVICE_DAY}_{departure_seed}",
-        "train_number": train_hash,
+        "service_instance_id": f"TOBU_{train_code}_{SERVICE_DAY}",
+        "train_number": train_code,
         "service_name": line_name or "Tobu",
         "headsign": headsign,
         "train_type": train_type,
@@ -277,6 +285,22 @@ def parse_stop_page(stop_url: str, station_lookup: dict[str, dict]) -> dict | No
 
 
 def write_output(station_seed: list[dict], source_reports: list[dict], train_instances: list[dict], node_seed: list[dict]) -> None:
+    deduped: dict[str | tuple, dict] = {}
+    for item in train_instances:
+        stop_times = item.get("stop_times", [])
+        if not stop_times:
+            continue
+        key = item.get("train_number") or (
+            item.get("service_name"),
+            item.get("headsign"),
+            item.get("train_type"),
+            stop_times[0].get("departure_hhmm", ""),
+            stop_times[-1].get("arrival_hhmm", ""),
+            tuple((s.get("station_id"), s.get("arrival_hhmm"), s.get("departure_hhmm")) for s in stop_times),
+        )
+        existing = deduped.get(key)
+        if existing is None or len(stop_times) > len(existing.get("stop_times", [])):
+            deduped[key] = item
     payload = {
         "id": "v3_tokyo_tobu_weekday_train_instances_v0_1",
         "label": "v3 Tokyo Tobu weekday train instances",
@@ -286,7 +310,7 @@ def write_output(station_seed: list[dict], source_reports: list[dict], train_ins
         "node_seed": node_seed,
         "source_reports": source_reports,
         "train_instances": sorted(
-            train_instances,
+            deduped.values(),
             key=lambda item: (
                 item["stop_times"][0]["departure_hhmm"],
                 item["train_number"],
