@@ -5,6 +5,7 @@ import hashlib
 import html
 import json
 import re
+import time
 from collections import deque
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
@@ -18,6 +19,7 @@ OUTPUT_PATH = ROOT / "data" / "v3_tokyo_odakyu_weekday_train_instances.json"
 CACHE_DIR = ROOT / "data" / "v3_external" / "odakyu"
 SERVICE_DAY = "2026-04-15"
 TIMEOUT = 30
+MAX_FETCH_RETRIES = 5
 
 OFFICIAL_BASE = "https://www.odakyu.jp"
 TRANSIT_BASE = "https://transfer.navitime.biz"
@@ -78,11 +80,21 @@ def fetch_text(url: str) -> str:
     path = cache_path(url, "html")
     if path.exists():
         return path.read_text(encoding="utf-8")
-    response = requests.get(url, timeout=TIMEOUT, headers={"User-Agent": "Mozilla/5.0"})
-    response.raise_for_status()
-    response.encoding = response.apparent_encoding or "utf-8"
-    path.write_text(response.text, encoding="utf-8")
-    return response.text
+    last_error: Exception | None = None
+    for attempt in range(1, MAX_FETCH_RETRIES + 1):
+        try:
+            response = requests.get(url, timeout=TIMEOUT, headers={"User-Agent": "Mozilla/5.0"})
+            response.raise_for_status()
+            response.encoding = response.apparent_encoding or "utf-8"
+            path.write_text(response.text, encoding="utf-8")
+            return response.text
+        except requests.RequestException as exc:
+            last_error = exc
+            if attempt == MAX_FETCH_RETRIES:
+                break
+            time.sleep(min(2 * attempt, 10))
+    assert last_error is not None
+    raise last_error
 
 
 def load_station_seed() -> list[dict]:
@@ -240,18 +252,43 @@ def parse_stop_list(stop_list_url: str, station_lookup: dict[str, dict]) -> tupl
     return train_instance, station_page_urls
 
 
+def load_existing_output() -> dict:
+    if not OUTPUT_PATH.exists():
+        return {}
+    return json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+
+
 def main() -> int:
     station_seed = load_station_seed()
     station_lookup = {entry["name_ja"]: entry for entry in station_seed}
 
-    queue: deque[str] = deque(SEED_OFFICIAL_PAGES)
-    seen_official_pages: set[str] = set()
-    seen_search_urls: set[str] = set()
-    seen_stop_urls: set[str] = set()
-    seen_instances: set[str] = set()
+    existing_output = load_existing_output()
+    train_instances = list(existing_output.get("train_instances", []))
+    source_reports = list(existing_output.get("source_reports", []))
+    seen_instances: set[str] = {item["service_instance_id"] for item in train_instances}
+    seen_official_pages: set[str] = {
+        official_page_key(report["official_page_url"])
+        for report in source_reports
+        if report.get("official_page_url")
+    }
+    seen_search_urls: set[str] = {
+        report["search_url"] for report in source_reports if report.get("search_url")
+    }
+    seen_stop_urls: set[str] = {item.get("source_url", "") for item in train_instances if item.get("source_url")}
 
-    source_reports = []
-    train_instances = []
+    queue_candidates = list(SEED_OFFICIAL_PAGES)
+    for item in train_instances:
+        for stop in item.get("stop_times", []):
+            station_name = stop.get("station_name_raw")
+            if not station_name:
+                continue
+            station_entry = station_lookup.get(station_name)
+            if not station_entry:
+                continue
+            official_page = station_entry.get("official_page_url")
+            if official_page:
+                queue_candidates.append(official_page)
+    queue: deque[str] = deque(queue_candidates)
 
     while queue:
         official_page = queue.popleft()

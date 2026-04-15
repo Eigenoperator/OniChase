@@ -4,6 +4,7 @@ from __future__ import annotations
 import html
 import json
 import re
+import time
 from collections import deque
 from hashlib import sha1
 from pathlib import Path
@@ -19,6 +20,7 @@ CACHE_DIR = ROOT / "data" / "v3_external" / "tokyu"
 SERVICE_DAY = "2026-04-15"
 BASE_URL = "https://transfer.navitime.biz"
 TIMEOUT = 30
+MAX_FETCH_RETRIES = 5
 
 SEED_LINE_PAGES = [
     "https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd=00003544&rrCd=00000790&updown=1",
@@ -35,11 +37,21 @@ def fetch_text(url: str) -> str:
     cache_path = CACHE_DIR / cache_name
     if cache_path.exists():
         return cache_path.read_text(encoding="utf-8")
-    response = requests.get(url, timeout=TIMEOUT, headers={"User-Agent": "Mozilla/5.0"})
-    response.raise_for_status()
-    response.encoding = response.apparent_encoding or "utf-8"
-    cache_path.write_text(response.text, encoding="utf-8")
-    return response.text
+    last_error: Exception | None = None
+    for attempt in range(1, MAX_FETCH_RETRIES + 1):
+        try:
+            response = requests.get(url, timeout=TIMEOUT, headers={"User-Agent": "Mozilla/5.0"})
+            response.raise_for_status()
+            response.encoding = response.apparent_encoding or "utf-8"
+            cache_path.write_text(response.text, encoding="utf-8")
+            return response.text
+        except requests.RequestException as exc:
+            last_error = exc
+            if attempt == MAX_FETCH_RETRIES:
+                break
+            time.sleep(min(2 * attempt, 10))
+    assert last_error is not None
+    raise last_error
 
 
 def centroid(coords: list) -> tuple[float, float]:
@@ -266,12 +278,19 @@ def crawl_tokyu_pages(station_lookup: dict[str, dict]) -> tuple[set[str], list[d
     return train_links, page_reports
 
 
+def load_existing_output() -> dict:
+    if not OUTPUT_PATH.exists():
+        return {}
+    return json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+
+
 def main() -> int:
     station_seed = load_station_seed()
     station_lookup = {entry["name_ja"]: entry for entry in station_seed}
     train_links, page_reports = crawl_tokyu_pages(station_lookup)
-    train_instances = []
-    seen_instances: set[str] = set()
+    existing_output = load_existing_output()
+    train_instances = list(existing_output.get("train_instances", []))
+    seen_instances: set[str] = {item["service_instance_id"] for item in train_instances}
     for train_url in sorted(train_links):
         train = parse_stop_page(train_url, station_lookup)
         if train is None:

@@ -5,6 +5,7 @@ import hashlib
 import html
 import json
 import re
+import time
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -16,6 +17,7 @@ N02_STATION_PATH = ROOT / "data" / "raw_n02_24" / "UTF-8" / "N02-24_Station.geoj
 OUTPUT_PATH = ROOT / "data" / "v3_tokyo_keikyu_weekday_train_instances.json"
 CACHE_DIR = ROOT / "data" / "v3_external" / "keikyu"
 TIMEOUT = 30
+MAX_FETCH_RETRIES = 5
 SERVICE_DAY = "2026-04-15"
 
 OFFICIAL_INDEX_PAGE = "https://www.keikyu.co.jp/ride/kakueki/"
@@ -33,11 +35,21 @@ def fetch_text(url: str) -> str:
     path = cache_path(url)
     if path.exists():
         return path.read_text(encoding="utf-8", errors="ignore")
-    response = requests.get(url, timeout=TIMEOUT, headers={"User-Agent": "Mozilla/5.0"})
-    response.raise_for_status()
-    response.encoding = response.apparent_encoding or "shift_jis"
-    path.write_text(response.text, encoding="utf-8")
-    return response.text
+    last_error: Exception | None = None
+    for attempt in range(1, MAX_FETCH_RETRIES + 1):
+        try:
+            response = requests.get(url, timeout=TIMEOUT, headers={"User-Agent": "Mozilla/5.0"})
+            response.raise_for_status()
+            response.encoding = response.apparent_encoding or "shift_jis"
+            path.write_text(response.text, encoding="utf-8")
+            return response.text
+        except requests.RequestException as exc:
+            last_error = exc
+            if attempt == MAX_FETCH_RETRIES:
+                break
+            time.sleep(min(2 * attempt, 10))
+    assert last_error is not None
+    raise last_error
 
 
 def centroid(coords: list) -> tuple[float, float]:
@@ -222,12 +234,21 @@ def main() -> int:
     station_lookup = {entry["name_ja"]: entry for entry in station_seed}
     station_pages = discover_station_pages()
 
-    source_reports = []
+    if OUTPUT_PATH.exists():
+        existing = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+        source_reports = existing.get("source_reports", [])
+        train_instances: list[dict] = existing.get("train_instances", [])
+    else:
+        source_reports = []
+        train_instances = []
+
+    completed_station_pages = {report["station_page"] for report in source_reports}
     seen_t7: set[str] = set()
-    seen_instances: set[str] = set()
-    train_instances: list[dict] = []
+    seen_instances: set[str] = {item["service_instance_id"] for item in train_instances}
 
     for station_index, station_page in enumerate(station_pages, start=1):
+        if station_page in completed_station_pages:
+            continue
         t5_pages = discover_t5_pages(station_page)
         t7_count = 0
         for t5_url in t5_pages:
@@ -253,6 +274,11 @@ def main() -> int:
                 "t5_pages": len(t5_pages),
                 "t7_pages": t7_count,
             }
+        )
+        write_output(station_seed, source_reports, train_instances)
+        print(
+            f"[keikyu] station {station_index}/{len(station_pages)} "
+            f"reports={len(source_reports)} trains={len(train_instances)}"
         )
 
     write_output(station_seed, source_reports, train_instances)
