@@ -250,6 +250,14 @@ def crawl_tokyu_pages(station_lookup: dict[str, dict]) -> tuple[set[str], list[d
             html_text = fetch_text(page_url)
         except requests.HTTPError as exc:
             print(f"[tokyu] skip page {page_url}: {exc}")
+            page_reports.append(
+                {
+                    "page_url": page_url,
+                    "title": None,
+                    "train_links": 0,
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            )
             continue
         title_match = re.search(r"<title>\s*(.*?)\s*</title>", html_text, re.S)
         title = html.unescape(re.sub(r"<.*?>", " ", title_match.group(1))).strip() if title_match else ""
