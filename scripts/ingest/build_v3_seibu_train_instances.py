@@ -6,6 +6,7 @@ import html
 import json
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -23,6 +24,7 @@ OFFICIAL_INDEX_URL = "https://seibu.ekitan.com/english/timetable"
 BASE_URL = "https://seibu.ekitan.com"
 CHECKPOINT_EVERY = 1
 CHECKPOINT_TRAINS_EVERY = 100
+DETAIL_WORKERS = 8
 ROUTE_COLOR = "005BAC"
 
 
@@ -199,6 +201,20 @@ def parse_detail_page(detail_url: str, station_lookup: dict[str, dict]) -> dict 
     }
 
 
+def collect_detail_pages(detail_urls: list[str], station_lookup: dict[str, dict]) -> list[dict]:
+    parsed: list[dict] = []
+    with ThreadPoolExecutor(max_workers=DETAIL_WORKERS) as executor:
+        future_map = {executor.submit(parse_detail_page, url, station_lookup): url for url in detail_urls}
+        for future in as_completed(future_map):
+            try:
+                item = future.result()
+            except Exception:
+                continue
+            if item:
+                parsed.append(item)
+    return parsed
+
+
 def write_output(station_seed: list[dict], source_reports: list[dict], train_instances: list[dict]) -> None:
     deduped: dict[str | tuple, dict] = {}
     for item in train_instances:
@@ -273,11 +289,7 @@ def main() -> int:
             )
             continue
         added = 0
-        for detail_url in detail_urls:
-            try:
-                parsed = parse_detail_page(detail_url, station_lookup)
-            except Exception:
-                continue
+        for parsed in collect_detail_pages(detail_urls, station_lookup):
             if not parsed or parsed["service_instance_id"] in seen_instances:
                 continue
             seen_instances.add(parsed["service_instance_id"])
