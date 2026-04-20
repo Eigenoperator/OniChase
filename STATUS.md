@@ -7,7 +7,7 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - `v1` Yamanote real-data prototype is complete enough for baseline playtests: real stations, weekday trains, planning, live capture, replay, and hunter visibility.
 - Main `v2` is the current nationwide Shinkansen playable build: GIS-first map, real weekday train instances, planning/live/capture/replay, and public online room flow via Render.
 - `v3` now has the first unified train index: `39450` normalized real trains across `16` operators, with manifest, unified train schema, and station departure lookup.
-- Public `v3` now reuses the `v2` UI code path and loads `docs/data/v3_tokyo_bundle.json`: `1673` station groups, `2039` physical stations, `108` service routes, `4147` track centerlines, and all `39450` v2-compatible trip instances.
+- Public `v3` now reuses the `v2` UI code path and loads compressed `docs/data/v3_tokyo_bundle.json.gz` (`6.6M`): `1673` station groups, `2039` physical stations, `108` service routes, `4147` track centerlines, and all `39450` v2-compatible trip instances.
 - `v3` is published at `https://eigenoperator.github.io/OniChase/v3.html`; public URL smoke test passes for Tokyo station departures, train selection, and downstream stop choices.
 - Backfilled `diary/DIARY-2026-04-19.md` and trimmed this status file back under the 50-line handoff limit.
 - Added reusable `v3_station_identity` and `v3_route_identity` layers; audit now reports `0` unmapped train station keys, `0` trains with unmapped stops, `0` collapsed duplicate map names, and `0` tiny routes.
@@ -20,7 +20,7 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 ## Blockers
 - No usable Notion tool/config exists in this repo/session, so true Notion updates remain blocked.
 - `JR Central` still lacks a direct train-detail page like `JR East / JR West`; deeper precision still needs station-grid aggregation.
-- `docs/data/v3_tokyo_bundle.json` is below GitHub's hard limit but above the recommended `50MB`; future v3 work should consider chunking or gzip loading before the bundle grows again.
+- No headless browser binary is installed locally; v3 page-init testing is currently limited to static HTTP, bundle decode, and Node `fetch + DecompressionStream` smoke tests unless a browser test dependency is added.
 
 ## Decisions
 - [2026-04-07] GIS-first Shinkansen became the main `v2`; public site keeps `v1`, `v2`, and now the new Tokyo `v3` sandbox.
@@ -29,6 +29,6 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Link v3 service geometry more precisely to train routes so selected trains can highlight real paths instead of only station stops.
-2. Test the reused `v2` chase loop on v3 data: station click, departures, downstream stop choice, chained planning, live movement, and capture.
-3. After v3 identity stabilizes, test and migrate the `v2` chase loop on v3: multi-leg planning, live capture, replay, and online parity.
+1. Test the reused `v2` chase loop on v3 data in a real browser: station click, departures, downstream stop choice, chained planning, live movement, capture, and replay.
+2. Link v3 service geometry more precisely to train routes so selected trains can highlight real paths instead of only station stops.
+3. Continue online parity work after browser-level v3 gameplay smoke tests pass.

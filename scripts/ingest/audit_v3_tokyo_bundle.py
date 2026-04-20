@@ -18,7 +18,7 @@ from v3_route_identity import canonical_route_line
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data"
 
-BUNDLE_PATH = DATA_DIR / "v3_tokyo_bundle.json"
+BUNDLE_PATH = DATA_DIR / "v3_tokyo_bundle.json.gz"
 MAP_PATH = DATA_DIR / "v3_tokyo_phase1_service_views.json"
 UNIFIED_TRAINS_PATH = DATA_DIR / "v3_trains_unified.json.gz"
 REPORT_PATH = DATA_DIR / "v3_tokyo_bundle_audit.json"

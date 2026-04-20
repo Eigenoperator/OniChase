@@ -28,7 +28,7 @@ DOCS_DATA_DIR = ROOT / "docs" / "data"
 MAP_PATH = DATA_DIR / "v3_tokyo_phase1_service_views.json"
 UNIFIED_TRAINS_PATH = DATA_DIR / "v3_trains_unified.json.gz"
 N02_STATION_PATH = DATA_DIR / "raw_n02_24" / "UTF-8" / "N02-24_Station.geojson"
-OUTPUT_PATH = DATA_DIR / "v3_tokyo_bundle.json"
+OUTPUT_PATH = DATA_DIR / "v3_tokyo_bundle.json.gz"
 
 SPECIAL_STATION_IDS = {
     "東京": "TOKYO",
@@ -85,7 +85,12 @@ def load_json(path: Path) -> Any:
 
 def write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    text = json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n"
+    if path.suffix == ".gz":
+        with gzip.open(path, "wt", encoding="utf-8") as handle:
+            handle.write(text)
+        return
+    path.write_text(text, encoding="utf-8")
 
 
 def stable_id(prefix: str, value: Any) -> str:
@@ -416,6 +421,7 @@ def build_bundle() -> dict[str, Any]:
             "datasetId": "v3_tokyo_v2_ui_bundle_v0_1",
             "sourceTrainIndex": str(UNIFIED_TRAINS_PATH.relative_to(ROOT)),
             "sourceMap": str(MAP_PATH.relative_to(ROOT)),
+            "bundleFormat": "json.gz",
             "skippedTrainCount": skipped_trains,
             "defaultRunnerStartStationId": default_runner,
             "defaultHunterStartStationId": default_hunter,

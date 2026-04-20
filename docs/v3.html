@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OniChase V3 Tokyo</title>
   <script>
-    window.ONICHASE_DATA_URL = './data/v3_tokyo_bundle.json';
+    window.ONICHASE_DATA_URL = './data/v3_tokyo_bundle.json.gz';
     window.ONICHASE_TILE_MANIFEST_URL = '';
     window.ONICHASE_TILE_BASE_URL = './data/v3_tiles/';
   </script>
@@ -1183,6 +1183,22 @@
       ? '../docs/data/v3_tiles/'.replace('../docs/', '../')
       : './data/v3_tiles/';
     const TILE_BASE_URL = window.ONICHASE_TILE_BASE_URL || DEFAULT_TILE_BASE_URL;
+
+    async function fetchJsonMaybeGz(url) {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to load ${url}: ${response.status}`);
+      }
+      if (!url.endsWith('.gz')) {
+        return response.json();
+      }
+      if (!('DecompressionStream' in window)) {
+        throw new Error('This browser cannot decompress gzip data. Please use a modern Chromium, Firefox, or Safari version.');
+      }
+      const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
+      const text = await new Response(stream).text();
+      return JSON.parse(text);
+    }
 
     const SERVICE_COLORS = {};
     const state = {
@@ -3686,8 +3702,7 @@
     }
 
     async function init() {
-      const response = await fetch(DATA_URL);
-      const bundle = await response.json();
+      const bundle = await fetchJsonMaybeGz(DATA_URL);
       try {
         const onlineConfigResponse = await fetch(ONLINE_CONFIG_URL);
         if (onlineConfigResponse.ok) {

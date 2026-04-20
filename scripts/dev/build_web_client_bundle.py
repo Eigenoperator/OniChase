@@ -28,7 +28,7 @@ DATA_FILES = [
     ROOT / "data" / "v3_train_manifest.json",
     ROOT / "data" / "v3_trains_unified.json.gz",
     ROOT / "data" / "v3_station_departures.json.gz",
-    ROOT / "data" / "v3_tokyo_bundle.json",
+    ROOT / "data" / "v3_tokyo_bundle.json.gz",
 ]
 
 
@@ -221,7 +221,7 @@ def build_landing_page() -> str:
 
 def build_v3_from_v2(v2_html: str) -> str:
     config = """<script>
-    window.ONICHASE_DATA_URL = './data/v3_tokyo_bundle.json';
+    window.ONICHASE_DATA_URL = './data/v3_tokyo_bundle.json.gz';
     window.ONICHASE_TILE_MANIFEST_URL = '';
     window.ONICHASE_TILE_BASE_URL = './data/v3_tiles/';
   </script>
