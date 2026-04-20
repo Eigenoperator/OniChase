@@ -18,6 +18,7 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Promoted the MapLibre renderer to the official public `v3.html`; the old v2-style v3 page and separate `v3_maplibre.html` website are removed from the generated site.
 - Connected the first v2-style gameplay shell into v3 MapLibre: role switching, clock, planning/live, hourly replanning, plan board, train outlook, selected-train path/stops, player markers, live capture, and local replay simulation now run on the real Tokyo data.
 - Made the room server dataset-configurable: `--dataset shinkansen` remains the default, while `--dataset v3-tokyo` loads the Tokyo map bundle plus deferred timetable and reports duplicate trip-id counts in `/health`.
+- Added the first v3 multiplayer entry flow: `v3.html` now has a single-player entry, a v3 Tokyo room lobby, room creation/join/copy, ready/unready, a main-board Room panel, and online plan sync against the dataset-configurable server.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
@@ -36,6 +37,6 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Add a v3 multiplayer entry flow that points at a `--dataset v3-tokyo` room server and reuses the same planning/live/capture payloads.
+1. Decide where to host the v3 Tokyo room server, then set `docs/data/v3_online_config.json` to that HTTPS endpoint once it is deployed with `--dataset v3-tokyo`.
 2. Manually play `v3.html` in a normal browser: build runner and hunter plans, switch roles, start live, check hourly replanning, capture, and replay.
 3. Continue MapLibre UX/performance work: smarter label priority, denser Tokyo click targets, selected-service visibility, and tile/vector migration planning.

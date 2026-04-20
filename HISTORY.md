@@ -246,3 +246,4 @@
 - Promoted the MapLibre renderer to the official public `v3.html` page and removed the separate `v3_maplibre.html` public entry.
 - Connected the first v2-style gameplay shell into v3 MapLibre, so runner/hunter role switching, planning/live timing, hourly replanning, plan board, train selection, destination-stop selection, player markers, live capture, and replay simulation now run against the real Tokyo map and timetable substrate.
 - Made the online room server dataset-configurable, preserving the default Shinkansen dataset while adding a `v3-tokyo` preset that loads the Tokyo map bundle plus deferred timetable and exposes dataset/trip-id QA in `/health`.
+- Added the first v3 multiplayer client entry on the official MapLibre page: players can choose single-player or a v3 Tokyo room, create/join/copy a room code, ready/unready, see room state on the main board, and sync the active plan to the same dataset-configurable room-server protocol used by v2.

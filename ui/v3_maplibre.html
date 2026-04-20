@@ -43,6 +43,110 @@
       grid-template-rows: 62px minmax(0, 1fr);
     }
 
+    .entry-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(21, 101, 192, 0.20), transparent 28%),
+        radial-gradient(circle at 82% 18%, rgba(220, 77, 98, 0.14), transparent 24%),
+        rgba(238, 242, 247, 0.76);
+      backdrop-filter: blur(12px);
+    }
+
+    .entry-overlay.hidden { display: none; }
+
+    .entry-card {
+      width: min(860px, 100%);
+      border: 1px solid rgba(213, 221, 232, 0.95);
+      border-radius: 32px;
+      background: rgba(250, 252, 255, 0.96);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .entry-card h2 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 0.03em;
+    }
+
+    .entry-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .entry-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .entry-panel {
+      border: 1px solid rgba(213, 221, 232, 0.9);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .entry-panel h3 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .room-input {
+      width: 100%;
+      border: 1px solid rgba(213, 221, 232, 0.96);
+      border-radius: 16px;
+      padding: 11px 12px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      outline: none;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .entry-status {
+      border-radius: 18px;
+      background: rgba(21, 101, 192, 0.08);
+      color: var(--muted);
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .room-code {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      border-radius: 999px;
+      background: rgba(31, 42, 55, 0.08);
+      color: var(--ink);
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
     header {
       display: grid;
       grid-template-columns: minmax(250px, 1fr) auto minmax(250px, 1fr);
@@ -441,6 +545,7 @@
         grid-template-columns: minmax(0, 1fr) auto;
       }
       .clock { display: none; }
+      .entry-grid { grid-template-columns: 1fr; }
       main {
         grid-template-columns: 1fr;
         grid-template-rows: minmax(0, 1fr) 310px;
@@ -453,6 +558,46 @@
   </style>
 </head>
 <body>
+  <section id="entry-overlay" class="entry-overlay">
+    <div class="entry-card">
+      <div>
+        <h2>OniChase V3 Tokyo</h2>
+        <p>选择单人本地测试，或连接一个使用 <code>--dataset v3-tokyo</code> 启动的 room server。单人和多人使用同一套 planning / live / capture payload。</p>
+      </div>
+      <div class="entry-grid">
+        <section class="entry-panel">
+          <h3>Single Player</h3>
+          <p>本地双角色测试。可以随时切换 Runner / Hunter 来搭计划。</p>
+          <div class="button-row">
+            <button id="single-runner-button" class="primary runner" type="button">Play Runner</button>
+            <button id="single-hunter-button" class="hunter" type="button">Play Hunter</button>
+          </div>
+        </section>
+        <section class="entry-panel">
+          <h3>Multiplayer</h3>
+          <p>需要一个 v3 Tokyo room server，例如：<br><code>python3 scripts/engine/v2_online_room_server.py --dataset v3-tokyo</code></p>
+          <div class="button-row">
+            <button id="lobby-runner-button" class="active runner" type="button">Runner</button>
+            <button id="lobby-hunter-button" class="hunter" type="button">Hunter</button>
+          </div>
+          <input id="room-id-input" class="room-input" placeholder="ROOM ID" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+          <div class="button-row">
+            <button id="create-room-button" class="primary" type="button">Create Room</button>
+            <button id="join-room-button" type="button">Join Room</button>
+            <button id="copy-room-button" type="button">Copy Code</button>
+          </div>
+          <div class="button-row">
+            <button id="ready-room-ready-button" class="primary" type="button">Ready</button>
+            <button id="ready-room-unready-button" type="button">Unready</button>
+            <button id="enter-local-button" type="button">Enter Local Board</button>
+          </div>
+          <div class="room-code" id="room-code-pill">NO ROOM</div>
+          <div class="entry-status" id="entry-status">Loading multiplayer config...</div>
+        </section>
+      </div>
+    </div>
+  </section>
+
   <div class="shell">
     <header>
       <div class="brand">
@@ -510,6 +655,18 @@
           </section>
 
           <section>
+            <div class="section-label">Room</div>
+            <div class="info-box" id="room-card">Single-player local mode.</div>
+            <div class="tiny-actions" id="room-actions" style="margin-top:10px;">
+              <button type="button" data-room-action="open">Lobby</button>
+              <button type="button" data-room-action="copy">Copy</button>
+              <button type="button" data-room-action="submit">Submit Plan</button>
+              <button type="button" data-room-action="ready">Ready</button>
+              <button type="button" data-room-action="unready">Unready</button>
+            </div>
+          </section>
+
+          <section>
             <div class="section-label">Train Outlook</div>
             <div class="info-box" id="train-summary">Select a station or choose a departure.</div>
             <div class="outlook-list" id="train-outlook">
@@ -547,6 +704,9 @@
   <script>
     const MAP_DATA_URL = './data/v3_tokyo_map_bundle.json.gz';
     const TIMETABLE_URL = './data/v3_tokyo_timetable_bundle.json.gz';
+    const ONLINE_CONFIG_URL = window.location.pathname.includes('/ui/')
+      ? '../docs/data/v3_online_config.json'
+      : './data/v3_online_config.json';
     const NONE_FILTER = ['==', ['get', 'id'], '__none__'];
     const NONE_STATION_FILTER = ['==', ['get', 'station_group_id'], '__none__'];
     const TOKYO_CENTER = [139.7671, 35.6812];
@@ -583,8 +743,21 @@
       tripById: new Map(),
       stationTripsByGroupId: new Map(),
       timetableStatus: 'idle',
+      online: {
+        serverUrl: '',
+        roomId: '',
+        seat: null,
+        token: '',
+        pollingHandle: null,
+        lastRoom: null,
+        presences: { runner: null, hunter: null },
+      },
     };
 
+    const entryOverlayEl = document.getElementById('entry-overlay');
+    const entryStatusEl = document.getElementById('entry-status');
+    const roomIdInput = document.getElementById('room-id-input');
+    const roomCodePillEl = document.getElementById('room-code-pill');
     const loadPill = document.getElementById('load-pill');
     const zoomPill = document.getElementById('zoom-pill');
     const statsEl = document.getElementById('stats');
@@ -594,6 +767,8 @@
     const trainSummaryEl = document.getElementById('train-summary');
     const trainOutlookEl = document.getElementById('train-outlook');
     const planBoardEl = document.getElementById('plan-board');
+    const roomCardEl = document.getElementById('room-card');
+    const roomActionsEl = document.getElementById('room-actions');
     const resultCardEl = document.getElementById('result-card');
     const replayListEl = document.getElementById('replay-list');
     const stationCardEl = document.getElementById('station-card');
@@ -622,6 +797,386 @@
       const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
       const text = await new Response(stream).text();
       return JSON.parse(text);
+    }
+
+    function onlineActive() {
+      return Boolean(state.online.roomId && state.online.seat && state.online.token);
+    }
+
+    function updateRoleButtons() {
+      document.getElementById('runner-button').className = state.activeMode === 'runner' ? 'active runner' : 'runner';
+      document.getElementById('hunter-button').className = state.activeMode === 'hunter' ? 'active hunter' : 'hunter';
+      document.getElementById('lobby-runner-button').className = state.activeMode === 'runner' ? 'active runner' : 'runner';
+      document.getElementById('lobby-hunter-button').className = state.activeMode === 'hunter' ? 'active hunter' : 'hunter';
+    }
+
+    function updateRoomCodePill(roomId) {
+      const value = (roomId || '').trim().toUpperCase();
+      roomCodePillEl.textContent = value ? `ROOM ${value}` : 'NO ROOM';
+      roomCodePillEl.classList.toggle('empty', !value);
+    }
+
+    function openEntry() {
+      entryOverlayEl.classList.remove('hidden');
+      updateRoomCodePill(state.online.roomId || roomIdInput.value || '');
+      renderEntryRoomStatus();
+    }
+
+    function closeEntry() {
+      entryOverlayEl.classList.add('hidden');
+    }
+
+    function configuredServerUrl() {
+      const queryValue = new URLSearchParams(window.location.search).get('server');
+      const storedValue = window.localStorage.getItem('onichase-v3-room-server-url');
+      const candidate = queryValue || storedValue || state.online.serverUrl || '';
+      const normalized = candidate.trim().replace(/\/+$/, '');
+      if (queryValue && normalized) window.localStorage.setItem('onichase-v3-room-server-url', normalized);
+      return normalized;
+    }
+
+    async function loadOnlineConfig() {
+      try {
+        const response = await fetch(ONLINE_CONFIG_URL, { cache: 'no-store' });
+        if (response.ok) {
+          const config = await response.json();
+          state.online.serverUrl = (config.server_url || '').trim().replace(/\/+$/, '');
+        }
+      } catch (_error) {
+        state.online.serverUrl = '';
+      }
+      const serverUrl = configuredServerUrl();
+      state.online.serverUrl = serverUrl;
+      entryStatusEl.textContent = serverUrl
+        ? `Multiplayer server configured:\n${serverUrl}\nMake sure it is running with --dataset v3-tokyo.`
+        : 'No v3 multiplayer server configured yet.\nFor local testing, open this page with ?server=http://127.0.0.1:8765 after starting the room server with --dataset v3-tokyo.';
+    }
+
+    function roomTokenStorageKey(roomId, seat) {
+      return `onichase-v3-room-token:${roomId}:${seat}`;
+    }
+
+    function saveOnlineToken(roomId, seat, token) {
+      if (!roomId || !seat || !token) return;
+      window.localStorage.setItem(roomTokenStorageKey(roomId, seat), token);
+    }
+
+    function loadOnlineToken(roomId, seat) {
+      if (!roomId || !seat) return '';
+      return window.localStorage.getItem(roomTokenStorageKey(roomId, seat)) || '';
+    }
+
+    function stopOnlinePolling() {
+      if (state.online.pollingHandle) window.clearTimeout(state.online.pollingHandle);
+      state.online.pollingHandle = null;
+    }
+
+    function scheduleOnlinePoll() {
+      if (!onlineActive()) return;
+      stopOnlinePolling();
+      state.online.pollingHandle = window.setTimeout(() => {
+        syncRoomState().catch((error) => {
+          entryStatusEl.textContent = `Room sync failed: ${String(error)}`;
+          renderRoomPanel();
+        });
+      }, 500);
+    }
+
+    async function apiJson(url, options = {}) {
+      const response = await fetch(url, {
+        headers: { 'Content-Type': 'application/json' },
+        ...options,
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+      return data;
+    }
+
+    function describeRoomError(error) {
+      const text = String(error || '');
+      if (text.includes('seat_occupied')) return 'That seat is already occupied. Switch seats or use another room.';
+      if (text.includes('room_not_found')) return 'Room not found. Check the room id and try again.';
+      if (text.includes('invalid_token')) return 'This browser does not own that seat. Rejoin or switch room.';
+      if (text.includes('Failed to fetch')) return 'Could not reach the v3 room server. Check server URL and dataset.';
+      return text;
+    }
+
+    function setLobbySeat(seat) {
+      if (onlineActive() && state.online.seat && seat !== state.online.seat) return;
+      state.activeMode = seat;
+      updateRoleButtons();
+      renderGame();
+    }
+
+    function enterSinglePlayer(seat) {
+      stopOnlinePolling();
+      state.online = {
+        ...state.online,
+        roomId: '',
+        seat: null,
+        token: '',
+        lastRoom: null,
+        presences: { runner: null, hunter: null },
+      };
+      resetMatch();
+      state.activeMode = seat;
+      updateRoleButtons();
+      closeEntry();
+      renderGame();
+    }
+
+    async function copyCurrentRoomId() {
+      const value = (state.online.roomId || roomIdInput.value || '').trim().toUpperCase();
+      if (!value) {
+        entryStatusEl.textContent = 'No room id to copy yet.';
+        return;
+      }
+      try {
+        if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(value);
+        else {
+          roomIdInput.focus();
+          roomIdInput.select();
+          document.execCommand('copy');
+        }
+        entryStatusEl.textContent = `Copied room ${value}. Share it with your opponent.`;
+      } catch (_error) {
+        entryStatusEl.textContent = `Copy failed. Room code: ${value}`;
+      }
+    }
+
+    function roomStatusSummary(room) {
+      const selfSeat = room.self?.seat || state.online.seat || state.activeMode;
+      const opponentSeat = selfSeat === 'runner' ? 'hunter' : 'runner';
+      const selfReady = room.self?.ready ? 'ready' : 'not ready';
+      const opponentJoined = Boolean(room.opponent?.connected);
+      const opponentReady = room.opponent?.ready ? 'ready' : 'not ready';
+      return [
+        `Room: ${room.room_id}`,
+        `Seat: ${selfSeat.toUpperCase()} (${selfReady})`,
+        `Opponent: ${opponentJoined ? `${opponentSeat.toUpperCase()} ${opponentReady}` : `waiting for ${opponentSeat.toUpperCase()}`}`,
+        `Phase: ${room.phase}`,
+        `Time: ${minutesToHhmm(room.current_game_minute)}`,
+      ].join('\n');
+    }
+
+    function renderEntryRoomStatus() {
+      const room = state.online.lastRoom;
+      if (!room) {
+        document.getElementById('ready-room-ready-button').disabled = !onlineActive();
+        document.getElementById('ready-room-unready-button').disabled = true;
+        return;
+      }
+      entryStatusEl.textContent = roomStatusSummary(room);
+      updateRoomCodePill(room.room_id);
+      document.getElementById('ready-room-ready-button').disabled = Boolean(room.self?.ready);
+      document.getElementById('ready-room-unready-button').disabled = !room.self?.ready;
+    }
+
+    function presenceToPreview(playerId, presence) {
+      if (!presence || presence.kind === 'HIDDEN') {
+        return {
+          visibility: 'hidden',
+          currentMinute: presence?.time_hhmm ? hhmmToMinutes(presence.time_hhmm) : state.currentGameMinute,
+          currentTime: presence?.time_hhmm || minutesToHhmm(state.currentGameMinute),
+          currentState: { kind: 'HIDDEN' },
+          currentTrip: null,
+          currentBoardStop: null,
+          resolvedSteps: [],
+          mapPosition: null,
+          mapStationGroupId: null,
+        };
+      }
+      const currentTrip = presence.trip_id ? state.tripById.get(presence.trip_id) || null : null;
+      let mapPosition = null;
+      let mapStationGroupId = null;
+      if (presence.map_position?.kind === 'STATION') {
+        mapStationGroupId = presence.map_position.station_group_id;
+        mapPosition = stationLonLat(mapStationGroupId);
+      } else if (presence.map_position?.kind === 'SEGMENT') {
+        const progress = presence.map_position.progress ?? 0;
+        mapPosition = currentTrip?.routeId
+          ? routePositionAlongPath(
+              currentTrip.routeId,
+              presence.map_position.from_station_group_id,
+              presence.map_position.to_station_group_id,
+              progress,
+            )
+          : null;
+        if (!mapPosition) {
+          mapPosition = interpolateCoordinates(
+            [
+              stationLonLat(presence.map_position.from_station_group_id),
+              stationLonLat(presence.map_position.to_station_group_id),
+            ].filter(Boolean),
+            progress,
+          );
+        }
+        mapStationGroupId = presence.map_position.to_station_group_id;
+      }
+      return {
+        visibility: presence.visibility || 'full',
+        currentMinute: hhmmToMinutes(presence.time_hhmm),
+        currentTime: presence.time_hhmm,
+        currentState: presence.kind === 'NODE'
+          ? { kind: 'NODE', stationGroupId: presence.station_group_id }
+          : { kind: 'TRAIN', tripId: presence.trip_id || null },
+        currentTrip,
+        currentBoardStop: null,
+        resolvedSteps: [],
+        mapPosition,
+        mapStationGroupId,
+        displayLabel: presence.station_label || presence.service_label || null,
+      };
+    }
+
+    function syncStateFromRoom(room) {
+      state.online.lastRoom = room;
+      state.online.roomId = room.room_id;
+      roomIdInput.value = room.room_id;
+      updateRoomCodePill(room.room_id);
+      state.phase = room.phase;
+      state.startTime = room.start_time_hhmm;
+      state.endTime = room.end_time_hhmm;
+      state.currentGameMinute = room.current_game_minute;
+      state.nextPlanningMinute = room.next_planning_minute;
+      if (room.planning_seconds_remaining !== null && room.planning_seconds_remaining !== undefined) {
+        state.planningSecondsRemaining = room.planning_seconds_remaining;
+      }
+      state.clockRunning = false;
+      if (state.tickHandle) {
+        window.clearTimeout(state.tickHandle);
+        state.tickHandle = null;
+      }
+      state.liveCapture = room.capture || null;
+      if (room.self) {
+        state.activeMode = room.self.seat;
+        state.online.seat = room.self.seat;
+        if (room.self.session_token && room.self.session_token !== state.online.token) {
+          state.online.token = room.self.session_token;
+          saveOnlineToken(room.room_id, room.self.seat, room.self.session_token);
+        }
+        state.players[room.self.seat] = {
+          start_station_id: room.self.start_station_id,
+          input_mode: 'plan',
+          steps: room.self.steps || [],
+        };
+        state.online.presences[room.self.seat] = room.self.presence || null;
+      }
+      if (room.opponent) {
+        const opponentSeat = room.opponent.seat;
+        state.players[opponentSeat] = state.players[opponentSeat] || {
+          start_station_id: null,
+          input_mode: 'plan',
+          steps: [],
+        };
+        state.online.presences[opponentSeat] = room.opponent.presence || null;
+      }
+      updateRoleButtons();
+      renderEntryRoomStatus();
+      if (room.match_started || room.phase === 'LIVE' || room.phase === 'ENDED') closeEntry();
+      renderGame();
+      scheduleOnlinePoll();
+    }
+
+    async function syncRoomState() {
+      if (!onlineActive()) return;
+      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/state?seat=${state.online.seat}&token=${encodeURIComponent(state.online.token)}`);
+      syncStateFromRoom(data.room);
+    }
+
+    async function createRoomAndJoinSeat() {
+      try {
+        state.online.serverUrl = configuredServerUrl();
+        if (!state.online.serverUrl) {
+          entryStatusEl.textContent = 'No v3 multiplayer server configured. Start one with --dataset v3-tokyo and use ?server=http://host:port.';
+          return;
+        }
+        const created = await apiJson(`${state.online.serverUrl}/api/rooms`, {
+          method: 'POST',
+          body: JSON.stringify({ start_time_hhmm: state.startTime, end_time_hhmm: state.endTime }),
+        });
+        state.online.roomId = created.room.room_id;
+        roomIdInput.value = created.room.room_id;
+        updateRoomCodePill(created.room.room_id);
+        await copyCurrentRoomId();
+        await joinExistingRoom();
+      } catch (error) {
+        entryStatusEl.textContent = `Create room failed: ${describeRoomError(error)}`;
+      }
+    }
+
+    async function joinExistingRoom() {
+      try {
+        state.online.serverUrl = configuredServerUrl();
+        if (!state.online.serverUrl) {
+          entryStatusEl.textContent = 'No v3 multiplayer server configured. Start one with --dataset v3-tokyo and use ?server=http://host:port.';
+          return;
+        }
+        state.online.roomId = roomIdInput.value.trim().toUpperCase();
+        if (!state.online.roomId) {
+          entryStatusEl.textContent = 'Enter a room id first.';
+          return;
+        }
+        updateRoomCodePill(state.online.roomId);
+        state.online.token = loadOnlineToken(state.online.roomId, state.activeMode);
+        const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/join`, {
+          method: 'POST',
+          body: JSON.stringify({ seat: state.activeMode, display_name: state.activeMode.toUpperCase(), token: state.online.token || null }),
+        });
+        if (data.token) {
+          state.online.token = data.token;
+          saveOnlineToken(state.online.roomId, state.activeMode, data.token);
+        }
+        syncStateFromRoom(data.room);
+      } catch (error) {
+        entryStatusEl.textContent = `Join room failed: ${describeRoomError(error)}`;
+      }
+    }
+
+    async function submitCurrentPlanToRoom() {
+      if (!onlineActive()) return null;
+      const player = state.players[state.online.seat];
+      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/plan`, {
+        method: 'POST',
+        body: JSON.stringify({
+          seat: state.online.seat,
+          token: state.online.token,
+          start_station_id: player.start_station_id,
+          steps: player.steps,
+        }),
+      });
+      syncStateFromRoom(data.room);
+      return data.room;
+    }
+
+    function syncPlanIfOnline() {
+      if (!onlineActive()) return;
+      submitCurrentPlanToRoom().catch((error) => {
+        entryStatusEl.textContent = `Submit plan failed: ${describeRoomError(error)}`;
+        renderRoomPanel();
+      });
+    }
+
+    async function markSeatReady() {
+      if (!onlineActive()) {
+        entryStatusEl.textContent = 'Join or create a room first.';
+        return;
+      }
+      await submitCurrentPlanToRoom();
+      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/ready`, {
+        method: 'POST',
+        body: JSON.stringify({ seat: state.online.seat, token: state.online.token, ready: true }),
+      });
+      syncStateFromRoom(data.room);
+    }
+
+    async function markSeatUnready() {
+      if (!onlineActive()) return;
+      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/ready`, {
+        method: 'POST',
+        body: JSON.stringify({ seat: state.online.seat, token: state.online.token, ready: false }),
+      });
+      syncStateFromRoom(data.room);
     }
 
     function displayNameForGroup(stationGroupId) {
@@ -1444,6 +1999,10 @@
     }
 
     function currentMapPreview(playerId) {
+      if (onlineActive() && state.online.presences[playerId]) {
+        const preview = presenceToPreview(playerId, state.online.presences[playerId]);
+        if (preview) return preview;
+      }
       const event = currentReplayEvent();
       if (event?.state_after?.[playerId]) return replayPreviewFromState(playerId, event.state_after[playerId], event);
       return previewPlayer(playerId, state.currentGameMinute);
@@ -1451,12 +2010,19 @@
 
     function formatState(preview) {
       if (!preview) return 'unknown';
+      if (preview.visibility === 'hidden' || preview.currentState.kind === 'HIDDEN') return 'hidden during LIVE';
+      if (preview.displayLabel && preview.currentState.kind === 'NODE') return `at ${preview.displayLabel} ${preview.currentTime}`;
+      if (preview.displayLabel && preview.currentState.kind === 'TRAIN') return `on ${preview.displayLabel} ${preview.currentTime}`;
       return preview.currentState.kind === 'NODE'
         ? `at ${displayNameForGroup(preview.currentState.stationGroupId)} ${preview.currentTime}`
         : `on ${formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: preview.currentState.tripId })} ${preview.currentTime}`;
     }
 
     function shouldShowPlayer(playerId) {
+      if (onlineActive()) {
+        const presence = state.online.presences[playerId];
+        return Boolean(presence && presence.kind !== 'HIDDEN');
+      }
       if (currentReplayEvent()) return true;
       if (state.phase === 'PLANNING') return true;
       return playerId === state.activeMode;
@@ -1604,9 +2170,9 @@
     }
 
     function setActiveMode(mode) {
+      if (onlineActive() && state.online.seat && mode !== state.online.seat) return;
       state.activeMode = mode;
-      document.getElementById('runner-button').className = mode === 'runner' ? 'active runner' : 'runner';
-      document.getElementById('hunter-button').className = mode === 'hunter' ? 'active hunter' : 'hunter';
+      updateRoleButtons();
       state.selectedStationGroupId = null;
       state.selectedTripId = pendingTripId(mode);
       const trip = state.tripById.get(state.selectedTripId);
@@ -1644,6 +2210,7 @@
       invalidateSimulation();
       updateSelectedTripPath();
       renderGame();
+      syncPlanIfOnline();
       return preview;
     }
 
@@ -1659,6 +2226,7 @@
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
+      syncPlanIfOnline();
     }
 
     function setStartToSelected() {
@@ -1668,6 +2236,7 @@
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
+      syncPlanIfOnline();
     }
 
     function addWaitStep() {
@@ -1678,6 +2247,7 @@
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
+      syncPlanIfOnline();
     }
 
     function undoLastStep() {
@@ -1687,6 +2257,7 @@
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
+      syncPlanIfOnline();
     }
 
     function addBoardAndRide(tripId, stationGroupId) {
@@ -1697,6 +2268,7 @@
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
+      syncPlanIfOnline();
     }
 
     function addRideToStation(stationGroupId) {
@@ -1710,6 +2282,7 @@
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
+      syncPlanIfOnline();
     }
 
     function detectLiveCapture() {
@@ -1778,6 +2351,13 @@
     }
 
     function startGameNow() {
+      if (onlineActive()) {
+        markSeatReady().catch((error) => {
+          entryStatusEl.textContent = `Ready failed: ${describeRoomError(error)}`;
+          renderRoomPanel();
+        });
+        return;
+      }
       if (state.phase !== 'PLANNING') return;
       state.phase = 'LIVE';
       state.clockRunning = true;
@@ -1788,6 +2368,7 @@
     }
 
     function toggleClock() {
+      if (onlineActive()) return;
       state.clockRunning = !state.clockRunning;
       if (state.clockRunning) scheduleTick();
       else if (state.tickHandle) {
@@ -1798,6 +2379,7 @@
     }
 
     function resetMatch() {
+      if (onlineActive()) return;
       const runnerStart = state.bundle?.metadata?.defaultRunnerStartStationId || 'SG_TOKYO';
       const hunterStart = state.bundle?.metadata?.defaultHunterStartStationId || 'SG_SHINJUKU';
       state.players = {
@@ -1834,8 +2416,17 @@
         Runner: ${state.phase === 'LIVE' && state.activeMode === 'hunter' ? 'hidden during LIVE' : formatState(runnerPreview)}<br>
         Hunter: ${state.phase === 'LIVE' && state.activeMode === 'runner' ? 'hidden during LIVE' : formatState(hunterPreview)}
       `;
-      document.getElementById('start-button').disabled = state.phase !== 'PLANNING' || state.timetableStatus !== 'ready';
-      document.getElementById('pause-button').textContent = state.clockRunning ? 'Pause' : 'Resume';
+      const startButton = document.getElementById('start-button');
+      const pauseButton = document.getElementById('pause-button');
+      const replayButton = document.getElementById('simulate-button');
+      startButton.textContent = onlineActive() ? 'Ready / Start' : 'Start Game';
+      startButton.disabled =
+        state.phase !== 'PLANNING' ||
+        state.timetableStatus !== 'ready' ||
+        (onlineActive() && Boolean(state.online.lastRoom?.self?.ready));
+      pauseButton.textContent = state.clockRunning ? 'Pause' : 'Resume';
+      pauseButton.disabled = onlineActive();
+      replayButton.disabled = onlineActive();
     }
 
     function renderTrainOutlook() {
@@ -1889,7 +2480,7 @@
           <button type="button" data-action="undo">Undo</button>
           <button type="button" data-action="clear">Clear Future</button>
           ${pending ? `<button type="button" data-action="choose-another">Choose Another</button>` : ''}
-          <button type="button" data-action="reset-match">Reset Match</button>
+          ${onlineActive() ? '' : '<button type="button" data-action="reset-match">Reset Match</button>'}
         </div>`;
       trainOutlookEl.innerHTML = rows.length
         ? rows.map((row) => `
@@ -1969,6 +2560,25 @@
       });
     }
 
+    function renderRoomPanel() {
+      const room = state.online.lastRoom;
+      if (!onlineActive()) {
+        roomCardEl.textContent = 'Single-player local mode.\nUse Lobby when you want to connect this same v3 gameplay shell to a v3 Tokyo room server.';
+      } else if (room) {
+        roomCardEl.textContent = roomStatusSummary(room);
+      } else {
+        roomCardEl.textContent = `ROOM ${state.online.roomId}\nSeat: ${state.online.seat?.toUpperCase() || 'n/a'}\nSyncing...`;
+      }
+
+      const buttons = Object.fromEntries(
+        [...roomActionsEl.querySelectorAll('[data-room-action]')].map((button) => [button.dataset.roomAction, button])
+      );
+      if (buttons.copy) buttons.copy.disabled = !state.online.roomId;
+      if (buttons.submit) buttons.submit.disabled = !onlineActive() || state.phase !== 'PLANNING';
+      if (buttons.ready) buttons.ready.disabled = !onlineActive() || state.phase !== 'PLANNING' || Boolean(room?.self?.ready);
+      if (buttons.unready) buttons.unready.disabled = !onlineActive() || state.phase !== 'PLANNING' || !room?.self?.ready;
+    }
+
     function renderResult() {
       if (state.liveCapture) {
         resultCardEl.textContent = state.liveCapture.type === 'same_node'
@@ -1985,6 +2595,7 @@
       renderCurrentStatus();
       renderTrainOutlook();
       renderPlanBoard();
+      renderRoomPanel();
       renderResult();
       updatePlayerMarkers();
       updateSelectedTripPath();
@@ -2365,6 +2976,7 @@
         loadPill.textContent = 'MapLibre failed to load from CDN';
         return;
       }
+      loadOnlineConfig();
       const t0 = performance.now();
       const bundle = await fetchJsonMaybeGz(MAP_DATA_URL);
       state.bundle = bundle;
@@ -2402,6 +3014,42 @@
       document.getElementById('service-button').addEventListener('click', () => setViewMode('service'));
       document.getElementById('fit-button').addEventListener('click', () => {
         map.fitBounds(networkBounds(bundle), { padding: 70, duration: 800, maxZoom: 10.2 });
+      });
+      document.getElementById('single-runner-button').addEventListener('click', () => enterSinglePlayer('runner'));
+      document.getElementById('single-hunter-button').addEventListener('click', () => enterSinglePlayer('hunter'));
+      document.getElementById('lobby-runner-button').addEventListener('click', () => setLobbySeat('runner'));
+      document.getElementById('lobby-hunter-button').addEventListener('click', () => setLobbySeat('hunter'));
+      document.getElementById('create-room-button').addEventListener('click', createRoomAndJoinSeat);
+      document.getElementById('join-room-button').addEventListener('click', joinExistingRoom);
+      document.getElementById('copy-room-button').addEventListener('click', copyCurrentRoomId);
+      document.getElementById('ready-room-ready-button').addEventListener('click', () => {
+        markSeatReady().catch((error) => {
+          entryStatusEl.textContent = `Ready failed: ${describeRoomError(error)}`;
+          renderRoomPanel();
+        });
+      });
+      document.getElementById('ready-room-unready-button').addEventListener('click', () => {
+        markSeatUnready().catch((error) => {
+          entryStatusEl.textContent = `Unready failed: ${describeRoomError(error)}`;
+          renderRoomPanel();
+        });
+      });
+      document.getElementById('enter-local-button').addEventListener('click', () => closeEntry());
+      roomActionsEl.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-room-action]');
+        if (!button) return;
+        const action = button.dataset.roomAction;
+        if (action === 'open') openEntry();
+        else if (action === 'copy') copyCurrentRoomId();
+        else if (action === 'submit') syncPlanIfOnline();
+        else if (action === 'ready') markSeatReady().catch((error) => {
+          entryStatusEl.textContent = `Ready failed: ${describeRoomError(error)}`;
+          renderRoomPanel();
+        });
+        else if (action === 'unready') markSeatUnready().catch((error) => {
+          entryStatusEl.textContent = `Unready failed: ${describeRoomError(error)}`;
+          renderRoomPanel();
+        });
       });
       setActiveMode('runner');
     }
