@@ -14,10 +14,12 @@ NOJEKYLL = DOCS_DIR / ".nojekyll"
 
 V1_SOURCE_HTML = UI_DIR / "web_client.html"
 V2_SOURCE_HTML = UI_DIR / "v2_web_client.html"
+V3_MAPLIBRE_SOURCE_HTML = UI_DIR / "v3_maplibre.html"
 INDEX_HTML = DOCS_DIR / "index.html"
 V1_TARGET_HTML = DOCS_DIR / "v1.html"
 V2_TARGET_HTML = DOCS_DIR / "v2.html"
 V3_TARGET_HTML = DOCS_DIR / "v3.html"
+V3_MAPLIBRE_TARGET_HTML = DOCS_DIR / "v3_maplibre.html"
 
 DATA_FILES = [
     ROOT / "data" / "yamanote_stations.json",
@@ -211,6 +213,7 @@ def build_landing_page() -> str:
           </div>
           <div class="actions">
             <a class="button" href="./v3.html">Open V3</a>
+            <a class="secondary-link" href="./v3_maplibre.html">MapLibre renderer</a>
           </div>
         </article>
       </section>
@@ -244,11 +247,13 @@ def build() -> None:
     DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
     v1_html = V1_SOURCE_HTML.read_text(encoding="utf-8").replace("__DATA_BASE__", "./data")
     v2_html = V2_SOURCE_HTML.read_text(encoding="utf-8").replace("__DATA_BASE__", "./data")
+    v3_maplibre_html = V3_MAPLIBRE_SOURCE_HTML.read_text(encoding="utf-8")
     v3_html = build_v3_from_v2(v2_html)
     INDEX_HTML.write_text(build_landing_page(), encoding="utf-8")
     V1_TARGET_HTML.write_text(v1_html, encoding="utf-8")
     V2_TARGET_HTML.write_text(v2_html, encoding="utf-8")
     V3_TARGET_HTML.write_text(v3_html, encoding="utf-8")
+    V3_MAPLIBRE_TARGET_HTML.write_text(v3_maplibre_html, encoding="utf-8")
     NOJEKYLL.write_text("", encoding="utf-8")
     for path in DATA_FILES:
         shutil.copy2(path, DOCS_DATA_DIR / path.name)
