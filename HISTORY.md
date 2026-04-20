@@ -240,3 +240,8 @@
 
 - Turned `v3` from scope discussion into a real data-foundation build: completed full nationwide Shinkansen real geometry, expanded the Tokyo real-position network to include JR, private rail, metro, monorail, and other urban rail systems, and published the first online `v3` Tokyo map page.
 - Began collecting real Tokyo-area train data for `v3`, producing the first weekday train-instance batches for `JR East` Tokyo core, `Toei`, `Rinkai`, and `Yurikamome`.
+
+## 2026-04-20
+
+- Promoted the MapLibre renderer to the official public `v3.html` page and removed the separate `v3_maplibre.html` public entry.
+- Connected the first v2-style gameplay shell into v3 MapLibre, so runner/hunter role switching, planning/live timing, hourly replanning, plan board, train selection, destination-stop selection, player markers, live capture, and replay simulation now run against the real Tokyo map and timetable substrate.

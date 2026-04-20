@@ -16,11 +16,12 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Fixed v3 MapLibre route/track/service colors: generated bundles and tiles now carry per-line colors from the physical-line data plus route aliases and operator fallbacks instead of the old default blue.
 - Added the missing full `埼玉高速鉄道線` real geometry toward `浦和美園` with SR blue `#00A6E9`; color QA now reports no missing, white, transparent, or fallback-gray colors in bundles or generated tiles.
 - Promoted the MapLibre renderer to the official public `v3.html`; the old v2-style v3 page and separate `v3_maplibre.html` website are removed from the generated site.
+- Connected the first v2-style gameplay shell into v3 MapLibre: role switching, clock, planning/live, hourly replanning, plan board, train outlook, selected-train path/stops, player markers, live capture, and local replay simulation now run on the real Tokyo data.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
-- Stabilize `v3` route geometry linkage, dense Tokyo click behavior, and gameplay migration on the reused `v2` UI path after the performance split.
-- Validate `v3` on the reused `v2` gameplay path: chained planning, live simulation, capture, replay, and default runner/hunter starts.
+- Stabilize `v3` MapLibre gameplay UX: dense Tokyo click behavior, destination-stop selection, player marker clarity, and replay readability.
+- Keep v3 gameplay rules aligned with v2 while deciding how the multiplayer room server should load the Tokyo v3 dataset.
 
 ## Blockers
 - No usable Notion tool/config exists in this repo/session, so true Notion updates remain blocked.
@@ -34,6 +35,6 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Manually test `v3.html`: first paint, official line colors, zoom/pan smoothness, label collision, station click, route highlight, and lazy timetable departures.
-2. Decide the migration seam for plugging existing v2 planning/capture/player markers into MapLibre without rewriting game logic.
-3. Test the reused `v2` chase loop on v3 data in a real browser: chained planning, live movement, capture, and replay.
+1. Manually play `v3.html` in a normal browser: build runner and hunter plans, switch roles, start live, check hourly replanning, capture, and replay.
+2. Decide whether to generalize `scripts/engine/v2_online_room_server.py` for v3 Tokyo data or create a dataset-configurable room server entry point.
+3. Continue MapLibre UX/performance work: smarter label priority, denser Tokyo click targets, selected-service visibility, and tile/vector migration planning.
