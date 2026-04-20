@@ -14,6 +14,7 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Optimized v3 map/site performance locally: `v3.html` now opens with `v3_tokyo_map_bundle.json.gz` (`1.3M`) and delayed `v3_tokyo_timetable_bundle.json.gz` (`5.4M`), uses dedicated Tokyo GeoJSON tiles under `docs/data/v3_tokyo_tiles`, indexed timetable lookups, and lightweight SVG scale refresh during wheel zoom.
 - Added the first standalone MapLibre renderer spike at `docs/v3_maplibre.html`: WebGL track/service layers, MapLibre label collision, station click, route highlight, route-stop highlight, and lazy timetable-driven departure rows.
 - Fixed v3 MapLibre route/track/service colors: generated bundles and tiles now carry per-line colors from the physical-line data plus route aliases and operator fallbacks instead of the old default blue.
+- Added the missing full `埼玉高速鉄道線` real geometry toward `浦和美園` with SR blue `#00A6E9`; color QA now reports no missing, white, transparent, or fallback-gray colors in bundles or generated tiles.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.

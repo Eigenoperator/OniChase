@@ -22,6 +22,7 @@ PRIVATE_OPERATORS = {
     "東武鉄道": {"label": "Tobu", "color": "#1f78ff"},
     "西武鉄道": {"label": "Seibu", "color": "#00a15f"},
     "京成電鉄": {"label": "Keisei", "color": "#2457c5"},
+    "埼玉高速鉄道": {"label": "Saitama Railway", "color": "#00a6e9"},
 }
 
 TOKYO_URBAN_LINE_REFS = {
@@ -328,6 +329,7 @@ def render() -> None:
   </g>
 </svg>
 '''
+    svg = "\n".join(line.rstrip() for line in svg.splitlines()) + "\n"
     OUTPUT_SVG_PATH.write_text(svg, encoding="utf-8")
     print(f"Wrote {OUTPUT_DATA_PATH}")
     print(f"Wrote {OUTPUT_SVG_PATH}")

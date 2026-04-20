@@ -73,6 +73,9 @@ OPERATOR_NAME_TO_ID = {
     "首都圏新都市鉄道": "tsukuba_express",
     "つくばエクスプレス": "tsukuba_express",
     "tsukuba express": "tsukuba_express",
+    "埼玉高速鉄道": "saitama_railway",
+    "saitama railway": "saitama_railway",
+    "saitama rapid railway": "saitama_railway",
 }
 
 
@@ -229,6 +232,7 @@ OPERATOR_DEFAULT_COLORS = {
     "keisei": "#2457C5",
     "odakyu": "#2B78D0",
     "rinkai": "#1F5AA6",
+    "saitama_railway": "#00A6E9",
     "seibu": "#00A15F",
     "shinkansen": "#1F78FF",
     "tama_monorail": "#54C0D8",
