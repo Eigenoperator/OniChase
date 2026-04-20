@@ -817,6 +817,103 @@
     const NONE_FILTER = ['==', ['get', 'id'], '__none__'];
     const NONE_STATION_FILTER = ['==', ['get', 'station_group_id'], '__none__'];
     const TOKYO_CENTER = [139.7671, 35.6812];
+    const JAPANESE_TEXT_RE = /[\u3040-\u30ff\u3400-\u9fff々]/u;
+    const OPERATOR_JA_LABELS = Object.freeze({
+      jr_east: 'JR東日本',
+      jr_central: 'JR東海',
+      jr_west: 'JR西日本',
+      jr_kyushu: 'JR九州',
+      keikyu: '京急',
+      keio: '京王',
+      keisei: '京成',
+      odakyu: '小田急',
+      rinkai: '東京臨海高速鉄道',
+      seibu: '西武',
+      shinkansen: 'JR新幹線',
+      tama_monorail: '多摩都市モノレール',
+      tobu: '東武',
+      toei: '都営',
+      tokyo_metro: '東京メトロ',
+      tokyo_monorail: '東京モノレール',
+      tokyu: '東急',
+      tsukuba_express: '首都圏新都市鉄道',
+      yurikamome: 'ゆりかもめ',
+    });
+    const ROUTE_JA_LABELS = Object.freeze({
+      JR_EAST_CHUO_RAPID: '中央線快速',
+      JR_EAST_CHUO_SOBU_LOCAL: '中央・総武線各駅停車',
+      JR_EAST_JOBAN_RAPID: '常磐線快速',
+      JR_EAST_KEIHIN_TOHOKU_NEGISHI: '京浜東北線・根岸線',
+      JR_EAST_KEIYO_MUSASHINO: '京葉線・武蔵野線',
+      JR_EAST_SAIKYO_KAWAGOE: '埼京線・川越線',
+      JR_EAST_SHONAN_SHINJUKU: '湘南新宿ライン',
+      JR_EAST_SOBU_RAPID: '総武快速線',
+      JR_EAST_TOKAIDO: '東海道線',
+      JR_EAST_UENO_TOKYO: '上野東京ライン',
+      JR_EAST_YOKOSUKA: '横須賀線',
+      JR_YAMANOTE: '山手線',
+      RINKAI: 'りんかい線',
+      SHINKANSEN_AKITA: '秋田新幹線',
+      SHINKANSEN_HOKURIKU: '北陸新幹線',
+      SHINKANSEN_JOETSU: '上越新幹線',
+      SHINKANSEN_KYUSHU: '九州新幹線',
+      SHINKANSEN_NISHI_KYUSHU: '西九州新幹線',
+      SHINKANSEN_TOHOKU_HOKKAIDO: '東北・北海道新幹線',
+      SHINKANSEN_TOKAIDO_SANYO: '東海道・山陽新幹線',
+      SHINKANSEN_YAMAGATA: '山形新幹線',
+      TAMA_MONORAIL: '多摩モノレール線',
+      TOEI_ARAKAWA: '都電荒川線',
+      TOEI_ASAKUSA: '都営浅草線',
+      TOEI_MITA: '都営三田線',
+      TOEI_NIPPORI_TONERI: '日暮里・舎人ライナー',
+      TOEI_OEDO: '都営大江戸線',
+      TOEI_SHINJUKU: '都営新宿線',
+      TOKYO_MONORAIL_HANEDA: '東京モノレール羽田空港線',
+      Tokyu: '東急線',
+      YURIKAMOME: 'ゆりかもめ',
+    });
+    const SERVICE_NAME_JA_LABELS = Object.freeze({
+      Asama: 'あさま',
+      Hakutaka: 'はくたか',
+      Hayabusa: 'はやぶさ',
+      Hikari: 'ひかり',
+      Kagayaki: 'かがやき',
+      Kamome: 'かもめ',
+      Kodama: 'こだま',
+      Komachi: 'こまち',
+      Mizuho: 'みずほ',
+      Nasuno: 'なすの',
+      Nozomi: 'のぞみ',
+      Rabbit: 'ラビット',
+      Sakura: 'さくら',
+      Tanigawa: 'たにがわ',
+      Toki: 'とき',
+      Tsubame: 'つばめ',
+      Tsubasa: 'つばさ',
+      'Tsukuba Express': 'つくばエクスプレス',
+      Tsurugi: 'つるぎ',
+      Urban: 'アーバン',
+      Yamabiko: 'やまびこ',
+      'Rinkai Line': 'りんかい線',
+      'Tama Monorail': '多摩モノレール',
+      Yurikamome: 'ゆりかもめ',
+    });
+    const GENERIC_ENGLISH_SERVICE_NAMES = new Set([
+      'JR East',
+      'Keikyu',
+      'Keio',
+      'Keisei',
+      'Seibu',
+      'Tokyu',
+      'Tobu',
+      'Tokyo Metro',
+      'Toei',
+      'Odakyu',
+      'Rinkai Line',
+      'Tama Monorail',
+      'Tsukuba Express',
+      'Yurikamome',
+    ]);
 
     const state = {
       bundle: null,
@@ -1187,7 +1284,11 @@
         resolvedSteps: [],
         mapPosition,
         mapStationGroupId,
-        displayLabel: presence.station_label || presence.service_label || null,
+        displayLabel: presence.kind === 'NODE'
+          ? displayNameForGroup(presence.station_group_id)
+          : currentTrip
+            ? formatTripLabel(currentTrip)
+            : (hasJapaneseText(presence.service_label) ? presence.service_label : null),
       };
     }
 
@@ -1347,10 +1448,47 @@
       syncStateFromRoom(data.room);
     }
 
+    function hasJapaneseText(value) {
+      return JAPANESE_TEXT_RE.test(String(value || ''));
+    }
+
+    function operatorJaLabel(operatorId) {
+      return OPERATOR_JA_LABELS[operatorId] || operatorId || '';
+    }
+
+    function routeJapaneseName(routeOrId) {
+      const route = typeof routeOrId === 'string' ? state.routeById.get(routeOrId) : routeOrId;
+      const routeId = typeof routeOrId === 'string' ? routeOrId : route?.id;
+      const candidates = [route?.shortName, route?.longName, routeId].filter(Boolean);
+      for (const candidate of candidates) {
+        if (ROUTE_JA_LABELS[candidate]) return ROUTE_JA_LABELS[candidate];
+      }
+      if (route?.shortName && hasJapaneseText(route.shortName)) return route.shortName;
+      if (route?.longName && hasJapaneseText(route.longName)) {
+        const japanesePart = route.longName.split('/').map((part) => part.trim()).find(hasJapaneseText);
+        return japanesePart || route.longName;
+      }
+      return route?.shortName || route?.longName || routeId || '路線';
+    }
+
+    function serviceNameJaLabel(trip) {
+      const explicit = trip?.serviceNameJa || trip?.service_name_ja || trip?.trainNameJa || trip?.train_name_ja;
+      if (explicit) return explicit;
+      const serviceName = trip?.serviceName || trip?.service_name || '';
+      if (SERVICE_NAME_JA_LABELS[serviceName]) return SERVICE_NAME_JA_LABELS[serviceName];
+      if (serviceName && hasJapaneseText(serviceName)) return serviceName;
+      const routeName = routeJapaneseName(trip?.routeId);
+      if (serviceName && !GENERIC_ENGLISH_SERVICE_NAMES.has(serviceName)) {
+        return routeName !== '路線' ? routeName : '列車';
+      }
+      return routeName !== '路線' ? routeName : '列車';
+    }
+
     function displayNameForGroup(stationGroupId) {
       const label = state.labelByGroupId.get(stationGroupId);
       const group = state.stationGroupById.get(stationGroupId);
-      return label?.displayNameEn || group?.names?.en || group?.primaryName || stationGroupId;
+      const station = state.stationByGroupId.get(stationGroupId);
+      return label?.displayNameJa || group?.names?.ja || station?.names?.ja || group?.primaryName || stationGroupId;
     }
 
     function buildIndexes(bundle) {
@@ -1419,7 +1557,7 @@
               id: station.id,
               station_group_id: station.stationGroupId,
               name_en: label.displayNameEn || station.names?.en || station.name,
-              name_ja: label.displayNameJa || station.names?.ja || station.name,
+              name_ja: label.displayNameJa || group.names?.ja || station.names?.ja || station.name,
               label_rank: labelRank,
               sort_rank: -labelRank,
               route_count: routeCount,
@@ -1430,7 +1568,7 @@
 
       const trackFeatures = (bundle.trackCenterlines || [])
         .map((track, index) => lineFeature(track.id || `track-${index}`, track.polyline, {
-          line_name: track.lineName || 'Track',
+          line_name: routeJapaneseName({ shortName: track.lineName, operatorId: track.operatorId }) || '軌道',
           operator_id: track.operatorId || '',
           mode: track.mode || 'rail',
           line_color: track.color || (track.mode === 'subway' ? '#7aa7d9' : track.mode === 'private' ? '#50a57d' : '#8aa4c8'),
@@ -1443,7 +1581,7 @@
           const route = state.routeById.get(geometry.routeId) || {};
           return lineFeature(geometry.id || `service-${index}`, geometry.polyline, {
             route_id: geometry.routeId || '',
-            route_name: route.shortName || geometry.routeId || 'Service',
+            route_name: routeJapaneseName(route || geometry.routeId),
             route_color: geometry.color || route.color || '#667487',
             route_text_color: route.textColor || '#ffffff',
             operator_id: geometry.operatorId || route.operatorId || '',
@@ -1701,7 +1839,7 @@
 
     function addLabelLayers(map) {
       const baseLayout = {
-        'text-field': ['coalesce', ['get', 'name_en'], ['get', 'name_ja']],
+        'text-field': ['coalesce', ['get', 'name_ja'], ['get', 'name_en']],
         'text-font': ['Open Sans Regular'],
         'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
         'text-radial-offset': 0.55,
@@ -1830,8 +1968,9 @@
     }
 
     function formatTripLabel(trip) {
-      if (!trip) return 'Trip';
-      return `${trip.serviceName || 'Trip'}${trip.serviceNumber ? ` ${trip.serviceNumber}` : ''}`;
+      if (!trip) return '列車';
+      const serviceName = serviceNameJaLabel(trip) || '列車';
+      return `${serviceName}${trip.serviceNumber ? ` ${trip.serviceNumber}` : ''}`;
     }
 
     function activePlayer() {
@@ -2183,7 +2322,7 @@
       if (preview.displayLabel && preview.currentState.kind === 'TRAIN') return `on ${preview.displayLabel} ${preview.currentTime}`;
       return preview.currentState.kind === 'NODE'
         ? `at ${displayNameForGroup(preview.currentState.stationGroupId)} ${preview.currentTime}`
-        : `on ${formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: preview.currentState.tripId })} ${preview.currentTime}`;
+        : `on ${formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })} ${preview.currentTime}`;
     }
 
     function shouldShowPlayer(playerId) {
@@ -2316,7 +2455,7 @@
         const preview = currentMapPreview(playerId);
         if (!preview?.mapPosition) continue;
         const tripLabel = preview.currentState.kind === 'TRAIN'
-          ? formatTripLabel(preview.currentTrip || { serviceName: preview.currentState.tripId })
+          ? formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })
           : displayNameForGroup(preview.currentState.stationGroupId);
         features.push({
           type: 'Feature',
@@ -2599,12 +2738,12 @@
 
     function routeTitle(routeId) {
       const route = state.routeById.get(routeId);
-      return route?.shortName || route?.longName || routeId || 'Route';
+      return routeJapaneseName(route || routeId) || '路線';
     }
 
     function routeSubtitle(routeId) {
       const route = state.routeById.get(routeId);
-      return [route?.operatorId, route?.longName].filter(Boolean).join(' · ') || routeId || '';
+      return operatorJaLabel(route?.operatorId) || routeId || '';
     }
 
     function routeColor(routeId) {
@@ -2663,7 +2802,7 @@
 
       const isOnboard = preview.currentState.kind === 'TRAIN';
       const currentLabel = isOnboard
-        ? formatTripLabel(preview.currentTrip || { serviceName: preview.currentState.tripId })
+        ? formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })
         : displayNameForGroup(preview.currentState.stationGroupId);
       trainSummaryEl.innerHTML = `<h3>${currentLabel}</h3>
         <div>${isOnboard ? 'You are onboard. Choose where to get off.' : `Choose a line from ${currentLabel}, then choose a train and destination.`}</div>
@@ -2755,7 +2894,7 @@
             <button class="outlook-row active" type="button">
               <span class="row-meta">NOW</span>
               <span>
-                <span class="row-title">${formatTripLabel(preview.currentTrip || { serviceName: preview.currentState.tripId })}</span>
+                <span class="row-title">${formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })}</span>
                 <span class="row-sub">Currently onboard</span>
               </span>
             </button>
@@ -2859,7 +2998,7 @@
         } else if (step.type === 'RIDE_TO_STATION') {
           const from = displayNameForGroup(chainStation);
           const to = displayNameForGroup(step.station_id);
-          const tripLabel = formatTripLabel(pendingTrip || { serviceName: 'Trip' });
+          const tripLabel = formatTripLabel(pendingTrip || { serviceName: '列車' });
           rows.push({
             time: `LEG ${legIndex}`,
             title: `${tripLabel}: ${from} -> ${to}`,
@@ -3233,27 +3372,30 @@
       const routeStops = state.routeStationSetById.get(state.selectedRouteId) || new Set();
       const selectedTrip = state.tripById.get(state.selectedTripId);
       routeCardEl.innerHTML = `
-        <h3>${route?.shortName || state.selectedRouteId}</h3>
-        <div>${route?.longName || ''}</div>
+        <h3>${routeTitle(state.selectedRouteId)}</h3>
+        <div>${routeSubtitle(state.selectedRouteId)}</div>
         <div class="tag-row">
-          <span class="tag">${route?.operatorId || 'operator n/a'}</span>
+          <span class="tag">${operatorJaLabel(route?.operatorId) || '運行会社未設定'}</span>
           <span class="tag">${routeStops.size} mapped stops</span>
-          ${selectedTrip ? `<span class="tag">Train ${selectedTrip.serviceName} ${selectedTrip.serviceNumber || ''}</span>` : ''}
+          ${selectedTrip ? `<span class="tag">${formatTripLabel(selectedTrip)}</span>` : ''}
         </div>
       `;
     }
 
     function renderRouteList() {
       const routes = [...(state.bundle?.serviceRoutes || [])]
-        .sort((a, b) => (a.operatorId || '').localeCompare(b.operatorId || '') || a.shortName.localeCompare(b.shortName));
+        .sort((a, b) =>
+          operatorJaLabel(a.operatorId).localeCompare(operatorJaLabel(b.operatorId)) ||
+          routeJapaneseName(a).localeCompare(routeJapaneseName(b))
+        );
       routeListEl.innerHTML = routes.map((route) => {
         const stopCount = (state.routeStationSetById.get(route.id) || new Set()).size;
         return `
           <button class="route-row ${route.id === state.selectedRouteId ? 'active' : ''}" type="button" data-route-id="${route.id}">
             <span class="route-swatch" style="background:${route.color || '#667487'}"></span>
             <span>
-              <span class="row-title">${route.shortName || route.id}</span>
-              <span class="row-sub">${route.operatorId || ''}</span>
+              <span class="row-title">${routeJapaneseName(route)}</span>
+              <span class="row-sub">${operatorJaLabel(route.operatorId)}</span>
             </span>
             <span class="row-meta">${stopCount}</span>
           </button>
