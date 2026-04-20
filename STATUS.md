@@ -29,6 +29,7 @@
 - 已完成 `v3` 统一 train schema 与 station departure lookup：生成 `data/v3_trains_unified.json.gz` 和 `data/v3_station_departures.json.gz`，统一字段为 `operator / line / train_number / service_name / direction / stops / source / service_day`，并补上 JR 英文站名到日文地图站名的 alias join。
 - 已把 `v3` 网页重新接上真实 map + timetable 同源联动：`ui/v3_tokyo_phase1_map.html` 和 `docs/v3.html` 现在可显示真实线路和站名，点击站点显示真实 departure board，选择列车后显示停站列表并高亮停站/线路；已用 Playwright headless 验证点击东京可显示 `4221` 条真实发车并选中一班列车。
 - 已按新决策把 `v3` 交互层切换为复用主 `v2` UI 代码：新增 `scripts/ingest/build_v3_tokyo_v2_bundle.py` 生成 `data/v3_tokyo_bundle.json`，让 `docs/v3.html` 从 `ui/v2_web_client.html` 派生并只注入 v3 数据 URL；当前 v3 bundle 有 `1529` 个真实坐标站点、`302` 条 service route、`4147` 条 track centerline、`39318` 趟可进入 v2 planning flow 的列车。
+- 已把复用 `v2` UI 的 `v3` 发布到 GitHub Pages：`https://eigenoperator.github.io/OniChase/v3.html` 当前线上可加载 `77,940,421` bytes 的 `v3_tokyo_bundle.json`，公开 URL Playwright smoke test 已确认点击东京站后能看到真实发车、选择列车并显示后续停站。
 ## In Progress
 - 正在继续把新的主 `v2` 收成稳定版本：一方面保留 GIS-first 地图/diagram 联动，另一方面把联机页面细节、单机页面体验和新的 UI brief 继续对齐。
 - 已把公开 `v2` 网页的多人配置接到 Render 房间服务器 `https://onichase.onrender.com`，现在公开网页会默认尝试连公网联机后端。
