@@ -112,6 +112,28 @@ def route_id_for(line: Any, operator_id: str) -> str:
     return f"R_{digest}"
 
 
+def normalize_hex_color(value: Any) -> str | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    text = text.lstrip("#")
+    if re.fullmatch(r"[0-9a-fA-F]{6}", text):
+        return f"#{text.upper()}"
+    return None
+
+
+def text_color_for_background(color: str | None) -> str:
+    normalized = normalize_hex_color(color)
+    if not normalized:
+        return "#ffffff"
+    r = int(normalized[1:3], 16)
+    g = int(normalized[3:5], 16)
+    b = int(normalized[5:7], 16)
+    # W3C relative luminance approximation is enough for route chips.
+    luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    return "#1f2a37" if luminance >= 0.62 else "#ffffff"
+
+
 def operator_id_for(value: Any) -> str:
     text = str(value or "").strip()
     key = normalize_key(text)
@@ -155,6 +177,102 @@ def mode_for_operator(operator_id: str) -> str:
     if operator_id in {"tokyo_metro", "toei"}:
         return "subway"
     return "private_rail" if operator_id not in {"jr_east"} else "rail"
+
+
+ROUTE_COLOR_ALIASES = {
+    "JR_EAST_CHUO_RAPID": "中央線",
+    "JR_EAST_CHUO_SOBU_LOCAL": "総武線",
+    "JR_EAST_JOBAN_RAPID": "常磐線",
+    "JR_EAST_KEIHIN_TOHOKU_NEGISHI": "根岸線",
+    "JR_EAST_KEIYO_MUSASHINO": "京葉線",
+    "JR_EAST_SAIKYO_KAWAGOE": "川越線",
+    "JR_EAST_SOBU_RAPID": "横須賀線",
+    "JR_EAST_TOKAIDO": "東海道線",
+    "JR_EAST_YOKOSUKA": "横須賀線",
+    "JR_YAMANOTE": "山手線",
+    "TOEI_ARAKAWA": "荒川線",
+    "TOEI_ASAKUSA": "1号線浅草線",
+    "TOEI_MITA": "6号線三田線",
+    "TOEI_NIPPORI_TONERI": "日暮里・舎人ライナー",
+    "TOEI_OEDO": "12号線大江戸線",
+    "TOEI_SHINJUKU": "10号線新宿線",
+    "小田急小田原線": "小田原線",
+    "小田急小田原線通勤": "小田原線",
+    "小田急江ノ島線": "江ノ島線",
+    "小田急多摩線": "多摩線",
+    "RINKAI": "臨海副都心線",
+    "TOKYO_MONORAIL_HANEDA": "東京モノレール羽田線",
+    "TAMA_MONORAIL": "多摩都市モノレール線",
+    "YURIKAMOME": "東京臨海新交通臨海線",
+    "SHINKANSEN_TOKAIDO_SANYO": "東海道新幹線",
+    "SHINKANSEN_TOHOKU_HOKKAIDO": "東北新幹線",
+    "SHINKANSEN_JOETSU": "上越新幹線",
+    "SHINKANSEN_HOKURIKU": "北陸新幹線",
+    "SHINKANSEN_KYUSHU": "九州新幹線",
+    "SHINKANSEN_NISHI_KYUSHU": "西九州新幹線",
+}
+
+
+MANUAL_ROUTE_COLORS = {
+    "JR_EAST_SHONAN_SHINJUKU": "#E21F26",
+    "JR_EAST_UENO_TOKYO": "#7A4FB3",
+    "SHINKANSEN_AKITA": "#D54A96",
+    "SHINKANSEN_YAMAGATA": "#F09B20",
+    "Tokyu": "#D9485F",
+}
+
+
+OPERATOR_DEFAULT_COLORS = {
+    "jr_east": "#8AA4C8",
+    "keikyu": "#D63339",
+    "keio": "#F18A00",
+    "keisei": "#2457C5",
+    "odakyu": "#2B78D0",
+    "rinkai": "#1F5AA6",
+    "seibu": "#00A15F",
+    "shinkansen": "#1F78FF",
+    "tama_monorail": "#54C0D8",
+    "tobu": "#1F78FF",
+    "toei": "#0067B0",
+    "tokyo_metro": "#009BBF",
+    "tokyo_monorail": "#4CC3E6",
+    "tokyu": "#D9485F",
+    "tsukuba_express": "#2BB673",
+    "yurikamome": "#4BBDDF",
+}
+
+
+def line_color_lookup(map_payload: dict[str, Any]) -> tuple[dict[tuple[str, str], str], dict[str, str]]:
+    by_operator_line: dict[tuple[str, str], Counter[str]] = defaultdict(Counter)
+    by_line: dict[str, Counter[str]] = defaultdict(Counter)
+    for line in map_payload.get("physicalLines", []):
+        color = normalize_hex_color(line.get("color"))
+        line_name = str(line.get("line_name_ja") or line.get("label") or "").strip()
+        if not color or not line_name:
+            continue
+        operator_id = operator_id_for(line.get("operator_ja"))
+        by_operator_line[(operator_id, line_name)][color] += 1
+        by_line[line_name][color] += 1
+    return (
+        {key: counter.most_common(1)[0][0] for key, counter in by_operator_line.items()},
+        {key: counter.most_common(1)[0][0] for key, counter in by_line.items()},
+    )
+
+
+def route_color_for(line: Any, operator_id: str, color_by_operator_line: dict[tuple[str, str], str], color_by_line: dict[str, str]) -> str:
+    line_text = str(line or "").strip()
+    if line_text in MANUAL_ROUTE_COLORS:
+        return MANUAL_ROUTE_COLORS[line_text]
+    alias = ROUTE_COLOR_ALIASES.get(line_text, line_text)
+    if (operator_id, alias) in color_by_operator_line:
+        return color_by_operator_line[(operator_id, alias)]
+    if alias in color_by_line:
+        return color_by_line[alias]
+    if (operator_id, line_text) in color_by_operator_line:
+        return color_by_operator_line[(operator_id, line_text)]
+    if line_text in color_by_line:
+        return color_by_line[line_text]
+    return OPERATOR_DEFAULT_COLORS.get(operator_id, "#667487")
 
 
 def collect_station_identity(map_payload: dict[str, Any], trains: list[dict[str, Any]]) -> tuple[dict[str, list[dict[str, Any]]], dict[str, str]]:
@@ -234,18 +352,21 @@ def collect_station_identity(map_payload: dict[str, Any], trains: list[dict[str,
 
 def build_routes(map_payload: dict[str, Any], trains: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
     route_meta: dict[str, dict[str, Any]] = {}
+    color_by_operator_line, color_by_line = line_color_lookup(map_payload)
 
     for train in trains:
         line = canonical_route_line(train)
-        route_id = route_id_for(line, train.get("operator_id", "tokyo"))
+        operator_id = train.get("operator_id") or "tokyo"
+        route_id = route_id_for(line, operator_id)
+        route_color = route_color_for(line, operator_id, color_by_operator_line, color_by_line)
         route_meta.setdefault(route_id, {
             "id": route_id,
-            "operatorId": train.get("operator_id") or "tokyo",
+            "operatorId": operator_id,
             "shortName": str(line or train.get("operator") or route_id),
             "longName": f"{train.get('operator') or 'Tokyo'} / {line or train.get('service_name') or route_id}",
-            "color": "#1565c0",
-            "textColor": "#ffffff",
-            "mode": mode_for_operator(train.get("operator_id", "")),
+            "color": route_color,
+            "textColor": text_color_for_background(route_color),
+            "mode": mode_for_operator(operator_id),
         })
 
     # Physical-only routes stay out of serviceRoutes; otherwise thousands of
@@ -349,12 +470,14 @@ def build_bundle() -> dict[str, Any]:
             continue
         map_operator_id = operator_id_for(line.get("operator_ja"))
         route_id = route_id_for(line.get("line_name_ja") or line.get("label"), map_operator_id)
+        line_color = normalize_hex_color(line.get("color")) or OPERATOR_DEFAULT_COLORS.get(map_operator_id, "#8aa4c8")
         polyline = [{"lat": lat, "lon": lon} for lon, lat in coords]
         track_centerlines.append({
             "id": f"TRACK_TOKYO_{index:04d}",
             "operatorId": map_operator_id,
             "lineName": line.get("line_name_ja") or line.get("label") or route_id,
             "mode": "rail" if line.get("kind") == "jr" else line.get("kind") or "rail",
+            "color": line_color,
             "polyline": polyline,
             "stationGroupIds": [],
             "tags": ["tokyo", "track_centerline"],
@@ -366,6 +489,9 @@ def build_bundle() -> dict[str, Any]:
             "minZoom": 0,
             "maxZoom": 24,
             "offsetRank": 0,
+            "color": line_color,
+            "lineName": line.get("line_name_ja") or line.get("label") or route_id,
+            "operatorId": map_operator_id,
             "polyline": polyline,
         })
 

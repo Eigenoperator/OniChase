@@ -13,6 +13,7 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Added reusable `v3_station_identity` and `v3_route_identity` layers; audit now reports `0` unmapped train station keys, `0` trains with unmapped stops, `0` collapsed duplicate map names, and `0` tiny routes.
 - Optimized v3 map/site performance locally: `v3.html` now opens with `v3_tokyo_map_bundle.json.gz` (`1.3M`) and delayed `v3_tokyo_timetable_bundle.json.gz` (`5.4M`), uses dedicated Tokyo GeoJSON tiles under `docs/data/v3_tokyo_tiles`, indexed timetable lookups, and lightweight SVG scale refresh during wheel zoom.
 - Added the first standalone MapLibre renderer spike at `docs/v3_maplibre.html`: WebGL track/service layers, MapLibre label collision, station click, route highlight, route-stop highlight, and lazy timetable-driven departure rows.
+- Fixed v3 MapLibre route/track/service colors: generated bundles and tiles now carry per-line colors from the physical-line data plus route aliases and operator fallbacks instead of the old default blue.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
@@ -32,6 +33,6 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Manually test `v3_maplibre.html`: first paint, zoom/pan smoothness, label collision, station click, route highlight, and lazy timetable departures.
+1. Manually test `v3_maplibre.html`: first paint, official line colors, zoom/pan smoothness, label collision, station click, route highlight, and lazy timetable departures.
 2. Decide the migration seam for plugging existing v2 planning/capture/player markers into MapLibre without rewriting game logic.
 3. Test the reused `v2` chase loop on v3 data in a real browser: chained planning, live movement, capture, and replay.

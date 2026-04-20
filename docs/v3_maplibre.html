@@ -575,7 +575,7 @@
           line_name: track.lineName || 'Track',
           operator_id: track.operatorId || '',
           mode: track.mode || 'rail',
-          line_color: track.mode === 'subway' ? '#7aa7d9' : track.mode === 'private' ? '#50a57d' : '#8aa4c8',
+          line_color: track.color || (track.mode === 'subway' ? '#7aa7d9' : track.mode === 'private' ? '#50a57d' : '#8aa4c8'),
           trunk_rank: track.mode === 'rail' || track.mode === 'shinkansen' ? 2 : track.mode === 'subway' ? 1 : 0,
         }))
         .filter(Boolean);
@@ -586,9 +586,9 @@
           return lineFeature(geometry.id || `service-${index}`, geometry.polyline, {
             route_id: geometry.routeId || '',
             route_name: route.shortName || geometry.routeId || 'Service',
-            route_color: route.color || '#667487',
+            route_color: geometry.color || route.color || '#667487',
             route_text_color: route.textColor || '#ffffff',
-            operator_id: route.operatorId || '',
+            operator_id: geometry.operatorId || route.operatorId || '',
             offset_rank: geometry.offsetRank || 0,
           });
         })
