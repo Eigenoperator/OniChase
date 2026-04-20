@@ -29,6 +29,8 @@ DATA_FILES = [
     ROOT / "data" / "v3_trains_unified.json.gz",
     ROOT / "data" / "v3_station_departures.json.gz",
     ROOT / "data" / "v3_tokyo_bundle.json.gz",
+    ROOT / "data" / "v3_tokyo_map_bundle.json.gz",
+    ROOT / "data" / "v3_tokyo_timetable_bundle.json.gz",
 ]
 
 
@@ -221,9 +223,10 @@ def build_landing_page() -> str:
 
 def build_v3_from_v2(v2_html: str) -> str:
     config = """<script>
-    window.ONICHASE_DATA_URL = './data/v3_tokyo_bundle.json.gz';
-    window.ONICHASE_TILE_MANIFEST_URL = '';
-    window.ONICHASE_TILE_BASE_URL = './data/v3_tiles/';
+    window.ONICHASE_DATA_URL = './data/v3_tokyo_map_bundle.json.gz';
+    window.ONICHASE_TIMETABLE_URL = './data/v3_tokyo_timetable_bundle.json.gz';
+    window.ONICHASE_TILE_MANIFEST_URL = './data/v3_tokyo_tiles/manifest.json';
+    window.ONICHASE_TILE_BASE_URL = './data/v3_tokyo_tiles/';
   </script>
 """
     html = v2_html.replace("<title>OniChase V2 GIS Shinkansen</title>", "<title>OniChase V3 Tokyo</title>")

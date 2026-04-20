@@ -1165,6 +1165,7 @@
       ? '../data/v3_shinkansen_bundle.json'
       : './data/v3_shinkansen_bundle.json';
     const DATA_URL = window.ONICHASE_DATA_URL || DEFAULT_DATA_URL;
+    const TIMETABLE_URL = window.ONICHASE_TIMETABLE_URL || '';
     const ONLINE_CONFIG_URL = window.location.pathname.includes('/ui/')
       ? '../docs/data/v2_online_config.json'.replace('../docs/', '../')
       : './data/v2_online_config.json';
@@ -1222,11 +1223,27 @@
       panY: 0,
       projection: null,
       labelEntries: [],
+      labelEntryByGroupId: new Map(),
       stationPoints: [],
+      stationPointByGroupId: new Map(),
+      stationGroupById: new Map(),
+      physicalStationByGroupId: new Map(),
+      routeById: new Map(),
+      routeTripsById: new Map(),
+      routeStationSetById: new Map(),
+      stationTripsByGroupId: new Map(),
+      stationRoutesByGroupId: new Map(),
+      trackLinesByStationGroupId: new Map(),
+      tripById: new Map(),
+      serviceGeometryByRouteId: new Map(),
+      timetableStatus: 'ready',
       tileManifest: null,
       tileCache: new Map(),
       visibleTileData: { stations: [], track_centerlines: [], service_paths: [] },
       currentTileSignature: '',
+      tileRefreshHandle: null,
+      tileRefreshInFlight: false,
+      tileLayersReady: false,
       hoveredTripId: null,
       dragging: false,
       dragStartX: 0,
@@ -1608,7 +1625,7 @@
 
     function presenceToPreview(playerId, presence) {
       if (!presence || presence.kind === 'HIDDEN') return null;
-      const currentTrip = presence.trip_id ? state.bundle.tripInstances.find((item) => item.id === presence.trip_id) || null : null;
+      const currentTrip = presence.trip_id ? state.tripById.get(presence.trip_id) || null : null;
       let mapPosition = null;
       let mapStationGroupId = null;
       if (presence.map_position?.kind === 'STATION') {
@@ -1823,8 +1840,63 @@
       return id.replace(/^SG_/, '').replace(/^PS_/, '').replace(/_/g, ' ');
     }
 
+    function buildBundleIndexes(bundle) {
+      state.labelEntryByGroupId = new Map((bundle.labelRepresentations || []).map((entry) => [entry.stationGroupId, entry]));
+      state.stationGroupById = new Map((bundle.stationGroups || []).map((group) => [group.id, group]));
+      state.routeById = new Map((bundle.serviceRoutes || []).map((route) => [route.id, route]));
+      state.tripById = new Map((bundle.tripInstances || []).map((trip) => [trip.id, trip]));
+      state.physicalStationByGroupId = new Map();
+      (bundle.physicalStations || []).forEach((station) => {
+        if (!state.physicalStationByGroupId.has(station.stationGroupId)) {
+          state.physicalStationByGroupId.set(station.stationGroupId, station);
+        }
+      });
+
+      state.routeTripsById = new Map();
+      state.routeStationSetById = new Map();
+      state.stationTripsByGroupId = new Map();
+      state.stationRoutesByGroupId = new Map();
+      (bundle.tripInstances || []).forEach((trip) => {
+        if (!state.routeTripsById.has(trip.routeId)) state.routeTripsById.set(trip.routeId, []);
+        state.routeTripsById.get(trip.routeId).push(trip);
+        if (!state.routeStationSetById.has(trip.routeId)) state.routeStationSetById.set(trip.routeId, new Set());
+        const routeStationSet = state.routeStationSetById.get(trip.routeId);
+        const tripStationIds = new Set();
+        (trip.stopTimes || []).forEach((stop) => {
+          routeStationSet.add(stop.stationGroupId);
+          if (!tripStationIds.has(stop.stationGroupId)) {
+            if (!state.stationTripsByGroupId.has(stop.stationGroupId)) state.stationTripsByGroupId.set(stop.stationGroupId, []);
+            state.stationTripsByGroupId.get(stop.stationGroupId).push(trip);
+            tripStationIds.add(stop.stationGroupId);
+          }
+          if (!state.stationRoutesByGroupId.has(stop.stationGroupId)) state.stationRoutesByGroupId.set(stop.stationGroupId, new Set());
+          state.stationRoutesByGroupId.get(stop.stationGroupId).add(trip.routeId);
+        });
+      });
+      state.trackLinesByStationGroupId = new Map();
+      (bundle.trackCenterlines || []).forEach((line) => {
+        (line.stationGroupIds || []).forEach((stationGroupId) => {
+          if (!state.trackLinesByStationGroupId.has(stationGroupId)) state.trackLinesByStationGroupId.set(stationGroupId, []);
+          state.trackLinesByStationGroupId.get(stationGroupId).push(line.lineName);
+        });
+      });
+
+      state.serviceGeometryByRouteId = new Map();
+      (bundle.serviceGeometry || []).forEach((geometry) => {
+        if (!state.serviceGeometryByRouteId.has(geometry.routeId)) state.serviceGeometryByRouteId.set(geometry.routeId, []);
+        state.serviceGeometryByRouteId.get(geometry.routeId).push(geometry);
+      });
+      state.serviceGeometryByRouteId.forEach((items) => {
+        items.sort((a, b) => {
+          if (a.representation === 'service_path' && b.representation !== 'service_path') return -1;
+          if (b.representation === 'service_path' && a.representation !== 'service_path') return 1;
+          return (b.maxZoom || 0) - (a.maxZoom || 0);
+        });
+      });
+    }
+
     function resolveLabelEntry(groupId) {
-      return state.labelEntries.find((entry) => entry.stationGroupId === groupId);
+      return state.labelEntryByGroupId.get(groupId);
     }
 
     function shouldShowLabel(entry) {
@@ -1850,6 +1922,40 @@
     function mapLabelStrokeWidth(baseWidth) {
       const zoomScale = Math.max(1, state.zoom);
       return clamp(baseWidth / (1 + 0.44 * Math.log2(zoomScale)), 0.86, 2.4).toFixed(2);
+    }
+
+    function mapLineWidth(role) {
+      const zoomScale = Math.max(1, state.zoom);
+      const definitions = {
+        corridorOuter: { base: state.viewMode === 'corridor' ? 10 : 7, min: 0.22, exponent: 1.08 },
+        corridorOuterSelected: { base: state.viewMode === 'corridor' ? 11.5 : 7.8, min: 0.26, exponent: 1.08 },
+        corridorInner: { base: state.viewMode === 'corridor' ? 5.2 : 3.4, min: 0.12, exponent: 1.08 },
+        corridorInnerSelected: { base: state.viewMode === 'corridor' ? 6.6 : 4.2, min: 0.16, exponent: 1.08 },
+        serviceOuter: { base: 7, min: 0.2, exponent: 1.08 },
+        serviceOuterSelected: { base: 8.4, min: 0.24, exponent: 1.08 },
+        serviceInner: { base: 3.6, min: 0.12, exponent: 1.08 },
+        serviceInnerSelected: { base: 5.4, min: 0.16, exponent: 1.08 },
+        hoverOuter: { base: state.viewMode === 'service' ? 12 : 10, min: 0.28, exponent: 1.1 },
+        hoverInner: { base: state.viewMode === 'service' ? 7.2 : 6.2, min: 0.18, exponent: 1.1 },
+      };
+      const definition = definitions[role] || definitions.corridorInner;
+      return clamp(definition.base / Math.pow(zoomScale, definition.exponent), definition.min, definition.base);
+    }
+
+    function stationScaleMetrics() {
+      const zoomScale = Math.max(1, state.zoom);
+      const stationRadius = clamp(3.8 / Math.pow(zoomScale, 1.45), 0.22, 3.8);
+      return {
+        stationRadius,
+        stationStrokeWidth: clamp(1.15 / Math.pow(zoomScale, 0.42), 0.3, 1.15),
+        selectedStrokeWidth: clamp(2.1 / Math.pow(zoomScale, 0.42), 0.55, 2.1),
+        routeStrokeWidth: clamp(1.45 / Math.pow(zoomScale, 0.42), 0.4, 1.45),
+        selectedHaloRadius: stationRadius + 2.8,
+        routeHaloRadius: stationRadius + 1.4,
+        futureRingRadius: Math.max(stationRadius + 4.0, stationRadius + 2.6),
+        futureRingStroke: clamp(1.4 / Math.pow(zoomScale, 0.5), 0.28, 1.4),
+        futureRingDash: Math.max(1.3, 4 / Math.pow(zoomScale, 0.35)).toFixed(2),
+      };
     }
 
     function labelAnchorPoint(entry) {
@@ -1885,6 +1991,7 @@
         const displayName = entry.displayNameEn || entry.displayNameJa || niceName(entry.stationGroupId);
         const screenX = point.x * state.zoom + state.panX + offset.x;
         const screenY = point.y * state.zoom + state.panY + offset.y;
+        if (screenX < -160 || screenX > state.projection.width + 160 || screenY < -80 || screenY > state.projection.height + 80) return;
         labelSvg.push(
           `<text x="${screenX}" y="${screenY}" font-size="${mapLabelFontSize(fontSize)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${mapLabelStrokeWidth(4.2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`
         );
@@ -1975,6 +2082,30 @@
       if (state.zoom < 2.1) return 4;
       if (state.zoom < 3.8) return 5;
       return 6;
+    }
+
+    function trackFeatureVisibleAtZoom(feature) {
+      const mode = String(feature.properties?.mode || '').toLowerCase();
+      const lineName = String(feature.properties?.line_name || '').toLowerCase();
+      const tags = feature.properties?.tags || [];
+      const isTrunk = mode.includes('shinkansen') || mode === 'rail' || mode === 'jr' || tags.includes('shinkansen') || lineName.includes('新幹線');
+      if (state.zoom < 1.35) return isTrunk;
+      if (state.zoom < 2.1) return isTrunk || mode === 'subway';
+      return true;
+    }
+
+    function stationFeatureVisibleAtZoom(feature) {
+      const rank = Number(feature.properties?.label_rank || 50);
+      if (state.selectedStationGroupId === feature.properties?.station_group_id) return true;
+      if (state.zoom < 1.35) return rank >= 99;
+      if (state.zoom < 2.1) return rank >= 95;
+      if (state.zoom < 3.8) return rank >= 90;
+      return true;
+    }
+
+    function serviceFeatureVisibleAtZoom(feature) {
+      if (!state.selectedRouteId) return state.zoom >= 1.35;
+      return feature.properties?.route_id === state.selectedRouteId || state.zoom >= 2.1;
     }
 
     function visibleGeoBounds() {
@@ -2074,7 +2205,40 @@
         track_centerlines: trackCollections.flatMap((fc) => fc.features || []),
         service_paths: serviceCollections.flatMap((fc) => fc.features || []),
       };
+      state.tileLayersReady = true;
       render();
+    }
+
+    function scheduleVisibleTileRefresh(delayMs = 80) {
+      if (!state.tileManifest) return;
+      if (state.tileRefreshHandle) window.clearTimeout(state.tileRefreshHandle);
+      state.tileRefreshHandle = window.setTimeout(() => {
+        state.tileRefreshHandle = null;
+        refreshVisibleTiles();
+      }, delayMs);
+    }
+
+    function updateMapScaleStyles() {
+      const metrics = stationScaleMetrics();
+      svg.querySelectorAll('[data-map-line-role]').forEach((node) => {
+        node.setAttribute('stroke-width', mapLineWidth(node.getAttribute('data-map-line-role')));
+      });
+      svg.querySelectorAll('[data-station-dot]').forEach((node) => {
+        const role = node.getAttribute('data-station-dot');
+        node.setAttribute('r', metrics.stationRadius);
+        if (role === 'selected') node.setAttribute('stroke-width', metrics.selectedStrokeWidth);
+        else if (role === 'route') node.setAttribute('stroke-width', metrics.routeStrokeWidth);
+        else node.setAttribute('stroke-width', metrics.stationStrokeWidth);
+      });
+      svg.querySelectorAll('[data-station-halo]').forEach((node) => {
+        const role = node.getAttribute('data-station-halo');
+        node.setAttribute('r', role === 'selected' ? metrics.selectedHaloRadius : metrics.routeHaloRadius);
+      });
+      svg.querySelectorAll('[data-future-ring]').forEach((node) => {
+        node.setAttribute('r', metrics.futureRingRadius);
+        node.style.strokeWidth = metrics.futureRingStroke;
+        node.style.strokeDasharray = `${metrics.futureRingDash} ${metrics.futureRingDash}`;
+      });
     }
 
     function visibleGameMinute() {
@@ -2114,7 +2278,7 @@
 
     function departuresForStationGroup(stationGroupId, currentMinute) {
       const rows = [];
-      for (const trip of state.bundle.tripInstances) {
+      for (const trip of state.stationTripsByGroupId.get(stationGroupId) || []) {
         for (const stop of trip.stopTimes) {
           if (stop.stationGroupId !== stationGroupId) continue;
           const departureMinute = stopDepartureMinutes(stop);
@@ -2204,7 +2368,7 @@
         }
         if (step.type === 'BOARD_TRAIN') {
           if (currentState.kind !== 'NODE') break;
-          const trip = state.bundle.tripInstances.find((item) => item.id === step.trip_id);
+          const trip = state.tripById.get(step.trip_id);
           if (!trip) break;
           const boardStop = findBoardingStop(trip, currentState.stationGroupId, currentMinute);
           if (!boardStop) break;
@@ -2285,7 +2449,7 @@
         currentMinute: event.time_minute,
         currentTime: event.time_hhmm,
         currentState,
-        currentTrip: currentState.kind === 'TRAIN' ? state.bundle.tripInstances.find((item) => item.id === currentState.tripId) || null : null,
+        currentTrip: currentState.kind === 'TRAIN' ? state.tripById.get(currentState.tripId) || null : null,
         currentBoardStop: null,
         resolvedSteps: [],
         mapPosition,
@@ -2324,7 +2488,7 @@
     }
 
     function tripLocationOnMap(tripId, timeMinute) {
-      const trip = state.bundle.tripInstances.find((item) => item.id === tripId);
+      const trip = state.tripById.get(tripId);
       if (!trip) return null;
       const stops = trip.stopTimes;
       for (let i = 0; i < stops.length; i += 1) {
@@ -2369,11 +2533,12 @@
       const width = opts.width ?? 2;
       const opacity = opts.opacity ?? 1;
       const dash = opts.dash || '';
-      return `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}" ${dash ? `stroke-dasharray="${dash}"` : ''}/>`;
+      const role = opts.role ? `data-map-line-role="${opts.role}"` : '';
+      return `<path ${role} d="${d}" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}" ${dash ? `stroke-dasharray="${dash}"` : ''}/>`;
     }
 
     function stationGroupById(stationGroupId) {
-      return state.bundle.stationGroups.find((item) => item.id === stationGroupId);
+      return state.stationGroupById.get(stationGroupId);
     }
 
     function stationGroupLabel(stationGroupId) {
@@ -2382,7 +2547,7 @@
     }
 
     function stationPointByGroupId(stationGroupId) {
-      return state.stationPoints.find((station) => station.stationGroupId === stationGroupId) || projectedStationPoint(stationGroupId);
+      return state.stationPointByGroupId.get(stationGroupId) || projectedStationPoint(stationGroupId);
     }
 
     function projectedStationPoint(stationGroupId) {
@@ -2395,14 +2560,7 @@
 
     function serviceGeometryForRoute(routeId) {
       if (!state.bundle || !routeId) return null;
-      const candidates = state.bundle.serviceGeometry
-        .filter((item) => item.routeId === routeId)
-        .sort((a, b) => {
-          if (a.representation === 'service_path' && b.representation !== 'service_path') return -1;
-          if (b.representation === 'service_path' && a.representation !== 'service_path') return 1;
-          return (b.maxZoom || 0) - (a.maxZoom || 0);
-        });
-      return candidates[0] || null;
+      return state.serviceGeometryByRouteId.get(routeId)?.[0] || null;
     }
 
     function nearestPolylineIndex(polyline, stationGroupId) {
@@ -2500,7 +2658,7 @@
 
     function hoveredTripPathPoints() {
       if (!state.hoveredTripId || !state.bundle) return [];
-      const trip = state.bundle.tripInstances.find((item) => item.id === state.hoveredTripId);
+      const trip = state.tripById.get(state.hoveredTripId);
       if (!trip) return [];
       return tripPolylinePoints(trip);
     }
@@ -2516,16 +2674,6 @@
       const labelSvg = [];
       const hoverSvg = [];
       const zoomScale = Math.max(1, state.zoom);
-      const corridorOuterWidth = clamp((state.viewMode === 'corridor' ? 10 : 7) / Math.pow(zoomScale, 1.08), 0.22, state.viewMode === 'corridor' ? 10 : 7);
-      const corridorOuterSelectedWidth = clamp((state.viewMode === 'corridor' ? 11.5 : 7.8) / Math.pow(zoomScale, 1.08), 0.26, state.viewMode === 'corridor' ? 11.5 : 7.8);
-      const corridorInnerWidth = clamp((state.viewMode === 'corridor' ? 5.2 : 3.4) / Math.pow(zoomScale, 1.08), 0.12, state.viewMode === 'corridor' ? 5.2 : 3.4);
-      const corridorInnerSelectedWidth = clamp((state.viewMode === 'corridor' ? 6.6 : 4.2) / Math.pow(zoomScale, 1.08), 0.16, state.viewMode === 'corridor' ? 6.6 : 4.2);
-      const serviceOuterSelectedWidth = clamp(8.4 / Math.pow(zoomScale, 1.08), 0.24, 8.4);
-      const serviceOuterWidth = clamp(7 / Math.pow(zoomScale, 1.08), 0.2, 7);
-      const serviceInnerSelectedWidth = clamp(5.4 / Math.pow(zoomScale, 1.08), 0.16, 5.4);
-      const serviceInnerWidth = clamp(3.6 / Math.pow(zoomScale, 1.08), 0.12, 3.6);
-      const hoverOuterWidth = clamp((state.viewMode === 'service' ? 12 : 10) / Math.pow(zoomScale, 1.1), 0.28, state.viewMode === 'service' ? 12 : 10);
-      const hoverInnerWidth = clamp((state.viewMode === 'service' ? 7.2 : 6.2) / Math.pow(zoomScale, 1.1), 0.18, state.viewMode === 'service' ? 7.2 : 6.2);
       const selectedRouteStations = state.selectedRouteId ? getRouteStationSet(state.selectedRouteId) : new Set();
       const activePreview = planCursorPreview(state.activeMode);
       const pending = pendingDepartureContext(activePreview);
@@ -2536,16 +2684,17 @@
             ? availableDestinations(activePreview).map((item) => item.stationGroupId)
             : []
       );
-      const trackFeatures = state.visibleTileData.track_centerlines.length
+      const useTileRendering = !!state.tileManifest;
+      const trackFeatures = useTileRendering
         ? state.visibleTileData.track_centerlines
         : bundle.trackCenterlines.map((line) => ({
             geometry: { coordinates: line.polyline.map((point) => [point.lon, point.lat]) },
             properties: { line_name: line.lineName, station_group_ids: line.stationGroupIds }
           }));
-      const serviceFeatures = state.visibleTileData.service_paths.length
+      const serviceFeatures = useTileRendering
         ? state.visibleTileData.service_paths
         : bundle.serviceGeometry.map((geometry) => {
-            const route = bundle.serviceRoutes.find((item) => item.id === geometry.routeId);
+            const route = state.routeById.get(geometry.routeId);
             return {
               geometry: { coordinates: geometry.polyline.map((point) => [point.lon, point.lat]) },
               properties: {
@@ -2556,7 +2705,7 @@
               }
             };
           });
-      const stationFeatures = state.visibleTileData.stations.length
+      const stationFeatures = useTileRendering
         ? state.visibleTileData.stations
         : bundle.physicalStations.map((station) => ({
             geometry: { coordinates: [station.lon, station.lat] },
@@ -2566,25 +2715,27 @@
             }
           }));
 
-      trackFeatures.forEach((feature) => {
+      trackFeatures.filter(trackFeatureVisibleAtZoom).forEach((feature) => {
         const trimmed = trimNishiKyushuGeometry(feature.properties.id, feature.geometry.coordinates, feature.properties.station_group_ids || []);
         const points = trimmed.coordinates.map(([lon, lat]) => projection.project(lat, lon));
         const stationGroupIds = trimmed.stationGroupIds || [];
         const lineTouchesSelectedRoute = state.selectedRouteId && stationGroupIds.some((id) => selectedRouteStations.has(id));
         centerlineSvg.push(drawPath(points, {
           stroke: state.viewMode === 'corridor' ? '#ffffff' : 'rgba(255,255,255,0.75)',
-          width: lineTouchesSelectedRoute ? corridorOuterSelectedWidth : corridorOuterWidth,
-          opacity: lineTouchesSelectedRoute ? 1 : 0.95
+          width: mapLineWidth(lineTouchesSelectedRoute ? 'corridorOuterSelected' : 'corridorOuter'),
+          opacity: lineTouchesSelectedRoute ? 1 : 0.95,
+          role: lineTouchesSelectedRoute ? 'corridorOuterSelected' : 'corridorOuter',
         }));
         centerlineSvg.push(drawPath(points, {
           stroke: lineTouchesSelectedRoute ? '#8aa4c8' : (state.viewMode === 'corridor' ? '#c5d0df' : '#d8dee8'),
-          width: lineTouchesSelectedRoute ? corridorInnerSelectedWidth : corridorInnerWidth,
-          opacity: lineTouchesSelectedRoute ? 1 : (state.viewMode === 'corridor' ? 1 : 0.88)
+          width: mapLineWidth(lineTouchesSelectedRoute ? 'corridorInnerSelected' : 'corridorInner'),
+          opacity: lineTouchesSelectedRoute ? 1 : (state.viewMode === 'corridor' ? 1 : 0.88),
+          role: lineTouchesSelectedRoute ? 'corridorInnerSelected' : 'corridorInner',
         }));
       });
 
       if (state.viewMode === 'service') {
-        serviceFeatures.forEach((feature) => {
+        serviceFeatures.filter(serviceFeatureVisibleAtZoom).forEach((feature) => {
           const routeId = feature.properties.route_id;
           const color = feature.properties.route_color || '#666';
           const selected = !state.selectedRouteId || routeId === state.selectedRouteId;
@@ -2603,21 +2754,22 @@
           });
           serviceSvg.push(drawPath(offsetPoints, {
             stroke: '#ffffff',
-            width: selected ? serviceOuterSelectedWidth : serviceOuterWidth,
-            opacity: selected ? 0.95 : 0.55
+            width: mapLineWidth(selected ? 'serviceOuterSelected' : 'serviceOuter'),
+            opacity: selected ? 0.95 : 0.55,
+            role: selected ? 'serviceOuterSelected' : 'serviceOuter',
           }));
           serviceSvg.push(drawPath(offsetPoints, {
             stroke: color,
-            width: selected ? serviceInnerSelectedWidth : serviceInnerWidth,
-            opacity: selected ? 0.98 : 0.34
+            width: mapLineWidth(selected ? 'serviceInnerSelected' : 'serviceInner'),
+            opacity: selected ? 0.98 : 0.34,
+            role: selected ? 'serviceInnerSelected' : 'serviceInner',
           }));
         });
       }
 
-      const physicalStationMap = new Map(bundle.physicalStations.map((station) => [station.stationGroupId, station]));
-      state.stationPoints = stationFeatures.map((feature) => {
+      state.stationPoints = stationFeatures.filter(stationFeatureVisibleAtZoom).map((feature) => {
         const stationGroupId = feature.properties.station_group_id;
-        const backing = physicalStationMap.get(stationGroupId);
+        const backing = state.physicalStationByGroupId.get(stationGroupId);
         const [lon, lat] = feature.geometry.coordinates;
         const point = projection.project(lat, lon);
         return {
@@ -2630,11 +2782,9 @@
           y: point.y,
         };
       });
+      state.stationPointByGroupId = new Map(state.stationPoints.map((station) => [station.stationGroupId, station]));
 
-      const stationRadius = clamp(3.8 / Math.pow(Math.max(1, state.zoom), 1.45), 0.22, 3.8);
-      const stationStrokeWidth = clamp(1.15 / Math.pow(Math.max(1, state.zoom), 0.42), 0.3, 1.15);
-      const selectedStrokeWidth = clamp(2.1 / Math.pow(Math.max(1, state.zoom), 0.42), 0.55, 2.1);
-      const routeStrokeWidth = clamp(1.45 / Math.pow(Math.max(1, state.zoom), 0.42), 0.4, 1.45);
+      const metrics = stationScaleMetrics();
 
       state.stationPoints.forEach((station) => {
         const selected = station.stationGroupId === selectedId;
@@ -2642,18 +2792,16 @@
         const onFutureTrip = highlightedFutureStops.has(station.stationGroupId);
         const stroke = selected ? '#f97316' : '#ffffff';
         const fill = selected ? '#f97316' : '#203247';
-        const haloRadius = selected ? stationRadius + 2.8 : onSelectedRoute ? stationRadius + 1.4 : stationRadius;
+        const haloRadius = selected ? metrics.selectedHaloRadius : onSelectedRoute ? metrics.routeHaloRadius : metrics.stationRadius;
         if (selected) {
-          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(249,115,22,0.18)" style="pointer-events:none" />`);
+          stationSvg.push(`<circle data-station-halo="selected" cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(249,115,22,0.18)" style="pointer-events:none" />`);
         } else if (onSelectedRoute) {
-          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(21,101,192,0.12)" style="pointer-events:none" />`);
+          stationSvg.push(`<circle data-station-halo="route" cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(21,101,192,0.12)" style="pointer-events:none" />`);
         }
         if (onFutureTrip) {
-          const futureRingRadius = Math.max(haloRadius + 1.2, stationRadius + 2.6);
-          const futureRingStroke = clamp(1.4 / Math.pow(zoomScale, 0.5), 0.28, 1.4);
-          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${futureRingRadius}" class="future-stop-ring" style="pointer-events:none;stroke-width:${futureRingStroke};stroke-dasharray:${Math.max(1.3, 4 / Math.pow(zoomScale, 0.35)).toFixed(2)} ${Math.max(1.3, 4 / Math.pow(zoomScale, 0.35)).toFixed(2)}" />`);
+          stationSvg.push(`<circle data-future-ring="1" cx="${station.x}" cy="${station.y}" r="${metrics.futureRingRadius}" class="future-stop-ring" style="pointer-events:none;stroke-width:${metrics.futureRingStroke};stroke-dasharray:${metrics.futureRingDash} ${metrics.futureRingDash}" />`);
         }
-        stationSvg.push(`<circle data-station-group-id="${station.stationGroupId}" cx="${station.x}" cy="${station.y}" r="${stationRadius}" fill="${onSelectedRoute && !selected ? '#2f5d97' : fill}" stroke="${selected ? stroke : onSelectedRoute ? '#dbeafe' : stroke}" stroke-width="${selected ? selectedStrokeWidth : onSelectedRoute ? routeStrokeWidth : stationStrokeWidth}" style="cursor:pointer" />`);
+        stationSvg.push(`<circle data-station-dot="${selected ? 'selected' : onSelectedRoute ? 'route' : 'normal'}" data-station-group-id="${station.stationGroupId}" cx="${station.x}" cy="${station.y}" r="${metrics.stationRadius}" fill="${onSelectedRoute && !selected ? '#2f5d97' : fill}" stroke="${selected ? stroke : onSelectedRoute ? '#dbeafe' : stroke}" stroke-width="${selected ? metrics.selectedStrokeWidth : onSelectedRoute ? metrics.routeStrokeWidth : metrics.stationStrokeWidth}" style="cursor:pointer" />`);
       });
 
       labelSvg.push(buildLabelMarkup());
@@ -2662,13 +2810,15 @@
       if (hoveredPoints.length >= 2) {
         hoverSvg.push(drawPath(hoveredPoints, {
           stroke: '#ffffff',
-          width: hoverOuterWidth,
-          opacity: 0.95
+          width: mapLineWidth('hoverOuter'),
+          opacity: 0.95,
+          role: 'hoverOuter',
         }));
         hoverSvg.push(drawPath(hoveredPoints, {
           stroke: '#0f172a',
-          width: hoverInnerWidth,
-          opacity: 0.92
+          width: mapLineWidth('hoverInner'),
+          opacity: 0.92,
+          role: 'hoverInner',
         }));
         hoveredPoints.forEach((point) => {
           const hoverPointRadius = clamp(5.2 / Math.pow(zoomScale, 0.8), 0.5, 5.2);
@@ -2735,16 +2885,17 @@
 
       renderSidebar();
       applyViewport();
-      refreshVisibleTiles();
+      scheduleVisibleTileRefresh(0);
     }
 
     function applyViewport() {
       const viewport = document.getElementById('viewport');
       if (!viewport || !state.projection) return;
       viewport.setAttribute('transform', `translate(${state.panX.toFixed(2)} ${state.panY.toFixed(2)}) scale(${state.zoom.toFixed(4)})`);
+      updateMapScaleStyles();
       updateLabelLayer();
       updatePlayerOverlayLayer();
-      refreshVisibleTiles();
+      scheduleVisibleTileRefresh(state.dragging ? 120 : 70);
     }
 
     function resetViewport() {
@@ -2777,7 +2928,7 @@
       truncateFuturePlan({ preserveCurrentRide: true });
     }
 
-    function applyTestPreset() {
+    function applyTestPreset({ schedule = true } = {}) {
       const runnerStart = state.bundle?.metadata?.defaultRunnerStartStationId || 'SG_TOKYO';
       const hunterStart = state.bundle?.metadata?.defaultHunterStartStationId || 'SG_SHIN_OSAKA';
       if (state.activeMode === 'hunter') {
@@ -2799,7 +2950,7 @@
       state.clockRunning = true;
       state.pendingTripIds = { runner: null, hunter: null };
       invalidateSimulation();
-      if (!onlineActive()) scheduleTick();
+      if (schedule && !onlineActive()) scheduleTick();
       else submitCurrentPlanToRoom().catch(() => {});
       render();
     }
@@ -3002,7 +3153,7 @@
       state.clockRunning = false;
       resultInfoEl.textContent = capture.type === 'same_node'
         ? `GAME END\n\nHunter caught the runner at ${capture.time_hhmm}.\nRule: same_node\nStation: ${stationGroupLabel(capture.station_group_id)}`
-        : `GAME END\n\nHunter caught the runner at ${capture.time_hhmm}.\nRule: same_train\nTrip: ${formatTripLabel(state.bundle.tripInstances.find((item) => item.id === capture.trip_id) || { serviceName: capture.trip_id })}`;
+        : `GAME END\n\nHunter caught the runner at ${capture.time_hhmm}.\nRule: same_train\nTrip: ${formatTripLabel(state.tripById.get(capture.trip_id) || { serviceName: capture.trip_id })}`;
     }
 
     function classifyEventFamily(eventType) {
@@ -3055,7 +3206,7 @@
           continue;
         }
         if (action.type === 'BOARD_TRAIN') {
-          const trip = state.bundle.tripInstances.find((item) => item.id === action.trip_id);
+          const trip = state.tripById.get(action.trip_id);
           if (!trip) throw new Error(`Unknown trip ${action.trip_id}`);
           const boardStop = findBoardingStop(trip, currentStationId, currentMinute);
           if (!boardStop) throw new Error(`Trip ${action.trip_id} not catchable from ${currentStationId}`);
@@ -3221,7 +3372,7 @@
       if (event.player_id) parts.push(event.player_id);
       if (event.station_group_id) parts.push(stationGroupLabel(event.station_group_id));
       if (event.trip_id) {
-        const trip = state.bundle.tripInstances.find((item) => item.id === event.trip_id);
+        const trip = state.tripById.get(event.trip_id);
         parts.push(formatTripLabel(trip || { serviceName: event.trip_id, serviceNumber: '' }));
       }
       if (event.capture_type) parts.push(event.capture_type);
@@ -3255,7 +3406,7 @@
       if (event.player_id) lines.push(`Player: ${event.player_id}`);
       if (event.station_group_id) lines.push(`Station: ${stationGroupLabel(event.station_group_id)}`);
       if (event.trip_id) {
-        const trip = state.bundle.tripInstances.find((item) => item.id === event.trip_id);
+        const trip = state.tripById.get(event.trip_id);
         lines.push(`Trip: ${formatTripLabel(trip || { serviceName: event.trip_id, serviceNumber: '' })}`);
       }
       if (event.capture_type) lines.push(`Capture: ${event.capture_type}`);
@@ -3276,7 +3427,7 @@
         if (!capture) lines.push('Capture: none');
         else if (capture.type === 'same_node') lines.push(`Capture: same_node at ${stationGroupLabel(capture.station_group_id)} ${capture.time_hhmm}`);
         else {
-          const trip = state.bundle.tripInstances.find((item) => item.id === capture.trip_id);
+          const trip = state.tripById.get(capture.trip_id);
           lines.push(`Capture: same_train on ${formatTripLabel(trip || { serviceName: capture.trip_id, serviceNumber: '' })} ${capture.time_hhmm}`);
         }
         resultInfoEl.textContent = `SIMULATION\n\n${lines.join('\n')}`;
@@ -3386,7 +3537,7 @@
           continue;
         }
         if (step.type === 'BOARD_TRAIN') {
-          pendingTrip = state.bundle.tripInstances.find((item) => item.id === step.trip_id);
+          pendingTrip = state.tripById.get(step.trip_id);
           continue;
         }
         if (step.type === 'RIDE_TO_STATION') {
@@ -3419,7 +3570,7 @@
           continue;
         }
         if (step.type === 'BOARD_TRAIN') {
-          pendingTrip = state.bundle.tripInstances.find((item) => item.id === step.trip_id) || null;
+          pendingTrip = state.tripById.get(step.trip_id) || null;
           continue;
         }
         if (step.type === 'RIDE_TO_STATION') {
@@ -3493,14 +3644,14 @@
           : `Match closed at ${currentTime} · Window ${state.startTime} → ${state.endTime}`;
       document.getElementById('runnerModeButton').className = state.activeMode === 'runner' ? 'active runner' : '';
       document.getElementById('hunterModeButton').className = state.activeMode === 'hunter' ? 'active hunter' : '';
-      document.getElementById('startGameButton').disabled = state.phase !== 'PLANNING';
+      document.getElementById('startGameButton').disabled = state.phase !== 'PLANNING' || state.timetableStatus === 'loading';
       document.getElementById('pauseGameButton').disabled = onlineActive();
       document.getElementById('runSimulationButton').disabled = onlineActive();
 
       mapStats.innerHTML = `
         <div>Stations: <strong>${bundle.physicalStations.length}</strong></div>
         <div>Routes: <strong>${bundle.serviceRoutes.length}</strong></div>
-        <div>Trips: <strong>${bundle.tripInstances.length}</strong></div>
+        <div>Trips: <strong>${state.timetableStatus === 'loading' ? 'loading' : bundle.tripInstances.length}</strong></div>
         <div>Zoom: <strong>${state.zoom.toFixed(1)}x</strong></div>
       `;
 
@@ -3508,7 +3659,7 @@
         ['Physical Stations', bundle.physicalStations.length],
         ['Track Centerlines', bundle.trackCenterlines.length],
         ['Service Routes', bundle.serviceRoutes.length],
-        ['Trip Instances', bundle.tripInstances.length]
+        ['Trip Instances', state.timetableStatus === 'loading' ? 'loading' : bundle.tripInstances.length]
       ].map(([label, value]) => `
         <div class="metric">
           <span class="value">${value}</span>
@@ -3544,24 +3695,19 @@
         stationTripsEl.innerHTML = '';
         routeStationDeparturesEl.innerHTML = '';
       } else {
-        const station = bundle.physicalStations.find((item) => item.stationGroupId === state.selectedStationGroupId);
+        const station = state.physicalStationByGroupId.get(state.selectedStationGroupId);
         const label = resolveLabelEntry(state.selectedStationGroupId);
-        const touchingTrackLines = bundle.trackCenterlines
-          .filter((line) => line.stationGroupIds.includes(state.selectedStationGroupId))
-          .map((line) => line.lineName);
-        const touchingRoutes = bundle.serviceRoutes
-          .filter((route) => bundle.tripInstances.some((trip) =>
-            trip.routeId === route.id &&
-            trip.stopTimes.some((stop) => stop.stationGroupId === state.selectedStationGroupId)
-          ))
-          .map((route) => route.shortName);
+        const touchingTrackLines = state.trackLinesByStationGroupId.get(state.selectedStationGroupId) || [];
+        const touchingRoutes = [...(state.stationRoutesByGroupId.get(state.selectedStationGroupId) || new Set())]
+          .map((routeId) => state.routeById.get(routeId)?.shortName)
+          .filter(Boolean);
 
         selectedStationEl.className = '';
         selectedStationEl.innerHTML = `
           <div class="selected-card">
-            <h3>${label?.displayNameEn || station.name}</h3>
-            <p>${label?.displayNameJa || ''} · ${station.id}</p>
-            <p>Lat/Lon: ${station.lat.toFixed(4)}, ${station.lon.toFixed(4)}</p>
+            <h3>${label?.displayNameEn || station?.name || state.selectedStationGroupId}</h3>
+            <p>${label?.displayNameJa || ''} · ${station?.id || state.selectedStationGroupId}</p>
+            <p>Lat/Lon: ${Number.isFinite(station?.lat) ? station.lat.toFixed(4) : 'n/a'}, ${Number.isFinite(station?.lon) ? station.lon.toFixed(4) : 'n/a'}</p>
             <p>${state.activeMode === 'hunter'
               ? (state.phase === 'PLANNING'
                   ? `Runner: ${runnerPreview.currentState.kind === 'NODE' ? stationGroupLabel(runnerPreview.currentState.stationGroupId) : 'visible on map only while on a train'}`
@@ -3575,11 +3721,11 @@
           </div>
         `;
 
-        const trips = bundle.tripInstances
-          .filter((trip) => trip.stopTimes.some((stop) => stop.stationGroupId === state.selectedStationGroupId))
-          .slice(0, 24);
+        const trips = (state.stationTripsByGroupId.get(state.selectedStationGroupId) || []).slice(0, 24);
 
-        stationTripsEl.innerHTML = trips.length
+        stationTripsEl.innerHTML = state.timetableStatus === 'loading'
+          ? `<div class="empty">Timetable is loading in the background. The map is ready first; departures will appear here shortly.</div>`
+          : trips.length
           ? trips.map((trip) => {
               const stop = trip.stopTimes.find((item) => item.stationGroupId === state.selectedStationGroupId);
               const hoverClass = state.hoveredTripId === trip.id ? 'trip-hover' : '';
@@ -3595,9 +3741,10 @@
 
         if (!state.selectedRouteId) {
           routeStationDeparturesEl.innerHTML = `<div class="empty">Select one route to see the actual departures for that route at this station.</div>`;
+        } else if (state.timetableStatus === 'loading') {
+          routeStationDeparturesEl.innerHTML = `<div class="empty">Timetable is loading. Route-specific departures will appear after the background load finishes.</div>`;
         } else {
-          const routeDepartures = bundle.tripInstances
-            .filter((trip) => trip.routeId === state.selectedRouteId)
+          const routeDepartures = (state.routeTripsById.get(state.selectedRouteId) || [])
             .map((trip) => {
               const stop = trip.stopTimes.find((item) => item.stationGroupId === state.selectedStationGroupId);
               if (!stop) return null;
@@ -3630,15 +3777,15 @@
         selectedRouteEl.className = 'empty';
         selectedRouteEl.textContent = 'Click a route card or legend chip to highlight one service family across the whole map.';
       } else {
-        const route = bundle.serviceRoutes.find((item) => item.id === state.selectedRouteId);
-        const routeStations = [...getRouteStationSet(route.id)];
+        const route = state.routeById.get(state.selectedRouteId);
+        const routeStations = [...getRouteStationSet(route?.id)];
         selectedRouteEl.className = '';
         selectedRouteEl.innerHTML = `
           <div class="selected-card">
-            <h3>${route.shortName}</h3>
-            <p>${route.longName}</p>
+            <h3>${route?.shortName || state.selectedRouteId}</h3>
+            <p>${route?.longName || ''}</p>
             <div class="tags">
-              <span class="tag">${countTripsForRoute(route.id)} trips</span>
+              <span class="tag">${countTripsForRoute(route?.id)} trips</span>
               <span class="tag">${routeStations.length} served stations</span>
             </div>
           </div>
@@ -3655,7 +3802,7 @@
         if (state.liveCapture?.type === 'same_node') {
           resultInfoEl.textContent = `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_node\nStation: ${stationGroupLabel(state.liveCapture.station_group_id)}`;
         } else if (state.liveCapture?.type === 'same_train') {
-          const trip = state.bundle.tripInstances.find((item) => item.id === state.liveCapture.trip_id);
+          const trip = state.tripById.get(state.liveCapture.trip_id);
           resultInfoEl.textContent = `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_train\nTrip: ${formatTripLabel(trip || { serviceName: state.liveCapture.trip_id, serviceNumber: '' })}`;
         } else if (onlineActive()) {
           resultInfoEl.textContent = `ONLINE ROOM\n\nRoom: ${state.online.roomId || 'not joined'}\nPhase: ${state.phase}\nTime: ${minutesToHhmm(state.currentGameMinute)}`;
@@ -3664,16 +3811,11 @@
     }
 
     function countTripsForRoute(routeId) {
-      return state.bundle.tripInstances.filter((trip) => trip.routeId === routeId).length;
+      return state.routeTripsById.get(routeId)?.length || 0;
     }
 
     function getRouteStationSet(routeId) {
-      const set = new Set();
-      state.bundle.tripInstances.forEach((trip) => {
-        if (trip.routeId !== routeId) return;
-        trip.stopTimes.forEach((stop) => set.add(stop.stationGroupId));
-      });
-      return set;
+      return state.routeStationSetById.get(routeId) || new Set();
     }
 
     function trimNishiKyushuGeometry(routeOrLineId, coordinates, stationGroupIds = []) {
@@ -3694,6 +3836,29 @@
           render();
         });
       });
+    }
+
+    async function loadDeferredTimetable() {
+      if (!TIMETABLE_URL || state.timetableStatus === 'ready') return;
+      try {
+        const timetable = await fetchJsonMaybeGz(TIMETABLE_URL);
+        const trips = Array.isArray(timetable?.tripInstances) ? timetable.tripInstances : [];
+        state.bundle.tripInstances = trips;
+        state.timetableStatus = 'ready';
+        buildBundleIndexes(state.bundle);
+        render();
+      } catch (error) {
+        console.error(error);
+        state.timetableStatus = 'error';
+        renderSidebar();
+      }
+    }
+
+    function scheduleDeferredTimetableLoad() {
+      if (!TIMETABLE_URL || state.timetableStatus !== 'loading') return;
+      window.setTimeout(() => {
+        loadDeferredTimetable();
+      }, 1800);
     }
 
     async function init() {
@@ -3721,6 +3886,13 @@
       state.bundle = bundle;
       state.tileManifest = tileManifest;
       state.labelEntries = bundle.labelRepresentations;
+      if (TIMETABLE_URL && !(bundle.tripInstances || []).length) {
+        state.timetableStatus = 'loading';
+        bundle.tripInstances = [];
+      } else {
+        state.timetableStatus = 'ready';
+      }
+      buildBundleIndexes(bundle);
       state.selectedRouteId = bundle.serviceRoutes[0]?.id || null;
       const runnerStart = bundle.metadata?.defaultRunnerStartStationId || 'SG_TOKYO';
       const hunterStart = bundle.metadata?.defaultHunterStartStationId || 'SG_SHIN_OSAKA';
@@ -3736,8 +3908,9 @@
       state.projection = makeProjection(bundle);
       SERVICE_COLORS.clear?.();
       bundle.serviceRoutes.forEach((route) => { SERVICE_COLORS[route.id] = route.color; });
-      applyTestPreset();
+      applyTestPreset({ schedule: false });
       resetViewport();
+      scheduleDeferredTimetableLoad();
     }
 
     init().catch((error) => {
