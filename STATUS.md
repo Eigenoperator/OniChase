@@ -19,11 +19,12 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Connected the first v2-style gameplay shell into v3 MapLibre: role switching, clock, planning/live, hourly replanning, plan board, train outlook, selected-train path/stops, player markers, live capture, and local replay simulation now run on the real Tokyo data.
 - Made the room server dataset-configurable: `--dataset shinkansen` remains the default, while `--dataset v3-tokyo` loads the Tokyo map bundle plus deferred timetable and reports duplicate trip-id counts in `/health`.
 - Added the first v3 multiplayer entry flow: `v3.html` now has a single-player entry, a v3 Tokyo room lobby, room creation/join/copy, ready/unready, a main-board Room panel, and online plan sync against the dataset-configurable server.
+- Prepared the v3 Render deployment path: `render.yaml` now declares separate v2 and v3 room services, and `docs/data/v3_online_config.json` points to the expected `onichase-v3-room-server` HTTPS endpoint.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
 - Stabilize `v3` MapLibre gameplay UX: dense Tokyo click behavior, destination-stop selection, player marker clarity, and replay readability.
-- Connect the v3 MapLibre client to the dataset-configurable room server without forking gameplay rules.
+- Bring up the actual Render `onichase-v3-room-server` service and verify its `/health` reports `dataset_name = v3-tokyo`.
 
 ## Blockers
 - No usable Notion tool/config exists in this repo/session, so true Notion updates remain blocked.
@@ -37,6 +38,6 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Decide where to host the v3 Tokyo room server, then set `docs/data/v3_online_config.json` to that HTTPS endpoint once it is deployed with `--dataset v3-tokyo`.
-2. Manually play `v3.html` in a normal browser: build runner and hunter plans, switch roles, start live, check hourly replanning, capture, and replay.
+1. Create or sync the Render service named `onichase-v3-room-server`; the expected public URL currently returns `Not Found` until Render provisions it.
+2. After `/health` returns `dataset_name = v3-tokyo`, manually play public `v3.html` online with two browsers.
 3. Continue MapLibre UX/performance work: smarter label priority, denser Tokyo click targets, selected-service visibility, and tile/vector migration planning.
