@@ -7,14 +7,14 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - `v1` Yamanote real-data prototype is complete enough for baseline playtests: real stations, weekday trains, planning, live capture, replay, and hunter visibility.
 - Main `v2` is the current nationwide Shinkansen playable build: GIS-first map, real weekday train instances, planning/live/capture/replay, and public online room flow via Render.
 - `v3` now has the first unified train index: `39450` normalized real trains across `16` operators, with manifest, unified train schema, and station departure lookup.
-- Public `v3` now reuses the `v2` UI code path and loads `docs/data/v3_tokyo_bundle.json`: `1529` stations, `302` service routes, `4147` track centerlines, and `39318` v2-compatible trip instances.
+- Public `v3` now reuses the `v2` UI code path and loads `docs/data/v3_tokyo_bundle.json`: `1673` station groups, `2039` physical stations, `108` service routes, `4147` track centerlines, and all `39450` v2-compatible trip instances.
 - `v3` is published at `https://eigenoperator.github.io/OniChase/v3.html`; public URL smoke test passes for Tokyo station departures, train selection, and downstream stop choices.
 - Backfilled `diary/DIARY-2026-04-19.md` and trimmed this status file back under the 50-line handoff limit.
-- Added `scripts/ingest/audit_v3_tokyo_bundle.py` and generated `data/v3_tokyo_bundle_audit.json`; first audit flags `201` train station keys without map groups, `134` duplicate same-name map point clusters, `199` tiny/empty routes, and `10` huge routes.
+- Added reusable `v3_station_identity` and `v3_route_identity` layers; audit now reports `0` unmapped train station keys, `0` trains with unmapped stops, `0` collapsed duplicate map names, and `0` tiny routes.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
-- Stabilize `v3` map + timetable identity before gameplay migration: station grouping, line/route mapping, dense Tokyo click behavior, and route-card count.
+- Stabilize `v3` route geometry linkage, dense Tokyo click behavior, and gameplay migration on the reused `v2` UI path.
 - Validate `v3` on the reused `v2` gameplay path: chained planning, live simulation, capture, replay, and default runner/hunter starts.
 
 ## Blockers
@@ -29,6 +29,6 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Fix the first audit's biggest route problem: map-derived service routes use Japanese operator names while train-derived route IDs use normalized `operator_id`, producing many 0-trip route cards.
-2. Use `data/v3_tokyo_bundle_audit.json` to fix station identity issues, especially high-traffic unmapped keys like `明治神宮前〈原宿〉`, `霞ケ関`, and `市ケ谷`, plus duplicate same-name clusters in dense central Tokyo.
+1. Link v3 service geometry more precisely to train routes so selected trains can highlight real paths instead of only station stops.
+2. Test the reused `v2` chase loop on v3 data: station click, departures, downstream stop choice, chained planning, live movement, and capture.
 3. After v3 identity stabilizes, test and migrate the `v2` chase loop on v3: multi-leg planning, live capture, replay, and online parity.

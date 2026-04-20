@@ -11,6 +11,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from v3_station_identity import (
+    build_station_alias_index,
+    canonical_group_key,
+    canonical_station_key,
+    normalize_key,
+    resolve_station_key,
+)
+from v3_route_identity import canonical_route_line
+
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data"
@@ -18,6 +27,7 @@ DOCS_DATA_DIR = ROOT / "docs" / "data"
 
 MAP_PATH = DATA_DIR / "v3_tokyo_phase1_service_views.json"
 UNIFIED_TRAINS_PATH = DATA_DIR / "v3_trains_unified.json.gz"
+N02_STATION_PATH = DATA_DIR / "raw_n02_24" / "UTF-8" / "N02-24_Station.geojson"
 OUTPUT_PATH = DATA_DIR / "v3_tokyo_bundle.json"
 
 SPECIAL_STATION_IDS = {
@@ -27,6 +37,42 @@ SPECIAL_STATION_IDS = {
     "池袋": "IKEBUKURO",
     "上野": "UENO",
     "品川": "SHINAGAWA",
+}
+
+OPERATOR_NAME_TO_ID = {
+    "東日本旅客鉄道": "jr_east",
+    "jr east": "jr_east",
+    "東京地下鉄": "tokyo_metro",
+    "tokyo metro": "tokyo_metro",
+    "東京都交通局": "toei",
+    "toei": "toei",
+    "京王電鉄": "keio",
+    "keio": "keio",
+    "東京急行電鉄": "tokyu",
+    "東急電鉄": "tokyu",
+    "tokyu": "tokyu",
+    "西武鉄道": "seibu",
+    "seibu": "seibu",
+    "京成電鉄": "keisei",
+    "keisei": "keisei",
+    "京浜急行電鉄": "keikyu",
+    "京急電鉄": "keikyu",
+    "keikyu": "keikyu",
+    "小田急電鉄": "odakyu",
+    "odakyu": "odakyu",
+    "東武鉄道": "tobu",
+    "tobu": "tobu",
+    "東京臨海高速鉄道": "rinkai",
+    "rinkai": "rinkai",
+    "ゆりかもめ": "yurikamome",
+    "yurikamome": "yurikamome",
+    "東京モノレール": "tokyo_monorail",
+    "tokyo monorail": "tokyo_monorail",
+    "多摩都市モノレール": "tama_monorail",
+    "tama monorail": "tama_monorail",
+    "首都圏新都市鉄道": "tsukuba_express",
+    "つくばエクスプレス": "tsukuba_express",
+    "tsukuba express": "tsukuba_express",
 }
 
 
@@ -42,14 +88,6 @@ def write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
 
 
-def normalize_key(value: Any) -> str:
-    text = unicodedata.normalize("NFKC", str(value or "")).strip().lower()
-    text = text.replace("（", "(").replace("）", ")")
-    text = re.sub(r"\([^)]*\)", "", text)
-    text = re.sub(r"[\s\-‐‑‒–—ー・･'’`]", "", text)
-    return text
-
-
 def stable_id(prefix: str, value: Any) -> str:
     raw = str(value or "unknown")
     special = SPECIAL_STATION_IDS.get(raw)
@@ -57,7 +95,7 @@ def stable_id(prefix: str, value: Any) -> str:
         return f"{prefix}_{special}"
     cleaned = unicodedata.normalize("NFKC", raw).upper()
     cleaned = re.sub(r"[^A-Z0-9]+", "_", cleaned).strip("_")
-    if cleaned:
+    if cleaned and re.search(r"[A-Z]", cleaned):
         return f"{prefix}_{cleaned[:48]}"
     digest = hashlib.sha1(raw.encode("utf-8")).hexdigest()[:12].upper()
     return f"{prefix}_{digest}"
@@ -67,6 +105,12 @@ def route_id_for(line: Any, operator_id: str) -> str:
     base = str(line or operator_id or "unknown")
     digest = hashlib.sha1(f"{operator_id}|{base}".encode("utf-8")).hexdigest()[:8].upper()
     return f"R_{digest}"
+
+
+def operator_id_for(value: Any) -> str:
+    text = str(value or "").strip()
+    key = normalize_key(text)
+    return OPERATOR_NAME_TO_ID.get(text) or OPERATOR_NAME_TO_ID.get(key) or key or "tokyo"
 
 
 def hhmm_to_sec(value: Any) -> int | None:
@@ -84,6 +128,22 @@ def seconds_or_none(*values: Any) -> int | None:
     return None
 
 
+def station_geometry_point(geometry: dict[str, Any]) -> tuple[float, float] | None:
+    coords = geometry.get("coordinates") if isinstance(geometry, dict) else None
+    if not coords:
+        return None
+    if geometry.get("type") == "Point" and len(coords) >= 2:
+        return float(coords[1]), float(coords[0])
+    if geometry.get("type") == "LineString":
+        points = [point for point in coords if isinstance(point, list) and len(point) >= 2]
+        if not points:
+            return None
+        lon = sum(float(point[0]) for point in points) / len(points)
+        lat = sum(float(point[1]) for point in points) / len(points)
+        return lat, lon
+    return None
+
+
 def mode_for_operator(operator_id: str) -> str:
     if operator_id == "shinkansen":
         return "shinkansen"
@@ -92,56 +152,86 @@ def mode_for_operator(operator_id: str) -> str:
     return "private_rail" if operator_id not in {"jr_east"} else "rail"
 
 
-def collect_station_coordinates(map_payload: dict[str, Any], trains: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    coords: dict[str, dict[str, Any]] = {}
+def collect_station_identity(map_payload: dict[str, Any], trains: list[dict[str, Any]]) -> tuple[dict[str, list[dict[str, Any]]], dict[str, str]]:
+    alias_index = build_station_alias_index(map_payload.get("visibleStations", []))
+    groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
     counts: Counter[str] = Counter()
+    train_display: dict[str, str] = {}
 
     for station in map_payload.get("visibleStations", []):
-        key = normalize_key(station.get("name_ja") or station.get("name_en"))
+        name = station.get("name_ja") or station.get("name_en")
+        key = canonical_station_key(name)
         if not key:
             continue
-        current = coords.get(key)
+        group_key = canonical_group_key(key)
         candidate = {
             "station_key": key,
-            "display_ja": station.get("name_ja") or station.get("name_en") or key,
-            "display_en": station.get("name_en") or station.get("name_ja") or key,
+            "group_key": group_key,
+            "display_ja": name or key,
+            "display_en": station.get("name_en") or name or key,
             "lat": station.get("lat"),
             "lon": station.get("lon"),
             "is_priority": bool(station.get("is_priority")),
         }
-        if current is None or (candidate["is_priority"] and not current.get("is_priority")):
-            coords[key] = candidate
+        groups[group_key].append(candidate)
 
     for train in trains:
         for stop in train.get("stops", []):
-            key = stop.get("station_key")
+            key = resolve_station_key(stop.get("station_key") or stop.get("station_name"), alias_index)
             if key:
                 counts[key] += 1
+                train_display.setdefault(key, stop.get("station_name") or key)
 
-    # Prefer high-traffic named points when the map has duplicate same-name physical stations.
-    for key, coord in coords.items():
-        coord["traffic_count"] = counts.get(key, 0)
+    if N02_STATION_PATH.exists():
+        n02_payload = load_json(N02_STATION_PATH)
+        existing_station_keys = {
+            station["station_key"]
+            for stations in groups.values()
+            for station in stations
+        }
+        n02_by_key: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for feature in n02_payload.get("features", []):
+            props = feature.get("properties", {})
+            name = props.get("N02_005")
+            key = canonical_station_key(name)
+            if not key:
+                continue
+            point = station_geometry_point(feature.get("geometry", {}))
+            if point is None:
+                continue
+            n02_by_key[key].append({
+                "station_key": key,
+                "group_key": canonical_group_key(key),
+                "display_ja": name,
+                "display_en": name,
+                "lat": point[0],
+                "lon": point[1],
+                "is_priority": False,
+                "source": "n02_2024",
+                "operator_ja": props.get("N02_004"),
+                "line_name_ja": props.get("N02_003"),
+            })
 
-    return coords
+        for train_key, count in counts.items():
+            if train_key in existing_station_keys:
+                continue
+            for candidate in n02_by_key.get(train_key, []):
+                candidate = dict(candidate)
+                candidate["traffic_count"] = count
+                groups[candidate["group_key"]].append(candidate)
+
+    for group_key, stations in groups.items():
+        for station in stations:
+            station["traffic_count"] = counts.get(station["station_key"], 0)
+
+    return groups, alias_index
 
 
 def build_routes(map_payload: dict[str, Any], trains: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
     route_meta: dict[str, dict[str, Any]] = {}
 
-    for line in map_payload.get("physicalLines", []):
-        route_id = route_id_for(line.get("line_name_ja") or line.get("label"), normalize_key(line.get("operator_ja")))
-        route_meta.setdefault(route_id, {
-            "id": route_id,
-            "operatorId": normalize_key(line.get("operator_ja")) or "tokyo",
-            "shortName": line.get("line_name_ja") or line.get("label") or route_id,
-            "longName": line.get("label") or line.get("line_name_ja") or route_id,
-            "color": line.get("color") or "#1565c0",
-            "textColor": "#ffffff",
-            "mode": "rail" if line.get("kind") == "jr" else line.get("kind") or "rail",
-        })
-
     for train in trains:
-        line = train.get("line") or train.get("service_name") or train.get("operator")
+        line = canonical_route_line(train)
         route_id = route_id_for(line, train.get("operator_id", "tokyo"))
         route_meta.setdefault(route_id, {
             "id": route_id,
@@ -153,6 +243,8 @@ def build_routes(map_payload: dict[str, Any], trains: list[dict[str, Any]]) -> t
             "mode": mode_for_operator(train.get("operator_id", "")),
         })
 
+    # Physical-only routes stay out of serviceRoutes; otherwise thousands of
+    # map fragments appear as empty route cards in the gameplay UI.
     routes = sorted(route_meta.values(), key=lambda item: (item["operatorId"], item["shortName"]))
     return routes, route_meta
 
@@ -161,7 +253,7 @@ def build_bundle() -> dict[str, Any]:
     map_payload = load_json(MAP_PATH)
     train_payload = load_json(UNIFIED_TRAINS_PATH)
     source_trains = train_payload.get("trains", [])
-    coord_map = collect_station_coordinates(map_payload, source_trains)
+    station_groups_by_key, station_alias_index = collect_station_identity(map_payload, source_trains)
     service_routes, route_meta = build_routes(map_payload, source_trains)
 
     physical_stations = []
@@ -169,30 +261,51 @@ def build_bundle() -> dict[str, Any]:
     label_representations = []
     game_nodes = []
 
-    for key, coord in sorted(coord_map.items(), key=lambda item: (bool(item[1].get("is_priority")), item[1].get("traffic_count", 0), item[0])):
-        if not (isinstance(coord.get("lat"), (int, float)) and isinstance(coord.get("lon"), (int, float))):
+    station_key_to_group: dict[str, str] = {}
+
+    def representative(stations: list[dict[str, Any]]) -> dict[str, Any]:
+        return sorted(
+            stations,
+            key=lambda item: (not item.get("is_priority"), -int(item.get("traffic_count", 0)), item.get("display_ja") or ""),
+        )[0]
+
+    for group_key, stations in sorted(station_groups_by_key.items(), key=lambda item: item[0]):
+        valid_stations = [
+            station for station in stations
+            if isinstance(station.get("lat"), (int, float)) and isinstance(station.get("lon"), (int, float))
+        ]
+        if not valid_stations:
             continue
-        sgid = stable_id("SG", key)
-        psid = stable_id("PS", key)
-        label_rank = 100 if coord.get("is_priority") else 92 if coord.get("traffic_count", 0) >= 1000 else 72
+        rep = representative(valid_stations)
+        sgid = stable_id("SG", group_key)
+        physical_ids = []
+        traffic_count = sum(int(station.get("traffic_count", 0)) for station in valid_stations)
+        label_rank = 100 if any(station.get("is_priority") for station in valid_stations) else 92 if traffic_count >= 1000 else 72
         tags = ["tokyo", "v3"]
-        physical_stations.append({
-            "id": psid,
-            "name": coord["display_en"],
-            "names": {"en": coord["display_en"], "ja": coord["display_ja"], "zh_hans": coord["display_ja"]},
-            "operatorIds": [],
-            "lat": coord["lat"],
-            "lon": coord["lon"],
-            "sourceStopIds": [key],
-            "stationGroupId": sgid,
-            "tags": tags,
-        })
+        for index, coord in enumerate(valid_stations):
+            psid = stable_id("PS", f"{coord['station_key']}|{coord['lat']:.7f}|{coord['lon']:.7f}|{index}")
+            physical_ids.append(psid)
+            station_key_to_group[coord["station_key"]] = sgid
+            physical_stations.append({
+                "id": psid,
+                "name": coord["display_en"],
+                "names": {"en": coord["display_en"], "ja": coord["display_ja"], "zh_hans": coord["display_ja"]},
+                "operatorIds": [],
+                "lat": coord["lat"],
+                "lon": coord["lon"],
+                "sourceStopIds": [coord["station_key"]],
+                "stationGroupId": sgid,
+                "tags": tags,
+            })
         station_groups.append({
             "id": sgid,
-            "primaryName": coord["display_en"],
-            "names": {"en": coord["display_en"], "ja": coord["display_ja"], "zh_hans": coord["display_ja"]},
-            "physicalStationIds": [psid],
-            "centroid": {"lat": coord["lat"], "lon": coord["lon"]},
+            "primaryName": rep["display_en"],
+            "names": {"en": rep["display_en"], "ja": rep["display_ja"], "zh_hans": rep["display_ja"]},
+            "physicalStationIds": physical_ids,
+            "centroid": {
+                "lat": sum(station["lat"] for station in valid_stations) / len(valid_stations),
+                "lon": sum(station["lon"] for station in valid_stations) / len(valid_stations),
+            },
             "category": "hub" if label_rank >= 100 else "normal",
             "labelRank": label_rank,
             "tags": tags,
@@ -202,20 +315,23 @@ def build_bundle() -> dict[str, Any]:
             "minZoom": 3 if label_rank >= 100 else 5,
             "maxZoom": 24,
             "labelRank": label_rank,
-            "displayNameJa": coord["display_ja"],
-            "displayNameEn": coord["display_en"],
-            "labelPoint": {"lat": coord["lat"], "lon": coord["lon"]},
+            "displayNameJa": rep["display_ja"],
+            "displayNameEn": rep["display_en"],
+            "labelPoint": {"lat": rep["lat"], "lon": rep["lon"]},
         })
         game_nodes.append({
-            "id": stable_id("GN", key),
+            "id": stable_id("GN", group_key),
             "stationGroupIds": [sgid],
             "primaryStationGroupId": sgid,
             "category": "hub" if label_rank >= 100 else "normal",
-            "revealName": coord["display_en"],
+            "revealName": rep["display_en"],
             "tags": tags,
         })
 
-    station_key_to_group = {station["sourceStopIds"][0]: station["stationGroupId"] for station in physical_stations}
+    for source_key, target_key in station_alias_index.items():
+        if target_key in station_key_to_group:
+            station_key_to_group[source_key] = station_key_to_group[target_key]
+
     station_group_set = set(station_key_to_group.values())
     default_runner = station_key_to_group.get("東京") or next(iter(station_group_set), None)
     default_hunter = station_key_to_group.get("新宿") or default_runner
@@ -226,13 +342,14 @@ def build_bundle() -> dict[str, Any]:
         coords = line.get("coordinates") or []
         if len(coords) < 2:
             continue
-        route_id = route_id_for(line.get("line_name_ja") or line.get("label"), normalize_key(line.get("operator_ja")))
+        map_operator_id = operator_id_for(line.get("operator_ja"))
+        route_id = route_id_for(line.get("line_name_ja") or line.get("label"), map_operator_id)
         polyline = [{"lat": lat, "lon": lon} for lon, lat in coords]
         track_centerlines.append({
             "id": f"TRACK_TOKYO_{index:04d}",
-            "operatorId": route_meta.get(route_id, {}).get("operatorId", "tokyo"),
+            "operatorId": map_operator_id,
             "lineName": line.get("line_name_ja") or line.get("label") or route_id,
-            "mode": route_meta.get(route_id, {}).get("mode", "rail"),
+            "mode": "rail" if line.get("kind") == "jr" else line.get("kind") or "rail",
             "polyline": polyline,
             "stationGroupIds": [],
             "tags": ["tokyo", "track_centerline"],
@@ -250,10 +367,11 @@ def build_bundle() -> dict[str, Any]:
     trip_instances = []
     skipped_trains = 0
     for train in source_trains:
-        route_id = route_id_for(train.get("line") or train.get("service_name") or train.get("operator"), train.get("operator_id", "tokyo"))
+        route_id = route_id_for(canonical_route_line(train), train.get("operator_id", "tokyo"))
         stop_times = []
         for stop in train.get("stops", []):
-            sgid = station_key_to_group.get(stop.get("station_key"))
+            resolved_station_key = resolve_station_key(stop.get("station_key") or stop.get("station_name"), station_alias_index)
+            sgid = station_key_to_group.get(resolved_station_key)
             if not sgid:
                 continue
             arr = seconds_or_none(stop.get("arrival"), stop.get("departure"))

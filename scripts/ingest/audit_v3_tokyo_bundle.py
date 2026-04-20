@@ -11,6 +11,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from v3_station_identity import build_station_alias_index, normalize_key, resolve_station_key
+from v3_route_identity import canonical_route_line
+
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data"
@@ -46,14 +49,6 @@ def load_json(path: Path) -> Any:
 
 def write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-
-def normalize_key(value: Any) -> str:
-    text = unicodedata.normalize("NFKC", str(value or "")).strip().lower()
-    text = text.replace("（", "(").replace("）", ")")
-    text = re.sub(r"\([^)]*\)", "", text)
-    text = re.sub(r"[\s\-‐‑‒–—ー・･'’`]", "", text)
-    return text
 
 
 def route_id_for(line: Any, operator_id: str) -> str:
@@ -100,12 +95,16 @@ def build_audit() -> dict[str, Any]:
     map_payload = load_json(MAP_PATH)
     train_payload = load_json(UNIFIED_TRAINS_PATH)
     trains = train_payload.get("trains", [])
+    station_alias_index = build_station_alias_index(map_payload.get("visibleStations", []))
 
     groups_by_id = {item["id"]: item for item in bundle.get("stationGroups", [])}
     station_key_to_group: dict[str, str] = {}
     for station in bundle.get("physicalStations", []):
         for source_id in station.get("sourceStopIds", []):
             station_key_to_group[source_id] = station["stationGroupId"]
+    for source_key, target_key in station_alias_index.items():
+        if target_key in station_key_to_group:
+            station_key_to_group[source_key] = station_key_to_group[target_key]
 
     label_by_group = {group_id: station_name(group) for group_id, group in groups_by_id.items()}
     route_by_id = {route["id"]: route for route in bundle.get("serviceRoutes", [])}
@@ -119,14 +118,14 @@ def build_audit() -> dict[str, Any]:
     route_source_operators: dict[str, Counter[str]] = defaultdict(Counter)
 
     for train in trains:
-        line = train.get("line") or train.get("service_name") or train.get("operator")
+        line = canonical_route_line(train)
         route_id = route_id_for(line, train.get("operator_id", "tokyo"))
         route_ids_from_unified[route_id] += 1
         route_source_lines[route_id][str(line or "")] += 1
         route_source_operators[route_id][str(train.get("operator_id") or "")] += 1
         unmapped = []
         for stop in train.get("stops", []):
-            key = stop.get("station_key")
+            key = resolve_station_key(stop.get("station_key") or stop.get("station_name"), station_alias_index)
             if not key:
                 continue
             train_stop_keys[key] += 1
@@ -171,12 +170,13 @@ def build_audit() -> dict[str, Any]:
 
     map_station_groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for station in map_payload.get("visibleStations", []):
-        key = normalize_key(station.get("name_ja") or station.get("name_en"))
+        key = resolve_station_key(station.get("name_ja") or station.get("name_en"), station_alias_index)
         if not key:
             continue
         map_station_groups[key].append(station)
 
     duplicate_map_names = []
+    collapsed_duplicate_map_names = []
     for key, stations in map_station_groups.items():
         coords = [
             (item.get("lat"), item.get("lon"))
@@ -191,13 +191,18 @@ def build_audit() -> dict[str, Any]:
                 max_distance = max(max_distance, distance_m(lat_a, lon_a, lat_b, lon_b))
         if max_distance < 50:
             continue
+        group_id = station_key_to_group.get(key)
+        physical_station_count = len(groups_by_id.get(group_id, {}).get("physicalStationIds", [])) if group_id else 0
+        is_collapsed = physical_station_count < len(coords)
         duplicate_map_names.append({
             "station_key": key,
             "display_name": stations[0].get("name_ja") or stations[0].get("name_en") or key,
             "map_point_count": len(coords),
+            "bundle_physical_station_count": physical_station_count,
+            "physical_points_preserved": not is_collapsed,
             "max_distance_m": round(max_distance, 1),
             "train_stop_count": train_stop_keys.get(key, 0),
-            "bundle_station_group_id": station_key_to_group.get(key),
+            "bundle_station_group_id": group_id,
             "sample_points": [
                 {
                     "name_ja": item.get("name_ja"),
@@ -209,7 +214,10 @@ def build_audit() -> dict[str, Any]:
                 for item in stations[:8]
             ],
         })
+        if is_collapsed:
+            collapsed_duplicate_map_names.append(duplicate_map_names[-1])
     duplicate_map_names.sort(key=lambda item: (-item["train_stop_count"], -item["max_distance_m"], item["station_key"]))
+    collapsed_duplicate_map_names.sort(key=lambda item: (-item["train_stop_count"], -item["max_distance_m"], item["station_key"]))
 
     map_stations_without_trains = [
         {
@@ -258,7 +266,9 @@ def build_audit() -> dict[str, Any]:
     route_stats_by_trip = sorted(route_stats, key=lambda item: (-item["trip_count"], item["short_name"] or ""))
     tiny_routes = [
         item for item in route_stats
-        if item["trip_count"] <= 3 or item["station_count"] <= 1 or item["max_stop_count"] <= 1
+        if item["station_count"] <= 1
+        or item["max_stop_count"] <= 1
+        or (item["trip_count"] <= 3 and item["station_count"] <= 8)
     ]
     tiny_routes.sort(key=lambda item: (item["trip_count"], item["station_count"], item["short_name"] or ""))
     huge_routes = [
@@ -308,13 +318,13 @@ def build_audit() -> dict[str, Any]:
             "summary": "Some real timetable station keys do not map into the v3 visible station/group layer.",
             "sample": train_stations_without_map[:10],
         })
-    if duplicate_map_names:
+    if collapsed_duplicate_map_names:
         priority_findings.append({
             "severity": "high",
             "code": "duplicate_map_names_collapsed_by_key",
-            "count": len(duplicate_map_names),
-            "summary": "Some same-name map points are physically distinct; the current station_key adapter may collapse them into one station group.",
-            "sample": duplicate_map_names[:10],
+            "count": len(collapsed_duplicate_map_names),
+            "summary": "Some same-name map points are physically distinct but are not preserved as separate physical stations in the bundle.",
+            "sample": collapsed_duplicate_map_names[:10],
         })
     if tiny_routes:
         priority_findings.append({
@@ -353,6 +363,7 @@ def build_audit() -> dict[str, Any]:
             "train_stations_without_map_count": len(train_stations_without_map),
             "map_stations_without_trains_count": len(map_stations_without_trains),
             "duplicate_map_name_count": len(duplicate_map_names),
+            "collapsed_duplicate_map_name_count": len(collapsed_duplicate_map_names),
             "tiny_route_count": len(tiny_routes),
             "huge_route_count": len(huge_routes),
             "trains_with_unmapped_stops_count": len(trains_with_unmapped_stops),
@@ -364,6 +375,7 @@ def build_audit() -> dict[str, Any]:
             "train_stations_without_map": train_stations_without_map[:200],
             "map_stations_without_trains": map_stations_without_trains[:200],
             "duplicate_map_names": duplicate_map_names[:200],
+            "collapsed_duplicate_map_names": collapsed_duplicate_map_names[:200],
             "trains_with_unmapped_stops": trains_with_unmapped_stops[:100],
         },
         "route_quality": {
