@@ -248,3 +248,4 @@
 - Made the online room server dataset-configurable, preserving the default Shinkansen dataset while adding a `v3-tokyo` preset that loads the Tokyo map bundle plus deferred timetable and exposes dataset/trip-id QA in `/health`.
 - Added the first v3 multiplayer client entry on the official MapLibre page: players can choose single-player or a v3 Tokyo room, create/join/copy a room code, ready/unready, see room state on the main board, and sync the active plan to the same dataset-configurable room-server protocol used by v2.
 - Prepared the independent v3 Tokyo online deployment path: `render.yaml` now declares both the v2 Shinkansen room service and a separate `onichase-v3-room-server` using `--dataset v3-tokyo`, while the public v3 config points at the expected v3 HTTPS endpoint.
+- Cleaned the v3 multiplayer entry UX so it no longer exposes development copy or raw network errors, and added a proper Ready Room between room creation/join and the main game board.

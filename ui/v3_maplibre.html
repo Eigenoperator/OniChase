@@ -43,7 +43,8 @@
       grid-template-rows: 62px minmax(0, 1fr);
     }
 
-    .entry-overlay {
+    .entry-overlay,
+    .ready-room {
       position: fixed;
       inset: 0;
       z-index: 10;
@@ -57,9 +58,11 @@
       backdrop-filter: blur(12px);
     }
 
-    .entry-overlay.hidden { display: none; }
+    .entry-overlay.hidden,
+    .ready-room.hidden { display: none; }
 
-    .entry-card {
+    .entry-card,
+    .ready-card {
       width: min(860px, 100%);
       border: 1px solid rgba(213, 221, 232, 0.95);
       border-radius: 32px;
@@ -70,13 +73,19 @@
       gap: 20px;
     }
 
-    .entry-card h2 {
+    .ready-card {
+      width: min(760px, 100%);
+    }
+
+    .entry-card h2,
+    .ready-card h2 {
       margin: 0;
       font-size: 30px;
       letter-spacing: 0.03em;
     }
 
-    .entry-card p {
+    .entry-card p,
+    .ready-card p {
       margin: 8px 0 0;
       color: var(--muted);
       line-height: 1.55;
@@ -101,6 +110,32 @@
     .entry-panel h3 {
       margin: 0;
       font-size: 17px;
+    }
+
+    .ready-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .ready-seat-card {
+      border: 1px solid rgba(213, 221, 232, 0.92);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.82);
+      padding: 16px;
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+    }
+
+    .ready-seat-card strong {
+      color: var(--ink);
+      font-size: 18px;
+    }
+
+    .ready-seat-card.ready {
+      border-color: rgba(36, 151, 111, 0.48);
+      background: rgba(36, 151, 111, 0.10);
     }
 
     .button-row {
@@ -562,12 +597,12 @@
     <div class="entry-card">
       <div>
         <h2>OniChase V3 Tokyo</h2>
-        <p>选择单人本地测试，或连接一个使用 <code>--dataset v3-tokyo</code> 启动的 room server。单人和多人使用同一套 planning / live / capture payload。</p>
+        <p>选择单人模式，或创建一个多人房间。</p>
       </div>
       <div class="entry-grid">
         <section class="entry-panel">
           <h3>Single Player</h3>
-          <p>本地双角色测试。可以随时切换 Runner / Hunter 来搭计划。</p>
+          <p>在同一个浏览器里开始一局单人对局。</p>
           <div class="button-row">
             <button id="single-runner-button" class="primary runner" type="button">Play Runner</button>
             <button id="single-hunter-button" class="hunter" type="button">Play Hunter</button>
@@ -575,7 +610,7 @@
         </section>
         <section class="entry-panel">
           <h3>Multiplayer</h3>
-          <p>需要一个 v3 Tokyo room server，例如：<br><code>python3 scripts/engine/v2_online_room_server.py --dataset v3-tokyo</code></p>
+          <p>选择身份后创建房间，或输入房间号加入。创建成功后会进入准备房。</p>
           <div class="button-row">
             <button id="lobby-runner-button" class="active runner" type="button">Runner</button>
             <button id="lobby-hunter-button" class="hunter" type="button">Hunter</button>
@@ -586,15 +621,39 @@
             <button id="join-room-button" type="button">Join Room</button>
             <button id="copy-room-button" type="button">Copy Code</button>
           </div>
-          <div class="button-row">
-            <button id="ready-room-ready-button" class="primary" type="button">Ready</button>
-            <button id="ready-room-unready-button" type="button">Unready</button>
-            <button id="enter-local-button" type="button">Enter Local Board</button>
-          </div>
           <div class="room-code" id="room-code-pill">NO ROOM</div>
-          <div class="entry-status" id="entry-status">Loading multiplayer config...</div>
+          <div class="entry-status" id="entry-status">选择身份，然后创建或加入房间。</div>
         </section>
       </div>
+    </div>
+  </section>
+
+  <section id="ready-room" class="ready-room hidden">
+    <div class="ready-card">
+      <div>
+        <h2>Ready Room</h2>
+        <p>把房间号发给另一位玩家。两边都进入并准备后，对局会开始。</p>
+      </div>
+      <div class="button-row">
+        <div class="room-code" id="ready-room-code-pill">NO ROOM</div>
+        <button id="copy-ready-room-button" type="button">Copy Code</button>
+      </div>
+      <div class="ready-grid">
+        <div id="ready-runner-card" class="ready-seat-card">
+          <strong>Runner</strong>
+          <span>Waiting for player.</span>
+        </div>
+        <div id="ready-hunter-card" class="ready-seat-card">
+          <strong>Hunter</strong>
+          <span>Waiting for player.</span>
+        </div>
+      </div>
+      <div class="button-row">
+        <button id="ready-room-ready-button" class="primary" type="button">Ready</button>
+        <button id="ready-room-unready-button" type="button">Unready</button>
+        <button id="ready-room-back-button" type="button">Back</button>
+      </div>
+      <div class="entry-status" id="ready-room-status">Waiting for room status.</div>
     </div>
   </section>
 
@@ -661,8 +720,6 @@
               <button type="button" data-room-action="open">Lobby</button>
               <button type="button" data-room-action="copy">Copy</button>
               <button type="button" data-room-action="submit">Submit Plan</button>
-              <button type="button" data-room-action="ready">Ready</button>
-              <button type="button" data-room-action="unready">Unready</button>
             </div>
           </section>
 
@@ -755,9 +812,14 @@
     };
 
     const entryOverlayEl = document.getElementById('entry-overlay');
+    const readyRoomEl = document.getElementById('ready-room');
     const entryStatusEl = document.getElementById('entry-status');
+    const readyRoomStatusEl = document.getElementById('ready-room-status');
     const roomIdInput = document.getElementById('room-id-input');
     const roomCodePillEl = document.getElementById('room-code-pill');
+    const readyRoomCodePillEl = document.getElementById('ready-room-code-pill');
+    const readyRunnerCardEl = document.getElementById('ready-runner-card');
+    const readyHunterCardEl = document.getElementById('ready-hunter-card');
     const loadPill = document.getElementById('load-pill');
     const zoomPill = document.getElementById('zoom-pill');
     const statsEl = document.getElementById('stats');
@@ -814,9 +876,12 @@
       const value = (roomId || '').trim().toUpperCase();
       roomCodePillEl.textContent = value ? `ROOM ${value}` : 'NO ROOM';
       roomCodePillEl.classList.toggle('empty', !value);
+      readyRoomCodePillEl.textContent = value ? `ROOM ${value}` : 'NO ROOM';
+      readyRoomCodePillEl.classList.toggle('empty', !value);
     }
 
     function openEntry() {
+      readyRoomEl.classList.add('hidden');
       entryOverlayEl.classList.remove('hidden');
       updateRoomCodePill(state.online.roomId || roomIdInput.value || '');
       renderEntryRoomStatus();
@@ -824,6 +889,17 @@
 
     function closeEntry() {
       entryOverlayEl.classList.add('hidden');
+    }
+
+    function openReadyRoom() {
+      entryOverlayEl.classList.add('hidden');
+      readyRoomEl.classList.remove('hidden');
+      updateRoomCodePill(state.online.roomId || roomIdInput.value || '');
+      renderReadyRoom(state.online.lastRoom);
+    }
+
+    function closeReadyRoom() {
+      readyRoomEl.classList.add('hidden');
     }
 
     function configuredServerUrl() {
@@ -848,8 +924,8 @@
       const serverUrl = configuredServerUrl();
       state.online.serverUrl = serverUrl;
       entryStatusEl.textContent = serverUrl
-        ? `Multiplayer server configured:\n${serverUrl}\nMake sure it is running with --dataset v3-tokyo.`
-        : 'No v3 multiplayer server configured yet.\nFor local testing, open this page with ?server=http://127.0.0.1:8765 after starting the room server with --dataset v3-tokyo.';
+        ? '在线服务已连接。可以创建或加入房间。'
+        : '在线服务暂时不可用。';
     }
 
     function roomTokenStorageKey(roomId, seat) {
@@ -876,7 +952,7 @@
       stopOnlinePolling();
       state.online.pollingHandle = window.setTimeout(() => {
         syncRoomState().catch((error) => {
-          entryStatusEl.textContent = `Room sync failed: ${String(error)}`;
+          readyRoomStatusEl.textContent = describeRoomError(error);
           renderRoomPanel();
         });
       }, 500);
@@ -887,7 +963,13 @@
         headers: { 'Content-Type': 'application/json' },
         ...options,
       });
-      const data = await response.json();
+      const text = await response.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (_error) {
+        data = { error: text || `HTTP ${response.status}` };
+      }
       if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
       return data;
     }
@@ -897,7 +979,7 @@
       if (text.includes('seat_occupied')) return 'That seat is already occupied. Switch seats or use another room.';
       if (text.includes('room_not_found')) return 'Room not found. Check the room id and try again.';
       if (text.includes('invalid_token')) return 'This browser does not own that seat. Rejoin or switch room.';
-      if (text.includes('Failed to fetch')) return 'Could not reach the v3 room server. Check server URL and dataset.';
+      if (text.includes('Failed to fetch') || text.includes('NetworkError')) return '在线服务暂时不可用，请稍后再试。';
       return text;
     }
 
@@ -922,13 +1004,15 @@
       state.activeMode = seat;
       updateRoleButtons();
       closeEntry();
+      closeReadyRoom();
       renderGame();
     }
 
     async function copyCurrentRoomId() {
       const value = (state.online.roomId || roomIdInput.value || '').trim().toUpperCase();
+      const statusEl = readyRoomEl.classList.contains('hidden') ? entryStatusEl : readyRoomStatusEl;
       if (!value) {
-        entryStatusEl.textContent = 'No room id to copy yet.';
+        statusEl.textContent = '还没有房间号可以复制。';
         return;
       }
       try {
@@ -938,9 +1022,9 @@
           roomIdInput.select();
           document.execCommand('copy');
         }
-        entryStatusEl.textContent = `Copied room ${value}. Share it with your opponent.`;
+        statusEl.textContent = `已复制房间号 ${value}。`;
       } catch (_error) {
-        entryStatusEl.textContent = `Copy failed. Room code: ${value}`;
+        statusEl.textContent = `复制失败。房间号：${value}`;
       }
     }
 
@@ -962,14 +1046,42 @@
     function renderEntryRoomStatus() {
       const room = state.online.lastRoom;
       if (!room) {
-        document.getElementById('ready-room-ready-button').disabled = !onlineActive();
-        document.getElementById('ready-room-unready-button').disabled = true;
         return;
       }
-      entryStatusEl.textContent = roomStatusSummary(room);
+      entryStatusEl.textContent = '房间已连接。请在准备房中等待另一位玩家。';
       updateRoomCodePill(room.room_id);
-      document.getElementById('ready-room-ready-button').disabled = Boolean(room.self?.ready);
-      document.getElementById('ready-room-unready-button').disabled = !room.self?.ready;
+    }
+
+    function seatCardHtml(seat, player) {
+      const joined = Boolean(player?.connected);
+      const ready = Boolean(player?.ready);
+      return `
+        <strong>${seat === 'runner' ? 'Runner' : 'Hunter'}</strong>
+        <span>${joined ? 'Player joined.' : 'Waiting for player.'}</span>
+        <span>${joined ? (ready ? 'Ready.' : 'Not ready.') : 'Share the room code.'}</span>
+      `;
+    }
+
+    function renderReadyRoom(room) {
+      if (!room) return;
+      const runner = room.players?.runner;
+      const hunter = room.players?.hunter;
+      readyRunnerCardEl.className = `ready-seat-card${runner?.ready ? ' ready' : ''}`;
+      readyHunterCardEl.className = `ready-seat-card${hunter?.ready ? ' ready' : ''}`;
+      readyRunnerCardEl.innerHTML = seatCardHtml('runner', runner);
+      readyHunterCardEl.innerHTML = seatCardHtml('hunter', hunter);
+      updateRoomCodePill(room.room_id);
+
+      const bothJoined = Boolean(runner?.connected && hunter?.connected);
+      const bothReady = Boolean(runner?.ready && hunter?.ready);
+      const youReady = Boolean(room.self?.ready);
+      readyRoomStatusEl.textContent = bothReady
+        ? '两位玩家都已准备，正在进入游戏。'
+        : bothJoined
+          ? (youReady ? '你已准备。等待另一位玩家。' : '两位玩家都已进入。准备好后点击 Ready。')
+          : '房间已创建。复制房间号并邀请另一位玩家。';
+      document.getElementById('ready-room-ready-button').disabled = youReady;
+      document.getElementById('ready-room-unready-button').disabled = !youReady;
     }
 
     function presenceToPreview(playerId, presence) {
@@ -1073,7 +1185,13 @@
       }
       updateRoleButtons();
       renderEntryRoomStatus();
-      if (room.match_started || room.phase === 'LIVE' || room.phase === 'ENDED') closeEntry();
+      renderReadyRoom(room);
+      if (room.match_started || room.phase === 'LIVE' || room.phase === 'ENDED') {
+        closeEntry();
+        closeReadyRoom();
+      } else if (onlineActive()) {
+        openReadyRoom();
+      }
       renderGame();
       scheduleOnlinePoll();
     }
@@ -1088,7 +1206,7 @@
       try {
         state.online.serverUrl = configuredServerUrl();
         if (!state.online.serverUrl) {
-          entryStatusEl.textContent = 'No v3 multiplayer server configured. Start one with --dataset v3-tokyo and use ?server=http://host:port.';
+          entryStatusEl.textContent = '在线服务暂时不可用。';
           return;
         }
         const created = await apiJson(`${state.online.serverUrl}/api/rooms`, {
@@ -1098,10 +1216,10 @@
         state.online.roomId = created.room.room_id;
         roomIdInput.value = created.room.room_id;
         updateRoomCodePill(created.room.room_id);
-        await copyCurrentRoomId();
         await joinExistingRoom();
+        await copyCurrentRoomId();
       } catch (error) {
-        entryStatusEl.textContent = `Create room failed: ${describeRoomError(error)}`;
+        entryStatusEl.textContent = describeRoomError(error);
       }
     }
 
@@ -1109,12 +1227,12 @@
       try {
         state.online.serverUrl = configuredServerUrl();
         if (!state.online.serverUrl) {
-          entryStatusEl.textContent = 'No v3 multiplayer server configured. Start one with --dataset v3-tokyo and use ?server=http://host:port.';
+          entryStatusEl.textContent = '在线服务暂时不可用。';
           return;
         }
         state.online.roomId = roomIdInput.value.trim().toUpperCase();
         if (!state.online.roomId) {
-          entryStatusEl.textContent = 'Enter a room id first.';
+          entryStatusEl.textContent = '请输入房间号。';
           return;
         }
         updateRoomCodePill(state.online.roomId);
@@ -1129,7 +1247,7 @@
         }
         syncStateFromRoom(data.room);
       } catch (error) {
-        entryStatusEl.textContent = `Join room failed: ${describeRoomError(error)}`;
+        entryStatusEl.textContent = describeRoomError(error);
       }
     }
 
@@ -1159,7 +1277,7 @@
 
     async function markSeatReady() {
       if (!onlineActive()) {
-        entryStatusEl.textContent = 'Join or create a room first.';
+        readyRoomStatusEl.textContent = '请先创建或加入房间。';
         return;
       }
       await submitCurrentPlanToRoom();
@@ -3024,17 +3142,18 @@
       document.getElementById('copy-room-button').addEventListener('click', copyCurrentRoomId);
       document.getElementById('ready-room-ready-button').addEventListener('click', () => {
         markSeatReady().catch((error) => {
-          entryStatusEl.textContent = `Ready failed: ${describeRoomError(error)}`;
+          readyRoomStatusEl.textContent = describeRoomError(error);
           renderRoomPanel();
         });
       });
       document.getElementById('ready-room-unready-button').addEventListener('click', () => {
         markSeatUnready().catch((error) => {
-          entryStatusEl.textContent = `Unready failed: ${describeRoomError(error)}`;
+          readyRoomStatusEl.textContent = describeRoomError(error);
           renderRoomPanel();
         });
       });
-      document.getElementById('enter-local-button').addEventListener('click', () => closeEntry());
+      document.getElementById('copy-ready-room-button').addEventListener('click', copyCurrentRoomId);
+      document.getElementById('ready-room-back-button').addEventListener('click', openEntry);
       roomActionsEl.addEventListener('click', (event) => {
         const button = event.target.closest('[data-room-action]');
         if (!button) return;
@@ -3043,11 +3162,11 @@
         else if (action === 'copy') copyCurrentRoomId();
         else if (action === 'submit') syncPlanIfOnline();
         else if (action === 'ready') markSeatReady().catch((error) => {
-          entryStatusEl.textContent = `Ready failed: ${describeRoomError(error)}`;
+          readyRoomStatusEl.textContent = describeRoomError(error);
           renderRoomPanel();
         });
         else if (action === 'unready') markSeatUnready().catch((error) => {
-          entryStatusEl.textContent = `Unready failed: ${describeRoomError(error)}`;
+          readyRoomStatusEl.textContent = describeRoomError(error);
           renderRoomPanel();
         });
       });

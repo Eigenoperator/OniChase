@@ -20,6 +20,7 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Made the room server dataset-configurable: `--dataset shinkansen` remains the default, while `--dataset v3-tokyo` loads the Tokyo map bundle plus deferred timetable and reports duplicate trip-id counts in `/health`.
 - Added the first v3 multiplayer entry flow: `v3.html` now has a single-player entry, a v3 Tokyo room lobby, room creation/join/copy, ready/unready, a main-board Room panel, and online plan sync against the dataset-configurable server.
 - Prepared the v3 Render deployment path: `render.yaml` now declares separate v2 and v3 room services, and `docs/data/v3_online_config.json` points to the expected `onichase-v3-room-server` HTTPS endpoint.
+- Cleaned the v3 multiplayer entry: removed developer/test copy, moved Ready/Unready into a dedicated post-create Ready Room, and replaced raw network errors with player-facing offline text.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
@@ -39,5 +40,5 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 
 ## Next
 1. Create or sync the Render service named `onichase-v3-room-server`; the expected public URL currently returns `Not Found` until Render provisions it.
-2. After `/health` returns `dataset_name = v3-tokyo`, manually play public `v3.html` online with two browsers.
+2. After `/health` returns `dataset_name = v3-tokyo`, manually play public `v3.html` online with two browsers through the new Ready Room flow.
 3. Continue MapLibre UX/performance work: smarter label priority, denser Tokyo click targets, selected-service visibility, and tile/vector migration planning.
