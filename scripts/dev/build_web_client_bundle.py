@@ -19,7 +19,6 @@ INDEX_HTML = DOCS_DIR / "index.html"
 V1_TARGET_HTML = DOCS_DIR / "v1.html"
 V2_TARGET_HTML = DOCS_DIR / "v2.html"
 V3_TARGET_HTML = DOCS_DIR / "v3.html"
-V3_MAPLIBRE_TARGET_HTML = DOCS_DIR / "v3_maplibre.html"
 
 DATA_FILES = [
     ROOT / "data" / "yamanote_stations.json",
@@ -156,12 +155,6 @@ def build_landing_page() -> str:
     .card.v1 a.button { background: #dff1c4; }
     .card.v2 a.button { background: #f6dfba; }
     .card.v3 a.button { background: #d8e7fb; }
-    .secondary-link {
-      align-self: center;
-      color: var(--muted);
-      text-decoration: none;
-      font-weight: 700;
-    }
     @media (max-width: 900px) {
       .cards { grid-template-columns: 1fr; }
       .hero h1 { font-size: 38px; }
@@ -173,7 +166,7 @@ def build_landing_page() -> str:
     <div class="shell">
       <section class="hero">
         <h1>OniChase</h1>
-        <p>Choose a version. <strong>V1</strong> is the archived Yamanote prototype. <strong>V2</strong> is the current playable nationwide Shinkansen build. <strong>V3</strong> is the real-position Tokyo network timetable sandbox.</p>
+        <p>Choose a version. <strong>V1</strong> is the archived Yamanote prototype. <strong>V2</strong> is the current playable nationwide Shinkansen build. <strong>V3</strong> is the official Tokyo MapLibre real-geometry timetable sandbox.</p>
       </section>
       <section class="cards">
         <article class="card v1">
@@ -204,16 +197,15 @@ def build_landing_page() -> str:
         </article>
         <article class="card v3">
           <div class="eyebrow">V3</div>
-          <h2>Tokyo Departures</h2>
-          <p>Real-position Tokyo urban rail map linked to the unified v3 timetable index. Click a station for real departures, then choose a train to inspect its stops.</p>
+          <h2>Tokyo MapLibre</h2>
+          <p>Official v3 Tokyo urban rail map with WebGL rendering, collision-aware labels, official line colors, real geometry, and lazy timetable-linked departures.</p>
           <div class="meta">
             <div>Map: Tokyo urban rail</div>
-            <div>Scope: real geometry + real train departures</div>
-            <div>Use: inspect current v3 map-data linkage</div>
+            <div>Scope: MapLibre + real geometry + real train departures</div>
+            <div>Use: inspect the current v3 map-data linkage</div>
           </div>
           <div class="actions">
             <a class="button" href="./v3.html">Open V3</a>
-            <a class="secondary-link" href="./v3_maplibre.html">MapLibre renderer</a>
           </div>
         </article>
       </section>
@@ -224,36 +216,18 @@ def build_landing_page() -> str:
 """
 
 
-def build_v3_from_v2(v2_html: str) -> str:
-    config = """<script>
-    window.ONICHASE_DATA_URL = './data/v3_tokyo_map_bundle.json.gz';
-    window.ONICHASE_TIMETABLE_URL = './data/v3_tokyo_timetable_bundle.json.gz';
-    window.ONICHASE_TILE_MANIFEST_URL = './data/v3_tokyo_tiles/manifest.json';
-    window.ONICHASE_TILE_BASE_URL = './data/v3_tokyo_tiles/';
-  </script>
-"""
-    html = v2_html.replace("<title>OniChase V2 GIS Shinkansen</title>", "<title>OniChase V3 Tokyo</title>")
-    html = html.replace("<title>OniChase V3 Tokyo</title>\n  <style>", "<title>OniChase V3 Tokyo</title>\n  " + config + "  <style>")
-    html = html.replace("OniChase V2", "OniChase V3")
-    html = html.replace("Nationwide Shinkansen chase prototype", "Tokyo real-train chase prototype")
-    html = html.replace("real Shinkansen routes", "real Tokyo rail routes")
-    html = html.replace("real weekday Shinkansen train instances", "real weekday Tokyo train instances")
-    html = html.replace("GIS Shinkansen", "Tokyo Rail")
-    html = html.replace("Shinkansen", "Tokyo Rail")
-    return html
-
-
 def build() -> None:
     DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
     v1_html = V1_SOURCE_HTML.read_text(encoding="utf-8").replace("__DATA_BASE__", "./data")
     v2_html = V2_SOURCE_HTML.read_text(encoding="utf-8").replace("__DATA_BASE__", "./data")
-    v3_maplibre_html = V3_MAPLIBRE_SOURCE_HTML.read_text(encoding="utf-8")
-    v3_html = build_v3_from_v2(v2_html)
+    v3_html = V3_MAPLIBRE_SOURCE_HTML.read_text(encoding="utf-8")
     INDEX_HTML.write_text(build_landing_page(), encoding="utf-8")
     V1_TARGET_HTML.write_text(v1_html, encoding="utf-8")
     V2_TARGET_HTML.write_text(v2_html, encoding="utf-8")
     V3_TARGET_HTML.write_text(v3_html, encoding="utf-8")
-    V3_MAPLIBRE_TARGET_HTML.write_text(v3_maplibre_html, encoding="utf-8")
+    old_v3_maplibre = DOCS_DIR / "v3_maplibre.html"
+    if old_v3_maplibre.exists():
+        old_v3_maplibre.unlink()
     NOJEKYLL.write_text("", encoding="utf-8")
     for path in DATA_FILES:
         shutil.copy2(path, DOCS_DATA_DIR / path.name)

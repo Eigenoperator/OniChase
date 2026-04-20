@@ -4,12 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OniChase V3 Tokyo</title>
-  <script>
-    window.ONICHASE_DATA_URL = './data/v3_tokyo_map_bundle.json.gz';
-    window.ONICHASE_TIMETABLE_URL = './data/v3_tokyo_timetable_bundle.json.gz';
-    window.ONICHASE_TILE_MANIFEST_URL = './data/v3_tokyo_tiles/manifest.json';
-    window.ONICHASE_TILE_BASE_URL = './data/v3_tokyo_tiles/';
-  </script>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <style>
     :root {
       --bg: #eef2f7;
@@ -20,10 +16,11 @@
       --muted: #667487;
       --accent: #1565c0;
       --accent-soft: rgba(21, 101, 192, 0.12);
-      --corridor: #b7c3d8;
-      --station: #203247;
-      --shadow: 0 20px 44px rgba(21, 33, 52, 0.12);
-      --shadow-soft: 0 10px 24px rgba(21, 33, 52, 0.08);
+      --runner: #dc4d62;
+      --hunter: #2d6cdf;
+      --warning: #f97316;
+      --shadow: 0 20px 48px rgba(31, 42, 55, 0.11);
+      --shadow-soft: 0 12px 28px rgba(31, 42, 55, 0.08);
     }
 
     * { box-sizing: border-box; }
@@ -32,3897 +29,1113 @@
       margin: 0;
       height: 100vh;
       overflow: hidden;
-      font-family: "Avenir Next", "Segoe UI", sans-serif;
       color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 12% 14%, rgba(21, 101, 192, 0.16), transparent 24%),
-        radial-gradient(circle at 85% 16%, rgba(126, 87, 194, 0.12), transparent 22%),
-        linear-gradient(180deg, #f8fbff 0%, #edf2f8 100%);
+        radial-gradient(circle at 16% 18%, rgba(21, 101, 192, 0.14), transparent 24%),
+        radial-gradient(circle at 84% 12%, rgba(249, 115, 22, 0.10), transparent 22%),
+        linear-gradient(180deg, #f8fafc 0%, var(--bg) 100%);
     }
 
-    .app {
+    .shell {
       height: 100vh;
       display: grid;
-      grid-template-rows: auto 1fr;
-      overflow: hidden;
+      grid-template-rows: 62px minmax(0, 1fr);
     }
 
-    .app.hidden {
-      display: none;
-    }
-
-    .lobby {
-      position: fixed;
-      inset: 0;
-      z-index: 40;
+    header {
       display: grid;
-      place-items: center;
-      padding: 28px;
-      background:
-        radial-gradient(circle at 18% 20%, rgba(21, 101, 192, 0.2), transparent 24%),
-        radial-gradient(circle at 82% 16%, rgba(220, 77, 98, 0.14), transparent 20%),
-        linear-gradient(180deg, rgba(245, 249, 255, 0.98), rgba(234, 241, 249, 0.98));
-      backdrop-filter: blur(10px);
-    }
-
-    .lobby.hidden {
-      display: none;
-    }
-
-    .ready-room {
-      position: fixed;
-      inset: 0;
-      z-index: 35;
-      display: grid;
-      place-items: center;
-      padding: 28px;
-      background:
-        radial-gradient(circle at 16% 20%, rgba(21, 101, 192, 0.16), transparent 24%),
-        radial-gradient(circle at 82% 18%, rgba(220, 77, 98, 0.14), transparent 22%),
-        linear-gradient(180deg, rgba(246, 250, 255, 0.97), rgba(236, 242, 249, 0.97));
-      backdrop-filter: blur(10px);
-    }
-
-    .ready-room.hidden {
-      display: none;
-    }
-
-    .ready-shell {
-      width: min(900px, 100%);
-      display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: 20px;
-    }
-
-    .ready-panel {
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      border-radius: 30px;
-      background: rgba(250, 252, 255, 0.96);
-      box-shadow: var(--shadow);
-      padding: 28px;
-    }
-
-    .ready-panel h2 {
-      margin: 0;
-      font-size: 28px;
-    }
-
-    .ready-panel p {
-      margin: 10px 0 0;
-      color: var(--muted);
-      line-height: 1.65;
-      font-size: 14px;
-    }
-
-    .ready-grid {
-      display: grid;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .ready-seat-card {
-      padding: 14px 16px;
-      border-radius: 18px;
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      background: rgba(255, 255, 255, 0.92);
-      box-shadow: var(--shadow-soft);
-    }
-
-    .ready-seat-card strong {
-      display: block;
-      font-size: 16px;
-      margin-bottom: 6px;
-    }
-
-    .ready-seat-card span {
-      display: block;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .ready-seat-card.ready {
-      border-color: rgba(21, 101, 192, 0.42);
-      background: rgba(232, 240, 252, 0.95);
-    }
-
-    .ready-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 18px;
-    }
-
-    .lobby-shell {
-      width: min(1120px, 100%);
-      display: grid;
-      grid-template-columns: minmax(320px, 1.1fr) minmax(320px, 0.9fr);
-      gap: 20px;
-    }
-
-    .lobby-panel {
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      border-radius: 30px;
-      background: rgba(250, 252, 255, 0.96);
-      box-shadow: var(--shadow);
-      padding: 28px;
-    }
-
-    .lobby-hero h1 {
-      margin: 0;
-      font-size: 46px;
-      letter-spacing: 0.02em;
-    }
-
-    .lobby-hero p {
-      margin: 12px 0 0;
-      color: var(--muted);
-      line-height: 1.7;
-      font-size: 15px;
-      max-width: 48ch;
-    }
-
-    .lobby-badges {
-      margin-top: 18px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .lobby-badge {
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: rgba(21, 101, 192, 0.08);
-      border: 1px solid rgba(21, 101, 192, 0.14);
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .lobby-stack {
-      display: grid;
-      gap: 18px;
-    }
-
-    .lobby-card {
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      border-radius: 24px;
-      background: rgba(255, 255, 255, 0.86);
-      padding: 20px;
-      box-shadow: var(--shadow-soft);
-    }
-
-    .lobby-card h2 {
-      margin: 0;
-      font-size: 22px;
-    }
-
-    .lobby-card p {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .lobby-actions {
-      margin-top: 18px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .seat-toggle {
-      margin-top: 16px;
-      display: inline-flex;
-      padding: 4px;
-      border-radius: 999px;
-      background: rgba(239, 244, 251, 0.94);
-      border: 1px solid rgba(213, 221, 232, 0.95);
-    }
-
-    .seat-toggle button {
-      padding: 10px 16px;
-      border-radius: 999px;
-      box-shadow: none;
-      background: transparent;
-      color: var(--muted);
-    }
-
-    .seat-toggle button.active {
-      background: var(--accent);
-      color: white;
-    }
-
-    .lobby-fields {
-      margin-top: 16px;
-      display: grid;
-      gap: 12px;
-    }
-
-    .lobby-field label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .lobby-field input {
-      width: 100%;
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      background: rgba(255, 255, 255, 0.96);
-      color: var(--ink);
-      border-radius: 14px;
-      padding: 12px 14px;
-      font: inherit;
-    }
-
-    .lobby-status {
-      margin-top: 16px;
-      min-height: 42px;
-      padding: 12px 14px;
-      border-radius: 16px;
-      background: rgba(237, 242, 248, 0.92);
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-      font-weight: 700;
-    }
-
-    .room-code-row {
-      margin-top: 14px;
-      display: flex;
-      gap: 10px;
+      grid-template-columns: minmax(250px, 1fr) auto minmax(250px, 1fr);
       align-items: center;
-      flex-wrap: wrap;
+      gap: 16px;
+      padding: 10px 18px;
+      border-bottom: 1px solid rgba(213, 221, 232, 0.92);
+      background: rgba(250, 252, 255, 0.86);
+      backdrop-filter: blur(16px);
+      z-index: 3;
     }
 
-    .room-code-pill {
-      padding: 10px 14px;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
       border-radius: 14px;
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      background: rgba(255, 255, 255, 0.96);
-      color: var(--ink);
-      font-weight: 900;
-      letter-spacing: 0.12em;
-      min-width: 132px;
+      background:
+        linear-gradient(135deg, rgba(21, 101, 192, 0.96), rgba(45, 108, 223, 0.66)),
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,0.82), transparent 28%);
+      box-shadow: 0 10px 22px rgba(21, 101, 192, 0.24);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .clock {
+      justify-self: center;
+      display: grid;
+      gap: 1px;
       text-align: center;
+    }
+
+    .clock strong {
+      font-size: 26px;
+      line-height: 1;
+      letter-spacing: 0.06em;
       font-variant-numeric: tabular-nums;
     }
 
-    .room-code-pill.empty {
-      letter-spacing: 0.04em;
-      font-weight: 700;
+    .clock span {
       color: var(--muted);
-      text-transform: uppercase;
-    }
-
-    .room-code-pill.in-panel {
-      width: 100%;
-      min-width: 0;
-      margin-bottom: 10px;
-      text-align: left;
-      letter-spacing: 0.14em;
-    }
-
-    .topbar {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 14px;
-      align-items: center;
-      padding: 10px 20px;
-      border-bottom: 1px solid rgba(213, 221, 232, 0.95);
-      background: rgba(252, 254, 255, 0.92);
-      backdrop-filter: blur(14px);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .topbar-spacer {
-      min-width: 0;
-    }
-
-    .command-center {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2px;
-      padding: 8px 14px;
-      border-radius: 18px;
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      background: rgba(255, 255, 255, 0.9);
-      box-shadow: var(--shadow-soft);
-      text-align: center;
-      min-width: 260px;
-      justify-self: center;
-    }
-
-    .command-meta {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 800;
       letter-spacing: 0.16em;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-
-    .command-time {
-      font-size: 30px;
-      line-height: 1;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      font-variant-numeric: tabular-nums;
-      color: var(--ink);
-    }
-
-    .command-phase {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .phase-chip {
-      padding: 5px 9px;
-      border-radius: 999px;
-      background: rgba(21, 101, 192, 0.12);
-      color: var(--accent);
-      letter-spacing: 0.08em;
       text-transform: uppercase;
     }
 
     .toolbar {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .topbar .toolbar {
       justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .toolbar.compact button {
-      padding: 10px 12px;
-      font-size: 13px;
-    }
-
-    .mode-toggle {
-      display: inline-flex;
-      padding: 4px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.86);
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      box-shadow: var(--shadow-soft);
-    }
-
-    button {
-      appearance: none;
-      border: 0;
-      cursor: pointer;
-      font: inherit;
-      font-weight: 800;
-      border-radius: 14px;
-      padding: 12px 14px;
-      box-shadow: var(--shadow-soft);
+    button, a.button {
+      border: 1px solid rgba(21, 101, 192, 0.18);
+      background: rgba(255, 255, 255, 0.9);
       color: var(--ink);
-      background: #eef4fb;
-    }
-
-    .mode-toggle button {
-      padding: 10px 16px;
       border-radius: 999px;
-      box-shadow: none;
-      background: transparent;
-      color: var(--muted);
-    }
-
-    .mode-toggle button.active {
-      background: var(--accent);
-      color: white;
-    }
-
-    .mode-toggle button.active.runner {
-      background: #dc4d62;
-      color: white;
-    }
-
-    .mode-toggle button.active.hunter {
-      background: #2d6cdf;
-      color: white;
-    }
-
-    button.secondary {
-      background: #edf2f8;
-    }
-
-    button.primary {
-      background: var(--accent);
-      color: white;
-    }
-
-    .pill {
-      padding: 12px 14px;
-      border-radius: 16px;
-      background: var(--panel);
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      box-shadow: var(--shadow-soft);
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-
-    .shell {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 390px;
-      gap: 20px;
-      padding: 20px 24px 24px;
-      height: 100%;
-      min-height: 0;
-    }
-
-    .panel {
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      border-radius: 28px;
-      background: var(--panel);
-      box-shadow: var(--shadow);
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .map-panel {
-      display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
-      background:
-        radial-gradient(circle at 16% 12%, rgba(21, 101, 192, 0.08), transparent 20%),
-        linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(241, 246, 251, 0.98));
-    }
-
-    .map-head {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 14px;
-      align-items: end;
-      padding: 18px 20px 10px;
-    }
-
-    .map-head h2 {
-      margin: 0;
-      font-size: 24px;
-    }
-
-    .map-head p {
-      margin: 4px 0 0;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .stats {
-      text-align: right;
-      color: var(--muted);
+      padding: 9px 12px;
+      font-weight: 800;
       font-size: 12px;
-      line-height: 1.5;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: var(--shadow-soft);
+    }
+
+    button.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      min-height: 0;
     }
 
     .map-wrap {
-      padding: 0 18px 18px;
+      position: relative;
+      min-width: 0;
       min-height: 0;
       overflow: hidden;
     }
 
-    svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-      border-radius: 22px;
-      background:
-        radial-gradient(circle at 18% 16%, rgba(21, 101, 192, 0.06), transparent 18%),
-        linear-gradient(180deg, rgba(255,255,255,0.9), rgba(246, 249, 253, 0.96));
-      cursor: grab;
-      user-select: none;
-      touch-action: none;
+    #map {
+      position: absolute;
+      inset: 0;
+      background: #edf2f7;
     }
 
-    svg.dragging { cursor: grabbing; }
+    .map-badge {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      z-index: 2;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-width: calc(100% - 36px);
+      pointer-events: none;
+    }
 
-    .sidebar {
-      display: block;
+    .pill {
+      border: 1px solid rgba(213, 221, 232, 0.92);
+      border-radius: 999px;
+      background: rgba(250, 252, 255, 0.92);
+      padding: 8px 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(12px);
+    }
+
+    aside {
       min-height: 0;
+      overflow: hidden;
+      border-left: 1px solid rgba(213, 221, 232, 0.96);
+      background: var(--panel);
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+    }
+
+    .side-head {
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid rgba(213, 221, 232, 0.8);
+    }
+
+    .side-head h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .side-head p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(213, 221, 232, 0.8);
+    }
+
+    .stat {
+      border: 1px solid rgba(213, 221, 232, 0.88);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 12px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .scroll {
       overflow: auto;
-    }
-
-    .sidebar section {
-      padding: 18px 20px;
-      border-bottom: 1px solid rgba(213, 221, 232, 0.92);
-    }
-
-    .sidebar section:last-child {
-      border-bottom: 0;
+      padding: 16px 18px 22px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
     }
 
     .section-label {
-      margin: 0 0 10px;
-      font-size: 12px;
-      font-weight: 900;
+      margin-bottom: 8px;
       color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
       letter-spacing: 0.14em;
       text-transform: uppercase;
     }
 
-    .overview-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .metric {
-      padding: 12px;
-      border-radius: 18px;
-      background: var(--panel-strong);
-      border: 1px solid rgba(213, 221, 232, 0.95);
+    .info-box, .route-list, .departure-list {
+      border: 1px solid rgba(213, 221, 232, 0.9);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.78);
       box-shadow: var(--shadow-soft);
-    }
-
-    .metric .value {
-      display: block;
-      font-size: 22px;
-      font-weight: 900;
-      line-height: 1;
-      margin-bottom: 6px;
-    }
-
-    .metric .label {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .selected-card {
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: var(--panel-strong);
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      box-shadow: var(--shadow-soft);
-      display: grid;
-      gap: 8px;
-    }
-
-    .selected-card h3 {
-      margin: 0;
-      font-size: 22px;
-    }
-
-    .selected-card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.55;
-      font-size: 13px;
-    }
-
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .tag {
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .lists {
-      min-height: 0;
-      overflow: auto;
-      display: grid;
-      align-content: start;
-      gap: 14px;
-    }
-
-    .card-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .mini-card {
-      padding: 12px 14px;
-      border-radius: 18px;
-      background: var(--panel-strong);
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      box-shadow: var(--shadow-soft);
-      display: grid;
-      gap: 6px;
-    }
-
-    .mini-card strong {
-      font-size: 15px;
-    }
-
-    .mini-card span,
-    .mini-card small {
-      color: var(--muted);
-      line-height: 1.45;
-    }
-
-    .legend {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .swatch {
-      width: 12px;
-      height: 12px;
-      border-radius: 999px;
-      display: inline-block;
-      margin-right: 6px;
-      border: 1px solid rgba(31, 42, 55, 0.15);
-      vertical-align: -1px;
-    }
-
-    .empty {
-      color: var(--muted);
-      line-height: 1.6;
-      font-size: 14px;
-    }
-
-    .temporarily-hidden {
-      display: none !important;
-    }
-
-    .mini-card.clickable {
-      cursor: pointer;
-      transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
-    }
-
-    .mini-card.clickable:hover {
-      transform: translateY(-1px);
-      border-color: rgba(21, 101, 192, 0.4);
-    }
-
-    .mini-card.active {
-      border-color: rgba(21, 101, 192, 0.58);
-      box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.10), var(--shadow-soft);
-      background: rgba(226, 237, 251, 0.96);
-    }
-
-    .mini-card.trip-hover {
-      border-color: rgba(15, 23, 42, 0.35);
-      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08), var(--shadow-soft);
-      background: rgba(241, 245, 249, 0.98);
     }
 
     .info-box {
-      border-radius: 18px;
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      background: #fffdf8;
       padding: 14px;
+      color: var(--muted);
       font-size: 13px;
       line-height: 1.55;
-      color: var(--muted);
-      white-space: pre-line;
-      overflow: auto;
     }
 
-    .room-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
-    .empty {
-      border-radius: 16px;
-      border: 1px dashed rgba(213, 221, 232, 0.95);
-      background: rgba(255, 253, 248, 0.78);
-      padding: 12px 14px;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .tiny-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
-    .tiny-button {
-      padding: 9px 11px;
-      border-radius: 12px;
-      font-size: 12px;
-      background: #eef4fb;
+    .info-box h3 {
+      margin: 0 0 6px;
       color: var(--ink);
-      box-shadow: none;
-      border: 1px solid rgba(213, 221, 232, 0.95);
+      font-size: 18px;
     }
 
-    .tiny-button.good {
-      background: rgba(21, 101, 192, 0.12);
-      color: var(--accent);
-    }
-
-    .tiny-button.runner {
-      background: rgba(220, 77, 98, 0.12);
-      color: #8a2334;
-    }
-
-    .tiny-button.hunter {
-      background: rgba(45, 108, 223, 0.12);
-      color: #1d4d9c;
-    }
-
-    .outlook-list {
-      display: grid;
-      gap: 8px;
-    }
-
-    .outlook-row {
-      display: grid;
-      grid-template-columns: 74px 1fr;
-      gap: 10px;
-      padding: 9px 0;
-      border-bottom: 1px dashed rgba(213, 221, 232, 0.9);
-      font-size: 13px;
-    }
-
-    .outlook-row.clickable {
-      cursor: pointer;
-      border-radius: 10px;
-      padding: 10px 8px;
-      margin: 0 -8px;
-      transition: background 120ms ease;
-    }
-
-    .outlook-row.clickable:hover {
-      background: rgba(21, 101, 192, 0.08);
-    }
-
-    .outlook-row strong {
-      display: block;
-      font-size: 13px;
-      color: #203247;
-    }
-
-    .outlook-row span {
-      display: block;
-      margin-top: 2px;
-      font-size: 11px;
-      color: #556476;
-    }
-
-    .plan-summary-list {
-      display: grid;
-      gap: 8px;
+    .tag-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
       margin-top: 10px;
     }
 
-    .plan-summary-row {
-      padding: 8px 10px;
-      border: 1px solid rgba(213, 221, 232, 0.95);
-      border-radius: 10px;
-      background: #ffffff;
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .plan-summary-row.current {
-      border-color: rgba(21, 101, 192, 0.42);
-      background: rgba(21, 101, 192, 0.06);
-    }
-
-    .plan-summary-row.clickable {
-      cursor: pointer;
-      transition: background 120ms ease, border-color 120ms ease;
-    }
-
-    .plan-summary-row.clickable:hover {
-      background: rgba(21, 101, 192, 0.1);
-      border-color: rgba(21, 101, 192, 0.5);
-    }
-
-    .plan-summary-title {
-      display: block;
-      font-weight: 700;
-      color: #203247;
-    }
-
-    .plan-summary-sub {
-      display: block;
-      margin-top: 2px;
-      color: #556476;
-      font-size: 11px;
-    }
-
-    .outlook-row:last-child {
-      border-bottom: 0;
-      padding-bottom: 0;
-    }
-
-    .player-marker {
-      pointer-events: none;
-    }
-
-    .player-overlay-marker {
-      pointer-events: none;
-    }
-
-    .marker-box {
-      fill: #fffaf3;
-    }
-
-    .player-overlay-box {
-      fill: rgba(255, 250, 243, 0.96);
-    }
-
-    .player-overlay-label {
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .player-overlay-sub {
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .marker-label {
+    .tag {
+      border-radius: 999px;
+      background: rgba(21, 101, 192, 0.08);
+      color: var(--accent);
+      padding: 6px 8px;
       font-size: 11px;
       font-weight: 800;
     }
 
-    .marker-sub {
+    .route-list, .departure-list {
+      overflow: hidden;
+    }
+
+    .route-row, .departure-row {
+      width: 100%;
+      border: 0;
+      border-bottom: 1px solid rgba(213, 221, 232, 0.72);
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      display: grid;
+      grid-template-columns: 7px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    .route-row:last-child,
+    .departure-row:last-child { border-bottom: 0; }
+
+    .route-row.active,
+    .departure-row.active { background: rgba(21, 101, 192, 0.08); }
+
+    .route-swatch {
+      width: 7px;
+      height: 32px;
+      border-radius: 999px;
+    }
+
+    .row-title {
+      display: block;
+      min-width: 0;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .row-sub {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .row-meta {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .maplibregl-ctrl-attrib {
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
       font-size: 10px;
     }
 
-    .future-stop-ring {
-      fill: rgba(21, 101, 192, 0.12);
-      stroke: rgba(21, 101, 192, 0.82);
-      stroke-width: 1.9;
-      stroke-dasharray: 4 4;
-      pointer-events: none;
-    }
-
-    @media (max-width: 1100px) {
-      body {
-        height: auto;
-        overflow: auto;
+    @media (max-width: 980px) {
+      header {
+        grid-template-columns: minmax(0, 1fr) auto;
       }
-      .lobby-shell {
+      .clock { display: none; }
+      main {
         grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr) 310px;
       }
-      .app {
-        height: auto;
-      }
-      .shell {
-        grid-template-columns: 1fr;
-        height: auto;
-      }
-      .panel {
-        min-height: 560px;
-      }
-      .sidebar {
-        min-height: 620px;
+      aside {
+        border-left: 0;
+        border-top: 1px solid rgba(213, 221, 232, 0.96);
       }
     }
   </style>
 </head>
 <body>
-  <section id="lobby" class="lobby">
-    <div class="lobby-shell">
-      <section class="lobby-panel lobby-hero">
-        <h1>OniChase V3</h1>
-        <p>
-          Nationwide Tokyo Rail playable map. Enter through a dedicated lobby, then move into the main game with a cleaner board:
-          single-player for local testing, or multiplayer with a room-based authoritative server.
-        </p>
-        <div class="lobby-badges">
-          <div class="lobby-badge">GIS-first map</div>
-          <div class="lobby-badge">Real train names</div>
-          <div class="lobby-badge">Hourly replanning</div>
-          <div class="lobby-badge">Runner / Hunter</div>
-        </div>
-      </section>
-
-      <section class="lobby-stack">
-        <div class="lobby-card">
-          <h2>Single Player</h2>
-          <p>Open a local test match immediately and play as either side on the same browser.</p>
-          <div class="lobby-actions">
-            <button id="singleRunnerButton" class="primary">Play as Runner</button>
-            <button id="singleHunterButton" class="secondary">Play as Hunter</button>
-          </div>
-        </div>
-
-        <div class="lobby-card">
-          <h2>Multiplayer</h2>
-          <p>Create or join a room, claim one seat, then enter the game once the authoritative room server accepts you.</p>
-          <div class="seat-toggle">
-            <button id="lobbyRunnerSeatButton" class="active">Runner</button>
-            <button id="lobbyHunterSeatButton">Hunter</button>
-          </div>
-          <div class="lobby-fields">
-            <div class="lobby-field">
-              <label for="roomIdInput">Room ID</label>
-              <input id="roomIdInput" placeholder="ROOM ID" aria-label="Room ID" autocomplete="off" autocapitalize="characters" spellcheck="false" />
-            </div>
-          </div>
-          <div class="lobby-actions">
-            <button id="createRoomButton" class="primary">Create Room</button>
-            <button id="joinRoomButton" class="secondary">Join Room</button>
-          </div>
-          <div class="room-code-row">
-            <div id="lobbyRoomCodePill" class="room-code-pill empty">No Room Yet</div>
-            <button id="copyRoomCodeButton" class="secondary">Copy Room ID</button>
-          </div>
-          <div id="lobbyStatus" class="lobby-status">Choose a seat, then create a room or enter an existing room code.</div>
-        </div>
-      </section>
-    </div>
-  </section>
-
-  <section id="readyRoom" class="ready-room hidden">
-    <div class="ready-shell">
-      <section class="ready-panel">
-        <h2>Match Room</h2>
-        <p>
-          Share the room code, wait for both seats to join, then both players choose ready. The match will start automatically once both sides are ready.
-        </p>
-        <div class="room-code-row">
-          <div id="readyRoomCodePill" class="room-code-pill empty">No Room Yet</div>
-          <button id="copyReadyRoomCodeButton" class="secondary">Copy Room ID</button>
-        </div>
-        <div id="readyRoomStatus" class="lobby-status" style="margin-top:18px;">Waiting for room status.</div>
-      </section>
-
-      <section class="ready-panel">
-        <h2>Seats</h2>
-        <p>Use this waiting room before entering the main map. You can safely wait here until both players are connected and ready.</p>
-        <div class="ready-grid">
-          <div>
-            <div class="section-label">Your Seat</div>
-            <div class="seat-toggle">
-              <button id="readyRunnerSeatButton" class="active">Runner</button>
-              <button id="readyHunterSeatButton">Hunter</button>
-            </div>
-          </div>
-          <div id="readyRunnerCard" class="ready-seat-card">
-            <strong>Runner</strong>
-            <span>Waiting for player.</span>
-          </div>
-          <div id="readyHunterCard" class="ready-seat-card">
-            <strong>Hunter</strong>
-            <span>Waiting for player.</span>
-          </div>
-        </div>
-        <div class="ready-actions">
-          <button id="readyRoomReadyButton" class="primary">Ready</button>
-          <button id="readyRoomUnreadyButton" class="secondary">Unready</button>
-          <button id="readyRoomLobbyButton" class="secondary">Back to Lobby</button>
-        </div>
-      </section>
-    </div>
-  </section>
-
-  <main id="app" class="app hidden">
-    <header class="topbar">
-      <div class="topbar-spacer"></div>
-      <div class="command-center">
-        <div class="command-meta">Game Clock</div>
-        <div class="command-time" id="commandTimeDisplay">06:00</div>
-        <div class="command-phase">
-          <span class="phase-chip" id="phaseChip">Planning</span>
-          <span id="phaseClock">PLANNING 60s · Game starts 06:00</span>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <h1>OniChase V3 MapLibre</h1>
+          <p>WebGL renderer experiment for the real Tokyo railway substrate</p>
         </div>
       </div>
-      <div class="toolbar compact">
-        <div class="mode-toggle">
-          <button id="runnerModeButton" class="active runner">Runner</button>
-          <button id="hunterModeButton">Hunter</button>
-        </div>
-        <button id="startGameButton" class="primary">Start Game</button>
-        <button id="pauseGameButton" class="secondary">Pause/Resume</button>
+      <div class="clock">
+        <strong>06:00</strong>
+        <span>Renderer Spike</span>
       </div>
+      <nav class="toolbar" aria-label="Map controls">
+        <button id="corridor-button" class="active" type="button">Corridor</button>
+        <button id="service-button" type="button">Service</button>
+        <button id="fit-button" type="button">Fit</button>
+        <a class="button" href="./v3.html">SVG V3</a>
+      </nav>
     </header>
 
-    <section class="shell">
-      <section class="panel map-panel">
-        <div class="map-head">
-          <div>
-            <h2 id="map-title">Corridor View</h2>
-            <p id="map-subtitle">Lower-zoom structural map. Physical track centerlines stay clean while the station hierarchy drives label density.</p>
-          </div>
-          <div class="stats" id="map-stats"></div>
-        </div>
-        <div class="map-wrap">
-          <svg id="map" viewBox="0 0 1200 820" aria-label="V3 nationwide Tokyo Rail map"></svg>
+    <main>
+      <section class="map-wrap">
+        <div id="map"></div>
+        <div class="map-badge">
+          <div class="pill" id="load-pill">Loading map bundle...</div>
+          <div class="pill" id="zoom-pill">Zoom n/a</div>
+          <div class="pill">MapLibre GL JS</div>
         </div>
       </section>
 
-      <aside class="panel sidebar">
-        <section class="temporarily-hidden">
-          <div class="section-label">Session</div>
-          <div id="roomStatus" class="info-box">Single-player local mode.</div>
-          <div class="toolbar" style="justify-content:flex-start; margin-top:12px;">
-            <button id="loadPresetButton" class="secondary">Load Test Preset</button>
-            <button id="runSimulationButton" class="secondary">Run Simulation</button>
-            <button id="resetPlanButton" class="secondary">Reset Plan</button>
-            <div class="mode-toggle">
-              <button id="corridor-btn" class="active">Corridor</button>
-              <button id="service-btn">Service</button>
+      <aside>
+        <div class="side-head">
+          <h2>Map Renderer</h2>
+          <p>This page only migrates the v3 map renderer: WebGL lines, collision-aware labels, station click, route highlight, and train stop highlight. Gameplay logic remains on the existing v2-compatible path.</p>
+        </div>
+
+        <div class="stats" id="stats">
+          <div class="stat"><strong>...</strong><span>Stations</span></div>
+          <div class="stat"><strong>...</strong><span>Routes</span></div>
+          <div class="stat"><strong>...</strong><span>Tracks</span></div>
+          <div class="stat"><strong>...</strong><span>Trips</span></div>
+        </div>
+
+        <div class="scroll">
+          <section>
+            <div class="section-label">Selected Station</div>
+            <div class="info-box" id="station-card">Click a station dot on the map. Labels are placed by MapLibre collision avoidance rather than SVG text repainting.</div>
+          </section>
+
+          <section>
+            <div class="section-label">Selected Route</div>
+            <div class="info-box" id="route-card">Click a colored service line or a route row. The selected route becomes a high-priority MapLibre layer.</div>
+          </section>
+
+          <section>
+            <div class="section-label">Departures At Station</div>
+            <div class="departure-list" id="departures">
+              <div class="info-box">Select a station to lazy-load timetable departures.</div>
             </div>
-            <button id="fit-btn" class="secondary">Fit Map</button>
-          </div>
-        </section>
+          </section>
 
-        <section class="temporarily-hidden">
-          <div class="section-label">Bundle</div>
-          <div class="overview-grid" id="overview-grid"></div>
-        </section>
-
-        <section class="temporarily-hidden">
-          <div class="section-label">Room</div>
-          <div id="roomInfoCodePill" class="room-code-pill in-panel empty">Local Session</div>
-          <div id="roomInfo" class="info-box">Single-player local mode.</div>
-          <div class="room-actions">
-            <button id="copyRoomCodeInGameButton" class="secondary">Copy Room ID</button>
-            <button id="submitPlanButton" class="secondary">Submit Plan</button>
-            <button id="readyButton" class="secondary">Ready</button>
-            <button id="openLobbyButton" class="secondary">Lobby</button>
-          </div>
-        </section>
-
-        <section>
-          <div class="section-label">Current Plan</div>
-          <div id="cursor-info" class="info-box"></div>
-        </section>
-
-        <section class="temporarily-hidden">
-          <div class="section-label">Selected Station</div>
-          <div id="selected-station" class="empty">Click a station to inspect its station group, connected lines, and service footprint.</div>
-        </section>
-
-        <section>
-          <div class="section-label">Selected Route</div>
-          <div id="selected-route" class="empty">Click a route card or legend chip to highlight one service family across the whole map.</div>
-        </section>
-
-        <section>
-          <div class="section-label">Train Outlook</div>
-          <div id="train-outlook" class="info-box">No train selected yet.</div>
-        </section>
-
-        <section class="temporarily-hidden">
-          <div class="section-label">Plan Board</div>
-          <div id="plan-board-info" class="info-box">No legs yet.</div>
-        </section>
-
-        <section class="lists">
-          <div>
-            <div class="section-label">Visible Services</div>
-            <div id="visible-services" class="card-list"></div>
-          </div>
-          <div>
-            <div class="section-label">Selected Station Trips</div>
-            <div id="station-trips" class="card-list"></div>
-          </div>
-          <div>
-            <div class="section-label">Route Departures At Station</div>
-            <div id="route-station-departures" class="card-list"></div>
-          </div>
-        </section>
-
-        <section>
-          <div class="section-label">Result</div>
-          <div id="result-info" class="info-box">No result yet.</div>
-          <div style="margin-top:12px;">
-            <div class="section-label">Replay Events</div>
-            <div id="result-event-list" class="card-list"></div>
-          </div>
-          <div id="result-detail" class="info-box" style="margin-top:12px;">Select an event to inspect it.</div>
-        </section>
-
-        <section>
-          <div class="section-label">Legend</div>
-          <div class="legend" id="legend"></div>
-        </section>
+          <section>
+            <div class="section-label">Service Routes</div>
+            <div class="route-list" id="route-list"></div>
+          </section>
+        </div>
       </aside>
-    </section>
-  </main>
+    </main>
+  </div>
 
   <script>
-    const DEFAULT_DATA_URL = window.location.pathname.includes('/ui/')
-      ? '../data/v3_shinkansen_bundle.json'
-      : './data/v3_shinkansen_bundle.json';
-    const DATA_URL = window.ONICHASE_DATA_URL || DEFAULT_DATA_URL;
-    const TIMETABLE_URL = window.ONICHASE_TIMETABLE_URL || '';
-    const ONLINE_CONFIG_URL = window.location.pathname.includes('/ui/')
-      ? '../docs/data/v2_online_config.json'.replace('../docs/', '../')
-      : './data/v2_online_config.json';
-    const DEFAULT_TILE_MANIFEST_URL = window.location.pathname.includes('/ui/')
-      ? '../docs/data/v3_tiles/manifest.json'.replace('../docs/', '../')
-      : './data/v3_tiles/manifest.json';
-    const TILE_MANIFEST_URL = window.ONICHASE_TILE_MANIFEST_URL === ''
-      ? ''
-      : (window.ONICHASE_TILE_MANIFEST_URL || DEFAULT_TILE_MANIFEST_URL);
-    const DEFAULT_TILE_BASE_URL = window.location.pathname.includes('/ui/')
-      ? '../docs/data/v3_tiles/'.replace('../docs/', '../')
-      : './data/v3_tiles/';
-    const TILE_BASE_URL = window.ONICHASE_TILE_BASE_URL || DEFAULT_TILE_BASE_URL;
+    const MAP_DATA_URL = './data/v3_tokyo_map_bundle.json.gz';
+    const TIMETABLE_URL = './data/v3_tokyo_timetable_bundle.json.gz';
+    const NONE_FILTER = ['==', ['get', 'id'], '__none__'];
+    const NONE_STATION_FILTER = ['==', ['get', 'station_group_id'], '__none__'];
+    const TOKYO_CENTER = [139.7671, 35.6812];
+
+    const state = {
+      bundle: null,
+      map: null,
+      viewMode: 'corridor',
+      selectedStationGroupId: null,
+      selectedRouteId: null,
+      selectedTripId: null,
+      selectedTripStopIds: [],
+      stationGroupById: new Map(),
+      stationByGroupId: new Map(),
+      labelByGroupId: new Map(),
+      routeById: new Map(),
+      routeStationSetById: new Map(),
+      stationRouteIdsByGroupId: new Map(),
+      tripById: new Map(),
+      stationTripsByGroupId: new Map(),
+      timetableStatus: 'idle',
+    };
+
+    const loadPill = document.getElementById('load-pill');
+    const zoomPill = document.getElementById('zoom-pill');
+    const statsEl = document.getElementById('stats');
+    const stationCardEl = document.getElementById('station-card');
+    const routeCardEl = document.getElementById('route-card');
+    const routeListEl = document.getElementById('route-list');
+    const departuresEl = document.getElementById('departures');
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function secToClock(seconds) {
+      if (!Number.isFinite(seconds)) return 'n/a';
+      const totalMinutes = Math.floor(seconds / 60);
+      const hour = Math.floor(totalMinutes / 60) % 24;
+      const minute = totalMinutes % 60;
+      return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    }
 
     async function fetchJsonMaybeGz(url) {
       const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to load ${url}: ${response.status}`);
-      }
-      if (!url.endsWith('.gz')) {
-        return response.json();
-      }
+      if (!response.ok) throw new Error(`Failed to load ${url}: ${response.status}`);
+      if (!url.endsWith('.gz')) return response.json();
       if (!('DecompressionStream' in window)) {
-        throw new Error('This browser cannot decompress gzip data. Please use a modern Chromium, Firefox, or Safari version.');
+        throw new Error('This browser cannot decompress gzip data. Please use a modern browser.');
       }
       const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
       const text = await new Response(stream).text();
       return JSON.parse(text);
     }
 
-    const SERVICE_COLORS = {};
-    const state = {
-      bundle: null,
-      selectedStationGroupId: null,
-      selectedRouteId: null,
-      activeMode: 'runner',
-      players: {},
-      pendingTripIds: { runner: null, hunter: null },
-      phase: 'PLANNING',
-      planningSecondsRemaining: 60,
-      currentGameMinute: 360,
-      startTime: '06:00',
-      endTime: '18:00',
-      nextPlanningMinute: 420,
-      latestResult: null,
-      selectedResultEventIndex: 0,
-      liveCapture: null,
-      clockRunning: false,
-      tickHandle: null,
-      viewMode: 'corridor',
-      zoom: 1,
-      minZoom: 0.85,
-      maxZoom: 40,
-      panX: 0,
-      panY: 0,
-      projection: null,
-      labelEntries: [],
-      labelEntryByGroupId: new Map(),
-      stationPoints: [],
-      stationPointByGroupId: new Map(),
-      stationGroupById: new Map(),
-      physicalStationByGroupId: new Map(),
-      routeById: new Map(),
-      routeTripsById: new Map(),
-      routeStationSetById: new Map(),
-      stationTripsByGroupId: new Map(),
-      stationRoutesByGroupId: new Map(),
-      trackLinesByStationGroupId: new Map(),
-      tripById: new Map(),
-      serviceGeometryByRouteId: new Map(),
-      timetableStatus: 'ready',
-      tileManifest: null,
-      tileCache: new Map(),
-      visibleTileData: { stations: [], track_centerlines: [], service_paths: [] },
-      currentTileSignature: '',
-      tileRefreshHandle: null,
-      tileRefreshInFlight: false,
-      tileLayersReady: false,
-      hoveredTripId: null,
-      dragging: false,
-      dragStartX: 0,
-      dragStartY: 0,
-      panStartX: 0,
-      panStartY: 0,
-      online: {
-        serverUrl: '',
-        roomId: '',
-        seat: null,
-        token: '',
-        pollingHandle: null,
-        lastRoom: null,
-        presences: { runner: null, hunter: null },
-      }
-    };
-
-    const svg = document.getElementById('map');
-    const mapTitle = document.getElementById('map-title');
-    const mapSubtitle = document.getElementById('map-subtitle');
-    const mapStats = document.getElementById('map-stats');
-    const overviewGrid = document.getElementById('overview-grid');
-    const selectedStationEl = document.getElementById('selected-station');
-    const selectedRouteEl = document.getElementById('selected-route');
-    const cursorInfoEl = document.getElementById('cursor-info');
-    const trainOutlookEl = document.getElementById('train-outlook');
-    const planBoardInfoEl = document.getElementById('plan-board-info');
-    const visibleServicesEl = document.getElementById('visible-services');
-    const stationTripsEl = document.getElementById('station-trips');
-    const routeStationDeparturesEl = document.getElementById('route-station-departures');
-    const resultInfoEl = document.getElementById('result-info');
-    const resultEventListEl = document.getElementById('result-event-list');
-    const resultDetailEl = document.getElementById('result-detail');
-    const legendEl = document.getElementById('legend');
-    const phaseClockEl = document.getElementById('phaseClock');
-    const commandTimeDisplayEl = document.getElementById('commandTimeDisplay');
-    const phaseChipEl = document.getElementById('phaseChip');
-    const lobbyEl = document.getElementById('lobby');
-    const readyRoomEl = document.getElementById('readyRoom');
-    const appEl = document.getElementById('app');
-    const roomIdInput = document.getElementById('roomIdInput');
-    const roomStatusEl = document.getElementById('roomStatus');
-    const roomInfoEl = document.getElementById('roomInfo');
-    const roomInfoCodePillEl = document.getElementById('roomInfoCodePill');
-    const lobbyStatusEl = document.getElementById('lobbyStatus');
-    const lobbyRoomCodePillEl = document.getElementById('lobbyRoomCodePill');
-    const readyRoomCodePillEl = document.getElementById('readyRoomCodePill');
-    const readyRoomStatusEl = document.getElementById('readyRoomStatus');
-    const readyRunnerCardEl = document.getElementById('readyRunnerCard');
-    const readyHunterCardEl = document.getElementById('readyHunterCard');
-
-    document.getElementById('corridor-btn').addEventListener('click', () => setViewMode('corridor'));
-    document.getElementById('service-btn').addEventListener('click', () => setViewMode('service'));
-    document.getElementById('fit-btn').addEventListener('click', resetViewport);
-    document.getElementById('runnerModeButton').addEventListener('click', () => setActiveMode('runner'));
-    document.getElementById('hunterModeButton').addEventListener('click', () => setActiveMode('hunter'));
-    document.getElementById('singleRunnerButton').addEventListener('click', () => enterSinglePlayer('runner'));
-    document.getElementById('singleHunterButton').addEventListener('click', () => enterSinglePlayer('hunter'));
-    document.getElementById('lobbyRunnerSeatButton').addEventListener('click', () => setLobbySeat('runner'));
-    document.getElementById('lobbyHunterSeatButton').addEventListener('click', () => setLobbySeat('hunter'));
-    document.getElementById('readyRunnerSeatButton').addEventListener('click', () => switchReadyRoomSeat('runner'));
-    document.getElementById('readyHunterSeatButton').addEventListener('click', () => switchReadyRoomSeat('hunter'));
-    document.getElementById('createRoomButton').addEventListener('click', createRoomAndJoinSeat);
-    document.getElementById('joinRoomButton').addEventListener('click', joinExistingRoom);
-    document.getElementById('copyRoomCodeButton').addEventListener('click', copyCurrentRoomId);
-    document.getElementById('copyRoomCodeInGameButton').addEventListener('click', copyCurrentRoomId);
-    document.getElementById('copyReadyRoomCodeButton').addEventListener('click', copyCurrentRoomId);
-    document.getElementById('submitPlanButton').addEventListener('click', submitCurrentPlanToRoom);
-    document.getElementById('readyButton').addEventListener('click', markSeatReady);
-    document.getElementById('openLobbyButton').addEventListener('click', openLobby);
-    document.getElementById('readyRoomReadyButton').addEventListener('click', markSeatReady);
-    document.getElementById('readyRoomUnreadyButton').addEventListener('click', markSeatUnready);
-    document.getElementById('readyRoomLobbyButton').addEventListener('click', openLobby);
-    document.getElementById('loadPresetButton').addEventListener('click', applyTestPreset);
-    document.getElementById('startGameButton').addEventListener('click', startGameNow);
-    document.getElementById('pauseGameButton').addEventListener('click', toggleClock);
-    document.getElementById('runSimulationButton').addEventListener('click', runSimulation);
-    document.getElementById('resetPlanButton').addEventListener('click', resetPlan);
-
-    svg.addEventListener('mousedown', (event) => {
-      state.dragging = true;
-      state.dragStartX = event.clientX;
-      state.dragStartY = event.clientY;
-      state.panStartX = state.panX;
-      state.panStartY = state.panY;
-      svg.classList.add('dragging');
-    });
-
-    window.addEventListener('mouseup', () => {
-      state.dragging = false;
-      svg.classList.remove('dragging');
-    });
-
-    window.addEventListener('mousemove', (event) => {
-      if (!state.dragging) return;
-      state.panX = state.panStartX + (event.clientX - state.dragStartX);
-      state.panY = state.panStartY + (event.clientY - state.dragStartY);
-      applyViewport();
-    });
-
-    svg.addEventListener('wheel', (event) => {
-      event.preventDefault();
-      const rect = svg.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left;
-      const mouseY = event.clientY - rect.top;
-      const prevZoom = state.zoom;
-      const factor = event.deltaY < 0 ? 1.12 : 0.9;
-      state.zoom = clamp(state.zoom * factor, state.minZoom, state.maxZoom);
-      const scaleChange = state.zoom / prevZoom;
-      state.panX = mouseX - (mouseX - state.panX) * scaleChange;
-      state.panY = mouseY - (mouseY - state.panY) * scaleChange;
-      applyViewport();
-    }, { passive: false });
-
-    function clamp(value, min, max) {
-      return Math.max(min, Math.min(max, value));
+    function displayNameForGroup(stationGroupId) {
+      const label = state.labelByGroupId.get(stationGroupId);
+      const group = state.stationGroupById.get(stationGroupId);
+      return label?.displayNameEn || group?.names?.en || group?.primaryName || stationGroupId;
     }
 
-    function onlineActive() {
-      return Boolean(state.online.roomId && state.online.seat && state.online.token);
-    }
-
-    function updateLobbyRoomCode(roomId) {
-      const value = (roomId || '').trim().toUpperCase();
-      if (!value) {
-        lobbyRoomCodePillEl.textContent = 'No Room Yet';
-        lobbyRoomCodePillEl.className = 'room-code-pill empty';
-        readyRoomCodePillEl.textContent = 'No Room Yet';
-        readyRoomCodePillEl.className = 'room-code-pill empty';
-        return;
-      }
-      lobbyRoomCodePillEl.textContent = value;
-      lobbyRoomCodePillEl.className = 'room-code-pill';
-      readyRoomCodePillEl.textContent = value;
-      readyRoomCodePillEl.className = 'room-code-pill';
-    }
-
-    function updateInGameRoomCode(roomId) {
-      const value = (roomId || '').trim().toUpperCase();
-      if (!value) {
-        roomInfoCodePillEl.textContent = 'Local Session';
-        roomInfoCodePillEl.className = 'room-code-pill in-panel empty';
-        return;
-      }
-      roomInfoCodePillEl.textContent = `ROOM ${value}`;
-      roomInfoCodePillEl.className = 'room-code-pill in-panel';
-    }
-
-    async function copyCurrentRoomId() {
-      const value = (state.online.roomId || roomIdInput.value || '').trim().toUpperCase();
-      if (!value) {
-        lobbyStatusEl.textContent = 'No room id to copy yet.';
-        return;
-      }
-      try {
-        if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(value);
-        } else {
-          roomIdInput.focus();
-          roomIdInput.select();
-          document.execCommand('copy');
-        }
-        lobbyStatusEl.textContent = `Copied room ${value}. Share it with your opponent.`;
-      } catch (_error) {
-        lobbyStatusEl.textContent = `Copy failed. Room code: ${value}`;
-      }
-    }
-
-    function roomStatusSummary(room) {
-      const selfSeat = room.self?.seat || state.online.seat || state.activeMode;
-      const opponentSeat = selfSeat === 'runner' ? 'hunter' : 'runner';
-      const selfReady = room.self?.ready ? 'ready' : 'not ready';
-      const opponentJoined = Boolean(room.opponent);
-      const opponentReady = room.opponent?.ready ? 'ready' : 'not ready';
-      const joinedText = opponentJoined ? `${opponentSeat.toUpperCase()} joined` : `Waiting for ${opponentSeat.toUpperCase()}`;
-      const readyText = opponentJoined ? `${opponentSeat.toUpperCase()} ${opponentReady}` : 'No opponent yet';
-      return {
-        short: `Room ${room.room_id} · ${selfSeat.toUpperCase()} ${selfReady} · ${joinedText}`,
-        detailed: [
-          `Room: ${room.room_id}`,
-          `Seat: ${selfSeat.toUpperCase()}`,
-          `You: ${selfReady}`,
-          `Opponent: ${joinedText}`,
-          `Opponent status: ${readyText}`,
-          `Phase: ${room.phase}`,
-          `Time: ${minutesToHhmm(room.current_game_minute)}`,
-        ].join('\n'),
-      };
-    }
-
-    function seatStatusLine(player, seat) {
-      if (!player?.connected) return `${seat.toUpperCase()} · waiting for player`;
-      return `${seat.toUpperCase()} · ${player.ready ? 'ready' : 'not ready'}`;
-    }
-
-    function renderReadyRoom(room) {
-      if (!room) return;
-      const runner = room.players.runner;
-      const hunter = room.players.hunter;
-      readyRunnerCardEl.className = `ready-seat-card${runner?.ready ? ' ready' : ''}`;
-      readyHunterCardEl.className = `ready-seat-card${hunter?.ready ? ' ready' : ''}`;
-      readyRunnerCardEl.innerHTML = `
-        <strong>Runner</strong>
-        <span>${runner?.connected ? 'Player joined.' : 'Waiting for player.'}</span>
-        <span>${runner?.ready ? 'Ready to start.' : 'Not ready yet.'}</span>
-      `;
-      readyHunterCardEl.innerHTML = `
-        <strong>Hunter</strong>
-        <span>${hunter?.connected ? 'Player joined.' : 'Waiting for player.'}</span>
-        <span>${hunter?.ready ? 'Ready to start.' : 'Not ready yet.'}</span>
-      `;
-      const bothJoined = Boolean(runner?.connected && hunter?.connected);
-      const bothReady = Boolean(runner?.ready && hunter?.ready);
-      const youReady = room.self?.ready;
-      setLobbySeat(room.self?.seat || state.activeMode);
-      readyRoomStatusEl.textContent = bothReady
-        ? 'Both players are ready. Starting match...'
-        : bothJoined
-          ? `Room ${room.room_id} is full. ${youReady ? 'You are ready. Waiting for the other player.' : 'Choose ready when you are set.'}`
-          : `${seatStatusLine(room.self, room.self?.seat || state.activeMode)}. You can ready now and wait for the other player to join.`;
-      document.getElementById('readyRoomReadyButton').disabled = !!youReady;
-      document.getElementById('readyRoomUnreadyButton').disabled = !youReady;
-      document.getElementById('readyRunnerSeatButton').disabled = !!state.online.seat && state.online.seat !== 'runner';
-      document.getElementById('readyHunterSeatButton').disabled = !!state.online.seat && state.online.seat !== 'hunter';
-    }
-
-    function setLobbySeat(seat) {
-      state.activeMode = seat;
-      if (!state.online.roomId) {
-        state.startTime = seat === 'hunter' ? '07:00' : '06:00';
-        state.endTime = '18:00';
-      }
-      document.getElementById('lobbyRunnerSeatButton').className = seat === 'runner' ? 'active' : '';
-      document.getElementById('lobbyHunterSeatButton').className = seat === 'hunter' ? 'active' : '';
-      document.getElementById('readyRunnerSeatButton').className = seat === 'runner' ? 'active' : '';
-      document.getElementById('readyHunterSeatButton').className = seat === 'hunter' ? 'active' : '';
-      document.getElementById('runnerModeButton').className = seat === 'runner' ? 'active runner' : '';
-      document.getElementById('hunterModeButton').className = seat === 'hunter' ? 'active hunter' : '';
-    }
-
-    async function switchReadyRoomSeat(seat) {
-      setLobbySeat(seat);
-      if (!state.online.roomId || !state.online.serverUrl) return;
-      if (state.online.seat === seat) return;
-      if (state.online.seat && state.online.token) {
-        readyRoomStatusEl.textContent = `You already claimed ${state.online.seat.toUpperCase()} in this room. Go back to the lobby if you want to enter as ${seat.toUpperCase()}.`;
-        setLobbySeat(state.online.seat);
-        return;
-      }
-      try {
-        state.online.token = loadOnlineToken(state.online.roomId, seat);
-        const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/join`, {
-          method: 'POST',
-          body: JSON.stringify({ seat, display_name: seat.toUpperCase(), token: state.online.token || null }),
-        });
-        if (data.token) {
-          state.online.token = data.token;
-          saveOnlineToken(state.online.roomId, seat, data.token);
-        }
-        syncStateFromRoom(data.room);
-      } catch (error) {
-        readyRoomStatusEl.textContent = `Could not switch to ${seat.toUpperCase()}: ${String(error)}`;
-      }
-    }
-
-    function closeLobby() {
-      lobbyEl.classList.add('hidden');
-    }
-
-    function openReadyRoom() {
-      lobbyEl.classList.add('hidden');
-      readyRoomEl.classList.remove('hidden');
-      appEl.classList.add('hidden');
-    }
-
-    function closeReadyRoom() {
-      readyRoomEl.classList.add('hidden');
-    }
-
-    function openApp() {
-      lobbyEl.classList.add('hidden');
-      readyRoomEl.classList.add('hidden');
-      appEl.classList.remove('hidden');
-    }
-
-    function openLobby() {
-      lobbyEl.classList.remove('hidden');
-      readyRoomEl.classList.add('hidden');
-      appEl.classList.add('hidden');
-      if (!state.online.roomId) roomIdInput.value = '';
-      updateLobbyRoomCode(state.online.roomId || roomIdInput.value || '');
-      if (onlineActive()) {
-        lobbyStatusEl.textContent = `Reconnect as ${state.online.seat?.toUpperCase() || 'seat'} in room ${state.online.roomId}.`;
-      } else {
-        lobbyStatusEl.textContent = 'Choose a seat, then create a room or enter an existing room code.';
-      }
-    }
-
-    function enterSinglePlayer(seat) {
-      stopOnlinePolling();
-      state.online.roomId = '';
-      state.online.seat = null;
-      state.online.token = '';
-      state.online.lastRoom = null;
-      state.online.presences = { runner: null, hunter: null };
-      roomStatusEl.textContent = 'Single-player local mode.';
-      updateInGameRoomCode('');
-      roomInfoEl.textContent = 'Single-player local mode.\nNo room code needed.\nUse Start Game after planning your route.';
-      updateLobbyRoomCode('');
-      setActiveMode(seat);
-      applyTestPreset();
-      openApp();
-      render();
-    }
-
-    function roomTokenStorageKey(roomId, seat) {
-      return `onichase-v2-room-token:${roomId}:${seat}`;
-    }
-
-    function configuredServerUrl() {
-      const queryValue = new URLSearchParams(window.location.search).get('server');
-      const storedValue = window.localStorage.getItem('onichase-v2-room-server-url');
-      const candidate = queryValue || storedValue || state.online.serverUrl || '';
-      return candidate.trim().replace(/\/+$/, '');
-    }
-
-    function saveOnlineToken(roomId, seat, token) {
-      if (!roomId || !seat || !token) return;
-      window.localStorage.setItem(roomTokenStorageKey(roomId, seat), token);
-    }
-
-    function loadOnlineToken(roomId, seat) {
-      if (!roomId || !seat) return '';
-      return window.localStorage.getItem(roomTokenStorageKey(roomId, seat)) || '';
-    }
-
-    function stopOnlinePolling() {
-      if (state.online.pollingHandle) window.clearTimeout(state.online.pollingHandle);
-      state.online.pollingHandle = null;
-    }
-
-    function scheduleOnlinePoll() {
-      if (!onlineActive()) return;
-      stopOnlinePolling();
-      state.online.pollingHandle = window.setTimeout(() => {
-        syncRoomState().catch((error) => {
-          roomStatusEl.textContent = `Room sync failed: ${String(error)}`;
-          lobbyStatusEl.textContent = `Room sync failed: ${String(error)}`;
-        });
-      }, 500);
-    }
-
-    async function apiJson(url, options = {}) {
-      const response = await fetch(url, {
-        headers: { 'Content-Type': 'application/json' },
-        ...options,
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
-      return data;
-    }
-
-    function describeRoomError(error) {
-      const text = String(error || '');
-      if (text.includes('seat_occupied')) {
-        return `That seat is already occupied. Switch to the other seat and try Join Room again.`;
-      }
-      if (text.includes('room_not_found')) {
-        return 'Room not found. Check the room id and try again.';
-      }
-      if (text.includes('invalid_token')) {
-        return 'This browser does not own that seat. Switch seat or rejoin the room.';
-      }
-      if (text.includes('Failed to fetch')) {
-        return 'Could not reach the multiplayer server. Please try again in a moment.';
-      }
-      return text;
-    }
-
-    function presenceToPreview(playerId, presence) {
-      if (!presence || presence.kind === 'HIDDEN') return null;
-      const currentTrip = presence.trip_id ? state.tripById.get(presence.trip_id) || null : null;
-      let mapPosition = null;
-      let mapStationGroupId = null;
-      if (presence.map_position?.kind === 'STATION') {
-        mapStationGroupId = presence.map_position.station_group_id;
-        mapPosition = stationPointByGroupId(mapStationGroupId);
-      } else if (presence.map_position?.kind === 'SEGMENT') {
-        const progress = presence.map_position.progress ?? 0;
-        const routeId = currentTrip?.routeId || null;
-        mapPosition = routeId
-          ? routePositionAlongPath(routeId, presence.map_position.from_station_group_id, presence.map_position.to_station_group_id, progress)
-          : null;
-        if (!mapPosition) {
-          const from = stationPointByGroupId(presence.map_position.from_station_group_id);
-          const to = stationPointByGroupId(presence.map_position.to_station_group_id);
-          if (from && to) {
-            mapPosition = {
-              x: from.x + (to.x - from.x) * progress,
-              y: from.y + (to.y - from.y) * progress,
-            };
-          }
-        }
-        mapStationGroupId = presence.map_position.to_station_group_id;
-      }
-      return {
-        currentMinute: hhmmToMinutes(presence.time_hhmm),
-        currentTime: presence.time_hhmm,
-        currentState: presence.kind === 'NODE'
-          ? { kind: 'NODE', stationGroupId: presence.station_group_id }
-          : { kind: 'TRAIN', tripId: presence.trip_id || null },
-        currentTrip,
-        currentBoardStop: null,
-        resolvedSteps: [],
-        mapPosition,
-        mapStationGroupId,
-        displayLabel: presence.station_label || presence.service_label || null,
-        visibility: presence.visibility || 'full',
-      };
-    }
-
-    function syncStateFromRoom(room) {
-      state.online.lastRoom = room;
-      state.online.roomId = room.room_id;
-      roomIdInput.value = room.room_id;
-      updateLobbyRoomCode(room.room_id);
-      updateInGameRoomCode(room.room_id);
-      state.phase = room.phase;
-      state.startTime = room.start_time_hhmm;
-      state.endTime = room.end_time_hhmm;
-      state.currentGameMinute = room.current_game_minute;
-      state.nextPlanningMinute = room.next_planning_minute;
-      if (room.planning_seconds_remaining !== null && room.planning_seconds_remaining !== undefined) {
-        state.planningSecondsRemaining = room.planning_seconds_remaining;
-      }
-      state.clockRunning = false;
-      if (state.tickHandle) {
-        window.clearTimeout(state.tickHandle);
-        state.tickHandle = null;
-      }
-      state.liveCapture = room.capture || null;
-      if (room.self) {
-        state.activeMode = room.self.seat;
-        state.online.seat = room.self.seat;
-        if (room.self.session_token && room.self.session_token !== state.online.token) {
-          state.online.token = room.self.session_token;
-          saveOnlineToken(room.room_id, room.self.seat, room.self.session_token);
-        }
-        state.players[room.self.seat] = {
-          start_station_id: room.self.start_station_id,
-          input_mode: 'plan',
-          steps: room.self.steps || [],
-        };
-        state.online.presences[room.self.seat] = room.self.presence || null;
-      }
-      if (room.opponent) {
-        const opponentSeat = room.opponent.seat;
-        state.players[opponentSeat] = {
-          start_station_id: state.players[opponentSeat]?.start_station_id || null,
-          input_mode: 'actions',
-          steps: [],
-        };
-        state.online.presences[opponentSeat] = room.opponent.presence || null;
-      }
-      const roomSummary = roomStatusSummary(room);
-      roomStatusEl.textContent = roomSummary.short;
-      roomInfoEl.textContent = roomSummary.detailed;
-      lobbyStatusEl.textContent = `Connected to room ${room.room_id} as ${state.online.seat?.toUpperCase() || 'seat'}. ${room.opponent ? 'Opponent present.' : 'Waiting for opponent.'}`;
-      renderReadyRoom(room);
-      if (room.match_started || room.phase === 'LIVE' || room.phase === 'ENDED') {
-        openApp();
-        render();
-      } else {
-        openReadyRoom();
-      }
-      scheduleOnlinePoll();
-    }
-
-    async function syncRoomState() {
-      if (!onlineActive()) return;
-      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/state?seat=${state.online.seat}&token=${encodeURIComponent(state.online.token)}`);
-      syncStateFromRoom(data.room);
-    }
-
-    async function createRoomAndJoinSeat() {
-      try {
-        state.online.serverUrl = configuredServerUrl();
-        if (!state.online.serverUrl) {
-          lobbyStatusEl.textContent = 'Multiplayer server is not configured yet.';
-          return;
-        }
-        const created = await apiJson(`${state.online.serverUrl}/api/rooms`, {
-          method: 'POST',
-          body: JSON.stringify({ start_time_hhmm: state.startTime, end_time_hhmm: state.endTime }),
-        });
-        state.online.roomId = created.room.room_id;
-        roomIdInput.value = created.room.room_id;
-        updateLobbyRoomCode(created.room.room_id);
-        await copyCurrentRoomId();
-        lobbyStatusEl.textContent = `Room ${created.room.room_id} created and copied. Share this code, then claim your ${state.activeMode.toUpperCase()} seat.`;
-        await joinExistingRoom();
-      } catch (error) {
-        lobbyStatusEl.textContent = `Create room failed: ${describeRoomError(error)}`;
-      }
-    }
-
-    async function joinExistingRoom() {
-      try {
-        state.online.serverUrl = configuredServerUrl();
-        if (!state.online.serverUrl) {
-          lobbyStatusEl.textContent = 'Multiplayer server is not configured yet.';
-          return;
-        }
-        state.online.roomId = roomIdInput.value.trim().toUpperCase();
-        if (!state.online.roomId) {
-          lobbyStatusEl.textContent = 'Enter a room id first.';
-          return;
-        }
-        updateLobbyRoomCode(state.online.roomId);
-        state.online.token = loadOnlineToken(state.online.roomId, state.activeMode);
-        const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/join`, {
-          method: 'POST',
-          body: JSON.stringify({ seat: state.activeMode, display_name: state.activeMode.toUpperCase(), token: state.online.token || null }),
-        });
-        if (data.token) {
-          state.online.token = data.token;
-          saveOnlineToken(state.online.roomId, state.activeMode, data.token);
-        }
-        syncStateFromRoom(data.room);
-      } catch (error) {
-        lobbyStatusEl.textContent = `Join room failed: ${describeRoomError(error)}`;
-      }
-    }
-
-    async function submitCurrentPlanToRoom() {
-      if (!onlineActive()) return;
-      const player = state.players[state.online.seat];
-      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/plan`, {
-        method: 'POST',
-        body: JSON.stringify({
-          seat: state.online.seat,
-          token: state.online.token,
-          start_station_id: player.start_station_id,
-          steps: player.steps,
-        }),
-      });
-      syncStateFromRoom(data.room);
-    }
-
-    async function markSeatReady() {
-      if (!onlineActive()) return;
-      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/ready`, {
-        method: 'POST',
-        body: JSON.stringify({ seat: state.online.seat, token: state.online.token, ready: true }),
-      });
-      syncStateFromRoom(data.room);
-    }
-
-    async function markSeatUnready() {
-      if (!onlineActive()) return;
-      const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/ready`, {
-        method: 'POST',
-        body: JSON.stringify({ seat: state.online.seat, token: state.online.token, ready: false }),
-      });
-      syncStateFromRoom(data.room);
-    }
-
-    function secToClock(sec) {
-      const h = String(Math.floor(sec / 3600)).padStart(2, '0');
-      const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
-      return `${h}:${m}`;
-    }
-
-    function hhmmToMinutes(value) {
-      const [h, m] = value.split(':').map(Number);
-      return h * 60 + m;
-    }
-
-    function minutesToHhmm(value) {
-      const hour = Math.floor(value / 60);
-      const minute = value % 60;
-      return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-    }
-
-    function stopArrivalMinutes(stop) {
-      return Math.floor((stop.arrivalTimeSec ?? stop.departureTimeSec) / 60);
-    }
-
-    function stopDepartureMinutes(stop) {
-      return Math.floor((stop.departureTimeSec ?? stop.arrivalTimeSec) / 60);
-    }
-
-    function niceName(id) {
-      return id.replace(/^SG_/, '').replace(/^PS_/, '').replace(/_/g, ' ');
-    }
-
-    function buildBundleIndexes(bundle) {
-      state.labelEntryByGroupId = new Map((bundle.labelRepresentations || []).map((entry) => [entry.stationGroupId, entry]));
+    function buildIndexes(bundle) {
       state.stationGroupById = new Map((bundle.stationGroups || []).map((group) => [group.id, group]));
+      state.labelByGroupId = new Map((bundle.labelRepresentations || []).map((label) => [label.stationGroupId, label]));
       state.routeById = new Map((bundle.serviceRoutes || []).map((route) => [route.id, route]));
-      state.tripById = new Map((bundle.tripInstances || []).map((trip) => [trip.id, trip]));
-      state.physicalStationByGroupId = new Map();
+      state.stationByGroupId = new Map();
       (bundle.physicalStations || []).forEach((station) => {
-        if (!state.physicalStationByGroupId.has(station.stationGroupId)) {
-          state.physicalStationByGroupId.set(station.stationGroupId, station);
-        }
+        if (!state.stationByGroupId.has(station.stationGroupId)) state.stationByGroupId.set(station.stationGroupId, station);
       });
 
-      state.routeTripsById = new Map();
       state.routeStationSetById = new Map();
-      state.stationTripsByGroupId = new Map();
-      state.stationRoutesByGroupId = new Map();
-      (bundle.tripInstances || []).forEach((trip) => {
-        if (!state.routeTripsById.has(trip.routeId)) state.routeTripsById.set(trip.routeId, []);
-        state.routeTripsById.get(trip.routeId).push(trip);
-        if (!state.routeStationSetById.has(trip.routeId)) state.routeStationSetById.set(trip.routeId, new Set());
-        const routeStationSet = state.routeStationSetById.get(trip.routeId);
-        const tripStationIds = new Set();
-        (trip.stopTimes || []).forEach((stop) => {
-          routeStationSet.add(stop.stationGroupId);
-          if (!tripStationIds.has(stop.stationGroupId)) {
-            if (!state.stationTripsByGroupId.has(stop.stationGroupId)) state.stationTripsByGroupId.set(stop.stationGroupId, []);
-            state.stationTripsByGroupId.get(stop.stationGroupId).push(trip);
-            tripStationIds.add(stop.stationGroupId);
+      state.stationRouteIdsByGroupId = new Map();
+      (bundle.servicePatterns || []).forEach((pattern) => {
+        if (!pattern.routeId) return;
+        const routeSet = state.routeStationSetById.get(pattern.routeId) || new Set();
+        (pattern.stationGroupIds || []).forEach((stationGroupId) => {
+          routeSet.add(stationGroupId);
+          if (!state.stationRouteIdsByGroupId.has(stationGroupId)) {
+            state.stationRouteIdsByGroupId.set(stationGroupId, new Set());
           }
-          if (!state.stationRoutesByGroupId.has(stop.stationGroupId)) state.stationRoutesByGroupId.set(stop.stationGroupId, new Set());
-          state.stationRoutesByGroupId.get(stop.stationGroupId).add(trip.routeId);
+          state.stationRouteIdsByGroupId.get(stationGroupId).add(pattern.routeId);
         });
-      });
-      state.trackLinesByStationGroupId = new Map();
-      (bundle.trackCenterlines || []).forEach((line) => {
-        (line.stationGroupIds || []).forEach((stationGroupId) => {
-          if (!state.trackLinesByStationGroupId.has(stationGroupId)) state.trackLinesByStationGroupId.set(stationGroupId, []);
-          state.trackLinesByStationGroupId.get(stationGroupId).push(line.lineName);
-        });
-      });
-
-      state.serviceGeometryByRouteId = new Map();
-      (bundle.serviceGeometry || []).forEach((geometry) => {
-        if (!state.serviceGeometryByRouteId.has(geometry.routeId)) state.serviceGeometryByRouteId.set(geometry.routeId, []);
-        state.serviceGeometryByRouteId.get(geometry.routeId).push(geometry);
-      });
-      state.serviceGeometryByRouteId.forEach((items) => {
-        items.sort((a, b) => {
-          if (a.representation === 'service_path' && b.representation !== 'service_path') return -1;
-          if (b.representation === 'service_path' && a.representation !== 'service_path') return 1;
-          return (b.maxZoom || 0) - (a.maxZoom || 0);
-        });
+        state.routeStationSetById.set(pattern.routeId, routeSet);
       });
     }
 
-    function resolveLabelEntry(groupId) {
-      return state.labelEntryByGroupId.get(groupId);
-    }
-
-    function shouldShowLabel(entry) {
-      if (!entry) return false;
-      if (state.selectedStationGroupId === entry.stationGroupId) return true;
-      if (state.selectedRouteId) {
-        const routeStations = getRouteStationSet(state.selectedRouteId);
-        if (routeStations.has(entry.stationGroupId) && state.zoom >= 4.8) return true;
-      }
-      const rank = entry.labelRank || 0;
-      if (state.zoom >= 14) return true;
-      if (state.zoom >= 9.5) return rank >= 90;
-      if (state.zoom >= 6.4) return rank >= 95;
-      if (state.zoom >= 4.0) return rank >= 98;
-      return rank >= 99;
-    }
-
-    function mapLabelFontSize(baseSize) {
-      const zoomScale = Math.max(1, state.zoom);
-      return clamp(baseSize / (1 + 0.2 * Math.log2(zoomScale)), 12.6, 18.2).toFixed(2);
-    }
-
-    function mapLabelStrokeWidth(baseWidth) {
-      const zoomScale = Math.max(1, state.zoom);
-      return clamp(baseWidth / (1 + 0.44 * Math.log2(zoomScale)), 0.86, 2.4).toFixed(2);
-    }
-
-    function mapLineWidth(role) {
-      const zoomScale = Math.max(1, state.zoom);
-      const definitions = {
-        corridorOuter: { base: state.viewMode === 'corridor' ? 10 : 7, min: 0.22, exponent: 1.08 },
-        corridorOuterSelected: { base: state.viewMode === 'corridor' ? 11.5 : 7.8, min: 0.26, exponent: 1.08 },
-        corridorInner: { base: state.viewMode === 'corridor' ? 5.2 : 3.4, min: 0.12, exponent: 1.08 },
-        corridorInnerSelected: { base: state.viewMode === 'corridor' ? 6.6 : 4.2, min: 0.16, exponent: 1.08 },
-        serviceOuter: { base: 7, min: 0.2, exponent: 1.08 },
-        serviceOuterSelected: { base: 8.4, min: 0.24, exponent: 1.08 },
-        serviceInner: { base: 3.6, min: 0.12, exponent: 1.08 },
-        serviceInnerSelected: { base: 5.4, min: 0.16, exponent: 1.08 },
-        hoverOuter: { base: state.viewMode === 'service' ? 12 : 10, min: 0.28, exponent: 1.1 },
-        hoverInner: { base: state.viewMode === 'service' ? 7.2 : 6.2, min: 0.18, exponent: 1.1 },
-      };
-      const definition = definitions[role] || definitions.corridorInner;
-      return clamp(definition.base / Math.pow(zoomScale, definition.exponent), definition.min, definition.base);
-    }
-
-    function stationScaleMetrics() {
-      const zoomScale = Math.max(1, state.zoom);
-      const stationRadius = clamp(3.8 / Math.pow(zoomScale, 1.45), 0.22, 3.8);
+    function lineFeature(id, polyline, properties) {
+      const coordinates = (polyline || [])
+        .filter((point) => Number.isFinite(point.lon) && Number.isFinite(point.lat))
+        .map((point) => [point.lon, point.lat]);
+      if (coordinates.length < 2) return null;
       return {
-        stationRadius,
-        stationStrokeWidth: clamp(1.15 / Math.pow(zoomScale, 0.42), 0.3, 1.15),
-        selectedStrokeWidth: clamp(2.1 / Math.pow(zoomScale, 0.42), 0.55, 2.1),
-        routeStrokeWidth: clamp(1.45 / Math.pow(zoomScale, 0.42), 0.4, 1.45),
-        selectedHaloRadius: stationRadius + 2.8,
-        routeHaloRadius: stationRadius + 1.4,
-        futureRingRadius: Math.max(stationRadius + 4.0, stationRadius + 2.6),
-        futureRingStroke: clamp(1.4 / Math.pow(zoomScale, 0.5), 0.28, 1.4),
-        futureRingDash: Math.max(1.3, 4 / Math.pow(zoomScale, 0.35)).toFixed(2),
+        type: 'Feature',
+        id,
+        geometry: { type: 'LineString', coordinates },
+        properties: { id, ...properties },
       };
     }
 
-    function labelAnchorPoint(entry) {
-      const labelPoint = state.projection.project(entry.labelPoint.lat, entry.labelPoint.lon);
-      const stationPoint = stationPointByGroupId(entry.stationGroupId) || labelPoint;
-      if (state.zoom >= 8) return stationPoint;
-      if (state.zoom >= 5) {
-        const t = (state.zoom - 5) / 3;
-        return {
-          x: labelPoint.x * (1 - t) + stationPoint.x * t,
-          y: labelPoint.y * (1 - t) + stationPoint.y * t,
-        };
-      }
-      return labelPoint;
-    }
-
-    function labelOffset(entry) {
-      const baseX = entry.labelRank >= 99 ? 8 : entry.labelRank >= 95 ? 7 : 6;
-      const baseY = entry.labelRank >= 99 ? -7 : -6;
-      return {
-        x: baseX,
-        y: baseY,
-      };
-    }
-
-    function buildLabelMarkup() {
-      const labelSvg = [];
-      state.labelEntries.forEach((entry) => {
-        if (!shouldShowLabel(entry)) return;
-        const point = labelAnchorPoint(entry);
-        const offset = labelOffset(entry);
-        const fontSize = entry.labelRank >= 99 ? 16 : entry.labelRank >= 95 ? 13 : 11;
-        const displayName = entry.displayNameEn || entry.displayNameJa || niceName(entry.stationGroupId);
-        const screenX = point.x * state.zoom + state.panX + offset.x;
-        const screenY = point.y * state.zoom + state.panY + offset.y;
-        if (screenX < -160 || screenX > state.projection.width + 160 || screenY < -80 || screenY > state.projection.height + 80) return;
-        labelSvg.push(
-          `<text x="${screenX}" y="${screenY}" font-size="${mapLabelFontSize(fontSize)}" font-weight="${entry.labelRank >= 99 ? 800 : 700}" fill="#203247" stroke="rgba(255,255,255,0.94)" stroke-width="${mapLabelStrokeWidth(4.2)}" paint-order="stroke" style="pointer-events:none">${displayName}</text>`
-        );
-      });
-      return labelSvg.join('');
-    }
-
-    function buildPlayerOverlayMarkup() {
-      const overlaySvg = [];
-      for (const playerId of ['runner', 'hunter']) {
-        if (!shouldShowPlayer(playerId)) continue;
-        const preview = currentMapPreview(playerId);
-        if (!preview?.mapPosition) continue;
-        const color = playerId === 'runner' ? '#dc4d62' : '#2d6cdf';
-        const { x, y } = preview.mapPosition;
-        const screenX = x * state.zoom + state.panX;
-        const screenY = y * state.zoom + state.panY;
-        const boxWidth = 170;
-        const boxHeight = 36;
-        const offsetX = 14;
-        const offsetY = -20;
-        const currentText = preview.currentState.kind === 'NODE'
-          ? stationGroupLabel(preview.currentState.stationGroupId)
-          : formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: '' });
-        overlaySvg.push(`
-          <g class="player-overlay-marker">
-            <circle cx="${screenX}" cy="${screenY}" r="10" fill="${color}" stroke="white" stroke-width="3" />
-            <rect x="${screenX + offsetX}" y="${screenY + offsetY}" width="${boxWidth}" height="${boxHeight}" rx="8" class="player-overlay-box" stroke="${color}" stroke-width="2" />
-            <text x="${screenX + 22}" y="${screenY - 6}" class="player-overlay-label" fill="${color}">${playerId.toUpperCase()}</text>
-            <text x="${screenX + 22}" y="${screenY + 10}" class="player-overlay-sub" fill="#203247">${currentText}</text>
-          </g>
-        `);
-      }
-      return overlaySvg.join('');
-    }
-
-    function updateLabelLayer() {
-      const labelLayer = document.getElementById('label-layer');
-      if (!labelLayer || !state.projection || !state.bundle) return;
-      labelLayer.innerHTML = buildLabelMarkup();
-    }
-
-    function updatePlayerOverlayLayer() {
-      const playerOverlayLayer = document.getElementById('player-overlay-layer');
-      if (!playerOverlayLayer || !state.projection || !state.bundle) return;
-      playerOverlayLayer.innerHTML = buildPlayerOverlayMarkup();
-    }
-
-    function makeProjection(bundle) {
-      const stations = bundle.physicalStations.filter((s) => Number.isFinite(s.lon) && Number.isFinite(s.lat));
-      const minLon = Math.min(...stations.map((s) => s.lon));
-      const maxLon = Math.max(...stations.map((s) => s.lon));
-      const minLat = Math.min(...stations.map((s) => s.lat));
-      const maxLat = Math.max(...stations.map((s) => s.lat));
-      const width = 1200;
-      const height = 820;
-      const padding = 70;
-      const usableWidth = width - padding * 2;
-      const usableHeight = height - padding * 2;
-      const lonSpan = Math.max(maxLon - minLon, 0.0001);
-      const latSpan = Math.max(maxLat - minLat, 0.0001);
-      const scale = Math.min(usableWidth / lonSpan, usableHeight / latSpan);
-
-      return {
-        width,
-        height,
-        minLon,
-        maxLon,
-        minLat,
-        maxLat,
-        padding,
-        scale,
-        project(lat, lon) {
-          const x = padding + (lon - minLon) * scale;
-          const y = height - padding - (lat - minLat) * scale;
-          return { x, y };
-        },
-        invert(x, y) {
-          const lon = minLon + ((x - padding) / scale);
-          const lat = minLat + ((height - padding - y) / scale);
-          return { lat, lon };
-        }
-      };
-    }
-
-    function tileZoomForCurrentView() {
-      if (state.zoom < 1.35) return 3;
-      if (state.zoom < 2.1) return 4;
-      if (state.zoom < 3.8) return 5;
-      return 6;
-    }
-
-    function trackFeatureVisibleAtZoom(feature) {
-      const mode = String(feature.properties?.mode || '').toLowerCase();
-      const lineName = String(feature.properties?.line_name || '').toLowerCase();
-      const tags = feature.properties?.tags || [];
-      const isTrunk = mode.includes('shinkansen') || mode === 'rail' || mode === 'jr' || tags.includes('shinkansen') || lineName.includes('新幹線');
-      if (state.zoom < 1.35) return isTrunk;
-      if (state.zoom < 2.1) return isTrunk || mode === 'subway';
-      return true;
-    }
-
-    function stationFeatureVisibleAtZoom(feature) {
-      const rank = Number(feature.properties?.label_rank || 50);
-      if (state.selectedStationGroupId === feature.properties?.station_group_id) return true;
-      if (state.zoom < 1.35) return rank >= 99;
-      if (state.zoom < 2.1) return rank >= 95;
-      if (state.zoom < 3.8) return rank >= 90;
-      return true;
-    }
-
-    function serviceFeatureVisibleAtZoom(feature) {
-      if (!state.selectedRouteId) return state.zoom >= 1.35;
-      return feature.properties?.route_id === state.selectedRouteId || state.zoom >= 2.1;
-    }
-
-    function visibleGeoBounds() {
-      const projection = state.projection;
-      const width = projection.width;
-      const height = projection.height;
-      const minContentX = (0 - state.panX) / state.zoom;
-      const maxContentX = (width - state.panX) / state.zoom;
-      const minContentY = (0 - state.panY) / state.zoom;
-      const maxContentY = (height - state.panY) / state.zoom;
-      const a = projection.invert(minContentX, maxContentY);
-      const b = projection.invert(maxContentX, minContentY);
-      return {
-        minLon: Math.max(Math.min(a.lon, b.lon), projection.minLon),
-        maxLon: Math.min(Math.max(a.lon, b.lon), projection.maxLon),
-        minLat: Math.max(Math.min(a.lat, b.lat), projection.minLat),
-        maxLat: Math.min(Math.max(a.lat, b.lat), projection.maxLat),
-      };
-    }
-
-    function tileGridBounds(z) {
-      const cols = 2 ** z;
-      const rows = 2 ** z;
-      return {
-        cols,
-        rows,
-        minLon: 128.0,
-        maxLon: 146.5,
-        minLat: 30.0,
-        maxLat: 46.5,
-      };
-    }
-
-    function tilesForBounds(bounds, z) {
-      const grid = tileGridBounds(z);
-      const lonSpan = grid.maxLon - grid.minLon;
-      const latSpan = grid.maxLat - grid.minLat;
-      const x0 = Math.max(0, Math.floor(((bounds.minLon - grid.minLon) / lonSpan) * grid.cols));
-      const x1 = Math.min(grid.cols - 1, Math.floor(((bounds.maxLon - grid.minLon) / lonSpan) * grid.cols));
-      const y0 = Math.max(0, Math.floor(((grid.maxLat - bounds.maxLat) / latSpan) * grid.rows));
-      const y1 = Math.min(grid.rows - 1, Math.floor(((grid.maxLat - bounds.minLat) / latSpan) * grid.rows));
-      const tiles = [];
-      for (let x = x0; x <= x1; x += 1) {
-        for (let y = y0; y <= y1; y += 1) {
-          tiles.push({ z, x, y });
-        }
-      }
-      return tiles;
-    }
-
-    function tileExists(layer, tile) {
-      const layerMeta = state.tileManifest?.layers?.[layer];
-      const zoomMeta = layerMeta?.zooms?.[String(tile.z)];
-      if (!zoomMeta) return false;
-      const availableTiles = zoomMeta.tiles || [];
-      return availableTiles.includes(`${tile.x}/${tile.y}`);
-    }
-
-    async function fetchTileLayer(layer, tile) {
-      const key = `${layer}:${tile.z}/${tile.x}/${tile.y}`;
-      if (state.tileCache.has(key)) return state.tileCache.get(key);
-      if (!tileExists(layer, tile)) {
-        const empty = Promise.resolve({ features: [] });
-        state.tileCache.set(key, empty);
-        return empty;
-      }
-      const url = `${TILE_BASE_URL}${layer}/${tile.z}/${tile.x}/${tile.y}.geojson`;
-      const promise = fetch(url)
-        .then((response) => {
-          if (!response.ok) return { features: [] };
-          return response.json();
-        })
-        .catch(() => ({ features: [] }));
-      state.tileCache.set(key, promise);
-      return promise;
-    }
-
-    async function refreshVisibleTiles() {
-      if (!state.tileManifest) return;
-      const z = tileZoomForCurrentView();
-      const bounds = visibleGeoBounds();
-      const tiles = tilesForBounds(bounds, z);
-      const signature = `${state.viewMode}|${z}|${tiles.map((tile) => `${tile.x}:${tile.y}`).join(',')}`;
-      if (signature === state.currentTileSignature) return;
-      state.currentTileSignature = signature;
-
-      const [stationCollections, trackCollections, serviceCollections] = await Promise.all([
-        Promise.all(tiles.map((tile) => fetchTileLayer('stations', tile))),
-        Promise.all(tiles.map((tile) => fetchTileLayer('track_centerlines', tile))),
-        Promise.all(tiles.map((tile) => fetchTileLayer('service_paths', tile))),
-      ]);
-
-      if (state.currentTileSignature !== signature) return;
-
-      state.visibleTileData = {
-        stations: stationCollections.flatMap((fc) => fc.features || []),
-        track_centerlines: trackCollections.flatMap((fc) => fc.features || []),
-        service_paths: serviceCollections.flatMap((fc) => fc.features || []),
-      };
-      state.tileLayersReady = true;
-      render();
-    }
-
-    function scheduleVisibleTileRefresh(delayMs = 80) {
-      if (!state.tileManifest) return;
-      if (state.tileRefreshHandle) window.clearTimeout(state.tileRefreshHandle);
-      state.tileRefreshHandle = window.setTimeout(() => {
-        state.tileRefreshHandle = null;
-        refreshVisibleTiles();
-      }, delayMs);
-    }
-
-    function updateMapScaleStyles() {
-      const metrics = stationScaleMetrics();
-      svg.querySelectorAll('[data-map-line-role]').forEach((node) => {
-        node.setAttribute('stroke-width', mapLineWidth(node.getAttribute('data-map-line-role')));
-      });
-      svg.querySelectorAll('[data-station-dot]').forEach((node) => {
-        const role = node.getAttribute('data-station-dot');
-        node.setAttribute('r', metrics.stationRadius);
-        if (role === 'selected') node.setAttribute('stroke-width', metrics.selectedStrokeWidth);
-        else if (role === 'route') node.setAttribute('stroke-width', metrics.routeStrokeWidth);
-        else node.setAttribute('stroke-width', metrics.stationStrokeWidth);
-      });
-      svg.querySelectorAll('[data-station-halo]').forEach((node) => {
-        const role = node.getAttribute('data-station-halo');
-        node.setAttribute('r', role === 'selected' ? metrics.selectedHaloRadius : metrics.routeHaloRadius);
-      });
-      svg.querySelectorAll('[data-future-ring]').forEach((node) => {
-        node.setAttribute('r', metrics.futureRingRadius);
-        node.style.strokeWidth = metrics.futureRingStroke;
-        node.style.strokeDasharray = `${metrics.futureRingDash} ${metrics.futureRingDash}`;
-      });
-    }
-
-    function visibleGameMinute() {
-      return state.currentGameMinute;
-    }
-
-    function pendingTripId(playerId = state.activeMode) {
-      return state.pendingTripIds[playerId];
-    }
-
-    function invalidateSimulation() {
-      if (onlineActive()) return;
-      state.latestResult = null;
-      state.selectedResultEventIndex = 0;
-      state.liveCapture = null;
-      resultInfoEl.textContent = 'No result yet.';
-      resultDetailEl.textContent = 'Select an event to inspect it.';
-    }
-
-    function clearPendingTrip(playerId = state.activeMode) {
-      state.pendingTripIds[playerId] = null;
-    }
-
-    function findBoardingStop(trip, stationGroupId, earliestMinute) {
-      return trip.stopTimes
-        .filter((stop) => stop.stationGroupId === stationGroupId && stopDepartureMinutes(stop) >= earliestMinute)
-        .sort((a, b) => stopDepartureMinutes(a) - stopDepartureMinutes(b))[0] || null;
-    }
-
-    function findAlightStop(trip, boardedSequence, stationGroupId) {
-      return trip.stopTimes.find((stop) => stop.sequence > boardedSequence && stop.stationGroupId === stationGroupId) || null;
-    }
-
-    function formatTripLabel(trip) {
-      return `${trip.serviceName}${trip.serviceNumber ? ` ${trip.serviceNumber}` : ''}`;
-    }
-
-    function departuresForStationGroup(stationGroupId, currentMinute) {
-      const rows = [];
-      for (const trip of state.stationTripsByGroupId.get(stationGroupId) || []) {
-        for (const stop of trip.stopTimes) {
-          if (stop.stationGroupId !== stationGroupId) continue;
-          const departureMinute = stopDepartureMinutes(stop);
-          if (departureMinute < currentMinute) continue;
-          rows.push({ departureMinute, trip, stop });
-          break;
-        }
-      }
-      rows.sort((a, b) => a.departureMinute - b.departureMinute || formatTripLabel(a.trip).localeCompare(formatTripLabel(b.trip)));
-      return rows.slice(0, 36);
-    }
-
-    function effectiveDepartureMinute(playerId, previewMinute) {
-      const minute = Number.isFinite(previewMinute) ? previewMinute : hhmmToMinutes(state.startTime);
-      if (playerId === 'hunter') return Math.max(minute, 420);
-      return minute;
-    }
-
-    function availableDepartures(preview, playerId = state.activeMode) {
-      if (preview.currentState.kind !== 'NODE') return [];
-      return departuresForStationGroup(preview.currentState.stationGroupId, effectiveDepartureMinute(playerId, preview.currentMinute)).map((row) => ({
-        trip: row.trip,
-        boardStop: row.stop,
-        departureMinute: row.departureMinute,
-        departureHhmm: minutesToHhmm(row.departureMinute),
-        directionLabel: row.trip.routeId,
-      }));
-    }
-
-    function futureTripStops(preview) {
-      if (!preview.currentTrip || !preview.currentBoardStop) return [];
-      return preview.currentTrip.stopTimes.filter((stop) => stop.sequence > preview.currentBoardStop.sequence);
-    }
-
-    function availableDestinations(preview) {
-      return futureTripStops(preview).map((stop) => ({
-        stationGroupId: stop.stationGroupId,
-        label: stationGroupLabel(stop.stationGroupId),
-        arrivalHhmm: secToClock(stop.arrivalTimeSec ?? stop.departureTimeSec),
-        sequence: stop.sequence,
-      }));
-    }
-
-    function pendingDepartureContext(preview, playerId = state.activeMode) {
-      const tripId = pendingTripId(playerId);
-      if (!tripId || preview.currentState.kind !== 'NODE') return null;
-      const departures = departuresForStationGroup(preview.currentState.stationGroupId, effectiveDepartureMinute(playerId, preview.currentMinute));
-      const match = departures.find((row) => row.trip.id === tripId);
-      if (!match) return null;
-      return {
-        trip: match.trip,
-        boardStop: match.stop,
-        destinations: match.trip.stopTimes
-          .filter((stop) => stop.sequence > match.stop.sequence)
-          .map((stop) => ({
-            stationGroupId: stop.stationGroupId,
-            label: stationGroupLabel(stop.stationGroupId),
-            arrivalHhmm: secToClock(stop.arrivalTimeSec ?? stop.departureTimeSec),
-            sequence: stop.sequence,
-          })),
-      };
-    }
-
-    function trainPreviewText(trip, boardStop) {
-      return trip.stopTimes
-        .filter((stop) => stop.sequence > boardStop.sequence)
-        .slice(0, 4)
-        .map((stop) => `${stationGroupLabel(stop.stationGroupId)} ${secToClock(stop.arrivalTimeSec ?? stop.departureTimeSec)}`)
-        .join(' · ') || 'No later stops';
-    }
-
-    function previewPlayer(playerId, timeCapMinute = null) {
-      const player = state.players[playerId];
-      let currentMinute = hhmmToMinutes(state.startTime);
-      let currentState = { kind: 'NODE', stationGroupId: player.start_station_id };
-      let currentTrip = null;
-      let currentBoardStop = null;
-      const resolvedSteps = [];
-
-      for (const step of player.steps) {
-        if (step.type === 'WAIT_UNTIL') {
-          const targetMinute = hhmmToMinutes(step.until_hhmm);
-          if (timeCapMinute !== null && targetMinute > timeCapMinute) break;
-          currentMinute = targetMinute;
-          resolvedSteps.push(step);
-          continue;
-        }
-        if (step.type === 'BOARD_TRAIN') {
-          if (currentState.kind !== 'NODE') break;
-          const trip = state.tripById.get(step.trip_id);
-          if (!trip) break;
-          const boardStop = findBoardingStop(trip, currentState.stationGroupId, currentMinute);
-          if (!boardStop) break;
-          const boardMinute = stopDepartureMinutes(boardStop);
-          if (timeCapMinute !== null && boardMinute > timeCapMinute) break;
-          currentMinute = boardMinute;
-          currentState = { kind: 'TRAIN', tripId: trip.id };
-          currentTrip = trip;
-          currentBoardStop = boardStop;
-          resolvedSteps.push(step);
-          continue;
-        }
-        if (step.type === 'RIDE_TO_STATION') {
-          if (currentState.kind !== 'TRAIN' || !currentTrip || !currentBoardStop) break;
-          const alightStop = findAlightStop(currentTrip, currentBoardStop.sequence, step.station_id);
-          if (!alightStop) break;
-          const arrivalMinute = stopArrivalMinutes(alightStop);
-          if (timeCapMinute !== null && arrivalMinute > timeCapMinute) {
-            const loc = tripLocationOnMap(currentTrip.id, timeCapMinute);
-            return {
-              currentMinute: timeCapMinute,
-              currentTime: minutesToHhmm(timeCapMinute),
-              currentState: { kind: 'TRAIN', tripId: currentTrip.id },
-              currentTrip,
-              currentBoardStop,
-              resolvedSteps,
-              mapPosition: loc?.position || null,
-              mapStationGroupId: loc?.anchorStationGroupId || null,
-            };
-          }
-          currentMinute = arrivalMinute;
-          currentState = { kind: 'NODE', stationGroupId: alightStop.stationGroupId };
-          currentTrip = null;
-          currentBoardStop = null;
-          resolvedSteps.push(step);
-        }
-      }
-
-      let mapPosition = null;
-      let mapStationGroupId = currentState.stationGroupId || null;
-      if (currentState.kind === 'NODE' && mapStationGroupId) {
-        mapPosition = stationPointByGroupId(mapStationGroupId);
-      } else if (currentState.kind === 'TRAIN') {
-        const loc = tripLocationOnMap(currentState.tripId, timeCapMinute ?? currentMinute);
-        mapPosition = loc?.position || null;
-        mapStationGroupId = loc?.anchorStationGroupId || null;
-      }
-      return { currentMinute, currentTime: minutesToHhmm(currentMinute), currentState, currentTrip, currentBoardStop, resolvedSteps, mapPosition, mapStationGroupId };
-    }
-
-    function planCursorPreview(playerId) {
-      if (state.phase === 'PLANNING' && !state.latestResult) {
-        const startMinute = hhmmToMinutes(state.startTime);
-        const isInitialPlanning = state.currentGameMinute <= startMinute;
-        return previewPlayer(playerId, isInitialPlanning ? null : state.currentGameMinute);
-      }
-      return previewPlayer(playerId, visibleGameMinute());
-    }
-
-    function currentReplayEvent() {
-      if (!state.latestResult?.match_event_log?.length) return null;
-      const index = Math.max(0, Math.min(state.selectedResultEventIndex, state.latestResult.match_event_log.length - 1));
-      return state.latestResult.match_event_log[index];
-    }
-
-    function replayPreviewFromState(playerId, carrierState, event) {
-      const currentState = { ...carrierState };
-      let mapPosition = null;
-      let mapStationGroupId = currentState.stationGroupId || null;
-      if (currentState.kind === 'NODE' && mapStationGroupId) {
-        mapPosition = stationPointByGroupId(mapStationGroupId);
-      } else if (currentState.kind === 'TRAIN') {
-        const loc = tripLocationOnMap(currentState.tripId, event.time_minute);
-        mapPosition = loc?.position || null;
-        mapStationGroupId = loc?.anchorStationGroupId || null;
-      }
-      return {
-        currentMinute: event.time_minute,
-        currentTime: event.time_hhmm,
-        currentState,
-        currentTrip: currentState.kind === 'TRAIN' ? state.tripById.get(currentState.tripId) || null : null,
-        currentBoardStop: null,
-        resolvedSteps: [],
-        mapPosition,
-        mapStationGroupId,
-      };
-    }
-
-    function currentMapPreview(playerId) {
-      if (onlineActive() && state.online.presences[playerId]) {
-        const preview = presenceToPreview(playerId, state.online.presences[playerId]);
-        if (preview && (preview.mapPosition || preview.currentState.kind === 'NODE')) return preview;
-      }
-      const event = currentReplayEvent();
-      if (event?.state_after?.[playerId]) return replayPreviewFromState(playerId, event.state_after[playerId], event);
-      return previewPlayer(playerId, visibleGameMinute());
-    }
-
-    function formatState(preview) {
-      if (!preview) return 'unknown';
-      if (preview.visibility === 'hidden') return 'hidden during LIVE';
-      if (preview.displayLabel && preview.currentState.kind === 'NODE') return `at ${preview.displayLabel} ${preview.currentTime}`;
-      if (preview.displayLabel && preview.currentState.kind === 'TRAIN') return `on ${preview.displayLabel} ${preview.currentTime}`;
-      return preview.currentState.kind === 'NODE'
-        ? `at ${stationGroupLabel(preview.currentState.stationGroupId)} ${preview.currentTime}`
-        : `on ${formatTripLabel(preview.currentTrip || { serviceName: 'Trip', serviceNumber: preview.currentState.tripId })} ${preview.currentTime}`;
-    }
-
-    function shouldShowPlayer(playerId) {
-      if (onlineActive()) {
-        const presence = state.online.presences[playerId];
-        return Boolean(presence && presence.kind !== 'HIDDEN');
-      }
-      if (currentReplayEvent()) return true;
-      if (state.phase === 'PLANNING') return true;
-      return playerId === state.activeMode;
-    }
-
-    function tripLocationOnMap(tripId, timeMinute) {
-      const trip = state.tripById.get(tripId);
-      if (!trip) return null;
-      const stops = trip.stopTimes;
-      for (let i = 0; i < stops.length; i += 1) {
-        const stop = stops[i];
-        const arr = stopArrivalMinutes(stop);
-        const dep = stopDepartureMinutes(stop);
-        if (arr <= timeMinute && timeMinute <= dep) {
-          const pos = stationPointByGroupId(stop.stationGroupId);
-          return pos ? { anchorStationGroupId: stop.stationGroupId, position: pos } : null;
-        }
-        if (dep < timeMinute && i + 1 < stops.length) {
-          const nextStop = stops[i + 1];
-          const nextArr = stopArrivalMinutes(nextStop);
-          if (dep <= timeMinute && timeMinute <= nextArr) {
-            const ratio = nextArr === dep ? 1 : ((timeMinute - dep) / (nextArr - dep));
-            const curvedPosition = routePositionAlongPath(trip.routeId, stop.stationGroupId, nextStop.stationGroupId, ratio);
-            if (curvedPosition) {
-              return {
-                anchorStationGroupId: nextStop.stationGroupId,
-                position: curvedPosition,
-              };
-            }
-            const a = stationPointByGroupId(stop.stationGroupId);
-            const b = stationPointByGroupId(nextStop.stationGroupId);
-            if (!a || !b) return null;
-            return {
-              anchorStationGroupId: nextStop.stationGroupId,
-              position: { x: a.x + (b.x - a.x) * ratio, y: a.y + (b.y - a.y) * ratio },
-            };
-          }
-        }
-      }
-      const last = stops[stops.length - 1];
-      const pos = stationPointByGroupId(last.stationGroupId);
-      return pos ? { anchorStationGroupId: last.stationGroupId, position: pos } : null;
-    }
-
-    function drawPath(points, opts = {}) {
-      if (!points.length) return '';
-      const d = points.map((pt, index) => `${index === 0 ? 'M' : 'L'} ${pt.x.toFixed(2)} ${pt.y.toFixed(2)}`).join(' ');
-      const stroke = opts.stroke || '#000';
-      const width = opts.width ?? 2;
-      const opacity = opts.opacity ?? 1;
-      const dash = opts.dash || '';
-      const role = opts.role ? `data-map-line-role="${opts.role}"` : '';
-      return `<path ${role} d="${d}" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}" ${dash ? `stroke-dasharray="${dash}"` : ''}/>`;
-    }
-
-    function stationGroupById(stationGroupId) {
-      return state.stationGroupById.get(stationGroupId);
-    }
-
-    function stationGroupLabel(stationGroupId) {
-      const label = resolveLabelEntry(stationGroupId);
-      return label?.displayNameEn || stationGroupById(stationGroupId)?.primaryName || niceName(stationGroupId);
-    }
-
-    function stationPointByGroupId(stationGroupId) {
-      return state.stationPointByGroupId.get(stationGroupId) || projectedStationPoint(stationGroupId);
-    }
-
-    function projectedStationPoint(stationGroupId) {
-      if (!state.projection || !state.bundle) return null;
-      const group = stationGroupById(stationGroupId);
-      if (!group?.centroid) return null;
-      const point = state.projection.project(group.centroid.lat, group.centroid.lon);
-      return { stationGroupId, x: point.x, y: point.y, lat: group.centroid.lat, lon: group.centroid.lon };
-    }
-
-    function serviceGeometryForRoute(routeId) {
-      if (!state.bundle || !routeId) return null;
-      return state.serviceGeometryByRouteId.get(routeId)?.[0] || null;
-    }
-
-    function nearestPolylineIndex(polyline, stationGroupId) {
-      const station = stationGroupById(stationGroupId);
-      if (!station?.centroid || !polyline?.length) return -1;
-      let bestIndex = 0;
-      let bestDistance = Number.POSITIVE_INFINITY;
-      polyline.forEach((point, index) => {
-        const dx = point.lon - station.centroid.lon;
-        const dy = point.lat - station.centroid.lat;
-        const distance = dx * dx + dy * dy;
-        if (distance < bestDistance) {
-          bestDistance = distance;
-          bestIndex = index;
-        }
-      });
-      return bestIndex;
-    }
-
-    function interpolateProjectedPolyline(points, progress) {
-      if (!points.length) return null;
-      if (points.length === 1) return points[0];
-      const clampedProgress = clamp(progress, 0, 1);
-      let total = 0;
-      const lengths = [];
-      for (let i = 1; i < points.length; i += 1) {
-        const seg = Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
-        lengths.push(seg);
-        total += seg;
-      }
-      if (total <= 0) return points[points.length - 1];
-      let remaining = total * clampedProgress;
-      for (let i = 1; i < points.length; i += 1) {
-        const seg = lengths[i - 1];
-        if (remaining <= seg) {
-          const ratio = seg <= 0 ? 1 : remaining / seg;
+    function makeFeatureCollections(bundle) {
+      const stationFeatures = (bundle.physicalStations || [])
+        .filter((station) => Number.isFinite(station.lon) && Number.isFinite(station.lat))
+        .map((station) => {
+          const group = state.stationGroupById.get(station.stationGroupId) || {};
+          const label = state.labelByGroupId.get(station.stationGroupId) || {};
+          const labelRank = Number(label.labelRank || group.labelRank || 50);
+          const routeCount = (state.stationRouteIdsByGroupId.get(station.stationGroupId) || new Set()).size;
           return {
-            x: points[i - 1].x + (points[i].x - points[i - 1].x) * ratio,
-            y: points[i - 1].y + (points[i].y - points[i - 1].y) * ratio,
-          };
-        }
-        remaining -= seg;
-      }
-      return points[points.length - 1];
-    }
-
-    function routeSliceProjectedPoints(routeId, fromStationGroupId, toStationGroupId) {
-      const geometry = serviceGeometryForRoute(routeId);
-      if (!geometry?.polyline?.length || !state.projection) return [];
-      const fromIndex = nearestPolylineIndex(geometry.polyline, fromStationGroupId);
-      const toIndex = nearestPolylineIndex(geometry.polyline, toStationGroupId);
-      if (fromIndex < 0 || toIndex < 0) return [];
-      const start = Math.min(fromIndex, toIndex);
-      const end = Math.max(fromIndex, toIndex);
-      let slice = geometry.polyline.slice(start, end + 1);
-      if (!slice.length) return [];
-      if (fromIndex > toIndex) slice = slice.reverse();
-      return slice.map((point) => state.projection.project(point.lat, point.lon));
-    }
-
-    function routePositionAlongPath(routeId, fromStationGroupId, toStationGroupId, progress) {
-      const projected = routeSliceProjectedPoints(routeId, fromStationGroupId, toStationGroupId);
-      if (!projected.length) return null;
-      return interpolateProjectedPolyline(projected, progress);
-    }
-
-    function tripPolylinePoints(trip) {
-      if (!trip || !trip.stopTimes?.length) return [];
-      const points = [];
-      for (let index = 0; index < trip.stopTimes.length - 1; index += 1) {
-        const currentStop = trip.stopTimes[index];
-        const nextStop = trip.stopTimes[index + 1];
-        const segment = routeSliceProjectedPoints(trip.routeId, currentStop.stationGroupId, nextStop.stationGroupId);
-        if (!segment.length) {
-          const fallback = [
-            stationPointByGroupId(currentStop.stationGroupId),
-            stationPointByGroupId(nextStop.stationGroupId),
-          ].filter(Boolean).map((station) => ({ x: station.x, y: station.y }));
-          if (!fallback.length) continue;
-          if (points.length && fallback.length && points[points.length - 1].x === fallback[0].x && points[points.length - 1].y === fallback[0].y) {
-            points.push(...fallback.slice(1));
-          } else {
-            points.push(...fallback);
-          }
-          continue;
-        }
-        if (points.length && segment.length && points[points.length - 1].x === segment[0].x && points[points.length - 1].y === segment[0].y) {
-          points.push(...segment.slice(1));
-        } else {
-          points.push(...segment);
-        }
-      }
-      return points;
-    }
-
-    function hoveredTripPathPoints() {
-      if (!state.hoveredTripId || !state.bundle) return [];
-      const trip = state.tripById.get(state.hoveredTripId);
-      if (!trip) return [];
-      return tripPolylinePoints(trip);
-    }
-
-    function render() {
-      if (!state.bundle) return;
-      const bundle = state.bundle;
-      const projection = state.projection;
-      const selectedId = state.selectedStationGroupId;
-      const centerlineSvg = [];
-      const serviceSvg = [];
-      const stationSvg = [];
-      const labelSvg = [];
-      const hoverSvg = [];
-      const zoomScale = Math.max(1, state.zoom);
-      const selectedRouteStations = state.selectedRouteId ? getRouteStationSet(state.selectedRouteId) : new Set();
-      const activePreview = planCursorPreview(state.activeMode);
-      const pending = pendingDepartureContext(activePreview);
-      const highlightedFutureStops = new Set(
-        pending
-          ? pending.destinations.map((item) => item.stationGroupId)
-          : activePreview.currentState.kind === 'TRAIN'
-            ? availableDestinations(activePreview).map((item) => item.stationGroupId)
-            : []
-      );
-      const useTileRendering = !!state.tileManifest;
-      const trackFeatures = useTileRendering
-        ? state.visibleTileData.track_centerlines
-        : bundle.trackCenterlines.map((line) => ({
-            geometry: { coordinates: line.polyline.map((point) => [point.lon, point.lat]) },
-            properties: { line_name: line.lineName, station_group_ids: line.stationGroupIds }
-          }));
-      const serviceFeatures = useTileRendering
-        ? state.visibleTileData.service_paths
-        : bundle.serviceGeometry.map((geometry) => {
-            const route = state.routeById.get(geometry.routeId);
-            return {
-              geometry: { coordinates: geometry.polyline.map((point) => [point.lon, point.lat]) },
-              properties: {
-                route_id: geometry.routeId,
-                route_name: route?.shortName,
-                route_color: route?.color,
-                offset_rank: geometry.offsetRank || 0,
-              }
-            };
-          });
-      const stationFeatures = useTileRendering
-        ? state.visibleTileData.stations
-        : bundle.physicalStations.map((station) => ({
-            geometry: { coordinates: [station.lon, station.lat] },
+            type: 'Feature',
+            id: station.id,
+            geometry: { type: 'Point', coordinates: [station.lon, station.lat] },
             properties: {
               id: station.id,
               station_group_id: station.stationGroupId,
-            }
-          }));
+              name_en: label.displayNameEn || station.names?.en || station.name,
+              name_ja: label.displayNameJa || station.names?.ja || station.name,
+              label_rank: labelRank,
+              sort_rank: -labelRank,
+              route_count: routeCount,
+              category: group.category || 'normal',
+            },
+          };
+        });
 
-      trackFeatures.filter(trackFeatureVisibleAtZoom).forEach((feature) => {
-        const trimmed = trimNishiKyushuGeometry(feature.properties.id, feature.geometry.coordinates, feature.properties.station_group_ids || []);
-        const points = trimmed.coordinates.map(([lon, lat]) => projection.project(lat, lon));
-        const stationGroupIds = trimmed.stationGroupIds || [];
-        const lineTouchesSelectedRoute = state.selectedRouteId && stationGroupIds.some((id) => selectedRouteStations.has(id));
-        centerlineSvg.push(drawPath(points, {
-          stroke: state.viewMode === 'corridor' ? '#ffffff' : 'rgba(255,255,255,0.75)',
-          width: mapLineWidth(lineTouchesSelectedRoute ? 'corridorOuterSelected' : 'corridorOuter'),
-          opacity: lineTouchesSelectedRoute ? 1 : 0.95,
-          role: lineTouchesSelectedRoute ? 'corridorOuterSelected' : 'corridorOuter',
-        }));
-        centerlineSvg.push(drawPath(points, {
-          stroke: lineTouchesSelectedRoute ? '#8aa4c8' : (state.viewMode === 'corridor' ? '#c5d0df' : '#d8dee8'),
-          width: mapLineWidth(lineTouchesSelectedRoute ? 'corridorInnerSelected' : 'corridorInner'),
-          opacity: lineTouchesSelectedRoute ? 1 : (state.viewMode === 'corridor' ? 1 : 0.88),
-          role: lineTouchesSelectedRoute ? 'corridorInnerSelected' : 'corridorInner',
-        }));
-      });
+      const trackFeatures = (bundle.trackCenterlines || [])
+        .map((track, index) => lineFeature(track.id || `track-${index}`, track.polyline, {
+          line_name: track.lineName || 'Track',
+          operator_id: track.operatorId || '',
+          mode: track.mode || 'rail',
+          line_color: track.color || (track.mode === 'subway' ? '#7aa7d9' : track.mode === 'private' ? '#50a57d' : '#8aa4c8'),
+          trunk_rank: track.mode === 'rail' || track.mode === 'shinkansen' ? 2 : track.mode === 'subway' ? 1 : 0,
+        }))
+        .filter(Boolean);
 
-      if (state.viewMode === 'service') {
-        serviceFeatures.filter(serviceFeatureVisibleAtZoom).forEach((feature) => {
-          const routeId = feature.properties.route_id;
-          const color = feature.properties.route_color || '#666';
-          const selected = !state.selectedRouteId || routeId === state.selectedRouteId;
-          const trimmed = trimNishiKyushuGeometry(routeId, feature.geometry.coordinates);
-          const points = trimmed.coordinates.map(([lon, lat]) => projection.project(lat, lon));
-          const offset = (feature.properties.offset_rank || 0) * 0.8;
-          const offsetPoints = points.map((point, index) => {
-            const prev = points[Math.max(index - 1, 0)];
-            const next = points[Math.min(index + 1, points.length - 1)];
-            const dx = next.x - prev.x;
-            const dy = next.y - prev.y;
-            const len = Math.hypot(dx, dy) || 1;
-            const nx = -dy / len;
-            const ny = dx / len;
-            return { x: point.x + nx * offset, y: point.y + ny * offset };
+      const serviceFeatures = (bundle.serviceGeometry || [])
+        .map((geometry, index) => {
+          const route = state.routeById.get(geometry.routeId) || {};
+          return lineFeature(geometry.id || `service-${index}`, geometry.polyline, {
+            route_id: geometry.routeId || '',
+            route_name: route.shortName || geometry.routeId || 'Service',
+            route_color: geometry.color || route.color || '#667487',
+            route_text_color: route.textColor || '#ffffff',
+            operator_id: geometry.operatorId || route.operatorId || '',
+            offset_rank: geometry.offsetRank || 0,
           });
-          serviceSvg.push(drawPath(offsetPoints, {
-            stroke: '#ffffff',
-            width: mapLineWidth(selected ? 'serviceOuterSelected' : 'serviceOuter'),
-            opacity: selected ? 0.95 : 0.55,
-            role: selected ? 'serviceOuterSelected' : 'serviceOuter',
-          }));
-          serviceSvg.push(drawPath(offsetPoints, {
-            stroke: color,
-            width: mapLineWidth(selected ? 'serviceInnerSelected' : 'serviceInner'),
-            opacity: selected ? 0.98 : 0.34,
-            role: selected ? 'serviceInnerSelected' : 'serviceInner',
-          }));
-        });
-      }
+        })
+        .filter(Boolean);
 
-      state.stationPoints = stationFeatures.filter(stationFeatureVisibleAtZoom).map((feature) => {
-        const stationGroupId = feature.properties.station_group_id;
-        const backing = state.physicalStationByGroupId.get(stationGroupId);
-        const [lon, lat] = feature.geometry.coordinates;
-        const point = projection.project(lat, lon);
-        return {
-          ...(backing || {}),
-          stationGroupId,
-          id: backing?.id || feature.properties.id,
-          lat,
-          lon,
-          x: point.x,
-          y: point.y,
-        };
-      });
-      state.stationPointByGroupId = new Map(state.stationPoints.map((station) => [station.stationGroupId, station]));
-
-      const metrics = stationScaleMetrics();
-
-      state.stationPoints.forEach((station) => {
-        const selected = station.stationGroupId === selectedId;
-        const onSelectedRoute = selectedRouteStations.has(station.stationGroupId);
-        const onFutureTrip = highlightedFutureStops.has(station.stationGroupId);
-        const stroke = selected ? '#f97316' : '#ffffff';
-        const fill = selected ? '#f97316' : '#203247';
-        const haloRadius = selected ? metrics.selectedHaloRadius : onSelectedRoute ? metrics.routeHaloRadius : metrics.stationRadius;
-        if (selected) {
-          stationSvg.push(`<circle data-station-halo="selected" cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(249,115,22,0.18)" style="pointer-events:none" />`);
-        } else if (onSelectedRoute) {
-          stationSvg.push(`<circle data-station-halo="route" cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(21,101,192,0.12)" style="pointer-events:none" />`);
-        }
-        if (onFutureTrip) {
-          stationSvg.push(`<circle data-future-ring="1" cx="${station.x}" cy="${station.y}" r="${metrics.futureRingRadius}" class="future-stop-ring" style="pointer-events:none;stroke-width:${metrics.futureRingStroke};stroke-dasharray:${metrics.futureRingDash} ${metrics.futureRingDash}" />`);
-        }
-        stationSvg.push(`<circle data-station-dot="${selected ? 'selected' : onSelectedRoute ? 'route' : 'normal'}" data-station-group-id="${station.stationGroupId}" cx="${station.x}" cy="${station.y}" r="${metrics.stationRadius}" fill="${onSelectedRoute && !selected ? '#2f5d97' : fill}" stroke="${selected ? stroke : onSelectedRoute ? '#dbeafe' : stroke}" stroke-width="${selected ? metrics.selectedStrokeWidth : onSelectedRoute ? metrics.routeStrokeWidth : metrics.stationStrokeWidth}" style="cursor:pointer" />`);
-      });
-
-      labelSvg.push(buildLabelMarkup());
-
-      const hoveredPoints = hoveredTripPathPoints();
-      if (hoveredPoints.length >= 2) {
-        hoverSvg.push(drawPath(hoveredPoints, {
-          stroke: '#ffffff',
-          width: mapLineWidth('hoverOuter'),
-          opacity: 0.95,
-          role: 'hoverOuter',
-        }));
-        hoverSvg.push(drawPath(hoveredPoints, {
-          stroke: '#0f172a',
-          width: mapLineWidth('hoverInner'),
-          opacity: 0.92,
-          role: 'hoverInner',
-        }));
-        hoveredPoints.forEach((point) => {
-          const hoverPointRadius = clamp(5.2 / Math.pow(zoomScale, 0.8), 0.5, 5.2);
-          const hoverPointStroke = clamp(2 / Math.pow(zoomScale, 0.5), 0.35, 2);
-          hoverSvg.push(`<circle cx="${point.x}" cy="${point.y}" r="${hoverPointRadius}" fill="#0f172a" stroke="rgba(255,255,255,0.95)" stroke-width="${hoverPointStroke}" />`);
-        });
-      }
-
-      const playerSvg = [];
-      for (const playerId of ['runner', 'hunter']) {
-        if (!shouldShowPlayer(playerId)) continue;
-        const preview = currentMapPreview(playerId);
-        if (!preview?.mapPosition) continue;
-        const color = playerId === 'runner' ? '#dc4d62' : '#2d6cdf';
-        const { x, y } = preview.mapPosition;
-        const anchorRadius = clamp(4.4 / Math.pow(zoomScale, 1.2), 0.22, 0.95);
-        const anchorStroke = clamp(1.1 / Math.pow(zoomScale, 0.7), 0.14, 0.32);
-        playerSvg.push(`
-          <g class="player-marker">
-            <circle cx="${x}" cy="${y}" r="${anchorRadius}" fill="${color}" stroke="white" stroke-width="${anchorStroke}" />
-          </g>
-        `);
-      }
-
-      svg.innerHTML = `
-        <g id="viewport">
-          <rect x="0" y="0" width="${projection.width}" height="${projection.height}" fill="transparent" />
-          <g id="corridor-layer">${centerlineSvg.join('')}</g>
-          <g id="service-layer" opacity="${state.viewMode === 'service' ? 1 : 0.18}">${serviceSvg.join('')}</g>
-          <g id="station-layer">${stationSvg.join('')}</g>
-          <g id="hovered-trip-layer">${hoverSvg.join('')}</g>
-          <g id="player-layer">${playerSvg.join('')}</g>
-        </g>
-        <g id="label-layer">${labelSvg.join('')}</g>
-        <g id="player-overlay-layer">${buildPlayerOverlayMarkup()}</g>
-      `;
-
-      svg.querySelectorAll('[data-station-group-id]').forEach((node) => {
-        node.addEventListener('click', (event) => {
-          event.stopPropagation();
-          const stationGroupId = node.getAttribute('data-station-group-id');
-          const preview = planCursorPreview(state.activeMode);
-          const pending = pendingDepartureContext(preview);
-          if (pending) {
-            const pendingDestination = pending.destinations.find((item) => item.stationGroupId === stationGroupId);
-            if (pendingDestination) {
-              addBoardAndRide(pending.trip.id, stationGroupId);
-              return;
-            }
-          }
-          if (preview.currentState.kind === 'TRAIN') {
-            const directDestination = availableDestinations(preview).find((item) => item.stationGroupId === stationGroupId);
-            if (directDestination) {
-              addRideToStation(stationGroupId);
-              return;
-            }
-          }
-          state.selectedStationGroupId = stationGroupId;
-          renderSidebar();
-          render();
-          applyViewport();
-        });
-      });
-
-      renderSidebar();
-      applyViewport();
-      scheduleVisibleTileRefresh(0);
+      return {
+        stations: { type: 'FeatureCollection', features: stationFeatures },
+        tracks: { type: 'FeatureCollection', features: trackFeatures },
+        services: { type: 'FeatureCollection', features: serviceFeatures },
+      };
     }
 
-    function applyViewport() {
-      const viewport = document.getElementById('viewport');
-      if (!viewport || !state.projection) return;
-      viewport.setAttribute('transform', `translate(${state.panX.toFixed(2)} ${state.panY.toFixed(2)}) scale(${state.zoom.toFixed(4)})`);
-      updateMapScaleStyles();
-      updateLabelLayer();
-      updatePlayerOverlayLayer();
-      scheduleVisibleTileRefresh(state.dragging ? 120 : 70);
+    function networkBounds(bundle) {
+      const coords = (bundle.physicalStations || [])
+        .filter((station) => Number.isFinite(station.lon) && Number.isFinite(station.lat))
+        .map((station) => [station.lon, station.lat]);
+      const lons = coords.map((coord) => coord[0]);
+      const lats = coords.map((coord) => coord[1]);
+      return [
+        [Math.min(...lons), Math.min(...lats)],
+        [Math.max(...lons), Math.max(...lats)],
+      ];
     }
 
-    function resetViewport() {
-      state.zoom = 1;
-      state.panX = 0;
-      state.panY = 0;
-      applyViewport();
+    function createMap() {
+      const map = new maplibregl.Map({
+        container: 'map',
+        center: TOKYO_CENTER,
+        zoom: 9.0,
+        minZoom: 4.2,
+        maxZoom: 16.5,
+        pitch: 0,
+        bearing: 0,
+        attributionControl: false,
+        localIdeographFontFamily: "'Hiragino Sans', 'Yu Gothic', 'Noto Sans CJK JP', sans-serif",
+        style: {
+          version: 8,
+          glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
+          sources: {},
+          layers: [
+            { id: 'background', type: 'background', paint: { 'background-color': '#eef2f7' } },
+            {
+              id: 'sea-haze',
+              type: 'background',
+              paint: {
+                'background-color': [
+                  'interpolate', ['linear'], ['zoom'],
+                  4, '#edf4f8',
+                  9, '#f7fafc',
+                  16, '#fbfdff',
+                ],
+              },
+            },
+          ],
+        },
+      });
+      map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-left');
+      map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+      return map;
+    }
+
+    function addRailLayers(map, collections) {
+      map.addSource('tracks', {
+        type: 'geojson',
+        data: collections.tracks,
+        promoteId: 'id',
+      });
+      map.addSource('services', {
+        type: 'geojson',
+        data: collections.services,
+        promoteId: 'id',
+      });
+      map.addSource('stations', {
+        type: 'geojson',
+        data: collections.stations,
+        promoteId: 'id',
+      });
+
+      map.addLayer({
+        id: 'track-casing',
+        type: 'line',
+        source: 'tracks',
+        filter: ['>=', ['get', 'trunk_rank'], 1],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#ffffff',
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.45, 8, 0.72, 12, 0.82],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.4, 9, 2.2, 13, 3.4],
+        },
+      });
+      map.addLayer({
+        id: 'track-lines',
+        type: 'line',
+        source: 'tracks',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': ['coalesce', ['get', 'line_color'], '#9fb0c6'],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.42, 8, 0.62, 12, 0.82],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.45, 9, 0.9, 13, 1.55, 16, 2.1],
+        },
+      });
+      map.addLayer({
+        id: 'service-lines',
+        type: 'line',
+        source: 'services',
+        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' },
+        paint: {
+          'line-color': ['coalesce', ['get', 'route_color'], '#667487'],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.12, 8, 0.32, 12, 0.68],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.35, 9, 0.9, 13, 1.8, 16, 2.6],
+        },
+      });
+      map.addLayer({
+        id: 'selected-route-casing',
+        type: 'line',
+        source: 'services',
+        filter: NONE_FILTER,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#ffffff',
+          'line-opacity': 0.96,
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 2.4, 9, 4.4, 13, 7.0, 16, 9.0],
+        },
+      });
+      map.addLayer({
+        id: 'selected-route-line',
+        type: 'line',
+        source: 'services',
+        filter: NONE_FILTER,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': ['coalesce', ['get', 'route_color'], '#1565c0'],
+          'line-opacity': 0.98,
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.4, 9, 2.4, 13, 4.2, 16, 5.6],
+        },
+      });
+
+      addStationLayers(map);
+      addLabelLayers(map);
+    }
+
+    function addStationLayers(map) {
+      map.addLayer({
+        id: 'route-stop-halo',
+        type: 'circle',
+        source: 'stations',
+        filter: NONE_STATION_FILTER,
+        paint: {
+          'circle-color': '#1565c0',
+          'circle-opacity': 0.16,
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 5, 12, 9, 16, 12],
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 1.2,
+        },
+      });
+      map.addLayer({
+        id: 'selected-trip-stops',
+        type: 'circle',
+        source: 'stations',
+        filter: NONE_STATION_FILTER,
+        paint: {
+          'circle-color': '#f97316',
+          'circle-opacity': 0.24,
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 6, 12, 10, 16, 13],
+          'circle-stroke-color': '#f97316',
+          'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 7, 0.8, 12, 1.4],
+        },
+      });
+      map.addLayer({
+        id: 'station-hub',
+        type: 'circle',
+        source: 'stations',
+        filter: ['>=', ['get', 'label_rank'], 99],
+        paint: {
+          'circle-color': '#203247',
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 2.2, 9, 3.8, 14, 5.4],
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 5, 0.6, 12, 1.3],
+        },
+      });
+      map.addLayer({
+        id: 'station-major',
+        type: 'circle',
+        source: 'stations',
+        minzoom: 7.2,
+        filter: ['all', ['>=', ['get', 'label_rank'], 90], ['<', ['get', 'label_rank'], 99]],
+        paint: {
+          'circle-color': '#263a51',
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 7.2, 1.8, 11, 3.0, 15, 4.2],
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 7.2, 0.45, 13, 1.0],
+        },
+      });
+      map.addLayer({
+        id: 'station-local',
+        type: 'circle',
+        source: 'stations',
+        minzoom: 10.4,
+        filter: ['<', ['get', 'label_rank'], 90],
+        paint: {
+          'circle-color': '#34495f',
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 10.4, 1.5, 14, 3.2, 16, 3.8],
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 10.4, 0.35, 14, 0.85],
+        },
+      });
+      map.addLayer({
+        id: 'selected-station',
+        type: 'circle',
+        source: 'stations',
+        filter: NONE_STATION_FILTER,
+        paint: {
+          'circle-color': '#f97316',
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 5.4, 10, 7.2, 15, 9.5],
+          'circle-opacity': 0.95,
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 2.0,
+        },
+      });
+    }
+
+    function addLabelLayers(map) {
+      const baseLayout = {
+        'text-field': ['coalesce', ['get', 'name_en'], ['get', 'name_ja']],
+        'text-font': ['Open Sans Regular'],
+        'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+        'text-radial-offset': 0.55,
+        'text-justify': 'auto',
+        'text-allow-overlap': false,
+        'text-ignore-placement': false,
+        'text-optional': true,
+        'symbol-sort-key': ['get', 'sort_rank'],
+      };
+      const basePaint = {
+        'text-color': '#203247',
+        'text-halo-color': 'rgba(255,255,255,0.94)',
+        'text-halo-width': ['interpolate', ['linear'], ['zoom'], 5, 1.0, 12, 1.5],
+      };
+      map.addLayer({
+        id: 'label-hub',
+        type: 'symbol',
+        source: 'stations',
+        minzoom: 5.0,
+        filter: ['>=', ['get', 'label_rank'], 99],
+        layout: {
+          ...baseLayout,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 5, 11, 9, 13, 14, 15],
+        },
+        paint: basePaint,
+      });
+      map.addLayer({
+        id: 'label-major',
+        type: 'symbol',
+        source: 'stations',
+        minzoom: 7.4,
+        filter: ['all', ['>=', ['get', 'label_rank'], 90], ['<', ['get', 'label_rank'], 99]],
+        layout: {
+          ...baseLayout,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 7.4, 10.5, 11, 12.5, 15, 14],
+        },
+        paint: basePaint,
+      });
+      map.addLayer({
+        id: 'label-local',
+        type: 'symbol',
+        source: 'stations',
+        minzoom: 11.0,
+        filter: ['<', ['get', 'label_rank'], 90],
+        layout: {
+          ...baseLayout,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 11, 10, 14, 12.2, 16, 13.4],
+        },
+        paint: basePaint,
+      });
+    }
+
+    function routeFilter(routeId) {
+      return routeId ? ['==', ['get', 'route_id'], routeId] : NONE_FILTER;
+    }
+
+    function stationMatchFilter(stationGroupIds) {
+      if (!stationGroupIds?.length) return NONE_STATION_FILTER;
+      return ['match', ['get', 'station_group_id'], stationGroupIds, true, false];
+    }
+
+    function setSelectedStation(stationGroupId) {
+      state.selectedStationGroupId = stationGroupId;
+      state.map.setFilter('selected-station', stationGroupId ? ['==', ['get', 'station_group_id'], stationGroupId] : NONE_STATION_FILTER);
+      renderStationCard();
+      renderDepartures();
+      if (stationGroupId) ensureTimetableLoaded();
+    }
+
+    function setSelectedRoute(routeId) {
+      state.selectedRouteId = routeId || null;
+      state.map.setFilter('selected-route-casing', routeFilter(state.selectedRouteId));
+      state.map.setFilter('selected-route-line', routeFilter(state.selectedRouteId));
+      const routeStops = [...(state.routeStationSetById.get(state.selectedRouteId) || new Set())];
+      state.map.setFilter('route-stop-halo', stationMatchFilter(routeStops));
+      renderRouteCard();
+      renderRouteList();
+      renderDepartures();
+    }
+
+    function setSelectedTrip(tripId) {
+      state.selectedTripId = tripId || null;
+      const trip = state.tripById.get(state.selectedTripId);
+      state.selectedTripStopIds = trip ? trip.stopTimes.map((stop) => stop.stationGroupId) : [];
+      state.map.setFilter('selected-trip-stops', stationMatchFilter(state.selectedTripStopIds));
+      if (trip?.routeId) setSelectedRoute(trip.routeId);
+      renderDepartures();
+      renderRouteCard();
     }
 
     function setViewMode(mode) {
       state.viewMode = mode;
-      document.getElementById('corridor-btn').classList.toggle('active', mode === 'corridor');
-      document.getElementById('service-btn').classList.toggle('active', mode === 'service');
-      mapTitle.textContent = mode === 'corridor' ? 'Corridor View' : 'Service View';
-      mapSubtitle.textContent = mode === 'corridor'
-        ? 'Lower-zoom structural map. Physical track centerlines stay clean while the station hierarchy drives label density.'
-        : 'Service-oriented view. Real service families ride on top of the same Tokyo Rail bundle with distinct colors and offsets.';
-      render();
-    }
-
-    function setActiveMode(mode) {
-      if (onlineActive() && state.online.seat && mode !== state.online.seat) return;
-      state.activeMode = mode;
-      state.selectedStationGroupId = null;
-      state.hoveredTripId = null;
-      render();
-    }
-
-    function resetPlan() {
-      truncateFuturePlan({ preserveCurrentRide: true });
-    }
-
-    function applyTestPreset({ schedule = true } = {}) {
-      const runnerStart = state.bundle?.metadata?.defaultRunnerStartStationId || 'SG_TOKYO';
-      const hunterStart = state.bundle?.metadata?.defaultHunterStartStationId || 'SG_SHIN_OSAKA';
-      if (state.activeMode === 'hunter') {
-        state.startTime = '07:00';
-        state.endTime = '18:00';
-        state.players.runner = { start_station_id: runnerStart, input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: state.endTime }] };
-        state.players.hunter = { start_station_id: hunterStart, input_mode: 'plan', steps: [] };
-      } else {
-        state.startTime = '06:00';
-        state.endTime = '18:00';
-        state.players.runner = { start_station_id: runnerStart, input_mode: 'plan', steps: [] };
-        state.players.hunter = { start_station_id: hunterStart, input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: state.endTime }] };
+      document.getElementById('corridor-button').classList.toggle('active', mode === 'corridor');
+      document.getElementById('service-button').classList.toggle('active', mode === 'service');
+      const serviceVisibility = mode === 'service' ? 'visible' : 'none';
+      if (state.map?.getLayer('service-lines')) {
+        state.map.setLayoutProperty('service-lines', 'visibility', serviceVisibility);
       }
-      state.selectedStationGroupId = null;
-      state.phase = 'PLANNING';
-      state.planningSecondsRemaining = 60;
-      state.currentGameMinute = hhmmToMinutes(state.startTime);
-      state.nextPlanningMinute = Math.min(hhmmToMinutes(state.startTime) + 60, hhmmToMinutes(state.endTime));
-      state.clockRunning = true;
-      state.pendingTripIds = { runner: null, hunter: null };
-      invalidateSimulation();
-      if (schedule && !onlineActive()) scheduleTick();
-      else submitCurrentPlanToRoom().catch(() => {});
-      render();
     }
 
-    function scheduleTick() {
-      if (onlineActive()) return;
-      if (state.tickHandle) window.clearTimeout(state.tickHandle);
-      if (!state.clockRunning) return;
-      state.tickHandle = window.setTimeout(onTick, 1000);
-    }
-
-    function onTick() {
-      state.tickHandle = null;
-      if (!state.clockRunning) return;
-      if (state.phase === 'PLANNING') {
-        state.planningSecondsRemaining = Math.max(0, state.planningSecondsRemaining - 1);
-        if (state.planningSecondsRemaining === 0) {
-          state.phase = 'LIVE';
-          checkLiveCapture();
-        }
-      } else if (state.phase === 'LIVE') {
-        const endMinute = hhmmToMinutes(state.endTime);
-        if (state.currentGameMinute < endMinute) {
-          state.currentGameMinute += 1;
-          checkLiveCapture();
-          if (
-            state.clockRunning &&
-            state.phase === 'LIVE' &&
-            state.nextPlanningMinute !== null &&
-            state.currentGameMinute >= state.nextPlanningMinute &&
-            state.currentGameMinute < endMinute
-          ) {
-            state.phase = 'PLANNING';
-            state.planningSecondsRemaining = 60;
-            state.nextPlanningMinute = Math.min(state.nextPlanningMinute + 60, endMinute);
-          }
-        } else {
-          state.phase = 'ENDED';
-          state.clockRunning = false;
-        }
-      }
-      render();
-      if (state.clockRunning) scheduleTick();
-    }
-
-    function startGameNow() {
-      if (onlineActive()) {
-        apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/start`, {
-          method: 'POST',
-          body: JSON.stringify({ seat: state.online.seat, token: state.online.token }),
-        }).then((data) => {
-          syncStateFromRoom(data.room);
-        }).catch((error) => {
-          roomStatusEl.textContent = `Start failed: ${describeRoomError(error)}`;
+    function bindMapInteractions(map) {
+      ['station-hub', 'station-major', 'station-local'].forEach((layerId) => {
+        map.on('click', layerId, (event) => {
+          const feature = event.features?.[0];
+          if (!feature) return;
+          setSelectedStation(feature.properties.station_group_id);
         });
-        return;
-      }
-      if (state.phase !== 'PLANNING') return;
-      state.phase = 'LIVE';
-      state.clockRunning = true;
-      invalidateSimulation();
-      checkLiveCapture();
-      if (!state.liveCapture) scheduleTick();
-      render();
-    }
-
-    function toggleClock() {
-      if (onlineActive()) return;
-      state.clockRunning = !state.clockRunning;
-      if (state.clockRunning) scheduleTick();
-      else if (state.tickHandle) {
-        window.clearTimeout(state.tickHandle);
-        state.tickHandle = null;
-      }
-      render();
-    }
-
-    function chooseTrip(tripId) {
-      state.pendingTripIds[state.activeMode] = tripId;
-      render();
-    }
-
-    function chooseAnotherTrip() {
-      clearPendingTrip();
-      render();
-    }
-
-    function currentEditableRideIndex(preview, playerId = state.activeMode) {
-      if (!preview || preview.currentState.kind !== 'TRAIN') return -1;
-      const steps = state.players[playerId].steps;
-      const candidateIndex = preview.resolvedSteps.length;
-      return steps[candidateIndex]?.type === 'RIDE_TO_STATION' ? candidateIndex : -1;
-    }
-
-    function truncateFuturePlan({ preserveCurrentRide = false } = {}) {
-      const preview = planCursorPreview(state.activeMode);
-      const steps = state.players[state.activeMode].steps;
-      const keep = steps.slice(0, preview.resolvedSteps.length);
-      const editableRideIndex = currentEditableRideIndex(preview);
-      if (preserveCurrentRide && editableRideIndex >= 0) {
-        keep.push(steps[editableRideIndex]);
-      }
-      state.players[state.activeMode].steps = keep;
-      clearPendingTrip();
-      invalidateSimulation();
-      render();
-      submitCurrentPlanToRoom().catch(() => {});
-      return preview;
-    }
-
-    function beginEditCurrentRide() {
-      const preview = planCursorPreview(state.activeMode);
-      const editableRideIndex = currentEditableRideIndex(preview);
-      if (editableRideIndex < 0) return;
-      state.players[state.activeMode].steps = state.players[state.activeMode].steps.slice(0, editableRideIndex);
-      clearPendingTrip();
-      invalidateSimulation();
-      render();
-      submitCurrentPlanToRoom().catch(() => {});
-    }
-
-    function setStartToSelected() {
-      if (!state.selectedStationGroupId) return;
-      state.players[state.activeMode].start_station_id = state.selectedStationGroupId;
-      state.players[state.activeMode].steps = [];
-      clearPendingTrip();
-      invalidateSimulation();
-      render();
-      submitCurrentPlanToRoom().catch(() => {});
-    }
-
-    function addWaitStep() {
-      const preview = truncateFuturePlan();
-      if (preview.currentState.kind !== 'NODE') return;
-      const targetMinute = Math.min(preview.currentMinute + 5, hhmmToMinutes(state.endTime));
-      state.players[state.activeMode].steps.push({ type: 'WAIT_UNTIL', until_hhmm: minutesToHhmm(targetMinute) });
-      clearPendingTrip();
-      invalidateSimulation();
-      render();
-      submitCurrentPlanToRoom().catch(() => {});
-    }
-
-    function undoLastStep() {
-      const steps = state.players[state.activeMode].steps;
-      if (!steps.length) return;
-      steps.pop();
-      clearPendingTrip();
-      invalidateSimulation();
-      render();
-      submitCurrentPlanToRoom().catch(() => {});
-    }
-
-    function addBoardAndRide(tripId, stationGroupId) {
-      const preview = truncateFuturePlan();
-      if (preview.currentState.kind !== 'NODE') return;
-      state.players[state.activeMode].steps.push({ type: 'BOARD_TRAIN', trip_id: tripId });
-      state.players[state.activeMode].steps.push({ type: 'RIDE_TO_STATION', station_id: stationGroupId });
-      clearPendingTrip();
-      invalidateSimulation();
-      render();
-      submitCurrentPlanToRoom().catch(() => {});
-    }
-
-    function addRideToStation(stationGroupId) {
-      const preview = planCursorPreview(state.activeMode);
-      if (preview.currentState.kind !== 'TRAIN') return;
-      const editableRideIndex = currentEditableRideIndex(preview);
-      if (editableRideIndex >= 0) {
-        state.players[state.activeMode].steps = state.players[state.activeMode].steps.slice(0, editableRideIndex);
-      } else {
-        state.players[state.activeMode].steps = state.players[state.activeMode].steps.slice(0, preview.resolvedSteps.length);
-      }
-      state.players[state.activeMode].steps.push({ type: 'RIDE_TO_STATION', station_id: stationGroupId });
-      clearPendingTrip();
-      invalidateSimulation();
-      render();
-      submitCurrentPlanToRoom().catch(() => {});
-    }
-
-    function detectLiveCapture() {
-      if (state.phase !== 'LIVE') return null;
-      const runnerPreview = previewPlayer('runner', visibleGameMinute());
-      const hunterPreview = previewPlayer('hunter', visibleGameMinute());
-      const runnerState = runnerPreview.currentState;
-      const hunterState = hunterPreview.currentState;
-      if (runnerState.kind === 'TRAIN' && hunterState.kind === 'TRAIN' && runnerState.tripId === hunterState.tripId) {
-        return { type: 'same_train', time_hhmm: minutesToHhmm(visibleGameMinute()), trip_id: runnerState.tripId };
-      }
-      if (runnerState.kind === 'NODE' && hunterState.kind === 'NODE' && runnerState.stationGroupId === hunterState.stationGroupId) {
-        return { type: 'same_node', time_hhmm: minutesToHhmm(visibleGameMinute()), station_group_id: runnerState.stationGroupId };
-      }
-      return null;
-    }
-
-    function checkLiveCapture() {
-      const capture = detectLiveCapture();
-      if (!capture) return;
-      state.liveCapture = capture;
-      state.phase = 'ENDED';
-      state.clockRunning = false;
-      resultInfoEl.textContent = capture.type === 'same_node'
-        ? `GAME END\n\nHunter caught the runner at ${capture.time_hhmm}.\nRule: same_node\nStation: ${stationGroupLabel(capture.station_group_id)}`
-        : `GAME END\n\nHunter caught the runner at ${capture.time_hhmm}.\nRule: same_train\nTrip: ${formatTripLabel(state.tripById.get(capture.trip_id) || { serviceName: capture.trip_id })}`;
-    }
-
-    function classifyEventFamily(eventType) {
-      if (['SCENARIO_START', 'SCENARIO_END'].includes(eventType)) return 'LIFECYCLE';
-      if (eventType === 'CAPTURE') return 'RESOLUTION';
-      if (['START_AT_STATION', 'WAIT_UNTIL'].includes(eventType)) return 'POSITION';
-      if (['BOARD_TRAIN', 'ALIGHT_TRAIN'].includes(eventType)) return 'MOVEMENT';
-      return 'GENERIC';
-    }
-
-    function formatEvent(timeMinute, eventType, playerId = null, payload = {}) {
-      const event = {
-        time_hhmm: minutesToHhmm(timeMinute),
-        time_minute: timeMinute,
-        type: eventType,
-        event_scope: ['SCENARIO_START', 'CAPTURE', 'SCENARIO_END'].includes(eventType) ? 'MATCH_GLOBAL' : 'PLAYER_LOCAL',
-        timeline_lane: playerId || 'match',
-        event_family: classifyEventFamily(eventType),
-      };
-      if (playerId) event.player_id = playerId;
-      return { ...event, ...payload };
-    }
-
-    function eventPriority(eventType) {
-      return { SCENARIO_START: 0, START_AT_STATION: 1, WAIT_UNTIL: 2, BOARD_TRAIN: 4, ALIGHT_TRAIN: 5, CAPTURE: 6, SCENARIO_END: 7 }[eventType] ?? 99;
-    }
-
-    function expandPlayerPlan(playerId, playerData, scenario) {
-      let currentMinute = hhmmToMinutes(scenario.start_time_hhmm);
-      const endMinute = hhmmToMinutes(scenario.end_time_hhmm);
-      let currentStationId = playerData.start_station_id;
-      let currentTrip = null;
-      let currentBoardStop = null;
-      const resolvedActions = [];
-      const events = [
-        formatEvent(currentMinute, 'START_AT_STATION', playerId, {
-          station_group_id: currentStationId,
-          carrier_after: { kind: 'NODE', stationGroupId: currentStationId },
-        }),
-      ];
-      const steps = playerData.plan ? playerData.plan.steps : (playerData.actions || []);
-      for (let i = 0; i < steps.length; i += 1) {
-        const action = steps[i];
-        if (action.type === 'WAIT_UNTIL') {
-          const targetMinute = hhmmToMinutes(action.until_hhmm);
-          if (targetMinute < currentMinute) throw new Error(`${playerId} has invalid WAIT_UNTIL`);
-          events.push(formatEvent(targetMinute, 'WAIT_UNTIL', playerId, { station_group_id: currentStationId }));
-          currentMinute = targetMinute;
-          resolvedActions.push({ step_index: i + 1, ...action });
-          continue;
-        }
-        if (action.type === 'BOARD_TRAIN') {
-          const trip = state.tripById.get(action.trip_id);
-          if (!trip) throw new Error(`Unknown trip ${action.trip_id}`);
-          const boardStop = findBoardingStop(trip, currentStationId, currentMinute);
-          if (!boardStop) throw new Error(`Trip ${action.trip_id} not catchable from ${currentStationId}`);
-          const boardMinute = stopDepartureMinutes(boardStop);
-          events.push(formatEvent(boardMinute, 'BOARD_TRAIN', playerId, {
-            station_group_id: currentStationId,
-            trip_id: trip.id,
-            carrier_after: { kind: 'TRAIN', tripId: trip.id },
-          }));
-          currentMinute = boardMinute;
-          currentTrip = trip;
-          currentBoardStop = boardStop;
-          currentStationId = null;
-          resolvedActions.push({ step_index: i + 1, ...action });
-          continue;
-        }
-        if (action.type === 'RIDE_TO_STATION') {
-          if (!currentTrip || !currentBoardStop) throw new Error(`${playerId} cannot ride while not on a trip`);
-          const alightStop = findAlightStop(currentTrip, currentBoardStop.sequence, action.station_id);
-          if (!alightStop) throw new Error(`${currentTrip.id} does not reach ${action.station_id}`);
-          const arrivalMinute = stopArrivalMinutes(alightStop);
-          events.push(formatEvent(arrivalMinute, 'ALIGHT_TRAIN', playerId, {
-            station_group_id: alightStop.stationGroupId,
-            trip_id: currentTrip.id,
-            carrier_after: { kind: 'NODE', stationGroupId: alightStop.stationGroupId },
-          }));
-          currentMinute = arrivalMinute;
-          currentStationId = alightStop.stationGroupId;
-          currentTrip = null;
-          currentBoardStop = null;
-          resolvedActions.push({ step_index: i + 1, ...action });
-        }
-      }
-      return {
-        player_id: playerId,
-        start_station_id: playerData.start_station_id,
-        input_mode: playerData.plan ? 'plan' : 'actions',
-        resolved_actions: resolvedActions,
-        events,
-        final_station_id: currentStationId,
-      };
-    }
-
-    function cloneState(stateObj) {
-      return { runner: { ...stateObj.runner }, hunter: { ...stateObj.hunter } };
-    }
-
-    function applyEventToState(stateObj, event) {
-      if (!event.player_id) return;
-      if (event.type === 'START_AT_STATION' || event.type === 'ALIGHT_TRAIN') stateObj[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
-      else if (event.type === 'BOARD_TRAIN') stateObj[event.player_id] = { kind: 'TRAIN', tripId: event.trip_id };
-    }
-
-    function allowsSameNodeCapture(event, minuteEvents) {
-      const playerEvents = minuteEvents.filter((item) => item.player_id);
-      const involvedPlayers = new Set(playerEvents.map((item) => item.player_id));
-      if (involvedPlayers.size < 2) return true;
-      const nodeEnteringTypes = new Set(['START_AT_STATION', 'ALIGHT_TRAIN']);
-      return playerEvents.every((item) => nodeEnteringTypes.has(item.type));
-    }
-
-    function detectCaptureAfterEvent(event, runningState, minuteEvents) {
-      if (!['SCENARIO_START', 'START_AT_STATION', 'BOARD_TRAIN', 'ALIGHT_TRAIN'].includes(event.type)) return null;
-      const runnerState = runningState.runner;
-      const hunterState = runningState.hunter;
-      if (runnerState.kind === 'TRAIN' && hunterState.kind === 'TRAIN' && runnerState.tripId === hunterState.tripId) {
-        return { type: 'same_train', trip_id: runnerState.tripId };
-      }
-      if (runnerState.kind === 'NODE' && hunterState.kind === 'NODE' && runnerState.stationGroupId === hunterState.stationGroupId) {
-        if (!allowsSameNodeCapture(event, minuteEvents || [event])) return null;
-        return { type: 'same_node', station_group_id: runnerState.stationGroupId };
-      }
-      return null;
-    }
-
-    function buildScenario() {
-      return {
-        id: 'v3-web-client-live',
-        start_time_hhmm: state.startTime,
-        end_time_hhmm: state.endTime,
-        players: {
-          runner: state.players.runner.input_mode === 'plan'
-            ? { start_station_id: state.players.runner.start_station_id, plan: { steps: state.players.runner.steps } }
-            : { start_station_id: state.players.runner.start_station_id, actions: state.players.runner.steps },
-          hunter: state.players.hunter.input_mode === 'plan'
-            ? { start_station_id: state.players.hunter.start_station_id, plan: { steps: state.players.hunter.steps } }
-            : { start_station_id: state.players.hunter.start_station_id, actions: state.players.hunter.steps },
-        },
-      };
-    }
-
-    function buildMatchEventLog(scenario, runner, hunter) {
-      const startMinute = hhmmToMinutes(scenario.start_time_hhmm);
-      const endMinute = hhmmToMinutes(scenario.end_time_hhmm);
-      const events = [
-        formatEvent(startMinute, 'SCENARIO_START', null, { scenario_id: scenario.id }),
-        ...runner.events,
-        ...hunter.events,
-      ].sort((a, b) => {
-        if (a.time_minute !== b.time_minute) return a.time_minute - b.time_minute;
-        const pa = eventPriority(a.type);
-        const pb = eventPriority(b.type);
-        if (pa !== pb) return pa - pb;
-        return String(a.player_id || '').localeCompare(String(b.player_id || ''));
+        map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
+        map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
       });
 
-      const runningState = {
-        runner: { kind: 'NODE', stationGroupId: runner.start_station_id },
-        hunter: { kind: 'NODE', stationGroupId: hunter.start_station_id },
-      };
-      const resolvedEvents = [];
-      let resolvedCapture = null;
-      for (let index = 0; index < events.length; index += 1) {
-        const event = events[index];
-        const minuteEvents = events.filter((item) => item.time_minute === event.time_minute);
-        event.state_before = cloneState(runningState);
-        applyEventToState(runningState, event);
-        event.state_after = cloneState(runningState);
-        event.state_snapshot = cloneState(runningState);
-        resolvedEvents.push(event);
-        const capture = detectCaptureAfterEvent(event, runningState, minuteEvents);
-        if (capture) {
-          const captureEvent = formatEvent(event.time_minute, 'CAPTURE', null, {
-            capture_type: capture.type,
-            trigger_event_type: event.type,
-            trigger_player_id: event.player_id,
-            ...Object.fromEntries(Object.entries(capture).filter(([key]) => key !== 'type')),
-          });
-          captureEvent.state_before = cloneState(runningState);
-          captureEvent.state_after = cloneState(runningState);
-          captureEvent.state_snapshot = cloneState(runningState);
-          resolvedEvents.push(captureEvent);
-          resolvedCapture = { type: capture.type, time_hhmm: captureEvent.time_hhmm, ...Object.fromEntries(Object.entries(capture).filter(([key]) => key !== 'type')) };
-          break;
-        }
-      }
-      if (!resolvedCapture) {
-        const endEvent = formatEvent(endMinute, 'SCENARIO_END', null, { scenario_id: scenario.id });
-        endEvent.state_before = cloneState(runningState);
-        endEvent.state_after = cloneState(runningState);
-        endEvent.state_snapshot = cloneState(runningState);
-        resolvedEvents.push(endEvent);
-      }
-      return { match_event_log: resolvedEvents, capture: resolvedCapture };
+      map.on('click', 'service-lines', (event) => {
+        const feature = event.features?.[0];
+        if (!feature) return;
+        setSelectedRoute(feature.properties.route_id);
+      });
+      map.on('mouseenter', 'service-lines', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'service-lines', () => { map.getCanvas().style.cursor = ''; });
+
+      map.on('zoom', () => {
+        zoomPill.textContent = `Zoom ${map.getZoom().toFixed(2)}`;
+      });
     }
 
-    function buildResult() {
-      const scenario = buildScenario();
-      const runner = expandPlayerPlan('runner', scenario.players.runner, scenario);
-      const hunter = expandPlayerPlan('hunter', scenario.players.hunter, scenario);
-      const match = buildMatchEventLog(scenario, runner, hunter);
-      return {
-        scenario_id: scenario.id,
-        dataset_id: state.bundle.metadata?.datasetId || 'v3_bundle',
-        capture: match.capture,
-        match_event_log: match.match_event_log,
-        players: { runner, hunter },
-      };
+    function renderStats(bundle) {
+      statsEl.innerHTML = [
+        ['Stations', bundle.physicalStations.length],
+        ['Routes', bundle.serviceRoutes.length],
+        ['Tracks', bundle.trackCenterlines.length],
+        ['Trips', bundle.metadata?.deferredTripCount || 0],
+      ].map(([label, value]) => `
+        <div class="stat">
+          <strong>${value}</strong>
+          <span>${label}</span>
+        </div>
+      `).join('');
     }
 
-    function formatEventSummary(event) {
-      const parts = [event.time_hhmm, event.type];
-      if (event.player_id) parts.push(event.player_id);
-      if (event.station_group_id) parts.push(stationGroupLabel(event.station_group_id));
-      if (event.trip_id) {
-        const trip = state.tripById.get(event.trip_id);
-        parts.push(formatTripLabel(trip || { serviceName: event.trip_id, serviceNumber: '' }));
-      }
-      if (event.capture_type) parts.push(event.capture_type);
-      return parts.join('  ');
-    }
-
-    function renderReplayList() {
-      resultEventListEl.innerHTML = '';
-      if (!state.latestResult?.match_event_log?.length) {
-        resultEventListEl.innerHTML = `<div class="empty">No replay yet. Run Simulation first.</div>`;
-        resultDetailEl.textContent = 'Select an event to inspect it.';
+    function renderStationCard() {
+      if (!state.selectedStationGroupId) {
+        stationCardEl.textContent = 'Click a station dot on the map. Labels are placed by MapLibre collision avoidance rather than SVG text repainting.';
         return;
       }
-      state.latestResult.match_event_log.forEach((event, index) => {
-        resultEventListEl.innerHTML += `
-          <button class="mini-card clickable ${index === state.selectedResultEventIndex ? 'active' : ''}" data-replay-index="${index}">
-            <strong>${formatEventSummary(event)}</strong>
-            <span>${event.event_family}</span>
+      const group = state.stationGroupById.get(state.selectedStationGroupId);
+      const station = state.stationByGroupId.get(state.selectedStationGroupId);
+      const routeIds = [...(state.stationRouteIdsByGroupId.get(state.selectedStationGroupId) || new Set())];
+      const routeTags = routeIds.slice(0, 12).map((routeId) => {
+        const route = state.routeById.get(routeId);
+        return `<button class="tag" type="button" data-route-chip="${routeId}">${route?.shortName || routeId}</button>`;
+      }).join('');
+      stationCardEl.innerHTML = `
+        <h3>${displayNameForGroup(state.selectedStationGroupId)}</h3>
+        <div>${group?.names?.ja || station?.names?.ja || ''}</div>
+        <div>Station group: ${state.selectedStationGroupId}</div>
+        <div>Lat/Lon: ${station ? `${station.lat.toFixed(5)}, ${station.lon.toFixed(5)}` : 'n/a'}</div>
+        <div class="tag-row">
+          <span class="tag">${routeIds.length} routes</span>
+          <span class="tag">rank ${group?.labelRank || 'n/a'}</span>
+          ${routeTags}
+        </div>
+      `;
+      stationCardEl.querySelectorAll('[data-route-chip]').forEach((node) => {
+        node.addEventListener('click', () => setSelectedRoute(node.getAttribute('data-route-chip')));
+      });
+    }
+
+    function renderRouteCard() {
+      if (!state.selectedRouteId) {
+        routeCardEl.textContent = 'Click a colored service line or a route row. The selected route becomes a high-priority MapLibre layer.';
+        return;
+      }
+      const route = state.routeById.get(state.selectedRouteId);
+      const routeStops = state.routeStationSetById.get(state.selectedRouteId) || new Set();
+      const selectedTrip = state.tripById.get(state.selectedTripId);
+      routeCardEl.innerHTML = `
+        <h3>${route?.shortName || state.selectedRouteId}</h3>
+        <div>${route?.longName || ''}</div>
+        <div class="tag-row">
+          <span class="tag">${route?.operatorId || 'operator n/a'}</span>
+          <span class="tag">${routeStops.size} mapped stops</span>
+          ${selectedTrip ? `<span class="tag">Train ${selectedTrip.serviceName} ${selectedTrip.serviceNumber || ''}</span>` : ''}
+        </div>
+      `;
+    }
+
+    function renderRouteList() {
+      const routes = [...(state.bundle?.serviceRoutes || [])]
+        .sort((a, b) => (a.operatorId || '').localeCompare(b.operatorId || '') || a.shortName.localeCompare(b.shortName));
+      routeListEl.innerHTML = routes.map((route) => {
+        const stopCount = (state.routeStationSetById.get(route.id) || new Set()).size;
+        return `
+          <button class="route-row ${route.id === state.selectedRouteId ? 'active' : ''}" type="button" data-route-id="${route.id}">
+            <span class="route-swatch" style="background:${route.color || '#667487'}"></span>
+            <span>
+              <span class="row-title">${route.shortName || route.id}</span>
+              <span class="row-sub">${route.operatorId || ''}</span>
+            </span>
+            <span class="row-meta">${stopCount}</span>
           </button>
         `;
+      }).join('');
+      routeListEl.querySelectorAll('[data-route-id]').forEach((node) => {
+        node.addEventListener('click', () => setSelectedRoute(node.getAttribute('data-route-id')));
       });
-      resultEventListEl.querySelectorAll('[data-replay-index]').forEach((node) => {
-        node.addEventListener('click', () => {
-          state.selectedResultEventIndex = Number(node.getAttribute('data-replay-index'));
-          render();
-        });
-      });
-      const event = currentReplayEvent();
-      if (!event) return;
-      const lines = [`Time: ${event.time_hhmm}`, `Type: ${event.type}`];
-      if (event.player_id) lines.push(`Player: ${event.player_id}`);
-      if (event.station_group_id) lines.push(`Station: ${stationGroupLabel(event.station_group_id)}`);
-      if (event.trip_id) {
-        const trip = state.tripById.get(event.trip_id);
-        lines.push(`Trip: ${formatTripLabel(trip || { serviceName: event.trip_id, serviceNumber: '' })}`);
-      }
-      if (event.capture_type) lines.push(`Capture: ${event.capture_type}`);
-      if (event.state_after) {
-        lines.push('', `Runner after: ${event.state_after.runner.kind === 'NODE' ? stationGroupLabel(event.state_after.runner.stationGroupId) : event.state_after.runner.tripId}`);
-        lines.push(`Hunter after: ${event.state_after.hunter.kind === 'NODE' ? stationGroupLabel(event.state_after.hunter.stationGroupId) : event.state_after.hunter.tripId}`);
-      }
-      resultDetailEl.textContent = lines.join('\n');
     }
 
-    function runSimulation() {
+    async function ensureTimetableLoaded() {
+      if (state.timetableStatus === 'ready' || state.timetableStatus === 'loading') return;
+      state.timetableStatus = 'loading';
+      renderDepartures();
       try {
-        const result = buildResult();
-        state.latestResult = result;
-        state.selectedResultEventIndex = 0;
-        const capture = result.capture;
-        const lines = [`Scenario: ${result.scenario_id}`, `Events: ${result.match_event_log.length}`];
-        if (!capture) lines.push('Capture: none');
-        else if (capture.type === 'same_node') lines.push(`Capture: same_node at ${stationGroupLabel(capture.station_group_id)} ${capture.time_hhmm}`);
-        else {
-          const trip = state.tripById.get(capture.trip_id);
-          lines.push(`Capture: same_train on ${formatTripLabel(trip || { serviceName: capture.trip_id, serviceNumber: '' })} ${capture.time_hhmm}`);
-        }
-        resultInfoEl.textContent = `SIMULATION\n\n${lines.join('\n')}`;
-      } catch (error) {
-        resultInfoEl.textContent = `SIMULATION\n\nFailed to simulate: ${String(error)}`;
-        state.latestResult = null;
-      }
-      render();
-    }
-
-    function renderTrainOutlook() {
-      const preview = planCursorPreview(state.activeMode);
-      const pending = pendingDepartureContext(preview);
-      let rows = [];
-      let title = 'No train selected';
-      let subtitle = 'Choose a train to preview later stops';
-      let listHtml = '';
-      if (pending) {
-        title = formatTripLabel(pending.trip);
-        subtitle = 'Selected service preview';
-        rows = pending.destinations.slice(0, 18).map((item) => ({
-          time: item.arrivalHhmm,
-          title: item.label,
-          sub: 'Click to add this ride leg',
-          action: 'ride-here',
-          stationGroupId: item.stationGroupId,
-          tripId: pending.trip.id
-        }));
-      } else if (preview.currentState.kind === 'TRAIN') {
-        title = formatTripLabel(preview.currentTrip || { serviceName: preview.currentState.tripId, serviceNumber: '' });
-        subtitle = 'Current onboard route';
-        rows = availableDestinations(preview).slice(0, 18).map((item) => ({
-          time: item.arrivalHhmm,
-          title: item.label,
-          sub: 'Click to get off here',
-          action: 'ride-direct',
-          stationGroupId: item.stationGroupId
-        }));
-      } else if (preview.currentState.kind === 'NODE') {
-        const departures = availableDepartures(preview);
-        rows = departures.map((entry) => ({
-          time: entry.departureHhmm,
-          title: formatTripLabel(entry.trip),
-          sub: trainPreviewText(entry.trip, entry.boardStop),
-          action: 'choose-trip',
-          tripId: entry.trip.id
-        }));
-      }
-      if (rows.length) {
-        listHtml = rows.map((row) => `
-          <div class="outlook-row clickable" data-action="${row.action}" ${row.tripId ? `data-trip-id="${row.tripId}"` : ''} ${row.stationGroupId ? `data-station-group-id="${row.stationGroupId}"` : ''}>
-            <div>${row.time}</div>
-            <div><strong>${row.title}</strong><span>${row.sub}</span></div>
-          </div>
-        `).join('');
-      } else if (preview.currentState.kind === 'TRAIN') {
-        listHtml = `<div class="empty">No downstream stops available from the current on-train state.</div>`;
-      } else if (pending) {
-        listHtml = `<div class="empty">No downstream stops available for the selected train.</div>`;
-      } else {
-        listHtml = `<div class="empty">No catchable departures from ${stationGroupLabel(preview.currentState.stationGroupId)} after ${preview.currentTime}.</div>`;
-      }
-      trainOutlookEl.innerHTML = `
-        <div class="tiny-actions">
-          <button class="tiny-button" data-action="set-start">Set Start To Selected Station</button>
-          <button class="tiny-button" data-action="wait">Wait +5 minutes</button>
-          <button class="tiny-button" data-action="undo">Undo Step</button>
-          <button class="tiny-button" data-action="clear">Clear Plan</button>
-          ${pending ? `<button class="tiny-button" data-action="choose-another">Choose Another Train</button>` : ''}
-        </div>
-        <div class="selected-card">
-          <h3>${title}</h3>
-          <p>${subtitle}</p>
-        </div>
-        <div class="outlook-list" style="margin-top:12px;">
-          ${listHtml}
-        </div>
-      `;
-      trainOutlookEl.querySelectorAll('[data-action]').forEach((button) => {
-        button.addEventListener('click', () => {
-          const action = button.dataset.action;
-          if (action === 'set-start') setStartToSelected();
-          else if (action === 'wait') addWaitStep();
-          else if (action === 'undo') undoLastStep();
-          else if (action === 'clear') resetPlan();
-          else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
-          else if (action === 'choose-another') chooseAnotherTrip();
-          else if (action === 'ride-here') addBoardAndRide(button.dataset.tripId, button.dataset.stationGroupId);
-          else if (action === 'ride-direct') addRideToStation(button.dataset.stationGroupId);
-        });
-      });
-    }
-
-    function renderPlanBoard() {
-      const steps = state.players[state.activeMode].steps;
-      if (!steps.length) {
-        planBoardInfoEl.textContent = 'No legs yet.\nSelect a station, choose a departure, then choose a destination stop.';
-        return;
-      }
-      let chainStation = state.players[state.activeMode].start_station_id;
-      let pendingTrip = null;
-      let legIndex = 1;
-      const lines = [];
-      for (const step of steps) {
-        if (step.type === 'WAIT_UNTIL') {
-          lines.push(`WAIT until ${step.until_hhmm}`);
-          continue;
-        }
-        if (step.type === 'BOARD_TRAIN') {
-          pendingTrip = state.tripById.get(step.trip_id);
-          continue;
-        }
-        if (step.type === 'RIDE_TO_STATION') {
-          lines.push(`LEG ${legIndex}. ${stationGroupLabel(chainStation)} -> ${formatTripLabel(pendingTrip || { serviceName: 'Trip', serviceNumber: '' })} -> ${stationGroupLabel(step.station_id)}`);
-          chainStation = step.station_id;
-          pendingTrip = null;
-          legIndex += 1;
-        }
-      }
-      planBoardInfoEl.textContent = lines.join('\n\n');
-    }
-
-    function renderUpcomingPlanSummary(preview) {
-      const steps = state.players[state.activeMode].steps;
-      if (!steps.length) {
-        cursorInfoEl.textContent = 'No plan yet.\nChoose a train, then choose where to get off.';
-        return;
-      }
-      const items = [];
-      let chainStation = state.players[state.activeMode].start_station_id;
-      let pendingTrip = null;
-      const editableRideIndex = currentEditableRideIndex(preview);
-      for (const step of steps) {
-        if (step.type === 'WAIT_UNTIL') {
-          items.push({
-            title: `Wait until ${step.until_hhmm}`,
-            sub: 'Hold at station',
-            editable: false,
+        const payload = await fetchJsonMaybeGz(TIMETABLE_URL);
+        state.tripById = new Map();
+        state.stationTripsByGroupId = new Map();
+        (payload.tripInstances || []).forEach((trip) => {
+          state.tripById.set(trip.id, trip);
+          const seen = new Set();
+          (trip.stopTimes || []).forEach((stop) => {
+            if (seen.has(stop.stationGroupId)) return;
+            seen.add(stop.stationGroupId);
+            if (!state.stationTripsByGroupId.has(stop.stationGroupId)) state.stationTripsByGroupId.set(stop.stationGroupId, []);
+            state.stationTripsByGroupId.get(stop.stationGroupId).push(trip);
           });
-          continue;
-        }
-        if (step.type === 'BOARD_TRAIN') {
-          pendingTrip = state.tripById.get(step.trip_id) || null;
-          continue;
-        }
-        if (step.type === 'RIDE_TO_STATION') {
-          const fromLabel = stationGroupLabel(chainStation);
-          const toLabel = stationGroupLabel(step.station_id);
-          const tripLabel = formatTripLabel(pendingTrip || { serviceName: 'Trip', serviceNumber: '' });
-          const stepIndex = steps.indexOf(step);
-          const isCurrentRide = stepIndex === editableRideIndex;
-          items.push({
-            title: `${tripLabel}: ${fromLabel} -> ${toLabel}`,
-            sub: isCurrentRide ? 'Click to change this drop-off station' : 'Planned travel leg',
-            editable: isCurrentRide,
-          });
-          chainStation = step.station_id;
-          pendingTrip = null;
-        }
-      }
-      cursorInfoEl.innerHTML = `
-        <div class="plan-summary-row current">
-          <span class="plan-summary-title">Now: ${formatState(preview)}</span>
-          <span class="plan-summary-sub">${preview.currentState.kind === 'TRAIN' ? 'You are currently on board. Future edits should keep this running leg.' : 'Future edits start from this state.'}</span>
-        </div>
-        <div class="plan-summary-list">
-          ${items.map((item) => `
-            <div class="plan-summary-row ${item.editable ? 'clickable current' : ''}" ${item.editable ? 'data-action="edit-current-ride"' : ''}>
-              <span class="plan-summary-title">${item.title}</span>
-              <span class="plan-summary-sub">${item.sub}</span>
-            </div>
-          `).join('')}
-        </div>
-      `;
-      cursorInfoEl.querySelectorAll('[data-action="edit-current-ride"]').forEach((node) => {
-        node.addEventListener('click', () => beginEditCurrentRide());
-      });
-    }
-
-    function renderSidebar() {
-      const bundle = state.bundle;
-      if (!bundle) return;
-      const activePreview = planCursorPreview(state.activeMode);
-      const runnerPreview = currentMapPreview('runner');
-      const hunterPreview = currentMapPreview('hunter');
-      const currentTime = minutesToHhmm(state.currentGameMinute);
-      const nextPlanningDelta = Math.max(0, state.nextPlanningMinute - state.currentGameMinute);
-
-      commandTimeDisplayEl.textContent = currentTime;
-      phaseChipEl.textContent = state.phase;
-      phaseChipEl.style.background = state.phase === 'PLANNING'
-        ? 'rgba(220, 77, 98, 0.12)'
-        : (state.phase === 'LIVE' ? 'rgba(21, 101, 192, 0.12)' : 'rgba(88, 101, 122, 0.16)');
-      phaseChipEl.style.color = state.phase === 'PLANNING'
-        ? '#a03145'
-        : (state.phase === 'LIVE' ? '#1565c0' : '#5e6d80');
-
-      phaseClockEl.innerHTML = state.phase === 'PLANNING'
-        ? (onlineActive()
-            ? (() => {
-                const room = state.online.lastRoom;
-                const opponentText = room?.opponent ? `${room.opponent.seat.toUpperCase()} ${room.opponent.ready ? 'ready' : 'not ready'}` : 'Waiting for opponent';
-                return `Planning lock ${String(state.planningSecondsRemaining).padStart(2, '0')}s · ${opponentText}`;
-              })()
-            : `Planning lock ${String(state.planningSecondsRemaining).padStart(2, '0')}s · Match ${state.startTime} → ${state.endTime}`)
-        : state.phase === 'LIVE'
-          ? (onlineActive()
-              ? (() => {
-                  const room = state.online.lastRoom;
-                  const opponentText = room?.opponent ? `${room.opponent.seat.toUpperCase()} ${room.opponent.ready ? 'ready' : 'locked in'}` : 'Waiting for opponent';
-                  return `${opponentText} · Next Planning ${minutesToHhmm(state.nextPlanningMinute)} · ${nextPlanningDelta} min left`;
-                })()
-              : `Next Planning ${minutesToHhmm(state.nextPlanningMinute)} · ${nextPlanningDelta} min left`)
-          : `Match closed at ${currentTime} · Window ${state.startTime} → ${state.endTime}`;
-      document.getElementById('runnerModeButton').className = state.activeMode === 'runner' ? 'active runner' : '';
-      document.getElementById('hunterModeButton').className = state.activeMode === 'hunter' ? 'active hunter' : '';
-      document.getElementById('startGameButton').disabled = state.phase !== 'PLANNING' || state.timetableStatus === 'loading';
-      document.getElementById('pauseGameButton').disabled = onlineActive();
-      document.getElementById('runSimulationButton').disabled = onlineActive();
-
-      mapStats.innerHTML = `
-        <div>Stations: <strong>${bundle.physicalStations.length}</strong></div>
-        <div>Routes: <strong>${bundle.serviceRoutes.length}</strong></div>
-        <div>Trips: <strong>${state.timetableStatus === 'loading' ? 'loading' : bundle.tripInstances.length}</strong></div>
-        <div>Zoom: <strong>${state.zoom.toFixed(1)}x</strong></div>
-      `;
-
-      overviewGrid.innerHTML = [
-        ['Physical Stations', bundle.physicalStations.length],
-        ['Track Centerlines', bundle.trackCenterlines.length],
-        ['Service Routes', bundle.serviceRoutes.length],
-        ['Trip Instances', state.timetableStatus === 'loading' ? 'loading' : bundle.tripInstances.length]
-      ].map(([label, value]) => `
-        <div class="metric">
-          <span class="value">${value}</span>
-          <span class="label">${label}</span>
-        </div>
-      `).join('');
-
-      renderUpcomingPlanSummary(activePreview);
-
-      renderTrainOutlook();
-      renderPlanBoard();
-      renderReplayList();
-
-      visibleServicesEl.innerHTML = bundle.serviceRoutes.map((route) => `
-        <button class="mini-card clickable ${state.selectedRouteId === route.id ? 'active' : ''}" data-route-id="${route.id}">
-          <strong><span class="swatch" style="background:${route.color}"></span>${route.shortName}</strong>
-          <span>${route.longName}</span>
-          <small>${countTripsForRoute(route.id)} trips in the current pilot bundle</small>
-        </button>
-      `).join('');
-
-      legendEl.innerHTML = bundle.serviceRoutes.map((route) => `
-        <button class="mini-card clickable ${state.selectedRouteId === route.id ? 'active' : ''}" data-route-id="${route.id}" style="padding:8px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:2px">
-          <span><span class="swatch" style="background:${route.color}"></span>${route.shortName}</span>
-        </button>
-      `).join('');
-
-      bindRouteClickTargets();
-
-      if (!state.selectedStationGroupId) {
-        selectedStationEl.className = 'empty';
-        selectedStationEl.textContent = 'Click a station to inspect its station group, connected lines, and service footprint.';
-        stationTripsEl.innerHTML = '';
-        routeStationDeparturesEl.innerHTML = '';
-      } else {
-        const station = state.physicalStationByGroupId.get(state.selectedStationGroupId);
-        const label = resolveLabelEntry(state.selectedStationGroupId);
-        const touchingTrackLines = state.trackLinesByStationGroupId.get(state.selectedStationGroupId) || [];
-        const touchingRoutes = [...(state.stationRoutesByGroupId.get(state.selectedStationGroupId) || new Set())]
-          .map((routeId) => state.routeById.get(routeId)?.shortName)
-          .filter(Boolean);
-
-        selectedStationEl.className = '';
-        selectedStationEl.innerHTML = `
-          <div class="selected-card">
-            <h3>${label?.displayNameEn || station?.name || state.selectedStationGroupId}</h3>
-            <p>${label?.displayNameJa || ''} · ${station?.id || state.selectedStationGroupId}</p>
-            <p>Lat/Lon: ${Number.isFinite(station?.lat) ? station.lat.toFixed(4) : 'n/a'}, ${Number.isFinite(station?.lon) ? station.lon.toFixed(4) : 'n/a'}</p>
-            <p>${state.activeMode === 'hunter'
-              ? (state.phase === 'PLANNING'
-                  ? `Runner: ${runnerPreview.currentState.kind === 'NODE' ? stationGroupLabel(runnerPreview.currentState.stationGroupId) : 'visible on map only while on a train'}`
-                  : 'Runner hidden during LIVE.')
-              : `Runner: ${formatState(runnerPreview)}`}</p>
-            <p>Hunter: ${formatState(hunterPreview)}</p>
-            <div class="tags">
-              ${touchingTrackLines.map((line) => `<span class="tag">${line}</span>`).join('')}
-              ${touchingRoutes.filter((item) => !touchingTrackLines.includes(item)).map((route) => `<span class="tag">${route}</span>`).join('')}
-            </div>
-          </div>
-        `;
-
-        const trips = (state.stationTripsByGroupId.get(state.selectedStationGroupId) || []).slice(0, 24);
-
-        stationTripsEl.innerHTML = state.timetableStatus === 'loading'
-          ? `<div class="empty">Timetable is loading in the background. The map is ready first; departures will appear here shortly.</div>`
-          : trips.length
-          ? trips.map((trip) => {
-              const stop = trip.stopTimes.find((item) => item.stationGroupId === state.selectedStationGroupId);
-              const hoverClass = state.hoveredTripId === trip.id ? 'trip-hover' : '';
-              return `
-                <div class="mini-card ${hoverClass}">
-                  <strong>${trip.serviceName} ${trip.serviceNumber || ''}</strong>
-                  <span>${trip.routeId.replace(/_/g, ' ')}</span>
-                  <small>${stop ? secToClock(stop.departureTimeSec ?? stop.arrivalTimeSec) : 'time n/a'} · ${trip.stopTimes.length} stops in pilot record</small>
-                </div>
-              `;
-            }).join('')
-          : `<div class="empty">No trip instances touch this station in the current pilot bundle.</div>`;
-
-        if (!state.selectedRouteId) {
-          routeStationDeparturesEl.innerHTML = `<div class="empty">Select one route to see the actual departures for that route at this station.</div>`;
-        } else if (state.timetableStatus === 'loading') {
-          routeStationDeparturesEl.innerHTML = `<div class="empty">Timetable is loading. Route-specific departures will appear after the background load finishes.</div>`;
-        } else {
-          const routeDepartures = (state.routeTripsById.get(state.selectedRouteId) || [])
-            .map((trip) => {
-              const stop = trip.stopTimes.find((item) => item.stationGroupId === state.selectedStationGroupId);
-              if (!stop) return null;
-              return {
-                trip,
-                timeSec: stop.departureTimeSec ?? stop.arrivalTimeSec,
-                stopCount: trip.stopTimes.length,
-              };
-            })
-            .filter(Boolean)
-            .sort((a, b) => a.timeSec - b.timeSec)
-            .slice(0, 24);
-
-          routeStationDeparturesEl.innerHTML = routeDepartures.length
-            ? routeDepartures.map(({ trip, timeSec, stopCount }) => {
-                const hoverClass = state.hoveredTripId === trip.id ? 'trip-hover' : '';
-                return `
-                  <div class="mini-card ${hoverClass}">
-                    <strong>${secToClock(timeSec)} · ${formatTripLabel(trip)}</strong>
-                    <span>${trip.routeId.replace(/_/g, ' ')}</span>
-                    <small>${stopCount} stops in this service record</small>
-                  </div>
-                `;
-              }).join('')
-            : `<div class="empty">This route has no recorded departures at the selected station in the current pilot bundle.</div>`;
-        }
-      }
-
-      if (!state.selectedRouteId) {
-        selectedRouteEl.className = 'empty';
-        selectedRouteEl.textContent = 'Click a route card or legend chip to highlight one service family across the whole map.';
-      } else {
-        const route = state.routeById.get(state.selectedRouteId);
-        const routeStations = [...getRouteStationSet(route?.id)];
-        selectedRouteEl.className = '';
-        selectedRouteEl.innerHTML = `
-          <div class="selected-card">
-            <h3>${route?.shortName || state.selectedRouteId}</h3>
-            <p>${route?.longName || ''}</p>
-            <div class="tags">
-              <span class="tag">${countTripsForRoute(route?.id)} trips</span>
-              <span class="tag">${routeStations.length} served stations</span>
-            </div>
-          </div>
-        `;
-      }
-
-      if (!state.latestResult) {
-      resultInfoEl.textContent = state.liveCapture
-          ? `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.`
-          : 'No result yet.';
-      }
-
-      if (onlineActive() && !state.latestResult) {
-        if (state.liveCapture?.type === 'same_node') {
-          resultInfoEl.textContent = `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_node\nStation: ${stationGroupLabel(state.liveCapture.station_group_id)}`;
-        } else if (state.liveCapture?.type === 'same_train') {
-          const trip = state.tripById.get(state.liveCapture.trip_id);
-          resultInfoEl.textContent = `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_train\nTrip: ${formatTripLabel(trip || { serviceName: state.liveCapture.trip_id, serviceNumber: '' })}`;
-        } else if (onlineActive()) {
-          resultInfoEl.textContent = `ONLINE ROOM\n\nRoom: ${state.online.roomId || 'not joined'}\nPhase: ${state.phase}\nTime: ${minutesToHhmm(state.currentGameMinute)}`;
-        }
-      }
-    }
-
-    function countTripsForRoute(routeId) {
-      return state.routeTripsById.get(routeId)?.length || 0;
-    }
-
-    function getRouteStationSet(routeId) {
-      return state.routeStationSetById.get(routeId) || new Set();
-    }
-
-    function trimNishiKyushuGeometry(routeOrLineId, coordinates, stationGroupIds = []) {
-      if (routeOrLineId !== 'NISHI_KYUSHU' && routeOrLineId !== 'TRACK_NISHI_KYUSHU') {
-        return { coordinates, stationGroupIds };
-      }
-      if (coordinates.length <= 1) return { coordinates, stationGroupIds };
-      const trimmedCoordinates = coordinates.slice(1);
-      const trimmedStationIds = stationGroupIds.length ? stationGroupIds.slice(1) : stationGroupIds;
-      return { coordinates: trimmedCoordinates, stationGroupIds: trimmedStationIds };
-    }
-
-    function bindRouteClickTargets() {
-      document.querySelectorAll('[data-route-id]').forEach((node) => {
-        node.addEventListener('click', () => {
-          const routeId = node.getAttribute('data-route-id');
-          state.selectedRouteId = state.selectedRouteId === routeId ? null : routeId;
-          render();
         });
-      });
-    }
-
-    async function loadDeferredTimetable() {
-      if (!TIMETABLE_URL || state.timetableStatus === 'ready') return;
-      try {
-        const timetable = await fetchJsonMaybeGz(TIMETABLE_URL);
-        const trips = Array.isArray(timetable?.tripInstances) ? timetable.tripInstances : [];
-        state.bundle.tripInstances = trips;
         state.timetableStatus = 'ready';
-        buildBundleIndexes(state.bundle);
-        render();
+        loadPill.textContent = `Map ready - timetable ${payload.tripInstances?.length || 0} trips`;
+        renderDepartures();
       } catch (error) {
         console.error(error);
         state.timetableStatus = 'error';
-        renderSidebar();
+        renderDepartures();
       }
     }
 
-    function scheduleDeferredTimetableLoad() {
-      if (!TIMETABLE_URL || state.timetableStatus !== 'loading') return;
-      window.setTimeout(() => {
-        loadDeferredTimetable();
-      }, 1800);
+    function departuresForSelectedStation() {
+      if (!state.selectedStationGroupId || state.timetableStatus !== 'ready') return [];
+      const rows = [];
+      const trips = state.stationTripsByGroupId.get(state.selectedStationGroupId) || [];
+      trips.forEach((trip) => {
+        const stop = (trip.stopTimes || []).find((item) => item.stationGroupId === state.selectedStationGroupId);
+        if (!stop) return;
+        const seconds = stop.departureTimeSec ?? stop.arrivalTimeSec;
+        if (!Number.isFinite(seconds)) return;
+        rows.push({ trip, stop, seconds });
+      });
+      rows.sort((a, b) => a.seconds - b.seconds || `${a.trip.serviceName} ${a.trip.serviceNumber || ''}`.localeCompare(`${b.trip.serviceName} ${b.trip.serviceNumber || ''}`));
+      const routeFiltered = state.selectedRouteId
+        ? rows.filter((row) => row.trip.routeId === state.selectedRouteId)
+        : rows;
+      return routeFiltered.slice(0, 36);
+    }
+
+    function renderDepartures() {
+      if (!state.selectedStationGroupId) {
+        departuresEl.innerHTML = `<div class="info-box">Select a station to lazy-load timetable departures.</div>`;
+        return;
+      }
+      if (state.timetableStatus === 'idle') {
+        departuresEl.innerHTML = `<div class="info-box">Preparing timetable lookup...</div>`;
+        return;
+      }
+      if (state.timetableStatus === 'loading') {
+        departuresEl.innerHTML = `<div class="info-box">Loading real timetable bundle. The map remains interactive while this happens.</div>`;
+        return;
+      }
+      if (state.timetableStatus === 'error') {
+        departuresEl.innerHTML = `<div class="info-box">Could not load timetable bundle. Map rendering still works.</div>`;
+        return;
+      }
+      const rows = departuresForSelectedStation();
+      if (!rows.length) {
+        departuresEl.innerHTML = `<div class="info-box">No departures found for this station${state.selectedRouteId ? ' on the selected route' : ''}.</div>`;
+        return;
+      }
+      departuresEl.innerHTML = rows.map((row) => `
+        <button class="departure-row ${row.trip.id === state.selectedTripId ? 'active' : ''}" type="button" data-trip-id="${row.trip.id}">
+          <span class="route-swatch" style="background:${state.routeById.get(row.trip.routeId)?.color || '#667487'}"></span>
+          <span>
+            <span class="row-title">${row.trip.serviceName} ${row.trip.serviceNumber || ''}</span>
+            <span class="row-sub">${state.routeById.get(row.trip.routeId)?.shortName || row.trip.routeId} - ${row.trip.stopTimes.length} stops</span>
+          </span>
+          <span class="row-meta">${secToClock(row.seconds)}</span>
+        </button>
+      `).join('');
+      departuresEl.querySelectorAll('[data-trip-id]').forEach((node) => {
+        node.addEventListener('click', () => setSelectedTrip(node.getAttribute('data-trip-id')));
+      });
     }
 
     async function init() {
-      const bundle = await fetchJsonMaybeGz(DATA_URL);
-      try {
-        const onlineConfigResponse = await fetch(ONLINE_CONFIG_URL);
-        if (onlineConfigResponse.ok) {
-          const onlineConfig = await onlineConfigResponse.json();
-          state.online.serverUrl = (onlineConfig.server_url || '').trim().replace(/\/+$/, '');
-        }
-      } catch (_error) {
-        state.online.serverUrl = '';
+      if (!window.maplibregl) {
+        loadPill.textContent = 'MapLibre failed to load from CDN';
+        return;
       }
-      let tileManifest = null;
-      if (TILE_MANIFEST_URL) {
-        try {
-          const tileManifestResponse = await fetch(TILE_MANIFEST_URL);
-          if (tileManifestResponse.ok) {
-            tileManifest = await tileManifestResponse.json();
-          }
-        } catch (_error) {
-          tileManifest = null;
-        }
-      }
+      const t0 = performance.now();
+      const bundle = await fetchJsonMaybeGz(MAP_DATA_URL);
       state.bundle = bundle;
-      state.tileManifest = tileManifest;
-      state.labelEntries = bundle.labelRepresentations;
-      if (TIMETABLE_URL && !(bundle.tripInstances || []).length) {
-        state.timetableStatus = 'loading';
-        bundle.tripInstances = [];
-      } else {
-        state.timetableStatus = 'ready';
-      }
-      buildBundleIndexes(bundle);
-      state.selectedRouteId = bundle.serviceRoutes[0]?.id || null;
-      const runnerStart = bundle.metadata?.defaultRunnerStartStationId || 'SG_TOKYO';
-      const hunterStart = bundle.metadata?.defaultHunterStartStationId || 'SG_SHIN_OSAKA';
-      state.players = {
-        runner: { start_station_id: runnerStart, input_mode: 'plan', steps: [] },
-        hunter: { start_station_id: hunterStart, input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: '18:00' }] },
-      };
-      state.online.serverUrl = configuredServerUrl();
-      roomIdInput.value = '';
-      setLobbySeat(state.activeMode);
-      state.selectedStationGroupId = null;
-      state.currentGameMinute = hhmmToMinutes(state.startTime);
-      state.projection = makeProjection(bundle);
-      SERVICE_COLORS.clear?.();
-      bundle.serviceRoutes.forEach((route) => { SERVICE_COLORS[route.id] = route.color; });
-      applyTestPreset({ schedule: false });
-      resetViewport();
-      scheduleDeferredTimetableLoad();
+      buildIndexes(bundle);
+      const collections = makeFeatureCollections(bundle);
+      const map = createMap();
+      state.map = map;
+      map.on('load', () => {
+        addRailLayers(map, collections);
+        bindMapInteractions(map);
+        renderStats(bundle);
+        renderRouteList();
+        setViewMode('corridor');
+        zoomPill.textContent = `Zoom ${map.getZoom().toFixed(2)}`;
+        const loadMs = Math.round(performance.now() - t0);
+        loadPill.textContent = `Map bundle ready in ${loadMs}ms`;
+      });
+
+      document.getElementById('corridor-button').addEventListener('click', () => setViewMode('corridor'));
+      document.getElementById('service-button').addEventListener('click', () => setViewMode('service'));
+      document.getElementById('fit-button').addEventListener('click', () => {
+        map.fitBounds(networkBounds(bundle), { padding: 70, duration: 800, maxZoom: 10.2 });
+      });
     }
 
     init().catch((error) => {
       console.error(error);
-      selectedStationEl.className = 'empty';
-      selectedStationEl.textContent = 'Failed to load v3 bundle.';
+      loadPill.textContent = 'Failed to initialize MapLibre v3';
+      stationCardEl.textContent = String(error.message || error);
     });
   </script>
 </body>

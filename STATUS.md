@@ -15,12 +15,12 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Added the first standalone MapLibre renderer spike at `docs/v3_maplibre.html`: WebGL track/service layers, MapLibre label collision, station click, route highlight, route-stop highlight, and lazy timetable-driven departure rows.
 - Fixed v3 MapLibre route/track/service colors: generated bundles and tiles now carry per-line colors from the physical-line data plus route aliases and operator fallbacks instead of the old default blue.
 - Added the missing full `埼玉高速鉄道線` real geometry toward `浦和美園` with SR blue `#00A6E9`; color QA now reports no missing, white, transparent, or fallback-gray colors in bundles or generated tiles.
+- Promoted the MapLibre renderer to the official public `v3.html`; the old v2-style v3 page and separate `v3_maplibre.html` website are removed from the generated site.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
 - Stabilize `v3` route geometry linkage, dense Tokyo click behavior, and gameplay migration on the reused `v2` UI path after the performance split.
 - Validate `v3` on the reused `v2` gameplay path: chained planning, live simulation, capture, replay, and default runner/hunter starts.
-- Evaluate whether `v3_maplibre.html` should become the official v3 renderer after manual browser testing.
 
 ## Blockers
 - No usable Notion tool/config exists in this repo/session, so true Notion updates remain blocked.
@@ -34,6 +34,6 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Manually test `v3_maplibre.html`: first paint, official line colors, zoom/pan smoothness, label collision, station click, route highlight, and lazy timetable departures.
+1. Manually test `v3.html`: first paint, official line colors, zoom/pan smoothness, label collision, station click, route highlight, and lazy timetable departures.
 2. Decide the migration seam for plugging existing v2 planning/capture/player markers into MapLibre without rewriting game logic.
 3. Test the reused `v2` chase loop on v3 data in a real browser: chained planning, live movement, capture, and replay.
