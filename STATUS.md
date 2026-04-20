@@ -25,12 +25,15 @@
 - 已根据 `UI_BRIEF_V2.md` 试做过一轮更激进的主 `v2` UI 重构；当前已按反馈把网页壳层退回到重做前的稳定布局与浅色配色，保留玩法和联机逻辑不变。
 - 已完成版本迁移：原 `v3` GIS-first 新干线玩法页已提升为新的主 `v2`；公开网站现只保留 `v1` 和主 `v2`，不再公开 `v2-legacy` 与 `v3` 页面。
 - 已继续收 `v2` 多人体验：大厅里新增了可复制的房间号显示，主游戏页新增轻量 `Room` 区来承载复制房间号、`Submit Plan`、`Ready`、返回大厅等关键联机动作，同时把对手是否已加入、是否 ready 的状态压进大厅状态文案、房间状态卡和顶部时间条。
+- 已完成 `v3` 统一 train index 第一版：新增 `scripts/ingest/build_v3_train_index.py`，把 `JR East / Tokyo Metro / Toei / Keio / Tokyu / Seibu / Keisei / Keikyu / Odakyu / Tobu / Rinkai / Yurikamome / Tokyo Monorail / Tama Monorail / Tsukuba Express / Shinkansen` 统一登记到 `data/v3_train_manifest.json`，当前共 `39450` 趟真实列车、`1415` 个 station departure key。
+- 已完成 `v3` 统一 train schema 与 station departure lookup：生成 `data/v3_trains_unified.json.gz` 和 `data/v3_station_departures.json.gz`，统一字段为 `operator / line / train_number / service_name / direction / stops / source / service_day`，并补上 JR 英文站名到日文地图站名的 alias join。
+- 已把 `v3` 网页重新接上真实 map + timetable 同源联动：`ui/v3_tokyo_phase1_map.html` 和 `docs/v3.html` 现在可显示真实线路和站名，点击站点显示真实 departure board，选择列车后显示停站列表并高亮停站/线路；已用 Playwright headless 验证点击东京可显示 `4221` 条真实发车并选中一班列车。
+- 已按新决策把 `v3` 交互层切换为复用主 `v2` UI 代码：新增 `scripts/ingest/build_v3_tokyo_v2_bundle.py` 生成 `data/v3_tokyo_bundle.json`，让 `docs/v3.html` 从 `ui/v2_web_client.html` 派生并只注入 v3 数据 URL；当前 v3 bundle 有 `1529` 个真实坐标站点、`302` 条 service route、`4147` 条 track centerline、`39318` 趟可进入 v2 planning flow 的列车。
 ## In Progress
 - 正在继续把新的主 `v2` 收成稳定版本：一方面保留 GIS-first 地图/diagram 联动，另一方面把联机页面细节、单机页面体验和新的 UI brief 继续对齐。
 - 已把公开 `v2` 网页的多人配置接到 Render 房间服务器 `https://onichase.onrender.com`，现在公开网页会默认尝试连公网联机后端。
 - 正在继续查 `v2` 是否还缺明显的短折返 / 中途始发终到班次，但目前已没有新的阻塞级问题。
-- 已明确 `v3` 第一阶段只做两件事：增大地图范围、准备东京周边 `JR / 私铁 / 新干线` 的真实数据底座，不急于先把新范围做成完整可玩版。
-- 已完成全新干线真实 geometry、东京周边真实物理线网图、`JR service_family` 命名模型，以及 `JR East / Toei / Rinkai / Yurikamome` 第一批真实 weekday train instances。
+- `v3` 当前进入 map + timetable 同源联动稳定化阶段：先继续收 station identity / line matching / dense map click 体验，再迁移 `v2` 追逃规划逻辑。
 ## Blockers
 - 当前仓库和本会话里没有可用的 Notion 工具、脚本或配置，所以无法直接完成真正的 Notion 更新。
 - `JR Central` 仍没有像 `JR East / JR West` 那样直接暴露单趟 train-detail 页，所以后面若要进一步精细化，仍需继续完善“按全站 departure grid 聚合 train instances”的逻辑。
@@ -43,8 +46,9 @@
 - [2026-04-05] 全国合并默认优先按真实 `service_name + service_number (+ direction)` 识别同一趟列车，而不是只按各运营商自带的 `train_number`。
 - [2026-04-07] GIS-first 新干线页面已成为新的主 `v2`；公开网站现在只保留 `v1` 与主 `v2`，`v3` 暂不定义。
 - [2026-04-13] `v3 phase 1` 先做“东京周边真实地图 + 真实车次数据”，并且保持所有站点真实位置，不通过伪造站位解决高密显示问题。
+- [2026-04-19] `v3` 所有 UI 交互复用主 `v2` 代码；`v3` 只维护 v2-compatible 数据适配层和东京真实数据，不再维护一套独立交互页面。
 
 ## Next
 1. 继续收主 `v2` 联机页面细节，例如房间状态、ready / planning / live 同步，以及单人/多人一致性。
-2. 继续收 `v3` 东京周边剩余系统的真实车次数据，优先 `Tokyo Metro`、`Tokyo Monorail`、`Tama Monorail`、`Tsukuba Express` 与各私铁。
-3. 在 `v3` 的真实物理网络上继续做 `physical_station / station_group` 拆分，为之后的玩法和换乘逻辑打底。
+2. 继续收 `v3_tokyo_bundle.json` 的 station-group / line-route 映射质量，尤其是同名多站、密集中心区点击命中、route card 数量和 train line_id 到物理线路名的映射。
+3. 在 v2 UI 复用路径上继续验证 `v3` 的 planning / live / capture / replay，而不是维护独立 v3 UI。

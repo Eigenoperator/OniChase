@@ -1161,18 +1161,23 @@
   </main>
 
   <script>
-    const DATA_URL = window.location.pathname.includes('/ui/')
+    const DEFAULT_DATA_URL = window.location.pathname.includes('/ui/')
       ? '../data/v3_shinkansen_bundle.json'
       : './data/v3_shinkansen_bundle.json';
+    const DATA_URL = window.ONICHASE_DATA_URL || DEFAULT_DATA_URL;
     const ONLINE_CONFIG_URL = window.location.pathname.includes('/ui/')
       ? '../docs/data/v2_online_config.json'.replace('../docs/', '../')
       : './data/v2_online_config.json';
-    const TILE_MANIFEST_URL = window.location.pathname.includes('/ui/')
+    const DEFAULT_TILE_MANIFEST_URL = window.location.pathname.includes('/ui/')
       ? '../docs/data/v3_tiles/manifest.json'.replace('../docs/', '../')
       : './data/v3_tiles/manifest.json';
-    const TILE_BASE_URL = window.location.pathname.includes('/ui/')
+    const TILE_MANIFEST_URL = window.ONICHASE_TILE_MANIFEST_URL === ''
+      ? ''
+      : (window.ONICHASE_TILE_MANIFEST_URL || DEFAULT_TILE_MANIFEST_URL);
+    const DEFAULT_TILE_BASE_URL = window.location.pathname.includes('/ui/')
       ? '../docs/data/v3_tiles/'.replace('../docs/', '../')
       : './data/v3_tiles/';
+    const TILE_BASE_URL = window.ONICHASE_TILE_BASE_URL || DEFAULT_TILE_BASE_URL;
 
     const SERVICE_COLORS = {};
     const state = {
@@ -2623,14 +2628,14 @@
         const fill = selected ? '#f97316' : '#203247';
         const haloRadius = selected ? stationRadius + 2.8 : onSelectedRoute ? stationRadius + 1.4 : stationRadius;
         if (selected) {
-          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(249,115,22,0.18)" />`);
+          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(249,115,22,0.18)" style="pointer-events:none" />`);
         } else if (onSelectedRoute) {
-          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(21,101,192,0.12)" />`);
+          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${haloRadius}" fill="rgba(21,101,192,0.12)" style="pointer-events:none" />`);
         }
         if (onFutureTrip) {
           const futureRingRadius = Math.max(haloRadius + 1.2, stationRadius + 2.6);
           const futureRingStroke = clamp(1.4 / Math.pow(zoomScale, 0.5), 0.28, 1.4);
-          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${futureRingRadius}" class="future-stop-ring" style="stroke-width:${futureRingStroke};stroke-dasharray:${Math.max(1.3, 4 / Math.pow(zoomScale, 0.35)).toFixed(2)} ${Math.max(1.3, 4 / Math.pow(zoomScale, 0.35)).toFixed(2)}" />`);
+          stationSvg.push(`<circle cx="${station.x}" cy="${station.y}" r="${futureRingRadius}" class="future-stop-ring" style="pointer-events:none;stroke-width:${futureRingStroke};stroke-dasharray:${Math.max(1.3, 4 / Math.pow(zoomScale, 0.35)).toFixed(2)} ${Math.max(1.3, 4 / Math.pow(zoomScale, 0.35)).toFixed(2)}" />`);
         }
         stationSvg.push(`<circle data-station-group-id="${station.stationGroupId}" cx="${station.x}" cy="${station.y}" r="${stationRadius}" fill="${onSelectedRoute && !selected ? '#2f5d97' : fill}" stroke="${selected ? stroke : onSelectedRoute ? '#dbeafe' : stroke}" stroke-width="${selected ? selectedStrokeWidth : onSelectedRoute ? routeStrokeWidth : stationStrokeWidth}" style="cursor:pointer" />`);
       });
@@ -2757,16 +2762,18 @@
     }
 
     function applyTestPreset() {
+      const runnerStart = state.bundle?.metadata?.defaultRunnerStartStationId || 'SG_TOKYO';
+      const hunterStart = state.bundle?.metadata?.defaultHunterStartStationId || 'SG_SHIN_OSAKA';
       if (state.activeMode === 'hunter') {
         state.startTime = '07:00';
         state.endTime = '18:00';
-        state.players.runner = { start_station_id: 'SG_TOKYO', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: state.endTime }] };
-        state.players.hunter = { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'plan', steps: [] };
+        state.players.runner = { start_station_id: runnerStart, input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: state.endTime }] };
+        state.players.hunter = { start_station_id: hunterStart, input_mode: 'plan', steps: [] };
       } else {
         state.startTime = '06:00';
         state.endTime = '18:00';
-        state.players.runner = { start_station_id: 'SG_TOKYO', input_mode: 'plan', steps: [] };
-        state.players.hunter = { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: state.endTime }] };
+        state.players.runner = { start_station_id: runnerStart, input_mode: 'plan', steps: [] };
+        state.players.hunter = { start_station_id: hunterStart, input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: state.endTime }] };
       }
       state.selectedStationGroupId = null;
       state.phase = 'PLANNING';
@@ -3685,15 +3692,26 @@
       } catch (_error) {
         state.online.serverUrl = '';
       }
-      const tileManifestResponse = await fetch(TILE_MANIFEST_URL);
-      const tileManifest = await tileManifestResponse.json();
+      let tileManifest = null;
+      if (TILE_MANIFEST_URL) {
+        try {
+          const tileManifestResponse = await fetch(TILE_MANIFEST_URL);
+          if (tileManifestResponse.ok) {
+            tileManifest = await tileManifestResponse.json();
+          }
+        } catch (_error) {
+          tileManifest = null;
+        }
+      }
       state.bundle = bundle;
       state.tileManifest = tileManifest;
       state.labelEntries = bundle.labelRepresentations;
       state.selectedRouteId = bundle.serviceRoutes[0]?.id || null;
+      const runnerStart = bundle.metadata?.defaultRunnerStartStationId || 'SG_TOKYO';
+      const hunterStart = bundle.metadata?.defaultHunterStartStationId || 'SG_SHIN_OSAKA';
       state.players = {
-        runner: { start_station_id: 'SG_TOKYO', input_mode: 'plan', steps: [] },
-        hunter: { start_station_id: 'SG_SHIN_OSAKA', input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: '18:00' }] },
+        runner: { start_station_id: runnerStart, input_mode: 'plan', steps: [] },
+        hunter: { start_station_id: hunterStart, input_mode: 'actions', passive_hold: true, steps: [{ type: 'WAIT_UNTIL', until_hhmm: '18:00' }] },
       };
       state.online.serverUrl = configuredServerUrl();
       roomIdInput.value = '';
