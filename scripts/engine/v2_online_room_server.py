@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import random
 import string
@@ -17,12 +18,98 @@ from urllib.parse import parse_qs, urlparse
 
 
 ROOT = Path(__file__).resolve().parents[2]
-BUNDLE_PATH = ROOT / "data" / "v3_shinkansen_bundle.json"
+DATASET_PRESETS = {
+    "shinkansen": {
+        "bundle_path": ROOT / "data" / "v3_shinkansen_bundle.json",
+        "timetable_path": None,
+    },
+    "v2-shinkansen": {
+        "bundle_path": ROOT / "data" / "v3_shinkansen_bundle.json",
+        "timetable_path": None,
+    },
+    "v3-tokyo": {
+        "bundle_path": ROOT / "data" / "v3_tokyo_map_bundle.json.gz",
+        "timetable_path": ROOT / "data" / "v3_tokyo_timetable_bundle.json.gz",
+    },
+}
+
+BUNDLE: dict[str, Any] = {}
+TRIP_LOOKUP: dict[str, dict[str, Any]] = {}
+STATION_GROUP_LOOKUP: dict[str, dict[str, Any]] = {}
+TRIP_INSTANCE_COUNT = 0
+DATASET_NAME = "unconfigured"
+BUNDLE_PATH: Path | None = None
+TIMETABLE_PATH: Path | None = None
+DEFAULT_RUNNER_START_STATION_ID = "SG_TOKYO"
+DEFAULT_HUNTER_START_STATION_ID = "SG_SHIN_OSAKA"
 
 
 def load_json(path: Path) -> dict[str, Any]:
-    with path.open("r", encoding="utf-8") as f:
+    opener = gzip.open if path.suffix == ".gz" else open
+    with opener(path, "rt", encoding="utf-8") as f:
         return json.load(f)
+
+
+def resolve_path(value: str | Path | None) -> Path | None:
+    if value is None:
+        return None
+    path = Path(value)
+    return path if path.is_absolute() else ROOT / path
+
+
+def display_path(path: Path | None) -> str:
+    if path is None:
+        return ""
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
+def choose_default_station(preferred_ids: list[str], fallback_index: int = 0) -> str:
+    for station_group_id in preferred_ids:
+        if station_group_id in STATION_GROUP_LOOKUP:
+            return station_group_id
+    station_ids = sorted(STATION_GROUP_LOOKUP)
+    if not station_ids:
+        raise ValueError("Dataset has no stationGroups")
+    return station_ids[min(fallback_index, len(station_ids) - 1)]
+
+
+def configure_dataset(dataset_name: str, bundle_path: Path, timetable_path: Path | None = None) -> None:
+    global BUNDLE, TRIP_LOOKUP, STATION_GROUP_LOOKUP
+    global TRIP_INSTANCE_COUNT
+    global DATASET_NAME, BUNDLE_PATH, TIMETABLE_PATH
+    global DEFAULT_RUNNER_START_STATION_ID, DEFAULT_HUNTER_START_STATION_ID
+
+    bundle = load_json(bundle_path)
+    if timetable_path is not None:
+        timetable = load_json(timetable_path)
+        bundle["tripInstances"] = timetable.get("tripInstances", [])
+    elif not bundle.get("tripInstances") and bundle.get("metadata", {}).get("deferredTimetable"):
+        raise ValueError(
+            f"{bundle_path} uses deferred timetable data; pass --timetable or use --dataset v3-tokyo"
+        )
+
+    station_lookup = {group["id"]: group for group in bundle.get("stationGroups", [])}
+    trip_instances = bundle.get("tripInstances", [])
+    trip_lookup = {trip["id"]: trip for trip in trip_instances}
+    if not trip_lookup:
+        raise ValueError(f"Dataset {dataset_name} has no tripInstances")
+
+    BUNDLE = bundle
+    TRIP_LOOKUP = trip_lookup
+    STATION_GROUP_LOOKUP = station_lookup
+    TRIP_INSTANCE_COUNT = len(trip_instances)
+    DATASET_NAME = dataset_name
+    BUNDLE_PATH = bundle_path
+    TIMETABLE_PATH = timetable_path
+
+    metadata = bundle.get("metadata", {})
+    DEFAULT_RUNNER_START_STATION_ID = metadata.get("defaultRunnerStartStationId") or choose_default_station(["SG_TOKYO"], 0)
+    DEFAULT_HUNTER_START_STATION_ID = metadata.get("defaultHunterStartStationId") or choose_default_station(
+        ["SG_SHIN_OSAKA", "SG_SHINJUKU"], 1
+    )
 
 
 def hhmm_to_minutes(value: str) -> int:
@@ -52,11 +139,6 @@ def make_session_token() -> str:
     return "".join(random.choice(alphabet) for _ in range(24))
 
 
-BUNDLE = load_json(BUNDLE_PATH)
-TRIP_LOOKUP = {trip["id"]: trip for trip in BUNDLE["tripInstances"]}
-STATION_GROUP_LOOKUP = {group["id"]: group for group in BUNDLE["stationGroups"]}
-
-
 @dataclass
 class SeatState:
     seat: str
@@ -78,8 +160,8 @@ class RoomState:
     next_planning_minute: int = 420
     players: dict[str, SeatState] = field(
         default_factory=lambda: {
-            "runner": SeatState(seat="runner", start_station_id="SG_TOKYO"),
-            "hunter": SeatState(seat="hunter", start_station_id="SG_SHIN_OSAKA"),
+            "runner": SeatState(seat="runner", start_station_id=DEFAULT_RUNNER_START_STATION_ID),
+            "hunter": SeatState(seat="hunter", start_station_id=DEFAULT_HUNTER_START_STATION_ID),
         }
     )
     phase_started_monotonic: float = field(default_factory=time.monotonic)
@@ -500,7 +582,22 @@ class RoomRequestHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path_parts = [part for part in parsed.path.split("/") if part]
         if parsed.path == "/health":
-            self._send_json(HTTPStatus.OK, {"ok": True, "dataset_id": BUNDLE.get("metadata", {}).get("datasetId")})
+            self._send_json(
+                HTTPStatus.OK,
+                {
+                    "ok": True,
+                    "dataset_name": DATASET_NAME,
+                    "dataset_id": BUNDLE.get("metadata", {}).get("datasetId"),
+                    "bundle_path": display_path(BUNDLE_PATH),
+                    "timetable_path": display_path(TIMETABLE_PATH),
+                    "trip_count": TRIP_INSTANCE_COUNT,
+                    "unique_trip_id_count": len(TRIP_LOOKUP),
+                    "duplicate_trip_id_count": TRIP_INSTANCE_COUNT - len(TRIP_LOOKUP),
+                    "station_group_count": len(STATION_GROUP_LOOKUP),
+                    "default_runner_start_station_id": DEFAULT_RUNNER_START_STATION_ID,
+                    "default_hunter_start_station_id": DEFAULT_HUNTER_START_STATION_ID,
+                },
+            )
             return
         if len(path_parts) == 4 and path_parts[0] == "api" and path_parts[1] == "rooms" and path_parts[3] == "state":
             room_id = path_parts[2]
@@ -531,7 +628,14 @@ class RoomRequestHandler(BaseHTTPRequestHandler):
                 start_time_hhmm=body.get("start_time_hhmm", "06:00"),
                 end_time_hhmm=body.get("end_time_hhmm", "18:00"),
             )
-            self._send_json(HTTPStatus.CREATED, {"room": room_payload(room), "bundle_metadata": BUNDLE.get("metadata", {})})
+            self._send_json(
+                HTTPStatus.CREATED,
+                {
+                    "room": room_payload(room),
+                    "bundle_metadata": BUNDLE.get("metadata", {}),
+                    "dataset_name": DATASET_NAME,
+                },
+            )
             return
 
         if len(path_parts) != 4 or path_parts[0] != "api" or path_parts[1] != "rooms":
@@ -604,16 +708,41 @@ class RoomRequestHandler(BaseHTTPRequestHandler):
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the OniChase v2 online room prototype server.")
+    parser = argparse.ArgumentParser(description="Run the OniChase online room prototype server.")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument(
+        "--dataset",
+        choices=sorted(DATASET_PRESETS),
+        default="shinkansen",
+        help="Named dataset preset. Use 'v3-tokyo' for the MapLibre Tokyo bundle plus deferred timetable.",
+    )
+    parser.add_argument(
+        "--bundle",
+        dest="bundle_path",
+        default=None,
+        help="Override the map/game bundle path. Relative paths are resolved from the repository root.",
+    )
+    parser.add_argument(
+        "--timetable",
+        dest="timetable_path",
+        default=None,
+        help="Optional deferred timetable bundle path, used by datasets such as v3 Tokyo.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    preset = DATASET_PRESETS[args.dataset]
+    bundle_path = resolve_path(args.bundle_path) or preset["bundle_path"]
+    timetable_path = resolve_path(args.timetable_path) or preset["timetable_path"]
+    configure_dataset(args.dataset, bundle_path, timetable_path)
     server = ThreadingHTTPServer((args.host, args.port), RoomRequestHandler)
-    print(f"OniChase room server listening on http://{args.host}:{args.port}")
+    print(
+        f"OniChase room server listening on http://{args.host}:{args.port} "
+        f"with dataset={DATASET_NAME} trips={TRIP_INSTANCE_COUNT} unique_trip_ids={len(TRIP_LOOKUP)}"
+    )
     server.serve_forever()
 
 

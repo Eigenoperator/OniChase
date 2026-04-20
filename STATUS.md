@@ -17,11 +17,12 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Added the missing full `埼玉高速鉄道線` real geometry toward `浦和美園` with SR blue `#00A6E9`; color QA now reports no missing, white, transparent, or fallback-gray colors in bundles or generated tiles.
 - Promoted the MapLibre renderer to the official public `v3.html`; the old v2-style v3 page and separate `v3_maplibre.html` website are removed from the generated site.
 - Connected the first v2-style gameplay shell into v3 MapLibre: role switching, clock, planning/live, hourly replanning, plan board, train outlook, selected-train path/stops, player markers, live capture, and local replay simulation now run on the real Tokyo data.
+- Made the room server dataset-configurable: `--dataset shinkansen` remains the default, while `--dataset v3-tokyo` loads the Tokyo map bundle plus deferred timetable and reports duplicate trip-id counts in `/health`.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
 - Stabilize `v3` MapLibre gameplay UX: dense Tokyo click behavior, destination-stop selection, player marker clarity, and replay readability.
-- Keep v3 gameplay rules aligned with v2 while deciding how the multiplayer room server should load the Tokyo v3 dataset.
+- Connect the v3 MapLibre client to the dataset-configurable room server without forking gameplay rules.
 
 ## Blockers
 - No usable Notion tool/config exists in this repo/session, so true Notion updates remain blocked.
@@ -35,6 +36,6 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Manually play `v3.html` in a normal browser: build runner and hunter plans, switch roles, start live, check hourly replanning, capture, and replay.
-2. Decide whether to generalize `scripts/engine/v2_online_room_server.py` for v3 Tokyo data or create a dataset-configurable room server entry point.
+1. Add a v3 multiplayer entry flow that points at a `--dataset v3-tokyo` room server and reuses the same planning/live/capture payloads.
+2. Manually play `v3.html` in a normal browser: build runner and hunter plans, switch roles, start live, check hourly replanning, capture, and replay.
 3. Continue MapLibre UX/performance work: smarter label priority, denser Tokyo click targets, selected-service visibility, and tile/vector migration planning.
