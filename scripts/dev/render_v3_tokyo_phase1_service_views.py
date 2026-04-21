@@ -226,6 +226,8 @@ def render() -> None:
         visible_stations.append(
             {
                 "name_ja": props.get("N02_005"),
+                "operator_ja": props.get("N02_004"),
+                "line_name_ja": props.get("N02_003"),
                 "lon": lon,
                 "lat": lat,
                 "is_priority": props.get("N02_005") in PRIORITY_STATIONS,

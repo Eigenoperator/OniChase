@@ -63,6 +63,7 @@ def build_source_geojson(bundle: dict[str, Any], source_dir: Path) -> dict[str, 
         if not isinstance(lon, (int, float)) or not isinstance(lat, (int, float)):
             continue
         group = group_by_id.get(station.get("stationGroupId"), {})
+        operator_ids = station.get("operatorIds") if isinstance(station.get("operatorIds"), list) else []
         station_features.append({
             "type": "Feature",
             "bbox": [lon, lat, lon, lat],
@@ -70,6 +71,8 @@ def build_source_geojson(bundle: dict[str, Any], source_dir: Path) -> dict[str, 
             "properties": {
                 "id": station.get("id"),
                 "station_group_id": station.get("stationGroupId"),
+                "operator_id": operator_ids[0] if operator_ids else "",
+                "operator_ids": ",".join(operator_ids),
                 "name_en": station.get("names", {}).get("en") or station.get("name"),
                 "name_ja": station.get("names", {}).get("ja") or station.get("name"),
                 "label_rank": group.get("labelRank", 50),

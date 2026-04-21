@@ -22,7 +22,7 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Prepared the v3 Render deployment path: `render.yaml` now declares separate v2 and v3 room services, and `docs/data/v3_online_config.json` points to the expected `onichase-v3-room-server` HTTPS endpoint.
 - Cleaned the v3 multiplayer entry: removed developer/test copy, moved Ready/Unready into a dedicated post-create Ready Room, and replaced raw network errors with player-facing offline text.
 - Simplified the v3 gameplay sidebar: removed visible Room/Result/Replay/debug route panels and replaced the train picker with a three-layer `line -> train -> destination stop` planner.
-- Switched v3 visible station, line, and train names to Japanese-original first across MapLibre labels and the gameplay sidebar.
+- Switched v3 visible station, line, and train names to Japanese-original first across MapLibre labels and the gameplay sidebar; map labels now dedupe same-company duplicate station names while keeping different-company physical stations separate.
 - Tightened v3 train choices and selected-train highlighting: regular trains hide opaque numbers, row subtitles show origin/terminal/next stop, and map highlight uses real geometry only.
 - Refined v3 planning rows and line coverage: terminal-only trains and duplicate boardable services are filtered, direct-through aliases are hidden, compact `5 x 3` transfer-logo grids are used, Keikyu airport trains reach Haneda terminals, Keisei airport trains reach `空港第2ビル` / `成田空港`, and train-backed JR East missing map lines now audit to `0`.
 

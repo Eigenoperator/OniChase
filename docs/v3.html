@@ -1940,6 +1940,7 @@
           const label = state.labelByGroupId.get(station.stationGroupId) || {};
           const labelRank = Number(label.labelRank || group.labelRank || 50);
           const routeCount = transferRouteIdsForStation(station.stationGroupId).length;
+          const operatorIds = Array.isArray(station.operatorIds) ? station.operatorIds.filter(Boolean) : [];
           return {
             type: 'Feature',
             id: station.id,
@@ -1947,6 +1948,8 @@
             properties: {
               id: station.id,
               station_group_id: station.stationGroupId,
+              operator_id: operatorIds[0] || '',
+              operator_ids: operatorIds.join(','),
               name_en: label.displayNameEn || station.names?.en || station.name,
               name_ja: label.displayNameJa || group.names?.ja || station.names?.ja || station.name,
               label_rank: labelRank,
@@ -1956,6 +1959,54 @@
             },
           };
         });
+
+      const labelBuckets = new Map();
+      stationFeatures.forEach((feature) => {
+        const props = feature.properties || {};
+        const companyId = props.operator_id || 'unknown';
+        const stationName = props.name_ja || props.name_en || props.station_group_id || props.id;
+        const key = `${companyId}|${props.station_group_id}|${stationName}`;
+        if (!labelBuckets.has(key)) {
+          labelBuckets.set(key, {
+            key,
+            features: [],
+            labelRank: Number(props.label_rank || 50),
+            routeCount: Number(props.route_count || 0),
+          });
+        }
+        const bucket = labelBuckets.get(key);
+        bucket.features.push(feature);
+        bucket.labelRank = Math.max(bucket.labelRank, Number(props.label_rank || 50));
+        bucket.routeCount = Math.max(bucket.routeCount, Number(props.route_count || 0));
+      });
+      const stationLabelFeatures = Array.from(labelBuckets.values()).map((bucket) => {
+        const features = bucket.features;
+        const representative = [...features].sort((a, b) => {
+          const aProps = a.properties || {};
+          const bProps = b.properties || {};
+          return (
+            Number(bProps.label_rank || 0) - Number(aProps.label_rank || 0)
+            || Number(bProps.route_count || 0) - Number(aProps.route_count || 0)
+            || String(aProps.id || '').localeCompare(String(bProps.id || ''))
+          );
+        })[0];
+        const lon = features.reduce((sum, feature) => sum + feature.geometry.coordinates[0], 0) / features.length;
+        const lat = features.reduce((sum, feature) => sum + feature.geometry.coordinates[1], 0) / features.length;
+        return {
+          type: 'Feature',
+          id: `label-${bucket.key}`,
+          geometry: { type: 'Point', coordinates: [lon, lat] },
+          properties: {
+            ...(representative.properties || {}),
+            id: `label-${bucket.key}`,
+            physical_station_ids: features.map((feature) => feature.properties?.id).filter(Boolean).join(','),
+            physical_station_count: features.length,
+            label_rank: bucket.labelRank,
+            sort_rank: -bucket.labelRank,
+            route_count: bucket.routeCount,
+          },
+        };
+      });
 
       const trackFeatures = (bundle.trackCenterlines || [])
         .map((track, index) => lineFeature(track.id || `track-${index}`, track.polyline, {
@@ -1983,6 +2034,7 @@
 
       return {
         stations: { type: 'FeatureCollection', features: stationFeatures },
+        stationLabels: { type: 'FeatureCollection', features: stationLabelFeatures },
         tracks: { type: 'FeatureCollection', features: trackFeatures },
         services: { type: 'FeatureCollection', features: serviceFeatures },
       };
@@ -2051,6 +2103,11 @@
       map.addSource('stations', {
         type: 'geojson',
         data: collections.stations,
+        promoteId: 'id',
+      });
+      map.addSource('station-labels', {
+        type: 'geojson',
+        data: collections.stationLabels,
         promoteId: 'id',
       });
       map.addSource('selected-trip-path', {
@@ -2248,7 +2305,7 @@
       map.addLayer({
         id: 'label-hub',
         type: 'symbol',
-        source: 'stations',
+        source: 'station-labels',
         minzoom: 5.0,
         filter: ['>=', ['get', 'label_rank'], 99],
         layout: {
@@ -2260,7 +2317,7 @@
       map.addLayer({
         id: 'label-major',
         type: 'symbol',
-        source: 'stations',
+        source: 'station-labels',
         minzoom: 7.4,
         filter: ['all', ['>=', ['get', 'label_rank'], 90], ['<', ['get', 'label_rank'], 99]],
         layout: {
@@ -2272,7 +2329,7 @@
       map.addLayer({
         id: 'label-local',
         type: 'symbol',
-        source: 'stations',
+        source: 'station-labels',
         minzoom: 11.0,
         filter: ['<', ['get', 'label_rank'], 90],
         layout: {
