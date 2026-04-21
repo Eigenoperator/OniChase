@@ -23,6 +23,7 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Cleaned the v3 multiplayer entry: removed developer/test copy, moved Ready/Unready into a dedicated post-create Ready Room, and replaced raw network errors with player-facing offline text.
 - Simplified the v3 gameplay sidebar: removed visible Room/Result/Replay/debug route panels and replaced the train picker with a three-layer `line -> train -> destination stop` planner.
 - Switched v3 visible station, line, and train names to Japanese-original first across MapLibre labels and the gameplay sidebar.
+- Tightened v3 train choices and selected-train highlighting: regular trains hide opaque numbers, row subtitles show origin/terminal/next stop, and map highlight uses real geometry only.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.

@@ -775,7 +775,7 @@
 
           <section>
             <div class="section-label">Planning</div>
-            <div class="info-box" id="train-summary">Select a station or choose a departure.</div>
+            <div class="info-box" id="train-summary" hidden></div>
             <div class="outlook-list" id="train-outlook">
               <div class="empty">Timetable will load after the map is ready.</div>
             </div>
@@ -872,6 +872,44 @@
       Tokyu: '東急線',
       YURIKAMOME: 'ゆりかもめ',
     });
+    const ROUTE_TRACK_LINE_ALIASES = Object.freeze({
+      JR_EAST_CHUO_RAPID: ['中央線', '青梅線'],
+      JR_EAST_CHUO_SOBU_LOCAL: ['中央線', '総武線'],
+      JR_EAST_JOBAN_RAPID: ['常磐線'],
+      JR_EAST_KEIHIN_TOHOKU_NEGISHI: ['東北線', '東海道線', '根岸線'],
+      JR_EAST_KEIYO_MUSASHINO: ['京葉線', '武蔵野線'],
+      JR_EAST_SAIKYO_KAWAGOE: ['山手線', '赤羽線', '東北線', '川越線'],
+      JR_EAST_SHONAN_SHINJUKU: ['東海道線', '山手線', '東北線', '高崎線', '横須賀線'],
+      JR_EAST_SOBU_RAPID: ['総武線'],
+      JR_EAST_TOKAIDO: ['東海道線'],
+      JR_EAST_UENO_TOKYO: ['東北線', '東海道線'],
+      JR_EAST_YOKOSUKA: ['横須賀線', '東海道線'],
+      JR_YAMANOTE: ['山手線'],
+      RINKAI: ['臨海副都心線', 'りんかい線'],
+      SHINKANSEN_AKITA: ['東北新幹線', '田沢湖線', '奥羽線'],
+      SHINKANSEN_HOKURIKU: ['北陸新幹線'],
+      SHINKANSEN_JOETSU: ['上越新幹線'],
+      SHINKANSEN_KYUSHU: ['九州新幹線'],
+      SHINKANSEN_NISHI_KYUSHU: ['西九州新幹線'],
+      SHINKANSEN_TOHOKU_HOKKAIDO: ['東北新幹線', '北海道新幹線'],
+      SHINKANSEN_TOKAIDO_SANYO: ['東海道新幹線', '山陽新幹線'],
+      SHINKANSEN_YAMAGATA: ['東北新幹線', '奥羽線'],
+      TAMA_MONORAIL: ['多摩都市モノレール線'],
+      TOEI_ARAKAWA: ['荒川線', '都電荒川線'],
+      TOEI_ASAKUSA: ['1号線浅草線', '都営浅草線'],
+      TOEI_MITA: ['6号線三田線', '都営三田線'],
+      TOEI_NIPPORI_TONERI: ['日暮里・舎人ライナー'],
+      TOEI_OEDO: ['12号線大江戸線', '都営大江戸線'],
+      TOEI_SHINJUKU: ['10号線新宿線', '都営新宿線'],
+      TOKYO_MONORAIL_HANEDA: ['東京モノレール羽田線', '東京モノレール羽田空港線'],
+      Tokyu: ['東横線', '目黒線', '田園都市線', '大井町線', '池上線', '東急多摩川線', '世田谷線', 'こどもの国線'],
+      YURIKAMOME: ['東京臨海新交通臨海線', 'ゆりかもめ東京臨海新交通臨海線', 'ゆりかもめ'],
+      小田急多摩線: ['多摩線'],
+      小田急小田原線: ['小田原線'],
+      小田急小田原線通勤: ['小田原線'],
+      小田急江ノ島線: ['江ノ島線'],
+      会津鬼怒川線: ['鬼怒川線'],
+    });
     const SERVICE_NAME_JA_LABELS = Object.freeze({
       Asama: 'あさま',
       Hakutaka: 'はくたか',
@@ -944,6 +982,7 @@
       serviceGeometryByRouteId: new Map(),
       routeStationSetById: new Map(),
       stationRouteIdsByGroupId: new Map(),
+      trackGeometriesByLineName: new Map(),
       tripById: new Map(),
       stationTripsByGroupId: new Map(),
       timetableStatus: 'idle',
@@ -1484,6 +1523,53 @@
       return routeName !== '路線' ? routeName : '列車';
     }
 
+    function tripRoute(trip) {
+      return trip?.routeId ? state.routeById.get(trip.routeId) || null : null;
+    }
+
+    function isShinkansenTrip(trip) {
+      const route = tripRoute(trip);
+      return route?.operatorId === 'shinkansen' || String(route?.shortName || '').startsWith('SHINKANSEN_');
+    }
+
+    function isLimitedExpressTrip(trip) {
+      const serviceName = String(trip?.serviceName || trip?.service_name || '');
+      return serviceName.includes('特急') || serviceName.includes('ライナー') || /limited\s*express/i.test(serviceName);
+    }
+
+    function looksLikePublicTrainNumber(value) {
+      const text = String(value || '').trim();
+      if (!text || text.length > 8 || text.includes('-')) return false;
+      return /^[A-Za-z]?\d{1,4}[A-Za-z]?$/.test(text) || /^\d{1,4}号$/.test(text);
+    }
+
+    function shouldShowTripNumber(trip, serviceName) {
+      const number = String(trip?.serviceNumber || '').trim();
+      if (!number || String(serviceName || '').includes(number)) return false;
+      if (isShinkansenTrip(trip)) return true;
+      return isLimitedExpressTrip(trip) && looksLikePublicTrainNumber(number);
+    }
+
+    function routeTrackLineAliases(routeId) {
+      const route = state.routeById.get(routeId);
+      const configured = ROUTE_TRACK_LINE_ALIASES[route?.shortName];
+      if (configured?.length) return configured;
+      const title = routeJapaneseName(route || routeId);
+      return title && title !== '路線' ? [title] : [];
+    }
+
+    function routeTrackGeometries(routeId) {
+      return routeTrackLineAliases(routeId).flatMap((lineName) => state.trackGeometriesByLineName.get(lineName) || []);
+    }
+
+    function routeTrackLineSegments(routeId) {
+      return routeTrackGeometries(routeId)
+        .map((track) => (track.polyline || [])
+          .filter((point) => Number.isFinite(point.lon) && Number.isFinite(point.lat))
+          .map((point) => [point.lon, point.lat]))
+        .filter((coordinates) => coordinates.length >= 2);
+    }
+
     function displayNameForGroup(stationGroupId) {
       const label = state.labelByGroupId.get(stationGroupId);
       const group = state.stationGroupById.get(stationGroupId);
@@ -1510,6 +1596,12 @@
           if (b.representation === 'service_path' && a.representation !== 'service_path') return 1;
           return (b.maxZoom || 0) - (a.maxZoom || 0);
         });
+      });
+      state.trackGeometriesByLineName = new Map();
+      (bundle.trackCenterlines || []).forEach((track) => {
+        if (!track.lineName || !track.polyline?.length) return;
+        if (!state.trackGeometriesByLineName.has(track.lineName)) state.trackGeometriesByLineName.set(track.lineName, []);
+        state.trackGeometriesByLineName.get(track.lineName).push(track);
       });
 
       state.routeStationSetById = new Map();
@@ -1970,7 +2062,7 @@
     function formatTripLabel(trip) {
       if (!trip) return '列車';
       const serviceName = serviceNameJaLabel(trip) || '列車';
-      return `${serviceName}${trip.serviceNumber ? ` ${trip.serviceNumber}` : ''}`;
+      return `${serviceName}${shouldShowTripNumber(trip, serviceName) ? ` ${trip.serviceNumber}` : ''}`;
     }
 
     function activePlayer() {
@@ -2067,11 +2159,17 @@
     }
 
     function trainPreviewText(trip, boardStop) {
-      return (trip.stopTimes || [])
-        .filter((stop) => stop.sequence > boardStop.sequence)
-        .slice(0, 4)
-        .map((stop) => `${displayNameForGroup(stop.stationGroupId)} ${secToClock(stop.arrivalTimeSec ?? stop.departureTimeSec)}`)
-        .join(' · ') || 'No later stops';
+      const stops = trip?.stopTimes || [];
+      const origin = stops[0];
+      const terminal = stops[stops.length - 1];
+      const nextStop = stops.find((stop) => stop.sequence > boardStop.sequence);
+      const parts = [];
+      if (origin) parts.push(`始発 ${displayNameForGroup(origin.stationGroupId)}`);
+      if (terminal) parts.push(`終点 ${displayNameForGroup(terminal.stationGroupId)}`);
+      if (nextStop) {
+        parts.push(`次 ${displayNameForGroup(nextStop.stationGroupId)} ${secToClock(nextStop.arrivalTimeSec ?? nextStop.departureTimeSec)}`);
+      }
+      return parts.join(' · ') || '後続停車駅なし';
     }
 
     function stationLonLat(stationGroupId) {
@@ -2084,13 +2182,9 @@
       return null;
     }
 
-    function serviceGeometryForRoute(routeId) {
-      return state.serviceGeometryByRouteId.get(routeId)?.[0] || null;
-    }
-
-    function nearestPolylineIndex(polyline, stationGroupId) {
+    function nearestPolylineMatch(polyline, stationGroupId) {
       const lonLat = stationLonLat(stationGroupId);
-      if (!lonLat || !polyline?.length) return -1;
+      if (!lonLat || !polyline?.length) return null;
       let bestIndex = 0;
       let bestDistance = Number.POSITIVE_INFINITY;
       polyline.forEach((point, index) => {
@@ -2102,15 +2196,25 @@
           bestIndex = index;
         }
       });
-      return bestIndex;
+      return { index: bestIndex, distance: bestDistance };
     }
 
     function routeSliceCoordinates(routeId, fromStationGroupId, toStationGroupId) {
-      const geometry = serviceGeometryForRoute(routeId);
-      if (!geometry?.polyline?.length) return [];
-      const fromIndex = nearestPolylineIndex(geometry.polyline, fromStationGroupId);
-      const toIndex = nearestPolylineIndex(geometry.polyline, toStationGroupId);
-      if (fromIndex < 0 || toIndex < 0) return [];
+      const geometries = [
+        ...(state.serviceGeometryByRouteId.get(routeId) || []),
+        ...routeTrackGeometries(routeId),
+      ];
+      let best = null;
+      geometries.forEach((geometry) => {
+        if (!geometry?.polyline?.length) return;
+        const from = nearestPolylineMatch(geometry.polyline, fromStationGroupId);
+        const to = nearestPolylineMatch(geometry.polyline, toStationGroupId);
+        if (!from || !to || from.index === to.index) return;
+        const score = from.distance + to.distance + Math.abs(to.index - from.index) * 1e-10;
+        if (!best || score < best.score) best = { geometry, fromIndex: from.index, toIndex: to.index, score };
+      });
+      if (!best) return [];
+      const { geometry, fromIndex, toIndex } = best;
       const start = Math.min(fromIndex, toIndex);
       const end = Math.max(fromIndex, toIndex);
       let slice = geometry.polyline.slice(start, end + 1);
@@ -2152,21 +2256,34 @@
       return interpolateCoordinates(coordinates, progress);
     }
 
-    function tripPathCoordinates(trip) {
+    function selectedTripStartSequence(trip) {
+      const preview = planCursorPreview(state.activeMode);
+      const pending = preview ? pendingDepartureContext(preview) : null;
+      if (pending?.trip?.id === trip?.id) return pending.boardStop.sequence;
+      if (preview?.currentTrip?.id === trip?.id && preview.currentBoardStop) return preview.currentBoardStop.sequence;
+      return Number.NEGATIVE_INFINITY;
+    }
+
+    function selectedTripStopIds(trip) {
       if (!trip?.stopTimes?.length) return [];
-      const coordinates = [];
+      const startSequence = selectedTripStartSequence(trip);
+      return trip.stopTimes
+        .filter((stop) => stop.sequence >= startSequence)
+        .map((stop) => stop.stationGroupId);
+    }
+
+    function tripPathSegments(trip) {
+      if (!trip?.stopTimes?.length) return [];
+      const startSequence = selectedTripStartSequence(trip);
+      const segments = [];
       for (let index = 0; index < trip.stopTimes.length - 1; index += 1) {
         const current = trip.stopTimes[index];
         const next = trip.stopTimes[index + 1];
+        if (next.sequence < startSequence) continue;
         const segment = routeSliceCoordinates(trip.routeId, current.stationGroupId, next.stationGroupId);
-        const fallback = [stationLonLat(current.stationGroupId), stationLonLat(next.stationGroupId)].filter(Boolean);
-        const useSegment = segment.length >= 2 ? segment : fallback;
-        if (!useSegment.length) continue;
-        const previous = coordinates[coordinates.length - 1];
-        if (previous && previous[0] === useSegment[0][0] && previous[1] === useSegment[0][1]) coordinates.push(...useSegment.slice(1));
-        else coordinates.push(...useSegment);
+        if (segment.length >= 2) segments.push(segment);
       }
-      return coordinates;
+      return segments.length ? segments : routeTrackLineSegments(trip.routeId);
     }
 
     function tripLocationOnMap(tripId, timeMinute) {
@@ -2374,7 +2491,7 @@
       state.selectedTripId = tripId || null;
       state.pendingTripIds[state.activeMode] = tripId || null;
       const trip = state.tripById.get(state.selectedTripId);
-      state.selectedTripStopIds = trip ? trip.stopTimes.map((stop) => stop.stationGroupId) : [];
+      state.selectedTripStopIds = trip ? selectedTripStopIds(trip) : [];
       state.map.setFilter('selected-trip-stops', stationMatchFilter(state.selectedTripStopIds));
       if (trip?.routeId) setSelectedRoute(trip.routeId);
       updateSelectedTripPath();
@@ -2434,16 +2551,16 @@
       if (!state.map?.getSource('selected-trip-path')) return;
       const trip = state.tripById.get(state.selectedTripId);
       const route = trip ? state.routeById.get(trip.routeId) : null;
-      const coordinates = trip ? tripPathCoordinates(trip) : [];
+      const segments = trip ? tripPathSegments(trip) : [];
       state.map.getSource('selected-trip-path').setData({
         type: 'FeatureCollection',
-        features: coordinates.length >= 2
-          ? [{
+        features: segments
+          .filter((coordinates) => coordinates.length >= 2)
+          .map((coordinates, index) => ({
               type: 'Feature',
               geometry: { type: 'LineString', coordinates },
-              properties: { id: trip.id, color: route?.color || '#0f172a' },
-            }]
-          : [],
+              properties: { id: `${trip.id}-${index}`, color: route?.color || '#0f172a' },
+            })),
       });
     }
 
@@ -2483,7 +2600,8 @@
       state.selectedStationGroupId = null;
       state.selectedTripId = pendingTripId(mode);
       const trip = state.tripById.get(state.selectedTripId);
-      state.selectedTripStopIds = trip ? trip.stopTimes.map((stop) => stop.stationGroupId) : [];
+      state.selectedTripStopIds = trip ? selectedTripStopIds(trip) : [];
+      updateSelectedTripPath();
       renderGame();
     }
 
@@ -2794,8 +2912,9 @@
     function renderTrainOutlook() {
       const preview = planCursorPreview(state.activeMode);
       const pending = pendingDepartureContext(preview);
+      trainSummaryEl.hidden = true;
+      trainSummaryEl.innerHTML = '';
       if (state.timetableStatus === 'loading' || state.timetableStatus === 'idle') {
-        trainSummaryEl.innerHTML = `<h3>Loading timetable</h3><div>Map is interactive. Planning rows will appear after the real timetable bundle is ready.</div>`;
         trainOutlookEl.innerHTML = `<div class="empty">Loading ${state.bundle?.metadata?.deferredTripCount || ''} real trips...</div>`;
         return;
       }
@@ -2804,14 +2923,6 @@
       const currentLabel = isOnboard
         ? formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })
         : displayNameForGroup(preview.currentState.stationGroupId);
-      trainSummaryEl.innerHTML = `<h3>${currentLabel}</h3>
-        <div>${isOnboard ? 'You are onboard. Choose where to get off.' : `Choose a line from ${currentLabel}, then choose a train and destination.`}</div>
-        <div class="tiny-actions">
-          ${isOnboard ? '' : '<button type="button" data-action="wait">Wait +5m</button>'}
-          <button type="button" data-action="undo">Undo</button>
-          <button type="button" data-action="clear">Clear Future</button>
-          ${pending ? `<button type="button" data-action="choose-another">Choose Another Train</button>` : ''}
-        </div>`;
 
       let html = '';
       if (pending) {
