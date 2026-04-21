@@ -186,6 +186,7 @@ ROUTE_COLOR_ALIASES = {
     "JR_EAST_CHUO_RAPID": "中央線",
     "JR_EAST_CHUO_SOBU_LOCAL": "総武線",
     "JR_EAST_JOBAN_RAPID": "常磐線",
+    "JR_NARITA": "成田線",
     "JR_EAST_KEIHIN_TOHOKU_NEGISHI": "根岸線",
     "JR_EAST_KEIYO_MUSASHINO": "京葉線",
     "JR_EAST_SAIKYO_KAWAGOE": "川越線",

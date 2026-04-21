@@ -59,6 +59,7 @@ JR_LINE_REFS = {
     ("東海道線", "東海旅客鉄道"): {"label": "JR Central / Tokaido", "color": "#f28e1c"},
     ("東北線", "東日本旅客鉄道"): {"label": "JR East / Tohoku", "color": "#3aa76d"},
     ("常磐線", "東日本旅客鉄道"): {"label": "JR East / Joban", "color": "#22a6b3"},
+    ("成田線", "東日本旅客鉄道"): {"label": "JR East / Narita", "color": "#339966"},
     ("京葉線", "東日本旅客鉄道"): {"label": "JR East / Keiyo", "color": "#c62828"},
     ("赤羽線", "東日本旅客鉄道"): {"label": "JR East / Saikyo", "color": "#0099cc"},
     ("川越線", "東日本旅客鉄道"): {"label": "JR East / Kawagoe", "color": "#0099cc"},
@@ -94,6 +95,7 @@ SERVICE_FAMILY_COLORS = {
     "JR_SHONAN_SHINJUKU": "#c85032",
     "JR_JOBAN_RAPID": "#22a6b3",
     "JR_JOBAN_LOCAL": "#4fc3d7",
+    "JR_NARITA": "#339966",
     "JR_KEIYO": "#c62828",
 }
 
