@@ -989,7 +989,7 @@
       JR_JOETSU_LOCAL: ['上越線', '高崎線'],
       JR_RYOMO: ['両毛線', '上越線', '高崎線'],
       JR_EAST_KEIHIN_TOHOKU_NEGISHI: ['東北線', '東海道線', '根岸線'],
-      JR_EAST_KEIYO_MUSASHINO: ['京葉線', '武蔵野線'],
+      JR_EAST_KEIYO_MUSASHINO: ['京葉線', '武蔵野線', '外房線', '内房線', '東金線'],
       JR_EAST_SAIKYO_KAWAGOE: ['山手線', '赤羽線', '東北線', '川越線'],
       JR_EAST_SHONAN_SHINJUKU: ['東海道線', '山手線', '東北線', '高崎線', '上越線', '両毛線', '横須賀線'],
       JR_EAST_SOBU_RAPID: ['総武線', '成田線', '内房線', '外房線', '鹿島線'],
@@ -1014,12 +1014,15 @@
       TOEI_OEDO: ['12号線大江戸線', '都営大江戸線'],
       TOEI_SHINJUKU: ['10号線新宿線', '都営新宿線'],
       TOKYO_MONORAIL_HANEDA: ['東京モノレール羽田線', '東京モノレール羽田空港線'],
-      Tokyu: ['東横線', '目黒線', '田園都市線', '大井町線', '池上線', '東急多摩川線', '世田谷線', 'こどもの国線'],
+      Tokyu: ['東横線', '目黒線', '田園都市線', '大井町線', '池上線', '東急多摩川線', '世田谷線', 'こどもの国線', '東急新横浜線'],
       YURIKAMOME: ['東京臨海新交通臨海線', 'ゆりかもめ東京臨海新交通臨海線', 'ゆりかもめ'],
-      小田急多摩線: ['多摩線'],
+      小田急多摩線: ['多摩線', '小田原線'],
       小田急小田原線: ['小田原線'],
       小田急小田原線通勤: ['小田原線'],
       小田急江ノ島線: ['江ノ島線'],
+      相鉄本線: ['目黒線', '東横線', '東急新横浜線'],
+      相鉄いずみ野線: ['目黒線', '東横線', '東急新横浜線'],
+      みなとみらい21線: ['東横線', '池袋線', '西武有楽町線'],
       会津鬼怒川線: ['鬼怒川線'],
     });
     const SERVICE_NAME_JA_LABELS = Object.freeze({
@@ -1282,6 +1285,11 @@
       routeStationSetById: new Map(),
       stationRouteIdsByGroupId: new Map(),
       trackGeometriesByLineName: new Map(),
+      routeGraphByRouteId: new Map(),
+      routeGraphPathCache: new Map(),
+      allTrackGraph: null,
+      globalGraphPathCache: new Map(),
+      physicalStationsByGroupId: new Map(),
       tripById: new Map(),
       stationTripsByGroupId: new Map(),
       timetableStatus: 'idle',
@@ -1869,6 +1877,260 @@
         .filter((coordinates) => coordinates.length >= 2);
     }
 
+    function routeCoordinateKey(coordinate) {
+      return `${Math.round(coordinate[0] * 1_000_000)},${Math.round(coordinate[1] * 1_000_000)}`;
+    }
+
+    function coordinatesFromTrack(track) {
+      return (track?.polyline || [])
+        .filter((point) => Number.isFinite(point.lon) && Number.isFinite(point.lat))
+        .map((point) => [point.lon, point.lat]);
+    }
+
+    function graphEnsureNode(nodes, coordinate) {
+      const key = routeCoordinateKey(coordinate);
+      if (!nodes.has(key)) nodes.set(key, { key, coordinate, edges: new Map() });
+      return nodes.get(key);
+    }
+
+    function graphAddEdge(nodes, fromCoordinate, toCoordinate, weightMultiplier = 1) {
+      const from = graphEnsureNode(nodes, fromCoordinate);
+      const to = graphEnsureNode(nodes, toCoordinate);
+      const weight = Math.hypot(to.coordinate[0] - from.coordinate[0], to.coordinate[1] - from.coordinate[1]) * weightMultiplier;
+      if (!Number.isFinite(weight) || weight <= 0) return;
+      const fromWeight = from.edges.get(to.key);
+      const toWeight = to.edges.get(from.key);
+      if (fromWeight === undefined || weight < fromWeight) from.edges.set(to.key, weight);
+      if (toWeight === undefined || weight < toWeight) to.edges.set(from.key, weight);
+    }
+
+    function graphFromSegments(segments) {
+      const nodes = new Map();
+      segments.forEach((segment) => {
+        for (let index = 1; index < segment.length; index += 1) {
+          graphAddEdge(nodes, segment[index - 1], segment[index]);
+        }
+      });
+      return { nodes };
+    }
+
+    function graphFromTracks(tracks, connectEndpointGaps = true) {
+      const normalized = (tracks || [])
+        .map((track) => ({ track, coordinates: coordinatesFromTrack(track) }))
+        .filter((entry) => entry.coordinates.length >= 2);
+      const graph = graphFromSegments(normalized.map((entry) => entry.coordinates));
+      if (!connectEndpointGaps) return graph;
+      const endpointsByLine = new Map();
+      normalized.forEach(({ track, coordinates }) => {
+        const lineKey = `${track.operatorId || ''}|${track.lineName || ''}`;
+        if (!endpointsByLine.has(lineKey)) endpointsByLine.set(lineKey, []);
+        endpointsByLine.get(lineKey).push(coordinates[0], coordinates[coordinates.length - 1]);
+      });
+      const maxDistanceSq = 0.0015 * 0.0015;
+      endpointsByLine.forEach((endpoints) => {
+        for (let outer = 0; outer < endpoints.length; outer += 1) {
+          for (let inner = outer + 1; inner < endpoints.length; inner += 1) {
+            const dx = endpoints[outer][0] - endpoints[inner][0];
+            const dy = endpoints[outer][1] - endpoints[inner][1];
+            if ((dx * dx) + (dy * dy) <= maxDistanceSq) {
+              graphAddEdge(graph.nodes, endpoints[outer], endpoints[inner], 1.05);
+            }
+          }
+        }
+      });
+      return graph;
+    }
+
+    function heapPush(heap, item) {
+      heap.push(item);
+      let index = heap.length - 1;
+      while (index > 0) {
+        const parent = Math.floor((index - 1) / 2);
+        if (heap[parent].distance <= item.distance) break;
+        heap[index] = heap[parent];
+        index = parent;
+      }
+      heap[index] = item;
+    }
+
+    function heapPop(heap) {
+      if (!heap.length) return null;
+      const first = heap[0];
+      const last = heap.pop();
+      if (heap.length && last) {
+        let index = 0;
+        while (true) {
+          const left = index * 2 + 1;
+          const right = left + 1;
+          if (left >= heap.length) break;
+          const child = right < heap.length && heap[right].distance < heap[left].distance ? right : left;
+          if (heap[child].distance >= last.distance) break;
+          heap[index] = heap[child];
+          index = child;
+        }
+        heap[index] = last;
+      }
+      return first;
+    }
+
+    function shortestGraphCoordinates(graph, sources, targets) {
+      if (!graph?.nodes?.size || !sources?.length || !targets?.length) return [];
+      const targetSet = new Set(targets.filter((key) => graph.nodes.has(key)));
+      if (!targetSet.size) return [];
+      const distances = new Map();
+      const previous = new Map();
+      const heap = [];
+      sources.forEach((source) => {
+        const key = typeof source === 'string' ? source : source?.key;
+        const distance = typeof source === 'string' ? 0 : source?.distance || 0;
+        if (!key || !graph.nodes.has(key) || distance >= (distances.get(key) ?? Number.POSITIVE_INFINITY)) return;
+        distances.set(key, distance);
+        heapPush(heap, { key, distance });
+      });
+      let reachedKey = null;
+      while (heap.length) {
+        const currentItem = heapPop(heap);
+        if (!currentItem) break;
+        const currentDistance = distances.get(currentItem.key);
+        if (currentItem.distance !== currentDistance) continue;
+        if (targetSet.has(currentItem.key)) {
+          reachedKey = currentItem.key;
+          break;
+        }
+        const current = graph.nodes.get(currentItem.key);
+        current.edges.forEach((weight, nextKey) => {
+          const candidate = currentDistance + weight;
+          if (candidate >= (distances.get(nextKey) ?? Number.POSITIVE_INFINITY)) return;
+          distances.set(nextKey, candidate);
+          previous.set(nextKey, currentItem.key);
+          heapPush(heap, { key: nextKey, distance: candidate });
+        });
+      }
+      if (!reachedKey) return [];
+      const keys = [reachedKey];
+      while (!sources.some((source) => (typeof source === 'string' ? source : source?.key) === keys[keys.length - 1])) {
+        const prev = previous.get(keys[keys.length - 1]);
+        if (!prev) return [];
+        keys.push(prev);
+      }
+      keys.reverse();
+      return keys.map((key) => graph.nodes.get(key)?.coordinate).filter(Boolean);
+    }
+
+    function stationLonLatCandidates(stationGroupId) {
+      const candidates = [];
+      const group = state.stationGroupById.get(stationGroupId);
+      if (group?.centroid && Number.isFinite(group.centroid.lon) && Number.isFinite(group.centroid.lat)) {
+        candidates.push([group.centroid.lon, group.centroid.lat]);
+      }
+      const station = state.stationByGroupId.get(stationGroupId);
+      if (station && Number.isFinite(station.lon) && Number.isFinite(station.lat)) candidates.push([station.lon, station.lat]);
+      (state.physicalStationsByGroupId.get(stationGroupId) || []).forEach((physicalStation) => {
+        if (Number.isFinite(physicalStation.lon) && Number.isFinite(physicalStation.lat)) {
+          candidates.push([physicalStation.lon, physicalStation.lat]);
+        }
+      });
+      const seen = new Set();
+      return candidates.filter((coordinate) => {
+        const key = routeCoordinateKey(coordinate);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function nearestCoordinateGraphNodes(graph, coordinates, maxCount = 6, maxDistance = 0.006, includeNearestWhenOutside = true) {
+      if (!graph?.nodes?.size || !coordinates?.length) return [];
+      const points = Array.isArray(coordinates[0]) ? coordinates : [coordinates];
+      const scored = [];
+      graph.nodes.forEach((node) => {
+        let bestDistance = Number.POSITIVE_INFINITY;
+        points.forEach((point) => {
+          const dx = node.coordinate[0] - point[0];
+          const dy = node.coordinate[1] - point[1];
+          const distance = dx * dx + dy * dy;
+          if (distance < bestDistance) bestDistance = distance;
+        });
+        scored.push({ key: node.key, distance: bestDistance });
+      });
+      scored.sort((a, b) => a.distance - b.distance);
+      const maxDistanceSq = maxDistance * maxDistance;
+      const nearby = scored.filter((entry) => entry.distance <= maxDistanceSq).slice(0, maxCount);
+      if (nearby.length || !includeNearestWhenOutside) return nearby;
+      return scored.slice(0, Math.max(1, Math.min(maxCount, 2)));
+    }
+
+    function nearestRouteGraphNodes(graph, stationGroupId, maxCount = 6, maxDistance = 0.006, includeNearestWhenOutside = true) {
+      return nearestCoordinateGraphNodes(graph, stationLonLatCandidates(stationGroupId), maxCount, maxDistance, includeNearestWhenOutside);
+    }
+
+    function nearestRouteGraphNode(graph, stationGroupId) {
+      return nearestRouteGraphNodes(graph, stationGroupId, 1)[0] || null;
+    }
+
+    function routeGraphFor(routeId) {
+      if (state.routeGraphByRouteId.has(routeId)) return state.routeGraphByRouteId.get(routeId);
+      const routeTracks = [
+        ...(state.serviceGeometryByRouteId.get(routeId) || []),
+        ...routeTrackGeometries(routeId),
+      ];
+      const graph = graphFromTracks(routeTracks);
+      state.routeGraphByRouteId.set(routeId, graph);
+      return graph;
+    }
+
+    function allTrackGraphFor() {
+      if (state.allTrackGraph) return state.allTrackGraph;
+      const graph = graphFromTracks(state.bundle?.trackCenterlines || []);
+      state.physicalStationsByGroupId.forEach((stations, stationGroupId) => {
+        const nodeKeys = new Map();
+        stations.forEach((station) => {
+          if (!Number.isFinite(station.lon) || !Number.isFinite(station.lat)) return;
+          nearestCoordinateGraphNodes(graph, [[station.lon, station.lat]], 5, 0.0035, false)
+            .forEach((node) => nodeKeys.set(node.key, node));
+        });
+        nearestRouteGraphNodes(graph, stationGroupId, 5, 0.0035, false)
+          .forEach((node) => nodeKeys.set(node.key, node));
+        const nodes = [...nodeKeys.values()];
+        for (let outer = 0; outer < nodes.length; outer += 1) {
+          for (let inner = outer + 1; inner < nodes.length; inner += 1) {
+            graphAddEdge(graph.nodes, graph.nodes.get(nodes[outer].key).coordinate, graph.nodes.get(nodes[inner].key).coordinate, 1.15);
+          }
+        }
+      });
+      state.allTrackGraph = graph;
+      return graph;
+    }
+
+    function globalGraphSliceCoordinates(routeId, fromStationGroupId, toStationGroupId) {
+      const cacheKey = `${routeId}|${fromStationGroupId}|${toStationGroupId}`;
+      if (state.globalGraphPathCache.has(cacheKey)) return state.globalGraphPathCache.get(cacheKey);
+      const graph = allTrackGraphFor();
+      const fromNodes = nearestRouteGraphNodes(graph, fromStationGroupId, 8, 0.006, false);
+      const toNodes = nearestRouteGraphNodes(graph, toStationGroupId, 8, 0.006, false);
+      const coordinates = shortestGraphCoordinates(graph, fromNodes, toNodes.map((node) => node.key));
+      const path = coordinates.length >= 2 ? coordinates : [];
+      state.globalGraphPathCache.set(cacheKey, path);
+      return path;
+    }
+
+    function shortestRouteGraphCoordinates(graph, fromKey, toKey) {
+      return shortestGraphCoordinates(graph, [fromKey], [toKey]);
+    }
+
+    function routeGraphSliceCoordinates(routeId, fromStationGroupId, toStationGroupId) {
+      const cacheKey = `${routeId}|${fromStationGroupId}|${toStationGroupId}`;
+      if (state.routeGraphPathCache.has(cacheKey)) return state.routeGraphPathCache.get(cacheKey);
+      const graph = routeGraphFor(routeId);
+      const fromNodes = nearestRouteGraphNodes(graph, fromStationGroupId, 4, 0.006);
+      const toNodes = nearestRouteGraphNodes(graph, toStationGroupId, 4, 0.006);
+      let coordinates = shortestGraphCoordinates(graph, fromNodes, toNodes.map((node) => node.key));
+      if (coordinates.length < 2) coordinates = globalGraphSliceCoordinates(routeId, fromStationGroupId, toStationGroupId);
+      const path = coordinates.length >= 2 ? coordinates : [];
+      state.routeGraphPathCache.set(cacheKey, path);
+      return path;
+    }
+
     function displayNameForGroup(stationGroupId) {
       const label = state.labelByGroupId.get(stationGroupId);
       const group = state.stationGroupById.get(stationGroupId);
@@ -1881,10 +2143,17 @@
       state.labelByGroupId = new Map((bundle.labelRepresentations || []).map((label) => [label.stationGroupId, label]));
       state.routeById = new Map((bundle.serviceRoutes || []).map((route) => [route.id, route]));
       state.stationByGroupId = new Map();
+      state.physicalStationsByGroupId = new Map();
       (bundle.physicalStations || []).forEach((station) => {
         if (!state.stationByGroupId.has(station.stationGroupId)) state.stationByGroupId.set(station.stationGroupId, station);
+        if (!state.physicalStationsByGroupId.has(station.stationGroupId)) state.physicalStationsByGroupId.set(station.stationGroupId, []);
+        state.physicalStationsByGroupId.get(station.stationGroupId).push(station);
       });
       state.serviceGeometryByRouteId = new Map();
+      state.routeGraphByRouteId = new Map();
+      state.routeGraphPathCache = new Map();
+      state.allTrackGraph = null;
+      state.globalGraphPathCache = new Map();
       (bundle.serviceGeometry || []).forEach((geometry) => {
         if (!state.serviceGeometryByRouteId.has(geometry.routeId)) state.serviceGeometryByRouteId.set(geometry.routeId, []);
         state.serviceGeometryByRouteId.get(geometry.routeId).push(geometry);
@@ -2734,7 +3003,7 @@
         const score = from.distance + to.distance + Math.abs(to.index - from.index) * 1e-10;
         if (!best || score < best.score) best = { geometry, fromIndex: from.index, toIndex: to.index, score };
       });
-      if (!best) return [];
+      if (!best) return routeGraphSliceCoordinates(routeId, fromStationGroupId, toStationGroupId);
       const { geometry, fromIndex, toIndex } = best;
       const start = Math.min(fromIndex, toIndex);
       const end = Math.max(fromIndex, toIndex);
