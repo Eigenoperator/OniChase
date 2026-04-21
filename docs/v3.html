@@ -1287,6 +1287,8 @@
       trackGeometriesByLineName: new Map(),
       routeGraphByRouteId: new Map(),
       routeGraphPathCache: new Map(),
+      physicalStationRouteIdsByStationId: new Map(),
+      physicalStationIdsByRouteGroupKey: new Map(),
       allTrackGraph: null,
       globalGraphPathCache: new Map(),
       physicalStationsByGroupId: new Map(),
@@ -1948,6 +1950,91 @@
       return { nodes };
     }
 
+    function pointSegmentDistanceSq(point, start, end) {
+      const px = point[0];
+      const py = point[1];
+      const ax = start[0];
+      const ay = start[1];
+      const bx = end[0];
+      const by = end[1];
+      const dx = bx - ax;
+      const dy = by - ay;
+      if (dx === 0 && dy === 0) return ((px - ax) * (px - ax)) + ((py - ay) * (py - ay));
+      const t = clamp(((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy), 0, 1);
+      const cx = ax + t * dx;
+      const cy = ay + t * dy;
+      return ((px - cx) * (px - cx)) + ((py - cy) * (py - cy));
+    }
+
+    function polylineDistanceSqToPoint(polyline, coordinate) {
+      if (!polyline?.length || !coordinate) return Number.POSITIVE_INFINITY;
+      let best = Number.POSITIVE_INFINITY;
+      for (let index = 1; index < polyline.length; index += 1) {
+        const start = [polyline[index - 1].lon, polyline[index - 1].lat];
+        const end = [polyline[index].lon, polyline[index].lat];
+        if (!Number.isFinite(start[0]) || !Number.isFinite(start[1]) || !Number.isFinite(end[0]) || !Number.isFinite(end[1])) continue;
+        best = Math.min(best, pointSegmentDistanceSq(coordinate, start, end));
+      }
+      if (best < Number.POSITIVE_INFINITY) return best;
+      const first = polyline[0];
+      if (!Number.isFinite(first?.lon) || !Number.isFinite(first?.lat)) return best;
+      return ((coordinate[0] - first.lon) * (coordinate[0] - first.lon)) + ((coordinate[1] - first.lat) * (coordinate[1] - first.lat));
+    }
+
+    function routeDistanceSqToStation(routeId, station) {
+      if (!Number.isFinite(station?.lon) || !Number.isFinite(station?.lat)) return Number.POSITIVE_INFINITY;
+      const coordinate = [station.lon, station.lat];
+      const geometries = [
+        ...(state.serviceGeometryByRouteId.get(routeId) || []),
+        ...routeTrackGeometries(routeId),
+      ];
+      return geometries.reduce((best, geometry) => Math.min(best, polylineDistanceSqToPoint(geometry.polyline, coordinate)), Number.POSITIVE_INFINITY);
+    }
+
+    function routeStationGroupKey(routeId, stationGroupId) {
+      return `${routeId || ''}|${stationGroupId || ''}`;
+    }
+
+    function routeOperatorMatchesStation(route, station) {
+      const routeOperator = route?.operatorId || '';
+      const stationOperators = Array.isArray(station?.operatorIds) ? station.operatorIds.filter(Boolean) : [];
+      if (!routeOperator || !stationOperators.length) return true;
+      if (stationOperators.includes(routeOperator)) return true;
+      if (routeOperator === 'shinkansen') return stationOperators.some((operatorId) => operatorId.startsWith('jr_'));
+      if (routeOperator.startsWith('jr_')) return stationOperators.includes(routeOperator);
+      return false;
+    }
+
+    function buildPhysicalStationRouteIndex() {
+      state.physicalStationRouteIdsByStationId = new Map();
+      state.physicalStationIdsByRouteGroupKey = new Map();
+      state.routeStationSetById.forEach((stationGroupIds, routeId) => {
+        const route = state.routeById.get(routeId);
+        stationGroupIds.forEach((stationGroupId) => {
+          const stations = state.physicalStationsByGroupId.get(stationGroupId) || [];
+          if (!stations.length) return;
+          const operatorMatches = stations.filter((station) => routeOperatorMatchesStation(route, station));
+          const candidates = operatorMatches.length ? operatorMatches : stations;
+          const scored = candidates
+            .map((station) => ({ station, distanceSq: routeDistanceSqToStation(routeId, station) }))
+            .sort((a, b) => a.distanceSq - b.distanceSq || String(a.station.id || '').localeCompare(String(b.station.id || '')));
+          const chosen = Number.isFinite(scored[0]?.distanceSq)
+            ? [scored[0].station]
+            : candidates;
+          const key = routeStationGroupKey(routeId, stationGroupId);
+          if (!state.physicalStationIdsByRouteGroupKey.has(key)) state.physicalStationIdsByRouteGroupKey.set(key, new Set());
+          chosen.forEach((station) => {
+            if (!station?.id) return;
+            if (!state.physicalStationRouteIdsByStationId.has(station.id)) {
+              state.physicalStationRouteIdsByStationId.set(station.id, new Set());
+            }
+            state.physicalStationRouteIdsByStationId.get(station.id).add(routeId);
+            state.physicalStationIdsByRouteGroupKey.get(key).add(station.id);
+          });
+        });
+      });
+    }
+
     function graphFromTracks(tracks, connectEndpointGaps = true) {
       const normalized = (tracks || [])
         .map((track) => ({ track, coordinates: coordinatesFromTrack(track) }))
@@ -2158,8 +2245,7 @@
       const graph = routeGraphFor(routeId);
       const fromNodes = nearestRouteGraphNodes(graph, fromStationGroupId, 4, 0.006);
       const toNodes = nearestRouteGraphNodes(graph, toStationGroupId, 4, 0.006);
-      let coordinates = shortestGraphCoordinates(graph, fromNodes, toNodes.map((node) => node.key));
-      if (coordinates.length < 2) coordinates = globalGraphSliceCoordinates(routeId, fromStationGroupId, toStationGroupId);
+      const coordinates = shortestGraphCoordinates(graph, fromNodes, toNodes.map((node) => node.key));
       const path = coordinates.length >= 2 ? coordinates : [];
       state.routeGraphPathCache.set(cacheKey, path);
       return path;
@@ -2220,6 +2306,7 @@
         });
         state.routeStationSetById.set(pattern.routeId, routeSet);
       });
+      buildPhysicalStationRouteIndex();
     }
 
     function lineFeature(id, polyline, properties) {
@@ -2244,6 +2331,7 @@
           const labelRank = Number(label.labelRank || group.labelRank || 50);
           const routeCount = transferRouteIdsForStation(station.stationGroupId).length;
           const operatorIds = Array.isArray(station.operatorIds) ? station.operatorIds.filter(Boolean) : [];
+          const routeIds = [...(state.physicalStationRouteIdsByStationId.get(station.id) || [])].sort();
           return {
             type: 'Feature',
             id: station.id,
@@ -2253,6 +2341,7 @@
               station_group_id: station.stationGroupId,
               operator_id: operatorIds[0] || '',
               operator_ids: operatorIds.join(','),
+              route_ids: routeIds.join(','),
               name_en: label.displayNameEn || station.names?.en || station.name,
               name_ja: label.displayNameJa || group.names?.ja || station.names?.ja || station.name,
               label_rank: labelRank,
@@ -2697,6 +2786,32 @@
     function stationMatchFilter(stationGroupIds) {
       if (!stationGroupIds?.length) return NONE_STATION_FILTER;
       return ['match', ['get', 'station_group_id'], stationGroupIds, true, false];
+    }
+
+    function stationFeatureIdFilter(stationIds) {
+      const ids = [...new Set((stationIds || []).filter(Boolean))];
+      if (!ids.length) return NONE_STATION_FILTER;
+      return ['match', ['get', 'id'], ids, true, false];
+    }
+
+    function routeStationPhysicalIds(routeId, stationGroupIds) {
+      const ids = [];
+      (stationGroupIds || []).forEach((stationGroupId) => {
+        const routeSpecificIds = state.physicalStationIdsByRouteGroupKey.get(routeStationGroupKey(routeId, stationGroupId));
+        if (routeSpecificIds?.size) {
+          ids.push(...routeSpecificIds);
+          return;
+        }
+        (state.physicalStationsByGroupId.get(stationGroupId) || []).forEach((station) => {
+          if (station?.id) ids.push(station.id);
+        });
+      });
+      return ids;
+    }
+
+    function routeStationMatchFilter(routeId, stationGroupIds) {
+      if (!routeId) return stationMatchFilter(stationGroupIds);
+      return stationFeatureIdFilter(routeStationPhysicalIds(routeId, stationGroupIds));
     }
 
     function hhmmToMinutes(value) {
@@ -3276,7 +3391,7 @@
       return playerId === state.activeMode;
     }
 
-    function setSelectedStation(stationGroupId) {
+    function setSelectedStation(stationGroupId, physicalStationId = null) {
       const preview = planCursorPreview(state.activeMode);
       const pending = preview ? pendingDepartureContext(preview) : null;
       if (pending) {
@@ -3294,7 +3409,12 @@
         }
       }
       state.selectedStationGroupId = stationGroupId;
-      state.map.setFilter('selected-station', stationGroupId ? ['==', ['get', 'station_group_id'], stationGroupId] : NONE_STATION_FILTER);
+      const stationFilter = physicalStationId
+        ? stationFeatureIdFilter([physicalStationId])
+        : stationGroupId && state.selectedRouteId
+          ? routeStationMatchFilter(state.selectedRouteId, [stationGroupId])
+          : stationMatchFilter(stationGroupId ? [stationGroupId] : []);
+      state.map.setFilter('selected-station', stationFilter);
       renderStationCard();
       renderGame();
       if (stationGroupId) ensureTimetableLoaded().then(renderGame);
@@ -3305,7 +3425,7 @@
       state.map.setFilter('selected-route-casing', routeFilter(state.selectedRouteId));
       state.map.setFilter('selected-route-line', routeFilter(state.selectedRouteId));
       const routeStops = [...(state.routeStationSetById.get(state.selectedRouteId) || new Set())];
-      state.map.setFilter('route-stop-halo', stationMatchFilter(routeStops));
+      state.map.setFilter('route-stop-halo', routeStationMatchFilter(state.selectedRouteId, routeStops));
       renderRouteCard();
       renderRouteList();
       renderGame();
@@ -3316,7 +3436,7 @@
       state.pendingTripIds[state.activeMode] = tripId || null;
       const trip = state.tripById.get(state.selectedTripId);
       state.selectedTripStopIds = trip ? selectedTripStopIds(trip) : [];
-      state.map.setFilter('selected-trip-stops', stationMatchFilter(state.selectedTripStopIds));
+      state.map.setFilter('selected-trip-stops', routeStationMatchFilter(trip?.routeId, state.selectedTripStopIds));
       if (trip?.routeId) setSelectedRoute(trip.routeId);
       updateSelectedTripPath();
       renderRouteCard();
@@ -3338,7 +3458,7 @@
         map.on('click', layerId, (event) => {
           const feature = event.features?.[0];
           if (!feature) return;
-          setSelectedStation(feature.properties.station_group_id);
+          setSelectedStation(feature.properties.station_group_id, feature.properties.id);
         });
         map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
         map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
@@ -4066,7 +4186,8 @@
           : preview?.currentState.kind === 'TRAIN'
             ? availableDestinations(preview).map((item) => item.stationGroupId)
             : state.selectedTripStopIds;
-        state.map.setFilter('selected-trip-stops', stationMatchFilter(futureStops));
+        const highlightRouteId = pending?.trip?.routeId || preview?.currentTrip?.routeId || state.tripById.get(state.selectedTripId)?.routeId || state.selectedRouteId;
+        state.map.setFilter('selected-trip-stops', routeStationMatchFilter(highlightRouteId, futureStops));
       }
     }
 
