@@ -3009,10 +3009,12 @@
       return playerId === 'hunter' ? Math.max(minute, 420) : minute;
     }
 
-    function departuresForStationGroup(stationGroupId, currentMinute) {
+    function departuresForStationGroup(stationGroupId, currentMinute, options = {}) {
       if (state.timetableStatus !== 'ready') return [];
+      const routeId = options.routeId || null;
       const rows = [];
       for (const trip of state.stationTripsByGroupId.get(stationGroupId) || []) {
+        if (routeId && trip.routeId !== routeId) continue;
         for (const stop of trip.stopTimes || []) {
           if (stop.stationGroupId !== stationGroupId) continue;
           const departureMinute = stopDepartureMinutes(stop);
@@ -3022,12 +3024,16 @@
         }
       }
       rows.sort((a, b) => a.departureMinute - b.departureMinute || formatTripLabel(a.trip).localeCompare(formatTripLabel(b.trip)));
-      return rows.slice(0, 48);
+      return Number.isFinite(options.limit) ? rows.slice(0, options.limit) : rows;
     }
 
-    function availableDepartures(preview, playerId = state.activeMode) {
+    function availableDepartures(preview, playerId = state.activeMode, options = {}) {
       if (preview.currentState.kind !== 'NODE') return [];
-      const entries = departuresForStationGroup(preview.currentState.stationGroupId, effectiveDepartureMinute(playerId, preview.currentMinute))
+      const entries = departuresForStationGroup(
+        preview.currentState.stationGroupId,
+        effectiveDepartureMinute(playerId, preview.currentMinute),
+        { routeId: options.routeId || null },
+      )
         .map((row) => ({
           trip: row.trip,
           boardStop: row.stop,
@@ -3035,7 +3041,13 @@
           departureHhmm: minutesToHhmm(row.departureMinute),
         }))
         .filter((entry) => hasDownstreamStop(entry.trip, entry.boardStop));
-      return dedupeBoardableDepartures(entries);
+      const deduped = dedupeBoardableDepartures(entries);
+      return Number.isFinite(options.limit) ? deduped.slice(0, options.limit) : deduped;
+    }
+
+    function availableRouteDepartures(preview, routeId, limit = 15, playerId = state.activeMode) {
+      if (!routeId) return [];
+      return availableDepartures(preview, playerId, { routeId, limit });
     }
 
     function dedupeBoardableDepartures(entries) {
@@ -3907,7 +3919,7 @@
         const departures = availableDepartures(preview);
         const routeChoices = routeChoicesFromDepartures(departures);
         const selectedRouteId = pending.trip.routeId;
-        const trainRows = departures.filter((entry) => entry.trip.routeId === selectedRouteId);
+        const trainRows = availableRouteDepartures(preview, selectedRouteId);
         html += plannerStep(
           1,
           `Lines at ${currentLabel}`,
@@ -4009,7 +4021,7 @@
         const departures = availableDepartures(preview);
         const routeChoices = routeChoicesFromDepartures(departures);
         const selectedRouteId = routeChoices.some((choice) => choice.routeId === state.selectedRouteId) ? state.selectedRouteId : null;
-        const trainRows = selectedRouteId ? departures.filter((entry) => entry.trip.routeId === selectedRouteId) : [];
+        const trainRows = selectedRouteId ? availableRouteDepartures(preview, selectedRouteId) : [];
         html += plannerStep(
           1,
           `Lines at ${currentLabel}`,
