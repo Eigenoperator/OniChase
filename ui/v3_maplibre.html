@@ -2517,7 +2517,7 @@
 
     function availableDepartures(preview, playerId = state.activeMode) {
       if (preview.currentState.kind !== 'NODE') return [];
-      return departuresForStationGroup(preview.currentState.stationGroupId, effectiveDepartureMinute(playerId, preview.currentMinute))
+      const entries = departuresForStationGroup(preview.currentState.stationGroupId, effectiveDepartureMinute(playerId, preview.currentMinute))
         .map((row) => ({
           trip: row.trip,
           boardStop: row.stop,
@@ -2525,6 +2525,32 @@
           departureHhmm: minutesToHhmm(row.departureMinute),
         }))
         .filter((entry) => hasDownstreamStop(entry.trip, entry.boardStop));
+      return dedupeBoardableDepartures(entries);
+    }
+
+    function dedupeBoardableDepartures(entries) {
+      const seen = new Set();
+      const deduped = [];
+      entries.forEach((entry) => {
+        const downstream = (entry.trip.stopTimes || [])
+          .filter((stop) => stop.sequence >= entry.boardStop.sequence)
+          .map((stop) => [
+            stop.stationGroupId,
+            stop.arrivalTimeSec ?? '',
+            stop.departureTimeSec ?? '',
+          ].join('@'))
+          .join('>');
+        const key = [
+          entry.trip.routeId || '',
+          entry.boardStop.stationGroupId || '',
+          entry.departureMinute,
+          downstream,
+        ].join('|');
+        if (seen.has(key)) return;
+        seen.add(key);
+        deduped.push(entry);
+      });
+      return deduped;
     }
 
     function futureTripStops(preview) {
@@ -3275,6 +3301,7 @@
       const byRoute = new Map();
       departures.forEach((entry) => {
         const routeId = entry.trip.routeId || '__unknown_route__';
+        if (isThroughServiceTransferAlias(routeId)) return;
         const current = byRoute.get(routeId) || {
           routeId,
           firstDepartureMinute: entry.departureMinute,
