@@ -443,6 +443,25 @@ class RoomRegistry:
                 player.session_token = session_token or make_session_token()
             return room, player.session_token
 
+    def leave(self, room_id: str, seat: str, session_token: str | None) -> RoomState:
+        with self._lock:
+            room = self._rooms[room_id]
+            advance_room(room)
+            player = room.players[seat]
+            if player.session_token is None or session_token != player.session_token:
+                raise PermissionError("invalid_token")
+            player.connected = False
+            player.display_name = None
+            player.session_token = None
+            player.ready = False
+            player.steps = []
+            player.start_station_id = (
+                DEFAULT_RUNNER_START_STATION_ID
+                if seat == "runner"
+                else DEFAULT_HUNTER_START_STATION_ID
+            )
+            return room
+
     def authorize(self, room_id: str, seat: str, session_token: str | None) -> RoomState:
         with self._lock:
             room = self._rooms[room_id]
@@ -660,6 +679,19 @@ class RoomRequestHandler(BaseHTTPRequestHandler):
                 self._send_json(HTTPStatus.CONFLICT, {"error": "seat_occupied"})
                 return
             self._send_json(HTTPStatus.OK, {"room": room_payload(room, seat), "token": token})
+            return
+
+        if action == "leave":
+            seat = body.get("seat")
+            if seat not in {"runner", "hunter"}:
+                self._send_json(HTTPStatus.BAD_REQUEST, {"error": "invalid_seat"})
+                return
+            try:
+                room = REGISTRY.leave(room_id, seat, body.get("token"))
+            except PermissionError:
+                self._send_json(HTTPStatus.FORBIDDEN, {"error": "invalid_token"})
+                return
+            self._send_json(HTTPStatus.OK, {"room": room_payload(room)})
             return
 
         if action == "plan":

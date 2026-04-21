@@ -795,7 +795,7 @@
       <div class="button-row">
         <button id="ready-room-ready-button" class="primary" type="button">Ready</button>
         <button id="ready-room-unready-button" type="button">Unready</button>
-        <button id="ready-room-back-button" type="button">Back</button>
+        <button id="ready-room-back-button" type="button">Leave Room</button>
       </div>
       <div class="entry-status" id="ready-room-status">Waiting for room status.</div>
     </div>
@@ -1575,6 +1575,40 @@
           : '房间已创建。复制房间号并邀请另一位玩家。';
       document.getElementById('ready-room-ready-button').disabled = youReady;
       document.getElementById('ready-room-unready-button').disabled = !youReady;
+    }
+
+    function clearLocalOnlineRoomState(message = '已退出房间，可以创建或加入新房间。') {
+      stopOnlinePolling();
+      state.online = {
+        ...state.online,
+        roomId: '',
+        seat: null,
+        token: '',
+        lastRoom: null,
+        presences: { runner: null, hunter: null },
+      };
+      roomIdInput.value = '';
+      updateRoomCodePill('');
+      readyRoomStatusEl.textContent = message;
+      entryStatusEl.textContent = message;
+      resetMatch();
+      updateRoleButtons();
+      closeReadyRoom();
+    }
+
+    async function leaveOnlineRoom() {
+      const { serverUrl, roomId, seat, token } = state.online;
+      const canNotifyServer = Boolean(serverUrl && roomId && seat && token);
+      if (canNotifyServer) {
+        apiJson(`${serverUrl}/api/rooms/${roomId}/leave`, {
+          method: 'POST',
+          body: JSON.stringify({ seat, token }),
+        }).catch(() => {
+          // Local exit must still work even if an older room server lacks /leave.
+        });
+      }
+      clearLocalOnlineRoomState();
+      openEntry();
     }
 
     function presenceToPreview(playerId, presence) {
@@ -3430,7 +3464,23 @@
     }
 
     function resetPlan() {
-      truncateFuturePlan({ preserveCurrentRide: true });
+      const floor = protectedPlanLength();
+      activePlayer().steps = activePlayer().steps.slice(0, floor);
+      clearPendingTrip();
+      invalidateSimulation();
+      updateSelectedTripPath();
+      renderGame();
+      syncPlanIfOnline();
+    }
+
+    function protectedPlanLength(playerId = state.activeMode) {
+      const startMinute = hhmmToMinutes(state.startTime);
+      const isInitialPlanning = state.phase === 'PLANNING' && !state.latestResult && state.currentGameMinute <= startMinute;
+      if (isInitialPlanning) return 0;
+      const executedPreview = previewPlayer(playerId, state.currentGameMinute);
+      const editableRideIndex = currentEditableRideIndex(executedPreview, playerId);
+      if (editableRideIndex >= 0) return editableRideIndex + 1;
+      return executedPreview?.resolvedSteps?.length || 0;
     }
 
     function beginEditCurrentRide() {
@@ -3467,8 +3517,25 @@
 
     function undoLastStep() {
       const steps = activePlayer().steps;
-      if (!steps.length) return;
-      steps.pop();
+      const floor = protectedPlanLength();
+      if (pendingTripId()) {
+        clearPendingTrip();
+        state.selectedTripStopIds = [];
+        state.map?.setFilter('selected-trip-stops', NONE_STATION_FILTER);
+        updateSelectedTripPath();
+        renderGame();
+        return;
+      }
+      if (steps.length <= floor) return;
+      let removeFrom = steps.length - 1;
+      if (
+        steps[removeFrom]?.type === 'RIDE_TO_STATION' &&
+        removeFrom - 1 >= floor &&
+        steps[removeFrom - 1]?.type === 'BOARD_TRAIN'
+      ) {
+        removeFrom -= 1;
+      }
+      steps.splice(removeFrom);
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
@@ -3888,6 +3955,7 @@
       }
       const preview = planCursorPreview(state.activeMode);
       const editableRideIndex = currentEditableRideIndex(preview);
+      const floor = protectedPlanLength();
       let chainStation = activePlayer().start_station_id;
       let currentMinute = hhmmToMinutes(state.startTime);
       let pendingTrip = null;
@@ -3923,7 +3991,15 @@
           legIndex += 1;
         }
       });
-      planBoardEl.innerHTML = rows.map((row) => `
+      const canUndo = steps.length > floor || Boolean(pendingTripId());
+      const canClear = steps.length > floor;
+      const planActions = `
+        <div class="button-row" style="margin-bottom:10px;">
+          <button type="button" data-plan-action="undo" ${canUndo ? '' : 'disabled'}>Undo Last</button>
+          <button type="button" data-plan-action="clear" ${canClear ? '' : 'disabled'}>Clear Future</button>
+        </div>
+      `;
+      planBoardEl.innerHTML = planActions + rows.map((row) => `
         <button class="plan-row ${row.editable ? 'clickable current' : ''}" type="button" ${row.editable ? 'data-action="edit-current-ride"' : ''}>
           <span class="row-meta">${row.time}</span>
           <span>
@@ -3934,6 +4010,12 @@
       `).join('');
       planBoardEl.querySelectorAll('[data-action="edit-current-ride"]').forEach((node) => {
         node.addEventListener('click', beginEditCurrentRide);
+      });
+      planBoardEl.querySelectorAll('[data-plan-action]').forEach((node) => {
+        node.addEventListener('click', () => {
+          if (node.dataset.planAction === 'undo') undoLastStep();
+          else if (node.dataset.planAction === 'clear') resetPlan();
+        });
       });
     }
 
@@ -4415,7 +4497,12 @@
         });
       });
       document.getElementById('copy-ready-room-button').addEventListener('click', copyCurrentRoomId);
-      document.getElementById('ready-room-back-button').addEventListener('click', openEntry);
+      document.getElementById('ready-room-back-button').addEventListener('click', () => {
+        leaveOnlineRoom().catch(() => {
+          clearLocalOnlineRoomState();
+          openEntry();
+        });
+      });
       roomActionsEl.addEventListener('click', (event) => {
         const button = event.target.closest('[data-room-action]');
         if (!button) return;
