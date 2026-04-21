@@ -24,7 +24,7 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Simplified the v3 gameplay sidebar: removed visible Room/Result/Replay/debug route panels and replaced the train picker with a three-layer `line -> train -> destination stop` planner.
 - Switched v3 visible station, line, and train names to Japanese-original first across MapLibre labels and the gameplay sidebar.
 - Tightened v3 train choices and selected-train highlighting: regular trains hide opaque numbers, row subtitles show origin/terminal/next stop, and map highlight uses real geometry only.
-- Refined v3 destination rows: terminal-only trains are filtered out, stop choices show time/station only, transfer badges prefer real line-symbol assets, direct-through aliases are filtered, and Keikyu airport trains now reach Haneda terminals.
+- Refined v3 destination rows: terminal-only trains are filtered out, stop choices show time/station only, transfer badges prefer compact two-row real line-symbol assets, direct-through aliases are filtered, and Keikyu airport trains now reach Haneda terminals.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
