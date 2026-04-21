@@ -570,6 +570,13 @@
       cursor: pointer;
     }
 
+    .outlook-row.destination-row {
+      grid-template-columns: 64px minmax(0, 1fr);
+      align-items: start;
+      min-height: 88px;
+      padding: 18px 20px 18px 12px;
+    }
+
     .plan-row, .replay-row {
       cursor: default;
     }
@@ -614,43 +621,87 @@
     }
 
     .destination-line {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
       min-width: 0;
       gap: 10px;
     }
 
     .destination-line .row-title {
-      flex: 1 1 auto;
+      display: block;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.45;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
     }
 
     .transfer-chips {
       display: inline-flex;
-      flex: 0 1 auto;
-      justify-content: flex-end;
-      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 5px;
       min-width: 0;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .transfer-chip {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 24px;
-      max-width: 42px;
-      height: 18px;
-      border-radius: 6px;
-      padding: 0 5px;
-      color: #fff;
-      font-size: 9px;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      border: 3px solid var(--route-color, #667487);
+      background: #ffffff;
+      color: var(--route-color, #667487);
+      font-size: 11px;
       font-weight: 900;
       line-height: 1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+      box-shadow: 0 1px 2px rgba(31, 42, 55, 0.14);
+    }
+
+    .transfer-chip.asset-chip {
+      width: 30px;
+      height: 30px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: inherit;
+      box-shadow: 0 1px 2px rgba(31, 42, 55, 0.16);
+    }
+
+    .transfer-chip.asset-chip img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+
+    .transfer-chip.jr,
+    .transfer-chip.private,
+    .transfer-chip.subway,
+    .transfer-chip.shinkansen,
+    .transfer-chip.more {
+      border-radius: 7px;
+      border-color: var(--route-color, #667487);
+      background: var(--route-color, #667487);
+      color: var(--route-text-color, #ffffff);
+    }
+
+    .transfer-chip.subway {
+      border-radius: 999px;
+    }
+
+    .transfer-chip.more {
+      --route-color: #667487;
+      --route-text-color: #ffffff;
+      font-size: 10px;
     }
 
     .row-meta {
@@ -975,6 +1026,177 @@
       'Rinkai Line': 'りんかい線',
       'Tama Monorail': '多摩モノレール',
       Yurikamome: 'ゆりかもめ',
+    });
+    const ROUTE_SYMBOL_CODES = Object.freeze({
+      JR_EAST_CHUO_RAPID: 'JC',
+      JR_EAST_CHUO_SOBU_LOCAL: 'JB',
+      JR_EAST_JOBAN_RAPID: 'JJ',
+      JR_EAST_KEIHIN_TOHOKU_NEGISHI: 'JK',
+      JR_EAST_KEIYO_MUSASHINO: 'JE',
+      JR_EAST_SAIKYO_KAWAGOE: 'JA',
+      JR_EAST_SHONAN_SHINJUKU: 'JS',
+      JR_EAST_SOBU_RAPID: 'JO',
+      JR_EAST_TOKAIDO: 'JT',
+      JR_EAST_UENO_TOKYO: 'JU',
+      JR_EAST_YOKOSUKA: 'JO',
+      JR_YAMANOTE: 'JY',
+      SHINKANSEN_AKITA: '新',
+      SHINKANSEN_HOKURIKU: '新',
+      SHINKANSEN_JOETSU: '新',
+      SHINKANSEN_KYUSHU: '新',
+      SHINKANSEN_NISHI_KYUSHU: '新',
+      SHINKANSEN_TOHOKU_HOKKAIDO: '新',
+      SHINKANSEN_TOKAIDO_SANYO: '新',
+      SHINKANSEN_YAMAGATA: '新',
+      '11号線半蔵門線': 'Z',
+      '13号線副都心線': 'F',
+      '2号線日比谷線': 'H',
+      '3号線銀座線': 'G',
+      '4号線丸ノ内線': 'M',
+      '4号線丸ノ内線分岐線': 'Mb',
+      '5号線東西線': 'T',
+      '6号線三田線': 'I',
+      '7号線南北線': 'N',
+      '8号線有楽町線': 'Y',
+      '9号線千代田線': 'C',
+      TOEI_ARAKAWA: 'SA',
+      TOEI_ASAKUSA: 'A',
+      TOEI_MITA: 'I',
+      TOEI_NIPPORI_TONERI: 'NT',
+      TOEI_OEDO: 'E',
+      TOEI_SHINJUKU: 'S',
+      RINKAI: 'R',
+      TOKYO_MONORAIL_HANEDA: 'MO',
+      TAMA_MONORAIL: 'TT',
+      YURIKAMOME: 'U',
+      Tokyu: 'TY',
+      東横線: 'TY',
+      田園都市線: 'DT',
+      大井町線: 'OM',
+      目黒線: 'MG',
+      池上線: 'IK',
+      東急多摩川線: 'TM',
+      世田谷線: 'SG',
+      常磐新線: 'TX',
+      中央線: 'JB',
+      総武線: 'JB',
+      常磐線: 'JL',
+      青梅線: 'JC',
+      小田原線: 'OH',
+      多摩線: 'OT',
+      埼玉高速鉄道線: 'SR',
+      みなとみらい21線: 'MM',
+      相鉄本線: 'SO',
+      相鉄いずみ野線: 'SO',
+      大月線: 'FJ',
+      井の頭線: 'IN',
+      京王線: 'KO',
+      動物園線: 'KO',
+      相模原線: 'KO',
+      高尾線: 'KO',
+      久里浜線: 'KK',
+      大師線: 'KK',
+      本線: 'KK',
+      空港線: 'KK',
+      逗子線: 'KK',
+      千葉線: 'KS',
+      成田空港線: 'KS',
+      押上線: 'KS',
+      東成田線: 'KS',
+      金町線: 'KS',
+      小田急多摩線: 'OT',
+      小田急小田原線: 'OH',
+      小田急小田原線通勤: 'OH',
+      小田急江ノ島線: 'OE',
+      国分寺線: 'SK',
+      多摩川線: 'SW',
+      多摩湖線: 'ST',
+      山口線: 'SY',
+      拝島線: 'SS',
+      新宿線: 'SS',
+      池袋線: 'SI',
+      狭山線: 'SI',
+      西武園線: 'SK',
+      西武有楽町線: 'SI',
+      西武秩父線: 'SI',
+      伊勢崎線: 'TS',
+      亀戸線: 'TS',
+      佐野線: 'TI',
+      宇都宮線: 'TN',
+      小泉線: 'TI',
+      日光線: 'TN',
+      東上本線: 'TJ',
+      桐生線: 'TI',
+      越生線: 'TJ',
+      野田線: 'TD',
+      鬼怒川線: 'TN',
+      会津鬼怒川線: 'TN',
+    });
+    const TOKYO_METRO_ROUTE_SYMBOL_ASSETS = Object.freeze({
+      '3号線銀座線': 'G',
+      '4号線丸ノ内線': 'M',
+      '4号線丸ノ内線分岐線': 'M',
+      '2号線日比谷線': 'H',
+      '5号線東西線': 'T',
+      '9号線千代田線': 'C',
+      '8号線有楽町線': 'Y',
+      '11号線半蔵門線': 'Z',
+      '7号線南北線': 'N',
+      '13号線副都心線': 'F',
+    });
+    const ROUTE_SYMBOL_ASSET_PATHS = Object.freeze({
+      JA: 'assets/transit/route_symbols/JA.svg',
+      JB: 'assets/transit/route_symbols/JB.svg',
+      JC: 'assets/transit/route_symbols/JC.svg',
+      JE: 'assets/transit/route_symbols/JE.svg',
+      JJ: 'assets/transit/route_symbols/JJ.svg',
+      JK: 'assets/transit/route_symbols/JK.svg',
+      JL: 'assets/transit/route_symbols/JL.svg',
+      JO: 'assets/transit/route_symbols/JO.svg',
+      JS: 'assets/transit/route_symbols/JS.svg',
+      JT: 'assets/transit/route_symbols/JT.svg',
+      JU: 'assets/transit/route_symbols/JU.svg',
+      JY: 'assets/transit/route_symbols/JY.svg',
+      A: 'assets/transit/route_symbols/A.svg',
+      I: 'assets/transit/route_symbols/I.svg',
+      S: 'assets/transit/route_symbols/S.svg',
+      E: 'assets/transit/route_symbols/E.svg',
+      NT: 'assets/transit/route_symbols/NT.svg',
+      SA: 'assets/transit/route_symbols/SA.svg',
+      TY: 'assets/transit/route_symbols/TY.svg',
+      DT: 'assets/transit/route_symbols/DT.svg',
+      OM: 'assets/transit/route_symbols/OM.svg',
+      MG: 'assets/transit/route_symbols/MG.svg',
+      IK: 'assets/transit/route_symbols/IK.svg',
+      TM: 'assets/transit/route_symbols/TM.svg',
+      SG: 'assets/transit/route_symbols/SG.svg',
+      KO: 'assets/transit/route_symbols/KO.svg',
+      IN: 'assets/transit/route_symbols/IN.svg',
+      KS: 'assets/transit/route_symbols/KS.png',
+      AE: 'assets/transit/route_symbols/AE.png',
+      KK: 'assets/transit/route_symbols/KK.svg',
+      OH: 'assets/transit/route_symbols/OH.svg',
+      OE: 'assets/transit/route_symbols/OE.svg',
+      OT: 'assets/transit/route_symbols/OT.svg',
+      SI: 'assets/transit/route_symbols/SI.svg',
+      SS: 'assets/transit/route_symbols/SS.svg',
+      SK: 'assets/transit/route_symbols/SK.svg',
+      ST: 'assets/transit/route_symbols/ST.svg',
+      SW: 'assets/transit/route_symbols/SW.svg',
+      SY: 'assets/transit/route_symbols/SY.svg',
+      TS: 'assets/transit/route_symbols/TS.svg',
+      TJ: 'assets/transit/route_symbols/TJ.svg',
+      TN: 'assets/transit/route_symbols/TN.svg',
+      TD: 'assets/transit/route_symbols/TD.svg',
+      TI: 'assets/transit/route_symbols/TI.svg',
+      R: 'assets/transit/route_symbols/R.svg',
+      MO: 'assets/transit/route_symbols/MO.svg',
+      U: 'assets/transit/route_symbols/U.svg',
+      TX: 'assets/transit/route_symbols/TX.svg',
+      TT: 'assets/transit/route_symbols/TT.svg',
+      MM: 'assets/transit/route_symbols/MM.svg',
+      SO: 'assets/transit/route_symbols/SO.svg',
+      SR: 'assets/transit/route_symbols/SR.svg',
     });
     const GENERIC_ENGLISH_SERVICE_NAMES = new Set([
       'JR East',
@@ -2109,7 +2331,52 @@
       return Boolean((trip?.stopTimes || []).some((stop) => stop.sequence > boardStop.sequence));
     }
 
+    function routeLogoClass(routeId) {
+      const route = state.routeById.get(routeId);
+      if (route?.operatorId === 'jr_east') return 'jr';
+      if (route?.operatorId === 'shinkansen') return 'shinkansen';
+      if (route?.operatorId === 'tokyo_metro' || route?.operatorId === 'toei') return 'subway';
+      return 'private';
+    }
+
+    function routeSymbolCode(routeId) {
+      const route = state.routeById.get(routeId);
+      const shortName = route?.shortName || '';
+      if (route?.operatorId === 'keikyu') return 'KK';
+      if (route?.operatorId === 'keisei') return shortName === '成田空港線' ? 'AE' : 'KS';
+      if (route?.operatorId === 'keio') return shortName === '井の頭線' ? 'IN' : 'KO';
+      if (route?.operatorId === 'odakyu') {
+        if (shortName.includes('江ノ島')) return 'OE';
+        if (shortName.includes('多摩')) return 'OT';
+        return 'OH';
+      }
+      if (route?.operatorId === 'seibu') {
+        if (['新宿線', '拝島線'].includes(shortName)) return 'SS';
+        if (['国分寺線', '西武園線'].includes(shortName)) return 'SK';
+        if (shortName === '多摩湖線') return 'ST';
+        if (shortName === '多摩川線') return 'SW';
+        if (shortName === '山口線') return 'SY';
+        if (shortName === '西武有楽町線') return 'SI';
+        return 'SI';
+      }
+      if (route?.operatorId === 'tobu') {
+        if (shortName === '東上本線' || shortName === '越生線') return 'TJ';
+        if (shortName === '野田線') return 'TD';
+        if (shortName === '日光線' || shortName === '鬼怒川線' || shortName === '宇都宮線') return 'TN';
+        if (shortName === '佐野線' || shortName === '桐生線' || shortName === '小泉線') return 'TI';
+        return 'TS';
+      }
+      if (route?.operatorId === 'tokyu') {
+        if (shortName === '目黒線') return 'MG';
+        if (shortName === '田園都市線') return 'DT';
+        return 'TY';
+      }
+      return ROUTE_SYMBOL_CODES[route?.shortName] || '';
+    }
+
     function routeLogoText(routeId) {
+      const symbolCode = routeSymbolCode(routeId);
+      if (symbolCode) return symbolCode;
       const title = routeTitle(routeId)
         .replace(/^東京メトロ/u, '')
         .replace(/^都営/u, '')
@@ -2127,17 +2394,32 @@
       return [...compact].slice(0, 3).join('') || '路線';
     }
 
+    function routeLogoAsset(routeId) {
+      const route = state.routeById.get(routeId);
+      if (route?.operatorId === 'tokyo_metro') {
+        const assetCode = TOKYO_METRO_ROUTE_SYMBOL_ASSETS[route.shortName];
+        if (assetCode) return `assets/transit/tokyo_metro/${assetCode}.jpg`;
+      }
+      return ROUTE_SYMBOL_ASSET_PATHS[routeSymbolCode(routeId)] || '';
+    }
+
+    function routeLogoHtml(routeId) {
+      const asset = routeLogoAsset(routeId);
+      if (asset) {
+        return `<span class="transfer-chip asset-chip" title="${routeTitle(routeId)}"><img src="${asset}" alt="${routeTitle(routeId)}"></span>`;
+      }
+      const route = state.routeById.get(routeId);
+      return `<span class="transfer-chip ${routeLogoClass(routeId)}" title="${routeTitle(routeId)}" style="--route-color:${route?.color || '#667487'};--route-text-color:${route?.textColor || '#ffffff'}">${routeLogoText(routeId)}</span>`;
+    }
+
     function transferChipsHtml(stationGroupId, currentRouteId) {
       const routeIds = [...(state.stationRouteIdsByGroupId.get(stationGroupId) || new Set())]
         .filter((routeId) => routeId !== currentRouteId)
         .sort((a, b) => routeTitle(a).localeCompare(routeTitle(b)));
       if (!routeIds.length) return '';
-      const visible = routeIds.slice(0, 5).map((routeId) => {
-        const route = state.routeById.get(routeId);
-        return `<span class="transfer-chip" title="${routeTitle(routeId)}" style="background:${route?.color || '#667487'};color:${route?.textColor || '#ffffff'}">${routeLogoText(routeId)}</span>`;
-      }).join('');
+      const visible = routeIds.slice(0, 5).map((routeId) => routeLogoHtml(routeId)).join('');
       const overflow = routeIds.length > 5
-        ? `<span class="transfer-chip" title="${routeIds.length - 5} more lines" style="background:#667487;">+${routeIds.length - 5}</span>`
+        ? `<span class="transfer-chip more" title="${routeIds.length - 5} more lines">+${routeIds.length - 5}</span>`
         : '';
       return `<span class="transfer-chips" aria-label="Transfer lines">${visible}${overflow}</span>`;
     }
@@ -3047,7 +3329,7 @@
           'Choose where to get off.',
           pending.destinations.length
             ? pending.destinations.slice(0, 52).map((item) => `
-                <button class="outlook-row" type="button" data-action="ride-here" data-trip-id="${pending.trip.id}" data-station-group-id="${item.stationGroupId}">
+                <button class="outlook-row destination-row" type="button" data-action="ride-here" data-trip-id="${pending.trip.id}" data-station-group-id="${item.stationGroupId}">
                   <span class="row-meta">${item.arrivalHhmm}</span>
                   <span class="destination-line">
                     <span class="row-title">${item.label}</span>
@@ -3095,7 +3377,7 @@
           'Click one stop to set or modify your alighting station.',
           destinations.length
             ? destinations.slice(0, 52).map((item) => `
-                <button class="outlook-row" type="button" data-action="ride-direct" data-station-group-id="${item.stationGroupId}">
+                <button class="outlook-row destination-row" type="button" data-action="ride-direct" data-station-group-id="${item.stationGroupId}">
                   <span class="row-meta">${item.arrivalHhmm}</span>
                   <span class="destination-line">
                     <span class="row-title">${item.label}</span>
