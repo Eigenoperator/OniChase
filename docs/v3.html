@@ -3889,26 +3889,37 @@
       const preview = planCursorPreview(state.activeMode);
       const editableRideIndex = currentEditableRideIndex(preview);
       let chainStation = activePlayer().start_station_id;
+      let currentMinute = hhmmToMinutes(state.startTime);
       let pendingTrip = null;
+      let pendingBoardStop = null;
       let legIndex = 1;
       const rows = [];
       steps.forEach((step, index) => {
         if (step.type === 'WAIT_UNTIL') {
           rows.push({ time: step.until_hhmm, title: `Wait until ${step.until_hhmm}`, sub: `Hold at ${displayNameForGroup(chainStation)}`, editable: false });
+          currentMinute = hhmmToMinutes(step.until_hhmm);
         } else if (step.type === 'BOARD_TRAIN') {
           pendingTrip = state.tripById.get(step.trip_id);
+          pendingBoardStop = pendingTrip ? findBoardingStop(pendingTrip, chainStation, currentMinute) : null;
+          if (pendingBoardStop) currentMinute = stopDepartureMinutes(pendingBoardStop);
         } else if (step.type === 'RIDE_TO_STATION') {
           const from = displayNameForGroup(chainStation);
           const to = displayNameForGroup(step.station_id);
           const tripLabel = formatTripLabel(pendingTrip || { serviceName: '列車' });
+          const alightStop = pendingTrip && pendingBoardStop ? findAlightStop(pendingTrip, pendingBoardStop.sequence, step.station_id) : null;
+          const boardHhmm = pendingBoardStop ? minutesToHhmm(stopDepartureMinutes(pendingBoardStop)) : '--:--';
+          const alightHhmm = alightStop ? minutesToHhmm(stopArrivalMinutes(alightStop)) : '--:--';
+          const timeText = `上車 ${boardHhmm} · 下車 ${alightHhmm}`;
           rows.push({
             time: `LEG ${legIndex}`,
             title: `${tripLabel}: ${from} -> ${to}`,
-            sub: index === editableRideIndex ? 'Current onboard leg. Click to edit alighting station.' : 'Planned travel leg',
+            sub: index === editableRideIndex ? `${timeText} · Click to edit alighting station.` : timeText,
             editable: index === editableRideIndex,
           });
+          if (alightStop) currentMinute = stopArrivalMinutes(alightStop);
           chainStation = step.station_id;
           pendingTrip = null;
+          pendingBoardStop = null;
           legIndex += 1;
         }
       });
