@@ -1,6 +1,6 @@
 {
   "id": "v3_tokyo_bundle_audit_v0_1",
-  "generated_at": "2026-04-21T02:59:01+00:00",
+  "generated_at": "2026-04-21T03:16:25+00:00",
   "inputs": {
     "bundle": "data/v3_tokyo_bundle.json.gz",
     "map": "data/v3_tokyo_phase1_service_views.json",
@@ -10,8 +10,8 @@
     "bundle_station_group_count": 1760,
     "bundle_physical_station_count": 2142,
     "bundle_route_count": 108,
-    "bundle_trip_count": 40456,
-    "unified_train_count": 40456,
+    "bundle_trip_count": 40738,
+    "unified_train_count": 40738,
     "map_visible_station_key_count": 1693,
     "map_visible_station_point_count": 2058,
     "train_station_key_count": 1384,
@@ -20,14 +20,14 @@
     "duplicate_map_name_count": 145,
     "collapsed_duplicate_map_name_count": 0,
     "tiny_route_count": 0,
-    "huge_route_count": 13,
+    "huge_route_count": 14,
     "trains_with_unmapped_stops_count": 0
   },
   "priority_findings": [
     {
       "severity": "medium",
       "code": "huge_routes",
-      "count": 13,
+      "count": 14,
       "summary": "Some routes are very broad and should be checked for over-merging or through-service scope.",
       "sample": [
         {
@@ -181,6 +181,31 @@
           ]
         },
         {
+          "route_id": "R_E67CFC31",
+          "short_name": "本線",
+          "operator_id": "keisei",
+          "mode": "private_rail",
+          "trip_count": 1396,
+          "station_count": 66,
+          "min_stop_count": 4,
+          "max_stop_count": 42,
+          "avg_stop_count": 22.99,
+          "first_departure": "00:06",
+          "last_departure": "23:51",
+          "source_lines": [
+            [
+              "本線",
+              1396
+            ]
+          ],
+          "source_operators": [
+            [
+              "keisei",
+              1396
+            ]
+          ]
+        },
+        {
           "route_id": "R_A78AE479",
           "short_name": "本線",
           "operator_id": "keikyu",
@@ -202,31 +227,6 @@
             [
               "keikyu",
               1236
-            ]
-          ]
-        },
-        {
-          "route_id": "R_E67CFC31",
-          "short_name": "本線",
-          "operator_id": "keisei",
-          "mode": "private_rail",
-          "trip_count": 1301,
-          "station_count": 64,
-          "min_stop_count": 2,
-          "max_stop_count": 41,
-          "avg_stop_count": 22.72,
-          "first_departure": "00:06",
-          "last_departure": "23:51",
-          "source_lines": [
-            [
-              "本線",
-              1301
-            ]
-          ],
-          "source_operators": [
-            [
-              "keisei",
-              1301
             ]
           ]
         },
@@ -336,6 +336,11 @@
         "count": 3014
       },
       {
+        "id": "SG_D2F5176AA023",
+        "name": "押上",
+        "count": 2956
+      },
+      {
         "id": "SG_BC04C5F3E300",
         "name": "秋葉原",
         "count": 2798
@@ -356,11 +361,6 @@
         "count": 2682
       },
       {
-        "id": "SG_D2F5176AA023",
-        "name": "押上",
-        "count": 2674
-      },
-      {
         "id": "SG_FCC147DE5DE8",
         "name": "武蔵小杉",
         "count": 2657
@@ -376,6 +376,16 @@
         "count": 2597
       },
       {
+        "id": "SG_715F211D588E",
+        "name": "青砥",
+        "count": 2595
+      },
+      {
+        "id": "SG_7E407EF85BE7",
+        "name": "京成高砂",
+        "count": 2527
+      },
+      {
         "id": "SG_4A3A581070C7",
         "name": "神田",
         "count": 2508
@@ -389,16 +399,6 @@
         "id": "SG_E42CE496F444",
         "name": "多摩川",
         "count": 2349
-      },
-      {
-        "id": "SG_7E407EF85BE7",
-        "name": "京成高砂",
-        "count": 2346
-      },
-      {
-        "id": "SG_715F211D588E",
-        "name": "青砥",
-        "count": 2313
       },
       {
         "id": "SG_9C308D5E85E8",
@@ -2184,6 +2184,46 @@
         ]
       },
       {
+        "station_key": "押上",
+        "display_name": "押上",
+        "map_point_count": 4,
+        "bundle_physical_station_count": 4,
+        "physical_points_preserved": true,
+        "max_distance_m": 229.1,
+        "train_stop_count": 2956,
+        "bundle_station_group_id": "SG_D2F5176AA023",
+        "sample_points": [
+          {
+            "name_ja": "押上",
+            "name_en": null,
+            "lat": 35.71022,
+            "lon": 139.81241,
+            "is_priority": false
+          },
+          {
+            "name_ja": "押上",
+            "name_en": null,
+            "lat": 35.70847,
+            "lon": 139.81375000000003,
+            "is_priority": false
+          },
+          {
+            "name_ja": "押上",
+            "name_en": null,
+            "lat": 35.71022,
+            "lon": 139.81241,
+            "is_priority": false
+          },
+          {
+            "name_ja": "押上",
+            "name_en": null,
+            "lat": 35.70847,
+            "lon": 139.81375000000003,
+            "is_priority": false
+          }
+        ]
+      },
+      {
         "station_key": "秋葉原",
         "display_name": "秋葉原",
         "map_point_count": 4,
@@ -2339,46 +2379,6 @@
             "name_en": null,
             "lat": 35.712905,
             "lon": 139.703825,
-            "is_priority": false
-          }
-        ]
-      },
-      {
-        "station_key": "押上",
-        "display_name": "押上",
-        "map_point_count": 4,
-        "bundle_physical_station_count": 4,
-        "physical_points_preserved": true,
-        "max_distance_m": 229.1,
-        "train_stop_count": 2674,
-        "bundle_station_group_id": "SG_D2F5176AA023",
-        "sample_points": [
-          {
-            "name_ja": "押上",
-            "name_en": null,
-            "lat": 35.71022,
-            "lon": 139.81241,
-            "is_priority": false
-          },
-          {
-            "name_ja": "押上",
-            "name_en": null,
-            "lat": 35.70847,
-            "lon": 139.81375000000003,
-            "is_priority": false
-          },
-          {
-            "name_ja": "押上",
-            "name_en": null,
-            "lat": 35.71022,
-            "lon": 139.81241,
-            "is_priority": false
-          },
-          {
-            "name_ja": "押上",
-            "name_en": null,
-            "lat": 35.70847,
-            "lon": 139.81375000000003,
             "is_priority": false
           }
         ]
@@ -4510,6 +4510,32 @@
         ]
       },
       {
+        "station_key": "東松戸",
+        "display_name": "東松戸",
+        "map_point_count": 2,
+        "bundle_physical_station_count": 2,
+        "physical_points_preserved": true,
+        "max_distance_m": 96.7,
+        "train_stop_count": 904,
+        "bundle_station_group_id": "SG_2AC4A240DADC",
+        "sample_points": [
+          {
+            "name_ja": "東松戸",
+            "name_en": null,
+            "lat": 35.77049,
+            "lon": 139.94386,
+            "is_priority": false
+          },
+          {
+            "name_ja": "東松戸",
+            "name_en": null,
+            "lat": 35.76995,
+            "lon": 139.94302,
+            "is_priority": false
+          }
+        ]
+      },
+      {
         "station_key": "豊島園",
         "display_name": "豊島園",
         "map_point_count": 2,
@@ -4727,32 +4753,6 @@
             "name_en": null,
             "lat": 35.626265000000004,
             "lon": 139.72349,
-            "is_priority": false
-          }
-        ]
-      },
-      {
-        "station_key": "東松戸",
-        "display_name": "東松戸",
-        "map_point_count": 2,
-        "bundle_physical_station_count": 2,
-        "physical_points_preserved": true,
-        "max_distance_m": 96.7,
-        "train_stop_count": 808,
-        "bundle_station_group_id": "SG_2AC4A240DADC",
-        "sample_points": [
-          {
-            "name_ja": "東松戸",
-            "name_en": null,
-            "lat": 35.77049,
-            "lon": 139.94386,
-            "is_priority": false
-          },
-          {
-            "name_ja": "東松戸",
-            "name_en": null,
-            "lat": 35.76995,
-            "lon": 139.94302,
             "is_priority": false
           }
         ]
@@ -6323,23 +6323,23 @@
         "short_name": "本線",
         "operator_id": "keisei",
         "mode": "private_rail",
-        "trip_count": 1301,
-        "station_count": 64,
-        "min_stop_count": 2,
-        "max_stop_count": 41,
-        "avg_stop_count": 22.72,
+        "trip_count": 1396,
+        "station_count": 66,
+        "min_stop_count": 4,
+        "max_stop_count": 42,
+        "avg_stop_count": 22.99,
         "first_departure": "00:06",
         "last_departure": "23:51",
         "source_lines": [
           [
             "本線",
-            1301
+            1396
           ]
         ],
         "source_operators": [
           [
             "keisei",
-            1301
+            1396
           ]
         ]
       },
@@ -6369,6 +6369,31 @@
         ]
       },
       {
+        "route_id": "R_4DDE1DDB",
+        "short_name": "押上線",
+        "operator_id": "keisei",
+        "mode": "private_rail",
+        "trip_count": 1142,
+        "station_count": 13,
+        "min_stop_count": 2,
+        "max_stop_count": 13,
+        "avg_stop_count": 8.25,
+        "first_departure": "00:11",
+        "last_departure": "23:59",
+        "source_lines": [
+          [
+            "押上線",
+            1142
+          ]
+        ],
+        "source_operators": [
+          [
+            "keisei",
+            1142
+          ]
+        ]
+      },
+      {
         "route_id": "R_B19F8639",
         "short_name": "小田急小田原線",
         "operator_id": "odakyu",
@@ -6390,31 +6415,6 @@
           [
             "odakyu",
             1090
-          ]
-        ]
-      },
-      {
-        "route_id": "R_4DDE1DDB",
-        "short_name": "押上線",
-        "operator_id": "keisei",
-        "mode": "private_rail",
-        "trip_count": 972,
-        "station_count": 11,
-        "min_stop_count": 3,
-        "max_stop_count": 11,
-        "avg_stop_count": 8.4,
-        "first_departure": "00:11",
-        "last_departure": "23:59",
-        "source_lines": [
-          [
-            "押上線",
-            972
-          ]
-        ],
-        "source_operators": [
-          [
-            "keisei",
-            972
           ]
         ]
       },
@@ -7669,6 +7669,31 @@
         ]
       },
       {
+        "route_id": "R_80C469C3",
+        "short_name": "成田空港線",
+        "operator_id": "keisei",
+        "mode": "private_rail",
+        "trip_count": 194,
+        "station_count": 11,
+        "min_stop_count": 2,
+        "max_stop_count": 9,
+        "avg_stop_count": 7.7,
+        "first_departure": "05:06",
+        "last_departure": "23:49",
+        "source_lines": [
+          [
+            "成田空港線",
+            194
+          ]
+        ],
+        "source_operators": [
+          [
+            "keisei",
+            194
+          ]
+        ]
+      },
+      {
         "route_id": "R_01D41C98",
         "short_name": "4号線丸ノ内線分岐線",
         "operator_id": "tokyo_metro",
@@ -7715,31 +7740,6 @@
           [
             "seibu",
             179
-          ]
-        ]
-      },
-      {
-        "route_id": "R_80C469C3",
-        "short_name": "成田空港線",
-        "operator_id": "keisei",
-        "mode": "private_rail",
-        "trip_count": 177,
-        "station_count": 9,
-        "min_stop_count": 2,
-        "max_stop_count": 8,
-        "avg_stop_count": 6.25,
-        "first_departure": "05:06",
-        "last_departure": "23:49",
-        "source_lines": [
-          [
-            "成田空港線",
-            177
-          ]
-        ],
-        "source_operators": [
-          [
-            "keisei",
-            177
           ]
         ]
       },
@@ -8322,6 +8322,31 @@
         ]
       },
       {
+        "route_id": "R_E67CFC31",
+        "short_name": "本線",
+        "operator_id": "keisei",
+        "mode": "private_rail",
+        "trip_count": 1396,
+        "station_count": 66,
+        "min_stop_count": 4,
+        "max_stop_count": 42,
+        "avg_stop_count": 22.99,
+        "first_departure": "00:06",
+        "last_departure": "23:51",
+        "source_lines": [
+          [
+            "本線",
+            1396
+          ]
+        ],
+        "source_operators": [
+          [
+            "keisei",
+            1396
+          ]
+        ]
+      },
+      {
         "route_id": "R_A78AE479",
         "short_name": "本線",
         "operator_id": "keikyu",
@@ -8343,31 +8368,6 @@
           [
             "keikyu",
             1236
-          ]
-        ]
-      },
-      {
-        "route_id": "R_E67CFC31",
-        "short_name": "本線",
-        "operator_id": "keisei",
-        "mode": "private_rail",
-        "trip_count": 1301,
-        "station_count": 64,
-        "min_stop_count": 2,
-        "max_stop_count": 41,
-        "avg_stop_count": 22.72,
-        "first_departure": "00:06",
-        "last_departure": "23:51",
-        "source_lines": [
-          [
-            "本線",
-            1301
-          ]
-        ],
-        "source_operators": [
-          [
-            "keisei",
-            1301
           ]
         ]
       },
@@ -8495,6 +8495,31 @@
             1437
           ]
         ]
+      },
+      {
+        "route_id": "R_4DDE1DDB",
+        "short_name": "押上線",
+        "operator_id": "keisei",
+        "mode": "private_rail",
+        "trip_count": 1142,
+        "station_count": 13,
+        "min_stop_count": 2,
+        "max_stop_count": 13,
+        "avg_stop_count": 8.25,
+        "first_departure": "00:11",
+        "last_departure": "23:59",
+        "source_lines": [
+          [
+            "押上線",
+            1142
+          ]
+        ],
+        "source_operators": [
+          [
+            "keisei",
+            1142
+          ]
+        ]
       }
     ]
   },
@@ -8532,7 +8557,7 @@
     {
       "operator_id": "keisei",
       "route_count": 6,
-      "trip_count": 3466,
+      "trip_count": 3748,
       "tiny_route_count": 0
     },
     {

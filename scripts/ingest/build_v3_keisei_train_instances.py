@@ -19,12 +19,14 @@ CACHE_DIR = ROOT / "data" / "v3_external" / "keisei"
 TIMEOUT = 30
 MAX_FETCH_RETRIES = 5
 SERVICE_DAY = "2026-04-15"
+OUTPUT_VERSION = "0.2.0"
 BASE_URL = "https://keisei.ekitan.com"
 TIME1_URL = f"{BASE_URL}/search/build/assets/time1.js"
 CHECKPOINT_EVERY = 1
 CHECKPOINT_TRAINS_EVERY = 100
 DETAIL_WORKERS = 8
 ROUTE_COLOR = "005AAA"
+FULLWIDTH_DIGIT_MAP = str.maketrans("０１２３４５６７８９", "0123456789")
 
 
 def cache_path(url: str) -> Path:
@@ -97,6 +99,10 @@ def load_station_seed() -> list[dict]:
 
 def normalize_station_name(name: str) -> str:
     text = " ".join(html.unescape(name).replace("\u3000", " ").split())
+    text = text.translate(FULLWIDTH_DIGIT_MAP)
+    # Ekitan writes airport terminals with explanatory suffixes, while N02
+    # keeps the canonical station names. Normalize to the N02 key before lookup.
+    text = re.sub(r"[（(].*?[）)]", "", text)
     text = text.replace("ヶ", "ケ")
     return text
 
@@ -243,7 +249,7 @@ def write_output(station_seed: list[dict], source_reports: list[dict], train_ins
     payload = {
         "id": "v3_tokyo_keisei_weekday_train_instances_v0_1",
         "label": "v3 Tokyo Keisei weekday train instances",
-        "version": "0.1.0",
+        "version": OUTPUT_VERSION,
         "service_day": SERVICE_DAY,
         "station_seed": station_seed,
         "source_reports": source_reports,
@@ -266,8 +272,12 @@ def main() -> int:
 
     if OUTPUT_PATH.exists():
         existing = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
-        source_reports = existing.get("source_reports", [])
-        train_instances: list[dict] = existing.get("train_instances", [])
+        if existing.get("version") == OUTPUT_VERSION:
+            source_reports = existing.get("source_reports", [])
+            train_instances: list[dict] = existing.get("train_instances", [])
+        else:
+            source_reports = []
+            train_instances = []
     else:
         source_reports = []
         train_instances = []

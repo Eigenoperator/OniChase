@@ -247,6 +247,21 @@ def departure_sort_key(entry: dict[str, Any]) -> tuple[int, str, str]:
     return (minute if minute is not None else 10_000, entry.get("operator", ""), entry.get("train_id", ""))
 
 
+def preferred_station_display_name(station_key_value: str, aliases: dict[str, set[str]], fallback: Any) -> str:
+    candidates = set(aliases.get(station_key_value, set()))
+    if fallback:
+        candidates.add(str(fallback))
+    japanese = [
+        value
+        for value in candidates
+        if re.search(r"[\u3040-\u30ff\u3400-\u9fff]", value)
+        and not re.match(r"^[a-z_]+_", value, re.I)
+    ]
+    if japanese:
+        return sorted(japanese, key=lambda item: (len(item), item))[0]
+    return str(fallback or station_key_value)
+
+
 def build() -> dict[str, Any]:
     aliases = load_station_aliases()
     manifest_operators: dict[str, dict[str, Any]] = {}
@@ -298,7 +313,7 @@ def build() -> dict[str, Any]:
             key = stop["station_key"]
             station = departures.setdefault(key, {
                 "station_key": key,
-                "display_name": stop["station_name"],
+                "display_name": preferred_station_display_name(key, aliases, stop["station_name"]),
                 "aliases": sorted(aliases.get(key, {key})),
                 "departures": [],
             })

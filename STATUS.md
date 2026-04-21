@@ -6,8 +6,8 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 ## Done
 - `v1` Yamanote real-data prototype is complete enough for baseline playtests: real stations, weekday trains, planning, live capture, replay, and hunter visibility.
 - Main `v2` is the current nationwide Shinkansen playable build: GIS-first map, real weekday train instances, planning/live/capture/replay, and public online room flow via Render.
-- `v3` now has the first unified train index: `40456` normalized real trains across `16` operators, with manifest, unified train schema, and station departure lookup.
-- Public `v3` now reuses the `v2` UI code path with `1760` station groups, `2142` physical stations, `108` service routes, `4612` track centerlines, and all `40456` v2-compatible trip instances.
+- `v3` now has the first unified train index: `40738` normalized real trains across `16` operators, with manifest, unified train schema, and station departure lookup.
+- Public `v3` now reuses the `v2` UI code path with `1760` station groups, `2142` physical stations, `108` service routes, `4612` track centerlines, and all `40738` v2-compatible trip instances.
 - `v3` is published at `https://eigenoperator.github.io/OniChase/v3.html`; public URL smoke test passes for Tokyo station departures, train selection, and downstream stop choices.
 - Backfilled `diary/DIARY-2026-04-19.md` and trimmed this status file back under the 50-line handoff limit.
 - Added reusable `v3_station_identity` and `v3_route_identity` layers; audit now reports `0` unmapped train station keys, `0` trains with unmapped stops, `0` collapsed duplicate map names, and `0` tiny routes.
@@ -24,7 +24,7 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Simplified the v3 gameplay sidebar: removed visible Room/Result/Replay/debug route panels and replaced the train picker with a three-layer `line -> train -> destination stop` planner.
 - Switched v3 visible station, line, and train names to Japanese-original first across MapLibre labels and the gameplay sidebar.
 - Tightened v3 train choices and selected-train highlighting: regular trains hide opaque numbers, row subtitles show origin/terminal/next stop, and map highlight uses real geometry only.
-- Refined v3 planning rows and line coverage: terminal-only trains and duplicate boardable services are filtered, direct-through aliases are hidden, compact `5 x 3` transfer-logo grids are used, Keikyu airport trains reach Haneda terminals, and train-backed JR East missing map lines now audit to `0`.
+- Refined v3 planning rows and line coverage: terminal-only trains and duplicate boardable services are filtered, direct-through aliases are hidden, compact `5 x 3` transfer-logo grids are used, Keikyu airport trains reach Haneda terminals, Keisei airport trains reach `空港第2ビル` / `成田空港`, and train-backed JR East missing map lines now audit to `0`.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
