@@ -1144,6 +1144,7 @@
       '7号線南北線': 'N',
       '13号線副都心線': 'F',
     });
+    const TOKYO_METRO_PHYSICAL_ROUTE_NAMES = new Set(Object.keys(TOKYO_METRO_ROUTE_SYMBOL_ASSETS));
     const ROUTE_SYMBOL_ASSET_PATHS = Object.freeze({
       JA: 'assets/transit/route_symbols/JA.svg',
       JB: 'assets/transit/route_symbols/JB.svg',
@@ -1902,7 +1903,7 @@
           const group = state.stationGroupById.get(station.stationGroupId) || {};
           const label = state.labelByGroupId.get(station.stationGroupId) || {};
           const labelRank = Number(label.labelRank || group.labelRank || 50);
-          const routeCount = (state.stationRouteIdsByGroupId.get(station.stationGroupId) || new Set()).size;
+          const routeCount = transferRouteIdsForStation(station.stationGroupId).length;
           return {
             type: 'Feature',
             id: station.id,
@@ -2374,8 +2375,14 @@
       return ROUTE_SYMBOL_CODES[route?.shortName] || '';
     }
 
-    function routeLogoText(routeId) {
-      const symbolCode = routeSymbolCode(routeId);
+    function routeTransferSymbolCode(routeId) {
+      const route = state.routeById.get(routeId);
+      if (route?.operatorId === 'keisei') return 'KS';
+      return routeSymbolCode(routeId);
+    }
+
+    function routeLogoText(routeId, options = {}) {
+      const symbolCode = options.transfer ? routeTransferSymbolCode(routeId) : routeSymbolCode(routeId);
       if (symbolCode) return symbolCode;
       const title = routeTitle(routeId)
         .replace(/^東京メトロ/u, '')
@@ -2394,30 +2401,63 @@
       return [...compact].slice(0, 3).join('') || '路線';
     }
 
-    function routeLogoAsset(routeId) {
+    function routeLogoAsset(routeId, options = {}) {
       const route = state.routeById.get(routeId);
       if (route?.operatorId === 'tokyo_metro') {
         const assetCode = TOKYO_METRO_ROUTE_SYMBOL_ASSETS[route.shortName];
         if (assetCode) return `assets/transit/tokyo_metro/${assetCode}.jpg`;
       }
-      return ROUTE_SYMBOL_ASSET_PATHS[routeSymbolCode(routeId)] || '';
+      const symbolCode = options.transfer ? routeTransferSymbolCode(routeId) : routeSymbolCode(routeId);
+      return ROUTE_SYMBOL_ASSET_PATHS[symbolCode] || '';
     }
 
-    function routeLogoHtml(routeId) {
-      const asset = routeLogoAsset(routeId);
+    function routeLogoHtml(routeId, options = {}) {
+      const asset = routeLogoAsset(routeId, options);
       if (asset) {
         return `<span class="transfer-chip asset-chip" title="${routeTitle(routeId)}"><img src="${asset}" alt="${routeTitle(routeId)}"></span>`;
       }
       const route = state.routeById.get(routeId);
-      return `<span class="transfer-chip ${routeLogoClass(routeId)}" title="${routeTitle(routeId)}" style="--route-color:${route?.color || '#667487'};--route-text-color:${route?.textColor || '#ffffff'}">${routeLogoText(routeId)}</span>`;
+      return `<span class="transfer-chip ${routeLogoClass(routeId)}" title="${routeTitle(routeId)}" style="--route-color:${route?.color || '#667487'};--route-text-color:${route?.textColor || '#ffffff'}">${routeLogoText(routeId, options)}</span>`;
+    }
+
+    function isThroughServiceTransferAlias(routeId) {
+      const route = state.routeById.get(routeId);
+      if (!route) return true;
+      if (route.operatorId === 'tokyo_metro' && !TOKYO_METRO_PHYSICAL_ROUTE_NAMES.has(route.shortName)) {
+        return true;
+      }
+      return false;
+    }
+
+    function transferLogoKey(routeId) {
+      const asset = routeLogoAsset(routeId, { transfer: true });
+      if (asset) return `asset:${asset}`;
+      const symbolCode = routeTransferSymbolCode(routeId);
+      if (symbolCode) return `symbol:${symbolCode}`;
+      const route = state.routeById.get(routeId);
+      return `${route?.operatorId || 'route'}:${routeLogoText(routeId, { transfer: true })}`;
+    }
+
+    function transferRouteIdsForStation(stationGroupId, currentRouteId = null) {
+      const seenLogoKeys = new Set();
+      const routeIds = [...(state.stationRouteIdsByGroupId.get(stationGroupId) || new Set())]
+        .filter((routeId) => routeId !== currentRouteId)
+        .filter((routeId) => !isThroughServiceTransferAlias(routeId))
+        .sort((a, b) => routeTitle(a).localeCompare(routeTitle(b)));
+      const visibleRouteIds = [];
+      routeIds.forEach((routeId) => {
+        const key = transferLogoKey(routeId);
+        if (seenLogoKeys.has(key)) return;
+        seenLogoKeys.add(key);
+        visibleRouteIds.push(routeId);
+      });
+      return visibleRouteIds;
     }
 
     function transferChipsHtml(stationGroupId, currentRouteId) {
-      const routeIds = [...(state.stationRouteIdsByGroupId.get(stationGroupId) || new Set())]
-        .filter((routeId) => routeId !== currentRouteId)
-        .sort((a, b) => routeTitle(a).localeCompare(routeTitle(b)));
+      const routeIds = transferRouteIdsForStation(stationGroupId, currentRouteId);
       if (!routeIds.length) return '';
-      const visible = routeIds.slice(0, 5).map((routeId) => routeLogoHtml(routeId)).join('');
+      const visible = routeIds.slice(0, 5).map((routeId) => routeLogoHtml(routeId, { transfer: true })).join('');
       const overflow = routeIds.length > 5
         ? `<span class="transfer-chip more" title="${routeIds.length - 5} more lines">+${routeIds.length - 5}</span>`
         : '';

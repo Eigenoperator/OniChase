@@ -6,12 +6,12 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 ## Done
 - `v1` Yamanote real-data prototype is complete enough for baseline playtests: real stations, weekday trains, planning, live capture, replay, and hunter visibility.
 - Main `v2` is the current nationwide Shinkansen playable build: GIS-first map, real weekday train instances, planning/live/capture/replay, and public online room flow via Render.
-- `v3` now has the first unified train index: `39450` normalized real trains across `16` operators, with manifest, unified train schema, and station departure lookup.
-- Public `v3` now reuses the `v2` UI code path with `1673` station groups, `2039` physical stations, `108` service routes, `4147` track centerlines, and all `39450` v2-compatible trip instances.
+- `v3` now has the first unified train index: `40456` normalized real trains across `16` operators, with manifest, unified train schema, and station departure lookup.
+- Public `v3` now reuses the `v2` UI code path with `1673` station groups, `2041` physical stations, `108` service routes, `4162` track centerlines, and all `40456` v2-compatible trip instances.
 - `v3` is published at `https://eigenoperator.github.io/OniChase/v3.html`; public URL smoke test passes for Tokyo station departures, train selection, and downstream stop choices.
 - Backfilled `diary/DIARY-2026-04-19.md` and trimmed this status file back under the 50-line handoff limit.
 - Added reusable `v3_station_identity` and `v3_route_identity` layers; audit now reports `0` unmapped train station keys, `0` trains with unmapped stops, `0` collapsed duplicate map names, and `0` tiny routes.
-- Optimized v3 map/site performance locally: `v3.html` now opens with `v3_tokyo_map_bundle.json.gz` (`1.3M`) and delayed `v3_tokyo_timetable_bundle.json.gz` (`5.4M`), uses dedicated Tokyo GeoJSON tiles under `docs/data/v3_tokyo_tiles`, indexed timetable lookups, and lightweight SVG scale refresh during wheel zoom.
+- Optimized v3 map/site performance locally: `v3.html` now opens with `v3_tokyo_map_bundle.json.gz` (`1.3M`) and delayed `v3_tokyo_timetable_bundle.json.gz` (`5.7M`), uses dedicated Tokyo GeoJSON tiles under `docs/data/v3_tokyo_tiles`, indexed timetable lookups, and lightweight SVG scale refresh during wheel zoom.
 - Added the first standalone MapLibre renderer spike at `docs/v3_maplibre.html`: WebGL track/service layers, MapLibre label collision, station click, route highlight, route-stop highlight, and lazy timetable-driven departure rows.
 - Fixed v3 MapLibre route/track/service colors: generated bundles and tiles now carry per-line colors from the physical-line data plus route aliases and operator fallbacks instead of the old default blue.
 - Added the missing full `埼玉高速鉄道線` real geometry toward `浦和美園` with SR blue `#00A6E9`; color QA now reports no missing, white, transparent, or fallback-gray colors in bundles or generated tiles.
@@ -24,7 +24,7 @@ Stabilize the main `v2` online playtest while turning `v3` into a real Tokyo map
 - Simplified the v3 gameplay sidebar: removed visible Room/Result/Replay/debug route panels and replaced the train picker with a three-layer `line -> train -> destination stop` planner.
 - Switched v3 visible station, line, and train names to Japanese-original first across MapLibre labels and the gameplay sidebar.
 - Tightened v3 train choices and selected-train highlighting: regular trains hide opaque numbers, row subtitles show origin/terminal/next stop, and map highlight uses real geometry only.
-- Refined v3 destination rows: terminal-only trains are filtered out, stop choices show time/station only, row spacing is taller, station names wrap fully, and transfer badges now prefer real line-symbol image assets.
+- Refined v3 destination rows: terminal-only trains are filtered out, stop choices show time/station only, transfer badges prefer real line-symbol assets, direct-through aliases are filtered, and Keikyu airport trains now reach Haneda terminals.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.

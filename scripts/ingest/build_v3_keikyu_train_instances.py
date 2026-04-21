@@ -6,6 +6,7 @@ import html
 import json
 import re
 import time
+import unicodedata
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -129,7 +130,8 @@ def discover_t7_pages(t5_url: str) -> list[str]:
 
 
 def normalize_station_name(name: str) -> str:
-    text = " ".join(html.unescape(name).replace("\u3000", " ").split())
+    text = unicodedata.normalize("NFKC", html.unescape(name))
+    text = " ".join(text.replace("\u3000", " ").split())
     if text not in {"", "停車駅"}:
         parts = text.split()
         if len(parts) > 1:
@@ -252,7 +254,10 @@ def write_output(station_seed: list[dict], source_reports: list[dict], train_ins
 
 def main() -> int:
     station_seed = load_station_seed()
-    station_lookup = {entry["name_ja"]: entry for entry in station_seed}
+    station_lookup: dict[str, dict] = {}
+    for entry in station_seed:
+        station_lookup[entry["name_ja"]] = entry
+        station_lookup[normalize_station_name(entry["name_ja"])] = entry
     station_pages = discover_station_pages()
 
     if OUTPUT_PATH.exists():
