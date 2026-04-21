@@ -622,7 +622,7 @@
 
     .destination-line {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 68px;
+      grid-template-columns: minmax(0, 1fr) 106px;
       align-items: center;
       min-width: 0;
       column-gap: 12px;
@@ -640,12 +640,12 @@
 
     .transfer-chips {
       display: grid;
-      grid-template-columns: repeat(3, 18px);
+      grid-template-columns: repeat(5, 18px);
       grid-auto-rows: 18px;
       justify-content: end;
       align-content: center;
       gap: 4px;
-      min-width: 68px;
+      min-width: 106px;
       overflow: visible;
     }
 
@@ -2462,9 +2462,11 @@
     function transferChipsHtml(stationGroupId, currentRouteId) {
       const routeIds = transferRouteIdsForStation(stationGroupId, currentRouteId);
       if (!routeIds.length) return '';
-      const visible = routeIds.slice(0, 5).map((routeId) => routeLogoHtml(routeId, { transfer: true })).join('');
-      const overflow = routeIds.length > 5
-        ? `<span class="transfer-chip more" title="${routeIds.length - 5} more lines">+${routeIds.length - 5}</span>`
+      const maxSlots = 15;
+      const visibleLimit = routeIds.length > maxSlots ? maxSlots - 1 : maxSlots;
+      const visible = routeIds.slice(0, visibleLimit).map((routeId) => routeLogoHtml(routeId, { transfer: true })).join('');
+      const overflow = routeIds.length > maxSlots
+        ? `<span class="transfer-chip more" title="${routeIds.length - visibleLimit} more lines">+${routeIds.length - visibleLimit}</span>`
         : '';
       return `<span class="transfer-chips" aria-label="Transfer lines">${visible}${overflow}</span>`;
     }
