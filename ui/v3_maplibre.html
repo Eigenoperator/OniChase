@@ -613,6 +613,46 @@
       text-overflow: ellipsis;
     }
 
+    .destination-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 0;
+      gap: 10px;
+    }
+
+    .destination-line .row-title {
+      flex: 1 1 auto;
+    }
+
+    .transfer-chips {
+      display: inline-flex;
+      flex: 0 1 auto;
+      justify-content: flex-end;
+      gap: 4px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .transfer-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      max-width: 42px;
+      height: 18px;
+      border-radius: 6px;
+      padding: 0 5px;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+    }
+
     .row-meta {
       color: var(--muted);
       font-size: 11px;
@@ -2065,6 +2105,43 @@
       return `${serviceName}${shouldShowTripNumber(trip, serviceName) ? ` ${trip.serviceNumber}` : ''}`;
     }
 
+    function hasDownstreamStop(trip, boardStop) {
+      return Boolean((trip?.stopTimes || []).some((stop) => stop.sequence > boardStop.sequence));
+    }
+
+    function routeLogoText(routeId) {
+      const title = routeTitle(routeId)
+        .replace(/^東京メトロ/u, '')
+        .replace(/^都営/u, '')
+        .replace(/^小田急/u, '')
+        .replace(/^東急/u, '')
+        .replace(/^京王/u, '')
+        .replace(/^京急/u, '')
+        .replace(/^京成/u, '')
+        .replace(/^西武/u, '')
+        .replace(/^東武/u, '')
+        .replace(/^\d+号線/u, '')
+        .replace(/新幹線$/u, '新')
+        .replace(/線(?:各駅停車|快速|通勤|分岐)?$/u, '');
+      const compact = title.replace(/[・\s]/gu, '');
+      return [...compact].slice(0, 3).join('') || '路線';
+    }
+
+    function transferChipsHtml(stationGroupId, currentRouteId) {
+      const routeIds = [...(state.stationRouteIdsByGroupId.get(stationGroupId) || new Set())]
+        .filter((routeId) => routeId !== currentRouteId)
+        .sort((a, b) => routeTitle(a).localeCompare(routeTitle(b)));
+      if (!routeIds.length) return '';
+      const visible = routeIds.slice(0, 5).map((routeId) => {
+        const route = state.routeById.get(routeId);
+        return `<span class="transfer-chip" title="${routeTitle(routeId)}" style="background:${route?.color || '#667487'};color:${route?.textColor || '#ffffff'}">${routeLogoText(routeId)}</span>`;
+      }).join('');
+      const overflow = routeIds.length > 5
+        ? `<span class="transfer-chip" title="${routeIds.length - 5} more lines" style="background:#667487;">+${routeIds.length - 5}</span>`
+        : '';
+      return `<span class="transfer-chips" aria-label="Transfer lines">${visible}${overflow}</span>`;
+    }
+
     function activePlayer() {
       return state.players[state.activeMode];
     }
@@ -2121,7 +2198,8 @@
           boardStop: row.stop,
           departureMinute: row.departureMinute,
           departureHhmm: minutesToHhmm(row.departureMinute),
-        }));
+        }))
+        .filter((entry) => hasDownstreamStop(entry.trip, entry.boardStop));
     }
 
     function futureTripStops(preview) {
@@ -2142,7 +2220,7 @@
       const tripId = pendingTripId(playerId);
       if (!tripId || preview.currentState.kind !== 'NODE') return null;
       const departures = departuresForStationGroup(preview.currentState.stationGroupId, effectiveDepartureMinute(playerId, preview.currentMinute));
-      const match = departures.find((row) => row.trip.id === tripId);
+      const match = departures.find((row) => row.trip.id === tripId && hasDownstreamStop(row.trip, row.stop));
       if (!match) return null;
       return {
         trip: match.trip,
@@ -2169,7 +2247,7 @@
       if (nextStop) {
         parts.push(`次 ${displayNameForGroup(nextStop.stationGroupId)} ${secToClock(nextStop.arrivalTimeSec ?? nextStop.departureTimeSec)}`);
       }
-      return parts.join(' · ') || '後続停車駅なし';
+      return parts.join(' · ');
     }
 
     function stationLonLat(stationGroupId) {
@@ -2971,9 +3049,9 @@
             ? pending.destinations.slice(0, 52).map((item) => `
                 <button class="outlook-row" type="button" data-action="ride-here" data-trip-id="${pending.trip.id}" data-station-group-id="${item.stationGroupId}">
                   <span class="row-meta">${item.arrivalHhmm}</span>
-                  <span>
+                  <span class="destination-line">
                     <span class="row-title">${item.label}</span>
-                    <span class="row-sub">Add this destination to your plan</span>
+                    ${transferChipsHtml(item.stationGroupId, pending.trip.routeId)}
                   </span>
                 </button>
               `).join('')
@@ -3019,9 +3097,9 @@
             ? destinations.slice(0, 52).map((item) => `
                 <button class="outlook-row" type="button" data-action="ride-direct" data-station-group-id="${item.stationGroupId}">
                   <span class="row-meta">${item.arrivalHhmm}</span>
-                  <span>
+                  <span class="destination-line">
                     <span class="row-title">${item.label}</span>
-                    <span class="row-sub">Set as destination</span>
+                    ${transferChipsHtml(item.stationGroupId, preview.currentTrip?.routeId || routeId)}
                   </span>
                 </button>
               `).join('')
