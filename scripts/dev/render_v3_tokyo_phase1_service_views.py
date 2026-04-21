@@ -53,6 +53,7 @@ TOKYO_URBAN_LINE_REFS = {
 JR_LINE_REFS = {
     ("山手線", "東日本旅客鉄道"): {"label": "JR East / Yamanote", "color": "#88c840"},
     ("中央線", "東日本旅客鉄道"): {"label": "JR East / Chuo", "color": "#f15a24"},
+    ("青梅線", "東日本旅客鉄道"): {"label": "JR East / Ome", "color": "#eb5a28"},
     ("総武線", "東日本旅客鉄道"): {"label": "JR East / Sobu", "color": "#f4c300"},
     ("横須賀線", "東日本旅客鉄道"): {"label": "JR East / Yokosuka", "color": "#2f4ca0"},
     ("東海道線", "東日本旅客鉄道"): {"label": "JR East / Tokaido", "color": "#f28e1c"},
@@ -60,10 +61,17 @@ JR_LINE_REFS = {
     ("東北線", "東日本旅客鉄道"): {"label": "JR East / Tohoku", "color": "#3aa76d"},
     ("常磐線", "東日本旅客鉄道"): {"label": "JR East / Joban", "color": "#22a6b3"},
     ("成田線", "東日本旅客鉄道"): {"label": "JR East / Narita", "color": "#339966"},
+    ("内房線", "東日本旅客鉄道"): {"label": "JR East / Uchibo", "color": "#00afcc"},
+    ("外房線", "東日本旅客鉄道"): {"label": "JR East / Sotobo", "color": "#d9352a"},
+    ("東金線", "東日本旅客鉄道"): {"label": "JR East / Togane", "color": "#e48e00"},
+    ("鹿島線", "東日本旅客鉄道"): {"label": "JR East / Kashima", "color": "#6f4b3e"},
+    ("伊東線", "東日本旅客鉄道"): {"label": "JR East / Ito", "color": "#319041"},
     ("京葉線", "東日本旅客鉄道"): {"label": "JR East / Keiyo", "color": "#c62828"},
     ("赤羽線", "東日本旅客鉄道"): {"label": "JR East / Saikyo", "color": "#0099cc"},
     ("川越線", "東日本旅客鉄道"): {"label": "JR East / Kawagoe", "color": "#0099cc"},
     ("高崎線", "東日本旅客鉄道"): {"label": "JR East / Takasaki", "color": "#f28e1c"},
+    ("上越線", "東日本旅客鉄道"): {"label": "JR East / Joetsu", "color": "#00a7e3"},
+    ("両毛線", "東日本旅客鉄道"): {"label": "JR East / Ryomo", "color": "#e49f00"},
     ("根岸線", "東日本旅客鉄道"): {"label": "JR East / Negishi", "color": "#00bcd4"},
     ("武蔵野線", "東日本旅客鉄道"): {"label": "JR East / Musashino", "color": "#ff6f00"},
 }
@@ -84,6 +92,7 @@ SHINKANSEN_REFS = {
 
 SERVICE_FAMILY_COLORS = {
     "JR_YAMANOTE": "#88c840",
+    "JR_OME": "#eb5a28",
     "JR_KEIHIN_TOHOKU_NEGISHI": "#00b2d6",
     "JR_CHUO_RAPID": "#f15a24",
     "JR_CHUO_SOBU_LOCAL": "#f2c94c",
@@ -96,6 +105,13 @@ SERVICE_FAMILY_COLORS = {
     "JR_JOBAN_RAPID": "#22a6b3",
     "JR_JOBAN_LOCAL": "#4fc3d7",
     "JR_NARITA": "#339966",
+    "JR_UCHIBO": "#00afcc",
+    "JR_SOTOBO": "#d9352a",
+    "JR_TOGANE": "#e48e00",
+    "JR_KASHIMA": "#6f4b3e",
+    "JR_ITO": "#319041",
+    "JR_JOETSU_LOCAL": "#00a7e3",
+    "JR_RYOMO": "#e49f00",
     "JR_KEIYO": "#c62828",
 }
 
