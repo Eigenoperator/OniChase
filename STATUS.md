@@ -27,6 +27,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 Current Plan ride rows now keep the subline to boarding/alighting times only.
 - Public v3 two-browser playtests now include 30 Render rooms; the latest 10/10 battle reports/timelines show public Japanese line names, private-operator prefixes, and no internal route or station ids.
 - Heavy public v3 battle records now support generated 10-leg plans plus same-node/same-train capture checks; the latest 10/10 Render rooms completed with no issues.
+- v3 heavy public regression is now one command with record validation, timeline rendering, and display-name audits for reports/timelines.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
@@ -44,6 +45,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Review remaining v3 data gaps: e.g. `13号線副都心線` is not exposed as a physical pattern at `小竹向原` in the current bundle.
+1. Add a more humanlike heavy scenario generator that avoids repetitive short hops while preserving 10+ leg coverage.
 2. Triage the remaining dirty v3 data/cache worktree and decide what is stable, ignored, or local-only.
 3. Use the cleaned battle timelines to spot gameplay readability bugs, then continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.
