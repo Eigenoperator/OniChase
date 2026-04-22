@@ -101,3 +101,11 @@
 - Do not collapse distinct physical interchange stations into one fake shared latitude/longitude point just because gameplay allows transfers there.
 - This is especially important when the interchange spans different operators or companies.
 - Gameplay may still group nearby physical stations into one transfer-capable station group, but the map and physical-network layers must preserve the distinct real station locations and distinct real line geometry.
+
+## 15. Through-Running Classification Must Be Physical
+
+- Shinkansen services are never merged by broad JR family, shared station, or shared corridor.
+- Different named Shinkansen routes must remain separately classified by their own Shinkansen route name.
+- Non-Shinkansen through-running exists only when trains actually run on the same physical track and stop at the same platform/boarding face.
+- Shared operators, shared station groups, transfer permission, nearby geometry, or parallel corridors do not by themselves make two lines through-running equivalents.
+- Ordinary lines such as Tokaido Line, Yokosuka Line, Yamanote Line, and Keihin-Tohoku Line must remain separate categories unless the specific train movement truly uses the same track and platform as another service.

@@ -17,6 +17,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - Local headless Firefox single-player smoke test passed the core v3 flow: load map/timetable, enter Runner mode, choose line/train/destination, generate a plan, start countdown, and transition into `LIVE`.
 - v3 through-running display now classifies departures by the physical boarding line: Toyoko/Yokohama/Hiyoshi/Jiyugaoka no longer surface Tokyo Metro through-service aliases as separate line choices.
 - v3 route matching now keeps Shinkansen and ordinary JR lines separate; shared station/operator families no longer make Tokaido Line and Tokaido Shinkansen borrow each other's trains.
+- `AXIOMS.md` now records the through-running classification rule: Shinkansen routes stay separated by name, and non-Shinkansen through-running requires same physical track and platform.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
