@@ -25,7 +25,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 train preview rows now show next stop without a clock time and only marquee-scroll after actual rendered overflow.
 - v3 Current Plan ride legs now show the same route-color swatch as the line chooser.
 - v3 Current Plan ride rows now keep the subline to boarding/alighting times only.
-- Public v3 two-browser playtests now include 30 Render rooms; the latest 10/10 were recorded as battle-event artifacts in `reports/v3_public_battle_records_20260422_143910.{json,md}`.
+- Public v3 two-browser playtests now include 30 Render rooms; the latest 10/10 have battle-event records and SVG timeline diagrams under `reports/`.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
