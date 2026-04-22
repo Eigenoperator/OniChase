@@ -25,6 +25,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - Backfilled `diary/DIARY-2026-04-21.md` with the full v3 data, display, through-running, and multiplayer smoke-test summary.
 - v3 train preview rows now show next stop without a clock time and only marquee-scroll after actual rendered overflow.
 - v3 Current Plan ride legs now show the same route-color swatch as the line chooser.
+- v3 Current Plan ride rows now keep the subline to boarding/alighting times only.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
