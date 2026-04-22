@@ -16,6 +16,28 @@ DEFAULT_RECORDS = Path("reports/v3_public_battle_records_20260422_143910.json")
 DEFAULT_BUNDLE = Path("docs/data/v3_tokyo_map_bundle.json.gz")
 DEFAULT_OUTPUT_DIR = Path("reports/v3_battle_timelines_20260422_143910")
 
+OPERATOR_JA_LABELS = {
+    "keikyu": "京急",
+    "keio": "京王",
+    "keisei": "京成",
+    "odakyu": "小田急",
+    "rinkai": "東京臨海高速鉄道",
+    "seibu": "西武",
+    "tama_monorail": "多摩都市モノレール",
+    "tobu": "東武",
+    "tokyo_monorail": "東京モノレール",
+    "tokyu": "東急",
+    "tsukuba_express": "首都圏新都市鉄道",
+    "yurikamome": "ゆりかもめ",
+}
+PRIVATE_ROUTE_PREFIX_OPERATOR_IDS = frozenset(OPERATOR_JA_LABELS)
+PHYSICAL_ALIAS_OPERATOR_LABELS = {
+    "みなとみらい21線": "横浜高速鉄道",
+    "埼玉高速鉄道線": "埼玉高速鉄道",
+    "相鉄いずみ野線": "相鉄",
+    "相鉄本線": "相鉄",
+}
+
 SVG_WIDTH = 1280
 TOP_MARGIN = 156
 BOTTOM_MARGIN = 88
@@ -38,6 +60,7 @@ class RouteStyle:
     color: str
     text_color: str
     title: str
+    short_name: str
 
 
 @dataclass(frozen=True)
@@ -85,17 +108,29 @@ def slug(value: str) -> str:
     return cleaned or "timeline"
 
 
+def route_display_name(route: dict[str, Any], name: str) -> str:
+    label = str(name or "")
+    operator = PHYSICAL_ALIAS_OPERATOR_LABELS.get(str(route.get("shortName") or ""))
+    if not operator and route.get("operatorId") in PRIVATE_ROUTE_PREFIX_OPERATOR_IDS:
+        operator = OPERATOR_JA_LABELS.get(str(route.get("operatorId") or ""))
+    if operator and label and not label.startswith(operator):
+        return f"{operator}{label}"
+    return label
+
+
 def route_styles(bundle: dict[str, Any]) -> dict[str, RouteStyle]:
     styles: dict[str, RouteStyle] = {}
     for route in bundle.get("serviceRoutes", []):
         route_id = route.get("id")
         if not route_id:
             continue
-        title = route.get("shortName") or route.get("longName") or route_id
+        short_name = route.get("shortName") or route.get("longName") or route_id
+        title = route_display_name(route, short_name)
         styles[route_id] = RouteStyle(
             color=route.get("color") or "#667487",
             text_color=route.get("textColor") or "#ffffff",
             title=title,
+            short_name=str(short_name),
         )
     return styles
 
@@ -128,6 +163,12 @@ def luminance(color: str) -> float:
 
 def readable_text_color(background: str) -> str:
     return "#102033" if luminance(background) > 0.54 else "#ffffff"
+
+
+def display_trip_label(ride: Ride, style: RouteStyle) -> str:
+    if ride.trip_label in {ride.route_title, style.short_name}:
+        return style.title
+    return ride.trip_label
 
 
 def player_rides(plan: dict[str, Any]) -> list[Ride]:
@@ -257,7 +298,7 @@ def render_ride(
     y2 = y_for_minute(ride.alight_minute, start_minute, px_per_minute)
     if y2 < y1:
         y1, y2 = y2, y1
-    style = styles.get(ride.route_id, RouteStyle("#667487", "#ffffff", ride.route_title))
+    style = styles.get(ride.route_id, RouteStyle("#667487", "#ffffff", ride.route_title, ride.route_title))
     color = style.color
     pale = mix(color, "#ffffff", 0.86)
     track_x = RUNNER_TRACK_X if side == "runner" else HUNTER_TRACK_X
@@ -279,9 +320,11 @@ def render_ride(
         f'<rect x="{card_x}" y="{card_y:.1f}" width="{card_width}" height="{card_h}" rx="{CARD_RADIUS}" fill="{pale}" stroke="{mix(color, "#1f2937", 0.18)}" stroke-width="1.2" />',
         f'<rect x="{stripe_x}" y="{card_y:.1f}" width="9" height="{card_h}" rx="4.5" fill="{color}" />',
     ]
-    title = f"{ride.route_title}"
-    if ride.trip_label and ride.trip_label != ride.route_title:
-        title = f"{ride.route_title} · {ride.trip_label}"
+    route_title = style.title
+    trip_label = display_trip_label(ride, style)
+    title = f"{route_title}"
+    if trip_label and trip_label != route_title:
+        title = f"{route_title} · {trip_label}"
     lines = [
         f"{ride.from_station} -> {ride.to_station}",
         f"{minutes_to_hhmm(ride.board_minute)} - {minutes_to_hhmm(ride.alight_minute)}",
@@ -357,8 +400,13 @@ def render_axis(start_minute: int, end_minute: int, px_per_minute: float, event_
     return elements
 
 
-def plan_route_chain(plan: dict[str, Any]) -> str:
-    names = [leg.get("routeTitle") or leg.get("requestedRoute") or "Line" for leg in plan.get("legs", [])]
+def leg_route_title(leg: dict[str, Any], styles: dict[str, RouteStyle]) -> str:
+    style = styles.get(leg.get("routeId") or "")
+    return style.title if style else leg.get("routeTitle") or leg.get("requestedRoute") or "Line"
+
+
+def plan_route_chain(plan: dict[str, Any], styles: dict[str, RouteStyle]) -> str:
+    names = [leg_route_title(leg, styles) for leg in plan.get("legs", [])]
     return " -> ".join(names) if names else "No plan"
 
 
@@ -366,8 +414,8 @@ def game_title(game: dict[str, Any]) -> str:
     return f"Game {game.get('index')} · Room {game.get('room_id', '')}"
 
 
-def game_route_summary(game: dict[str, Any]) -> str:
-    return f"Runner: {plan_route_chain(game['runner_plan'])} · Hunter: {plan_route_chain(game['hunter_plan'])}"
+def game_route_summary(game: dict[str, Any], styles: dict[str, RouteStyle]) -> str:
+    return f"Runner: {plan_route_chain(game['runner_plan'], styles)} · Hunter: {plan_route_chain(game['hunter_plan'], styles)}"
 
 
 def capture_label(game: dict[str, Any]) -> str:
@@ -375,8 +423,8 @@ def capture_label(game: dict[str, Any]) -> str:
     return "No capture" if capture == "none" else str(capture)
 
 
-def render_header(game: dict[str, Any], height: float) -> list[str]:
-    subtitle = f"{game_route_summary(game)} · {capture_label(game)} · {game.get('online_phase', 'LIVE')}"
+def render_header(game: dict[str, Any], height: float, styles: dict[str, RouteStyle]) -> list[str]:
+    subtitle = f"{game_route_summary(game, styles)} · {capture_label(game)} · {game.get('online_phase', 'LIVE')}"
     return [
         '<rect x="0" y="0" width="1280" height="100%" fill="#f5f7fb" />',
         '<rect x="34" y="26" width="1212" height="96" rx="8" fill="#ffffff" stroke="#d8e0eb" />',
@@ -411,7 +459,7 @@ def game_svg(game: dict[str, Any], styles: dict[str, RouteStyle], px_per_minute:
         "</defs>",
         '<g font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">',
     ]
-    elements.extend(render_header(game, height))
+    elements.extend(render_header(game, height, styles))
     elements.append('<g opacity="0.96">')
     elements.extend(render_axis(start_minute, end_minute, px_per_minute, event_minutes))
     elements.append("</g>")
@@ -432,12 +480,12 @@ def game_svg(game: dict[str, Any], styles: dict[str, RouteStyle], px_per_minute:
     return "\n".join(elements) + "\n"
 
 
-def write_index(output_dir: Path, generated: list[tuple[dict[str, Any], Path]]) -> Path:
+def write_index(output_dir: Path, generated: list[tuple[dict[str, Any], Path]], styles: dict[str, RouteStyle]) -> Path:
     rows = []
     for game, svg_path in generated:
         rows.append(
             f'<section class="game"><h2>{esc(game_title(game))}</h2>'
-            f'<p>{esc(game_route_summary(game))} · {esc(capture_label(game))} · phase <code>{esc(game.get("online_phase", ""))}</code></p>'
+            f'<p>{esc(game_route_summary(game, styles))} · {esc(capture_label(game))} · phase <code>{esc(game.get("online_phase", ""))}</code></p>'
             f'<img src="{esc(svg_path.name)}" alt="Game {game.get("index")} timeline"></section>'
         )
     html_text = f"""<!doctype html>
@@ -506,7 +554,7 @@ def main() -> None:
         svg_path.write_text(game_svg(game, styles, args.px_per_minute), encoding="utf-8")
         generated.append((game, svg_path))
         print(f"wrote {svg_path}")
-    index_path = write_index(output_dir, generated)
+    index_path = write_index(output_dir, generated, styles)
     print(f"wrote {index_path}")
 
 

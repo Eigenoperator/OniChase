@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import socket
 import subprocess
@@ -16,6 +17,29 @@ from typing import Any
 DEFAULT_PAGE_URL = "https://eigenoperator.github.io/OniChase/v3.html"
 DEFAULT_ROOM_SERVER = "https://onichase-v3-room-server.onrender.com"
 DEFAULT_OUTPUT_DIR = Path("reports")
+DEFAULT_BUNDLE = Path("docs/data/v3_tokyo_map_bundle.json.gz")
+
+OPERATOR_JA_LABELS = {
+    "keikyu": "京急",
+    "keio": "京王",
+    "keisei": "京成",
+    "odakyu": "小田急",
+    "rinkai": "東京臨海高速鉄道",
+    "seibu": "西武",
+    "tama_monorail": "多摩都市モノレール",
+    "tobu": "東武",
+    "tokyo_monorail": "東京モノレール",
+    "tokyu": "東急",
+    "tsukuba_express": "首都圏新都市鉄道",
+    "yurikamome": "ゆりかもめ",
+}
+PRIVATE_ROUTE_PREFIX_OPERATOR_IDS = frozenset(OPERATOR_JA_LABELS)
+PHYSICAL_ALIAS_OPERATOR_LABELS = {
+    "みなとみらい21線": "横浜高速鉄道",
+    "埼玉高速鉄道線": "埼玉高速鉄道",
+    "相鉄いずみ野線": "相鉄",
+    "相鉄本線": "相鉄",
+}
 
 
 SCENARIOS: list[dict[str, Any]] = [
@@ -25,7 +49,7 @@ SCENARIOS: list[dict[str, Any]] = [
             "start": "東京",
             "legs": [
                 {"route": "東海道線", "to": "横浜"},
-                {"route": "東横線", "to": "菊名"},
+                {"route": "東急東横線", "to": "菊名"},
             ],
         },
         "hunter": {
@@ -144,8 +168,8 @@ SCENARIOS: list[dict[str, Any]] = [
             "start": "東京",
             "legs": [
                 {"route": "横須賀線", "to": "武蔵小杉"},
-                {"route": "東横線", "to": "渋谷"},
-                {"route": "東横線", "to": "綱島"},
+                {"route": "東急東横線", "to": "渋谷"},
+                {"route": "東急東横線", "to": "綱島"},
             ],
         },
         "hunter": {
@@ -196,7 +220,7 @@ SCENARIOS: list[dict[str, Any]] = [
 
 BATTLE_HELPER_JS = r"""
 (() => {
-  const version = '2026-04-22-public-battle-records';
+  const version = '2026-04-22-public-battle-records-private-route-prefixes';
   if (window.__oniBattle && window.__oniBattle.version === version) return;
   const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
   const norm = (value) => String(value || '')
@@ -652,7 +676,62 @@ def call_helper(driver: Driver, expression: str, timeout: float = 180) -> Any:
     return unwrap_async(driver.execute_async(js_async(expression), timeout=timeout))
 
 
-def event_text(event: dict[str, Any]) -> str:
+def load_json_maybe_gz(path: Path) -> Any:
+    if path.suffix == ".gz":
+        with gzip.open(path, "rt", encoding="utf-8") as file:
+            return json.load(file)
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def route_display_name(route: dict[str, Any], name: str) -> str:
+    label = str(name or "")
+    operator = PHYSICAL_ALIAS_OPERATOR_LABELS.get(str(route.get("shortName") or ""))
+    if not operator and route.get("operatorId") in PRIVATE_ROUTE_PREFIX_OPERATOR_IDS:
+        operator = OPERATOR_JA_LABELS.get(str(route.get("operatorId") or ""))
+    if operator and label and not label.startswith(operator):
+        return f"{operator}{label}"
+    return label
+
+
+def route_title_lookup(bundle_path: Path = DEFAULT_BUNDLE) -> dict[str, dict[str, str]]:
+    bundle = load_json_maybe_gz(bundle_path)
+    lookup: dict[str, dict[str, str]] = {}
+    for route in bundle.get("serviceRoutes", []):
+        route_id = str(route.get("id") or "")
+        if not route_id:
+            continue
+        short_name = str(route.get("shortName") or route.get("longName") or route_id)
+        lookup[route_id] = {
+            "short_name": short_name,
+            "display_name": route_display_name(route, short_name),
+        }
+    return lookup
+
+
+def display_leg_route_title(leg: dict[str, Any], route_titles: dict[str, dict[str, str]]) -> str:
+    route = route_titles.get(str(leg.get("routeId") or ""))
+    return route["display_name"] if route else str(leg.get("routeTitle") or leg.get("requestedRoute") or "路線")
+
+
+def display_leg_trip_label(leg: dict[str, Any], route_titles: dict[str, dict[str, str]]) -> str:
+    route = route_titles.get(str(leg.get("routeId") or ""))
+    trip_label = str(leg.get("tripLabel") or leg.get("tripId") or "列車")
+    if route and trip_label in {str(leg.get("routeTitle") or ""), route["short_name"]}:
+        return route["display_name"]
+    return trip_label
+
+
+def game_trip_title_lookup(game: dict[str, Any], route_titles: dict[str, dict[str, str]]) -> dict[str, str]:
+    lookup: dict[str, str] = {}
+    for plan_key in ("runner_plan", "hunter_plan"):
+        for leg in game.get(plan_key, {}).get("legs", []):
+            trip_id = str(leg.get("tripId") or "")
+            if trip_id:
+                lookup[trip_id] = display_leg_trip_label(leg, route_titles)
+    return lookup
+
+
+def event_text(event: dict[str, Any], trip_titles: dict[str, str] | None = None) -> str:
     player = event.get("player_id")
     subject = {"runner": "Runner", "hunter": "Hunter"}.get(player, "Match")
     event_type = event.get("type")
@@ -665,11 +744,11 @@ def event_text(event: dict[str, Any]) -> str:
         return f"{event['time_hhmm']} {subject} 从 {station} 出发"
     if event_type == "BOARD_TRAIN":
         station = event.get("station_label") or event.get("station_group_id")
-        trip = event.get("trip_label") or event.get("trip_id")
+        trip = (trip_titles or {}).get(str(event.get("trip_id") or "")) or event.get("trip_label") or event.get("trip_id")
         return f"{event['time_hhmm']} {subject} 在 {station} 上车 {trip}"
     if event_type == "ALIGHT_TRAIN":
         station = event.get("station_label") or event.get("station_group_id")
-        trip = event.get("trip_label") or event.get("trip_id")
+        trip = (trip_titles or {}).get(str(event.get("trip_id") or "")) or event.get("trip_label") or event.get("trip_id")
         return f"{event['time_hhmm']} {subject} 在 {station} 下车 {trip}"
     if event_type == "WAIT_UNTIL":
         station = event.get("station_label") or event.get("station_group_id")
@@ -680,17 +759,20 @@ def event_text(event: dict[str, Any]) -> str:
     return f"{event.get('time_hhmm', '')} {event_type}"
 
 
-def format_plan(plan: dict[str, Any]) -> list[str]:
+def format_plan(plan: dict[str, Any], route_titles: dict[str, dict[str, str]]) -> list[str]:
     lines = [f"起点: {plan['startStation']} ({plan['start_station_id']})"]
     for index, leg in enumerate(plan["legs"], start=1):
+        route_title = display_leg_route_title(leg, route_titles)
+        trip_label = display_leg_trip_label(leg, route_titles)
         lines.append(
-            f"{index}. {leg['routeTitle']} / {leg['tripLabel']}: "
+            f"{index}. {route_title} / {trip_label}: "
             f"{leg['fromStation']} {leg['boardHhmm']} -> {leg['toStation']} {leg['alightHhmm']}"
         )
     return lines
 
 
-def make_markdown(payload: dict[str, Any]) -> str:
+def make_markdown(payload: dict[str, Any], route_titles: dict[str, dict[str, str]] | None = None) -> str:
+    route_titles = route_titles or route_title_lookup()
     lines = [
         "# v3 公网对战记录",
         "",
@@ -715,12 +797,13 @@ def make_markdown(payload: dict[str, Any]) -> str:
                 "",
             ]
         )
-        lines.extend(f"- {line}" for line in format_plan(game["runner_plan"]))
+        lines.extend(f"- {line}" for line in format_plan(game["runner_plan"], route_titles))
         lines.extend(["", "### Hunter", ""])
-        lines.extend(f"- {line}" for line in format_plan(game["hunter_plan"]))
+        lines.extend(f"- {line}" for line in format_plan(game["hunter_plan"], route_titles))
         lines.extend(["", "### 战况时间线", ""])
+        trip_titles = game_trip_title_lookup(game, route_titles)
         for event in game["event_log"]:
-            lines.append(f"- {event_text(event)}")
+            lines.append(f"- {event_text(event, trip_titles)}")
         if game.get("issues"):
             lines.extend(["", "### 问题", ""])
             lines.extend(f"- {issue}" for issue in game["issues"])
@@ -847,6 +930,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     started = datetime.now().astimezone()
+    route_titles = route_title_lookup()
     args.output_dir.mkdir(parents=True, exist_ok=True)
     args.log_dir.mkdir(parents=True, exist_ok=True)
     if args.scenario_indexes.strip():
@@ -891,7 +975,7 @@ def main() -> None:
             payload["failures"].append(failure)
             print(f"  FAILED: {error}", flush=True)
         json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        md_path.write_text(make_markdown(payload), encoding="utf-8")
+        md_path.write_text(make_markdown(payload, route_titles), encoding="utf-8")
 
     print(f"JSON: {json_path}")
     print(f"Markdown: {md_path}")

@@ -988,6 +988,20 @@
       相鉄本線: ['sotetsu', '相模鉄道', '相鉄'],
     });
     const PHYSICAL_ALIAS_ROUTE_NAMES = new Set(Object.keys(PHYSICAL_ALIAS_OPERATOR_LABELS));
+    const PRIVATE_ROUTE_PREFIX_OPERATOR_IDS = new Set([
+      'keikyu',
+      'keio',
+      'keisei',
+      'odakyu',
+      'rinkai',
+      'seibu',
+      'tama_monorail',
+      'tobu',
+      'tokyo_monorail',
+      'tokyu',
+      'tsukuba_express',
+      'yurikamome',
+    ]);
     const ROUTE_JA_LABELS = Object.freeze({
       JR_EAST_CHUO_RAPID: '中央線快速',
       JR_EAST_CHUO_SOBU_LOCAL: '中央・総武線各駅停車',
@@ -1982,17 +1996,26 @@
       return OPERATOR_JA_LABELS[operatorId] || operatorId || '';
     }
 
+    function routeDisplayName(route, name) {
+      const label = String(name || '');
+      if (!route || !label) return label;
+      const operator = PHYSICAL_ALIAS_OPERATOR_LABELS[route.shortName]
+        || (PRIVATE_ROUTE_PREFIX_OPERATOR_IDS.has(route.operatorId) ? operatorJaLabel(route.operatorId) : '');
+      if (!operator || label.startsWith(operator)) return label;
+      return `${operator}${label}`;
+    }
+
     function routeJapaneseName(routeOrId) {
       const route = typeof routeOrId === 'string' ? state.routeById.get(routeOrId) : routeOrId;
       const routeId = typeof routeOrId === 'string' ? routeOrId : route?.id;
       const candidates = [route?.shortName, route?.longName, routeId].filter(Boolean);
       for (const candidate of candidates) {
-        if (ROUTE_JA_LABELS[candidate]) return ROUTE_JA_LABELS[candidate];
+        if (ROUTE_JA_LABELS[candidate]) return routeDisplayName(route, ROUTE_JA_LABELS[candidate]);
       }
-      if (route?.shortName && hasJapaneseText(route.shortName)) return route.shortName;
+      if (route?.shortName && hasJapaneseText(route.shortName)) return routeDisplayName(route, route.shortName);
       if (route?.longName && hasJapaneseText(route.longName)) {
         const japanesePart = route.longName.split('/').map((part) => part.trim()).find(hasJapaneseText);
-        return japanesePart || route.longName;
+        return routeDisplayName(route, japanesePart || route.longName);
       }
       return route?.shortName || route?.longName || routeId || '路線';
     }

@@ -25,11 +25,11 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 train preview rows now show next stop without a clock time and only marquee-scroll after actual rendered overflow.
 - v3 Current Plan ride legs now show the same route-color swatch as the line chooser.
 - v3 Current Plan ride rows now keep the subline to boarding/alighting times only.
-- Public v3 two-browser playtests now include 30 Render rooms; the latest 10/10 have battle-event records and English-labeled SVG timeline diagrams under `reports/`.
+- Public v3 two-browser playtests now include 30 Render rooms; the latest 10/10 have private-operator-prefixed battle reports and English-labeled SVG timeline diagrams under `reports/`.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
-- Stabilize `v3` MapLibre/reporting UX: dense Tokyo click behavior, player marker clarity, route labeling, battle timelines, and map/planner readability.
+- Stabilize `v3` MapLibre/reporting UX: dense Tokyo click behavior, player marker clarity, private-rail route labeling, battle timelines, and map/planner readability.
 
 ## Blockers
 - `JR Central` still lacks a direct train-detail page like `JR East / JR West`; deeper precision still needs station-grid aggregation.
@@ -45,4 +45,4 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 ## Next
 1. Review remaining v3 data gaps: e.g. `13号線副都心線` is not exposed as a physical pattern at `小竹向原` in the current bundle.
 2. Triage the remaining dirty v3 data/cache worktree and decide what is stable, ignored, or local-only.
-3. Use the new battle timelines to spot gameplay readability bugs, then continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.
+3. Use the updated battle timelines to spot gameplay readability bugs, then continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.
