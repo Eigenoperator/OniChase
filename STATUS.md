@@ -21,6 +21,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 implements that rule in route display: Tokyo Station again shows Yamanote/Keihin-Tohoku/Yokosuka/Tokaido separately, while Jiyugaoka keeps only Tokyu physical boarding lines.
 - v3 through-running audit now covers Keikyu/Asakusa/Keisei, Tokyu/Fukutoshin/Seibu/Tobu, Meguro/Mita/Namboku/Sotetsu, Saitama Railway, and Minatomirai display boundaries.
 - v3 Tokyo Metro route titles now use common line names (`丸ノ内線`, `有楽町線`, `副都心線`, etc.) instead of numbered legal names in the UI.
+- Local two-browser v3 multiplayer smoke passed: Runner/Hunter created and joined one room, both ready states synced into Planning and then LIVE, and local/public room `/health` report `dataset_name = v3-tokyo`.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
@@ -39,6 +40,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Manually play public `v3.html` online with two browsers through the Ready Room flow now that single-player smoke and v3 room `/health` both pass.
+1. Do a real public-browser multiplayer playtest against `https://eigenoperator.github.io/OniChase/v3.html` after the latest local two-browser smoke.
 2. Review remaining v3 data gaps: e.g. `13号線副都心線` is not exposed as a physical pattern at `小竹向原` in the current bundle.
 3. Continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.
