@@ -390,6 +390,13 @@ def render_ride(
     return elements
 
 
+def ride_card_bottom(ride: Ride, start_minute: int, px_per_minute: float) -> float:
+    y1 = y_for_minute(ride.board_minute, start_minute, px_per_minute)
+    y2 = y_for_minute(ride.alight_minute, start_minute, px_per_minute)
+    mid = (min(y1, y2) + max(y1, y2)) / 2
+    return max(TOP_MARGIN + 8, mid - 86 / 2) + 86
+
+
 def layout_moments(moments: list[Moment], start_minute: int, px_per_minute: float, min_gap: float = 54) -> list[tuple[Moment, float]]:
     laid_out: list[tuple[Moment, float]] = []
     previous_y = -1_000_000.0
@@ -499,11 +506,19 @@ def render_header(game: dict[str, Any], height: float, styles: dict[str, RouteSt
 
 def game_svg(game: dict[str, Any], styles: dict[str, RouteStyle], px_per_minute: float) -> str:
     start_minute, end_minute = time_bounds(game)
-    height = TOP_MARGIN + (end_minute - start_minute) * px_per_minute + BOTTOM_MARGIN
     runner_rides = player_rides(game["runner_plan"])
     hunter_rides = player_rides(game["hunter_plan"])
     runner_moments = player_moments(game["runner_plan"])
     hunter_moments = player_moments(game["hunter_plan"])
+    runner_moment_layout = layout_moments(runner_moments, start_minute, px_per_minute)
+    hunter_moment_layout = layout_moments(hunter_moments, start_minute, px_per_minute)
+    base_height = TOP_MARGIN + (end_minute - start_minute) * px_per_minute + BOTTOM_MARGIN
+    max_content_y = y_for_minute(end_minute, start_minute, px_per_minute)
+    for ride in runner_rides + hunter_rides:
+        max_content_y = max(max_content_y, ride_card_bottom(ride, start_minute, px_per_minute))
+    for _moment, label_y in runner_moment_layout + hunter_moment_layout:
+        max_content_y = max(max_content_y, label_y + 23)
+    height = max(base_height, max_content_y + BOTTOM_MARGIN)
     event_minutes = [
         *(ride.board_minute for ride in runner_rides + hunter_rides),
         *(ride.alight_minute for ride in runner_rides + hunter_rides),
@@ -527,9 +542,9 @@ def game_svg(game: dict[str, Any], styles: dict[str, RouteStyle], px_per_minute:
         elements.extend(render_ride(ride, "hunter", start_minute, px_per_minute, styles))
     elements.append("</g>")
     elements.append("<g>")
-    for moment, label_y in layout_moments(runner_moments, start_minute, px_per_minute):
+    for moment, label_y in runner_moment_layout:
         elements.extend(render_moment(moment, label_y, "runner", start_minute, px_per_minute))
-    for moment, label_y in layout_moments(hunter_moments, start_minute, px_per_minute):
+    for moment, label_y in hunter_moment_layout:
         elements.extend(render_moment(moment, label_y, "hunter", start_minute, px_per_minute))
     elements.append("</g>")
     elements.append(svg_text(SVG_WIDTH / 2, height - 22, "Generated from v3 public battle records", size=12, weight=650, fill="#8a97a8", anchor="middle"))
@@ -592,7 +607,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--bundle", type=Path, default=DEFAULT_BUNDLE)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--game", default="all", help="Game index, comma-separated indexes, or 'all'.")
-    parser.add_argument("--px-per-minute", type=float, default=9.0)
+    parser.add_argument("--px-per-minute", type=float, default=14.0)
     return parser.parse_args()
 
 
