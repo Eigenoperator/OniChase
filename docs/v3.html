@@ -2449,8 +2449,6 @@
       const right = state.routeById.get(rightRouteId);
       if (!left || !right) return false;
       if (left.operatorId === right.operatorId) return true;
-      if (left.operatorId === 'shinkansen' && right.operatorId?.startsWith('jr_')) return true;
-      if (right.operatorId === 'shinkansen' && left.operatorId?.startsWith('jr_')) return true;
       return false;
     }
 
