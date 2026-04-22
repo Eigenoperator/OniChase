@@ -1325,6 +1325,7 @@
       physicalRouteIdsByGroupId: new Map(),
       tripById: new Map(),
       stationTripsByGroupId: new Map(),
+      departureQueryCache: new Map(),
       timetableStatus: 'idle',
       online: {
         serverUrl: '',
@@ -1945,6 +1946,8 @@
       if (!raw) return '';
       const withoutGo = raw.replace(/号$/u, '');
       if (isShinkansenTrip(trip)) {
+        const jrcMatch = withoutGo.match(/^JRC_[A-Z]+_(\d{1,4})_(?:INBOUND|OUTBOUND)$/i);
+        if (jrcMatch) return jrcMatch[1];
         const match = withoutGo.match(/^([A-Za-z]?)(\d{1,4})([A-Za-z])$/);
         if (match) return `${match[1] || ''}${match[2]}`;
       }
@@ -3164,6 +3167,10 @@
       if (!current || !candidate) return false;
       const names = new Set([current.shortName, candidate.shortName]);
       if (names.has('RINKAI') && names.has('JR_EAST_SAIKYO_KAWAGOE')) return true;
+      if (names.has('TOEI_ASAKUSA')) {
+        const operators = new Set([current.operatorId, candidate.operatorId]);
+        if (operators.has('keikyu') || operators.has('keisei')) return true;
+      }
       return false;
     }
 
@@ -3241,14 +3248,19 @@
     function departuresForStationGroup(stationGroupId, currentMinute, options = {}) {
       if (state.timetableStatus !== 'ready') return [];
       const routeId = options.routeId || null;
+      const cacheKey = `${stationGroupId || ''}|${currentMinute}|${routeId || '*'}`;
+      if (state.departureQueryCache.has(cacheKey)) {
+        const cached = state.departureQueryCache.get(cacheKey);
+        return Number.isFinite(options.limit) ? cached.slice(0, options.limit) : cached;
+      }
       const rows = [];
       const seenRows = new Set();
       for (const searchGroupId of equivalentStationGroupIds(stationGroupId)) {
         for (const trip of state.stationTripsByGroupId.get(searchGroupId) || []) {
           for (const stop of trip.stopTimes || []) {
             if (stop.stationGroupId !== searchGroupId) continue;
-          const departureMinute = stopDepartureMinutes(stop);
-          if (departureMinute < currentMinute) continue;
+            const departureMinute = stopDepartureMinutes(stop);
+            if (departureMinute < currentMinute) continue;
             const routeIds = boardableRouteIdsForStop(trip, stop);
             const row = { departureMinute, trip, stop, routeIds };
             if (!departureMatchesRoute(row, routeId)) break;
@@ -3262,6 +3274,8 @@
         }
       }
       rows.sort((a, b) => a.departureMinute - b.departureMinute || formatTripLabel(a.trip).localeCompare(formatTripLabel(b.trip)));
+      if (state.departureQueryCache.size > 800) state.departureQueryCache.clear();
+      state.departureQueryCache.set(cacheKey, rows);
       return Number.isFinite(options.limit) ? rows.slice(0, options.limit) : rows;
     }
 
@@ -4881,6 +4895,7 @@
         const payload = await fetchJsonMaybeGz(TIMETABLE_URL);
         state.tripById = new Map();
         state.stationTripsByGroupId = new Map();
+        state.departureQueryCache = new Map();
         (payload.tripInstances || []).map(normalizeTripForGameplay).forEach((trip) => {
           state.tripById.set(trip.id, trip);
           const seen = new Set();
