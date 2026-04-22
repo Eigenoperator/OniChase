@@ -137,8 +137,8 @@ def player_rides(plan: dict[str, Any]) -> list[Ride]:
             Ride(
                 index=index,
                 route_id=leg.get("routeId") or "",
-                route_title=leg.get("routeTitle") or leg.get("requestedRoute") or "路線",
-                trip_label=leg.get("tripLabel") or leg.get("tripId") or "列車",
+                route_title=leg.get("routeTitle") or leg.get("requestedRoute") or "Line",
+                trip_label=leg.get("tripLabel") or leg.get("tripId") or "Train",
                 from_station=leg.get("fromStation") or "",
                 to_station=leg.get("toStation") or "",
                 board_minute=hhmm_to_minutes(leg["boardHhmm"]),
@@ -154,8 +154,8 @@ def player_moments(plan: dict[str, Any]) -> list[Moment]:
     moments = [
         Moment(
             minute=start_minute,
-            title=f"起点 {plan.get('startStation') or plan.get('start') or ''}",
-            subtitle="准备阶段",
+            title=f"Start {plan.get('startStation') or plan.get('start') or ''}",
+            subtitle="Planning",
             kind="start",
         )
     ]
@@ -171,15 +171,15 @@ def player_moments(plan: dict[str, Any]) -> list[Moment]:
         if boards and alights:
             station = boards[0].from_station or alights[0].to_station
             subtitle = " / ".join(
-                [f"下 {ride.trip_label}" for ride in alights] + [f"上 {ride.trip_label}" for ride in boards]
+                [f"Alight {ride.trip_label}" for ride in alights] + [f"Board {ride.trip_label}" for ride in boards]
             )
-            moments.append(Moment(minute=minute, title=f"换乘 {station}", subtitle=subtitle, kind="transfer"))
+            moments.append(Moment(minute=minute, title=f"Transfer {station}", subtitle=subtitle, kind="transfer"))
         elif boards:
             ride = boards[0]
-            moments.append(Moment(minute=minute, title=f"上车 {ride.from_station}", subtitle=ride.trip_label, kind="board"))
+            moments.append(Moment(minute=minute, title=f"Board {ride.from_station}", subtitle=ride.trip_label, kind="board"))
         elif alights:
             ride = alights[0]
-            moments.append(Moment(minute=minute, title=f"到达 {ride.to_station}", subtitle=f"下 {ride.trip_label}", kind="alight"))
+            moments.append(Moment(minute=minute, title=f"Alight {ride.to_station}", subtitle=f"Alight {ride.trip_label}", kind="alight"))
     return moments
 
 
@@ -306,7 +306,7 @@ def render_moment(moment: Moment, label_y: float, side: str, start_minute: int, 
     track_x = RUNNER_TRACK_X if side == "runner" else HUNTER_TRACK_X
     marker_x = LEFT_MARKER_X if side == "runner" else RIGHT_MARKER_X
     marker_width = LEFT_MARKER_WIDTH if side == "runner" else RIGHT_MARKER_WIDTH
-    align = "right" if side == "runner" else "left"
+    text_anchor = "end" if side == "runner" else "start"
     marker_color = {
         "start": "#0f766e",
         "board": "#2563eb",
@@ -314,14 +314,14 @@ def render_moment(moment: Moment, label_y: float, side: str, start_minute: int, 
         "transfer": "#db2777",
     }.get(moment.kind, "#475569")
     fill = mix(marker_color, "#ffffff", 0.9)
-    text_x = marker_x + marker_width - 12 if align == "right" else marker_x + 12
+    text_x = marker_x + marker_width - 12 if side == "runner" else marker_x + 12
     connector_end = marker_x + marker_width if side == "runner" else marker_x
     return [
         f'<line x1="{connector_end}" y1="{label_y:.1f}" x2="{track_x}" y2="{event_y:.1f}" stroke="{mix(marker_color, "#ffffff", 0.35)}" stroke-width="1.6" />',
         f'<circle cx="{track_x}" cy="{event_y:.1f}" r="4.8" fill="{marker_color}" stroke="#ffffff" stroke-width="2" />',
         f'<rect x="{marker_x}" y="{label_y - 23:.1f}" width="{marker_width}" height="46" rx="{CARD_RADIUS}" fill="{fill}" stroke="{mix(marker_color, "#0f172a", 0.18)}" />',
-        svg_text(text_x, label_y - 4, minutes_to_hhmm(moment.minute), size=11, weight=900, fill=marker_color, anchor=align),
-        svg_text(text_x, label_y + 12, moment.title, size=12, weight=800, fill="#182335", anchor=align),
+        svg_text(text_x, label_y - 4, minutes_to_hhmm(moment.minute), size=11, weight=900, fill=marker_color, anchor=text_anchor),
+        svg_text(text_x, label_y + 12, moment.title, size=12, weight=800, fill="#182335", anchor=text_anchor),
     ]
 
 
@@ -358,12 +358,12 @@ def render_axis(start_minute: int, end_minute: int, px_per_minute: float, event_
 
 
 def plan_route_chain(plan: dict[str, Any]) -> str:
-    names = [leg.get("routeTitle") or leg.get("requestedRoute") or "路線" for leg in plan.get("legs", [])]
-    return " -> ".join(names) if names else "未规划"
+    names = [leg.get("routeTitle") or leg.get("requestedRoute") or "Line" for leg in plan.get("legs", [])]
+    return " -> ".join(names) if names else "No plan"
 
 
 def game_title(game: dict[str, Any]) -> str:
-    return f"第 {game.get('index')} 局 · Room {game.get('room_id', '')}"
+    return f"Game {game.get('index')} · Room {game.get('room_id', '')}"
 
 
 def game_route_summary(game: dict[str, Any]) -> str:
@@ -372,7 +372,7 @@ def game_route_summary(game: dict[str, Any]) -> str:
 
 def capture_label(game: dict[str, Any]) -> str:
     capture = game.get("capture_summary", "none")
-    return "无抓捕" if capture == "none" else str(capture)
+    return "No capture" if capture == "none" else str(capture)
 
 
 def render_header(game: dict[str, Any], height: float) -> list[str]:
@@ -438,14 +438,14 @@ def write_index(output_dir: Path, generated: list[tuple[dict[str, Any], Path]]) 
         rows.append(
             f'<section class="game"><h2>{esc(game_title(game))}</h2>'
             f'<p>{esc(game_route_summary(game))} · {esc(capture_label(game))} · phase <code>{esc(game.get("online_phase", ""))}</code></p>'
-            f'<img src="{esc(svg_path.name)}" alt="第 {game.get("index")} 局时间线"></section>'
+            f'<img src="{esc(svg_path.name)}" alt="Game {game.get("index")} timeline"></section>'
         )
     html_text = f"""<!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>v3 公网对战时间线</title>
+  <title>v3 Public Battle Timeline</title>
   <style>
     :root {{ color-scheme: light; --bg: #eef2f7; --text: #172033; --muted: #64748b; }}
     body {{ margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }}
@@ -461,8 +461,8 @@ def write_index(output_dir: Path, generated: list[tuple[dict[str, Any], Path]]) 
 </head>
 <body>
   <header>
-    <h1>v3 公网对战时间线</h1>
-    <p>中间是时间流逝，左侧 Runner，右侧 Hunter。乘车区间使用线路颜色，站点和换乘贴在对应时间点。</p>
+    <h1>v3 Public Battle Timeline</h1>
+    <p>Time runs down the center. Runner is on the left, Hunter is on the right. Ride intervals use route colors, and station or transfer callouts stay attached to their event times.</p>
   </header>
   {''.join(rows)}
 </body>
