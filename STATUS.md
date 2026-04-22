@@ -19,6 +19,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 route matching now keeps Shinkansen and ordinary JR lines separate; shared station/operator families no longer make Tokaido Line and Tokaido Shinkansen borrow each other's trains.
 - `AXIOMS.md` now records the through-running classification rule: Shinkansen routes stay separated by name, and non-Shinkansen through-running requires same physical track and platform.
 - v3 implements that rule in route display: Tokyo Station again shows Yamanote/Keihin-Tohoku/Yokosuka/Tokaido separately, while Jiyugaoka keeps only Tokyu physical boarding lines.
+- v3 through-running audit now covers Keikyu/Asakusa/Keisei, Tokyu/Fukutoshin/Seibu/Tobu, Meguro/Mita/Namboku/Sotetsu, Saitama Railway, and Minatomirai display boundaries.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
@@ -38,5 +39,5 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 
 ## Next
 1. Manually play public `v3.html` online with two browsers through the Ready Room flow now that single-player smoke and v3 room `/health` both pass.
-2. Review minor v3 UI rough edges: duplicated marquee preview text, occasional combined through-route train labels, and hidden Replay button semantics.
+2. Review remaining v3 data gaps: e.g. `13号線副都心線` is not exposed as a physical pattern at `小竹向原` in the current bundle.
 3. Continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.

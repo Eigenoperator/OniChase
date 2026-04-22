@@ -962,6 +962,19 @@
       tsukuba_express: '首都圏新都市鉄道',
       yurikamome: 'ゆりかもめ',
     });
+    const PHYSICAL_ALIAS_OPERATOR_LABELS = Object.freeze({
+      みなとみらい21線: '横浜高速鉄道',
+      埼玉高速鉄道線: '埼玉高速鉄道',
+      相鉄いずみ野線: '相鉄',
+      相鉄本線: '相鉄',
+    });
+    const PHYSICAL_ALIAS_STATION_OPERATORS = Object.freeze({
+      みなとみらい21線: ['横浜高速鉄道'],
+      埼玉高速鉄道線: ['saitama_railway', '埼玉高速鉄道'],
+      相鉄いずみ野線: ['sotetsu', '相模鉄道', '相鉄'],
+      相鉄本線: ['sotetsu', '相模鉄道', '相鉄'],
+    });
+    const PHYSICAL_ALIAS_ROUTE_NAMES = new Set(Object.keys(PHYSICAL_ALIAS_OPERATOR_LABELS));
     const ROUTE_JA_LABELS = Object.freeze({
       JR_EAST_CHUO_RAPID: '中央線快速',
       JR_EAST_CHUO_SOBU_LOCAL: '中央・総武線各駅停車',
@@ -1019,7 +1032,7 @@
       JR_RYOMO: ['両毛線', '上越線', '高崎線'],
       JR_EAST_KEIHIN_TOHOKU_NEGISHI: ['東北線', '東海道線', '根岸線'],
       JR_EAST_KEIYO_MUSASHINO: ['京葉線', '武蔵野線', '外房線', '内房線', '東金線'],
-      JR_EAST_SAIKYO_KAWAGOE: ['山手線', '赤羽線', '東北線', '川越線'],
+      JR_EAST_SAIKYO_KAWAGOE: ['山手線', '赤羽線', '東北線', '川越線', '相鉄本線'],
       JR_EAST_SHONAN_SHINJUKU: ['東海道線', '山手線', '東北線', '高崎線', '上越線', '両毛線', '横須賀線'],
       JR_EAST_SOBU_RAPID: ['総武線', '成田線', '内房線', '外房線', '鹿島線'],
       JR_EAST_TOKAIDO: ['東海道線', '伊東線', '高崎線', '上越線', '両毛線', '東北線', '常磐線', '成田線'],
@@ -1038,7 +1051,7 @@
       TAMA_MONORAIL: ['多摩都市モノレール線'],
       TOEI_ARAKAWA: ['荒川線', '都電荒川線'],
       TOEI_ASAKUSA: ['1号線浅草線', '都営浅草線'],
-      TOEI_MITA: ['6号線三田線', '都営三田線'],
+      TOEI_MITA: ['6号線三田線', '都営三田線', '相鉄本線'],
       TOEI_NIPPORI_TONERI: ['日暮里・舎人ライナー'],
       TOEI_OEDO: ['12号線大江戸線', '都営大江戸線'],
       TOEI_SHINJUKU: ['10号線新宿線', '都営新宿線'],
@@ -1050,9 +1063,13 @@
       小田急小田原線: ['小田原線'],
       小田急小田原線通勤: ['小田原線'],
       小田急江ノ島線: ['江ノ島線'],
-      相鉄本線: ['目黒線', '東横線', '東急新横浜線'],
-      相鉄いずみ野線: ['目黒線', '東横線', '東急新横浜線'],
-      みなとみらい21線: ['東横線', '池袋線', '西武有楽町線'],
+      '7号線南北線': ['7号線南北線', '南北線', '埼玉高速鉄道線', '相鉄本線'],
+      '8号線有楽町線': ['8号線有楽町線', '有楽町線', 'みなとみらい21線', '相鉄本線'],
+      '13号線副都心線': ['13号線副都心線', '副都心線', '東横線', 'みなとみらい21線', '相鉄本線'],
+      埼玉高速鉄道線: ['埼玉高速鉄道線', '南北線'],
+      相鉄本線: ['相鉄本線', '相鉄いずみ野線', '目黒線', '東横線', '東急新横浜線'],
+      相鉄いずみ野線: ['相鉄いずみ野線', '相鉄本線', '目黒線', '東横線', '東急新横浜線'],
+      みなとみらい21線: ['みなとみらい21線', '東横線', '池袋線', '西武有楽町線', '副都心線'],
       会津鬼怒川線: ['鬼怒川線'],
     });
     const SERVICE_NAME_JA_LABELS = Object.freeze({
@@ -2091,6 +2108,8 @@
       const routeOperator = route?.operatorId || '';
       const stationOperators = Array.isArray(station?.operatorIds) ? station.operatorIds.filter(Boolean) : [];
       if (!routeOperator || !stationOperators.length) return true;
+      const aliasOperators = PHYSICAL_ALIAS_STATION_OPERATORS[route?.shortName] || [];
+      if (aliasOperators.length) return aliasOperators.some((operatorId) => stationOperators.includes(operatorId));
       if (stationOperators.includes(routeOperator)) return true;
       if (routeOperator === 'shinkansen') return stationOperators.some((operatorId) => operatorId.startsWith('jr_'));
       if (routeOperator.startsWith('jr_')) return stationOperators.includes(routeOperator);
@@ -2426,7 +2445,13 @@
       const route = state.routeById.get(routeId);
       if (!route || !state.routeStationSetById.get(routeId)?.has(stationGroupId)) return false;
       const operatorId = route.operatorId || '';
-      if (operatorId !== 'shinkansen' && !operatorId.startsWith('jr_')) return false;
+      if (
+        operatorId !== 'shinkansen' &&
+        !operatorId.startsWith('jr_') &&
+        operatorId !== 'tokyo_metro' &&
+        operatorId !== 'toei' &&
+        !PHYSICAL_ALIAS_ROUTE_NAMES.has(route.shortName)
+      ) return false;
       const stations = state.physicalStationsByGroupId.get(stationGroupId) || [];
       return !stations.length || stations.some((station) => routeOperatorMatchesStation(route, station));
     }
@@ -2435,7 +2460,10 @@
       state.physicalRouteIdsByGroupId = new Map();
       state.stationRouteIdsByGroupId.forEach((routeIds, stationGroupId) => {
         routeIds.forEach((routeId) => {
-          if (!routePhysicallyServesStationGroup(routeId, stationGroupId)) return;
+          const route = state.routeById.get(routeId);
+          const patternServes = routePatternServesBoardingStation(routeId, stationGroupId);
+          const geometryServes = !PHYSICAL_ALIAS_ROUTE_NAMES.has(route?.shortName) && routePhysicallyServesStationGroup(routeId, stationGroupId);
+          if (!geometryServes && !patternServes) return;
           if (!state.physicalRouteIdsByGroupId.has(stationGroupId)) {
             state.physicalRouteIdsByGroupId.set(stationGroupId, new Set());
           }
@@ -2474,7 +2502,8 @@
       const selectedRoute = state.routeById.get(selectedRouteId);
       if (!tripRoute || !selectedRoute) return false;
       const sameOperator = tripRoute.operatorId === selectedRoute.operatorId;
-      if (sameOperator && ['jr_east', 'tokyo_metro', 'toei'].includes(tripRoute.operatorId)) {
+      const involvesPhysicalAlias = PHYSICAL_ALIAS_ROUTE_NAMES.has(tripRoute.shortName) || PHYSICAL_ALIAS_ROUTE_NAMES.has(selectedRoute.shortName);
+      if (sameOperator && ['jr_east', 'tokyo_metro', 'toei'].includes(tripRoute.operatorId) && !involvesPhysicalAlias) {
         return false;
       }
       return routeAliasesOverlap(selectedRouteId, tripRouteId);
@@ -2490,17 +2519,27 @@
       if (state.routeCanRepresentCache.has(cacheKey)) return state.routeCanRepresentCache.get(cacheKey);
       let result = false;
       if (isThroughServiceTransferAlias(routeId)) return false;
-      if (!routesShareBoardingOperator(trip.routeId, routeId)) return false;
+      if (!routesShareBoardingOperator(trip.routeId, routeId) && !routeAliasesOverlap(trip.routeId, routeId)) return false;
       const route = state.routeById.get(routeId);
       if (!route) return false;
+      const boardingStations = state.physicalStationsByGroupId.get(boardStop.stationGroupId) || [];
+      const operatorMatchesBoardingStation = !boardingStations.length ||
+        boardingStations.some((station) => routeOperatorMatchesStation(route, station));
       const nextStop = nextStopAfter(trip, boardStop);
       if (routeId === trip.routeId) {
-        result = routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)
-          || routePatternServesBoardingStation(routeId, boardStop.stationGroupId);
-      } else if (nextStop && canBorrowTripForBoardingLine(trip.routeId, routeId) && routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)) {
+        result = operatorMatchesBoardingStation && (
+          routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId) ||
+          routePatternServesBoardingStation(routeId, boardStop.stationGroupId)
+        );
+      } else if (
+        operatorMatchesBoardingStation &&
+        nextStop &&
+        canBorrowTripForBoardingLine(trip.routeId, routeId) &&
+        (routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId) || routePatternServesBoardingStation(routeId, boardStop.stationGroupId))
+      ) {
         result = (
           routePhysicallyServesStationGroup(routeId, nextStop.stationGroupId) ||
-          Boolean(state.routeStationSetById.get(routeId)?.has(nextStop.stationGroupId))
+          routePatternServesBoardingStation(routeId, nextStop.stationGroupId)
         );
       }
       state.routeCanRepresentCache.set(cacheKey, result);
@@ -3255,6 +3294,7 @@
     function isThroughServiceTransferAlias(routeId) {
       const route = state.routeById.get(routeId);
       if (!route) return true;
+      if (PHYSICAL_ALIAS_ROUTE_NAMES.has(route.shortName)) return false;
       if (route.operatorId === 'tokyo_metro' && !TOKYO_METRO_PHYSICAL_ROUTE_NAMES.has(route.shortName)) {
         return true;
       }
@@ -4281,7 +4321,7 @@
 
     function routeSubtitle(routeId) {
       const route = state.routeById.get(routeId);
-      return operatorJaLabel(route?.operatorId) || routeId || '';
+      return PHYSICAL_ALIAS_OPERATOR_LABELS[route?.shortName] || operatorJaLabel(route?.operatorId) || routeId || '';
     }
 
     function routeColor(routeId) {
