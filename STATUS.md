@@ -18,6 +18,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 through-running display now classifies departures by the physical boarding line: Toyoko/Yokohama/Hiyoshi/Jiyugaoka no longer surface Tokyo Metro through-service aliases as separate line choices.
 - v3 route matching now keeps Shinkansen and ordinary JR lines separate; shared station/operator families no longer make Tokaido Line and Tokaido Shinkansen borrow each other's trains.
 - `AXIOMS.md` now records the through-running classification rule: Shinkansen routes stay separated by name, and non-Shinkansen through-running requires same physical track and platform.
+- v3 implements that rule in route display: Tokyo Station again shows Yamanote/Keihin-Tohoku/Yokosuka/Tokaido separately, while Jiyugaoka keeps only Tokyu physical boarding lines.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
