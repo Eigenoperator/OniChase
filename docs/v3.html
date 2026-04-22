@@ -1960,6 +1960,13 @@
 
     function routeTrackLineAliases(routeId) {
       const route = state.routeById.get(routeId);
+      if (route?.operatorId === 'keikyu') {
+        if (route.shortName === '本線') return ['京急本線', '本線'];
+        if (route.shortName === '空港線') return ['空港線', '京急本線', '本線'];
+        if (route.shortName === '久里浜線') return ['久里浜線', '京急本線', '本線'];
+        if (route.shortName === '逗子線') return ['逗子線', '京急本線', '本線'];
+        return [route.shortName];
+      }
       const configured = ROUTE_TRACK_LINE_ALIASES[route?.shortName];
       if (configured?.length) return configured;
       const title = routeJapaneseName(route || routeId);
@@ -2415,13 +2422,46 @@
       return false;
     }
 
-    function boardableRouteIdsForStop(trip, stationGroupId) {
+    function routeAliasesOverlap(leftRouteId, rightRouteId) {
+      const leftAliases = new Set(routeTrackLineAliases(leftRouteId));
+      return routeTrackLineAliases(rightRouteId).some((alias) => leftAliases.has(alias));
+    }
+
+    function nextStopAfter(trip, boardStop) {
+      return (trip?.stopTimes || []).find((stop) => stop.sequence > boardStop.sequence) || null;
+    }
+
+    function routeCanRepresentTripDeparture(trip, boardStop, routeId) {
+      if (!trip?.routeId || !boardStop?.stationGroupId || !routeId) return false;
+      if (isThroughServiceTransferAlias(routeId)) return false;
+      if (!routesShareBoardingOperator(trip.routeId, routeId)) return false;
+      const route = state.routeById.get(routeId);
+      if (!route) return false;
+      const nextStop = nextStopAfter(trip, boardStop);
+      if (routeId === trip.routeId) {
+        if (routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)) return true;
+        return ['jr_east', 'shinkansen', 'tokyo_metro', 'toei'].includes(route.operatorId);
+      }
+      if (!nextStop) return false;
+      if (!routeAliasesOverlap(routeId, trip.routeId)) return false;
+      if (!routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)) return false;
+      return (
+        routePhysicallyServesStationGroup(routeId, nextStop.stationGroupId) ||
+        Boolean(state.routeStationSetById.get(routeId)?.has(nextStop.stationGroupId))
+      );
+    }
+
+    function boardableRouteIdsForStop(trip, boardStopOrStationGroupId) {
+      const boardStop = typeof boardStopOrStationGroupId === 'object' ? boardStopOrStationGroupId : null;
+      const stationGroupId = boardStop?.stationGroupId || boardStopOrStationGroupId;
       if (!trip?.routeId || !stationGroupId) return [];
       const physicalRouteIds = routeIdsForStationAndTransfers(stationGroupId, { physicalOnly: true });
       const routeIds = new Set();
+      if (boardStop && routeCanRepresentTripDeparture(trip, boardStop, trip.routeId)) {
+        routeIds.add(trip.routeId);
+      }
       physicalRouteIds.forEach((routeId) => {
-        if (isThroughServiceTransferAlias(routeId)) return;
-        if (!routesShareBoardingOperator(trip.routeId, routeId)) return;
+        if (!boardStop || !routeCanRepresentTripDeparture(trip, boardStop, routeId)) return;
         routeIds.add(routeId);
       });
       if (!routeIds.size && !isThroughServiceTransferAlias(trip.routeId)) routeIds.add(trip.routeId);
@@ -2430,7 +2470,7 @@
 
     function departureMatchesRoute(row, routeId) {
       if (!routeId) return true;
-      return (row.routeIds || boardableRouteIdsForStop(row.trip, row.stop?.stationGroupId)).includes(routeId);
+      return (row.routeIds || boardableRouteIdsForStop(row.trip, row.stop)).includes(routeId);
     }
 
     function buildIndexes(bundle) {
@@ -3209,7 +3249,7 @@
             if (stop.stationGroupId !== searchGroupId) continue;
           const departureMinute = stopDepartureMinutes(stop);
           if (departureMinute < currentMinute) continue;
-            const routeIds = boardableRouteIdsForStop(trip, stop.stationGroupId);
+            const routeIds = boardableRouteIdsForStop(trip, stop);
             const row = { departureMinute, trip, stop, routeIds };
             if (!departureMatchesRoute(row, routeId)) break;
             const key = `${trip.id}|${stop.sequence}|${departureMinute}`;
@@ -3237,7 +3277,7 @@
           boardStop: row.stop,
           departureMinute: row.departureMinute,
           departureHhmm: minutesToHhmm(row.departureMinute),
-          routeIds: row.routeIds || boardableRouteIdsForStop(row.trip, row.stop.stationGroupId),
+          routeIds: row.routeIds || boardableRouteIdsForStop(row.trip, row.stop),
         }))
         .filter((entry) => hasDownstreamStop(entry.trip, entry.boardStop));
       const deduped = dedupeBoardableDepartures(entries);
@@ -3297,7 +3337,7 @@
       return {
         trip: match.trip,
         boardStop: match.stop,
-        routeIds: match.routeIds || boardableRouteIdsForStop(match.trip, match.stop.stationGroupId),
+        routeIds: match.routeIds || boardableRouteIdsForStop(match.trip, match.stop),
         destinations: match.trip.stopTimes
           .filter((stop) => stop.sequence > match.stop.sequence)
           .map((stop) => ({
@@ -4221,7 +4261,7 @@
                 <button class="outlook-row ${entry.trip.id === pending.trip.id ? 'active' : ''}" type="button" data-action="choose-trip" data-trip-id="${entry.trip.id}">
                   <span class="row-meta">${entry.departureHhmm}</span>
                   <span>
-                    <span class="row-title">${formatTripLabel(entry.trip)}</span>
+                    <span class="row-title">${formatTripLabelForBoarding(entry, selectedRouteId)}</span>
                     ${trainPreviewHtml(entry.trip, entry.boardStop)}
                   </span>
                 </button>
@@ -4324,7 +4364,7 @@
                   <button class="outlook-row" type="button" data-action="choose-trip" data-trip-id="${entry.trip.id}">
                   <span class="row-meta">${entry.departureHhmm}</span>
                   <span>
-                    <span class="row-title">${formatTripLabel(entry.trip)}</span>
+                      <span class="row-title">${formatTripLabelForBoarding(entry, selectedRouteId)}</span>
                     ${trainPreviewHtml(entry.trip, entry.boardStop)}
                   </span>
                 </button>
