@@ -32,6 +32,7 @@ DATA_FILES = [
     ROOT / "data" / "v3_tokyo_bundle.json.gz",
     ROOT / "data" / "v3_tokyo_map_bundle.json.gz",
     ROOT / "data" / "v3_tokyo_timetable_bundle.json.gz",
+    ROOT / "data" / "v3_tokyo_timetable_compact.json.gz",
 ]
 
 

@@ -933,7 +933,7 @@
 
   <script>
     const MAP_DATA_URL = './data/v3_tokyo_map_bundle.json.gz';
-    const TIMETABLE_URL = './data/v3_tokyo_timetable_bundle.json.gz';
+    const TIMETABLE_URL = './data/v3_tokyo_timetable_compact.json.gz';
     const ONLINE_CONFIG_URL = window.location.pathname.includes('/ui/')
       ? '../docs/data/v3_online_config.json'
       : './data/v3_online_config.json';
@@ -1288,6 +1288,8 @@
       bundle: null,
       map: null,
       viewMode: 'corridor',
+      serviceLayersReady: false,
+      serviceInteractionsBound: false,
       selectedStationGroupId: null,
       selectedRouteId: null,
       selectedTripId: null,
@@ -1313,6 +1315,10 @@
       serviceGeometryByRouteId: new Map(),
       routeStationSetById: new Map(),
       stationRouteIdsByGroupId: new Map(),
+      routeDistanceSqCache: new Map(),
+      routePhysicalServeCache: new Map(),
+      routeCanRepresentCache: new Map(),
+      boardableRouteIdsCache: new Map(),
       trackGeometriesByLineName: new Map(),
       routeGraphByRouteId: new Map(),
       routeGraphPathCache: new Map(),
@@ -1327,6 +1333,7 @@
       stationTripsByGroupId: new Map(),
       departureQueryCache: new Map(),
       timetableStatus: 'idle',
+      timetableLoadRequested: false,
       online: {
         serverUrl: '',
         roomId: '',
@@ -1556,6 +1563,7 @@
       closeEntry();
       closeReadyRoom();
       renderGame();
+      beginTimetableLoadSoon();
     }
 
     async function copyCurrentRoomId() {
@@ -1777,6 +1785,7 @@
       if (room.match_started || room.phase === 'LIVE' || room.phase === 'ENDED') {
         closeEntry();
         closeReadyRoom();
+        beginTimetableLoadSoon();
       } else if (onlineActive()) {
         openReadyRoom();
       }
@@ -2058,12 +2067,16 @@
 
     function routeDistanceSqToStation(routeId, station) {
       if (!Number.isFinite(station?.lon) || !Number.isFinite(station?.lat)) return Number.POSITIVE_INFINITY;
+      const cacheKey = `${routeId || ''}|${station.id || `${station.lon},${station.lat}`}`;
+      if (state.routeDistanceSqCache.has(cacheKey)) return state.routeDistanceSqCache.get(cacheKey);
       const coordinate = [station.lon, station.lat];
       const geometries = [
         ...(state.serviceGeometryByRouteId.get(routeId) || []),
         ...routeTrackGeometries(routeId),
       ];
-      return geometries.reduce((best, geometry) => Math.min(best, polylineDistanceSqToPoint(geometry.polyline, coordinate)), Number.POSITIVE_INFINITY);
+      const distance = geometries.reduce((best, geometry) => Math.min(best, polylineDistanceSqToPoint(geometry.polyline, coordinate)), Number.POSITIVE_INFINITY);
+      state.routeDistanceSqCache.set(cacheKey, distance);
+      return distance;
     }
 
     function routeStationGroupKey(routeId, stationGroupId) {
@@ -2381,14 +2394,23 @@
 
     function routePhysicallyServesStationGroup(routeId, stationGroupId) {
       if (!routeId || !stationGroupId) return false;
+      const cacheKey = routeStationGroupKey(routeId, stationGroupId);
+      if (state.routePhysicalServeCache.has(cacheKey)) return state.routePhysicalServeCache.get(cacheKey);
       const stations = state.physicalStationsByGroupId.get(stationGroupId) || [];
-      if (!stations.length) return Boolean(state.routeStationSetById.get(routeId)?.has(stationGroupId));
+      if (!stations.length) {
+        const fallback = Boolean(state.routeStationSetById.get(routeId)?.has(stationGroupId));
+        state.routePhysicalServeCache.set(cacheKey, fallback);
+        return fallback;
+      }
       let best = Number.POSITIVE_INFINITY;
       stations.forEach((station) => {
         best = Math.min(best, routeDistanceSqToStation(routeId, station));
       });
-      if (!Number.isFinite(best)) return Boolean(state.routeStationSetById.get(routeId)?.has(stationGroupId));
-      return best <= PHYSICAL_ROUTE_STATION_DISTANCE_SQ;
+      const result = Number.isFinite(best)
+        ? best <= PHYSICAL_ROUTE_STATION_DISTANCE_SQ
+        : Boolean(state.routeStationSetById.get(routeId)?.has(stationGroupId));
+      state.routePhysicalServeCache.set(cacheKey, result);
+      return result;
     }
 
     function buildPhysicalRouteIdsByGroup() {
@@ -2436,28 +2458,35 @@
 
     function routeCanRepresentTripDeparture(trip, boardStop, routeId) {
       if (!trip?.routeId || !boardStop?.stationGroupId || !routeId) return false;
+      const cacheKey = `${trip.id || ''}|${boardStop.sequence || 0}|${routeId}`;
+      if (state.routeCanRepresentCache.has(cacheKey)) return state.routeCanRepresentCache.get(cacheKey);
+      let result = false;
       if (isThroughServiceTransferAlias(routeId)) return false;
       if (!routesShareBoardingOperator(trip.routeId, routeId)) return false;
       const route = state.routeById.get(routeId);
       if (!route) return false;
       const nextStop = nextStopAfter(trip, boardStop);
       if (routeId === trip.routeId) {
-        if (routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)) return true;
-        return ['jr_east', 'shinkansen', 'tokyo_metro', 'toei'].includes(route.operatorId);
+        result = routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)
+          || ['jr_east', 'shinkansen', 'tokyo_metro', 'toei'].includes(route.operatorId);
+      } else if (nextStop && routeAliasesOverlap(routeId, trip.routeId) && routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)) {
+        result = (
+          routePhysicallyServesStationGroup(routeId, nextStop.stationGroupId) ||
+          Boolean(state.routeStationSetById.get(routeId)?.has(nextStop.stationGroupId))
+        );
       }
-      if (!nextStop) return false;
-      if (!routeAliasesOverlap(routeId, trip.routeId)) return false;
-      if (!routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)) return false;
-      return (
-        routePhysicallyServesStationGroup(routeId, nextStop.stationGroupId) ||
-        Boolean(state.routeStationSetById.get(routeId)?.has(nextStop.stationGroupId))
-      );
+      state.routeCanRepresentCache.set(cacheKey, result);
+      return result;
     }
 
     function boardableRouteIdsForStop(trip, boardStopOrStationGroupId) {
       const boardStop = typeof boardStopOrStationGroupId === 'object' ? boardStopOrStationGroupId : null;
       const stationGroupId = boardStop?.stationGroupId || boardStopOrStationGroupId;
       if (!trip?.routeId || !stationGroupId) return [];
+      const cacheKey = boardStop
+        ? `${trip.id || ''}|${boardStop.sequence || 0}|${stationGroupId}`
+        : `${trip.id || ''}|*|${stationGroupId}`;
+      if (state.boardableRouteIdsCache.has(cacheKey)) return state.boardableRouteIdsCache.get(cacheKey);
       const physicalRouteIds = routeIdsForStationAndTransfers(stationGroupId, { physicalOnly: true });
       const routeIds = new Set();
       if (boardStop && routeCanRepresentTripDeparture(trip, boardStop, trip.routeId)) {
@@ -2468,7 +2497,9 @@
         routeIds.add(routeId);
       });
       if (!routeIds.size && !isThroughServiceTransferAlias(trip.routeId)) routeIds.add(trip.routeId);
-      return [...routeIds];
+      const result = [...routeIds];
+      state.boardableRouteIdsCache.set(cacheKey, result);
+      return result;
     }
 
     function departureMatchesRoute(row, routeId) {
@@ -2482,6 +2513,10 @@
       state.routeById = new Map((bundle.serviceRoutes || []).map((route) => [route.id, route]));
       state.stationByGroupId = new Map();
       state.physicalStationsByGroupId = new Map();
+      state.routeDistanceSqCache = new Map();
+      state.routePhysicalServeCache = new Map();
+      state.routeCanRepresentCache = new Map();
+      state.boardableRouteIdsCache = new Map();
       (bundle.physicalStations || []).forEach((station) => {
         if (!state.stationByGroupId.has(station.stationGroupId)) state.stationByGroupId.set(station.stationGroupId, station);
         if (!state.physicalStationsByGroupId.has(station.stationGroupId)) state.physicalStationsByGroupId.set(station.stationGroupId, []);
@@ -2630,6 +2665,14 @@
         }))
         .filter(Boolean);
 
+      return {
+        stations: { type: 'FeatureCollection', features: stationFeatures },
+        stationLabels: { type: 'FeatureCollection', features: stationLabelFeatures },
+        tracks: { type: 'FeatureCollection', features: trackFeatures },
+      };
+    }
+
+    function serviceFeatureCollection(bundle) {
       const serviceFeatures = (bundle.serviceGeometry || [])
         .map((geometry, index) => {
           const route = state.routeById.get(geometry.routeId) || {};
@@ -2643,13 +2686,24 @@
           });
         })
         .filter(Boolean);
+      return { type: 'FeatureCollection', features: serviceFeatures };
+    }
 
-      return {
-        stations: { type: 'FeatureCollection', features: stationFeatures },
-        stationLabels: { type: 'FeatureCollection', features: stationLabelFeatures },
-        tracks: { type: 'FeatureCollection', features: trackFeatures },
-        services: { type: 'FeatureCollection', features: serviceFeatures },
-      };
+    function selectedRouteFeatureCollection(routeId) {
+      if (!routeId) return { type: 'FeatureCollection', features: [] };
+      const route = state.routeById.get(routeId) || {};
+      const serviceGeometries = state.serviceGeometryByRouteId.get(routeId) || [];
+      const geometries = serviceGeometries.length ? serviceGeometries : routeTrackGeometries(routeId);
+      const features = geometries
+        .map((geometry, index) => lineFeature(geometry.id || `selected-route-${index}`, geometry.polyline, {
+          route_id: routeId || '',
+          route_name: routeJapaneseName(route || routeId),
+          route_color: geometry.color || route.color || '#1565c0',
+          route_text_color: route.textColor || '#ffffff',
+          operator_id: geometry.operatorId || route.operatorId || '',
+        }))
+        .filter(Boolean);
+      return { type: 'FeatureCollection', features };
     }
 
     function networkBounds(bundle) {
@@ -2673,6 +2727,7 @@
         maxZoom: 16.5,
         pitch: 0,
         bearing: 0,
+        fadeDuration: 0,
         attributionControl: false,
         localIdeographFontFamily: "'Hiragino Sans', 'Yu Gothic', 'Noto Sans CJK JP', sans-serif",
         style: {
@@ -2706,11 +2761,7 @@
         type: 'geojson',
         data: collections.tracks,
         promoteId: 'id',
-      });
-      map.addSource('services', {
-        type: 'geojson',
-        data: collections.services,
-        promoteId: 'id',
+        tolerance: 0.8,
       });
       map.addSource('stations', {
         type: 'geojson',
@@ -2722,9 +2773,15 @@
         data: collections.stationLabels,
         promoteId: 'id',
       });
+      map.addSource('selected-route-path', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+        tolerance: 0.35,
+      });
       map.addSource('selected-trip-path', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
+        tolerance: 0.35,
       });
       map.addSource('player-markers', {
         type: 'geojson',
@@ -2755,21 +2812,9 @@
         },
       });
       map.addLayer({
-        id: 'service-lines',
-        type: 'line',
-        source: 'services',
-        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' },
-        paint: {
-          'line-color': ['coalesce', ['get', 'route_color'], '#667487'],
-          'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.12, 8, 0.32, 12, 0.68],
-          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.35, 9, 0.9, 13, 1.8, 16, 2.6],
-        },
-      });
-      map.addLayer({
         id: 'selected-route-casing',
         type: 'line',
-        source: 'services',
-        filter: NONE_FILTER,
+        source: 'selected-route-path',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#ffffff',
@@ -2780,8 +2825,7 @@
       map.addLayer({
         id: 'selected-route-line',
         type: 'line',
-        source: 'services',
-        filter: NONE_FILTER,
+        source: 'selected-route-path',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': ['coalesce', ['get', 'route_color'], '#1565c0'],
@@ -2815,6 +2859,34 @@
       addStationLayers(map);
       addLabelLayers(map);
       addPlayerLayers(map);
+    }
+
+    function ensureServiceLayers() {
+      const map = state.map;
+      if (!map || state.serviceLayersReady) return;
+      if (!map.getSource('services')) {
+        map.addSource('services', {
+          type: 'geojson',
+          data: serviceFeatureCollection(state.bundle),
+          promoteId: 'id',
+          tolerance: 1.0,
+        });
+      }
+      if (!map.getLayer('service-lines')) {
+        map.addLayer({
+          id: 'service-lines',
+          type: 'line',
+          source: 'services',
+          layout: { 'line-cap': 'round', 'line-join': 'round', visibility: state.viewMode === 'service' ? 'visible' : 'none' },
+          paint: {
+            'line-color': ['coalesce', ['get', 'route_color'], '#667487'],
+            'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.12, 8, 0.32, 12, 0.68],
+            'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.35, 9, 0.9, 13, 1.8, 16, 2.6],
+          },
+        }, 'route-stop-halo');
+      }
+      state.serviceLayersReady = true;
+      bindServiceInteractions(map);
     }
 
     function addStationLayers(map) {
@@ -3759,8 +3831,10 @@
 
     function setSelectedRoute(routeId) {
       state.selectedRouteId = routeId || null;
-      state.map.setFilter('selected-route-casing', routeFilter(state.selectedRouteId));
-      state.map.setFilter('selected-route-line', routeFilter(state.selectedRouteId));
+      const selectedRouteSource = state.map?.getSource('selected-route-path');
+      if (selectedRouteSource) {
+        selectedRouteSource.setData(selectedRouteFeatureCollection(state.selectedRouteId));
+      }
       const routeStops = [...(state.routeStationSetById.get(state.selectedRouteId) || new Set())];
       state.map.setFilter('route-stop-halo', routeStationMatchFilter(state.selectedRouteId, routeStops));
       renderRouteCard();
@@ -3785,6 +3859,7 @@
       state.viewMode = mode;
       document.getElementById('corridor-button').classList.toggle('active', mode === 'corridor');
       document.getElementById('service-button').classList.toggle('active', mode === 'service');
+      if (mode === 'service') ensureServiceLayers();
       const serviceVisibility = mode === 'service' ? 'visible' : 'none';
       if (state.map?.getLayer('service-lines')) {
         state.map.setLayoutProperty('service-lines', 'visibility', serviceVisibility);
@@ -3802,6 +3877,14 @@
         map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
       });
 
+      map.on('zoom', () => {
+        zoomPill.textContent = `Zoom ${map.getZoom().toFixed(2)}`;
+      });
+    }
+
+    function bindServiceInteractions(map) {
+      if (state.serviceInteractionsBound || !map.getLayer('service-lines')) return;
+      state.serviceInteractionsBound = true;
       map.on('click', 'service-lines', (event) => {
         const feature = event.features?.[0];
         if (!feature) return;
@@ -3809,10 +3892,6 @@
       });
       map.on('mouseenter', 'service-lines', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'service-lines', () => { map.getCanvas().style.cursor = ''; });
-
-      map.on('zoom', () => {
-        zoomPill.textContent = `Zoom ${map.getZoom().toFixed(2)}`;
-      });
     }
 
     function renderStats(bundle) {
@@ -4887,16 +4966,38 @@
       return extendCircularTripForContinuousRide(trip);
     }
 
+    function decodeTimetablePayload(payload) {
+      if (Array.isArray(payload?.tripInstances)) return payload.tripInstances;
+      if (payload?.format !== 'v3-timetable-compact-v1') return [];
+      const stationGroupIds = payload.stationGroupIds || [];
+      const routeIds = payload.routeIds || [];
+      const serviceNames = payload.serviceNames || [];
+      return (payload.trips || []).map((row) => ({
+        id: row[0],
+        routeId: routeIds[row[1]] || '',
+        serviceName: serviceNames[row[2]] || '',
+        serviceNumber: row[3] || '',
+        stopTimes: (row[4] || []).map((stop, index) => ({
+          sequence: index + 1,
+          stationGroupId: stationGroupIds[stop[0]] || '',
+          arrivalTimeSec: stop[1],
+          departureTimeSec: stop[2],
+        })),
+      }));
+    }
+
     async function ensureTimetableLoaded() {
       if (state.timetableStatus === 'ready' || state.timetableStatus === 'loading') return;
+      state.timetableLoadRequested = true;
       state.timetableStatus = 'loading';
       renderGame();
       try {
         const payload = await fetchJsonMaybeGz(TIMETABLE_URL);
+        const trips = decodeTimetablePayload(payload);
         state.tripById = new Map();
         state.stationTripsByGroupId = new Map();
         state.departureQueryCache = new Map();
-        (payload.tripInstances || []).map(normalizeTripForGameplay).forEach((trip) => {
+        trips.map(normalizeTripForGameplay).forEach((trip) => {
           state.tripById.set(trip.id, trip);
           const seen = new Set();
           (trip.stopTimes || []).forEach((stop) => {
@@ -4907,13 +5008,21 @@
           });
         });
         state.timetableStatus = 'ready';
-        loadPill.textContent = `Map ready - timetable ${payload.tripInstances?.length || 0} trips`;
+        loadPill.textContent = `Map ready - timetable ${trips.length || 0} trips`;
         renderGame();
       } catch (error) {
         console.error(error);
         state.timetableStatus = 'error';
+        state.timetableLoadRequested = false;
         renderGame();
       }
+    }
+
+    function beginTimetableLoadSoon() {
+      if (state.timetableLoadRequested || state.timetableStatus === 'ready' || state.timetableStatus === 'loading') return;
+      state.timetableLoadRequested = true;
+      const load = () => ensureTimetableLoaded();
+      window.setTimeout(load, 80);
     }
 
     function renderDepartures() {
@@ -4951,7 +5060,6 @@
         const loadMs = Math.round(performance.now() - t0);
         loadPill.textContent = `Map bundle ready in ${loadMs}ms`;
         renderGame();
-        window.setTimeout(() => ensureTimetableLoaded(), 700);
       });
 
       document.getElementById('runner-button').addEventListener('click', () => setActiveMode('runner'));
