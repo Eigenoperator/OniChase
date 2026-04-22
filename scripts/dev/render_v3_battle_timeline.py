@@ -37,6 +37,61 @@ PHYSICAL_ALIAS_OPERATOR_LABELS = {
     "相鉄いずみ野線": "相鉄",
     "相鉄本線": "相鉄",
 }
+ROUTE_JA_LABELS = {
+    "JR_EAST_CHUO_RAPID": "中央線快速",
+    "JR_EAST_CHUO_SOBU_LOCAL": "中央・総武線各駅停車",
+    "JR_EAST_JOBAN_RAPID": "常磐線快速",
+    "JR_NARITA": "成田線",
+    "JR_OME": "青梅線",
+    "JR_UCHIBO": "内房線",
+    "JR_SOTOBO": "外房線",
+    "JR_TOGANE": "東金線",
+    "JR_KASHIMA": "鹿島線",
+    "JR_ITO": "伊東線",
+    "JR_JOETSU_LOCAL": "上越線",
+    "JR_RYOMO": "両毛線",
+    "JR_EAST_KEIHIN_TOHOKU_NEGISHI": "京浜東北線・根岸線",
+    "JR_EAST_KEIYO_MUSASHINO": "京葉線・武蔵野線",
+    "JR_EAST_SAIKYO_KAWAGOE": "埼京線・川越線",
+    "JR_EAST_SHONAN_SHINJUKU": "湘南新宿ライン",
+    "JR_EAST_SOBU_RAPID": "総武快速線",
+    "JR_EAST_TOKAIDO": "東海道線",
+    "JR_EAST_UENO_TOKYO": "上野東京ライン",
+    "JR_EAST_YOKOSUKA": "横須賀線",
+    "JR_YAMANOTE": "山手線",
+    "RINKAI": "りんかい線",
+    "SHINKANSEN_AKITA": "秋田新幹線",
+    "SHINKANSEN_HOKURIKU": "北陸新幹線",
+    "SHINKANSEN_JOETSU": "上越新幹線",
+    "SHINKANSEN_KYUSHU": "九州新幹線",
+    "SHINKANSEN_NISHI_KYUSHU": "西九州新幹線",
+    "SHINKANSEN_TOHOKU_HOKKAIDO": "東北・北海道新幹線",
+    "SHINKANSEN_TOKAIDO_SANYO": "東海道・山陽新幹線",
+    "SHINKANSEN_YAMAGATA": "山形新幹線",
+    "TAMA_MONORAIL": "多摩モノレール線",
+    "TOEI_ARAKAWA": "都電荒川線",
+    "TOEI_ASAKUSA": "都営浅草線",
+    "TOEI_MITA": "都営三田線",
+    "TOEI_NIPPORI_TONERI": "日暮里・舎人ライナー",
+    "TOEI_OEDO": "都営大江戸線",
+    "TOEI_SHINJUKU": "都営新宿線",
+    "TOKYO_MONORAIL_HANEDA": "東京モノレール羽田空港線",
+    "Tokyu": "東急線",
+    "YURIKAMOME": "ゆりかもめ",
+    "2号線日比谷線": "日比谷線",
+    "3号線銀座線": "銀座線",
+    "4号線丸ノ内線": "丸ノ内線",
+    "4号線丸ノ内線分岐線": "丸ノ内線方南町支線",
+    "5号線東西線": "東西線",
+    "6号線三田線": "三田線",
+    "7号線南北線": "南北線",
+    "8号線有楽町線": "有楽町線",
+    "9号線千代田線": "千代田線",
+    "10号線新宿線": "新宿線",
+    "11号線半蔵門線": "半蔵門線",
+    "12号線大江戸線": "大江戸線",
+    "13号線副都心線": "副都心線",
+}
 
 SVG_WIDTH = 1280
 TOP_MARGIN = 156
@@ -109,7 +164,7 @@ def slug(value: str) -> str:
 
 
 def route_display_name(route: dict[str, Any], name: str) -> str:
-    label = str(name or "")
+    label = ROUTE_JA_LABELS.get(str(name or ""), str(name or ""))
     operator = PHYSICAL_ALIAS_OPERATOR_LABELS.get(str(route.get("shortName") or ""))
     if not operator and route.get("operatorId") in PRIVATE_ROUTE_PREFIX_OPERATOR_IDS:
         operator = OPERATOR_JA_LABELS.get(str(route.get("operatorId") or ""))
