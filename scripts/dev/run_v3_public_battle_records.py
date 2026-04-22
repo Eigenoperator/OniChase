@@ -36,6 +36,7 @@ OPERATOR_JA_LABELS = {
 PRIVATE_ROUTE_PREFIX_OPERATOR_IDS = frozenset(OPERATOR_JA_LABELS)
 PHYSICAL_ALIAS_OPERATOR_LABELS = {
     "みなとみらい21線": "横浜高速鉄道",
+    "小田原線": "小田急",
     "埼玉高速鉄道線": "埼玉高速鉄道",
     "相鉄いずみ野線": "相鉄",
     "相鉄本線": "相鉄",
@@ -53,6 +54,7 @@ ROUTE_JA_LABELS = {
     "JR_ITO": "伊東線",
     "JR_JOETSU_LOCAL": "上越線",
     "JR_RYOMO": "両毛線",
+    "JR_TOHOKU": "宇都宮線",
     "JR_EAST_KEIHIN_TOHOKU_NEGISHI": "京浜東北線・根岸線",
     "JR_EAST_KEIYO_MUSASHINO": "京葉線・武蔵野線",
     "JR_EAST_SAIKYO_KAWAGOE": "埼京線・川越線",
@@ -272,10 +274,71 @@ SCENARIOS: list[dict[str, Any]] = [
     },
 ]
 
+HEAVY_SCENARIOS: list[dict[str, Any]] = [
+    {"name": "Heavy same-node mirror from Tokyo", "kind": "same_node", "start": "東京", "leg_count": 10, "seed": 101, "expected_capture": "same_node"},
+    {"name": "Heavy generated same-train capture", "kind": "same_train", "leg_count": 10, "seed": 202, "expected_capture": "same_train"},
+    {
+        "name": "Heavy divergent hubs Tokyo vs Shinjuku",
+        "kind": "auto_pair",
+        "expected_capture": "none",
+        "runner": {"start": "東京", "leg_count": 10, "seed": 301},
+        "hunter": {"start": "新宿", "leg_count": 10, "seed": 401},
+    },
+    {
+        "name": "Heavy private railways Shibuya vs Shinagawa",
+        "kind": "auto_pair",
+        "expected_capture": "none",
+        "runner": {"start": "渋谷", "leg_count": 10, "seed": 302},
+        "hunter": {"start": "品川", "leg_count": 10, "seed": 402},
+    },
+    {
+        "name": "Heavy north-east corridor Ueno vs Ikebukuro",
+        "kind": "auto_pair",
+        "expected_capture": "none",
+        "runner": {"start": "上野", "leg_count": 10, "seed": 303},
+        "hunter": {"start": "池袋", "leg_count": 10, "seed": 403},
+    },
+    {
+        "name": "Heavy Yokohama and central Tokyo",
+        "kind": "auto_pair",
+        "expected_capture": "none",
+        "runner": {"start": "横浜", "leg_count": 10, "seed": 304},
+        "hunter": {"start": "東京", "leg_count": 10, "seed": 404},
+    },
+    {
+        "name": "Heavy Omiya and Shinjuku",
+        "kind": "auto_pair",
+        "expected_capture": "none",
+        "runner": {"start": "大宮", "leg_count": 10, "seed": 305},
+        "hunter": {"start": "新宿", "leg_count": 10, "seed": 405},
+    },
+    {
+        "name": "Heavy Asakusa-Keikyu corridor",
+        "kind": "auto_pair",
+        "expected_capture": "none",
+        "runner": {"start": "押上", "leg_count": 10, "seed": 306},
+        "hunter": {"start": "品川", "leg_count": 10, "seed": 406},
+    },
+    {
+        "name": "Heavy Chiyoda and Toyoko transfer web",
+        "kind": "auto_pair",
+        "expected_capture": "none",
+        "runner": {"start": "北千住", "leg_count": 10, "seed": 307},
+        "hunter": {"start": "渋谷", "leg_count": 10, "seed": 407},
+    },
+    {
+        "name": "Heavy Musashi-Kosugi and Nakano",
+        "kind": "auto_pair",
+        "expected_capture": "none",
+        "runner": {"start": "武蔵小杉", "leg_count": 10, "seed": 308},
+        "hunter": {"start": "中野", "leg_count": 10, "seed": 408},
+    },
+]
+
 
 BATTLE_HELPER_JS = r"""
 (() => {
-  const version = '2026-04-22-public-battle-records-private-route-prefixes';
+  const version = '2026-04-22-public-battle-records-heavy-scenarios';
   if (window.__oniBattle && window.__oniBattle.version === version) return;
   const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
   const norm = (value) => String(value || '')
@@ -360,6 +423,36 @@ BATTLE_HELPER_JS = r"""
     const destinationId = findStation(leg.to);
     const routeQueries = Array.isArray(leg.route) ? leg.route : [leg.route];
     const earliest = effectiveDepartureMinute(seat, currentMinute);
+    if (leg.tripId) {
+      const trip = state.tripById.get(leg.tripId);
+      if (!trip) throw new Error(`Trip not found: ${leg.tripId}`);
+      const boardStop = findBoardingStop(trip, currentStationId, earliest);
+      if (!boardStop) {
+        throw new Error(`Trip ${leg.tripId} not catchable from ${displayNameForGroup(currentStationId)} after ${minutesToHhmm(earliest)}`);
+      }
+      const alightStop = destinationStop(trip, boardStop, destinationId);
+      if (!alightStop) {
+        throw new Error(`Trip ${leg.tripId} does not reach ${leg.to} from ${displayNameForGroup(currentStationId)}`);
+      }
+      const routeId = trip.routeId;
+      const routeQuery = routeQueries[0] || routeId;
+      return {
+        requestedRoute: routeQuery,
+        routeId,
+        routeTitle: routeTitle(routeId),
+        trip,
+        tripId: trip.id,
+        tripLabel: formatTripLabelForBoarding({ trip, boardStop, routeIds: boardableRouteIdsForStop(trip, boardStop) }, routeId),
+        boardStop,
+        boardStationId: boardStop.stationGroupId,
+        boardStation: displayNameForGroup(boardStop.stationGroupId),
+        boardHhmm: minutesToHhmm(stopDepartureMinutes(boardStop)),
+        alightStop,
+        alightStationId: alightStop.stationGroupId,
+        alightStation: displayNameForGroup(alightStop.stationGroupId),
+        alightHhmm: minutesToHhmm(stopArrivalMinutes(alightStop)),
+      };
+    }
     const errors = [];
     for (const routeQuery of routeQueries) {
       let routeId = null;
@@ -371,6 +464,7 @@ BATTLE_HELPER_JS = r"""
       }
       const rows = departuresForStationGroup(currentStationId, earliest, { routeId });
       for (const row of rows) {
+        if (leg.tripId && row.trip.id !== leg.tripId) continue;
         if (!hasDownstreamStop(row.trip, row.stop)) continue;
         const alightStop = destinationStop(row.trip, row.stop, destinationId);
         if (!alightStop) continue;
@@ -394,6 +488,177 @@ BATTLE_HELPER_JS = r"""
       errors.push(`No ${routeQuery} train from ${displayNameForGroup(currentStationId)} to ${leg.to} after ${minutesToHhmm(earliest)}`);
     }
     throw new Error(errors.join('; ') || `Cannot resolve leg to ${leg.to}`);
+  }
+
+  function downstreamStops(trip, boardStop) {
+    return (trip.stopTimes || [])
+      .filter((stop) => stop.sequence > boardStop.sequence && Number.isFinite(stopArrivalMinutes(stop)));
+  }
+
+  function chooseAutoLeg(seat, currentStationId, currentMinute, seed, usedRoutes = []) {
+    const preview = { currentState: { kind: 'NODE', stationGroupId: currentStationId }, currentMinute };
+    const latestArrivalMinute = Math.min(hhmmToMinutes(state.endTime || '18:00'), 18 * 60);
+    const routeIds = routeChoicesFromDepartures(availableDepartures(preview, seat, { limit: 80 }))
+      .map((choice) => choice.routeId)
+      .filter((routeId) => !String(routeId).startsWith('SHINKANSEN_') && !routeTitle(routeId).includes('新幹線'));
+    const orderedRouteIds = [...routeIds].sort((a, b) => {
+      const aRecent = usedRoutes.includes(a) ? 1 : 0;
+      const bRecent = usedRoutes.includes(b) ? 1 : 0;
+      if (aRecent !== bRecent) return aRecent - bRecent;
+      return String(a).localeCompare(String(b));
+    });
+    if (!orderedRouteIds.length) {
+      throw new Error(`No route choices from ${displayNameForGroup(currentStationId)} at ${minutesToHhmm(currentMinute)}`);
+    }
+    const earliest = effectiveDepartureMinute(seat, currentMinute);
+    for (let routeAttempt = 0; routeAttempt < orderedRouteIds.length; routeAttempt += 1) {
+      const routeId = orderedRouteIds[(seed + routeAttempt) % orderedRouteIds.length];
+      const rows = departuresForStationGroup(currentStationId, earliest, { routeId }).slice(0, 24);
+      for (let rowAttempt = 0; rowAttempt < rows.length; rowAttempt += 1) {
+        const row = rows[rowAttempt];
+        const boardMinute = stopDepartureMinutes(row.stop);
+        if (boardMinute > latestArrivalMinute) continue;
+        if (!hasDownstreamStop(row.trip, row.stop)) continue;
+        const stops = downstreamStops(row.trip, row.stop)
+          .filter((stop) => {
+            const arrivalMinute = stopArrivalMinutes(stop);
+            return arrivalMinute <= latestArrivalMinute && arrivalMinute - boardMinute <= 45;
+          });
+        if (!stops.length) continue;
+        const maxHop = Math.min(5, stops.length);
+        const destination = stops[Math.min(stops.length - 1, (seed + routeAttempt + rowAttempt) % maxHop)];
+        const spec = {
+          route: routeTitle(routeId),
+          to: displayNameForGroup(destination.stationGroupId),
+          tripId: row.trip.id,
+        };
+        const resolved = resolveLeg(seat, currentStationId, currentMinute, spec);
+        return { spec, resolved };
+      }
+    }
+    throw new Error(`No usable downstream train from ${displayNameForGroup(currentStationId)} at ${minutesToHhmm(currentMinute)}`);
+  }
+
+  function buildAutoLongSpec(seat, seedSpec) {
+    const targetLegCount = Math.max(1, Number(seedSpec.leg_count || seedSpec.legCount || 10));
+    const seed = Number(seedSpec.seed || 0);
+    const start = seedSpec.start;
+    const legs = JSON.parse(JSON.stringify(seedSpec.legs || []));
+    let currentStationId = findStation(start);
+    let currentMinute = hhmmToMinutes(state.startTime);
+    const usedRoutes = [];
+
+    for (const leg of legs) {
+      const resolved = resolveLeg(seat, currentStationId, currentMinute, leg);
+      currentStationId = resolved.alightStationId;
+      currentMinute = stopArrivalMinutes(resolved.alightStop);
+      usedRoutes.push(resolved.routeId);
+      if (usedRoutes.length > 4) usedRoutes.shift();
+    }
+
+    while (legs.length < targetLegCount) {
+      const picked = chooseAutoLeg(seat, currentStationId, currentMinute, seed + legs.length * 17, usedRoutes);
+      legs.push(picked.spec);
+      currentStationId = picked.resolved.alightStationId;
+      currentMinute = stopArrivalMinutes(picked.resolved.alightStop);
+      usedRoutes.push(picked.resolved.routeId);
+      if (usedRoutes.length > 4) usedRoutes.shift();
+    }
+
+    return { start, legs };
+  }
+
+  function sameTrainCandidates(seed) {
+    const candidates = [];
+    const startMinute = hhmmToMinutes(state.startTime);
+    const runnerEarliest = effectiveDepartureMinute('runner', startMinute);
+    const hunterEarliest = effectiveDepartureMinute('hunter', startMinute);
+    state.tripById.forEach((trip) => {
+      const stops = (trip.stopTimes || [])
+        .filter((stop) => stop.stationGroupId && Number.isFinite(stopDepartureMinutes(stop)) && Number.isFinite(stopArrivalMinutes(stop)))
+        .sort((a, b) => a.sequence - b.sequence);
+      if (stops.length < 5) return;
+      const routeId = trip.routeId;
+      if (!routeId || String(routeId).startsWith('SHINKANSEN_')) return;
+      for (let boardIndex = 0; boardIndex <= Math.min(3, stops.length - 4); boardIndex += 1) {
+        const runnerBoard = stops[boardIndex];
+        const hunterBoard = stops[boardIndex + 1];
+        const destination = stops[Math.min(stops.length - 1, boardIndex + 4 + (seed % 2))];
+        const runnerMinute = stopDepartureMinutes(runnerBoard);
+        const hunterMinute = stopDepartureMinutes(hunterBoard);
+        const arrivalMinute = stopArrivalMinutes(destination);
+        if (runnerMinute < runnerEarliest || hunterMinute < hunterEarliest || hunterMinute <= runnerMinute || arrivalMinute <= hunterMinute) continue;
+        candidates.push({ trip, routeId, runnerBoard, hunterBoard, destination, runnerMinute, hunterMinute });
+      }
+    });
+    candidates.sort((a, b) =>
+      a.runnerMinute - b.runnerMinute ||
+      String(a.routeId).localeCompare(String(b.routeId)) ||
+      String(a.trip.id).localeCompare(String(b.trip.id))
+    );
+    return candidates;
+  }
+
+  function buildSameTrainCaptureScenario(config) {
+    const seed = Number(config.seed || 0);
+    const candidates = sameTrainCandidates(seed);
+    if (!candidates.length) throw new Error('No same-train capture candidate found');
+    const picked = candidates[seed % candidates.length];
+    const route = picked.routeId;
+    const runner = buildAutoLongSpec('runner', {
+      start: displayNameForGroup(picked.runnerBoard.stationGroupId),
+      leg_count: config.leg_count || 10,
+      seed: seed + 11,
+      legs: [{ route, to: displayNameForGroup(picked.destination.stationGroupId), tripId: picked.trip.id }],
+    });
+    const hunter = buildAutoLongSpec('hunter', {
+      start: displayNameForGroup(picked.hunterBoard.stationGroupId),
+      leg_count: config.leg_count || 10,
+      seed: seed + 29,
+      legs: [{ route, to: displayNameForGroup(picked.destination.stationGroupId), tripId: picked.trip.id }],
+    });
+    return {
+      name: config.name,
+      runner,
+      hunter,
+      expected_capture: 'same_train',
+      min_legs: config.leg_count || 10,
+      capture_seed_trip_id: picked.trip.id,
+      capture_seed_route: routeTitle(picked.routeId),
+    };
+  }
+
+  function buildHeavyScenario(config) {
+    if (config.kind === 'same_train') return buildSameTrainCaptureScenario(config);
+    if (config.kind === 'same_node') {
+      const runner = buildAutoLongSpec('runner', {
+        start: config.start,
+        leg_count: config.leg_count || 10,
+        seed: Number(config.seed || 0),
+      });
+      const hunter = buildAutoLongSpec('hunter', {
+        start: config.start,
+        leg_count: config.leg_count || 10,
+        seed: Number(config.seed || 0),
+      });
+      return {
+        name: config.name,
+        runner,
+        hunter,
+        expected_capture: 'same_node',
+        min_legs: config.leg_count || 10,
+      };
+    }
+    if (config.kind === 'auto_pair') {
+      return {
+        name: config.name,
+        runner: buildAutoLongSpec('runner', config.runner),
+        hunter: buildAutoLongSpec('hunter', config.hunter),
+        expected_capture: config.expected_capture || 'none',
+        min_legs: Math.min(config.runner?.leg_count || 10, config.hunter?.leg_count || 10),
+      };
+    }
+    return config;
   }
 
   async function ensureReady(timeoutMs = 90000) {
@@ -515,6 +780,21 @@ BATTLE_HELPER_JS = r"""
     return snapshot();
   }
 
+  async function waitForAnyPhase(expectedPhases, timeoutMs = 90000) {
+    const expected = new Set(expectedPhases);
+    const started = Date.now();
+    while (!expected.has(state.phase)) {
+      if (onlineActive()) {
+        try { await syncRoomState(); } catch (_error) {}
+      }
+      if (Date.now() - started > timeoutMs) {
+        throw new Error(`Timed out waiting for ${Array.from(expected).join('/')} ; currently ${state.phase}`);
+      }
+      await wait(500);
+    }
+    return snapshot();
+  }
+
   function resultForPlans(scenarioId, runnerPlan, hunterPlan) {
     const scenario = {
       id: scenarioId,
@@ -557,7 +837,9 @@ BATTLE_HELPER_JS = r"""
     planAndSubmit,
     readySeat,
     waitForPhase,
+    waitForAnyPhase,
     resultForPlans,
+    buildHeavyScenario,
   };
 })();
 """
@@ -846,6 +1128,9 @@ def make_markdown(payload: dict[str, Any], route_titles: dict[str, dict[str, str
                 "",
                 f"- 房间: `{game['room_id']}`",
                 f"- 最终在线阶段: `{game['online_phase']}`",
+                f"- Runner 段数: `{len(game['runner_plan'].get('legs', []))}`",
+                f"- Hunter 段数: `{len(game['hunter_plan'].get('legs', []))}`",
+                f"- 预期抓捕: `{game.get('expected_capture') or '未指定'}`",
                 f"- 抓捕结果: `{capture_display}`",
                 "",
                 "### Runner",
@@ -905,18 +1190,27 @@ def run_game(
         call_helper(runner, "__oniBattle.ensureReady()", timeout=120)
         call_helper(hunter, "__oniBattle.ensureReady()", timeout=120)
 
+        active_scenario = scenario
+        if scenario.get("kind"):
+            active_scenario = call_helper(
+                runner,
+                f"__oniBattle.buildHeavyScenario({json.dumps(scenario, ensure_ascii=False)})",
+                timeout=120,
+            )
+            active_scenario["name"] = active_scenario.get("name") or scenario["name"]
+
         created = call_helper(runner, f"__oniBattle.createRoom('runner', {json.dumps(room_server_url)})", timeout=120)
         room_id = created["roomId"]
         call_helper(hunter, f"__oniBattle.joinRoom('hunter', {json.dumps(room_id)}, {json.dumps(room_server_url)})", timeout=120)
 
         runner_plan_response = call_helper(
             runner,
-            f"__oniBattle.planAndSubmit('runner', {json.dumps(scenario['runner'], ensure_ascii=False)})",
+            f"__oniBattle.planAndSubmit('runner', {json.dumps(active_scenario['runner'], ensure_ascii=False)})",
             timeout=120,
         )
         hunter_plan_response = call_helper(
             hunter,
-            f"__oniBattle.planAndSubmit('hunter', {json.dumps(scenario['hunter'], ensure_ascii=False)})",
+            f"__oniBattle.planAndSubmit('hunter', {json.dumps(active_scenario['hunter'], ensure_ascii=False)})",
             timeout=120,
         )
 
@@ -926,8 +1220,8 @@ def run_game(
         call_helper(hunter, "__oniBattle.waitForPhase('PLANNING', 90000)", timeout=100)
         call_helper(runner, "__oniBattle.readySeat()", timeout=60)
         call_helper(hunter, "__oniBattle.readySeat()", timeout=60)
-        live_snapshot = call_helper(runner, "__oniBattle.waitForPhase('LIVE', 90000)", timeout=100)
-        call_helper(hunter, "__oniBattle.waitForPhase('LIVE', 90000)", timeout=100)
+        live_snapshot = call_helper(runner, "__oniBattle.waitForAnyPhase(['LIVE', 'ENDED'], 90000)", timeout=100)
+        call_helper(hunter, "__oniBattle.waitForAnyPhase(['LIVE', 'ENDED'], 90000)", timeout=100)
 
         runner_plan = runner_plan_response["plan"]
         hunter_plan = hunter_plan_response["plan"]
@@ -939,16 +1233,27 @@ def run_game(
             )
         )
         issues: list[str] = []
-        if live_snapshot.get("phase") != "LIVE":
-            issues.append(f"Room did not reach LIVE; phase={live_snapshot.get('phase')}")
-        if len(runner_plan.get("legs", [])) != len(scenario["runner"].get("legs", [])):
+        if live_snapshot.get("phase") not in {"LIVE", "ENDED"}:
+            issues.append(f"Room did not reach LIVE/ENDED; phase={live_snapshot.get('phase')}")
+        if len(runner_plan.get("legs", [])) != len(active_scenario["runner"].get("legs", [])):
             issues.append("Runner resolved fewer legs than requested")
-        if len(hunter_plan.get("legs", [])) != len(scenario["hunter"].get("legs", [])):
+        if len(hunter_plan.get("legs", [])) != len(active_scenario["hunter"].get("legs", [])):
             issues.append("Hunter resolved fewer legs than requested")
+        min_legs = int(active_scenario.get("min_legs") or 0)
+        if min_legs and len(runner_plan.get("legs", [])) < min_legs:
+            issues.append(f"Runner resolved {len(runner_plan.get('legs', []))} legs; expected at least {min_legs}")
+        if min_legs and len(hunter_plan.get("legs", [])) < min_legs:
+            issues.append(f"Hunter resolved {len(hunter_plan.get('legs', []))} legs; expected at least {min_legs}")
+        expected_capture = active_scenario.get("expected_capture")
+        actual_capture_type = (result.get("capture") or {}).get("type") or "none"
+        if expected_capture and expected_capture != actual_capture_type:
+            issues.append(f"Expected capture {expected_capture}; got {actual_capture_type}")
 
         return {
             "index": index,
-            "scenario_name": scenario["name"],
+            "scenario_name": active_scenario["name"],
+            "scenario_kind": scenario.get("kind", "fixed"),
+            "expected_capture": expected_capture,
             "room_id": room_id,
             "viewport": {"runner": runner_size, "hunter": hunter_size},
             "online_phase": live_snapshot.get("phase"),
@@ -972,6 +1277,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--page-url", default=DEFAULT_PAGE_URL)
     parser.add_argument("--room-server-url", default=DEFAULT_ROOM_SERVER)
     parser.add_argument("--count", type=int, default=10)
+    parser.add_argument("--mode", choices=["standard", "heavy"], default="standard")
     parser.add_argument(
         "--scenario-indexes",
         default="",
@@ -988,16 +1294,18 @@ def main() -> None:
     route_titles = route_title_lookup()
     args.output_dir.mkdir(parents=True, exist_ok=True)
     args.log_dir.mkdir(parents=True, exist_ok=True)
+    scenario_pool = HEAVY_SCENARIOS if args.mode == "heavy" else SCENARIOS
     if args.scenario_indexes.strip():
         indexes = [int(item.strip()) for item in args.scenario_indexes.split(",") if item.strip()]
-        scenarios = [SCENARIOS[index - 1] for index in indexes]
+        scenarios = [scenario_pool[index - 1] for index in indexes]
     else:
-        indexes = list(range(1, min(args.count, len(SCENARIOS)) + 1))
-        scenarios = SCENARIOS[: args.count]
+        indexes = list(range(1, min(args.count, len(scenario_pool)) + 1))
+        scenarios = scenario_pool[: args.count]
     payload: dict[str, Any] = {
         "run_started_at": started.isoformat(timespec="seconds"),
         "page_url": args.page_url,
         "room_server_url": args.room_server_url,
+        "mode": args.mode,
         "requested_count": len(scenarios),
         "completed_count": 0,
         "games": [],
