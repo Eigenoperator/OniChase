@@ -25,7 +25,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 train preview rows now show next stop without a clock time and only marquee-scroll after actual rendered overflow.
 - v3 Current Plan ride legs now show the same route-color swatch as the line chooser.
 - v3 Current Plan ride rows now keep the subline to boarding/alighting times only.
-- Public v3 two-browser playtest completed 10 Render rooms; all reached LIVE on alternating desktop/mobile widths, with several successful multi-leg transfer plans.
+- Public v3 two-browser playtests completed 20 Render rooms total; after the `plan_revision` race fix, 10/10 post-fix rooms reached LIVE with all selected multi-leg Current Plan rows preserved.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
@@ -35,7 +35,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - `JR Central` still lacks a direct train-detail page like `JR East / JR West`; deeper precision still needs station-grid aggregation.
 - Firefox/geckodriver works for headless DOM gameplay probes; screenshot capture may still be limited by this machine's SWGL renderer.
 - Large untracked source caches are intentionally not part of the stable commit: `data/v3_external/`, `data/v3_tokyo_jreast_core_cache/`, and `data/v3_tokyo_rinkai_cache/`.
-- Public playtest exposed a planner bug: some selected follow-up transfer legs do not persist/render in Current Plan, especially cross-operator or equivalent-station transfers.
 
 ## Decisions
 - [2026-04-07] GIS-first Shinkansen became the main `v2`; public site keeps `v1`, `v2`, and now the new Tokyo `v3` sandbox.
@@ -44,6 +43,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Fix the public-playtest planner bug where selected second legs can vanish or leave invalid future steps after cross-station-group transfers.
-2. Review remaining v3 data gaps: e.g. `13号線副都心線` is not exposed as a physical pattern at `小竹向原` in the current bundle.
+1. Review remaining v3 data gaps: e.g. `13号線副都心線` is not exposed as a physical pattern at `小竹向原` in the current bundle.
+2. Triage the remaining dirty v3 data/cache worktree and decide what is stable, ignored, or local-only.
 3. Continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.
