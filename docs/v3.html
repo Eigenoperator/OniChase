@@ -585,6 +585,19 @@
       cursor: pointer;
     }
 
+    .plan-title-with-route {
+      display: grid;
+      grid-template-columns: 7px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .plan-title-copy {
+      display: block;
+      min-width: 0;
+    }
+
     .empty {
       padding: 14px;
       color: var(--muted);
@@ -4619,6 +4632,7 @@
             time: `LEG ${legIndex}`,
             title: `${tripLabel}: ${from} -> ${to}`,
             sub: index === editableRideIndex ? `${timeText} · Click to edit alighting station.` : timeText,
+            routeId: pendingTrip?.routeId || null,
             editable: index === editableRideIndex,
           });
           if (alightStop) currentMinute = stopArrivalMinutes(alightStop);
@@ -4639,9 +4653,12 @@
       planBoardEl.innerHTML = planActions + rows.map((row) => `
         <button class="plan-row ${row.editable ? 'clickable current' : ''}" type="button" ${row.editable ? 'data-action="edit-current-ride"' : ''}>
           <span class="row-meta">${row.time}</span>
-          <span>
-            <span class="row-title">${row.title}</span>
-            <span class="row-sub">${row.sub}</span>
+          <span class="${row.routeId ? 'plan-title-with-route' : ''}">
+            ${row.routeId ? `<span class="route-swatch" style="background:${routeColor(row.routeId)}"></span>` : ''}
+            <span class="plan-title-copy">
+              <span class="row-title">${row.title}</span>
+              <span class="row-sub">${row.sub}</span>
+            </span>
           </span>
         </button>
       `).join('');
