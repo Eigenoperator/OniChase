@@ -33,6 +33,7 @@ OPERATOR_JA_LABELS = {
 PRIVATE_ROUTE_PREFIX_OPERATOR_IDS = frozenset(OPERATOR_JA_LABELS)
 PHYSICAL_ALIAS_OPERATOR_LABELS = {
     "みなとみらい21線": "横浜高速鉄道",
+    "小田原線": "小田急",
     "埼玉高速鉄道線": "埼玉高速鉄道",
     "相鉄いずみ野線": "相鉄",
     "相鉄本線": "相鉄",
@@ -50,6 +51,7 @@ ROUTE_JA_LABELS = {
     "JR_ITO": "伊東線",
     "JR_JOETSU_LOCAL": "上越線",
     "JR_RYOMO": "両毛線",
+    "JR_TOHOKU": "宇都宮線",
     "JR_EAST_KEIHIN_TOHOKU_NEGISHI": "京浜東北線・根岸線",
     "JR_EAST_KEIYO_MUSASHINO": "京葉線・武蔵野線",
     "JR_EAST_SAIKYO_KAWAGOE": "埼京線・川越線",
