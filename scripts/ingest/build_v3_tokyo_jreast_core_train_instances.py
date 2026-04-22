@@ -211,6 +211,24 @@ TIMETABLE_PAGES = [
     },
     {
         "station_name": "Chiba",
+        "title": "Sobu・Narita Line",
+        "line_id": "JR_NARITA",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0989/0989010.html",
+    },
+    {
+        "station_name": "Chiba",
+        "title": "Uchibo Line",
+        "line_id": "JR_UCHIBO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0989/0989020.html",
+    },
+    {
+        "station_name": "Chiba",
+        "title": "Sotobo Line",
+        "line_id": "JR_SOTOBO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0989/0989030.html",
+    },
+    {
+        "station_name": "Chiba",
         "title": "Sobu Line (Rapid)",
         "line_id": "JR_EAST_SOBU_RAPID",
         "timetable_url": "https://timetables.jreast.co.jp/en/timetable/table0989/0989040.html",
@@ -220,6 +238,252 @@ TIMETABLE_PAGES = [
         "title": "Chuo・Sobu Line (Local)",
         "line_id": "JR_EAST_CHUO_SOBU_LOCAL",
         "timetable_url": "https://timetables.jreast.co.jp/en/timetable/table0989/0989050.html",
+    },
+    {
+        "station_name": "Tachikawa",
+        "title": "Ome・Itsukaichi Line",
+        "line_id": "JR_OME",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0958/0958030.html",
+    },
+    {
+        "station_name": "Ome",
+        "title": "Ome Line",
+        "line_id": "JR_OME",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0303/0303010.html",
+    },
+    {
+        "station_name": "Oku-Tama",
+        "title": "Ome Line",
+        "line_id": "JR_OME",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0368/0368010.html",
+    },
+    {
+        "station_name": "Takasaki",
+        "title": "Joetsu Line",
+        "line_id": "JR_JOETSU_LOCAL",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0934/0934050.html",
+    },
+    {
+        "station_name": "Minakami",
+        "title": "Joetsu Line",
+        "line_id": "JR_JOETSU_LOCAL",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt1474/1474010.html",
+    },
+    {
+        "station_name": "Takasaki",
+        "title": "Ryomo Line",
+        "line_id": "JR_RYOMO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0934/0934090.html",
+    },
+    {
+        "station_name": "Omiya",
+        "title": "Utsunomiya Line (Tohoku Line)",
+        "line_id": "JR_TOHOKU",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0350/0350070.html",
+    },
+    {
+        "station_name": "Utsunomiya",
+        "title": "Utsunomiya Line (Tohoku Line)",
+        "line_id": "JR_TOHOKU",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0248/0248050.html",
+    },
+    {
+        "station_name": "Utsunomiya",
+        "title": "Utsunomiya Line (Tohoku Line)",
+        "line_id": "JR_TOHOKU",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0248/0248060.html",
+    },
+    {
+        "station_name": "Kuroiso",
+        "title": "Tohoku Line",
+        "line_id": "JR_TOHOKU",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0638/0638010.html",
+    },
+    {
+        "station_name": "Kuroiso",
+        "title": "Utsunomiya Line (Tohoku Line)",
+        "line_id": "JR_TOHOKU",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0638/0638020.html",
+    },
+    {
+        "station_name": "Koriyama",
+        "title": "Tohoku Line",
+        "line_id": "JR_TOHOKU",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0675/0675050.html",
+    },
+    {
+        "station_name": "Koriyama",
+        "title": "Tohoku Line",
+        "line_id": "JR_TOHOKU",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0675/0675060.html",
+    },
+    {
+        "station_name": "Fukushima",
+        "title": "Tohoku Line",
+        "line_id": "JR_TOHOKU",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt1352/1352040.html",
+    },
+    {
+        "station_name": "Fukushima",
+        "title": "Tohoku Line",
+        "line_id": "JR_TOHOKU",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt1352/1352050.html",
+    },
+    {
+        "station_name": "Sendai",
+        "title": "Tohoku Line",
+        "line_id": "JR_TOHOKU",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0913/0913080.html",
+    },
+    {
+        "station_name": "Sendai",
+        "title": "Tohoku Line",
+        "line_id": "JR_TOHOKU",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0913/0913090.html",
+    },
+    {
+        "station_name": "Morioka",
+        "title": "Tohoku Line",
+        "line_id": "JR_TOHOKU",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt1565/1565040.html",
+    },
+    {
+        "station_name": "Mito",
+        "title": "Joban Line",
+        "line_id": "JR_JOBAN",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt1471/1471010.html",
+    },
+    {
+        "station_name": "Mito",
+        "title": "Joban Line",
+        "line_id": "JR_JOBAN",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt1471/1471020.html",
+    },
+    {
+        "station_name": "Iwaki",
+        "title": "Joban Line",
+        "line_id": "JR_JOBAN",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0166/0166010.html",
+    },
+    {
+        "station_name": "Iwaki",
+        "title": "Joban Line",
+        "line_id": "JR_JOBAN",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0166/0166020.html",
+    },
+    {
+        "station_name": "Haranomachi",
+        "title": "Joban Line",
+        "line_id": "JR_JOBAN",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt1259/1259010.html",
+    },
+    {
+        "station_name": "Haranomachi",
+        "title": "Joban Line",
+        "line_id": "JR_JOBAN",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt1259/1259020.html",
+    },
+    {
+        "station_name": "Sendai",
+        "title": "Joban Line",
+        "line_id": "JR_JOBAN",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0913/0913040.html",
+    },
+    {
+        "station_name": "Kobuchizawa",
+        "title": "Chuo Line",
+        "line_id": "JR_CHUO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0707/0707020.html",
+    },
+    {
+        "station_name": "Kobuchizawa",
+        "title": "Chuo Line",
+        "line_id": "JR_CHUO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0707/0707030.html",
+    },
+    {
+        "station_name": "Kami-Suwa",
+        "title": "Chuo Line",
+        "line_id": "JR_CHUO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0492/0492010.html",
+    },
+    {
+        "station_name": "Kami-Suwa",
+        "title": "Chuo Line",
+        "line_id": "JR_CHUO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0492/0492020.html",
+    },
+    {
+        "station_name": "Shinano-Kawashima",
+        "title": "Chuo Line",
+        "line_id": "JR_CHUO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0792/0792010.html",
+    },
+    {
+        "station_name": "Shinano-Kawashima",
+        "title": "Chuo Line",
+        "line_id": "JR_CHUO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0792/0792020.html",
+    },
+    {
+        "station_name": "Ono",
+        "title": "Chuo Line",
+        "line_id": "JR_CHUO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0389/0389010.html",
+    },
+    {
+        "station_name": "Ono",
+        "title": "Chuo Line",
+        "line_id": "JR_CHUO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0389/0389020.html",
+    },
+    {
+        "station_name": "Kawagoe",
+        "title": "Kawagoe Line",
+        "line_id": "JR_KAWAGOE",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0525/0525010.html",
+    },
+    {
+        "station_name": "Kawagoe",
+        "title": "Saikyo・Kawagoe Line",
+        "line_id": "JR_EAST_SAIKYO_KAWAGOE",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0525/0525020.html",
+    },
+    {
+        "station_name": "Tateyama",
+        "title": "Uchibo Line",
+        "line_id": "JR_UCHIBO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0969/0969010.html",
+    },
+    {
+        "station_name": "Tateyama",
+        "title": "Uchibo Line",
+        "line_id": "JR_UCHIBO",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0969/0969020.html",
+    },
+    {
+        "station_name": "Takagimachi",
+        "title": "Senseki Line",
+        "line_id": "JR_SENSEKI",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0932/0932010.html",
+    },
+    {
+        "station_name": "Takagimachi",
+        "title": "Senseki Line",
+        "line_id": "JR_SENSEKI",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0932/0932020.html",
+    },
+    {
+        "station_name": "Kashimajingu",
+        "title": "Kashima Line",
+        "line_id": "JR_KASHIMA",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0431/0431010.html",
+    },
+    {
+        "station_name": "Kashimajingu",
+        "title": "Kashima Line",
+        "line_id": "JR_KASHIMA",
+        "timetable_url": "https://timetables.jreast.co.jp/en/2605/timetable/tt0431/0431020.html",
     },
 ]
 
@@ -367,6 +631,10 @@ def main() -> int:
     unresolved_total = set()
     for dataset in raw_datasets:
         normalized_instances, unresolved = normalize_train_instances(dataset["train_instances"], stations_data)
+        normalized_instances = [
+            train for train in normalized_instances
+            if len(train.get("stop_times", [])) >= 2
+        ]
         unresolved_total.update(unresolved)
         normalized_datasets.append(
             {
@@ -376,7 +644,12 @@ def main() -> int:
         )
 
     if unresolved_total:
-        raise ValueError(f"Unresolved station names: {', '.join(sorted(unresolved_total))}")
+        print(
+            "Warning: unresolved station names skipped: "
+            + ", ".join(sorted(unresolved_total)[:80])
+            + (f" ... (+{len(unresolved_total) - 80} more)" if len(unresolved_total) > 80 else ""),
+            flush=True,
+        )
 
     merged_by_key, merge_report = merge_datasets(normalized_datasets)
     merged_instances = sorted(
@@ -397,6 +670,7 @@ def main() -> int:
         "station_seed_id": stations_data["id"],
         "selected_timetable_pages": selected_pages,
         "source_dataset_ids": [dataset["id"] for dataset in normalized_datasets],
+        "unresolved_station_names": sorted(unresolved_total),
         "merge_report": merge_report,
         "train_instances": merged_instances,
     }

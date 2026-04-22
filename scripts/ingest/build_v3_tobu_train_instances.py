@@ -4,12 +4,15 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+import os
 import re
 import time
 from pathlib import Path
 from urllib.parse import quote
 
 import requests
+
+from train_instance_merge import index_train_instances, upsert_train_instance
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -116,13 +119,31 @@ def load_station_seed() -> list[dict]:
 
 def normalize_station_name(name: str) -> str:
     text = " ".join(html.unescape(name).replace("\u3000", " ").split())
+    text = re.sub(r"[（(].*?[）)]", "", text)
+    text = re.sub(r"［.*?］", "", text)
+    text = re.sub(r"\[.*?\]", "", text)
     text = text.replace("ヶ", "ケ")
+    text = text.replace("塚", "塚")
+    text = text.replace("曾", "曽")
     return text
 
 
 def normalize_hhmm(value: str) -> str:
     match = re.search(r"(\d{1,2}:\d{2})", value)
     return match.group(1) if match else ""
+
+
+def hhmm_minutes(value: str) -> int:
+    if not value or ":" not in value:
+        return 99_999
+    hour, minute = value.split(":", 1)
+    try:
+        total = int(hour) * 60 + int(minute)
+    except ValueError:
+        return 99_999
+    if total < 3 * 60:
+        total += 24 * 60
+    return total
 
 
 def discover_navitime_nodes(station_seed: list[dict]) -> list[dict]:
@@ -139,7 +160,13 @@ def discover_navitime_nodes(station_seed: list[dict]) -> list[dict]:
         match = None
         for item in items:
             label = normalize_station_name(item.get("label", ""))
-            if label == target or label.startswith(target + "(") or label.startswith(target + "（"):
+            if (
+                label == target
+                or label.startswith(target + "(")
+                or label.startswith(target + "（")
+                or label.startswith(target + "[")
+                or label.startswith(target + "［")
+            ):
                 match = item
                 break
         if not match:
@@ -201,8 +228,8 @@ def parse_stop_page(stop_url: str, station_lookup: dict[str, dict]) -> dict | No
     lines = [re.sub(r"\s+", " ", line).strip() for line in clean.splitlines()]
     lines = [line for line in lines if line]
 
-    title = next((line for line in lines if "の停車駅/時刻表" in line), "")
-    title = title.replace("の停車駅/時刻表", "")
+    title_raw = next((line for line in lines if "の停車駅/時刻表" in line), "")
+    title = title_raw.replace("の停車駅/時刻表", "")
     line_name = ""
     if title:
         if "(" in title:
@@ -220,6 +247,16 @@ def parse_stop_page(stop_url: str, station_lookup: dict[str, dict]) -> dict | No
             headsign = title_head
 
     station_rows = []
+    title_inner = title_raw.replace("（", "(").replace("）", ")")
+    if "(" in title_inner:
+        title_inner = title_inner.split("(", 1)[1]
+        current_match = re.match(r"(.+?)(\d{1,2}:\d{2})発", title_inner)
+        if current_match:
+            current_station_name = normalize_station_name(current_match.group(1))
+            current_station = station_lookup.get(current_station_name)
+            current_departure = current_match.group(2)
+            if current_station is not None:
+                station_rows.append((current_station, current_departure, current_departure))
     for i, line in enumerate(lines):
         station = station_lookup.get(normalize_station_name(line))
         if station is None:
@@ -241,6 +278,8 @@ def parse_stop_page(stop_url: str, station_lookup: dict[str, dict]) -> dict | No
             station_rows.append((station, arrival, departure))
     if len(station_rows) < 2:
         return None
+
+    station_rows.sort(key=lambda row: hhmm_minutes(row[1] or row[2]))
 
     stop_times = []
     seen_station_ids: set[str] = set()
@@ -268,10 +307,9 @@ def parse_stop_page(stop_url: str, station_lookup: dict[str, dict]) -> dict | No
     year = params.get("year", "")
     month = params.get("month", "")
     day = params.get("day", "")
-    if year and month and day:
-        date_str = f"{year}-{month}-{day}"
-        if date_str != SERVICE_DAY:
-            return None
+    # Navitime advances the URL date over time; for this collector we normalize
+    # the captured weekday pattern into SERVICE_DAY rather than rejecting fresh
+    # weekday pages that are otherwise structurally identical.
     return {
         "service_instance_id": f"TOBU_{train_code}_{SERVICE_DAY}",
         "train_number": train_code,
@@ -285,28 +323,6 @@ def parse_stop_page(stop_url: str, station_lookup: dict[str, dict]) -> dict | No
 
 
 def write_output(station_seed: list[dict], source_reports: list[dict], train_instances: list[dict], node_seed: list[dict]) -> None:
-    deduped: dict[tuple, dict] = {}
-    for item in train_instances:
-        stop_times = item.get("stop_times", [])
-        if not stop_times:
-            continue
-        key = (
-            item.get("service_name"),
-            item.get("headsign"),
-            item.get("train_type"),
-            stop_times[0].get("departure_hhmm", ""),
-            stop_times[-1].get("arrival_hhmm", ""),
-            tuple((s.get("station_id"), s.get("arrival_hhmm"), s.get("departure_hhmm")) for s in stop_times),
-        )
-        existing = deduped.get(key)
-        if existing is None or (
-            len(stop_times) > len(existing.get("stop_times", []))
-            or (
-                len(stop_times) == len(existing.get("stop_times", []))
-                and item.get("train_number", "") < existing.get("train_number", "")
-            )
-        ):
-            deduped[key] = item
     payload = {
         "id": "v3_tokyo_tobu_weekday_train_instances_v0_1",
         "label": "v3 Tokyo Tobu weekday train instances",
@@ -316,7 +332,7 @@ def write_output(station_seed: list[dict], source_reports: list[dict], train_ins
         "node_seed": node_seed,
         "source_reports": source_reports,
         "train_instances": sorted(
-            deduped.values(),
+            train_instances,
             key=lambda item: (
                 item["stop_times"][0]["departure_hhmm"],
                 item["train_number"],
@@ -331,22 +347,31 @@ def main() -> int:
     station_seed = load_station_seed()
     station_lookup = {normalize_station_name(entry["name_ja"]): entry for entry in station_seed}
     node_seed = discover_navitime_nodes(station_seed)
+    only_stations = {
+        name.strip()
+        for name in os.environ.get("ONLY_STATIONS", "").split(",")
+        if name.strip()
+    }
+    process_node_seed = [
+        node for node in node_seed if not only_stations or node["station_name"] in only_stations
+    ]
 
-    if OUTPUT_PATH.exists():
+    rebuild = os.environ.get("REBUILD") == "1"
+    if OUTPUT_PATH.exists() and not rebuild:
         existing = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
         source_reports = existing.get("source_reports", [])
-        train_instances: list[dict] = existing.get("train_instances", [])
+        train_instances, instance_index = index_train_instances(existing.get("train_instances", []))
     else:
         source_reports = []
         train_instances = []
+        instance_index = {}
 
     completed_nodes = {report["node_id"] for report in source_reports}
-    seen_instances = {item["service_instance_id"] for item in train_instances}
     next_train_checkpoint = ((len(train_instances) // CHECKPOINT_TRAINS_EVERY) + 1) * CHECKPOINT_TRAINS_EVERY
 
-    for idx, node in enumerate(node_seed, start=1):
+    for idx, node in enumerate(process_node_seed, start=1):
         node_id = node["node_id"]
-        if node_id in completed_nodes:
+        if node_id in completed_nodes and node["station_name"] not in only_stations:
             continue
         try:
             timetable_urls = discover_timetable_urls(node_id)
@@ -361,7 +386,7 @@ def main() -> int:
                 }
             )
             write_output(station_seed, source_reports, train_instances, node_seed)
-            print(f"[tobu] node error {idx}/{len(node_seed)} {node_id} -> {type(exc).__name__}: {exc}")
+            print(f"[tobu] node error {idx}/{len(process_node_seed)} {node_id} -> {type(exc).__name__}: {exc}")
             continue
 
         added = 0
@@ -375,14 +400,14 @@ def main() -> int:
                     parsed = parse_stop_page(stop_url, station_lookup)
                 except Exception:
                     continue
-                if not parsed or parsed["service_instance_id"] in seen_instances:
+                if not parsed:
                     continue
-                seen_instances.add(parsed["service_instance_id"])
-                train_instances.append(parsed)
-                added += 1
+                action = upsert_train_instance(train_instances, instance_index, parsed)
+                if action == "added":
+                    added += 1
                 if len(train_instances) >= next_train_checkpoint:
                     write_output(station_seed, source_reports, train_instances, node_seed)
-                    print(f"[tobu] train checkpoint {len(train_instances)} after node {idx}/{len(node_seed)}")
+                    print(f"[tobu] train checkpoint {len(train_instances)} after node {idx}/{len(process_node_seed)}")
                     next_train_checkpoint += CHECKPOINT_TRAINS_EVERY
 
         source_reports.append(
@@ -394,7 +419,7 @@ def main() -> int:
             }
         )
         write_output(station_seed, source_reports, train_instances, node_seed)
-        print(f"[tobu] checkpoint {idx}/{len(node_seed)}: {len(source_reports)} nodes, {len(train_instances)} trains")
+        print(f"[tobu] checkpoint {idx}/{len(process_node_seed)}: {len(source_reports)} nodes, {len(train_instances)} trains")
 
     write_output(station_seed, source_reports, train_instances, node_seed)
     print(f"[tobu] wrote {len(train_instances)} train instances -> {OUTPUT_PATH}")

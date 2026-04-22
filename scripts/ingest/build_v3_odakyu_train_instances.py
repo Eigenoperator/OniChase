@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+import os
 import re
 import time
 from collections import deque
@@ -11,6 +12,8 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
 
 import requests
+
+from train_instance_merge import index_train_instances, upsert_train_instance
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -69,6 +72,24 @@ def clean_text(value: str) -> str:
     value = re.sub(r"<br\s*/?>", " ", value)
     value = re.sub(r"<.*?>", " ", value, flags=re.S)
     return " ".join(html.unescape(value).split())
+
+
+def normalize_station_name(name: str) -> str:
+    text = clean_text(str(name or ""))
+    text = re.sub(r"[（(].*?[）)]", "", text)
+    text = text.replace("ヶ", "ケ")
+    return text
+
+
+def station_name_variants(name: str) -> set[str]:
+    text = clean_text(str(name or ""))
+    variants = {text}
+    variants.add(re.sub(r"[（(].*?[）)]", "", text))
+    more = set()
+    for variant in variants:
+        more.add(variant.replace("ヶ", "ケ"))
+        more.add(variant.replace("ケ", "ヶ"))
+    return {variant for variant in variants | more if variant}
 
 
 def cache_path(url: str, suffix: str) -> Path:
@@ -224,7 +245,7 @@ def parse_stop_list(stop_list_url: str, station_lookup: dict[str, dict]) -> tupl
         if station_page_url not in seen_station_pages:
             seen_station_pages.add(station_page_url)
             station_page_urls.append(station_page_url)
-        station_name = clean_text(raw_name)
+        station_name = normalize_station_name(raw_name)
         station = station_lookup.get(station_name)
         if station is None:
             continue
@@ -265,12 +286,20 @@ def load_existing_output() -> dict:
 
 def main() -> int:
     station_seed = load_station_seed()
-    station_lookup = {entry["name_ja"]: entry for entry in station_seed}
+    station_lookup = {}
+    for entry in station_seed:
+        for variant in station_name_variants(entry["name_ja"]):
+            station_lookup[variant] = entry
 
     existing_output = load_existing_output()
-    train_instances = list(existing_output.get("train_instances", []))
-    source_reports = list(existing_output.get("source_reports", []))
-    seen_instances: set[str] = {item["service_instance_id"] for item in train_instances}
+    rebuild = os.environ.get("REBUILD") == "1"
+    if existing_output and not rebuild:
+        train_instances, instance_index = index_train_instances(existing_output.get("train_instances", []))
+        source_reports = list(existing_output.get("source_reports") or existing_output.get("source_pages", []))
+    else:
+        train_instances = []
+        instance_index = {}
+        source_reports = []
     seen_official_pages: set[str] = {
         official_page_key(report["official_page_url"])
         for report in source_reports
@@ -334,11 +363,7 @@ def main() -> int:
                         queue.append(station_page)
                 if train is None:
                     continue
-                key = train["service_instance_id"]
-                if key in seen_instances:
-                    continue
-                seen_instances.add(key)
-                train_instances.append(train)
+                upsert_train_instance(train_instances, instance_index, train)
                 if len(train_instances) % 500 == 0:
                     OUTPUT_PATH.write_text(
                         json.dumps(
@@ -361,24 +386,7 @@ def main() -> int:
                         f"stations={len(seen_official_pages)} stop_pages={len(seen_stop_urls)}"
                     )
 
-    deduped: dict[str, dict] = {}
-    for item in train_instances:
-        stop_times = item.get("stop_times", [])
-        if not stop_times:
-            continue
-        first_dep = stop_times[0].get("departure_hhmm", "")
-        last_arr = stop_times[-1].get("arrival_hhmm", "")
-        key = item.get("train_number") or (
-            item.get("service_name"),
-            item.get("headsign"),
-            item.get("train_type"),
-            first_dep,
-            last_arr,
-            tuple((s.get("station_id"), s.get("arrival_hhmm"), s.get("departure_hhmm")) for s in stop_times),
-        )
-        existing = deduped.get(key)
-        if existing is None or len(stop_times) > len(existing.get("stop_times", [])):
-            deduped[key] = item
+    train_instances, _ = index_train_instances(train_instances)
 
     output = {
         "id": "v3_tokyo_odakyu_weekday_train_instances_v0_1",
@@ -387,7 +395,7 @@ def main() -> int:
         "service_day": SERVICE_DAY,
         "station_seed": station_seed,
         "source_pages": source_reports,
-        "train_instances": list(deduped.values()),
+        "train_instances": train_instances,
     }
     OUTPUT_PATH.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Official pages: {len(seen_official_pages)}")

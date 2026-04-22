@@ -188,15 +188,19 @@ def mode_for_operator(operator_id: str) -> str:
         return "shinkansen"
     if operator_id in {"tokyo_metro", "toei"}:
         return "subway"
-    return "private_rail" if operator_id not in {"jr_east"} else "rail"
+    return "private_rail" if operator_id not in {"jr_east", "jr_central"} else "rail"
 
 
 ROUTE_COLOR_ALIASES = {
     "JR_EAST_CHUO_RAPID": "中央線",
     "JR_EAST_CHUO_SOBU_LOCAL": "総武線",
     "JR_EAST_JOBAN_RAPID": "常磐線",
+    "JR_CHUO": "中央線",
+    "JR_JOBAN": "常磐線",
+    "JR_KAWAGOE": "川越線",
     "JR_NARITA": "成田線",
     "JR_OME": "青梅線",
+    "JR_TOHOKU": "東北線",
     "JR_UCHIBO": "内房線",
     "JR_SOTOBO": "外房線",
     "JR_TOGANE": "東金線",
@@ -204,6 +208,7 @@ ROUTE_COLOR_ALIASES = {
     "JR_ITO": "伊東線",
     "JR_JOETSU_LOCAL": "上越線",
     "JR_RYOMO": "両毛線",
+    "JR_SENSEKI": "仙石線",
     "JR_EAST_KEIHIN_TOHOKU_NEGISHI": "根岸線",
     "JR_EAST_KEIYO_MUSASHINO": "京葉線",
     "JR_EAST_SAIKYO_KAWAGOE": "川越線",
@@ -244,6 +249,7 @@ MANUAL_ROUTE_COLORS = {
 
 
 OPERATOR_DEFAULT_COLORS = {
+    "jr_central": "#F77321",
     "jr_east": "#8AA4C8",
     "keikyu": "#D63339",
     "keio": "#F18A00",
@@ -399,6 +405,19 @@ def build_routes(map_payload: dict[str, Any], trains: list[dict[str, Any]]) -> t
     return routes, route_meta
 
 
+def service_route_ids_for_physical_line(line_name: str, operator_id: str, route_meta: dict[str, dict[str, Any]]) -> set[str]:
+    route_ids = {route_id_for(line_name, operator_id)}
+    for route_id, route in route_meta.items():
+        route_operator_id = str(route.get("operatorId") or "")
+        short_name = str(route.get("shortName") or "")
+        alias = ROUTE_COLOR_ALIASES.get(short_name, short_name)
+        if alias != line_name and short_name != line_name:
+            continue
+        if route_operator_id == operator_id or route_operator_id == "shinkansen":
+            route_ids.add(route_id)
+    return route_ids
+
+
 def build_bundle() -> dict[str, Any]:
     map_payload = load_json(MAP_PATH)
     train_payload = load_json(UNIFIED_TRAINS_PATH)
@@ -493,31 +512,33 @@ def build_bundle() -> dict[str, Any]:
         if len(coords) < 2:
             continue
         map_operator_id = operator_id_for(line.get("operator_ja"))
-        route_id = route_id_for(line.get("line_name_ja") or line.get("label"), map_operator_id)
+        line_name = line.get("line_name_ja") or line.get("label") or ""
+        route_ids = service_route_ids_for_physical_line(str(line_name), map_operator_id, route_meta)
         line_color = normalize_hex_color(line.get("color")) or OPERATOR_DEFAULT_COLORS.get(map_operator_id, "#8aa4c8")
         polyline = [{"lat": lat, "lon": lon} for lon, lat in coords]
         track_centerlines.append({
             "id": f"TRACK_TOKYO_{index:04d}",
             "operatorId": map_operator_id,
-            "lineName": line.get("line_name_ja") or line.get("label") or route_id,
+            "lineName": line_name or next(iter(route_ids)),
             "mode": "rail" if line.get("kind") == "jr" else line.get("kind") or "rail",
             "color": line_color,
             "polyline": polyline,
             "stationGroupIds": [],
             "tags": ["tokyo", "track_centerline"],
         })
-        service_geometry.append({
-            "id": f"GEOM_TOKYO_{index:04d}",
-            "routeId": route_id,
-            "representation": "service_path",
-            "minZoom": 0,
-            "maxZoom": 24,
-            "offsetRank": 0,
-            "color": line_color,
-            "lineName": line.get("line_name_ja") or line.get("label") or route_id,
-            "operatorId": map_operator_id,
-            "polyline": polyline,
-        })
+        for route_index, route_id in enumerate(sorted(route_ids)):
+            service_geometry.append({
+                "id": f"GEOM_TOKYO_{index:04d}_{route_index:02d}",
+                "routeId": route_id,
+                "representation": "service_path",
+                "minZoom": 0,
+                "maxZoom": 24,
+                "offsetRank": 0,
+                "color": line_color,
+                "lineName": line_name or route_id,
+                "operatorId": map_operator_id,
+                "polyline": polyline,
+            })
 
     trip_instances = []
     skipped_trains = 0
@@ -542,11 +563,13 @@ def build_bundle() -> dict[str, Any]:
         if len(stop_times) < 2:
             skipped_trains += 1
             continue
+        public_service_number = train.get("service_number") or train.get("public_service_number") or train.get("train_number") or ""
         trip_instances.append({
             "id": train.get("id"),
             "routeId": route_id,
             "serviceName": train.get("service_name") or train.get("operator") or "Train",
-            "serviceNumber": train.get("train_number") or "",
+            "serviceNumber": public_service_number,
+            "operatingNumber": train.get("operating_number") or train.get("train_number") or "",
             "stopTimes": stop_times,
         })
 

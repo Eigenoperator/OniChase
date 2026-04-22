@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import html
 import json
+import os
 import re
 import time
 from collections import deque
@@ -25,10 +26,40 @@ MAX_FETCH_RETRIES = 5
 SEED_LINE_PAGES = [
     "https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd=00003544&rrCd=00000790&updown=1",
     "https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd=00003544&rrCd=00000789&updown=1",
+    "https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd=00007197&rrCd=00000787&updown=0",
+    "https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd=00007245&rrCd=00000791&updown=0",
+    "https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd=00001277&rrCd=00000788&updown=0",
+    "https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd=00005463&rrCd=00000903&updown=1",
+    "https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd=00003004&rrCd=00000786&updown=1",
+    "https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd=00006248&rrCd=00000784&updown=1",
+    "https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd=00007245&rrCd=00001279&updown=1",
 ]
 
 TOKYU_OPERATOR = "東急電鉄"
 ROUTE_COLOR = "D91B5C"
+TOKYU_LINE_LABELS = {
+    "東横線",
+    "目黒線",
+    "田園都市線",
+    "大井町線",
+    "池上線",
+    "東急多摩川線",
+    "多摩川線",
+    "世田谷線",
+    "こどもの国線",
+    "東急新横浜線",
+}
+RR_LINE_NAMES = {
+    "00000784": "こどもの国線",
+    "00000786": "世田谷線",
+    "00000787": "大井町線",
+    "00000788": "池上線",
+    "00000789": "田園都市線",
+    "00000790": "東横線",
+    "00000791": "目黒線",
+    "00000903": "東急多摩川線",
+    "00001279": "東急新横浜線",
+}
 
 
 def fetch_text(url: str) -> str:
@@ -42,7 +73,7 @@ def fetch_text(url: str) -> str:
         try:
             response = requests.get(url, timeout=TIMEOUT, headers={"User-Agent": "Mozilla/5.0"})
             response.raise_for_status()
-            response.encoding = response.apparent_encoding or "utf-8"
+            response.encoding = response.encoding or "utf-8"
             cache_path.write_text(response.text, encoding="utf-8")
             return response.text
         except requests.RequestException as exc:
@@ -98,6 +129,7 @@ def load_station_seed() -> list[dict]:
                 "station_id": f"TOKYU_{norm}",
                 "name_ja": norm,
                 "operator": TOKYU_OPERATOR,
+                "line_id": props.get("N02_003", ""),
                 "lat": round(lat, 8),
                 "lon": round(lon, 8),
                 "n02_station_code": props.get("N02_005c"),
@@ -118,9 +150,22 @@ def canonical_line_page(url: str) -> str:
 def is_tokyu_line_page(url: str, label: str | None = None) -> bool:
     if "transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?" not in url:
         return False
+    rr_filter = {
+        item.strip()
+        for item in os.environ.get("TOKYU_RR_FILTER", "").split(",")
+        if item.strip()
+    }
+    if rr_filter:
+        query = parse_qs(urlparse(url).query)
+        rr = query.get("rrCd", [""])[0]
+        if rr not in rr_filter:
+            return False
     if label is None:
         return True
-    return "東急" in label and "東京メトロ" not in label
+    text = html.unescape(re.sub(r"<.*?>", " ", label)).strip()
+    if any(external in text for external in ("東京メトロ", "都営", "相鉄", "埼玉高速", "みなとみらい")):
+        return False
+    return "東急" in text or text in TOKYU_LINE_LABELS
 
 
 def extract_line_page_options(html_text: str) -> list[tuple[str, str]]:
@@ -166,21 +211,41 @@ def extract_tokyu_station_codes_from_stop_page(html_text: str, station_lookup: d
     return codes
 
 
+def extract_tokyu_timetable_links_from_stop_page(html_text: str) -> list[str]:
+    links: list[str] = []
+    seen: set[str] = set()
+    for href in re.findall(r'href="(/tokyu/pc/diagram/TrainDiagram\?[^"]+)"', html_text):
+        full = canonical_line_page(urljoin(BASE_URL, html.unescape(href)))
+        if not is_tokyu_line_page(full):
+            continue
+        if full in seen:
+            continue
+        seen.add(full)
+        links.append(full)
+    return links
+
+
+def route_line_name_from_url(url: str) -> str | None:
+    query = parse_qs(urlparse(url).query)
+    rr = query.get("rrCd", [""])[0]
+    return RR_LINE_NAMES.get(rr)
+
+
 def parse_stop_page(url: str, station_lookup: dict[str, dict]) -> dict | None:
     html_text = fetch_text(url)
     title_match = re.search(r"<title>\s*(.*?)\s*</title>", html_text, re.S)
     title = html.unescape(re.sub(r"<.*?>", " ", title_match.group(1))).strip() if title_match else ""
 
     query = parse_qs(urlparse(url).query)
+    route_line_name = route_line_name_from_url(url)
+    route_code = query.get("rrCd", ["tokyu"])[0]
     train_code = query.get("trCd", [""])[0]
     day = query.get("day", [""])[0]
     month = query.get("month", [""])[0]
     year = query.get("year", [""])[0]
     hour = query.get("hour", [""])[0]
     minute = query.get("minutes", [""])[0]
-    if f"{year}-{month}-{day}" != SERVICE_DAY:
-        return None
-    service_instance_id = f"{train_code}_{SERVICE_DAY}"
+    service_instance_id = f"{route_code}_{train_code}_{SERVICE_DAY}"
 
     title_clean = title.replace("停車駅 | 東急電鉄", "").strip()
     title_match = re.match(r"\((.+?)\)\s+(\d{2}:\d{2})発\s+(.+?)行き", title_clean)
@@ -215,7 +280,7 @@ def parse_stop_page(url: str, station_lookup: dict[str, dict]) -> dict | None:
                 "sequence": index,
                 "station_name_raw": station_name,
                 "station_id": station["station_id"],
-                "line_id": None,
+                "line_id": route_line_name or station.get("line_id"),
                 "arrival_hhmm": arrival_hhmm,
                 "departure_hhmm": departure_hhmm,
                 "platform": None,
@@ -237,10 +302,15 @@ def parse_stop_page(url: str, station_lookup: dict[str, dict]) -> dict | None:
 
 
 def crawl_tokyu_pages(station_lookup: dict[str, dict]) -> tuple[set[str], list[dict]]:
-    queue = deque(canonical_line_page(url) for url in SEED_LINE_PAGES)
+    queue = deque(
+        canonical_line_page(url)
+        for url in SEED_LINE_PAGES
+        if is_tokyu_line_page(canonical_line_page(url))
+    )
     seen_pages: set[str] = set()
     train_links: set[str] = set()
     page_reports: list[dict] = []
+    discover_station_pages = os.environ.get("DISCOVER_STATION_PAGES") == "1"
     while queue:
         page_url = queue.popleft()
         if page_url in seen_pages:
@@ -267,17 +337,15 @@ def crawl_tokyu_pages(station_lookup: dict[str, dict]) -> tuple[set[str], list[d
             if not is_tokyu_line_page(option_url, label):
                 continue
             queue.append(canonical_line_page(option_url))
-        for train_url in route_train_links[:40]:
-            try:
-                stop_html = fetch_text(train_url)
-            except requests.HTTPError as exc:
-                print(f"[tokyu] skip stop page {train_url}: {exc}")
-                continue
-            line_query = parse_qs(urlparse(page_url).query)
-            rr = line_query.get("rrCd", [""])[0]
-            for station_code in extract_tokyu_station_codes_from_stop_page(stop_html, station_lookup):
-                queue.append(canonical_line_page(f"https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd={station_code}&rrCd={rr}&updown=0"))
-                queue.append(canonical_line_page(f"https://transfer.navitime.biz/tokyu/pc/diagram/TrainDiagram?stCd={station_code}&rrCd={rr}&updown=1"))
+        if discover_station_pages:
+            for train_url in route_train_links[:40]:
+                try:
+                    stop_html = fetch_text(train_url)
+                except requests.HTTPError as exc:
+                    print(f"[tokyu] skip stop page {train_url}: {exc}")
+                    continue
+                for timetable_url in extract_tokyu_timetable_links_from_stop_page(stop_html):
+                    queue.append(timetable_url)
         page_reports.append(
             {
                 "page_url": page_url,
@@ -289,6 +357,8 @@ def crawl_tokyu_pages(station_lookup: dict[str, dict]) -> tuple[set[str], list[d
 
 
 def load_existing_output() -> dict:
+    if os.environ.get("REBUILD") == "1":
+        return {}
     if not OUTPUT_PATH.exists():
         return {}
     return json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))

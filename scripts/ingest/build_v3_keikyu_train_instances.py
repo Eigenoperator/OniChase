@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+import os
 import re
 import time
 import unicodedata
@@ -139,6 +140,20 @@ def normalize_station_name(name: str) -> str:
     return text
 
 
+def station_name_variants(name: str) -> set[str]:
+    text = normalize_station_name(name)
+    variants = {text}
+    variants.add(text.replace("ヶ", "ケ"))
+    variants.add(text.replace("ケ", "ヶ"))
+    variants.add(text.replace("塚", "塚"))
+    variants.add(text.replace("塚", "塚"))
+    more = set(variants)
+    for variant in variants:
+        more.add(variant.replace("ヶ", "ケ").replace("塚", "塚"))
+        more.add(variant.replace("ケ", "ヶ").replace("塚", "塚"))
+    return {variant for variant in more if variant}
+
+
 def normalize_hhmm(value: str) -> str:
     text = html.unescape(value).replace("：", ":").strip()
     if text in {"—", "-", "―", "‐", "&mdash;"}:
@@ -256,11 +271,12 @@ def main() -> int:
     station_seed = load_station_seed()
     station_lookup: dict[str, dict] = {}
     for entry in station_seed:
-        station_lookup[entry["name_ja"]] = entry
-        station_lookup[normalize_station_name(entry["name_ja"])] = entry
+        for variant in station_name_variants(entry["name_ja"]):
+            station_lookup[variant] = entry
     station_pages = discover_station_pages()
 
-    if OUTPUT_PATH.exists():
+    rebuild = os.environ.get("REBUILD") == "1"
+    if OUTPUT_PATH.exists() and not rebuild:
         existing = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
         source_reports = existing.get("source_reports", [])
         train_instances: list[dict] = existing.get("train_instances", [])

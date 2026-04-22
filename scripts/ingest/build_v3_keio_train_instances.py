@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import json
+import os
 import re
+import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -85,11 +87,30 @@ def hhmm(value: str | None) -> str:
 
 
 def station_name_to_seed_key(name: str) -> str:
-    return name.replace("ヶ", "ケ")
+    text = unicodedata.normalize("NFKC", str(name or "")).strip()
+    text = re.sub(r"[（(].*?[）)]", "", text)
+    text = re.sub(r"［.*?］", "", text)
+    text = re.sub(r"\[.*?\]", "", text)
+    return text
+
+
+def station_name_variants(name: str) -> set[str]:
+    text = station_name_to_seed_key(name)
+    variants = {text}
+    variants.add(text.replace("ヶ", "ケ"))
+    variants.add(text.replace("ケ", "ヶ"))
+    variants.add(text.replace("塚", "塚"))
+    variants.add(text.replace("塚", "塚"))
+    more = set(variants)
+    for variant in variants:
+        more.add(variant.replace("ヶ", "ケ").replace("塚", "塚"))
+        more.add(variant.replace("ケ", "ヶ").replace("塚", "塚"))
+    return {variant for variant in more if variant}
 
 
 def build_instances(station_lookup: dict[str, dict]) -> tuple[list[dict], list[dict]]:
-    if OUTPUT_PATH.exists():
+    rebuild = os.environ.get("REBUILD") == "1"
+    if OUTPUT_PATH.exists() and not rebuild:
         existing = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
         source_reports: list[dict] = existing.get("source_reports", [])
         train_instances: list[dict] = existing.get("train_instances", [])
@@ -244,7 +265,10 @@ def build_instances(station_lookup: dict[str, dict]) -> tuple[list[dict], list[d
 
 def main() -> int:
     station_seed = load_station_seed()
-    station_lookup = {entry["name_ja"]: entry for entry in station_seed}
+    station_lookup = {}
+    for entry in station_seed:
+        for variant in station_name_variants(entry["name_ja"]):
+            station_lookup[variant] = entry
     source_reports, train_instances = build_instances(station_lookup)
     payload = {
         "id": "v3_tokyo_keio_weekday_train_instances_v0_1",

@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+import os
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -11,6 +12,8 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import requests
+
+from train_instance_merge import index_train_instances, upsert_train_instance
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -216,22 +219,7 @@ def collect_detail_pages(detail_urls: list[str], station_lookup: dict[str, dict]
 
 
 def write_output(station_seed: list[dict], source_reports: list[dict], train_instances: list[dict]) -> None:
-    deduped: dict[str | tuple, dict] = {}
-    for item in train_instances:
-        stop_times = item.get("stop_times", [])
-        if not stop_times:
-            continue
-        key = item.get("train_number") or (
-            item.get("service_name"),
-            item.get("headsign"),
-            item.get("train_type"),
-            stop_times[0].get("departure_hhmm", ""),
-            stop_times[-1].get("arrival_hhmm", ""),
-            tuple((s.get("station_id"), s.get("arrival_hhmm"), s.get("departure_hhmm")) for s in stop_times),
-        )
-        existing = deduped.get(key)
-        if existing is None or len(stop_times) > len(existing.get("stop_times", [])):
-            deduped[key] = item
+    merged_instances, _ = index_train_instances(train_instances)
     payload = {
         "id": "v3_tokyo_seibu_weekday_train_instances_v0_1",
         "label": "v3 Tokyo Seibu weekday train instances",
@@ -240,7 +228,7 @@ def write_output(station_seed: list[dict], source_reports: list[dict], train_ins
         "station_seed": station_seed,
         "source_reports": source_reports,
         "train_instances": sorted(
-            deduped.values(),
+            merged_instances,
             key=lambda item: (
                 item["stop_times"][0]["departure_hhmm"],
                 item["train_number"],
@@ -253,18 +241,19 @@ def write_output(station_seed: list[dict], source_reports: list[dict], train_ins
 
 def main() -> int:
     station_seed = load_station_seed()
-    station_lookup = {entry["name_ja"]: entry for entry in station_seed}
+    station_lookup = {normalize_station_name(entry["name_ja"]): entry for entry in station_seed}
     station_pages = discover_station_pages()
 
-    if OUTPUT_PATH.exists():
+    rebuild = os.environ.get("REBUILD") == "1"
+    if OUTPUT_PATH.exists() and not rebuild:
         existing = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
         source_reports = existing.get("source_reports", [])
-        train_instances: list[dict] = existing.get("train_instances", [])
+        train_instances, instance_index = index_train_instances(existing.get("train_instances", []))
     else:
         source_reports = []
         train_instances = []
+        instance_index = {}
 
-    seen_instances: set[str] = {item["service_instance_id"] for item in train_instances}
     completed_station_pages = {report["station_page"] for report in source_reports}
     next_train_checkpoint = ((len(train_instances) // CHECKPOINT_TRAINS_EVERY) + 1) * CHECKPOINT_TRAINS_EVERY
 
@@ -290,11 +279,11 @@ def main() -> int:
             continue
         added = 0
         for parsed in collect_detail_pages(detail_urls, station_lookup):
-            if not parsed or parsed["service_instance_id"] in seen_instances:
+            if not parsed:
                 continue
-            seen_instances.add(parsed["service_instance_id"])
-            train_instances.append(parsed)
-            added += 1
+            action = upsert_train_instance(train_instances, instance_index, parsed)
+            if action == "added":
+                added += 1
             if len(train_instances) >= next_train_checkpoint:
                 write_output(station_seed, source_reports, train_instances)
                 print(

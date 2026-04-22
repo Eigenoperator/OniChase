@@ -23,6 +23,7 @@ DEPARTURES_PATH = DATA_DIR / "v3_station_departures.json.gz"
 
 DATASET_SPECS = [
     ("jr_east", "JR East", DATA_DIR / "v3_tokyo_jreast_core_weekday_train_instances.json"),
+    ("jr_central", "JR Central", DATA_DIR / "v3_tokyo_jr_central_tokaido_weekday_train_instances.json"),
     ("tokyo_metro", "Tokyo Metro", DATA_DIR / "v3_tokyo_tokyo_metro_weekday_train_instances.json.gz"),
     ("toei", "Toei", DATA_DIR / "v3_tokyo_toei_weekday_train_instances.json"),
     ("keio", "Keio", DATA_DIR / "v3_tokyo_keio_weekday_train_instances.json"),
@@ -39,6 +40,96 @@ DATASET_SPECS = [
     ("tsukuba_express", "Tsukuba Express", DATA_DIR / "v3_tokyo_tsukuba_express_weekday_train_instances.json"),
     ("shinkansen", "JR Shinkansen", DATA_DIR / "shinkansen_v2_weekday_train_instances_merged.json"),
 ]
+
+
+MANUAL_STATION_KEY_ALIASES = {
+    "Abukuma": "あぶくま",
+    "Adachi": "安達",
+    "Arikabe": "有壁",
+    "Asakanagamori": "安積永盛",
+    "Date": "伊達",
+    "Fujita": "藤田",
+    "Fukushima": "福島",
+    "Funaoka": "船岡",
+    "Furudate": "古館",
+    "Gohyakugawa": "五百川",
+    "Hanaizumi": "花泉",
+    "Hanamaki": "花巻",
+    "Hanamaki-Kuko": "花巻空港",
+    "Higashi-Fukushima": "東福島",
+    "Higashi-Sendai": "東仙台",
+    "Higashi-Shiroishi": "東白石",
+    "Hiraizumi": "平泉",
+    "Hiwada": "日和田",
+    "Hizume": "日詰",
+    "Ishidoriya": "石鳥谷",
+    "Ishikoshi": "石越",
+    "Iwakiri": "岩切",
+    "Iwate-Iioka": "岩手飯岡",
+    "Izumizaki": "泉崎",
+    "J-Village": "Jヴィレッジ",
+    "Kagamiishi": "鏡石",
+    "Kaida": "貝田",
+    "Kanayagawa": "金谷川",
+    "Kanegasaki": "金ヶ崎",
+    "Kashimadai": "鹿島台",
+    "Kita-Shirakawa": "北白川",
+    "Kogota": "小牛田",
+    "Kokufu-Tagajo": "国府多賀城",
+    "Koori": "桑折",
+    "Kosugo": "越河",
+    "Kurodahara": "黒田原",
+    "Kutano": "久田野",
+    "Maesawa": "前沢",
+    "Matsukawa": "松川",
+    "Matsushima": "松島",
+    "Matsuyamamachi": "松山町",
+    "Minami-Fukushima": "南福島",
+    "Mizusawa": "水沢",
+    "Motomiya": "本宮",
+    "Murasakino": "村崎野",
+    "Nihommatsu": "二本松",
+    "Ogawara": "大河原",
+    "Rikuchu-Orii": "陸中折居",
+    "Rifu": "利府",
+    "Rikuzen-Sanno": "陸前山王",
+    "Rokuhara": "六原",
+    "Sembokucho": "仙北町",
+    "Semine": "瀬峰",
+    "Shimizuhara": "清水原",
+    "Shinainuma": "品井沼",
+    "Shin-Rifu": "新利府",
+    "Shiogama": "塩釜",
+    "Shirasaka": "白坂",
+    "Shirakawa": "白河",
+    "Shiroishi": "白石",
+    "Shiwa-Chuo": "紫波中央",
+    "Sukagawa": "須賀川",
+    "Tajiri": "田尻",
+    "Takagimachi": "高城町",
+    "Takaku": "高久",
+    "Toyohara": "豊原",
+    "Tsukinoki": "槻木",
+    "Umegasawa": "梅ヶ沢",
+    "Yabuki": "矢吹",
+    "Yahaba": "矢幅",
+    "Yamanome": "山ノ目",
+    "Yushima": "油島",
+}
+
+
+LINE_STATION_KEY_OVERRIDES = {
+    ("jr_east", "JR_CHUO", "kawashima"): "信濃川島",
+    ("jr_east", "JR_CHUO", "ono"): "小野",
+    ("jr_east", "JR_JOBAN", "ono"): "大野",
+    ("jr_east", "JR_JOBAN", "ueda"): "植田",
+    ("jr_east", "JR_SENSEKI", "takagimachi"): "高城町",
+    ("jr_east", "JR_KASHIMA", "kashimasoccerstadium"): "鹿島サッカースタジアム",
+    ("jr_east", "JR_KASHIMA", "kashimasoccerstadiumseasonal"): "鹿島サッカースタジアム",
+    ("jr_east", "JR_CHUO", "shinanokawashima"): "信濃川島",
+    ("jr_east", "JR_EAST_SOBU_RAPID", "shinnihombashi"): "新日本橋",
+    ("jr_east", "JR_EAST_YOKOSUKA", "shinnihombashi"): "新日本橋",
+}
 
 
 def load_json(path: Path) -> Any:
@@ -147,6 +238,12 @@ def load_station_aliases() -> dict[str, set[str]]:
                 for key in keys:
                     aliases[key].update(keys)
 
+    for source, target in MANUAL_STATION_KEY_ALIASES.items():
+        source_key = station_key(source)
+        target_key = station_key(target)
+        aliases[source_key].update({source_key, target_key})
+        aliases[target_key].update({source_key, target_key})
+
     return aliases
 
 
@@ -165,8 +262,23 @@ def train_identity(operator_id: str, source_id: str, train: dict[str, Any], inde
         train.get("display_name"),
         train.get("train_name_raw"),
     )
+    stop_signature = [
+        (
+            stop.get("station_id") or stop.get("station_name_raw") or stop.get("station_name") or stop.get("name"),
+            stop.get("arrival_hhmm") or stop.get("arrival") or stop.get("time"),
+            stop.get("departure_hhmm") or stop.get("departure") or stop.get("time"),
+            stop.get("line_id") or stop.get("line"),
+        )
+        for stop in (train.get("stop_times") or train.get("stops") or [])
+    ]
     if natural:
-        digest = hashlib.sha1(f"{operator_id}|{source_id}|{natural}".encode("utf-8")).hexdigest()[:10]
+        digest = hashlib.sha1(
+            json.dumps(
+                [operator_id, source_id, natural, stop_signature],
+                ensure_ascii=False,
+                sort_keys=True,
+            ).encode("utf-8")
+        ).hexdigest()[:10]
         return f"{operator_id}:{str(natural).replace(' ', '_')}:{digest}"
     digest = hashlib.sha1(json.dumps(train, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()[:14]
     return f"{operator_id}:anonymous_{index}:{digest}"
@@ -202,10 +314,11 @@ def normalize_train(
         if not raw_name:
             continue
         raw_key = station_key(raw_name)
-        key = canonical_key(raw_key, aliases)
         arrival = first_present(stop.get("arrival_hhmm"), stop.get("arrival"), stop.get("time"))
         departure = first_present(stop.get("departure_hhmm"), stop.get("departure"), arrival)
         line = first_present(stop.get("line_id"), stop.get("line"), train.get("line_id"))
+        override = LINE_STATION_KEY_OVERRIDES.get((operator_id, str(line), raw_key))
+        key = station_key(override) if override is not None else canonical_key(raw_key, aliases)
         stops.append({
             "sequence": int(stop.get("sequence") or fallback_sequence),
             "station_id": stop.get("station_id"),
@@ -223,13 +336,17 @@ def normalize_train(
     stops.sort(key=lambda item: item["sequence"])
     train_id = train_identity(operator_id, source_id, train, index)
     service_name = first_present(train.get("service_name"), train.get("display_name"), train.get("train_name_raw"), operator_name)
-    train_number = first_present(train.get("train_number"), train.get("service_number"), train.get("service_instance_id"), "")
+    public_service_number = first_present(train.get("public_service_number"), train.get("service_number"), "")
+    operating_number = first_present(train.get("train_number"), train.get("service_instance_id"), "")
+    train_number = first_present(operating_number, public_service_number, "")
     return {
         "id": train_id,
         "operator": operator_name,
         "operator_id": operator_id,
         "line": infer_line(train, stops),
         "train_number": train_number,
+        "service_number": public_service_number,
+        "operating_number": operating_number,
         "service_name": service_name,
         "direction": first_present(train.get("direction"), train.get("headsign"), stops[-1]["station_name"]),
         "stops": stops,
@@ -240,6 +357,45 @@ def normalize_train(
         },
         "service_day": service_day,
     }
+
+
+def normalized_train_signature(train: dict[str, Any]) -> tuple:
+    stops = train.get("stops") or []
+    return (
+        train.get("operator_id"),
+        train.get("line"),
+        train.get("service_name"),
+        train.get("direction"),
+        tuple(
+            (
+                stop.get("station_key"),
+                stop.get("arrival"),
+                stop.get("departure"),
+                stop.get("line"),
+            )
+            for stop in stops
+        ),
+    )
+
+
+def choose_best_normalized_train(current: dict[str, Any] | None, candidate: dict[str, Any]) -> dict[str, Any]:
+    if current is None:
+        return candidate
+    current_stops = current.get("stops") or []
+    candidate_stops = candidate.get("stops") or []
+    if len(candidate_stops) > len(current_stops):
+        return candidate
+    if len(candidate_stops) < len(current_stops):
+        return current
+    return candidate if str(candidate.get("train_number") or "") < str(current.get("train_number") or "") else current
+
+
+def dedupe_normalized_trains(trains: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_signature: dict[tuple, dict[str, Any]] = {}
+    for train in trains:
+        signature = normalized_train_signature(train)
+        by_signature[signature] = choose_best_normalized_train(by_signature.get(signature), train)
+    return list(by_signature.values())
 
 
 def departure_sort_key(entry: dict[str, Any]) -> tuple[int, str, str]:
@@ -288,6 +444,7 @@ def build() -> dict[str, Any]:
             normalized = normalize_train(operator_id, operator_name, path, source_id, service_day, train, index, aliases)
             if normalized:
                 normalized_batch.append(normalized)
+        normalized_batch = dedupe_normalized_trains(normalized_batch)
         trains.extend(normalized_batch)
         entry.update({
             "train_count": len(normalized_batch),
@@ -325,6 +482,8 @@ def build() -> dict[str, Any]:
                 "operator_id": train["operator_id"],
                 "line": stop.get("line") or train.get("line"),
                 "train_number": train.get("train_number"),
+                "service_number": train.get("service_number"),
+                "operating_number": train.get("operating_number"),
                 "service_name": train.get("service_name"),
                 "direction": train.get("direction"),
                 "destination": destination,
