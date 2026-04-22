@@ -1425,16 +1425,31 @@
 
     function marqueeHtml(text, className = '') {
       const value = String(text || '');
-      const needsMarquee = value.length >= 24;
       const safe = escapeHtml(value);
       return `
-        <span class="${className} marquee-wrap ${needsMarquee ? 'needs-marquee' : ''}" title="${safe}">
+        <span class="${className} marquee-wrap" title="${safe}">
           <span class="marquee-track">
             <span>${safe}</span>
             <span class="marquee-clone" aria-hidden="true">${safe}</span>
           </span>
         </span>
       `;
+    }
+
+    function refreshConditionalMarquees(root = document) {
+      const wraps = Array.from(root.querySelectorAll('.marquee-wrap'));
+      wraps.forEach((wrap) => wrap.classList.remove('needs-marquee'));
+      requestAnimationFrame(() => {
+        wraps.forEach((wrap) => {
+          const track = wrap.querySelector('.marquee-track');
+          if (!track) return;
+          const sourceText = track.firstElementChild;
+          const textWidth = sourceText ? sourceText.getBoundingClientRect().width : track.scrollWidth;
+          if (textWidth > wrap.clientWidth + 1) {
+            wrap.classList.add('needs-marquee');
+          }
+        });
+      });
     }
 
     async function fetchJsonMaybeGz(url) {
@@ -3525,7 +3540,7 @@
       if (origin) parts.push(`始発 ${displayNameForGroup(origin.stationGroupId)}`);
       if (terminal) parts.push(`終点 ${displayNameForGroup(terminal.stationGroupId)}`);
       if (nextStop) {
-        parts.push(`次 ${displayNameForGroup(nextStop.stationGroupId)} ${secToClock(nextStop.arrivalTimeSec ?? nextStop.departureTimeSec)}`);
+        parts.push(`次 ${displayNameForGroup(nextStop.stationGroupId)}`);
       }
       return parts.join(' · ');
     }
@@ -4548,6 +4563,7 @@
         }
       }
       trainOutlookEl.innerHTML = `<div class="planner-stack">${html || '<div class="empty">No planning options available.</div>'}</div>`;
+      refreshConditionalMarquees(trainOutlookEl);
       trainSummaryEl.querySelectorAll('[data-action]').forEach((button) => {
         button.addEventListener('click', () => {
           const action = button.dataset.action;

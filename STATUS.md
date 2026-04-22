@@ -23,6 +23,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 Tokyo Metro route titles now use common line names (`丸ノ内線`, `有楽町線`, `副都心線`, etc.) instead of numbered legal names in the UI.
 - Local two-browser v3 multiplayer smoke passed: Runner/Hunter created and joined one room, both ready states synced into Planning and then LIVE, and local/public room `/health` report `dataset_name = v3-tokyo`.
 - Backfilled `diary/DIARY-2026-04-21.md` with the full v3 data, display, through-running, and multiplayer smoke-test summary.
+- v3 train preview rows now show next stop without a clock time and only marquee-scroll after actual rendered overflow.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
