@@ -14,6 +14,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - Recent local work tightened departure route matching, optimized MapLibre loading, and generated large v3 data/script changes that are still dirty in the worktree.
 - v3 data/script stable set was rebuilt and audited: unified trains `41186`, duplicate unified ids `0`, duplicate unified signatures `0`, rendered lines without trips `0`, and local/public v3 room `/health` both report `dataset_name = v3-tokyo`.
 - Committed and pushed the validated v3 stable set in `c66264e` (`Validate v3 Tokyo timetable bundle`).
+- Local headless Firefox single-player smoke test passed the core v3 flow: load map/timetable, enter Runner mode, choose line/train/destination, generate a plan, start countdown, and transition into `LIVE`.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
@@ -32,5 +33,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Manually play public `v3.html` online with two browsers through the Ready Room flow now that the v3 room server health endpoint is live.
-2. Continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.
+1. Manually play public `v3.html` online with two browsers through the Ready Room flow now that single-player smoke and v3 room `/health` both pass.
+2. Review minor v3 single-player UI rough edges from smoke testing: duplicated marquee preview text and hidden Replay button semantics.
+3. Continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.
