@@ -15,15 +15,16 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 data/script stable set was rebuilt and audited: unified trains `41186`, duplicate unified ids `0`, duplicate unified signatures `0`, rendered lines without trips `0`, and local/public v3 room `/health` both report `dataset_name = v3-tokyo`.
 - Committed and pushed the validated v3 stable set in `c66264e` (`Validate v3 Tokyo timetable bundle`).
 - Local headless Firefox single-player smoke test passed the core v3 flow: load map/timetable, enter Runner mode, choose line/train/destination, generate a plan, start countdown, and transition into `LIVE`.
+- v3 through-running display now classifies departures by the physical boarding line: Toyoko/Yokohama/Hiyoshi/Jiyugaoka no longer surface Tokyo Metro through-service aliases as separate line choices.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
-- Stabilize `v3` MapLibre gameplay UX: dense Tokyo click behavior, destination-stop selection, player marker clarity, and map/planner readability.
+- Stabilize `v3` MapLibre gameplay UX: dense Tokyo click behavior, player marker clarity, route labeling, and map/planner readability.
 
 ## Blockers
 - No usable Notion tool/config exists in this repo/session, so true Notion updates remain blocked.
 - `JR Central` still lacks a direct train-detail page like `JR East / JR West`; deeper precision still needs station-grid aggregation.
-- Firefox exists locally, but headless screenshot times out in this machine's SWGL renderer; current v3 verification is static JS, bundle decode, generated tile audit, and localhost resource smoke tests until manual browser testing or a stronger browser harness is available.
+- Firefox/geckodriver works for headless DOM gameplay probes; screenshot capture may still be limited by this machine's SWGL renderer.
 - Large untracked source caches are intentionally not part of the stable commit: `data/v3_external/`, `data/v3_tokyo_jreast_core_cache/`, and `data/v3_tokyo_rinkai_cache/`.
 
 ## Decisions
@@ -34,5 +35,5 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 
 ## Next
 1. Manually play public `v3.html` online with two browsers through the Ready Room flow now that single-player smoke and v3 room `/health` both pass.
-2. Review minor v3 single-player UI rough edges from smoke testing: duplicated marquee preview text and hidden Replay button semantics.
+2. Review minor v3 UI rough edges: duplicated marquee preview text, occasional combined through-route train labels, and hidden Replay button semantics.
 3. Continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.

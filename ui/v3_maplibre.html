@@ -2405,13 +2405,17 @@
         state.routePhysicalServeCache.set(cacheKey, fallback);
         return fallback;
       }
+      const ownGeometries = state.serviceGeometryByRouteId.get(routeId) || [];
       let best = Number.POSITIVE_INFINITY;
       stations.forEach((station) => {
-        best = Math.min(best, routeDistanceSqToStation(routeId, station));
+        const coordinate = [station.lon, station.lat];
+        ownGeometries.forEach((geometry) => {
+          best = Math.min(best, polylineDistanceSqToPoint(geometry.polyline, coordinate));
+        });
       });
       const result = Number.isFinite(best)
         ? best <= PHYSICAL_ROUTE_STATION_DISTANCE_SQ
-        : Boolean(state.routeStationSetById.get(routeId)?.has(stationGroupId));
+        : false;
       state.routePhysicalServeCache.set(cacheKey, result);
       return result;
     }
@@ -2464,7 +2468,8 @@
       if (sameOperator && ['jr_east', 'tokyo_metro', 'toei'].includes(tripRoute.operatorId)) {
         return false;
       }
-      return routesShareBoardingOperator(tripRouteId, selectedRouteId) && routeAliasesOverlap(selectedRouteId, tripRouteId);
+      return routeAliasesOverlap(selectedRouteId, tripRouteId)
+        || routesShareBoardingOperator(tripRouteId, selectedRouteId);
     }
 
     function nextStopAfter(trip, boardStop) {
@@ -2482,8 +2487,7 @@
       if (!route) return false;
       const nextStop = nextStopAfter(trip, boardStop);
       if (routeId === trip.routeId) {
-        result = routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)
-          || ['jr_east', 'shinkansen', 'tokyo_metro', 'toei'].includes(route.operatorId);
+        result = routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId);
       } else if (nextStop && canBorrowTripForBoardingLine(trip.routeId, routeId) && routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)) {
         result = (
           routePhysicallyServesStationGroup(routeId, nextStop.stationGroupId) ||
@@ -2511,7 +2515,7 @@
         if (!boardStop || !routeCanRepresentTripDeparture(trip, boardStop, routeId)) return;
         routeIds.add(routeId);
       });
-      if (!routeIds.size && !isThroughServiceTransferAlias(trip.routeId)) routeIds.add(trip.routeId);
+      if (!routeIds.size && !physicalRouteIds.size && !isThroughServiceTransferAlias(trip.routeId)) routeIds.add(trip.routeId);
       const result = [...routeIds];
       state.boardableRouteIdsCache.set(cacheKey, result);
       return result;
@@ -4278,7 +4282,7 @@
     function routeChoicesFromDepartures(departures) {
       const byRoute = new Map();
       departures.forEach((entry) => {
-        const entryRouteIds = entry.routeIds?.length ? entry.routeIds : [entry.trip.routeId || '__unknown_route__'];
+        const entryRouteIds = entry.routeIds?.length ? entry.routeIds : [];
         entryRouteIds.forEach((routeId) => {
         if (isThroughServiceTransferAlias(routeId)) return;
         const current = byRoute.get(routeId) || {
