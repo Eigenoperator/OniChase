@@ -1918,12 +1918,15 @@
     }
 
     function serviceNameJaLabel(trip) {
+      const routeName = routeJapaneseName(trip?.routeId);
+      if (!isShinkansenTrip(trip) && !isLimitedExpressTrip(trip)) {
+        return routeName !== '路線' ? routeName : '列車';
+      }
       const explicit = trip?.serviceNameJa || trip?.service_name_ja || trip?.trainNameJa || trip?.train_name_ja;
       if (explicit) return explicit;
       const serviceName = trip?.serviceName || trip?.service_name || '';
       if (SERVICE_NAME_JA_LABELS[serviceName]) return SERVICE_NAME_JA_LABELS[serviceName];
       if (serviceName && hasJapaneseText(serviceName)) return serviceName;
-      const routeName = routeJapaneseName(trip?.routeId);
       if (serviceName && !GENERIC_ENGLISH_SERVICE_NAMES.has(serviceName)) {
         return routeName !== '路線' ? routeName : '列車';
       }
@@ -2452,6 +2455,18 @@
       return routeTrackLineAliases(rightRouteId).some((alias) => leftAliases.has(alias));
     }
 
+    function canBorrowTripForBoardingLine(tripRouteId, selectedRouteId) {
+      if (!tripRouteId || !selectedRouteId || tripRouteId === selectedRouteId) return false;
+      const tripRoute = state.routeById.get(tripRouteId);
+      const selectedRoute = state.routeById.get(selectedRouteId);
+      if (!tripRoute || !selectedRoute) return false;
+      const sameOperator = tripRoute.operatorId === selectedRoute.operatorId;
+      if (sameOperator && ['jr_east', 'tokyo_metro', 'toei'].includes(tripRoute.operatorId)) {
+        return false;
+      }
+      return routesShareBoardingOperator(tripRouteId, selectedRouteId) && routeAliasesOverlap(selectedRouteId, tripRouteId);
+    }
+
     function nextStopAfter(trip, boardStop) {
       return (trip?.stopTimes || []).find((stop) => stop.sequence > boardStop.sequence) || null;
     }
@@ -2469,7 +2484,7 @@
       if (routeId === trip.routeId) {
         result = routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)
           || ['jr_east', 'shinkansen', 'tokyo_metro', 'toei'].includes(route.operatorId);
-      } else if (nextStop && routeAliasesOverlap(routeId, trip.routeId) && routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)) {
+      } else if (nextStop && canBorrowTripForBoardingLine(trip.routeId, routeId) && routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId)) {
         result = (
           routePhysicallyServesStationGroup(routeId, nextStop.stationGroupId) ||
           Boolean(state.routeStationSetById.get(routeId)?.has(nextStop.stationGroupId))
