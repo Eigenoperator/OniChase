@@ -1386,6 +1386,8 @@
         pollingHandle: null,
         lastRoom: null,
         presences: { runner: null, hunter: null },
+        planSubmitSeq: 0,
+        localPlanDirty: false,
       },
     };
 
@@ -1615,6 +1617,8 @@
         token: '',
         lastRoom: null,
         presences: { runner: null, hunter: null },
+        planSubmitSeq: 0,
+        localPlanDirty: false,
       };
       resetMatch();
       state.activeMode = seat;
@@ -1710,6 +1714,8 @@
         token: '',
         lastRoom: null,
         presences: { runner: null, hunter: null },
+        planSubmitSeq: 0,
+        localPlanDirty: false,
       };
       roomIdInput.value = '';
       updateRoomCodePill('');
@@ -1796,7 +1802,7 @@
       };
     }
 
-    function syncStateFromRoom(room) {
+    function syncStateFromRoom(room, options = {}) {
       state.online.lastRoom = room;
       state.online.roomId = room.room_id;
       roomIdInput.value = room.room_id;
@@ -1816,16 +1822,24 @@
       }
       state.liveCapture = room.capture || null;
       if (room.self) {
+        const preserveLocalPlan = Boolean(state.online.localPlanDirty && !options.acceptSelfPlan);
+        const existingSelf = state.players[room.self.seat] || {};
         state.activeMode = room.self.seat;
         state.online.seat = room.self.seat;
         if (room.self.session_token && room.self.session_token !== state.online.token) {
           state.online.token = room.self.session_token;
           saveOnlineToken(room.room_id, room.self.seat, room.self.session_token);
         }
+        const roomPlanRevision = Number(room.self.plan_revision || 0);
+        if (!preserveLocalPlan && Number.isFinite(roomPlanRevision)) {
+          state.online.planSubmitSeq = Math.max(state.online.planSubmitSeq || 0, roomPlanRevision);
+        }
         state.players[room.self.seat] = {
-          start_station_id: room.self.start_station_id,
+          start_station_id: preserveLocalPlan
+            ? (existingSelf.start_station_id || room.self.start_station_id)
+            : room.self.start_station_id,
           input_mode: 'plan',
-          steps: room.self.steps || [],
+          steps: preserveLocalPlan ? (existingSelf.steps || []) : (room.self.steps || []),
         };
         state.online.presences[room.self.seat] = room.self.presence || null;
       }
@@ -1910,6 +1924,9 @@
     async function submitCurrentPlanToRoom() {
       if (!onlineActive()) return null;
       const player = state.players[state.online.seat];
+      const submitSeq = (state.online.planSubmitSeq || 0) + 1;
+      state.online.planSubmitSeq = submitSeq;
+      state.online.localPlanDirty = true;
       const data = await apiJson(`${state.online.serverUrl}/api/rooms/${state.online.roomId}/plan`, {
         method: 'POST',
         body: JSON.stringify({
@@ -1917,9 +1934,13 @@
           token: state.online.token,
           start_station_id: player.start_station_id,
           steps: player.steps,
+          plan_revision: submitSeq,
         }),
       });
-      syncStateFromRoom(data.room);
+      if (submitSeq === state.online.planSubmitSeq) {
+        state.online.localPlanDirty = false;
+        syncStateFromRoom(data.room, { acceptSelfPlan: true });
+      }
       return data.room;
     }
 

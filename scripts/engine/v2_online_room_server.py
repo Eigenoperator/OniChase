@@ -148,6 +148,7 @@ class SeatState:
     ready: bool = False
     start_station_id: str | None = None
     steps: list[dict[str, Any]] = field(default_factory=list)
+    plan_revision: int = 0
 
 
 @dataclass
@@ -455,6 +456,7 @@ class RoomRegistry:
             player.session_token = None
             player.ready = False
             player.steps = []
+            player.plan_revision = 0
             player.start_station_id = (
                 DEFAULT_RUNNER_START_STATION_ID
                 if seat == "runner"
@@ -471,14 +473,28 @@ class RoomRegistry:
                 raise PermissionError("invalid_token")
             return room
 
-    def submit_plan(self, room_id: str, seat: str, start_station_id: str | None, steps: list[dict[str, Any]]) -> RoomState:
+    def submit_plan(
+        self,
+        room_id: str,
+        seat: str,
+        start_station_id: str | None,
+        steps: list[dict[str, Any]],
+        plan_revision: int | None = None,
+    ) -> RoomState:
         with self._lock:
             room = self._rooms[room_id]
             advance_room(room)
             player = room.players[seat]
+            if plan_revision is None:
+                accepted_revision = player.plan_revision + 1
+            else:
+                accepted_revision = int(plan_revision)
+                if accepted_revision < player.plan_revision:
+                    return room
             if start_station_id is not None:
                 player.start_station_id = start_station_id
             player.steps = steps
+            player.plan_revision = accepted_revision
             player.ready = False
             return room
 
@@ -559,6 +575,7 @@ def room_payload(room: RoomState, viewer_seat: str | None = None) -> dict[str, A
             **players_summary[viewer_seat],
             "start_station_id": self_player.start_station_id,
             "steps": self_player.steps,
+            "plan_revision": self_player.plan_revision,
             "session_token": self_player.session_token,
             "presence": project_presence_for_viewer(room, viewer_seat, viewer_seat),
         }
@@ -704,7 +721,19 @@ class RoomRequestHandler(BaseHTTPRequestHandler):
             except PermissionError:
                 self._send_json(HTTPStatus.FORBIDDEN, {"error": "invalid_token"})
                 return
-            room = REGISTRY.submit_plan(room_id, seat, body.get("start_station_id"), body.get("steps", []))
+            plan_revision_raw = body.get("plan_revision")
+            try:
+                plan_revision = int(plan_revision_raw) if plan_revision_raw is not None else None
+            except (TypeError, ValueError):
+                self._send_json(HTTPStatus.BAD_REQUEST, {"error": "invalid_plan_revision"})
+                return
+            room = REGISTRY.submit_plan(
+                room_id,
+                seat,
+                body.get("start_station_id"),
+                body.get("steps", []),
+                plan_revision,
+            )
             self._send_json(HTTPStatus.OK, {"room": room_payload(room, seat)})
             return
 
