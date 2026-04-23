@@ -2621,12 +2621,9 @@
         operatorMatchesBoardingStation &&
         nextStop &&
         canBorrowTripForBoardingLine(trip.routeId, routeId) &&
-        (routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId) || routePatternServesBoardingStation(routeId, boardStop.stationGroupId))
+        routePatternServesBoardingStation(routeId, boardStop.stationGroupId)
       ) {
-        result = (
-          routePhysicallyServesStationGroup(routeId, nextStop.stationGroupId) ||
-          routePatternServesBoardingStation(routeId, nextStop.stationGroupId)
-        );
+        result = routePatternServesBoardingStation(routeId, nextStop.stationGroupId);
       }
       state.routeCanRepresentCache.set(cacheKey, result);
       return result;
