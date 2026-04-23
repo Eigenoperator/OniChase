@@ -310,6 +310,14 @@ async function runInPage(page, probeName) {
       state.latestResult = null;
       state.liveCapture = null;
       state.replayShareStatus = '';
+      renderGame();
+      const initial = {
+        resultSectionHidden: document.getElementById('result-replay-section').hidden,
+        visibleTextHasEmptyCopy: /No replay yet|No result yet|Run Replay after building plans/.test(document.body.innerText),
+        resultCardText: document.getElementById('result-card').innerText,
+        replayListText: document.getElementById('replay-list').innerText,
+        replaySummaryText: document.getElementById('replay-summary').innerText,
+      };
 
       runSimulation();
       const record = buildCanonicalReplayRecord();
@@ -324,6 +332,7 @@ async function runInPage(page, probeName) {
         datasetName: record.dataset_name,
         gameRulesVersion: record.game_rules_version,
         sourceKind: record.source.kind,
+        initial,
         captureType: record.result.capture?.type || 'none',
         captureCheckType: record.capture_checks.at(-1)?.capture_type || 'none',
         eventCount: record.events.length,

@@ -13,6 +13,12 @@ class V3ReplayUiTests(unittest.TestCase):
         cls.result = run_v3_probe("replay-core")
 
     def test_replay_panel_is_visible_and_uses_canonical_record(self) -> None:
+        initial = self.result["initial"]
+        self.assertTrue(initial["resultSectionHidden"])
+        self.assertFalse(initial["visibleTextHasEmptyCopy"])
+        self.assertEqual(initial["resultCardText"], "")
+        self.assertEqual(initial["replayListText"], "")
+        self.assertEqual(initial["replaySummaryText"], "")
         self.assertFalse(self.result["resultSectionHidden"])
         self.assertFalse(self.result["toolbarReplayHidden"])
         self.assertEqual(self.result["schemaVersion"], "v3.replay.1")

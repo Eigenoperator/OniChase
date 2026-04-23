@@ -1085,20 +1085,16 @@
             <div class="info-box" id="route-card">Click a colored service line or a route row. The selected route becomes a high-priority MapLibre layer.</div>
           </section>
 
-          <section>
+          <section id="result-replay-section" hidden>
             <div class="section-label">Result / Replay</div>
             <div class="tiny-actions" id="replay-actions">
               <button id="replay-run-button" type="button">Run Replay</button>
               <button id="replay-copy-link-button" type="button">Copy Link</button>
               <button id="replay-copy-json-button" type="button">Copy JSON</button>
             </div>
-            <div class="replay-summary" id="replay-summary">
-              <div class="empty">No replay yet.</div>
-            </div>
-            <div class="info-box" id="result-card">No result yet.</div>
-            <div class="result-list" id="replay-list" style="margin-top:10px;">
-              <div class="empty">Run Replay after building plans.</div>
-            </div>
+            <div class="replay-summary" id="replay-summary"></div>
+            <div class="info-box" id="result-card"></div>
+            <div class="result-list" id="replay-list" style="margin-top:10px;"></div>
           </section>
 
           <section hidden>
@@ -1601,6 +1597,7 @@
     const tutorialGuideEl = document.getElementById('tutorial-guide');
     const roomCardEl = document.getElementById('room-card');
     const roomActionsEl = document.getElementById('room-actions');
+    const resultReplaySectionEl = document.getElementById('result-replay-section');
     const resultCardEl = document.getElementById('result-card');
     const replaySummaryEl = document.getElementById('replay-summary');
     const replayActionsEl = document.getElementById('replay-actions');
@@ -5181,7 +5178,7 @@
 
     function renderReplaySummary() {
       if (!state.latestResult?.match_event_log?.length) {
-        replaySummaryEl.innerHTML = `<div class="empty">No replay yet.</div>`;
+        replaySummaryEl.innerHTML = '';
         return;
       }
       const record = buildCanonicalReplayRecord(state.latestResult);
@@ -5196,6 +5193,14 @@
     }
 
     function renderResult() {
+      const hasReplayContent = Boolean(state.liveCapture || state.latestResult?.match_event_log?.length || state.replayShareStatus);
+      resultReplaySectionEl.hidden = !hasReplayContent;
+      if (!hasReplayContent) {
+        replaySummaryEl.innerHTML = '';
+        resultCardEl.textContent = '';
+        replayListEl.innerHTML = '';
+        return;
+      }
       renderReplayActions();
       renderReplaySummary();
       if (state.liveCapture) {
@@ -5203,7 +5208,7 @@
           ? `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_node\nStation: ${displayNameForGroup(state.liveCapture.station_group_id)}`
           : `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_train\nTrip: ${formatTripLabel(state.tripById.get(state.liveCapture.trip_id) || { serviceName: state.liveCapture.trip_id })}`;
       } else if (!state.latestResult) {
-        resultCardEl.textContent = 'No result yet.';
+        resultCardEl.textContent = '';
       }
       renderReplayList();
     }
@@ -5795,7 +5800,7 @@
 
     function renderReplayList() {
       if (!state.latestResult?.match_event_log?.length) {
-        replayListEl.innerHTML = `<div class="empty">Run Replay after building plans.</div>`;
+        replayListEl.innerHTML = '';
         return;
       }
       replayListEl.innerHTML = state.latestResult.match_event_log.map((event, index) => `
