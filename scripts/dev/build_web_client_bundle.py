@@ -14,7 +14,8 @@ NOJEKYLL = DOCS_DIR / ".nojekyll"
 
 V1_SOURCE_HTML = UI_DIR / "web_client.html"
 V2_SOURCE_HTML = UI_DIR / "v2_web_client.html"
-V3_MAPLIBRE_SOURCE_HTML = UI_DIR / "v3_maplibre.html"
+V3_MAPLIBRE_SOURCE_HTML = DOCS_DIR / "v3.html"
+V3_LOCAL_MIRROR_HTML = UI_DIR / "v3_maplibre.html"
 INDEX_HTML = DOCS_DIR / "index.html"
 V1_TARGET_HTML = DOCS_DIR / "v1.html"
 V2_TARGET_HTML = DOCS_DIR / "v2.html"
@@ -226,6 +227,7 @@ def build() -> None:
     V1_TARGET_HTML.write_text(v1_html, encoding="utf-8")
     V2_TARGET_HTML.write_text(v2_html, encoding="utf-8")
     V3_TARGET_HTML.write_text(v3_html, encoding="utf-8")
+    V3_LOCAL_MIRROR_HTML.write_text(v3_html, encoding="utf-8")
     old_v3_maplibre = DOCS_DIR / "v3_maplibre.html"
     if old_v3_maplibre.exists():
         old_v3_maplibre.unlink()

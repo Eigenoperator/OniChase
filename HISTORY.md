@@ -258,3 +258,4 @@
 ## 2026-04-22
 
 - Converted the most fragile v3 physical-through-running axioms into executable regression tests. The new local Playwright-backed unittest suite verifies AXIOMS text, `docs/v3.html` / `ui/v3_maplibre.html` sync, Tokyo major route separation, Shinkansen/ordinary separation, strict same-train and station-group capture behavior, private/metro boundary physical segments, and golden selected-train highlights for 池袋 `副都心線` and 東京 `山手線`.
+- Added the first P1/P2 v3 hardening layer: a canonical replay-record normalizer/validator for heavy public battle records, unittest coverage for same-node/same-train/no-capture replay preservation, and a source-of-truth build check that treats `docs/v3.html` as canonical while syncing `ui/v3_maplibre.html`.
