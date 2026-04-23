@@ -3714,11 +3714,17 @@
       ));
     }
 
+    function stationPairCoordinates(currentStop, nextStop) {
+      const from = stationLonLat(currentStop?.stationGroupId);
+      const to = stationLonLat(nextStop?.stationGroupId);
+      return from && to ? [from, to] : [];
+    }
+
     function coordinatesForTripSegment(routeId, currentStop, nextStop) {
       const direct = routeSliceCoordinates(routeId, currentStop.stationGroupId, nextStop.stationGroupId);
       if (direct.length >= 2) return direct;
       if (!routeCanAnchorTripSegment(routeId, currentStop, nextStop)) return [];
-      return globalGraphSliceCoordinates(routeId, currentStop.stationGroupId, nextStop.stationGroupId);
+      return stationPairCoordinates(currentStop, nextStop);
     }
 
     function routeSliceCoordinates(routeId, fromStationGroupId, toStationGroupId) {
