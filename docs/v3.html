@@ -411,7 +411,7 @@
       text-transform: uppercase;
     }
 
-    .info-box, .route-list, .departure-list, .outlook-list, .plan-board, .result-list {
+    .info-box, .route-list, .departure-list, .outlook-list, .plan-board, .result-list, .replay-summary {
       border: 1px solid rgba(213, 221, 232, 0.9);
       border-radius: 22px;
       background: rgba(255, 255, 255, 0.78);
@@ -435,6 +435,36 @@
       margin: 0;
       white-space: pre-wrap;
       font-family: "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    .replay-summary {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .replay-summary .empty {
+      padding: 2px;
+    }
+
+    .replay-answer {
+      display: grid;
+      grid-template-columns: 70px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .replay-answer strong {
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .tiny-actions {
@@ -861,7 +891,7 @@
         <button id="hunter-button" type="button">Hunter</button>
         <button id="start-button" class="primary" type="button">Start Game</button>
         <button id="pause-button" type="button">Pause</button>
-        <button id="simulate-button" type="button" hidden>Replay</button>
+        <button id="simulate-button" type="button">Replay</button>
         <button id="corridor-button" class="active" type="button">Corridor</button>
         <button id="service-button" type="button">Service</button>
         <button id="fit-button" type="button">Fit</button>
@@ -927,8 +957,16 @@
             <div class="info-box" id="route-card">Click a colored service line or a route row. The selected route becomes a high-priority MapLibre layer.</div>
           </section>
 
-          <section hidden>
+          <section>
             <div class="section-label">Result / Replay</div>
+            <div class="tiny-actions" id="replay-actions">
+              <button id="replay-run-button" type="button">Run Replay</button>
+              <button id="replay-copy-link-button" type="button">Copy Link</button>
+              <button id="replay-copy-json-button" type="button">Copy JSON</button>
+            </div>
+            <div class="replay-summary" id="replay-summary">
+              <div class="empty">No replay yet.</div>
+            </div>
             <div class="info-box" id="result-card">No result yet.</div>
             <div class="result-list" id="replay-list" style="margin-top:10px;">
               <div class="empty">Run Replay after building plans.</div>
@@ -947,6 +985,11 @@
   <script>
     const MAP_DATA_URL = './data/v3_tokyo_map_bundle.json.gz';
     const TIMETABLE_URL = './data/v3_tokyo_timetable_compact.json.gz';
+    const V3_REPLAY_SCHEMA_VERSION = 'v3.replay.1';
+    const V3_REPLAY_COLLECTION_SCHEMA_VERSION = 'v3.replay.collection.1';
+    const V3_DATASET_NAME = 'v3-tokyo';
+    const V3_GAME_RULES_VERSION = 'v3.rules.2026-04-22';
+    const REPLAY_HASH_PREFIX = 'replay=';
     const ONLINE_CONFIG_URL = window.location.pathname.includes('/ui/')
       ? '../docs/data/v3_online_config.json'
       : './data/v3_online_config.json';
@@ -1366,6 +1409,7 @@
       tickHandle: null,
       latestResult: null,
       selectedResultEventIndex: 0,
+      replayShareStatus: '',
       liveCapture: null,
       stationGroupById: new Map(),
       stationByGroupId: new Map(),
@@ -1427,6 +1471,8 @@
     const roomCardEl = document.getElementById('room-card');
     const roomActionsEl = document.getElementById('room-actions');
     const resultCardEl = document.getElementById('result-card');
+    const replaySummaryEl = document.getElementById('replay-summary');
+    const replayActionsEl = document.getElementById('replay-actions');
     const replayListEl = document.getElementById('replay-list');
     const stationCardEl = document.getElementById('station-card');
     const routeCardEl = document.getElementById('route-card');
@@ -4565,7 +4611,7 @@
         (onlineActive() && Boolean(state.online.lastRoom?.self?.ready));
       pauseButton.textContent = state.clockRunning ? 'Pause' : 'Resume';
       pauseButton.disabled = onlineActive();
-      replayButton.disabled = onlineActive();
+      replayButton.disabled = onlineActive() || state.timetableStatus !== 'ready';
     }
 
     function routeTitle(routeId) {
@@ -4905,7 +4951,36 @@
       if (buttons.unready) buttons.unready.disabled = !onlineActive() || state.phase !== 'PLANNING' || !room?.self?.ready;
     }
 
+    function renderReplayActions() {
+      const buttons = {
+        run: document.getElementById('replay-run-button'),
+        link: document.getElementById('replay-copy-link-button'),
+        json: document.getElementById('replay-copy-json-button'),
+      };
+      if (buttons.run) buttons.run.disabled = onlineActive() || state.timetableStatus !== 'ready';
+      if (buttons.link) buttons.link.disabled = !state.latestResult;
+      if (buttons.json) buttons.json.disabled = !state.latestResult;
+    }
+
+    function renderReplaySummary() {
+      if (!state.latestResult?.match_event_log?.length) {
+        replaySummaryEl.innerHTML = `<div class="empty">No replay yet.</div>`;
+        return;
+      }
+      const record = buildCanonicalReplayRecord(state.latestResult);
+      const rows = replaySummaryRows(record);
+      if (state.replayShareStatus) rows.push(['Share', state.replayShareStatus]);
+      replaySummaryEl.innerHTML = rows.map(([label, text]) => `
+        <div class="replay-answer">
+          <strong>${escapeHtml(label)}</strong>
+          <span>${escapeHtml(text)}</span>
+        </div>
+      `).join('');
+    }
+
     function renderResult() {
+      renderReplayActions();
+      renderReplaySummary();
       if (state.liveCapture) {
         resultCardEl.textContent = state.liveCapture.type === 'same_node'
           ? `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_node\nStation: ${displayNameForGroup(state.liveCapture.station_group_id)}`
@@ -5137,6 +5212,360 @@
       };
     }
 
+    function cloneJson(value, fallback = null) {
+      if (value === undefined) return fallback;
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function replayFinalHhmm(events, playerId) {
+      const event = [...(events || [])].reverse().find((item) => item.player_id === playerId);
+      return event?.time_hhmm || null;
+    }
+
+    function carrierReplayLabel(carrier) {
+      if (!carrier) return 'unknown';
+      if (carrier.kind === 'NODE') return displayNameForGroup(carrier.stationGroupId);
+      if (carrier.kind === 'TRAIN') return formatTripLabel(state.tripById.get(carrier.tripId) || { serviceName: carrier.tripId });
+      return carrier.kind || 'unknown';
+    }
+
+    function replayFinalCarrierLabel(events, playerId, fallbackStationId = null) {
+      const event = [...(events || [])].reverse().find((item) => item.state_after?.[playerId]);
+      if (event) return carrierReplayLabel(event.state_after[playerId]);
+      return fallbackStationId ? displayNameForGroup(fallbackStationId) : 'unknown';
+    }
+
+    function replayPlayerPlan(result, seat) {
+      const player = result.players?.[seat] || {};
+      const livePlan = state.players?.[seat] || {};
+      const steps = cloneJson(livePlan.steps || [], []);
+      const finalStationId = player.final_station_id || null;
+      return {
+        seat,
+        start_station_id: player.start_station_id || livePlan.start_station_id || '',
+        start_label: displayNameForGroup(player.start_station_id || livePlan.start_station_id),
+        final_station_id: finalStationId,
+        final_label: finalStationId ? displayNameForGroup(finalStationId) : replayFinalCarrierLabel(result.match_event_log, seat, player.start_station_id || livePlan.start_station_id),
+        final_hhmm: replayFinalHhmm(result.match_event_log, seat),
+        steps,
+        legs: [],
+        resolved_actions: cloneJson(player.resolved_actions || [], []),
+      };
+    }
+
+    function replayInitialState(events) {
+      const event = (events || []).find((item) => item.type === 'SCENARIO_START') || (events || [])[0];
+      if (!event) return {};
+      return {
+        time_hhmm: event.time_hhmm,
+        time_minute: event.time_minute,
+        carriers: cloneJson(event.state_after || event.state_snapshot || {}, {}),
+      };
+    }
+
+    function replayPhaseEvents(events) {
+      return (events || []).filter((event) =>
+        event.event_family === 'LIFECYCLE' || ['SCENARIO_START', 'SCENARIO_END'].includes(event.type)
+      ).map((event) => cloneJson(event, {}));
+    }
+
+    function replayCaptureChecks(events, result) {
+      const checks = (events || [])
+        .filter((event) => event.type === 'CAPTURE')
+        .map((event) => ({
+          time_hhmm: event.time_hhmm,
+          time_minute: event.time_minute,
+          capture_type: event.capture_type,
+          trigger_event_type: event.trigger_event_type,
+          trigger_player_id: event.trigger_player_id,
+          station_group_id: event.station_group_id,
+          station_label: event.station_group_id ? displayNameForGroup(event.station_group_id) : null,
+          trip_id: event.trip_id,
+          trip_label: event.trip_id ? formatTripLabel(state.tripById.get(event.trip_id) || { serviceName: event.trip_id }) : null,
+          state_snapshot: cloneJson(event.state_snapshot || event.state_after || {}, {}),
+        }));
+      const capture = result.capture;
+      if (capture && !checks.length) {
+        checks.push({
+          time_hhmm: capture.time_hhmm,
+          time_minute: capture.time_hhmm ? hhmmToMinutes(capture.time_hhmm) : null,
+          capture_type: capture.type,
+          station_group_id: capture.station_group_id,
+          station_label: capture.station_group_id ? displayNameForGroup(capture.station_group_id) : null,
+          trip_id: capture.trip_id,
+          trip_label: capture.trip_id ? formatTripLabel(state.tripById.get(capture.trip_id) || { serviceName: capture.trip_id }) : null,
+          state_snapshot: {},
+        });
+      }
+      return checks;
+    }
+
+    function buildCanonicalReplayRecord(result = state.latestResult) {
+      if (!result?.match_event_log?.length) throw new Error('No replay result is available.');
+      const runner = replayPlayerPlan(result, 'runner');
+      const hunter = replayPlayerPlan(result, 'hunter');
+      const recordId = result.scenario_id || `v3-replay-${Date.now()}`;
+      return {
+        schema_version: V3_REPLAY_SCHEMA_VERSION,
+        record_id: recordId,
+        dataset_name: V3_DATASET_NAME,
+        dataset_id: result.dataset_id || state.bundle?.metadata?.datasetId || 'v3_tokyo',
+        dataset_version: state.bundle?.metadata?.datasetId || '',
+        game_rules_version: V3_GAME_RULES_VERSION,
+        source: {
+          kind: onlineActive() ? 'v3_browser_room' : 'v3_browser_local',
+          page_url: window.location.href.split('#')[0],
+          room_id: state.online.roomId || null,
+          seat: state.online.seat || null,
+        },
+        room_id: state.online.roomId || null,
+        scenario: {
+          id: recordId,
+          index: null,
+          name: 'Browser replay',
+          kind: onlineActive() ? 'online' : 'local',
+          expected_capture: null,
+        },
+        players: { runner, hunter },
+        initial_state: replayInitialState(result.match_event_log),
+        plans: {
+          runner: { start_station_id: runner.start_station_id, steps: cloneJson(runner.steps, []), legs: cloneJson(runner.legs, []) },
+          hunter: { start_station_id: hunter.start_station_id, steps: cloneJson(hunter.steps, []), legs: cloneJson(hunter.legs, []) },
+        },
+        phase_events: replayPhaseEvents(result.match_event_log),
+        events: cloneJson(result.match_event_log, []),
+        capture_checks: replayCaptureChecks(result.match_event_log, result),
+        result: {
+          capture: cloneJson(result.capture, null),
+          capture_summary: replayCaptureLineFromCapture(result.capture),
+          online_phase: state.online.lastRoom?.phase || state.phase,
+          online_time: minutesToHhmm(state.currentGameMinute),
+          issues: [],
+        },
+      };
+    }
+
+    function utf8ToBase64Url(value) {
+      const bytes = new TextEncoder().encode(value);
+      let binary = '';
+      const chunkSize = 0x8000;
+      for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+      }
+      return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
+    }
+
+    function base64UrlToUtf8(value) {
+      const raw = String(value);
+      const padded = raw.replaceAll('-', '+').replaceAll('_', '/').padEnd(Math.ceil(raw.length / 4) * 4, '=');
+      const binary = atob(padded);
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+      return new TextDecoder().decode(bytes);
+    }
+
+    function encodeReplaySharePayload(record) {
+      return `j1.${utf8ToBase64Url(JSON.stringify(record))}`;
+    }
+
+    function decodeReplaySharePayload(payload) {
+      let value = String(payload || '');
+      if (value.startsWith('#')) value = value.slice(1);
+      if (value.startsWith(REPLAY_HASH_PREFIX)) value = value.slice(REPLAY_HASH_PREFIX.length);
+      if (value.startsWith('j1.')) value = value.slice(3);
+      return JSON.parse(base64UrlToUtf8(value));
+    }
+
+    function replayShareUrl(record) {
+      const url = new URL(window.location.href);
+      url.hash = `${REPLAY_HASH_PREFIX}${encodeReplaySharePayload(record)}`;
+      return url.toString();
+    }
+
+    function resultFromReplayRecord(record) {
+      return {
+        scenario_id: record.scenario?.id || record.record_id || 'v3-shared-replay',
+        dataset_id: record.dataset_id || state.bundle?.metadata?.datasetId || 'v3_tokyo',
+        capture: cloneJson(record.result?.capture, null),
+        match_event_log: cloneJson(record.events || [], []),
+        players: {
+          runner: {
+            start_station_id: record.players?.runner?.start_station_id || record.plans?.runner?.start_station_id,
+            resolved_actions: cloneJson(record.players?.runner?.resolved_actions || [], []),
+            final_station_id: record.players?.runner?.final_station_id || null,
+          },
+          hunter: {
+            start_station_id: record.players?.hunter?.start_station_id || record.plans?.hunter?.start_station_id,
+            resolved_actions: cloneJson(record.players?.hunter?.resolved_actions || [], []),
+            final_station_id: record.players?.hunter?.final_station_id || null,
+          },
+        },
+        replay_record: record,
+      };
+    }
+
+    function applyReplayRecord(record) {
+      state.players.runner = {
+        start_station_id: record.players?.runner?.start_station_id || record.plans?.runner?.start_station_id || state.players.runner?.start_station_id,
+        input_mode: 'plan',
+        steps: cloneJson(record.plans?.runner?.steps || record.players?.runner?.steps || [], []),
+      };
+      state.players.hunter = {
+        start_station_id: record.players?.hunter?.start_station_id || record.plans?.hunter?.start_station_id || state.players.hunter?.start_station_id,
+        input_mode: 'plan',
+        steps: cloneJson(record.plans?.hunter?.steps || record.players?.hunter?.steps || [], []),
+      };
+      if (record.initial_state?.time_hhmm) {
+        state.startTime = record.initial_state.time_hhmm;
+        state.currentGameMinute = record.initial_state.time_minute ?? hhmmToMinutes(record.initial_state.time_hhmm);
+      }
+      state.latestResult = resultFromReplayRecord(record);
+      state.liveCapture = null;
+      state.replayShareStatus = 'Shared replay loaded.';
+      selectDefaultReplayEvent(state.latestResult);
+      closeEntry();
+      renderGame();
+    }
+
+    async function loadReplayFromHash() {
+      const hash = window.location.hash.slice(1);
+      if (!hash.startsWith(REPLAY_HASH_PREFIX)) return false;
+      await ensureTimetableLoaded();
+      applyReplayRecord(decodeReplaySharePayload(hash));
+      return true;
+    }
+
+    function replayRouteSequence(steps) {
+      const routes = [];
+      (steps || []).forEach((step) => {
+        if (step.type !== 'BOARD_TRAIN') return;
+        const trip = state.tripById.get(step.trip_id);
+        const routeName = routeTitle(trip?.routeId || step.route_id);
+        if (routeName && routes[routes.length - 1] !== routeName) routes.push(routeName);
+      });
+      return routes;
+    }
+
+    function shortRouteSequence(routes) {
+      if (!routes.length) return '';
+      if (routes.length <= 4) return routes.join(' -> ');
+      return `${routes.slice(0, 3).join(' -> ')} -> ${routes[routes.length - 1]}`;
+    }
+
+    function replayPlanLine(record, seat) {
+      const plan = record.players?.[seat] || {};
+      const routes = replayRouteSequence(plan.steps || []);
+      const rideCount = (plan.steps || []).filter((step) => step.type === 'BOARD_TRAIN').length;
+      const transferCount = Math.max(0, rideCount - 1);
+      const start = plan.start_label || displayNameForGroup(plan.start_station_id);
+      const final = plan.final_label || replayFinalCarrierLabel(record.events, seat, plan.start_station_id);
+      if (!rideCount) return `${seatLabel(seat)} stayed at ${start}.`;
+      return `${seatLabel(seat)} took ${rideCount} rides and ${transferCount} transfers: ${shortRouteSequence(routes)}. Ended at ${final}${plan.final_hhmm ? ` ${plan.final_hhmm}` : ''}.`;
+    }
+
+    function seatLabel(seat) {
+      return seat === 'runner' ? 'Runner' : 'Hunter';
+    }
+
+    function stationTimingGap(record) {
+      const nodeEvents = { runner: [], hunter: [] };
+      (record.events || []).forEach((event) => {
+        if (!event.player_id || !['START_AT_STATION', 'WAIT_UNTIL', 'ALIGHT_TRAIN'].includes(event.type)) return;
+        if (!event.station_group_id) return;
+        nodeEvents[event.player_id].push(event);
+      });
+      let best = null;
+      nodeEvents.runner.forEach((runnerEvent) => {
+        nodeEvents.hunter.forEach((hunterEvent) => {
+          if (runnerEvent.station_group_id !== hunterEvent.station_group_id) return;
+          const gap = Math.abs(runnerEvent.time_minute - hunterEvent.time_minute);
+          if (!best || gap < best.gap) {
+            best = {
+              gap,
+              station: displayNameForGroup(runnerEvent.station_group_id),
+              runnerTime: runnerEvent.time_hhmm,
+              hunterTime: hunterEvent.time_hhmm,
+            };
+          }
+        });
+      });
+      return best;
+    }
+
+    function replayCaptureLineFromCapture(capture) {
+      if (!capture) return 'No capture.';
+      if (capture.type === 'same_node') return `same_node at ${displayNameForGroup(capture.station_group_id)} ${capture.time_hhmm}`;
+      if (capture.type === 'same_train') return `same_train on ${formatTripLabel(state.tripById.get(capture.trip_id) || { serviceName: capture.trip_id })} ${capture.time_hhmm}`;
+      return `${capture.type || 'capture'} ${capture.time_hhmm || ''}`.trim();
+    }
+
+    function replayHunterGapLine(record) {
+      const capture = record.result?.capture;
+      if (capture) return `Hunter closed the gap by ${replayCaptureLineFromCapture(capture)}.`;
+      const gap = stationTimingGap(record);
+      if (gap) return `Closest shared-station timing was ${gap.gap}m at ${gap.station}: Runner ${gap.runnerTime}, Hunter ${gap.hunterTime}.`;
+      return 'Hunter never reached the same recorded station or train window in this replay.';
+    }
+
+    function replaySummaryRows(record) {
+      return [
+        ['Runner', replayPlanLine(record, 'runner')],
+        ['Hunter', replayHunterGapLine(record)],
+        ['Capture', replayCaptureLineFromCapture(record.result?.capture)],
+      ];
+    }
+
+    function selectDefaultReplayEvent(result) {
+      const captureIndex = result.match_event_log.findIndex((event) => event.type === 'CAPTURE');
+      state.selectedResultEventIndex = captureIndex >= 0 ? captureIndex : 0;
+    }
+
+    function ensureReplayResult() {
+      if (!state.latestResult) {
+        state.latestResult = buildResult();
+        selectDefaultReplayEvent(state.latestResult);
+      }
+      return state.latestResult;
+    }
+
+    async function copyTextToClipboard(text) {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      textarea.remove();
+    }
+
+    async function copyReplayLink() {
+      try {
+        const record = buildCanonicalReplayRecord(ensureReplayResult());
+        await copyTextToClipboard(replayShareUrl(record));
+        state.replayShareStatus = 'Link copied.';
+      } catch (error) {
+        state.replayShareStatus = `Copy failed: ${String(error.message || error)}`;
+      }
+      renderGame();
+    }
+
+    async function copyReplayJson() {
+      try {
+        const record = buildCanonicalReplayRecord(ensureReplayResult());
+        await copyTextToClipboard(JSON.stringify(record, null, 2));
+        state.replayShareStatus = 'JSON copied.';
+      } catch (error) {
+        state.replayShareStatus = `Copy failed: ${String(error.message || error)}`;
+      }
+      renderGame();
+    }
+
     function formatEventSummary(event) {
       const parts = [event.time_hhmm, event.type];
       if (event.player_id) parts.push(event.player_id);
@@ -5182,10 +5611,9 @@
 
     function runSimulation() {
       try {
-        const result = buildResult();
-        state.latestResult = result;
-        const captureIndex = result.match_event_log.findIndex((event) => event.type === 'CAPTURE');
-        state.selectedResultEventIndex = captureIndex >= 0 ? captureIndex : 0;
+        state.latestResult = null;
+        state.replayShareStatus = '';
+        const result = ensureReplayResult();
         const capture = result.capture;
         const lines = [`Scenario: ${result.scenario_id}`, `Events: ${result.match_event_log.length}`];
         if (!capture) lines.push('Capture: none');
@@ -5388,6 +5816,10 @@
         const loadMs = Math.round(performance.now() - t0);
         loadPill.textContent = `Map bundle ready in ${loadMs}ms`;
         renderGame();
+        loadReplayFromHash().catch((error) => {
+          state.replayShareStatus = `Replay load failed: ${String(error.message || error)}`;
+          renderGame();
+        });
       });
 
       document.getElementById('runner-button').addEventListener('click', () => setActiveMode('runner'));
@@ -5395,6 +5827,9 @@
       document.getElementById('start-button').addEventListener('click', startGameNow);
       document.getElementById('pause-button').addEventListener('click', toggleClock);
       document.getElementById('simulate-button').addEventListener('click', runSimulation);
+      document.getElementById('replay-run-button').addEventListener('click', runSimulation);
+      document.getElementById('replay-copy-link-button').addEventListener('click', copyReplayLink);
+      document.getElementById('replay-copy-json-button').addEventListener('click', copyReplayJson);
       document.getElementById('corridor-button').addEventListener('click', () => setViewMode('corridor'));
       document.getElementById('service-button').addEventListener('click', () => setViewMode('service'));
       document.getElementById('fit-button').addEventListener('click', () => {

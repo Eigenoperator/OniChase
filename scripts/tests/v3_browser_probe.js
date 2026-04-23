@@ -299,10 +299,49 @@ async function runInPage(page, probeName) {
       };
     }
 
+    function replayCoreProbe() {
+      const tokyo = stationIdByName('東京');
+      state.phase = 'PLANNING';
+      state.startTime = '06:00';
+      state.endTime = '18:00';
+      state.currentGameMinute = hhmmToMinutes('06:00');
+      state.players.runner = { start_station_id: tokyo, input_mode: 'plan', steps: [] };
+      state.players.hunter = { start_station_id: tokyo, input_mode: 'plan', steps: [] };
+      state.latestResult = null;
+      state.liveCapture = null;
+      state.replayShareStatus = '';
+
+      runSimulation();
+      const record = buildCanonicalReplayRecord();
+      const encoded = encodeReplaySharePayload(record);
+      const decoded = decodeReplaySharePayload(`${REPLAY_HASH_PREFIX}${encoded}`);
+      applyReplayRecord(decoded);
+
+      return {
+        resultSectionHidden: document.getElementById('result-card').closest('section').hidden,
+        toolbarReplayHidden: document.getElementById('simulate-button').hidden,
+        schemaVersion: record.schema_version,
+        datasetName: record.dataset_name,
+        gameRulesVersion: record.game_rules_version,
+        sourceKind: record.source.kind,
+        captureType: record.result.capture?.type || 'none',
+        captureCheckType: record.capture_checks.at(-1)?.capture_type || 'none',
+        eventCount: record.events.length,
+        phaseEventCount: record.phase_events.length,
+        replayRowCount: document.querySelectorAll('#replay-list .replay-row').length,
+        selectedEventType: currentReplayEvent()?.type || null,
+        decodedCaptureType: decoded.result.capture?.type || 'none',
+        summaryText: document.getElementById('replay-summary').innerText,
+        resultText: document.getElementById('result-card').innerText,
+        sharePayloadPrefix: encoded.slice(0, 3),
+      };
+    }
+
     const probes = {
       axioms: axiomsProbe,
       'physical-through-running': physicalThroughRunningProbe,
       'selected-train-highlight': selectedTrainHighlightProbe,
+      'replay-core': replayCoreProbe,
     };
     if (!probes[name]) throw new Error(`Unknown probe: ${name}`);
     return probes[name]();

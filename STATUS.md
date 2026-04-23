@@ -27,11 +27,11 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 Current Plan ride rows now keep the subline to boarding/alighting times only.
 - Public v3 two-browser playtests now include 30 Render rooms; the latest 10/10 battle reports/timelines show public Japanese line names, private-operator prefixes, and no internal route or station ids.
 - Heavy public v3 battle records now support generated 10-leg plans plus same-node/same-train capture checks; the latest 10/10 Render rooms completed with no issues.
-- v3 regression now includes one-command heavy battle validation, P0 axiom unittests, canonical replay-record validation, and v3 page source-of-truth sync checks.
+- v3 replay is now first-class in the MapLibre UI: visible Result/Replay panel, canonical `v3.replay.1` records, copyable share links/JSON, hash loading, and replay UI regression coverage.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
-- Stabilize `v3` MapLibre/reporting UX behind automated checks: dense Tokyo click behavior, player marker clarity, battle timelines, replay UI/share flow, and map/planner readability.
+- Stabilize `v3` MapLibre/reporting UX behind automated checks: dense Tokyo click behavior, player marker clarity, richer replay playback, easy single-player AI, and map/planner readability.
 
 ## Blockers
 - `JR Central` still lacks a direct train-detail page like `JR East / JR West`; deeper precision still needs station-grid aggregation.
@@ -45,6 +45,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Run the v3 axiom/replay/page suites before changing bundle, through-running, filtering, selected-train highlight, capture, replay, or build-source logic; next product step is replay UI/share flow, then easy single-player AI.
+1. Run the v3 axiom/replay/page suites before changing bundle, through-running, filtering, selected-train highlight, capture, replay, or build-source logic; next product step is richer replay playback, then easy single-player AI.
 2. Triage the remaining dirty v3 data/cache worktree and decide what is stable, ignored, or local-only.
 3. Use the cleaned battle timelines to spot gameplay readability bugs, then continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.
