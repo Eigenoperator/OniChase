@@ -101,7 +101,7 @@
 
     .entry-mode-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
     }
 
@@ -245,6 +245,40 @@
       font-size: 12px;
       font-weight: 900;
       margin-bottom: 2px;
+    }
+
+    .tutorial-demo {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(213, 221, 232, 0.78);
+      display: grid;
+      gap: 10px;
+    }
+
+    .tutorial-demo-title {
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .tutorial-demo-card {
+      border: 1px solid rgba(213, 221, 232, 0.82);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.66);
+      padding: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.48;
+      font-weight: 750;
+    }
+
+    .tutorial-demo-card strong {
+      display: block;
+      color: var(--ink);
+      font-weight: 900;
+      margin-bottom: 3px;
     }
 
     .room-code {
@@ -890,16 +924,12 @@
     <div class="entry-card">
       <div>
         <h2>OniChase V3 Tokyo</h2>
-        <p>Choose a fast route into the chase, learn the planning loop, or open the full room setup.</p>
+        <p>Learn the planning loop, or open the full room setup.</p>
       </div>
       <div class="entry-mode-grid">
-        <button id="quick-play-button" class="entry-choice primary" type="button">
-          <strong>Quick Play</strong>
-          <span>Recommended Tokyo short game with starter plans and a running countdown.</span>
-        </button>
-        <button id="tutorial-button" class="entry-choice" type="button">
+        <button id="tutorial-button" class="entry-choice primary" type="button">
           <strong>Tutorial</strong>
-          <span>Three-minute guided planning loop: line, train, destination, plan, LIVE.</span>
+          <span>Detailed lesson with example routes: choose line, train, alighting station, validate plan, then replay capture.</span>
         </button>
         <button id="advanced-setup-button" class="entry-choice" type="button" aria-expanded="false">
           <strong>Advanced Setup</strong>
@@ -4746,89 +4776,6 @@
       return state.routeById.get(routeId)?.color || '#667487';
     }
 
-    function stationGroupIdByName(name) {
-      return [...state.stationGroupById.entries()].find(([, group]) =>
-        (group.names?.ja || group.primaryName) === name
-      )?.[0] || null;
-    }
-
-    function routeIdByTitle(title) {
-      return [...state.routeById.keys()].find((routeId) => routeTitle(routeId) === title) || null;
-    }
-
-    function firstStarterRide(candidate) {
-      const startId = stationGroupIdByName(candidate.startName) || candidate.startId;
-      if (!startId) return null;
-      const routeId = candidate.routeTitle ? routeIdByTitle(candidate.routeTitle) : null;
-      const earliestMinute = hhmmToMinutes(candidate.earliestHhmm || state.startTime);
-      const destinationIds = new Set((candidate.destinationNames || []).map(stationGroupIdByName).filter(Boolean));
-      const rows = departuresForStationGroup(startId, earliestMinute, { routeId });
-      for (const row of rows) {
-        if (!hasDownstreamStop(row.trip, row.stop)) continue;
-        const downstream = (row.trip.stopTimes || []).filter((stop) => stop.sequence > row.stop.sequence);
-        const destination = downstream.find((stop) => destinationIds.has(stop.stationGroupId))
-          || downstream[Math.min(4, downstream.length - 1)];
-        if (!destination) continue;
-        return {
-          startId,
-          tripId: row.trip.id,
-          destinationId: destination.stationGroupId,
-          departureHhmm: minutesToHhmm(row.departureMinute),
-          routeTitle: routeTitle(row.routeIds?.[0] || row.trip.routeId),
-          destinationLabel: displayNameForGroup(destination.stationGroupId),
-        };
-      }
-      return null;
-    }
-
-    function recommendedStarterRide(playerId) {
-      const candidates = playerId === 'runner'
-        ? [
-          { startName: '東京', routeTitle: '山手線', destinationNames: ['渋谷', '新宿', '池袋'], earliestHhmm: '06:00' },
-          { startName: '東京', routeTitle: '京浜東北線・根岸線', destinationNames: ['品川', '横浜'], earliestHhmm: '06:00' },
-          { startName: '東京', routeTitle: '東海道線', destinationNames: ['横浜'], earliestHhmm: '06:00' },
-          { startId: state.bundle?.metadata?.defaultRunnerStartStationId, destinationNames: [], earliestHhmm: '06:00' },
-        ]
-        : [
-          { startName: '新宿', routeTitle: '山手線', destinationNames: ['渋谷', '品川', '東京'], earliestHhmm: '07:00' },
-          { startName: '新宿', routeTitle: '中央線快速', destinationNames: ['東京'], earliestHhmm: '07:00' },
-          { startName: '池袋', routeTitle: '副都心線', destinationNames: ['渋谷', '横浜'], earliestHhmm: '07:00' },
-          { startId: state.bundle?.metadata?.defaultHunterStartStationId, destinationNames: [], earliestHhmm: '07:00' },
-        ];
-      for (const candidate of candidates) {
-        const ride = firstStarterRide(candidate);
-        if (ride) return ride;
-      }
-      return null;
-    }
-
-    function applyStarterRide(playerId, ride) {
-      if (!ride) return false;
-      state.players[playerId].start_station_id = ride.startId;
-      state.players[playerId].steps = [
-        { type: 'BOARD_TRAIN', trip_id: ride.tripId },
-        { type: 'RIDE_TO_STATION', station_id: ride.destinationId },
-      ];
-      return true;
-    }
-
-    async function startQuickPlay() {
-      entryStatusEl.textContent = 'Preparing Quick Play...';
-      prepareLocalSession('runner', { startTime: '06:00', endTime: '08:00', planningSeconds: 30 });
-      await ensureTimetableLoaded();
-      const runnerRide = recommendedStarterRide('runner');
-      const hunterRide = recommendedStarterRide('hunter');
-      applyStarterRide('runner', runnerRide);
-      applyStarterRide('hunter', hunterRide);
-      state.activeMode = 'runner';
-      state.tutorialMode = false;
-      state.planningSecondsRemaining = 30;
-      updateRoleButtons();
-      closeEntry();
-      renderGame();
-      startGameNow();
-    }
-
     async function startTutorialMode() {
       entryStatusEl.textContent = 'Loading Tutorial...';
       prepareLocalSession('runner', { startTime: '06:00', endTime: '08:00', tutorialMode: true });
@@ -5176,17 +5123,21 @@
       tutorialGuideSectionEl.hidden = !state.tutorialMode;
       if (!state.tutorialMode) return;
       const steps = activePlayer()?.steps || [];
+      const activePreview = planCursorPreview(state.activeMode);
+      const currentLabel = activePreview?.currentState?.kind === 'NODE'
+        ? displayNameForGroup(activePreview.currentState.stationGroupId)
+        : formatTripLabel(activePreview?.currentTrip || { serviceName: '列車' });
       const hasRoute = Boolean(state.selectedRouteId);
       const hasTrain = Boolean(pendingTripId() || state.selectedTripId || steps.some((step) => step.type === 'BOARD_TRAIN'));
       const hasDestination = steps.some((step) => step.type === 'RIDE_TO_STATION');
       const planStatus = tutorialPlanStatus();
       const liveStarted = state.phase !== 'PLANNING' || state.clockRunning || Boolean(state.latestResult);
       const rows = [
-        [hasRoute, 'Line', 'Pick one line from the Planning list.'],
-        [hasTrain, 'Train', 'Pick one departure on that line.'],
-        [hasDestination, 'Alight', 'Pick a downstream station; the ride appears in Current Plan.'],
-        [planStatus.valid, 'Plan', planStatus.text],
-        [liveStarted, 'LIVE', 'Start Game runs the countdown; Replay explains the capture.'],
+        [hasRoute, '1. Line', `You are at ${currentLabel}. In Planning, choose one line. This is the physical boarding line shown at the platform.`],
+        [hasTrain, '2. Train', 'After choosing a line, choose one departure. A train row shows departure time, service label, origin/terminal, and next stop.'],
+        [hasDestination, '3. Alight', 'After choosing a train, choose a downstream station. This adds Board + Alight to Current Plan.'],
+        [planStatus.valid, '4. Valid Plan', `A valid ride has both train and alighting station. ${planStatus.text}`],
+        [liveStarted, '5. LIVE / Replay', 'Start Game enters LIVE after the countdown. Replay explains same_node or same_train capture step by step.'],
       ];
       tutorialGuideEl.innerHTML = `
         <div class="tutorial-steps">
@@ -5196,7 +5147,22 @@
             </div>
           `).join('')}
           <div class="tutorial-step done">
-            <span><strong>Through-service</strong>Same train, different physical line name when the service continues, for example 副都心線 -> 東急東横線.</span>
+            <span><strong>Through-service</strong>Same train can change displayed physical line after it continues onto another company's track, for example 副都心線 -> 東急東横線 -> 横浜高速鉄道みなとみらい21線. Do not add a transfer unless you actually get off.</span>
+          </div>
+        </div>
+        <div class="tutorial-demo">
+          <div class="tutorial-demo-title">Demonstrations</div>
+          <div class="tutorial-demo-card">
+            <strong>Demo A: ordinary ride</strong>
+            Start as Runner at 東京. Choose 山手線, choose a departure, then choose 渋谷 or 新宿 as the alighting station. Current Plan should show one ride with boarding and alighting times.
+          </div>
+          <div class="tutorial-demo-card">
+            <strong>Demo B: through-service</strong>
+            Start from 池袋 and choose 副都心線 toward 横浜 / みなとみらい. The same train may later display 東急東横線 and 横浜高速鉄道みなとみらい21線 because the physical line changes while the train continues.
+          </div>
+          <div class="tutorial-demo-card">
+            <strong>Demo C: capture explanation</strong>
+            Run Replay after both plans exist. same_node means both players are at the same station group at the same time; same_train means both are on the exact same train.
           </div>
         </div>
       `;
@@ -6089,13 +6055,6 @@
       });
       document.getElementById('single-runner-button').addEventListener('click', () => enterSinglePlayer('runner'));
       document.getElementById('single-hunter-button').addEventListener('click', () => enterSinglePlayer('hunter'));
-      document.getElementById('quick-play-button').addEventListener('click', () => {
-        startQuickPlay().catch((error) => {
-          entryStatusEl.textContent = `Quick Play failed: ${String(error.message || error)}`;
-          toggleAdvancedSetup(true);
-          openEntry();
-        });
-      });
       document.getElementById('tutorial-button').addEventListener('click', () => {
         startTutorialMode().catch((error) => {
           entryStatusEl.textContent = `Tutorial failed: ${String(error.message || error)}`;

@@ -363,7 +363,9 @@ async function runInPage(page, probeName) {
       const advancedPanel = document.getElementById('advanced-setup-panel');
       const advancedButton = document.getElementById('advanced-setup-button');
       const initial = {
-        quickText: document.getElementById('quick-play-button').innerText,
+        quickButtonExists: Boolean(document.getElementById('quick-play-button')),
+        bodyHasQuickPlay: document.body.innerText.includes('Quick Play'),
+        entryChoiceCount: document.querySelectorAll('.entry-mode-grid .entry-choice').length,
         tutorialText: document.getElementById('tutorial-button').innerText,
         advancedText: advancedButton.innerText,
         advancedHidden: advancedPanel.classList.contains('hidden'),
@@ -390,25 +392,7 @@ async function runInPage(page, probeName) {
         endTime: state.endTime,
         guideText: document.getElementById('tutorial-guide').innerText,
       };
-
-      openEntry();
-      document.getElementById('quick-play-button').click();
-      await waitUntil(() => entryOverlayEl.classList.contains('hidden') && state.clockRunning);
-      const quick = {
-        entryHidden: entryOverlayEl.classList.contains('hidden'),
-        activeMode: state.activeMode,
-        startTime: state.startTime,
-        endTime: state.endTime,
-        clockRunning: state.clockRunning,
-        planningSecondsRemaining: state.planningSecondsRemaining,
-        runnerStepCount: state.players.runner.steps.length,
-        hunterStepCount: state.players.hunter.steps.length,
-        runnerStart: displayNameForGroup(state.players.runner.start_station_id),
-        hunterStart: displayNameForGroup(state.players.hunter.start_station_id),
-        planText: document.getElementById('plan-board').innerText,
-      };
-
-      return { initial, advanced, tutorial, quick };
+      return { initial, advanced, tutorial };
     }
 
     const probes = {
