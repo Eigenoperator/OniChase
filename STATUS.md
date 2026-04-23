@@ -10,7 +10,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - `v3` data foundation includes `1760` station groups, `2142` physical stations, `108` service routes, `4612` track centerlines, and `40738` v2-compatible trip instances.
 - `v3` MapLibre gameplay now has role switching, planning/live timing, hourly replanning, plan board, train outlook, selected-train path/stops, player markers, live capture, replay simulation, and Japanese-original display.
 - `v3` multiplayer client has single-player entry, v3 Tokyo room lobby, Ready Room, room code copy, ready/unready, leave-room cleanup, and online plan sync.
-- v3 planner is now a three-layer `line -> train -> destination stop` flow with compact transfer grids, physical train filtering, and fast selected-train highlights for future physical segments/stops.
+- v3 planner is now a three-layer `line -> train -> destination stop` flow with compact transfer grids, physical train filtering, and selected-train whole-future physical highlights.
 - Recent local work tightened departure route matching, optimized MapLibre loading, and generated large v3 data/script changes that are still dirty in the worktree.
 - v3 data/script stable set was rebuilt and audited: unified trains `41186`, duplicate unified ids `0`, duplicate unified signatures `0`, rendered lines without trips `0`, and local/public v3 room `/health` both report `dataset_name = v3-tokyo`.
 - Committed and pushed the validated v3 stable set in `c66264e` (`Validate v3 Tokyo timetable bundle`).
@@ -22,7 +22,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 through-running audit now covers Keikyu/Asakusa/Keisei, Tokyu/Fukutoshin/Seibu/Tobu, Meguro/Mita/Namboku/Sotetsu, Saitama Railway, and Minatomirai display boundaries.
 - v3 Tokyo Metro route titles now use common line names (`丸ノ内線`, `有楽町線`, `副都心線`, etc.) instead of numbered legal names in the UI.
 - Local two-browser v3 multiplayer smoke passed: Runner/Hunter created and joined one room, both ready states synced into Planning and then LIVE, and local/public room `/health` report `dataset_name = v3-tokyo`.
-- v3 train preview rows now show next stop without a clock time and only marquee-scroll after actual rendered overflow.
+- v3 selected-train highlights now score trip identity, selected route identity, normalized corridor aliases, and physical endpoint service, so 山手線 stays on the whole future 山手線 path while 副都心線 through-services split onto 副都心線 -> 東急東横線 -> みなとみらい21線.
 - v3 Current Plan ride legs now show the same route-color swatch as the line chooser.
 - v3 Current Plan ride rows now keep the subline to boarding/alighting times only.
 - Public v3 two-browser playtests now include 30 Render rooms; the latest 10/10 battle reports/timelines show public Japanese line names, private-operator prefixes, and no internal route or station ids.
@@ -31,12 +31,12 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
-- Stabilize `v3` MapLibre/reporting UX: dense Tokyo click behavior, player marker clarity, public route naming, battle timelines, and map/planner readability.
+- Stabilize `v3` MapLibre/reporting UX: dense Tokyo click behavior, player marker clarity, public route naming, battle timelines, selected-trip highlighting, and map/planner readability.
 
 ## Blockers
 - `JR Central` still lacks a direct train-detail page like `JR East / JR West`; deeper precision still needs station-grid aggregation.
 - Firefox/geckodriver works for headless DOM gameplay probes; use Playwright for local SVG screenshot/bounds checks when system Python lacks Selenium.
-- Large untracked source caches are intentionally not part of the stable commit: `data/v3_external/`, `data/v3_tokyo_jreast_core_cache/`, and `data/v3_tokyo_rinkai_cache/`.
+- No blocker for the selected-trip highlight fix; large untracked source caches remain local-only: `data/v3_external/`, `data/v3_tokyo_jreast_core_cache/`, and `data/v3_tokyo_rinkai_cache/`.
 
 ## Decisions
 - [2026-04-07] GIS-first Shinkansen became the main `v2`; public site keeps `v1`, `v2`, and now the new Tokyo `v3` sandbox.
@@ -45,6 +45,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Continue v3 map UX hardening: dense-station click disambiguation, player marker clarity, and selected-service label priority.
+1. After Pages deploys the selected-trip highlight fix, do one public browser visual smoke on 山手線 and the 池袋 `副都心線` -> `東急東横線` -> `みなとみらい21線` through-service.
 2. Triage the remaining dirty v3 data/cache worktree and decide what is stable, ignored, or local-only.
 3. Use the cleaned battle timelines to spot gameplay readability bugs, then continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.

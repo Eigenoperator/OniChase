@@ -2582,6 +2582,41 @@
       return routeTrackLineAliases(rightRouteId).some((alias) => leftAliases.has(alias));
     }
 
+    const TRACK_LINE_ALIAS_PREFIX_RE = /^(?:JR|ＪＲ|東京メトロ|都営|東京モノレール|モノレール|京急|京成|京王|小田急|東急|東武|西武|相鉄|横浜高速鉄道|埼玉高速鉄道|東京臨海高速鉄道|首都圏新都市鉄道|多摩都市モノレール|ゆりかもめ)/u;
+
+    function normalizedTrackLineAlias(value) {
+      return String(value || '').normalize('NFKC').replace(/\s+/gu, '');
+    }
+
+    function trackLineAliasTokensForRoute(routeId) {
+      const tokens = new Set();
+      const route = state.routeById.get(routeId);
+      const addToken = (value) => {
+        const normalized = normalizedTrackLineAlias(value);
+        if (!normalized) return;
+        tokens.add(normalized);
+        const withoutPrefix = normalized.replace(TRACK_LINE_ALIAS_PREFIX_RE, '');
+        if (withoutPrefix) tokens.add(withoutPrefix);
+      };
+      routeTrackLineAliases(routeId).forEach(addToken);
+      addToken(route?.shortName);
+      addToken(ROUTE_JA_LABELS[route?.shortName]);
+      return tokens;
+    }
+
+    function tripCorridorAliasTokens(trip) {
+      return trackLineAliasTokensForRoute(trip?.routeId);
+    }
+
+    function routeTrackAliasOverlapCount(routeId, corridorAliases) {
+      if (!corridorAliases?.size) return 0;
+      let count = 0;
+      trackLineAliasTokensForRoute(routeId).forEach((alias) => {
+        if (corridorAliases.has(alias)) count += 1;
+      });
+      return count;
+    }
+
     function canBorrowTripForBoardingLine(tripRouteId, selectedRouteId) {
       if (!tripRouteId || !selectedRouteId || tripRouteId === selectedRouteId) return false;
       const tripRoute = state.routeById.get(tripRouteId);
@@ -3676,32 +3711,81 @@
     function candidateSegmentRouteIds(trip, currentStop, nextStop) {
       const candidates = new Set();
       if (!trip || !currentStop || !nextStop) return [];
-      const addPhysicalCandidate = (routeId) => {
-        if (
-          routePhysicallyServesStationGroup(routeId, nextStop.stationGroupId) ||
-          routePatternServesBoardingStation(routeId, nextStop.stationGroupId) ||
-          routeSliceCoordinates(routeId, currentStop.stationGroupId, nextStop.stationGroupId).length >= 2
-        ) {
-          candidates.add(routeId);
-        }
+      const addCandidate = (routeId) => {
+        if (!routeId) return;
+        if (isThroughServiceTransferAlias(routeId) && routeId !== trip.routeId) return;
+        candidates.add(routeId);
       };
-      boardableRouteIdsForStop(trip, currentStop).forEach(addPhysicalCandidate);
-      const fromRoutes = routeIdsForStationAndTransfers(currentStop.stationGroupId, { physicalOnly: true });
-      const toRoutes = routeIdsForStationAndTransfers(nextStop.stationGroupId, { physicalOnly: true });
-      new Set([...fromRoutes, ...toRoutes]).forEach(addPhysicalCandidate);
-      if (trip?.routeId) candidates.add(trip.routeId);
+      boardableRouteIdsForStop(trip, currentStop).forEach(addCandidate);
+      routeIdsForStationAndTransfers(currentStop.stationGroupId, { physicalOnly: true }).forEach(addCandidate);
+      routeIdsForStationAndTransfers(nextStop.stationGroupId, { physicalOnly: true }).forEach(addCandidate);
+      routeIdsForStationAndTransfers(currentStop.stationGroupId).forEach(addCandidate);
+      routeIdsForStationAndTransfers(nextStop.stationGroupId).forEach(addCandidate);
+      if (trip?.routeId) addCandidate(trip.routeId);
       return [...candidates];
+    }
+
+    function tripSegmentRouteScore(trip, currentStop, nextStop, routeId, coordinates, priority, corridorAliases) {
+      if (!routeId || !coordinates?.length || coordinates.length < 2) return null;
+      const isTripRoute = routeId === trip?.routeId;
+      const fromPhysical = routePhysicallyServesStationGroup(routeId, currentStop.stationGroupId);
+      const toPhysical = routePhysicallyServesStationGroup(routeId, nextStop.stationGroupId);
+      const fromPattern = routePatternServesBoardingStation(routeId, currentStop.stationGroupId);
+      const toPattern = routePatternServesBoardingStation(routeId, nextStop.stationGroupId);
+      const fromServed = fromPhysical || fromPattern;
+      const toServed = toPhysical || toPattern;
+      const physicalBoth = fromPhysical && toPhysical;
+      const patternBoth = fromPattern && toPattern;
+      const aliasOverlap = routeTrackAliasOverlapCount(routeId, corridorAliases);
+      const isBoardable = boardableRouteIdsForStop(trip, currentStop).includes(routeId);
+      const isSelectedRoute = routeId === state.selectedRouteId && (state.selectedTripId === trip?.id || pendingTripId(state.activeMode) === trip?.id);
+      let group = 100;
+      if (physicalBoth && isTripRoute) group = 0;
+      else if (physicalBoth && aliasOverlap) group = 1;
+      else if (physicalBoth && isSelectedRoute) group = 2;
+      else if (patternBoth && isTripRoute) group = 3;
+      else if (patternBoth && aliasOverlap) group = 4;
+      else if (patternBoth && isSelectedRoute) group = 5;
+      else if (physicalBoth && isBoardable) group = 5;
+      else if (physicalBoth) group = 10;
+      else if (patternBoth) group = 14;
+      else if (isTripRoute && (fromServed || toServed)) group = 18;
+      else if (aliasOverlap && fromServed && toServed) group = 24;
+      else if (aliasOverlap && (fromServed || toServed)) group = 42;
+      else if (isTripRoute) group = 60;
+      if (group >= 100) return null;
+      const length = coordinatePathLength(coordinates);
+      return {
+        routeId,
+        group,
+        aliasOverlap,
+        isBoardable,
+        isTripRoute,
+        isSelectedRoute,
+        length,
+        priority,
+      };
     }
 
     function routeIdForTripSegment(trip, currentStop, nextStop) {
       const candidates = candidateSegmentRouteIds(trip, currentStop, nextStop);
+      const corridorAliases = tripCorridorAliasTokens(trip);
       let best = null;
       candidates.forEach((routeId, priority) => {
         const coordinates = coordinatesForTripSegment(routeId, currentStop, nextStop);
-        if (coordinates.length < 2) return;
-        const length = coordinatePathLength(coordinates);
-        if (!best || priority < best.priority || (priority === best.priority && length < best.length)) {
-          best = { routeId, priority, length };
+        const score = tripSegmentRouteScore(trip, currentStop, nextStop, routeId, coordinates, priority, corridorAliases);
+        if (!score) return;
+        if (
+          !best ||
+          score.group < best.group ||
+          (score.group === best.group && score.aliasOverlap > best.aliasOverlap) ||
+          (score.group === best.group && score.aliasOverlap === best.aliasOverlap && score.isTripRoute && !best.isTripRoute) ||
+          (score.group === best.group && score.aliasOverlap === best.aliasOverlap && score.isTripRoute === best.isTripRoute && score.isSelectedRoute && !best.isSelectedRoute) ||
+          (score.group === best.group && score.aliasOverlap === best.aliasOverlap && score.isTripRoute === best.isTripRoute && score.isSelectedRoute === best.isSelectedRoute && score.isBoardable && !best.isBoardable) ||
+          (score.group === best.group && score.aliasOverlap === best.aliasOverlap && score.isTripRoute === best.isTripRoute && score.isSelectedRoute === best.isSelectedRoute && score.isBoardable === best.isBoardable && score.length < best.length) ||
+          (score.group === best.group && score.aliasOverlap === best.aliasOverlap && score.isTripRoute === best.isTripRoute && score.isSelectedRoute === best.isSelectedRoute && score.isBoardable === best.isBoardable && score.length === best.length && score.priority < best.priority)
+        ) {
+          best = score;
         }
       });
       return best?.routeId || trip?.routeId;
