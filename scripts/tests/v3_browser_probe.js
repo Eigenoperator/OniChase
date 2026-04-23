@@ -337,11 +337,86 @@ async function runInPage(page, probeName) {
       };
     }
 
+    async function entryModesProbe() {
+      function waitUntil(predicate, timeoutMs = 5000) {
+        return new Promise((resolve, reject) => {
+          const start = performance.now();
+          function tick() {
+            try {
+              if (predicate()) {
+                resolve();
+                return;
+              }
+            } catch (_error) {
+              // Keep waiting until timeout.
+            }
+            if (performance.now() - start > timeoutMs) {
+              reject(new Error('Timed out waiting for entry mode state'));
+              return;
+            }
+            setTimeout(tick, 20);
+          }
+          tick();
+        });
+      }
+
+      const advancedPanel = document.getElementById('advanced-setup-panel');
+      const advancedButton = document.getElementById('advanced-setup-button');
+      const initial = {
+        quickText: document.getElementById('quick-play-button').innerText,
+        tutorialText: document.getElementById('tutorial-button').innerText,
+        advancedText: advancedButton.innerText,
+        advancedHidden: advancedPanel.classList.contains('hidden'),
+        singleRunnerHidden: !document.getElementById('single-runner-button').offsetParent,
+      };
+
+      advancedButton.click();
+      await waitUntil(() => !advancedPanel.classList.contains('hidden'));
+      const advanced = {
+        hidden: advancedPanel.classList.contains('hidden'),
+        expanded: advancedButton.getAttribute('aria-expanded'),
+        singleRunnerText: document.getElementById('single-runner-button').innerText,
+        createRoomText: document.getElementById('create-room-button').innerText,
+      };
+
+      document.getElementById('tutorial-button').click();
+      await waitUntil(() => !state.tutorialMode || entryOverlayEl.classList.contains('hidden'));
+      await waitUntil(() => state.tutorialMode && !document.getElementById('tutorial-guide-section').hidden);
+      const tutorial = {
+        entryHidden: entryOverlayEl.classList.contains('hidden'),
+        guideHidden: document.getElementById('tutorial-guide-section').hidden,
+        activeMode: state.activeMode,
+        startTime: state.startTime,
+        endTime: state.endTime,
+        guideText: document.getElementById('tutorial-guide').innerText,
+      };
+
+      openEntry();
+      document.getElementById('quick-play-button').click();
+      await waitUntil(() => entryOverlayEl.classList.contains('hidden') && state.clockRunning);
+      const quick = {
+        entryHidden: entryOverlayEl.classList.contains('hidden'),
+        activeMode: state.activeMode,
+        startTime: state.startTime,
+        endTime: state.endTime,
+        clockRunning: state.clockRunning,
+        planningSecondsRemaining: state.planningSecondsRemaining,
+        runnerStepCount: state.players.runner.steps.length,
+        hunterStepCount: state.players.hunter.steps.length,
+        runnerStart: displayNameForGroup(state.players.runner.start_station_id),
+        hunterStart: displayNameForGroup(state.players.hunter.start_station_id),
+        planText: document.getElementById('plan-board').innerText,
+      };
+
+      return { initial, advanced, tutorial, quick };
+    }
+
     const probes = {
       axioms: axiomsProbe,
       'physical-through-running': physicalThroughRunningProbe,
       'selected-train-highlight': selectedTrainHighlightProbe,
       'replay-core': replayCoreProbe,
+      'entry-modes': entryModesProbe,
     };
     if (!probes[name]) throw new Error(`Unknown probe: ${name}`);
     return probes[name]();

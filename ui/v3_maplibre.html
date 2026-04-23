@@ -65,7 +65,7 @@
 
     .entry-card,
     .ready-card {
-      width: min(860px, 100%);
+      width: min(940px, 100%);
       border: 1px solid rgba(213, 221, 232, 0.95);
       border-radius: 32px;
       background: rgba(250, 252, 255, 0.96);
@@ -99,6 +99,41 @@
       gap: 16px;
     }
 
+    .entry-mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .entry-choice {
+      min-height: 116px;
+      border-radius: 20px;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+      justify-items: start;
+      padding: 16px;
+      white-space: normal;
+      text-align: left;
+    }
+
+    .entry-choice strong {
+      display: block;
+      font-size: 16px;
+    }
+
+    .entry-choice span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      font-weight: 750;
+    }
+
+    .entry-choice.primary span,
+    .entry-choice.active span {
+      color: rgba(255, 255, 255, 0.78);
+    }
+
     .entry-panel {
       border: 1px solid rgba(213, 221, 232, 0.9);
       border-radius: 24px;
@@ -113,6 +148,8 @@
       margin: 0;
       font-size: 17px;
     }
+
+    .advanced-setup.hidden { display: none; }
 
     .ready-grid {
       display: grid;
@@ -169,6 +206,45 @@
       font-size: 13px;
       line-height: 1.5;
       white-space: pre-wrap;
+    }
+
+    .tutorial-steps {
+      display: grid;
+      gap: 8px;
+    }
+
+    .tutorial-step {
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      line-height: 1.45;
+    }
+
+    .tutorial-step::before {
+      content: "";
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 2px solid rgba(102, 116, 135, 0.36);
+      margin-top: 1px;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .tutorial-step.done::before {
+      border-color: rgba(36, 151, 111, 0.72);
+      background: #24976f;
+    }
+
+    .tutorial-step strong {
+      display: block;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      margin-bottom: 2px;
     }
 
     .room-code {
@@ -796,7 +872,8 @@
         grid-template-columns: minmax(0, 1fr) auto;
       }
       .clock { display: none; }
-      .entry-grid { grid-template-columns: 1fr; }
+      .entry-grid,
+      .entry-mode-grid { grid-template-columns: 1fr; }
       main {
         grid-template-columns: 1fr;
         grid-template-rows: minmax(0, 1fr) 310px;
@@ -813,12 +890,26 @@
     <div class="entry-card">
       <div>
         <h2>OniChase V3 Tokyo</h2>
-        <p>选择单人模式，或创建一个多人房间。</p>
+        <p>Choose a fast route into the chase, learn the planning loop, or open the full room setup.</p>
       </div>
-      <div class="entry-grid">
+      <div class="entry-mode-grid">
+        <button id="quick-play-button" class="entry-choice primary" type="button">
+          <strong>Quick Play</strong>
+          <span>Recommended Tokyo short game with starter plans and a running countdown.</span>
+        </button>
+        <button id="tutorial-button" class="entry-choice" type="button">
+          <strong>Tutorial</strong>
+          <span>Three-minute guided planning loop: line, train, destination, plan, LIVE.</span>
+        </button>
+        <button id="advanced-setup-button" class="entry-choice" type="button" aria-expanded="false">
+          <strong>Advanced Setup</strong>
+          <span>Choose seat, single-player mode, room code, and multiplayer flow.</span>
+        </button>
+      </div>
+      <div id="advanced-setup-panel" class="entry-grid advanced-setup hidden">
         <section class="entry-panel">
           <h3>Single Player</h3>
-          <p>在同一个浏览器里开始一局单人对局。</p>
+          <p>Start a local planning session in this browser.</p>
           <div class="button-row">
             <button id="single-runner-button" class="primary runner" type="button">Play Runner</button>
             <button id="single-hunter-button" class="hunter" type="button">Play Hunter</button>
@@ -826,7 +917,7 @@
         </section>
         <section class="entry-panel">
           <h3>Multiplayer</h3>
-          <p>选择身份后创建房间，或输入房间号加入。创建成功后会进入准备房。</p>
+          <p>Pick a seat, create a room, or join with a room code.</p>
           <div class="button-row">
             <button id="lobby-runner-button" class="active runner" type="button">Runner</button>
             <button id="lobby-hunter-button" class="hunter" type="button">Hunter</button>
@@ -838,7 +929,7 @@
             <button id="copy-room-button" type="button">Copy Code</button>
           </div>
           <div class="room-code" id="room-code-pill">NO ROOM</div>
-          <div class="entry-status" id="entry-status">选择身份，然后创建或加入房间。</div>
+          <div class="entry-status" id="entry-status">Choose a seat, then create or join a room.</div>
         </section>
       </div>
     </div>
@@ -926,6 +1017,13 @@
             <div class="section-label">Current Plan</div>
             <div class="plan-board" id="plan-board">
               <div class="empty">No plan yet. Choose a line, then a train, then a destination stop.</div>
+            </div>
+          </section>
+
+          <section id="tutorial-guide-section" hidden>
+            <div class="section-label">Tutorial</div>
+            <div class="info-box" id="tutorial-guide">
+              <div class="empty">Tutorial will appear here.</div>
             </div>
           </section>
 
@@ -1407,6 +1505,7 @@
       nextPlanningMinute: 420,
       clockRunning: false,
       tickHandle: null,
+      tutorialMode: false,
       latestResult: null,
       selectedResultEventIndex: 0,
       replayShareStatus: '',
@@ -1468,6 +1567,8 @@
     const trainSummaryEl = document.getElementById('train-summary');
     const trainOutlookEl = document.getElementById('train-outlook');
     const planBoardEl = document.getElementById('plan-board');
+    const tutorialGuideSectionEl = document.getElementById('tutorial-guide-section');
+    const tutorialGuideEl = document.getElementById('tutorial-guide');
     const roomCardEl = document.getElementById('room-card');
     const roomActionsEl = document.getElementById('room-actions');
     const resultCardEl = document.getElementById('result-card');
@@ -1570,6 +1671,15 @@
       entryOverlayEl.classList.add('hidden');
     }
 
+    function toggleAdvancedSetup(forceOpen = null) {
+      const panel = document.getElementById('advanced-setup-panel');
+      const button = document.getElementById('advanced-setup-button');
+      const shouldOpen = forceOpen === null ? panel.classList.contains('hidden') : Boolean(forceOpen);
+      panel.classList.toggle('hidden', !shouldOpen);
+      button.classList.toggle('active', shouldOpen);
+      button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    }
+
     function openReadyRoom() {
       entryOverlayEl.classList.add('hidden');
       readyRoomEl.classList.remove('hidden');
@@ -1669,7 +1779,7 @@
       renderGame();
     }
 
-    function enterSinglePlayer(seat) {
+    function prepareLocalSession(seat, options = {}) {
       stopOnlinePolling();
       state.online = {
         ...state.online,
@@ -1681,12 +1791,20 @@
         planSubmitSeq: 0,
         localPlanDirty: false,
       };
+      state.startTime = options.startTime || '06:00';
+      state.endTime = options.endTime || '18:00';
       resetMatch();
+      state.tutorialMode = Boolean(options.tutorialMode);
+      state.planningSecondsRemaining = options.planningSeconds ?? state.planningSecondsRemaining;
       state.activeMode = seat;
       updateRoleButtons();
-      closeEntry();
       closeReadyRoom();
       renderGame();
+    }
+
+    function enterSinglePlayer(seat) {
+      prepareLocalSession(seat);
+      closeEntry();
       beginTimetableLoadSoon();
     }
 
@@ -4628,6 +4746,97 @@
       return state.routeById.get(routeId)?.color || '#667487';
     }
 
+    function stationGroupIdByName(name) {
+      return [...state.stationGroupById.entries()].find(([, group]) =>
+        (group.names?.ja || group.primaryName) === name
+      )?.[0] || null;
+    }
+
+    function routeIdByTitle(title) {
+      return [...state.routeById.keys()].find((routeId) => routeTitle(routeId) === title) || null;
+    }
+
+    function firstStarterRide(candidate) {
+      const startId = stationGroupIdByName(candidate.startName) || candidate.startId;
+      if (!startId) return null;
+      const routeId = candidate.routeTitle ? routeIdByTitle(candidate.routeTitle) : null;
+      const earliestMinute = hhmmToMinutes(candidate.earliestHhmm || state.startTime);
+      const destinationIds = new Set((candidate.destinationNames || []).map(stationGroupIdByName).filter(Boolean));
+      const rows = departuresForStationGroup(startId, earliestMinute, { routeId });
+      for (const row of rows) {
+        if (!hasDownstreamStop(row.trip, row.stop)) continue;
+        const downstream = (row.trip.stopTimes || []).filter((stop) => stop.sequence > row.stop.sequence);
+        const destination = downstream.find((stop) => destinationIds.has(stop.stationGroupId))
+          || downstream[Math.min(4, downstream.length - 1)];
+        if (!destination) continue;
+        return {
+          startId,
+          tripId: row.trip.id,
+          destinationId: destination.stationGroupId,
+          departureHhmm: minutesToHhmm(row.departureMinute),
+          routeTitle: routeTitle(row.routeIds?.[0] || row.trip.routeId),
+          destinationLabel: displayNameForGroup(destination.stationGroupId),
+        };
+      }
+      return null;
+    }
+
+    function recommendedStarterRide(playerId) {
+      const candidates = playerId === 'runner'
+        ? [
+          { startName: '東京', routeTitle: '山手線', destinationNames: ['渋谷', '新宿', '池袋'], earliestHhmm: '06:00' },
+          { startName: '東京', routeTitle: '京浜東北線・根岸線', destinationNames: ['品川', '横浜'], earliestHhmm: '06:00' },
+          { startName: '東京', routeTitle: '東海道線', destinationNames: ['横浜'], earliestHhmm: '06:00' },
+          { startId: state.bundle?.metadata?.defaultRunnerStartStationId, destinationNames: [], earliestHhmm: '06:00' },
+        ]
+        : [
+          { startName: '新宿', routeTitle: '山手線', destinationNames: ['渋谷', '品川', '東京'], earliestHhmm: '07:00' },
+          { startName: '新宿', routeTitle: '中央線快速', destinationNames: ['東京'], earliestHhmm: '07:00' },
+          { startName: '池袋', routeTitle: '副都心線', destinationNames: ['渋谷', '横浜'], earliestHhmm: '07:00' },
+          { startId: state.bundle?.metadata?.defaultHunterStartStationId, destinationNames: [], earliestHhmm: '07:00' },
+        ];
+      for (const candidate of candidates) {
+        const ride = firstStarterRide(candidate);
+        if (ride) return ride;
+      }
+      return null;
+    }
+
+    function applyStarterRide(playerId, ride) {
+      if (!ride) return false;
+      state.players[playerId].start_station_id = ride.startId;
+      state.players[playerId].steps = [
+        { type: 'BOARD_TRAIN', trip_id: ride.tripId },
+        { type: 'RIDE_TO_STATION', station_id: ride.destinationId },
+      ];
+      return true;
+    }
+
+    async function startQuickPlay() {
+      entryStatusEl.textContent = 'Preparing Quick Play...';
+      prepareLocalSession('runner', { startTime: '06:00', endTime: '08:00', planningSeconds: 30 });
+      await ensureTimetableLoaded();
+      const runnerRide = recommendedStarterRide('runner');
+      const hunterRide = recommendedStarterRide('hunter');
+      applyStarterRide('runner', runnerRide);
+      applyStarterRide('hunter', hunterRide);
+      state.activeMode = 'runner';
+      state.tutorialMode = false;
+      state.planningSecondsRemaining = 30;
+      updateRoleButtons();
+      closeEntry();
+      renderGame();
+      startGameNow();
+    }
+
+    async function startTutorialMode() {
+      entryStatusEl.textContent = 'Loading Tutorial...';
+      prepareLocalSession('runner', { startTime: '06:00', endTime: '08:00', tutorialMode: true });
+      closeEntry();
+      await ensureTimetableLoaded();
+      renderGame();
+    }
+
     function routeChoicesFromDepartures(departures) {
       const byRoute = new Map();
       departures.forEach((entry) => {
@@ -4951,6 +5160,48 @@
       if (buttons.unready) buttons.unready.disabled = !onlineActive() || state.phase !== 'PLANNING' || !room?.self?.ready;
     }
 
+    function tutorialPlanStatus() {
+      const steps = activePlayer()?.steps || [];
+      if (!steps.some((step) => step.type === 'BOARD_TRAIN')) return { valid: false, text: 'Choose a line and one train.' };
+      if (!steps.some((step) => step.type === 'RIDE_TO_STATION')) return { valid: false, text: 'Choose an alighting station.' };
+      try {
+        buildResult();
+        return { valid: true, text: 'Current Plan can be replayed.' };
+      } catch (error) {
+        return { valid: false, text: String(error.message || error) };
+      }
+    }
+
+    function renderTutorialGuide() {
+      tutorialGuideSectionEl.hidden = !state.tutorialMode;
+      if (!state.tutorialMode) return;
+      const steps = activePlayer()?.steps || [];
+      const hasRoute = Boolean(state.selectedRouteId);
+      const hasTrain = Boolean(pendingTripId() || state.selectedTripId || steps.some((step) => step.type === 'BOARD_TRAIN'));
+      const hasDestination = steps.some((step) => step.type === 'RIDE_TO_STATION');
+      const planStatus = tutorialPlanStatus();
+      const liveStarted = state.phase !== 'PLANNING' || state.clockRunning || Boolean(state.latestResult);
+      const rows = [
+        [hasRoute, 'Line', 'Pick one line from the Planning list.'],
+        [hasTrain, 'Train', 'Pick one departure on that line.'],
+        [hasDestination, 'Alight', 'Pick a downstream station; the ride appears in Current Plan.'],
+        [planStatus.valid, 'Plan', planStatus.text],
+        [liveStarted, 'LIVE', 'Start Game runs the countdown; Replay explains the capture.'],
+      ];
+      tutorialGuideEl.innerHTML = `
+        <div class="tutorial-steps">
+          ${rows.map(([done, title, text]) => `
+            <div class="tutorial-step ${done ? 'done' : ''}">
+              <span><strong>${escapeHtml(title)}</strong>${escapeHtml(text)}</span>
+            </div>
+          `).join('')}
+          <div class="tutorial-step done">
+            <span><strong>Through-service</strong>Same train, different physical line name when the service continues, for example 副都心線 -> 東急東横線.</span>
+          </div>
+        </div>
+      `;
+    }
+
     function renderReplayActions() {
       const buttons = {
         run: document.getElementById('replay-run-button'),
@@ -4996,6 +5247,7 @@
       renderCurrentStatus();
       renderTrainOutlook();
       renderPlanBoard();
+      renderTutorialGuide();
       renderRoomPanel();
       renderResult();
       updatePlayerMarkers();
@@ -5837,6 +6089,21 @@
       });
       document.getElementById('single-runner-button').addEventListener('click', () => enterSinglePlayer('runner'));
       document.getElementById('single-hunter-button').addEventListener('click', () => enterSinglePlayer('hunter'));
+      document.getElementById('quick-play-button').addEventListener('click', () => {
+        startQuickPlay().catch((error) => {
+          entryStatusEl.textContent = `Quick Play failed: ${String(error.message || error)}`;
+          toggleAdvancedSetup(true);
+          openEntry();
+        });
+      });
+      document.getElementById('tutorial-button').addEventListener('click', () => {
+        startTutorialMode().catch((error) => {
+          entryStatusEl.textContent = `Tutorial failed: ${String(error.message || error)}`;
+          toggleAdvancedSetup(true);
+          openEntry();
+        });
+      });
+      document.getElementById('advanced-setup-button').addEventListener('click', () => toggleAdvancedSetup());
       document.getElementById('lobby-runner-button').addEventListener('click', () => setLobbySeat('runner'));
       document.getElementById('lobby-hunter-button').addEventListener('click', () => setLobbySeat('hunter'));
       document.getElementById('create-room-button').addEventListener('click', createRoomAndJoinSeat);
