@@ -1352,6 +1352,7 @@
       selectedRouteId: null,
       selectedTripId: null,
       selectedTripStopIds: [],
+      selectedTripStopFeatureIds: [],
       activeMode: 'runner',
       players: {},
       pendingTripIds: { runner: null, hunter: null },
@@ -3450,7 +3451,9 @@
       if (playerId === state.activeMode) {
         state.selectedTripId = null;
         state.selectedTripStopIds = [];
+        state.selectedTripStopFeatureIds = [];
         state.map?.setFilter('selected-trip-stops', NONE_STATION_FILTER);
+        updateSelectedRouteHighlights();
       }
     }
 
@@ -3673,30 +3676,52 @@
       return coordinatePathLength(forward) <= coordinatePathLength(backward) ? forward : backward;
     }
 
-    function candidateSegmentRouteIds(trip, fromStationGroupId, toStationGroupId) {
+    function candidateSegmentRouteIds(trip, currentStop, nextStop) {
       const candidates = new Set();
-      const tripRoute = state.routeById.get(trip?.routeId);
-      const fromRoutes = routeIdsForStationAndTransfers(fromStationGroupId, { physicalOnly: true });
-      const toRoutes = routeIdsForStationAndTransfers(toStationGroupId, { physicalOnly: true });
-      fromRoutes.forEach((routeId) => {
-        if (!toRoutes.has(routeId)) return;
-        if (tripRoute && !routesShareBoardingOperator(trip.routeId, routeId)) return;
-        candidates.add(routeId);
-      });
+      if (!trip || !currentStop || !nextStop) return [];
+      const addPhysicalCandidate = (routeId) => {
+        if (
+          routePhysicallyServesStationGroup(routeId, nextStop.stationGroupId) ||
+          routePatternServesBoardingStation(routeId, nextStop.stationGroupId) ||
+          routeSliceCoordinates(routeId, currentStop.stationGroupId, nextStop.stationGroupId).length >= 2
+        ) {
+          candidates.add(routeId);
+        }
+      };
+      boardableRouteIdsForStop(trip, currentStop).forEach(addPhysicalCandidate);
+      const fromRoutes = routeIdsForStationAndTransfers(currentStop.stationGroupId, { physicalOnly: true });
+      const toRoutes = routeIdsForStationAndTransfers(nextStop.stationGroupId, { physicalOnly: true });
+      new Set([...fromRoutes, ...toRoutes]).forEach(addPhysicalCandidate);
       if (trip?.routeId) candidates.add(trip.routeId);
       return [...candidates];
     }
 
-    function routeIdForTripSegment(trip, fromStationGroupId, toStationGroupId) {
-      const candidates = candidateSegmentRouteIds(trip, fromStationGroupId, toStationGroupId);
+    function routeIdForTripSegment(trip, currentStop, nextStop) {
+      const candidates = candidateSegmentRouteIds(trip, currentStop, nextStop);
       let best = null;
-      candidates.forEach((routeId) => {
-        const coordinates = routeSliceCoordinates(routeId, fromStationGroupId, toStationGroupId);
+      candidates.forEach((routeId, priority) => {
+        const coordinates = coordinatesForTripSegment(routeId, currentStop, nextStop);
         if (coordinates.length < 2) return;
         const length = coordinatePathLength(coordinates);
-        if (!best || length < best.length) best = { routeId, length };
+        if (!best || priority < best.priority || (priority === best.priority && length < best.length)) {
+          best = { routeId, priority, length };
+        }
       });
       return best?.routeId || trip?.routeId;
+    }
+
+    function routeCanAnchorTripSegment(routeId, currentStop, nextStop) {
+      return Boolean(routeId && currentStop && nextStop && (
+        (routePhysicallyServesStationGroup(routeId, currentStop.stationGroupId) && routePhysicallyServesStationGroup(routeId, nextStop.stationGroupId)) ||
+        (routePatternServesBoardingStation(routeId, currentStop.stationGroupId) && routePatternServesBoardingStation(routeId, nextStop.stationGroupId))
+      ));
+    }
+
+    function coordinatesForTripSegment(routeId, currentStop, nextStop) {
+      const direct = routeSliceCoordinates(routeId, currentStop.stationGroupId, nextStop.stationGroupId);
+      if (direct.length >= 2) return direct;
+      if (!routeCanAnchorTripSegment(routeId, currentStop, nextStop)) return [];
+      return globalGraphSliceCoordinates(routeId, currentStop.stationGroupId, nextStop.stationGroupId);
     }
 
     function routeSliceCoordinates(routeId, fromStationGroupId, toStationGroupId) {
@@ -3773,6 +3798,44 @@
         .map((stop) => stop.stationGroupId);
     }
 
+    function routeIdsForTripStopHighlight(trip, stop, startSequence) {
+      const stops = trip?.stopTimes || [];
+      const stopIndex = stops.indexOf(stop);
+      const routeIds = new Set();
+      const nextStop = stops.slice(stopIndex + 1).find((item) => item.sequence >= startSequence);
+      const previousStop = [...stops.slice(0, stopIndex)].reverse().find((item) => item.sequence >= startSequence);
+      if (nextStop) routeIds.add(routeIdForTripSegment(trip, stop, nextStop));
+      if (previousStop) routeIds.add(routeIdForTripSegment(trip, previousStop, stop));
+      if (!routeIds.size && trip?.routeId) routeIds.add(trip.routeId);
+      return [...routeIds].filter(Boolean);
+    }
+
+    function tripStopFeatureIds(trip, stationGroupIds = null) {
+      if (!trip?.stopTimes?.length) return [];
+      const wanted = stationGroupIds ? new Set(stationGroupIds) : null;
+      const startSequence = selectedTripStartSequence(trip);
+      const featureIds = new Set();
+      trip.stopTimes
+        .filter((stop) => stop.sequence >= startSequence && (!wanted || wanted.has(stop.stationGroupId)))
+        .forEach((stop) => {
+          const previousSize = featureIds.size;
+          routeIdsForTripStopHighlight(trip, stop, startSequence).forEach((routeId) => {
+            routeStationPhysicalIds(routeId, [stop.stationGroupId]).forEach((id) => featureIds.add(id));
+          });
+          if (featureIds.size === previousSize) {
+            (state.physicalStationsByGroupId.get(stop.stationGroupId) || []).forEach((station) => {
+              if (station?.id) featureIds.add(station.id);
+            });
+          }
+        });
+      return [...featureIds];
+    }
+
+    function tripStopsFilter(trip, stationGroupIds) {
+      const featureIds = tripStopFeatureIds(trip, stationGroupIds);
+      return featureIds.length ? stationFeatureIdFilter(featureIds) : stationMatchFilter(stationGroupIds || []);
+    }
+
     function tripPathSegments(trip) {
       if (!trip?.stopTimes?.length) return [];
       const startSequence = selectedTripStartSequence(trip);
@@ -3780,12 +3843,12 @@
       for (let index = 0; index < trip.stopTimes.length - 1; index += 1) {
         const current = trip.stopTimes[index];
         const next = trip.stopTimes[index + 1];
-        if (next.sequence < startSequence) continue;
-        const segmentRouteId = routeIdForTripSegment(trip, current.stationGroupId, next.stationGroupId);
-        const segment = routeSliceCoordinates(segmentRouteId, current.stationGroupId, next.stationGroupId);
-        if (segment.length >= 2) segments.push(segment);
+        if (current.sequence < startSequence) continue;
+        const segmentRouteId = routeIdForTripSegment(trip, current, next);
+        const segment = coordinatesForTripSegment(segmentRouteId, current, next);
+        if (segment.length >= 2) segments.push({ routeId: segmentRouteId, coordinates: segment });
       }
-      return segments.length ? segments : routeTrackLineSegments(trip.routeId);
+      return segments;
     }
 
     function tripLocationOnMap(tripId, timeMinute) {
@@ -3805,8 +3868,9 @@
           const nextArr = stopArrivalMinutes(nextStop);
           if (dep <= timeMinute && timeMinute <= nextArr) {
             const ratio = nextArr === dep ? 1 : ((timeMinute - dep) / (nextArr - dep));
-            const segmentRouteId = routeIdForTripSegment(trip, stop.stationGroupId, nextStop.stationGroupId);
-            const position = routePositionAlongPath(segmentRouteId, stop.stationGroupId, nextStop.stationGroupId, ratio)
+            const segmentRouteId = routeIdForTripSegment(trip, stop, nextStop);
+            const position = interpolateCoordinates(coordinatesForTripSegment(segmentRouteId, stop, nextStop), ratio)
+              || routePositionAlongPath(segmentRouteId, stop.stationGroupId, nextStop.stationGroupId, ratio)
               || interpolateCoordinates([stationLonLat(stop.stationGroupId), stationLonLat(nextStop.stationGroupId)].filter(Boolean), ratio);
             return position ? { anchorStationGroupId: nextStop.stationGroupId, position } : null;
           }
@@ -3982,14 +4046,24 @@
       if (stationGroupId) ensureTimetableLoaded().then(renderGame);
     }
 
-    function setSelectedRoute(routeId) {
-      state.selectedRouteId = routeId || null;
+    function updateSelectedRouteHighlights() {
       const selectedRouteSource = state.map?.getSource('selected-route-path');
+      const showingTrip = Boolean(state.selectedTripId || pendingTripId(state.activeMode));
       if (selectedRouteSource) {
-        selectedRouteSource.setData(selectedRouteFeatureCollection(state.selectedRouteId));
+        selectedRouteSource.setData(showingTrip ? { type: 'FeatureCollection', features: [] } : selectedRouteFeatureCollection(state.selectedRouteId));
+      }
+      if (!state.map?.getLayer('route-stop-halo')) return;
+      if (showingTrip || !state.selectedRouteId) {
+        state.map.setFilter('route-stop-halo', NONE_STATION_FILTER);
+        return;
       }
       const routeStops = [...(state.routeStationSetById.get(state.selectedRouteId) || new Set())];
       state.map.setFilter('route-stop-halo', routeStationMatchFilter(state.selectedRouteId, routeStops));
+    }
+
+    function setSelectedRoute(routeId) {
+      state.selectedRouteId = routeId || null;
+      updateSelectedRouteHighlights();
       renderRouteCard();
       renderRouteList();
       renderGame();
@@ -4000,10 +4074,12 @@
       state.pendingTripIds[state.activeMode] = tripId || null;
       const trip = state.tripById.get(state.selectedTripId);
       state.selectedTripStopIds = trip ? selectedTripStopIds(trip) : [];
-      state.map.setFilter('selected-trip-stops', routeStationMatchFilter(trip?.routeId, state.selectedTripStopIds));
+      state.selectedTripStopFeatureIds = trip ? tripStopFeatureIds(trip, state.selectedTripStopIds) : [];
+      state.map.setFilter('selected-trip-stops', trip ? tripStopsFilter(trip, state.selectedTripStopIds) : NONE_STATION_FILTER);
       if (routeId) setSelectedRoute(routeId);
       else if (trip?.routeId) setSelectedRoute(trip.routeId);
       updateSelectedTripPath();
+      updateSelectedRouteHighlights();
       renderRouteCard();
       renderGame();
     }
@@ -4064,17 +4140,23 @@
     function updateSelectedTripPath() {
       if (!state.map?.getSource('selected-trip-path')) return;
       const trip = state.tripById.get(state.selectedTripId);
-      const route = trip ? state.routeById.get(trip.routeId) : null;
       const segments = trip ? tripPathSegments(trip) : [];
       state.map.getSource('selected-trip-path').setData({
         type: 'FeatureCollection',
         features: segments
-          .filter((coordinates) => coordinates.length >= 2)
-          .map((coordinates, index) => ({
+          .filter((segment) => segment.coordinates.length >= 2)
+          .map((segment, index) => {
+            const route = state.routeById.get(segment.routeId) || state.routeById.get(trip.routeId);
+            return {
               type: 'Feature',
-              geometry: { type: 'LineString', coordinates },
-              properties: { id: `${trip.id}-${index}`, color: route?.color || '#0f172a' },
-            })),
+              geometry: { type: 'LineString', coordinates: segment.coordinates },
+              properties: {
+                id: `${trip.id}-${index}`,
+                route_id: segment.routeId || trip.routeId || '',
+                color: route?.color || '#0f172a',
+              },
+            };
+          }),
       });
     }
 
@@ -4756,6 +4838,7 @@
       renderResult();
       updatePlayerMarkers();
       updateSelectedTripPath();
+      updateSelectedRouteHighlights();
       if (state.map?.getLayer('selected-trip-stops')) {
         const preview = planCursorPreview(state.activeMode);
         const pending = preview ? pendingDepartureContext(preview) : null;
@@ -4764,8 +4847,8 @@
           : preview?.currentState.kind === 'TRAIN'
             ? availableDestinations(preview).map((item) => item.stationGroupId)
             : state.selectedTripStopIds;
-        const highlightRouteId = pending?.trip?.routeId || preview?.currentTrip?.routeId || state.tripById.get(state.selectedTripId)?.routeId || state.selectedRouteId;
-        state.map.setFilter('selected-trip-stops', routeStationMatchFilter(highlightRouteId, futureStops));
+        const highlightTrip = pending?.trip || preview?.currentTrip || state.tripById.get(state.selectedTripId);
+        state.map.setFilter('selected-trip-stops', highlightTrip ? tripStopsFilter(highlightTrip, futureStops) : NONE_STATION_FILTER);
       }
     }
 
