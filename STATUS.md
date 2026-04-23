@@ -22,7 +22,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 through-running audit now covers Keikyu/Asakusa/Keisei, Tokyu/Fukutoshin/Seibu/Tobu, Meguro/Mita/Namboku/Sotetsu, Saitama Railway, and Minatomirai display boundaries.
 - v3 Tokyo Metro route titles now use common line names (`丸ノ内線`, `有楽町線`, `副都心線`, etc.) instead of numbered legal names in the UI.
 - Local two-browser v3 multiplayer smoke passed: Runner/Hunter created and joined one room, both ready states synced into Planning and then LIVE, and local/public room `/health` report `dataset_name = v3-tokyo`.
-- v3 selected-train highlights now score trip identity, selected route identity, normalized corridor aliases, and physical endpoint service, so 山手線 stays on the whole future 山手線 path while 副都心線 through-services split onto 副都心線 -> 東急東横線 -> みなとみらい21線.
+- v3 selected-train highlights now score trip identity, selected route identity, normalized corridor aliases, and physical endpoint service; public Pages smoke confirms 山手線 stays all 山手線 while 副都心線 through-services split onto 副都心線 -> 東急東横線 -> みなとみらい21線.
 - v3 Current Plan ride legs now show the same route-color swatch as the line chooser.
 - v3 Current Plan ride rows now keep the subline to boarding/alighting times only.
 - Public v3 two-browser playtests now include 30 Render rooms; the latest 10/10 battle reports/timelines show public Japanese line names, private-operator prefixes, and no internal route or station ids.
@@ -45,6 +45,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. After Pages deploys the selected-trip highlight fix, do one public browser visual smoke on 山手線 and the 池袋 `副都心線` -> `東急東横線` -> `みなとみらい21線` through-service.
+1. If selected-trip map display still looks wrong visually, capture a real rendered public screenshot and compare it against the now-verified public path feature split.
 2. Triage the remaining dirty v3 data/cache worktree and decide what is stable, ignored, or local-only.
 3. Use the cleaned battle timelines to spot gameplay readability bugs, then continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.
