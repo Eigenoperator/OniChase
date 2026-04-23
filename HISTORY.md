@@ -254,3 +254,7 @@
 - Removed the extra v3 planning summary card, simplified regular train labels by hiding non-express train numbers, changed train-row subtitles to origin / terminal / next-stop information, and made selected-train highlighting use real service/track geometry instead of station-to-station straight lines.
 - Refined v3 destination selection: trains with no downstream stop from the current station are filtered out, destination rows only show time and station name, and compact route-color transfer chips now appear beside destination station names.
 - Upgraded v3 destination-stop transfer badges to real line-symbol assets: Tokyo Metro uses official route-symbol JPGs from its trademark download package, and the current Tokyo route set now includes JR/Toei/private/third-sector route-symbol SVG/PNG assets with generated badges only as fallback.
+
+## 2026-04-22
+
+- Converted the most fragile v3 physical-through-running axioms into executable regression tests. The new local Playwright-backed unittest suite verifies AXIOMS text, `docs/v3.html` / `ui/v3_maplibre.html` sync, Tokyo major route separation, Shinkansen/ordinary separation, strict same-train and station-group capture behavior, private/metro boundary physical segments, and golden selected-train highlights for 池袋 `副都心線` and 東京 `山手線`.
