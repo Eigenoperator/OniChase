@@ -184,7 +184,7 @@ async function runInPage(page, probeName) {
       const fukutoshinRoute = routeIdByTitle('副都心線');
       const ikebukuroRows = departuresForStationGroup(stationIdByName('池袋'), hhmmToMinutes('06:00'), { routeId: fukutoshinRoute });
       const fukutoshinBadRows = routeTitlesForRows(ikebukuroRows)
-        .filter((row) => /埼京|川越/.test(row.label) || row.routeIds.some((title) => /埼京|川越/.test(title)));
+        .filter((row) => /埼京|川越線/.test(row.label) || row.routeIds.some((title) => /埼京|川越線/.test(title)));
 
       const tokyo = stationIdByName('東京');
       const tokyoRouteChoices = routeChoicesFromDepartures(departuresForStationGroup(tokyo, hhmmToMinutes('06:00')));

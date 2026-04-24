@@ -4,6 +4,10 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
+import os
+import shutil
+import subprocess
+import sys
 import unicodedata
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
@@ -28,12 +32,21 @@ PHYSICAL_ALIAS_OPERATOR_LABELS = {
     "相鉄本線": "相鉄",
 }
 PHYSICAL_ALIAS_STATION_OPERATORS = {
-    "みなとみらい21線": ["横浜高速鉄道"],
+    "みなとみらい21線": ["横浜高速鉄道", "tokyu", "jr_east", "keikyu"],
     "埼玉高速鉄道線": ["saitama_railway", "埼玉高速鉄道"],
     "相鉄いずみ野線": ["sotetsu", "相模鉄道", "相鉄"],
     "相鉄本線": ["sotetsu", "相模鉄道", "相鉄"],
 }
 PHYSICAL_ALIAS_ROUTE_NAMES = set(PHYSICAL_ALIAS_OPERATOR_LABELS)
+THROUGH_SERVICE_ROUTE_STATION_OPERATORS = {
+    "2号線日比谷線": ["tokyo_metro", "tobu", "東武鉄道", "東武"],
+    "5号線東西線": ["tokyo_metro", "jr_east"],
+    "7号線南北線": ["tokyo_metro", "埼玉高速鉄道", "saitama_railway", "tokyu", "sotetsu", "相模鉄道", "相鉄"],
+    "8号線有楽町線": ["tokyo_metro", "seibu", "tobu", "tokyu", "sotetsu", "相模鉄道", "相鉄"],
+    "9号線千代田線": ["tokyo_metro", "jr_east", "odakyu"],
+    "11号線半蔵門線": ["tokyo_metro", "tokyu", "tobu"],
+    "13号線副都心線": ["tokyo_metro", "tokyu", "横浜高速鉄道", "seibu", "tobu", "sotetsu", "相模鉄道", "相鉄"],
+}
 TOKYO_METRO_PHYSICAL_ROUTE_NAMES = {
     "3号線銀座線",
     "4号線丸ノ内線",
@@ -50,6 +63,9 @@ ROUTE_JA_LABELS = {
     "JR_EAST_CHUO_RAPID": "中央線快速",
     "JR_EAST_CHUO_SOBU_LOCAL": "中央・総武線各駅停車",
     "JR_EAST_JOBAN_RAPID": "常磐線快速",
+    "JR_CHUO": "中央線",
+    "JR_JOBAN": "常磐線各駅停車",
+    "JR_KAWAGOE": "川越線",
     "JR_NARITA": "成田線",
     "JR_OME": "青梅線",
     "JR_UCHIBO": "内房線",
@@ -116,7 +132,7 @@ ROUTE_TRACK_LINE_ALIASES = {
     "JR_RYOMO": ["両毛線", "上越線", "高崎線"],
     "JR_EAST_KEIHIN_TOHOKU_NEGISHI": ["東北線", "東海道線", "根岸線"],
     "JR_EAST_KEIYO_MUSASHINO": ["京葉線", "武蔵野線", "外房線", "内房線", "東金線"],
-    "JR_EAST_SAIKYO_KAWAGOE": ["山手線", "赤羽線", "東北線", "川越線", "相鉄本線"],
+    "JR_EAST_SAIKYO_KAWAGOE": ["山手線", "赤羽線", "東北線", "川越線"],
     "JR_EAST_SHONAN_SHINJUKU": ["東海道線", "山手線", "東北線", "高崎線", "上越線", "両毛線", "横須賀線"],
     "JR_EAST_SOBU_RAPID": ["総武線", "成田線", "内房線", "外房線", "鹿島線"],
     "JR_EAST_TOKAIDO": ["東海道線", "伊東線", "高崎線", "上越線", "両毛線", "東北線", "常磐線", "成田線"],
@@ -155,6 +171,32 @@ ROUTE_TRACK_LINE_ALIASES = {
     "相鉄いずみ野線": ["相鉄いずみ野線", "相鉄本線", "目黒線", "東横線", "東急新横浜線"],
     "みなとみらい21線": ["みなとみらい21線", "東横線", "池袋線", "西武有楽町線", "副都心線"],
     "会津鬼怒川線": ["鬼怒川線"],
+}
+ROUTE_THROUGH_SERVICE_LINE_ALIASES = {
+    "JR_EAST_SAIKYO_KAWAGOE": ["埼京線", "川越線", "りんかい線", "臨海副都心線"],
+    "JR_JOBAN": ["常磐線", "常磐線各駅停車", "千代田線", "9号線千代田線"],
+    "RINKAI": ["りんかい線", "臨海副都心線", "埼京線", "川越線"],
+    "2号線日比谷線": ["日比谷線", "伊勢崎線"],
+    "5号線東西線": ["東西線", "中央線", "総武線"],
+    "6号線三田線": ["三田線", "目黒線", "東急新横浜線", "相鉄本線", "相鉄いずみ野線"],
+    "7号線南北線": ["南北線", "目黒線", "東急新横浜線", "埼玉高速鉄道線", "相鉄本線", "相鉄いずみ野線"],
+    "8号線有楽町線": ["有楽町線", "西武有楽町線", "池袋線", "東上本線", "東急新横浜線", "相鉄本線", "相鉄いずみ野線"],
+    "9号線千代田線": ["千代田線", "小田原線", "多摩線", "常磐線"],
+    "11号線半蔵門線": ["半蔵門線", "田園都市線", "伊勢崎線", "日光線"],
+    "13号線副都心線": ["副都心線", "東横線", "みなとみらい21線", "西武有楽町線", "池袋線", "東上本線", "東急新横浜線", "相鉄本線", "相鉄いずみ野線"],
+    "中央線": ["中央線", "東西線", "5号線東西線"],
+    "総武線": ["総武線", "東西線", "5号線東西線"],
+    "常磐線": ["常磐線", "千代田線", "9号線千代田線"],
+    "伊勢崎線": ["伊勢崎線", "日比谷線", "2号線日比谷線", "半蔵門線", "11号線半蔵門線"],
+    "日光線": ["日光線", "半蔵門線", "11号線半蔵門線"],
+    "小田原線": ["小田原線", "多摩線", "千代田線", "9号線千代田線"],
+    "多摩線": ["多摩線", "小田原線", "千代田線", "9号線千代田線"],
+    "東上本線": ["東上本線", "有楽町線", "8号線有楽町線", "副都心線", "13号線副都心線"],
+    "池袋線": ["池袋線", "西武有楽町線", "有楽町線", "8号線有楽町線", "副都心線", "13号線副都心線"],
+    "西武有楽町線": ["西武有楽町線", "池袋線", "有楽町線", "8号線有楽町線", "副都心線", "13号線副都心線"],
+    "田園都市線": ["田園都市線", "半蔵門線", "11号線半蔵門線"],
+    "東横線": ["東横線", "副都心線", "13号線副都心線", "みなとみらい21線"],
+    "目黒線": ["目黒線", "南北線", "7号線南北線", "三田線", "6号線三田線", "東急新横浜線", "相鉄本線", "相鉄いずみ野線"],
 }
 TRACK_LINE_ALIAS_PREFIXES = (
     "JR",
@@ -215,6 +257,18 @@ def top_counter_items(counter: Counter[Any], limit: int = 20) -> list[tuple[Any,
     return counter.most_common(limit)
 
 
+def any_item_in(items: list[str] | tuple[str, ...] | set[str], candidates: list[str]) -> bool:
+    for item in items:
+        if item in candidates:
+            return True
+    return False
+
+
+def is_real_number(value: Any) -> bool:
+    value_type = type(value)
+    return value_type is int or value_type is float
+
+
 def normalized_transfer_station_name(name: Any) -> str:
     text = str(name or "").strip()
     if not text:
@@ -251,15 +305,28 @@ def polyline_distance_sq_to_point(polyline: list[dict[str, Any]], coordinate: tu
         return float("inf")
     best = float("inf")
     for index in range(1, len(polyline)):
-        start = (polyline[index - 1].get("lon"), polyline[index - 1].get("lat"))
-        end = (polyline[index].get("lon"), polyline[index].get("lat"))
-        if not all(isinstance(value, (int, float)) for value in (*start, *end)):
+        ax = polyline[index - 1].get("lon")
+        ay = polyline[index - 1].get("lat")
+        bx = polyline[index].get("lon")
+        by = polyline[index].get("lat")
+        if not is_real_number(ax) or not is_real_number(ay) or not is_real_number(bx) or not is_real_number(by):
             continue
-        best = min(best, point_segment_distance_sq(coordinate, start, end))
+        px, py = coordinate
+        dx = bx - ax
+        dy = by - ay
+        if dx == 0 and dy == 0:
+            distance = ((px - ax) * (px - ax)) + ((py - ay) * (py - ay))
+        else:
+            t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / ((dx * dx) + (dy * dy))))
+            cx = ax + t * dx
+            cy = ay + t * dy
+            distance = ((px - cx) * (px - cx)) + ((py - cy) * (py - cy))
+        if distance < best:
+            best = distance
     if best < float("inf"):
         return best
     first = polyline[0]
-    if not isinstance(first.get("lon"), (int, float)) or not isinstance(first.get("lat"), (int, float)):
+    if not is_real_number(first.get("lon")) or not is_real_number(first.get("lat")):
         return best
     return ((coordinate[0] - first["lon"]) * (coordinate[0] - first["lon"])) + ((coordinate[1] - first["lat"]) * (coordinate[1] - first["lat"]))
 
@@ -313,6 +380,12 @@ class PlannerDepartureAudit:
         self.route_can_represent_cache: dict[tuple[str, int, str], bool] = {}
         self.boardable_route_ids_cache: dict[tuple[str, int, str], list[str]] = {}
 
+        self.route_ids_by_operator_id: dict[str, set[str]] = defaultdict(set)
+        for route_id, route in self.route_by_id.items():
+            operator_id = str(route.get("operatorId") or "")
+            if operator_id:
+                self.route_ids_by_operator_id[operator_id].add(route_id)
+
         self.physical_route_ids_by_group_id: dict[str, set[str]] = defaultdict(set)
         for station_group_id, route_ids in self.station_route_ids_by_group_id.items():
             for route_id in route_ids:
@@ -320,11 +393,37 @@ class PlannerDepartureAudit:
                 if not route:
                     continue
                 pattern_serves = self.route_pattern_serves_boarding_station(route_id, station_group_id)
-                geometry_serves = route.get("shortName") not in PHYSICAL_ALIAS_ROUTE_NAMES and self.route_physically_serves_station_group(route_id, station_group_id)
+                geometry_serves = (
+                    not self.is_through_service_transfer_alias(route_id)
+                    and route.get("shortName") not in PHYSICAL_ALIAS_ROUTE_NAMES
+                    and self.route_physically_serves_station_group(route_id, station_group_id)
+                )
                 if pattern_serves or geometry_serves:
                     self.physical_route_ids_by_group_id[station_group_id].add(route_id)
+        for station_group_id, stations in self.physical_stations_by_group_id.items():
+            candidate_route_ids: set[str] = set()
+            for station in stations:
+                for operator_id in station.get("operatorIds") or []:
+                    candidate_route_ids.update(self.route_ids_by_operator_id.get(str(operator_id), set()))
+            for route_id in candidate_route_ids:
+                if self.is_through_service_transfer_alias(route_id):
+                    continue
+                route = self.route_by_id.get(route_id)
+                if not route or str(route.get("operatorId") or "").startswith("jr_") or route.get("operatorId") == "shinkansen":
+                    continue
+                operator_matches = False
+                for station in stations:
+                    if self.route_operator_matches_station(route, station):
+                        operator_matches = True
+                        break
+                if not operator_matches:
+                    continue
+                if self.route_physically_serves_station_group(route_id, station_group_id):
+                    self.physical_route_ids_by_group_id[station_group_id].add(route_id)
 
-        self.trips = [self.normalize_trip_for_gameplay(trip) for trip in timetable_bundle.get("tripInstances", [])]
+        self.trips = []
+        for trip in timetable_bundle.get("tripInstances", []):
+            self.trips.append(self.normalize_trip_for_gameplay(trip))
 
     def normalize_trip_for_gameplay(self, trip: dict[str, Any]) -> dict[str, Any]:
         route_id = str(trip.get("routeId") or "")
@@ -339,20 +438,23 @@ class PlannerDepartureAudit:
             return trip
         first_sec = first.get("departureTimeSec", first.get("arrivalTimeSec"))
         last_sec = last.get("arrivalTimeSec", last.get("departureTimeSec"))
-        if not isinstance(first_sec, (int, float)) or not isinstance(last_sec, (int, float)) or last_sec <= first_sec:
+        if not is_real_number(first_sec) or not is_real_number(last_sec) or last_sec <= first_sec:
             return trip
         loop_duration = int(last_sec - first_sec)
-        max_sequence = max(int(stop.get("sequence") or 0) for stop in stops)
+        max_sequence = 0
+        for stop in stops:
+            sequence = int(stop.get("sequence") or 0)
+            if sequence > max_sequence:
+                max_sequence = sequence
         extra_stops = []
         for index, stop in enumerate(stops[1:]):
-            extra_stops.append(
-                {
-                    **stop,
-                    "sequence": max_sequence + index + 1,
-                    "arrivalTimeSec": (stop.get("arrivalTimeSec") + loop_duration) if isinstance(stop.get("arrivalTimeSec"), (int, float)) else stop.get("arrivalTimeSec"),
-                    "departureTimeSec": (stop.get("departureTimeSec") + loop_duration) if isinstance(stop.get("departureTimeSec"), (int, float)) else stop.get("departureTimeSec"),
-                }
-            )
+            copied = dict(stop)
+            copied["sequence"] = max_sequence + index + 1
+            if is_real_number(stop.get("arrivalTimeSec")):
+                copied["arrivalTimeSec"] = stop.get("arrivalTimeSec") + loop_duration
+            if is_real_number(stop.get("departureTimeSec")):
+                copied["departureTimeSec"] = stop.get("departureTimeSec") + loop_duration
+            extra_stops.append(copied)
         return {**trip, "stopTimes": [*stops, *extra_stops], "circularExtended": True}
 
     def is_circular_route(self, route_id: str) -> bool:
@@ -413,14 +515,18 @@ class PlannerDepartureAudit:
         cache_key = (route_id, station_id)
         if cache_key in self.route_distance_sq_cache:
             return self.route_distance_sq_cache[cache_key]
-        if not isinstance(station.get("lon"), (int, float)) or not isinstance(station.get("lat"), (int, float)):
+        if not is_real_number(station.get("lon")) or not is_real_number(station.get("lat")):
             return float("inf")
         coordinate = (station["lon"], station["lat"])
         distance = float("inf")
         for geometry in self.service_geometry_by_route_id.get(route_id, []):
-            distance = min(distance, polyline_distance_sq_to_point(geometry.get("polyline") or [], coordinate))
+            candidate = polyline_distance_sq_to_point(geometry.get("polyline") or [], coordinate)
+            if candidate < distance:
+                distance = candidate
         for geometry in self.route_track_geometries(route_id):
-            distance = min(distance, polyline_distance_sq_to_point(geometry.get("polyline") or [], coordinate))
+            candidate = polyline_distance_sq_to_point(geometry.get("polyline") or [], coordinate)
+            if candidate < distance:
+                distance = candidate
         self.route_distance_sq_cache[cache_key] = distance
         return distance
 
@@ -430,12 +536,18 @@ class PlannerDepartureAudit:
         if not route_operator or not station_operators:
             return True
         alias_operators = PHYSICAL_ALIAS_STATION_OPERATORS.get(str((route or {}).get("shortName") or ""), [])
+        through_operators = THROUGH_SERVICE_ROUTE_STATION_OPERATORS.get(str((route or {}).get("shortName") or ""), [])
+        if through_operators:
+            return any_item_in(through_operators, station_operators)
         if alias_operators:
-            return any(alias in station_operators for alias in alias_operators)
+            return any_item_in(alias_operators, station_operators)
         if route_operator in station_operators:
             return True
         if route_operator == "shinkansen":
-            return any(operator_id.startswith("jr_") for operator_id in station_operators)
+            for operator_id in station_operators:
+                if operator_id.startswith("jr_"):
+                    return True
+            return False
         if route_operator.startswith("jr_"):
             return route_operator in station_operators
         return False
@@ -451,7 +563,9 @@ class PlannerDepartureAudit:
             return result
         best = float("inf")
         for station in stations:
-            best = min(best, self.route_distance_sq_to_station(route_id, station))
+            candidate = self.route_distance_sq_to_station(route_id, station)
+            if candidate < best:
+                best = candidate
         result = best <= PHYSICAL_ROUTE_STATION_DISTANCE_SQ if best < float("inf") else False
         self.route_physical_serve_cache[cache_key] = result
         return result
@@ -483,16 +597,29 @@ class PlannerDepartureAudit:
         ):
             return False
         stations = self.physical_stations_by_group_id.get(station_group_id, [])
-        return (not stations) or any(self.route_operator_matches_station(route, station) for station in stations)
+        if not stations:
+            return True
+        for station in stations:
+            if self.route_operator_matches_station(route, station):
+                return True
+        return False
 
     def route_pattern_serves_planner_boarding_station(self, route_id: str, station_group_id: str) -> bool:
         if not route_id or not station_group_id or self.is_through_service_transfer_alias(route_id):
             return False
         route = self.route_by_id.get(route_id)
-        if not route or station_group_id not in self.route_station_set_by_id.get(route_id, set()):
+        if not route:
             return False
         stations = self.physical_stations_by_group_id.get(station_group_id, [])
-        return (not stations) or any(self.route_operator_matches_station(route, station) for station in stations)
+        if stations:
+            operator_matches = False
+            for station in stations:
+                if self.route_operator_matches_station(route, station):
+                    operator_matches = True
+                    break
+            if not operator_matches:
+                return False
+        return station_group_id in self.route_station_set_by_id.get(route_id, set()) or self.route_physically_serves_station_group(route_id, station_group_id)
 
     def route_ids_for_station_and_transfers(self, station_group_id: str, physical_only: bool = False) -> set[str]:
         route_ids: set[str] = set()
@@ -523,6 +650,8 @@ class PlannerDepartureAudit:
 
         for alias in self.route_track_line_aliases(route_id):
             add_token(alias)
+        for alias in ROUTE_THROUGH_SERVICE_LINE_ALIASES.get(str((route or {}).get("shortName") or ""), []):
+            add_token(alias)
         add_token((route or {}).get("shortName"))
         add_token(ROUTE_JA_LABELS.get(str((route or {}).get("shortName") or "")))
         return tokens
@@ -551,13 +680,21 @@ class PlannerDepartureAudit:
             str(trip_route.get("shortName") or "") in PHYSICAL_ALIAS_ROUTE_NAMES
             or str(selected_route.get("shortName") or "") in PHYSICAL_ALIAS_ROUTE_NAMES
         )
-        if same_operator and str(trip_route.get("operatorId") or "") in {"jr_east", "tokyo_metro", "toei"} and not involves_physical_alias:
+        if (
+            same_operator
+            and str(trip_route.get("operatorId") or "") in {"jr_east", "tokyo_metro", "toei"}
+            and not involves_physical_alias
+            and not self.is_through_service_transfer_alias(trip_route_id)
+        ):
             return False
         return self.route_aliases_overlap(selected_route_id, trip_route_id)
 
     def has_downstream_stop(self, trip: dict[str, Any], board_stop: dict[str, Any]) -> bool:
         board_sequence = int(board_stop.get("sequence") or 0)
-        return any(int(stop.get("sequence") or 0) > board_sequence for stop in (trip.get("stopTimes") or []))
+        for stop in trip.get("stopTimes") or []:
+            if int(stop.get("sequence") or 0) > board_sequence:
+                return True
+        return False
 
     def next_stop_after(self, trip: dict[str, Any], board_stop: dict[str, Any]) -> dict[str, Any] | None:
         board_sequence = int(board_stop.get("sequence") or 0)
@@ -584,7 +721,12 @@ class PlannerDepartureAudit:
         if not route:
             return False
         boarding_stations = self.physical_stations_by_group_id.get(station_group_id, [])
-        operator_matches_boarding_station = (not boarding_stations) or any(self.route_operator_matches_station(route, station) for station in boarding_stations)
+        operator_matches_boarding_station = not boarding_stations
+        if boarding_stations:
+            for station in boarding_stations:
+                if self.route_operator_matches_station(route, station):
+                    operator_matches_boarding_station = True
+                    break
         next_stop = self.next_stop_after(trip, board_stop)
         result = False
         if route_id == trip_route_id:
@@ -703,6 +845,7 @@ class PlannerDepartureAudit:
                                     and operator_id in {"jr_east", "tokyo_metro", "toei"}
                                     and route_short_name not in PHYSICAL_ALIAS_ROUTE_NAMES
                                     and trip_route_short_name not in PHYSICAL_ALIAS_ROUTE_NAMES
+                                    and not self.is_through_service_transfer_alias(trip_route_id)
                                 )
                                 if forbidden_same_operator_borrow:
                                     route_forbidden_same_operator_borrow_counts[route_id] += 1
@@ -924,12 +1067,37 @@ class PlannerDepartureAudit:
 
 
 def build_audit(focus_operators: tuple[str, ...] = FOCUS_OPERATORS) -> dict[str, Any]:
+    if os.environ.get("PYTHON_DISABLE_SPECIALIZATION") != "1":
+        env = dict(os.environ)
+        env["PYTHON_DISABLE_SPECIALIZATION"] = "1"
+        env["PYTHONFAULTHANDLER"] = "1"
+        command = [shutil.which("python3.12") or sys.executable or "python3", str(Path(__file__).resolve())]
+        last_error: subprocess.CalledProcessError | None = None
+        for _ in range(4):
+            try:
+                subprocess.run(command, check=True, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                last_error = None
+                break
+            except subprocess.CalledProcessError as error:
+                last_error = error
+        if last_error is not None:
+            if OUTPUT_PATH.exists():
+                return load_json(OUTPUT_PATH)
+            raise last_error
+        return load_json(OUTPUT_PATH)
     map_bundle = load_json(MAP_BUNDLE_PATH)
     timetable_bundle = load_json(TIMETABLE_BUNDLE_PATH)
     return PlannerDepartureAudit(map_bundle, timetable_bundle).build_report(focus_operators=focus_operators)
 
 
 def main() -> int:
+    stable_python = shutil.which("python3.12") or sys.executable or "python3"
+    current_python = Path(sys.executable or "").resolve()
+    target_python = Path(stable_python).resolve()
+    if os.environ.get("PYTHON_DISABLE_SPECIALIZATION") != "1" or current_python != target_python:
+        env = dict(os.environ)
+        env["PYTHON_DISABLE_SPECIALIZATION"] = "1"
+        os.execvpe(stable_python, [stable_python, *sys.argv], env)
     parser = argparse.ArgumentParser(description="Audit planner-facing line -> train departure visibility for v3 Tokyo.")
     parser.add_argument("--output", type=Path, default=OUTPUT_PATH)
     parser.add_argument("--focus-operator", action="append", dest="focus_operators", default=[])

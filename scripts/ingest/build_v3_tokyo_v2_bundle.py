@@ -87,6 +87,33 @@ OPERATOR_NAME_TO_ID = {
     "saitama rapid railway": "saitama_railway",
 }
 
+PHYSICAL_ALIAS_ROUTE_SPECS = {
+    "みなとみらい21線": {
+        "operator_id": "tokyo_metro",
+        "operator_label": "横浜高速鉄道",
+        "color": "#09357F",
+        "station_names": ["横浜", "新高島", "みなとみらい", "馬車道", "日本大通り", "元町・中華街"],
+    },
+    "埼玉高速鉄道線": {
+        "operator_id": "saitama_railway",
+        "operator_label": "埼玉高速鉄道",
+        "color": "#00A6E9",
+        "station_names": ["赤羽岩淵", "川口元郷", "南鳩ヶ谷", "鳩ヶ谷", "新井宿", "戸塚安行", "東川口", "浦和美園"],
+    },
+    "相鉄本線": {
+        "operator_id": "tokyo_metro",
+        "operator_label": "相鉄",
+        "color": "#003C8F",
+        "station_names": ["西谷", "羽沢横浜国大", "新横浜", "二俣川", "大和", "海老名"],
+    },
+    "相鉄いずみ野線": {
+        "operator_id": "tokyo_metro",
+        "operator_label": "相鉄",
+        "color": "#003C8F",
+        "station_names": ["二俣川", "南万騎が原", "緑園都市", "弥生台", "いずみ野", "いずみ中央", "ゆめが丘", "湘南台"],
+    },
+}
+
 
 def load_json(path: Path) -> Any:
     if path.suffix == ".gz":
@@ -398,6 +425,19 @@ def build_routes(map_payload: dict[str, Any], trains: list[dict[str, Any]]) -> t
             "textColor": text_color_for_background(route_color),
             "mode": mode_for_operator(operator_id),
         })
+    for line, spec in PHYSICAL_ALIAS_ROUTE_SPECS.items():
+        operator_id = str(spec["operator_id"])
+        route_id = route_id_for(line, operator_id)
+        route_color = normalize_hex_color(spec.get("color")) or route_color_for(line, operator_id, color_by_operator_line, color_by_line)
+        route_meta.setdefault(route_id, {
+            "id": route_id,
+            "operatorId": operator_id,
+            "shortName": line,
+            "longName": f"{spec.get('operator_label') or operator_id} / {line}",
+            "color": route_color,
+            "textColor": text_color_for_background(route_color),
+            "mode": mode_for_operator(operator_id),
+        })
 
     # Physical-only routes stay out of serviceRoutes; otherwise thousands of
     # map fragments appear as empty route cards in the gameplay UI.
@@ -576,6 +616,12 @@ def build_bundle() -> dict[str, Any]:
     route_station_sets: dict[str, set[str]] = defaultdict(set)
     for trip in trip_instances:
         route_station_sets[trip["routeId"]].update(stop["stationGroupId"] for stop in trip["stopTimes"])
+    for line, spec in PHYSICAL_ALIAS_ROUTE_SPECS.items():
+        route_id = route_id_for(line, str(spec["operator_id"]))
+        for station_name in spec["station_names"]:
+            station_group_id = station_key_to_group.get(station_name)
+            if station_group_id:
+                route_station_sets[route_id].add(station_group_id)
 
     service_patterns = [{
         "id": f"PATTERN_{route['id']}",
