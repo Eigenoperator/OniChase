@@ -27,7 +27,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - Public v3 two-browser playtests now include 30 Render rooms; the latest 10/10 battle reports/timelines show public Japanese line names, private-operator prefixes, and no internal route or station ids.
 - Heavy public v3 battle records now support generated 10-leg plans plus same-node/same-train capture checks; the latest 10/10 Render rooms completed with no issues.
 - v3 player-facing P0 now includes first-class replay UI that hides empty state, plus Tutorial / Advanced Setup entry modes with detailed demonstrations and browser regression coverage.
-- `scripts/ingest/audit_v3_planner_departures.py` now audits planner-visible `line -> train` surfacing, same-operator forbidden borrowing, and visible station/route pairs with no boardable departures; it is wired into `run_v3_data_quality_audits.py` and covered by `scripts/tests/test_v3_planner_departure_audit.py`.
+- Planner departure audits now include reusable warning-family summaries, and the first planner-boardability fix cut unsurfaced boardable trip stops from `83826` to `39245` while preserving selected-trip physical highlight regressions.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
@@ -36,7 +36,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 ## Blockers
 - `JR Central` still lacks a direct train-detail page like `JR East / JR West`; deeper precision still needs station-grid aggregation.
 - Firefox/geckodriver works for headless DOM gameplay probes; use Playwright for local SVG screenshot/bounds checks when system Python lacks Selenium.
-- The new planner audit now exposes real remaining gaps: `83826` unsurfaced boardable trip stops and `314` visible station/route pairs with no boardable departure; large untracked source caches remain local-only: `data/v3_external/`, `data/v3_tokyo_jreast_core_cache/`, and `data/v3_tokyo_rinkai_cache/`.
+- The new planner audit still exposes real remaining gaps: `39245` unsurfaced boardable trip stops and `314` visible station/route pairs with no boardable departure; large untracked source caches remain local-only: `data/v3_external/`, `data/v3_tokyo_jreast_core_cache/`, and `data/v3_tokyo_rinkai_cache/`.
 
 ## Decisions
 - [2026-04-07] GIS-first Shinkansen became the main `v2`; public site keeps `v1`, `v2`, and now the new Tokyo `v3` sandbox.

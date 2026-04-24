@@ -211,6 +211,10 @@ def display_name_for_group(group: dict[str, Any] | None, station: dict[str, Any]
     return str((group or {}).get("id") or (station or {}).get("stationGroupId") or "Unknown")
 
 
+def top_counter_items(counter: Counter[Any], limit: int = 20) -> list[tuple[Any, int]]:
+    return counter.most_common(limit)
+
+
 def normalized_transfer_station_name(name: Any) -> str:
     text = str(name or "").strip()
     if not text:
@@ -412,11 +416,11 @@ class PlannerDepartureAudit:
         if not isinstance(station.get("lon"), (int, float)) or not isinstance(station.get("lat"), (int, float)):
             return float("inf")
         coordinate = (station["lon"], station["lat"])
-        geometries = [*self.service_geometry_by_route_id.get(route_id, []), *self.route_track_geometries(route_id)]
-        distance = min(
-            (polyline_distance_sq_to_point(geometry.get("polyline") or [], coordinate) for geometry in geometries),
-            default=float("inf"),
-        )
+        distance = float("inf")
+        for geometry in self.service_geometry_by_route_id.get(route_id, []):
+            distance = min(distance, polyline_distance_sq_to_point(geometry.get("polyline") or [], coordinate))
+        for geometry in self.route_track_geometries(route_id):
+            distance = min(distance, polyline_distance_sq_to_point(geometry.get("polyline") or [], coordinate))
         self.route_distance_sq_cache[cache_key] = distance
         return distance
 
@@ -445,10 +449,9 @@ class PlannerDepartureAudit:
             result = station_group_id in self.route_station_set_by_id.get(route_id, set())
             self.route_physical_serve_cache[cache_key] = result
             return result
-        best = min(
-            (self.route_distance_sq_to_station(route_id, station) for station in stations),
-            default=float("inf"),
-        )
+        best = float("inf")
+        for station in stations:
+            best = min(best, self.route_distance_sq_to_station(route_id, station))
         result = best <= PHYSICAL_ROUTE_STATION_DISTANCE_SQ if best < float("inf") else False
         self.route_physical_serve_cache[cache_key] = result
         return result
@@ -478,6 +481,15 @@ class PlannerDepartureAudit:
             and operator_id != "toei"
             and str(route.get("shortName") or "") not in PHYSICAL_ALIAS_ROUTE_NAMES
         ):
+            return False
+        stations = self.physical_stations_by_group_id.get(station_group_id, [])
+        return (not stations) or any(self.route_operator_matches_station(route, station) for station in stations)
+
+    def route_pattern_serves_planner_boarding_station(self, route_id: str, station_group_id: str) -> bool:
+        if not route_id or not station_group_id or self.is_through_service_transfer_alias(route_id):
+            return False
+        route = self.route_by_id.get(route_id)
+        if not route or station_group_id not in self.route_station_set_by_id.get(route_id, set()):
             return False
         stations = self.physical_stations_by_group_id.get(station_group_id, [])
         return (not stations) or any(self.route_operator_matches_station(route, station) for station in stations)
@@ -578,15 +590,15 @@ class PlannerDepartureAudit:
         if route_id == trip_route_id:
             result = operator_matches_boarding_station and (
                 self.route_physically_serves_station_group(route_id, station_group_id)
-                or self.route_pattern_serves_boarding_station(route_id, station_group_id)
+                or self.route_pattern_serves_planner_boarding_station(route_id, station_group_id)
             )
         elif (
             operator_matches_boarding_station
             and next_stop is not None
             and self.can_borrow_trip_for_boarding_line(trip_route_id, route_id)
-            and self.route_pattern_serves_boarding_station(route_id, station_group_id)
+            and self.route_pattern_serves_planner_boarding_station(route_id, station_group_id)
         ):
-            result = self.route_pattern_serves_boarding_station(route_id, str(next_stop.get("stationGroupId") or ""))
+            result = self.route_pattern_serves_planner_boarding_station(route_id, str(next_stop.get("stationGroupId") or ""))
         self.route_can_represent_cache[cache_key] = result
         return result
 
@@ -628,6 +640,10 @@ class PlannerDepartureAudit:
         operator_borrowed_counts: Counter[str] = Counter()
         operator_own_counts: Counter[str] = Counter()
         operator_forbidden_same_operator_borrow_counts: Counter[str] = Counter()
+        unsurfaced_by_operator: Counter[str] = Counter()
+        unsurfaced_by_trip_route: Counter[str] = Counter()
+        unsurfaced_by_station: Counter[str] = Counter()
+        unsurfaced_by_trip_route_station: Counter[tuple[str, str]] = Counter()
 
         forbidden_borrow_samples: list[dict[str, Any]] = []
         unsurfaced_boardable_stop_samples: list[dict[str, Any]] = []
@@ -646,6 +662,10 @@ class PlannerDepartureAudit:
                     route_ids = self.boardable_route_ids_for_stop(trip, stop)
                     if not route_ids:
                         unsurfaced_boardable_stop_count += 1
+                        unsurfaced_by_operator[trip_operator_id] += 1
+                        unsurfaced_by_trip_route[trip_route_id] += 1
+                        unsurfaced_by_station[station_group_id] += 1
+                        unsurfaced_by_trip_route_station[(trip_route_id, station_group_id)] += 1
                         if len(unsurfaced_boardable_stop_samples) < sample_limit:
                             group = self.station_group_by_id.get(station_group_id)
                             station = self.station_by_group_id.get(station_group_id)
@@ -785,6 +805,20 @@ class PlannerDepartureAudit:
                 }
             )
 
+        no_boardable_by_operator: Counter[str] = Counter()
+        no_boardable_by_route: Counter[str] = Counter()
+        terminal_only_by_operator: Counter[str] = Counter()
+        terminal_only_by_route: Counter[str] = Counter()
+        for report in route_reports:
+            operator_id = str(report.get("operatorId") or "")
+            route_id = str(report.get("routeId") or "")
+            if report["boardableCount"] == 0 and report["terminalOnlyCount"] > 0:
+                terminal_only_by_operator[operator_id] += 1
+                terminal_only_by_route[route_id] += 1
+            elif report["boardableCount"] == 0:
+                no_boardable_by_operator[operator_id] += 1
+                no_boardable_by_route[route_id] += 1
+
         focus_route_reports = [
             report
             for report in route_reports
@@ -813,6 +847,62 @@ class PlannerDepartureAudit:
             "unsurfaced_boardable_trip_stop_count": unsurfaced_boardable_stop_count,
         }
 
+        def route_row(route_id: str, count: int, field_name: str = "routeId") -> dict[str, Any]:
+            route = self.route_by_id.get(route_id)
+            return {
+                field_name: route_id,
+                "route": route_title(route),
+                "operatorId": (route or {}).get("operatorId"),
+                "count": count,
+            }
+
+        def station_row(station_group_id: str, count: int) -> dict[str, Any]:
+            group = self.station_group_by_id.get(station_group_id)
+            station = self.station_by_group_id.get(station_group_id)
+            return {
+                "stationGroupId": station_group_id,
+                "station": display_name_for_group(group, station),
+                "count": count,
+            }
+
+        aggregates = {
+            "unsurfacedBoardableTripStopsByOperator": [
+                {"operatorId": operator_id, "count": count}
+                for operator_id, count in top_counter_items(unsurfaced_by_operator, sample_limit)
+            ],
+            "unsurfacedBoardableTripStopsByTripRoute": [
+                route_row(route_id, count, "tripRouteId")
+                for route_id, count in top_counter_items(unsurfaced_by_trip_route, sample_limit)
+            ],
+            "unsurfacedBoardableTripStopsByStation": [
+                station_row(station_group_id, count)
+                for station_group_id, count in top_counter_items(unsurfaced_by_station, sample_limit)
+            ],
+            "unsurfacedBoardableTripStopsByTripRouteStation": [
+                {
+                    **route_row(route_id, count, "tripRouteId"),
+                    **station_row(station_group_id, count),
+                }
+                for (route_id, station_group_id), count in top_counter_items(unsurfaced_by_trip_route_station, sample_limit)
+            ],
+            "noBoardableStationRoutePairsByOperator": [
+                {"operatorId": operator_id, "count": count}
+                for operator_id, count in top_counter_items(no_boardable_by_operator, sample_limit)
+            ],
+            "noBoardableStationRoutePairsByRoute": [
+                route_row(route_id, count)
+                for route_id, count in top_counter_items(no_boardable_by_route, sample_limit)
+            ],
+            "terminalOnlyStationRoutePairsByOperator": [
+                {"operatorId": operator_id, "count": count}
+                for operator_id, count in top_counter_items(terminal_only_by_operator, sample_limit)
+            ],
+            "terminalOnlyStationRoutePairsByRoute": [
+                route_row(route_id, count)
+                for route_id, count in top_counter_items(terminal_only_by_route, sample_limit)
+            ],
+        }
+
         return {
             "generatedAt": datetime.now(timezone.utc).isoformat(),
             "source": {
@@ -820,6 +910,7 @@ class PlannerDepartureAudit:
                 "timetable_bundle": str(TIMETABLE_BUNDLE_PATH.relative_to(ROOT)),
             },
             "summary": summary,
+            "aggregates": aggregates,
             "focusOperators": list(focus_operators),
             "operatorReports": operator_reports,
             "samples": {

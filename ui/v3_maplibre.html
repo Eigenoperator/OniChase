@@ -2733,6 +2733,14 @@
       return !stations.length || stations.some((station) => routeOperatorMatchesStation(route, station));
     }
 
+    function routePatternServesPlannerBoardingStation(routeId, stationGroupId) {
+      if (!routeId || !stationGroupId || isThroughServiceTransferAlias(routeId)) return false;
+      const route = state.routeById.get(routeId);
+      if (!route || !state.routeStationSetById.get(routeId)?.has(stationGroupId)) return false;
+      const stations = state.physicalStationsByGroupId.get(stationGroupId) || [];
+      return !stations.length || stations.some((station) => routeOperatorMatchesStation(route, station));
+    }
+
     function buildPhysicalRouteIdsByGroup() {
       state.physicalRouteIdsByGroupId = new Map();
       state.stationRouteIdsByGroupId.forEach((routeIds, stationGroupId) => {
@@ -2841,15 +2849,15 @@
       if (routeId === trip.routeId) {
         result = operatorMatchesBoardingStation && (
           routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId) ||
-          routePatternServesBoardingStation(routeId, boardStop.stationGroupId)
+          routePatternServesPlannerBoardingStation(routeId, boardStop.stationGroupId)
         );
       } else if (
         operatorMatchesBoardingStation &&
         nextStop &&
         canBorrowTripForBoardingLine(trip.routeId, routeId) &&
-        routePatternServesBoardingStation(routeId, boardStop.stationGroupId)
+        routePatternServesPlannerBoardingStation(routeId, boardStop.stationGroupId)
       ) {
-        result = routePatternServesBoardingStation(routeId, nextStop.stationGroupId);
+        result = routePatternServesPlannerBoardingStation(routeId, nextStop.stationGroupId);
       }
       state.routeCanRepresentCache.set(cacheKey, result);
       return result;
