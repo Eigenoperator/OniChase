@@ -4,11 +4,10 @@ OniChase is a public-transit chase game prototype built on real Japanese railway
 
 Current focus:
 
-- real Yamanote weekday timetable ingestion
-- train-instance-based simulation
-- capture-rule prototyping
-- planning-oriented local tools
-- browser and desktop playtest clients
+- keep `v2` nationwide Shinkansen online playtest healthy
+- stabilize `v3` Tokyo MapLibre gameplay on real physical geometry and real timetable bundles
+- audit planner-facing departure correctness, through-running boundaries, and data identity
+- keep single-player and multiplayer on the same gameplay loop
 
 ## Online Playtest
 
@@ -23,7 +22,8 @@ Browser source pages:
 
 - `v1` source: [ui/web_client.html](/home/xincheng/toy/Chase/ui/web_client.html)
 - `v2` source: [ui/v2_web_client.html](/home/xincheng/toy/Chase/ui/v2_web_client.html)
-- `v3` source: [ui/v3_tokyo_phase1_map.html](/home/xincheng/toy/Chase/ui/v3_tokyo_phase1_map.html)
+- `v3` local mirror: [ui/v3_maplibre.html](/home/xincheng/toy/Chase/ui/v3_maplibre.html)
+- `v3` public/source-of-truth page: [docs/v3.html](/home/xincheng/toy/Chase/docs/v3.html)
 - landing page output: [docs/index.html](/home/xincheng/toy/Chase/docs/index.html)
 - Pages workflow: [.github/workflows/deploy-pages.yml](/home/xincheng/toy/Chase/.github/workflows/deploy-pages.yml)
 
@@ -48,15 +48,18 @@ If `tkinter` is missing on your system, see:
 Key entry points:
 
 - `STATUS.md`
+- `AXIOMS.md`
 - `SCHEMA.md`
 - `STATE_MACHINE.md`
 - `SIMULATION_INPUT.md`
 - `PLANNING_FORMAT.md`
 - `ui/web_client.html`
 - `ui/v2_web_client.html`
+- `ui/v3_maplibre.html`
 - `docs/index.html`
 - `docs/v1.html`
 - `docs/v2.html`
+- `docs/v3.html`
 
 Workspace layout:
 
@@ -78,7 +81,8 @@ Local testing and setup:
 - architecture: [ONLINE_ARCHITECTURE.md](/home/xincheng/toy/Chase/ONLINE_ARCHITECTURE.md)
 - protocol: [ONLINE_PROTOCOL.md](/home/xincheng/toy/Chase/ONLINE_PROTOCOL.md)
 - room server: [scripts/engine/v2_online_room_server.py](/home/xincheng/toy/Chase/scripts/engine/v2_online_room_server.py)
-- web client: [ui/v2_web_client.html](/home/xincheng/toy/Chase/ui/v2_web_client.html)
+- `v2` web client: [ui/v2_web_client.html](/home/xincheng/toy/Chase/ui/v2_web_client.html)
+- `v3` web client mirror: [ui/v3_maplibre.html](/home/xincheng/toy/Chase/ui/v3_maplibre.html)
 - deployment: [ONLINE_DEPLOYMENT.md](/home/xincheng/toy/Chase/ONLINE_DEPLOYMENT.md)
 
 Quick start:
@@ -90,6 +94,14 @@ Quick start:
 Then open:
 
 - local/public `v2` page: `https://eigenoperator.github.io/OniChase/v2.html`
+- local/public `v3` page: `https://eigenoperator.github.io/OniChase/v3.html`
+
+For a local `v3` room server:
+
+```bash
+cd /home/xincheng/toy/Chase
+python3 scripts/engine/v2_online_room_server.py --dataset v3-tokyo
+```
 
 Current multiplayer flow:
 
@@ -101,4 +113,19 @@ Current multiplayer flow:
 Public multiplayer note:
 
 - the public `v2` page reads its default room-server URL from [docs/data/v2_online_config.json](/home/xincheng/toy/Chase/docs/data/v2_online_config.json)
+- the public `v3` page reads its default room-server URL from [docs/data/v3_online_config.json](/home/xincheng/toy/Chase/docs/data/v3_online_config.json)
 - until that file points to a public deployment, single-player works immediately but multiplayer room creation will remain unconfigured on the public site
+
+## Audit And Regression
+
+- unified v3 audit entry: [scripts/ingest/run_v3_data_quality_audits.py](/home/xincheng/toy/Chase/scripts/ingest/run_v3_data_quality_audits.py)
+- planner-facing departure audit: [scripts/ingest/audit_v3_planner_departures.py](/home/xincheng/toy/Chase/scripts/ingest/audit_v3_planner_departures.py)
+- browser regression tests: [scripts/tests](/home/xincheng/toy/Chase/scripts/tests)
+
+Useful commands:
+
+```bash
+cd /home/xincheng/toy/Chase
+python3 scripts/ingest/run_v3_data_quality_audits.py --checks planner-departures
+python3 -m unittest scripts.tests.test_v3_planner_departure_audit
+```

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import audit_v3_map_timetable_coverage
+import audit_v3_planner_departures
 import audit_v3_tokyo_bundle
 from audit_v3_train_datasets import dataset_report
 
@@ -19,7 +20,7 @@ DATA_DIR = ROOT / "data"
 DEFAULT_OUTPUT_PATH = DATA_DIR / "v3_data_quality_audit.json"
 UNIFIED_TRAINS_PATH = DATA_DIR / "v3_trains_unified.json.gz"
 
-CHECKS = ("coverage", "unified", "bundle", "raw-datasets")
+CHECKS = ("coverage", "planner-departures", "unified", "bundle", "raw-datasets")
 
 
 def load_json(path: Path) -> Any:
@@ -146,6 +147,55 @@ def run_coverage_check(max_samples: int) -> dict[str, Any]:
         },
         artifacts={
             "legacy_component_report": relative(audit_v3_map_timetable_coverage.OUTPUT_PATH),
+        },
+    )
+
+
+def run_planner_departure_check(max_samples: int) -> dict[str, Any]:
+    report = audit_v3_planner_departures.build_audit()
+    audit_v3_planner_departures.write_json(audit_v3_planner_departures.OUTPUT_PATH, report)
+    summary = report["summary"]
+    failures: list[dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
+
+    if summary["forbidden_same_operator_borrow_count"]:
+        failures.append(
+            {
+                "code": "forbidden_same_operator_borrowing",
+                "count": summary["forbidden_same_operator_borrow_count"],
+                "message": "JR East / Tokyo Metro / Toei lines should not borrow same-operator departures across unrelated physical lines.",
+            }
+        )
+    if summary["unsurfaced_boardable_trip_stop_count"]:
+        warnings.append(
+            {
+                "code": "unsurfaced_boardable_trip_stop",
+                "count": summary["unsurfaced_boardable_trip_stop_count"],
+                "message": "Some trips have downstream boardable stops that surface under no planner line at all.",
+            }
+        )
+    if summary["no_boardable_station_route_pair_count"]:
+        warnings.append(
+            {
+                "code": "visible_station_route_without_boardable_departure",
+                "count": summary["no_boardable_station_route_pair_count"],
+                "message": "Some visible station/route pairs never surface a boardable departure and should be checked against planner expectations.",
+            }
+        )
+
+    return make_check(
+        "planner-departures",
+        "Planner-facing line/train departure visibility",
+        metrics=summary,
+        failures=failures,
+        warnings=warnings,
+        samples={
+            "forbidden_same_operator_borrow": first_items(report.get("samples", {}).get("forbiddenSameOperatorBorrow", []), max_samples),
+            "unsurfaced_boardable_trip_stops": first_items(report.get("samples", {}).get("unsurfacedBoardableTripStops", []), max_samples),
+            "focus_operator_route_reports": first_items(report.get("samples", {}).get("focusOperatorRouteReports", []), max_samples),
+        },
+        artifacts={
+            "planner_departure_report": relative(audit_v3_planner_departures.OUTPUT_PATH),
         },
     )
 
@@ -455,6 +505,7 @@ def run_raw_dataset_check(max_samples: int) -> dict[str, Any]:
 
 RUNNERS = {
     "coverage": run_coverage_check,
+    "planner-departures": run_planner_departure_check,
     "unified": run_unified_check,
     "bundle": run_bundle_check,
     "raw-datasets": run_raw_dataset_check,
@@ -540,6 +591,9 @@ def print_summary(report: dict[str, Any], output_path: Path) -> None:
         for key in (
             "zero_stop_station_membership_count",
             "rendered_line_without_trip_count",
+            "forbidden_same_operator_borrow_count",
+            "unsurfaced_boardable_trip_stop_count",
+            "no_boardable_station_route_pair_count",
             "duplicate_id_group_count",
             "duplicate_signature_group_count",
             "train_stations_without_map_count",

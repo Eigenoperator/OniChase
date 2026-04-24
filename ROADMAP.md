@@ -66,42 +66,46 @@ Not the goal of V2:
 - huge same-station ambiguity
 - full metropolitan schedule density
 
-### V3: GIS Shinkansen
+### V3: Tokyo Real Network
 
-`V3` is the GIS-first upgrade of the nationwide Shinkansen version.
+`V3` is the dense-network upgrade that keeps the `v2` gameplay shell but moves the game onto the real Tokyo-area railway network.
 
 Scope:
 
-- whole Shinkansen map
+- real Tokyo-area rail map with physical station geometry preserved
+- shared `planning / live / capture / replay` gameplay with `v2`
+- MapLibre rendering, real service geometry, and denser line identity rules
+- real commuter, subway, through-running, and transfer-heavy timetable structure
+- online and single-player parity on the same core loop
 - real physical geometry
-- real service geometry
-- multi-scale map rendering
-- stronger map / timetable linkage
-- a more modern transit-map presentation layer than `v2`
+- stronger map / timetable / planner linkage than `v2`
 
 Purpose:
 
-- keep the same nationwide Shinkansen gameplay scope as `v2`
-- upgrade the map and data stack from a game-oriented board to a GIS-oriented transit model
-- prove the long-term architecture before moving to a denser urban system later
+- prove that OniChase still works when the railway network becomes transfer-dense and through-running-heavy
+- keep `v3` on the same game rules as `v2`, rather than inventing a separate Tokyo-only ruleset
+- harden the long-term data architecture: station groups, physical stations, route identity, and planner-visible departures
+- make the real-map presentation layer production-worthy enough for repeated public playtests
 
 Risks:
 
-- GIS and timetable integration become much more demanding
-- map readability becomes harder as geometry becomes more real
-- station grouping and multi-scale rendering become more important
+- route identity and through-running boundaries become much more demanding than in Shinkansen-only play
+- map readability and performance both become harder once the network is dense
+- planner-visible departures can drift from physical reality unless auditing stays reusable and automated
 
 ## Current Priority
 
-The project is currently transitioning from `V2` playability work into the first `V3` architecture track.
+The project is currently in a split state:
+
+- `v2` remains the stable nationwide public playtest baseline
+- `v3` is the active forward path for map/data/gameplay integration
 
 That means current work should primarily optimize for:
 
-- `v2` playable stability
-- `v2` client flow quality
-- `v3` GIS architecture correctness
-- reusable geometry and service contracts
-- long-term map/timetable linkage
+- `v2` playable stability and online reliability
+- `v3` Tokyo gameplay correctness on the real network
+- reusable planner/data audits, especially line -> train -> stop visibility
+- top-level docs and public clients matching the actual current architecture
 
 ## Expansion Rule
 
@@ -110,5 +114,5 @@ We should not change version scope casually once a version is already carrying r
 For the current roadmap:
 
 1. `V2` proves the nationwide Shinkansen game loop with real trains.
-2. `V3` upgrades the same network into a GIS-first architecture.
-3. A later city-scale version can build on that architecture instead of starting from scratch.
+2. `V3` proves the same game loop on the real Tokyo dense network with the same core rules.
+3. Later expansion should grow outward from the stable `v3` data/gameplay architecture instead of branching into a separate incompatible product.
