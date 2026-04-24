@@ -11,7 +11,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - `v3` MapLibre gameplay now has role switching, planning/live timing, hourly replanning, plan board, train outlook, selected-train path/stops, player markers, live capture, replay simulation, and Japanese-original display.
 - `v3` multiplayer client has single-player entry, v3 Tokyo room lobby, Ready Room, room code copy, ready/unready, leave-room cleanup, and online plan sync.
 - v3 planner is now a three-layer `line -> train -> destination stop` flow with compact transfer grids, physical train filtering, and selected-train whole-future physical highlights.
-- Recent local work tightened departure route matching, optimized MapLibre loading, and generated large v3 data/script changes that are still dirty in the worktree.
+- Recent local work tightened departure route matching, optimized MapLibre loading, and clarified the next v3 focus: planner-facing audits plus top-level doc sync.
 - v3 data/script stable set was rebuilt and audited: unified trains `41186`, duplicate unified ids `0`, duplicate unified signatures `0`, rendered lines without trips `0`, and local/public v3 room `/health` both report `dataset_name = v3-tokyo`.
 - Committed and pushed the validated v3 stable set in `c66264e` (`Validate v3 Tokyo timetable bundle`).
 - Local headless Firefox single-player smoke test passed the core v3 flow: load map/timetable, enter Runner mode, choose line/train/destination, generate a plan, start countdown, and transition into `LIVE`.
@@ -31,12 +31,12 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
-- Stabilize `v3` MapLibre/reporting UX behind automated checks: remaining player-understanding copy/states, richer replay playback, easy single-player AI, and map/planner readability.
+- Stabilize `v3` MapLibre/reporting UX behind automated checks: planner-facing departure correctness, clearer player-facing states, richer replay playback, and map/planner readability.
 
 ## Blockers
 - `JR Central` still lacks a direct train-detail page like `JR East / JR West`; deeper precision still needs station-grid aggregation.
 - Firefox/geckodriver works for headless DOM gameplay probes; use Playwright for local SVG screenshot/bounds checks when system Python lacks Selenium.
-- No blocker for the selected-trip highlight fix; large untracked source caches remain local-only: `data/v3_external/`, `data/v3_tokyo_jreast_core_cache/`, and `data/v3_tokyo_rinkai_cache/`.
+- Top-level docs still lag the real public v3 source/roadmap, and large untracked source caches remain local-only: `data/v3_external/`, `data/v3_tokyo_jreast_core_cache/`, and `data/v3_tokyo_rinkai_cache/`.
 
 ## Decisions
 - [2026-04-07] GIS-first Shinkansen became the main `v2`; public site keeps `v1`, `v2`, and now the new Tokyo `v3` sandbox.
@@ -46,5 +46,5 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 
 ## Next
 1. Run the v3 axiom/replay/page suites before changing bundle, through-running, filtering, selected-train highlight, capture, replay, or build-source logic; next product step is clearer plan-validity, capture, and through-service explanations.
-2. Triage the remaining dirty v3 data/cache worktree and decide what is stable, ignored, or local-only.
-3. Use the cleaned battle timelines to spot gameplay readability bugs, then continue MapLibre UX/performance work: dense Tokyo click targets, selected-service visibility, label priority, and tile/vector migration planning.
+2. Triage the remaining dirty v3 data/cache worktree and refresh `README.md` / `ROADMAP.md` so the top-level docs match the real v3 MapLibre Tokyo path.
+3. Extend the existing v3 audit/regression harness toward planner-facing departure correctness: mixed-line filtering, no-train stations, and trains-that-pass-but-do-not-surface.
