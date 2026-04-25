@@ -262,3 +262,8 @@
 - Promoted v3 replay from hidden debug output into the MapLibre product surface: the public page now shows a Result/Replay panel, builds canonical `v3.replay.1` records in-browser, copies replay share links or JSON, loads shared replays from `#replay=...`, and summarizes Runner plan, Hunter gap, and capture outcome.
 - Refined the v3 player-understanding P0 by dropping Quick Play and keeping Tutorial plus Advanced Setup. Tutorial now gives a detailed guided checklist, ordinary-ride demonstration, through-service demonstration, and capture-rule demonstration; Advanced keeps the prior single-player and multiplayer controls available.
 - Hid the v3 Result/Replay panel while it has no replay or capture content, removing the visible empty-state copy from the sidebar until the player actually runs Replay or a result exists.
+
+## 2026-04-24
+
+- Reduced v3 planner warning debt to a release-candidate level: no-boardable station/route pairs are `0`, forbidden same-operator borrowing is `0`, and the remaining `9` unsurfaced stops are documented as external/homonym data edges rather than gameplay blockers.
+- Created `V3_RELEASE_CANDIDATE_NOTES.md` to freeze the current v3 Tokyo MapLibre baseline, list verified commands/results, document the remaining known warnings, and move larger station-identity/external-line work to v4.

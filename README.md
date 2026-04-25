@@ -49,6 +49,7 @@ Key entry points:
 
 - `STATUS.md`
 - `AXIOMS.md`
+- `V3_RELEASE_CANDIDATE_NOTES.md`
 - `SCHEMA.md`
 - `STATE_MACHINE.md`
 - `SIMULATION_INPUT.md`

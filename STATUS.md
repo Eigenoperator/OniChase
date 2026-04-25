@@ -11,7 +11,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - `v3` MapLibre gameplay now has role switching, planning/live timing, hourly replanning, plan board, train outlook, selected-train path/stops, player markers, live capture, replay simulation, and Japanese-original display.
 - `v3` multiplayer client has single-player entry, v3 Tokyo room lobby, Ready Room, room code copy, ready/unready, leave-room cleanup, and online plan sync.
 - v3 planner is now a three-layer `line -> train -> destination stop` flow with compact transfer grids, physical train filtering, and selected-train whole-future physical highlights.
-- Recent local work tightened Tokyo Metro route identity, through-service boarding visibility, physical alias route preservation, MapLibre loading, and reusable v3 audit entry points.
 - v3 data/script stable set was rebuilt and audited: unified trains `41186`, duplicate unified ids `0`, duplicate unified signatures `0`, rendered lines without trips `0`, and local/public v3 room `/health` both report `dataset_name = v3-tokyo`.
 - Local headless Firefox single-player smoke test passed the core v3 flow: load map/timetable, enter Runner mode, choose line/train/destination, generate a plan, start countdown, and transition into `LIVE`.
 - v3 through-running display now classifies departures by the physical boarding line: Toyoko/Yokohama/Hiyoshi/Jiyugaoka no longer surface Tokyo Metro through-service aliases as separate line choices.
@@ -28,10 +27,11 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 player-facing P0 now includes first-class replay UI that hides empty state, plus Tutorial / Advanced Setup entry modes with detailed demonstrations and browser regression coverage.
 - v3 release-check pass fixed the みなとみらい21線 selected-highlight boundary regression; the core suite passes `30` tests and data-quality has no hard integrity failures.
 - v3 planner route visibility now has no visible station/route no-boardable warnings and only `9` unsurfaced boardable trip-stop warnings after adding Sotetsu through aliases and fixing Metro-Odakyu limited-express route identity.
+- `V3_RELEASE_CANDIDATE_NOTES.md` now freezes the current v3 Tokyo MapLibre baseline and moves the remaining external/homonym data edges to v4 planning.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
-- Prepare v3 for release-candidate freeze while separating true blockers from v4 polish.
+- Start v4 planning from the frozen v3 Tokyo MapLibre release-candidate baseline.
 
 ## Blockers
 - `JR Central` still lacks a direct train-detail page like `JR East / JR West`; deeper precision still needs station-grid aggregation.
@@ -45,6 +45,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Finish v3 release-candidate notes by documenting the remaining `9` planner warnings as known external/homonym data edges.
+1. Start v4 planning from the frozen v3 RC: station identity, external-line boundaries, larger network growth, and performance.
 2. Clean the remaining unrelated dirty worktree items without committing caches or obsolete phase-1 artifacts.
-3. Start v4 planning only after v3 release-candidate notes clearly list what is frozen versus what moves forward.
+3. Choose the first v4 implementation slice after the v4 plan separates data identity, map scale, and performance work.
