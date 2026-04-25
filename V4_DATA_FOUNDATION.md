@@ -19,6 +19,7 @@ This is the first `v4` data slice: nationwide real physical rail geometry plus `
 - `docs/data/v4_maplibre/physical_stations.geojson`
 - `docs/data/v4_maplibre/line_inventory.json`
 - `docs/data/v4_maplibre/manifest.json`
+- `docs/v4.html`
 
 Current generated counts:
 
@@ -59,3 +60,5 @@ python3 scripts/ingest/build_v4_maplibre_sources.py
 - `line_inventory.json`: all current nationwide operator-line pairs.
 
 The first export is GeoJSON so it can be loaded directly by MapLibre during development. Later performance work should convert this same layer contract into vector tiles or PMTiles.
+
+The first public viewer is `https://eigenoperator.github.io/OniChase/v4.html`. It shows the nationwide physical track layer, station groups, optional high-zoom physical stations, and a searchable operator-line inventory with per-line geometry highlighting.

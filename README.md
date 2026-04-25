@@ -6,6 +6,7 @@ Current focus:
 
 - keep `v2` nationwide Shinkansen online playtest healthy
 - stabilize `v3` Tokyo MapLibre gameplay on real physical geometry and real timetable bundles
+- start `v4` from a nationwide real physical railway map and safer station identity foundation
 - audit planner-facing departure correctness, through-running boundaries, and data identity
 - keep single-player and multiplayer on the same gameplay loop
 
@@ -17,6 +18,7 @@ The GitHub Pages site currently exposes only the active public playtest pages:
 - `v1` Yamanote client: `https://eigenoperator.github.io/OniChase/v1.html`
 - `v2` GIS Shinkansen client: `https://eigenoperator.github.io/OniChase/v2.html`
 - `v3` Tokyo network map: `https://eigenoperator.github.io/OniChase/v3.html`
+- `v4` Japan physical railway map: `https://eigenoperator.github.io/OniChase/v4.html`
 
 Browser source pages:
 
@@ -24,6 +26,7 @@ Browser source pages:
 - `v2` source: [ui/v2_web_client.html](/home/xincheng/toy/Chase/ui/v2_web_client.html)
 - `v3` local mirror: [ui/v3_maplibre.html](/home/xincheng/toy/Chase/ui/v3_maplibre.html)
 - `v3` public/source-of-truth page: [docs/v3.html](/home/xincheng/toy/Chase/docs/v3.html)
+- `v4` public physical-map page: [docs/v4.html](/home/xincheng/toy/Chase/docs/v4.html)
 - landing page output: [docs/index.html](/home/xincheng/toy/Chase/docs/index.html)
 - Pages workflow: [.github/workflows/deploy-pages.yml](/home/xincheng/toy/Chase/.github/workflows/deploy-pages.yml)
 
@@ -61,6 +64,7 @@ Key entry points:
 - `docs/v1.html`
 - `docs/v2.html`
 - `docs/v3.html`
+- `docs/v4.html`
 
 Workspace layout:
 
@@ -126,6 +130,9 @@ Public multiplayer note:
 - raw train dataset audit: [scripts/ingest/audit_v3_train_datasets.py](/home/xincheng/toy/Chase/scripts/ingest/audit_v3_train_datasets.py)
 - planner warning summary: [scripts/ingest/summarize_v3_planner_departure_audit.py](/home/xincheng/toy/Chase/scripts/ingest/summarize_v3_planner_departure_audit.py)
 - public display-name audit: [scripts/dev/audit_v3_display_names.py](/home/xincheng/toy/Chase/scripts/dev/audit_v3_display_names.py)
+- v4 physical-map builder: [scripts/ingest/build_v4_japan_physical_map.py](/home/xincheng/toy/Chase/scripts/ingest/build_v4_japan_physical_map.py)
+- v4 MapLibre source exporter: [scripts/ingest/build_v4_maplibre_sources.py](/home/xincheng/toy/Chase/scripts/ingest/build_v4_maplibre_sources.py)
+- v4 nationwide line inventory: [scripts/ingest/build_v4_line_inventory.py](/home/xincheng/toy/Chase/scripts/ingest/build_v4_line_inventory.py)
 - browser regression tests: [scripts/tests](/home/xincheng/toy/Chase/scripts/tests)
 
 Useful commands:

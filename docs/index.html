@@ -16,6 +16,7 @@
       --v1: #80c241;
       --v2: #cc8b2c;
       --v3: #1565c0;
+      --v4: #0f766e;
     }
     * { box-sizing: border-box; }
     body {
@@ -60,7 +61,7 @@
     }
     .cards {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 22px;
     }
     .card {
@@ -81,6 +82,7 @@
     .card.v1 .eyebrow { color: var(--v1); }
     .card.v2 .eyebrow { color: var(--v2); }
     .card.v3 .eyebrow { color: var(--v3); }
+    .card.v4 .eyebrow { color: var(--v4); }
     .card h2 {
       margin: 0;
       font-size: 30px;
@@ -117,6 +119,7 @@
     .card.v1 a.button { background: #dff1c4; }
     .card.v2 a.button { background: #f6dfba; }
     .card.v3 a.button { background: #d8e7fb; }
+    .card.v4 a.button { background: #cdece7; }
     @media (max-width: 900px) {
       .cards { grid-template-columns: 1fr; }
       .hero h1 { font-size: 38px; }
@@ -128,7 +131,7 @@
     <div class="shell">
       <section class="hero">
         <h1>OniChase</h1>
-        <p>Choose a version. <strong>V1</strong> is the archived Yamanote prototype. <strong>V2</strong> is the current playable nationwide Shinkansen build. <strong>V3</strong> is the official Tokyo MapLibre real-geometry timetable sandbox.</p>
+        <p>Choose a version. <strong>V1</strong> is the archived Yamanote prototype. <strong>V2</strong> is the current playable nationwide Shinkansen build. <strong>V3</strong> is the official Tokyo MapLibre gameplay release candidate. <strong>V4</strong> starts the nationwide real physical railway map.</p>
       </section>
       <section class="cards">
         <article class="card v1">
@@ -168,6 +171,19 @@
           </div>
           <div class="actions">
             <a class="button" href="./v3.html">Open V3</a>
+          </div>
+        </article>
+        <article class="card v4">
+          <div class="eyebrow">V4</div>
+          <h2>Japan Physical Map</h2>
+          <p>Nationwide real physical railway substrate from MLIT N02 data, with station identity v2, MapLibre layers, and searchable operated-line inventory.</p>
+          <div class="meta">
+            <div>Map: all-Japan physical rail geometry</div>
+            <div>Scope: 21,932 track centerlines and 10,235 physical stations</div>
+            <div>Use: inspect the v4 data foundation</div>
+          </div>
+          <div class="actions">
+            <a class="button" href="./v4.html">Open V4</a>
           </div>
         </article>
       </section>

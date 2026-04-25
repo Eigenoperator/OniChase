@@ -275,3 +275,4 @@
 - Generated the first v4 nationwide physical bundle: `10235` physical stations, `9048` station groups, `21932` track centerlines, and `178` operators.
 - Verified the first station identity audit with `427` same-name split names, `0` multi-name station groups, and `0` line coverage warnings.
 - Exported the v4 physical bundle into MapLibre-ready public GeoJSON sources and generated the first nationwide operated-line inventory: `596` operator-line pairs, `552` unique line names, and `178` operators.
+- Added the first public v4 MapLibre viewer at `docs/v4.html`, with nationwide physical tracks, zoom-tiered station labels, optional physical stations, line search, and selected-line geometry highlighting.

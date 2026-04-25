@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from build_v4_japan_physical_map import DEFAULT_OUTPUT, stable_id, write_json, load_json
+from v4_visual_identity import color_for_operator
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -31,6 +32,7 @@ def build_line_inventory(bundle: dict[str, Any]) -> dict[str, Any]:
                 "id": stable_id("LINE", operator_id, line_name),
                 "operatorId": operator_id,
                 "operatorName": operator_name,
+                "operatorColor": color_for_operator(operator_id),
                 "lineName": line_name,
                 "physicalStationCount": 0,
                 "stationGroupIds": set(),
@@ -78,6 +80,7 @@ def build_line_inventory(bundle: dict[str, Any]) -> dict[str, Any]:
                 "id": entry["id"],
                 "operatorId": entry["operatorId"],
                 "operatorName": entry["operatorName"],
+                "operatorColor": entry["operatorColor"],
                 "lineName": entry["lineName"],
                 "physicalStationCount": entry["physicalStationCount"],
                 "stationGroupCount": len(entry["stationGroupIds"]),
@@ -98,6 +101,7 @@ def build_line_inventory(bundle: dict[str, Any]) -> dict[str, Any]:
             {
                 "operatorId": operator_id,
                 "operatorName": line["operatorName"],
+                "operatorColor": line["operatorColor"],
                 "lineCount": 0,
                 "physicalStationCount": 0,
                 "trackCenterlineCount": 0,

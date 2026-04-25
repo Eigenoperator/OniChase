@@ -8,19 +8,60 @@ from typing import Any
 
 from build_v4_japan_physical_map import DEFAULT_OUTPUT, write_json, load_json
 from build_v4_line_inventory import build_line_inventory
+from v4_visual_identity import color_for_operator
 
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_DIR = ROOT / "docs" / "data" / "v4_maplibre"
+
+MAJOR_STATION_NAMES = {
+    "札幌",
+    "仙台",
+    "大宮",
+    "上野",
+    "東京",
+    "品川",
+    "新宿",
+    "渋谷",
+    "池袋",
+    "横浜",
+    "名古屋",
+    "京都",
+    "新大阪",
+    "大阪",
+    "三ノ宮",
+    "岡山",
+    "広島",
+    "小倉",
+    "博多",
+    "熊本",
+    "鹿児島中央",
+}
 
 
 def feature_collection(features: list[dict[str, Any]]) -> dict[str, Any]:
     return {"type": "FeatureCollection", "features": features}
 
 
+def label_rank_for_group(group: dict[str, Any]) -> int:
+    name = group.get("nameJa")
+    physical_count = int(group.get("physicalStationCount", 0))
+    operator_count = len(group.get("operatorIds", []))
+    line_count = len(group.get("lineNames", []))
+    rank = 30 + physical_count * 24 + operator_count * 16 + line_count * 8
+    if name in MAJOR_STATION_NAMES:
+        rank += 900
+    if physical_count >= 3:
+        rank += 120
+    if operator_count >= 3:
+        rank += 90
+    return min(rank, 1200)
+
+
 def physical_station_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
     features = []
     for station in bundle.get("physicalStations", []):
+        operator_id = station["operatorId"]
         features.append(
             {
                 "type": "Feature",
@@ -31,8 +72,9 @@ def physical_station_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
                     "station_group_id": station["stationGroupId"],
                     "name_ja": station["nameJa"],
                     "name_key": station["nameKey"],
-                    "operator_id": station["operatorId"],
+                    "operator_id": operator_id,
                     "operator_name": station["operatorName"],
+                    "operator_color": color_for_operator(operator_id),
                     "line_name": station["lineName"],
                     "source_station_code": station.get("sourceStationCode"),
                     "source_group_code": station.get("sourceGroupCode"),
@@ -46,6 +88,8 @@ def station_group_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
     features = []
     for group in bundle.get("stationGroups", []):
         centroid = group["centroid"]
+        operator_ids = group.get("operatorIds", [])
+        primary_operator_id = operator_ids[0] if operator_ids else "unknown_operator"
         features.append(
             {
                 "type": "Feature",
@@ -55,10 +99,12 @@ def station_group_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
                     "id": group["id"],
                     "name_ja": group["nameJa"],
                     "name_keys": ",".join(group.get("nameKeys", [])),
-                    "operator_ids": ",".join(group.get("operatorIds", [])),
+                    "operator_ids": ",".join(operator_ids),
                     "operator_names": ",".join(group.get("operatorNames", [])),
+                    "operator_color": color_for_operator(primary_operator_id),
                     "line_names": ",".join(group.get("lineNames", [])),
                     "physical_station_count": group.get("physicalStationCount", 0),
+                    "label_rank": label_rank_for_group(group),
                     "grouping_method": group.get("groupingMethod"),
                     "source_group_codes": ",".join(group.get("sourceGroupCodes", [])),
                 },
@@ -70,6 +116,7 @@ def station_group_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
 def track_centerline_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
     features = []
     for track in bundle.get("trackCenterlines", []):
+        operator_id = track["operatorId"]
         features.append(
             {
                 "type": "Feature",
@@ -77,8 +124,9 @@ def track_centerline_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
                 "geometry": {"type": "LineString", "coordinates": track["points"]},
                 "properties": {
                     "id": track["id"],
-                    "operator_id": track["operatorId"],
+                    "operator_id": operator_id,
                     "operator_name": track["operatorName"],
+                    "operator_color": color_for_operator(operator_id),
                     "line_name": track["lineName"],
                     "railway_class": track.get("railwayClass"),
                     "railway_type": track.get("railwayType"),
