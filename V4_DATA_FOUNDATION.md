@@ -8,6 +8,7 @@ This is the first `v4` data slice: nationwide real physical rail geometry plus `
 - Local source: `data/raw_n02_24/UTF-8/N02-24_RailroadSection.geojson`
 - Source family: MLIT N02 railway data, 2024 edition.
 - The raw N02 directory is intentionally ignored by git; keep or redownload it before regenerating the bundle.
+- Land outline source: geoBoundaries `gbOpen/JPN/ADM0`, fetched by `scripts/ingest/build_v4_land_outline.py`.
 
 ## Outputs
 
@@ -16,6 +17,7 @@ This is the first `v4` data slice: nationwide real physical rail geometry plus `
 - `data/v4_nationwide_line_inventory.json`
 - `data/v4_track_continuity_audit.json`
 - `docs/data/v4_maplibre/japan_land.geojson`
+- `docs/data/v4_maplibre/japan_land_overview.geojson`
 - `docs/data/v4_maplibre/track_overview.geojson`
 - `docs/data/v4_maplibre/track_continuity_highlights.geojson`
 - `docs/data/v4_track_continuity_highlights.svg`
@@ -65,7 +67,8 @@ python3 scripts/ingest/render_v4_track_continuity_highlights.py
 
 - `track_centerlines.geojson`: nationwide physical rail LineString features.
 - `track_overview.geojson`: simplified low-zoom operator-line geometry.
-- `japan_land.geojson`: Japan outline only; the v4 viewer does not use a land-fill layer.
+- `japan_land.geojson`: high-detail Japan outline only; the v4 viewer does not use a land-fill layer.
+- `japan_land_overview.geojson`: lighter low-zoom Japan outline.
 - `station_groups.geojson`: gameplay/interchange identity points.
 - `physical_stations.geojson`: real physical station points.
 - `line_inventory.json`: all current nationwide operator-line pairs.

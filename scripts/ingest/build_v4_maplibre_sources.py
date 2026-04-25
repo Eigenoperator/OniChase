@@ -14,6 +14,7 @@ from v4_visual_identity import color_for_operator
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_DIR = ROOT / "docs" / "data" / "v4_maplibre"
 LAND_OUTLINE_FILENAME = "japan_land.geojson"
+LAND_OVERVIEW_FILENAME = "japan_land_overview.geojson"
 
 MAJOR_STATION_NAMES = {
     "札幌",
@@ -268,6 +269,8 @@ def main() -> int:
     }
     if (args.output_dir / LAND_OUTLINE_FILENAME).exists():
         manifest["supportingFiles"]["land_outline"] = {"path": LAND_OUTLINE_FILENAME}
+    if (args.output_dir / LAND_OVERVIEW_FILENAME).exists():
+        manifest["supportingFiles"]["land_outline_overview"] = {"path": LAND_OVERVIEW_FILENAME}
     write_json(args.output_dir / "manifest.json", manifest)
     print(
         "Wrote v4 MapLibre sources:",

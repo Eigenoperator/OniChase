@@ -505,6 +505,7 @@
       lines: [],
       selectedLine: null,
       physicalVisible: false,
+      detailLandLoaded: false,
       detailTracksLoaded: false,
       physicalStationsLoaded: false,
     };
@@ -551,11 +552,11 @@
           version: 8,
           glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
           sources: {
-            land: {
+            landOverview: {
               type: 'geojson',
-              data: `${DATA_ROOT}japan_land.geojson`,
-              tolerance: 0.04,
-              maxzoom: 14,
+              data: `${DATA_ROOT}japan_land_overview.geojson`,
+              tolerance: 0.018,
+              maxzoom: 8,
             },
             trackOverview: {
               type: 'geojson',
@@ -596,14 +597,15 @@
 
     function addRailLayers(map) {
       map.addLayer({
-        id: 'land-outline',
+        id: 'land-overview-outline',
         type: 'line',
-        source: 'land',
+        source: 'landOverview',
+        maxzoom: 6.6,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#b8c8cf',
-          'line-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.46, 8, 0.66, 13, 0.82, 17, 0.9],
-          'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.34, 8, 0.85, 12, 1.55, 17, 2.9],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.44, 5.8, 0.56, 6.5, 0.0],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.28, 6.5, 0.72],
         },
       });
       map.addLayer({
@@ -765,6 +767,39 @@
           'line-width': ['interpolate', ['linear'], ['zoom'], 7.55, 1.9, 13, 4.2, 17, 5.6],
         },
       }, 'station-hubs');
+    }
+
+    function addDetailedLandLayer() {
+      if (state.detailLandLoaded || map.getSource('landDetail')) return;
+      state.detailLandLoaded = true;
+      map.addSource('landDetail', {
+        type: 'geojson',
+        data: `${DATA_ROOT}japan_land.geojson`,
+        tolerance: 0.001,
+        maxzoom: 16,
+      });
+      map.addLayer({
+        id: 'land-detail-outline',
+        type: 'line',
+        source: 'landDetail',
+        minzoom: 5.8,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#9fb4bd',
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 5.8, 0.0, 6.25, 0.58, 10, 0.72, 15, 0.84],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5.8, 0.22, 10, 0.62, 14, 1.05, 17, 1.45],
+        },
+      }, 'track-overview-casing');
+    }
+
+    function ensureDetailedLandSoon() {
+      if (state.detailLandLoaded || map.getZoom() < 5.45) return;
+      const run = () => addDetailedLandLayer();
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(run, { timeout: 700 });
+      } else {
+        window.setTimeout(run, 80);
+      }
     }
 
     function ensureDetailedTracksSoon() {
@@ -955,6 +990,7 @@
 
     function updateZoomPill() {
       elements.zoomPill.textContent = `Zoom ${map.getZoom().toFixed(2)}`;
+      ensureDetailedLandSoon();
       ensureDetailedTracksSoon();
     }
 

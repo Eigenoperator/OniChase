@@ -17,7 +17,7 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - v4 MapLibre-ready public GeoJSON layers now exist under `docs/data/v4_maplibre`: `track_centerlines`, `station_groups`, `physical_stations`, and `line_inventory`.
 - v4 nationwide line inventory now lists `596` operator-line pairs, `552` unique line names, `178` operators, `0` stationless lines, and `0` trackless lines.
 - Public `v4.html` now displays the nationwide physical railway map with MapLibre, station labels, optional physical station dots, line search, and selected-line highlighting.
-- v4 map now includes Japan outline-only coastline rendering, low-zoom `596`-feature track overview, lazy high-detail track loading, lazy physical-station loading, and high-zoom station dots for labels.
+- v4 map now includes two-level Japan outline-only coastline rendering, low-zoom `596`-feature track overview, lazy high-detail track loading, lazy physical-station loading, and high-zoom station dots for labels.
 - v4 track-continuity audit reports `12` multi-component operator-line pairs out of `596`; the report is saved as `data/v4_track_continuity_audit.json`.
 - v4 continuity warnings now have a dedicated review map at `docs/v4_continuity.html` plus generated SVG/GeoJSON highlight outputs.
 - v4 overview tracks now fade out by zoom `7.65`, and exact physical `track_centerlines` take over from zoom `7.55` to avoid straight overview lines overlapping real geometry.
@@ -25,7 +25,7 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 ## In Progress
 - Start nationwide timetable-source planning from the `596` operator-line inventory.
 - Continue reducing v4 map ambiguity from same-operator colors by adding official per-line colors.
-- If coastline performance regresses, replace the current detailed GeoJSON outline with a two-level outline source or PMTiles layer.
+- If coastline performance regresses again, convert the two-level outline GeoJSON contract into PMTiles.
 
 ## Blockers
 - Raw MLIT N02-2024 source files are local-only and ignored by git; regenerated v4 artifacts require those local files or a documented download step.
