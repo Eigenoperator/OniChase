@@ -14,10 +14,12 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - `station_identity_v2` now preserves physical station coordinates while grouping gameplay/interchange identity by N02 group code first; same-name stations are not globally collapsed.
 - Reusable v4 scripts added: `scripts/ingest/build_v4_japan_physical_map.py` and `scripts/ingest/audit_v4_station_identity.py`.
 - Latest v4 identity audit reports `427` same-name split names, `0` multi-name station groups, and `0` line coverage warnings.
+- v4 MapLibre-ready public GeoJSON layers now exist under `docs/data/v4_maplibre`: `track_centerlines`, `station_groups`, `physical_stations`, and `line_inventory`.
+- v4 nationwide line inventory now lists `596` operator-line pairs, `552` unique line names, `178` operators, `0` stationless lines, and `0` trackless lines.
 
 ## In Progress
-- Turn the v4 nationwide physical bundle into a MapLibre-renderable layer set.
 - Design station identity v2 adapters from physical stations to gameplay station groups without breaking single-player/multiplayer parity.
+- Start nationwide timetable-source planning from the `596` operator-line inventory.
 
 ## Blockers
 - Raw MLIT N02-2024 source files are local-only and ignored by git; regenerated v4 artifacts require those local files or a documented download step.
@@ -32,6 +34,6 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - [2026-04-25] `v4` starts from nationwide N02 physical geometry plus `station_identity_v2`, not from another Tokyo-only hand-built map.
 
 ## Next
-1. Export v4 physical tracks/stations into MapLibre-friendly GeoJSON/PMTiles-style layer inputs.
+1. Build a minimal `v4.html` MapLibre viewer using `docs/data/v4_maplibre/manifest.json`.
 2. Add an identity lookup that maps timetable stops to station groups while preserving physical stations for rendering.
-3. Write the v4 source-download/regeneration note so another machine can rebuild the nationwide map.
+3. Split the nationwide line inventory into timetable-collection source groups by operator.
