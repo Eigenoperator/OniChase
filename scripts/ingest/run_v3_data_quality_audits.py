@@ -21,6 +21,33 @@ DEFAULT_OUTPUT_PATH = DATA_DIR / "v3_data_quality_audit.json"
 UNIFIED_TRAINS_PATH = DATA_DIR / "v3_trains_unified.json.gz"
 
 CHECKS = ("coverage", "planner-departures", "unified", "bundle", "raw-datasets")
+CHECK_DETAILS = {
+    "coverage": {
+        "title": "Rendered map/timetable coverage",
+        "purpose": "Checks rendered lines/stations against timetable coverage and flags map lines or station memberships with no trips.",
+        "component_script": "scripts/ingest/audit_v3_map_timetable_coverage.py",
+    },
+    "planner-departures": {
+        "title": "Planner-facing departure visibility",
+        "purpose": "Checks the line -> train planner surface for missing boardable departures and forbidden same-operator route borrowing.",
+        "component_script": "scripts/ingest/audit_v3_planner_departures.py",
+    },
+    "unified": {
+        "title": "Unified gameplay timetable integrity",
+        "purpose": "Checks deduped v3 gameplay trains for duplicate ids/signatures, missing station keys, empty trips, and invalid time order.",
+        "component_script": "scripts/ingest/run_v3_data_quality_audits.py --checks unified",
+    },
+    "bundle": {
+        "title": "Generated v3 bundle station/route integrity",
+        "purpose": "Checks station-group mapping, same-name physical station preservation, route sizes, and unmapped timetable stops.",
+        "component_script": "scripts/ingest/audit_v3_tokyo_bundle.py",
+    },
+    "raw-datasets": {
+        "title": "Raw collected timetable dataset health",
+        "purpose": "Checks each source train dataset before unification for empty datasets, duplicate signatures, and duplicate train numbers.",
+        "component_script": "scripts/ingest/audit_v3_train_datasets.py",
+    },
+}
 
 
 def load_json(path: Path) -> Any:
@@ -544,6 +571,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Exit non-zero on warnings as well as failures.",
     )
+    parser.add_argument(
+        "--list",
+        action="store_true",
+        help="List reusable audit checks and exit without running them.",
+    )
     return parser.parse_args()
 
 
@@ -607,8 +639,20 @@ def print_summary(report: dict[str, Any], output_path: Path) -> None:
     print("\n".join(lines))
 
 
+def print_check_list() -> None:
+    print("Reusable v3 data-quality checks:")
+    for check_id in CHECKS:
+        details = CHECK_DETAILS[check_id]
+        print(f"- {check_id}: {details['title']}")
+        print(f"  purpose: {details['purpose']}")
+        print(f"  component: {details['component_script']}")
+
+
 def main() -> int:
     args = parse_args()
+    if args.list:
+        print_check_list()
+        return 0
     check_names = selected_checks(args.checks)
     output_path = Path(args.output)
     if not output_path.is_absolute():

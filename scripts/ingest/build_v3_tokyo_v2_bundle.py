@@ -472,6 +472,15 @@ def build_bundle() -> dict[str, Any]:
 
     station_key_to_group: dict[str, str] = {}
 
+    def add_station_group_lookup(value: Any, station_group_id: str) -> None:
+        for key in {
+            str(value or "").strip(),
+            canonical_station_key(value),
+            canonical_group_key(value),
+        }:
+            if key:
+                station_key_to_group[key] = station_group_id
+
     def representative(stations: list[dict[str, Any]]) -> dict[str, Any]:
         return sorted(
             stations,
@@ -494,7 +503,9 @@ def build_bundle() -> dict[str, Any]:
         for index, coord in enumerate(valid_stations):
             psid = stable_id("PS", f"{coord['station_key']}|{coord['lat']:.7f}|{coord['lon']:.7f}|{index}")
             physical_ids.append(psid)
-            station_key_to_group[coord["station_key"]] = sgid
+            add_station_group_lookup(coord["station_key"], sgid)
+            add_station_group_lookup(coord.get("display_ja"), sgid)
+            add_station_group_lookup(coord.get("display_en"), sgid)
             physical_stations.append({
                 "id": psid,
                 "name": coord["display_en"],

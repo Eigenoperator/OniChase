@@ -1,18 +1,88 @@
 {
   "id": "v3_data_quality_audit_v0_1",
   "schema_version": "0.1.0",
-  "generated_at": "2026-04-24T22:32:33+00:00",
+  "generated_at": "2026-04-25T00:00:30+00:00",
   "status": "warn",
   "checks_requested": [
-    "planner-departures"
+    "coverage",
+    "planner-departures",
+    "unified",
+    "bundle",
+    "raw-datasets"
   ],
   "summary": {
-    "check_count": 1,
-    "pass_count": 0,
-    "warn_count": 1,
+    "check_count": 5,
+    "pass_count": 1,
+    "warn_count": 4,
     "fail_count": 0
   },
   "checks": [
+    {
+      "id": "coverage",
+      "title": "Rendered map/timetable coverage",
+      "status": "warn",
+      "metrics": {
+        "physical_station_count": 2194,
+        "station_group_count": 1804,
+        "track_centerline_count": 4612,
+        "rendered_line_count": 108,
+        "service_route_count": 112,
+        "trip_instance_count": 41186,
+        "unified_train_count": 41186,
+        "rendered_station_membership_count": 2018,
+        "zero_stop_station_membership_count": 0,
+        "non_regular_zero_station_membership_count": 2,
+        "rendered_line_without_trip_count": 0
+      },
+      "failures": [],
+      "warnings": [
+        {
+          "code": "non_regular_station_without_current_weekday_service",
+          "count": 2,
+          "message": "Known seasonal/event stations have no regular weekday service in the current source timetable."
+        }
+      ],
+      "samples": {
+        "zero_or_unresolved_lines": [],
+        "non_regular_zero_lines": [
+          {
+            "operator_id": "jr_east",
+            "line_name_ja": "常磐線",
+            "stations": [
+              {
+                "name_ja": "偕楽園",
+                "station_key": "偕楽園",
+                "group_ids": [
+                  "SG_BF2AC143F445"
+                ],
+                "timetable_stop_count": 0,
+                "line_specific_stop_count": 0,
+                "non_regular_service_reason": "seasonal Joban Line stop with no regular weekday service in the current source timetable"
+              }
+            ]
+          },
+          {
+            "operator_id": "jr_east",
+            "line_name_ja": "鹿島線",
+            "stations": [
+              {
+                "name_ja": "鹿島サッカースタジアム",
+                "station_key": "鹿島サッカスタジアム",
+                "group_ids": [
+                  "SG_DB998C9DEC56"
+                ],
+                "timetable_stop_count": 0,
+                "line_specific_stop_count": 0,
+                "non_regular_service_reason": "seasonal/event stop with no regular weekday service in the current source timetable"
+              }
+            ]
+          }
+        ]
+      },
+      "artifacts": {
+        "legacy_component_report": "data/v3_map_timetable_coverage_audit.json"
+      }
+    },
     {
       "id": "planner-departures",
       "title": "Planner-facing line/train departure visibility",
@@ -21,12 +91,12 @@
         "station_group_count": 1804,
         "route_count": 112,
         "trip_count": 41186,
-        "visible_station_route_pair_count": 3607,
-        "boardable_station_route_pair_count": 3460,
+        "visible_station_route_pair_count": 3608,
+        "boardable_station_route_pair_count": 3461,
         "terminal_only_station_route_pair_count": 42,
         "no_boardable_station_route_pair_count": 105,
-        "boardable_departure_count": 1074023,
-        "borrowed_departure_count": 408111,
+        "boardable_departure_count": 1074495,
+        "borrowed_departure_count": 408583,
         "forbidden_same_operator_borrow_count": 0,
         "unsurfaced_boardable_trip_stop_count": 337
       },
@@ -85,6 +155,30 @@
             "stationGroupId": "SG_744D8787F673",
             "station": "上大月",
             "sequence": 17
+          },
+          {
+            "tripId": "jr_east:574E:be1f582f6a",
+            "tripRouteId": "R_8E648791",
+            "tripRoute": "川越線",
+            "stationGroupId": "SG_7FE076EEAD71",
+            "station": "東飯能",
+            "sequence": 2
+          },
+          {
+            "tripId": "jr_east:660E:2d2ea11b01",
+            "tripRouteId": "R_8E648791",
+            "tripRoute": "川越線",
+            "stationGroupId": "SG_7FE076EEAD71",
+            "station": "東飯能",
+            "sequence": 2
+          },
+          {
+            "tripId": "jr_east:664E:63c297efe3",
+            "tripRouteId": "R_8E648791",
+            "tripRoute": "川越線",
+            "stationGroupId": "SG_7FE076EEAD71",
+            "station": "東飯能",
+            "sequence": 2
           }
         ],
         "focus_operator_route_reports": [
@@ -142,11 +236,554 @@
             "ownBoardableCount": 1,
             "borrowedBoardableCount": 0,
             "terminalOnlyCount": 0
+          },
+          {
+            "stationGroupId": "SG_7DDA5F34833E",
+            "station": "さいたま新都心",
+            "routeId": "R_032D1D43",
+            "route": "京浜東北線・根岸線",
+            "operatorId": "jr_east",
+            "boardableCount": 332,
+            "ownBoardableCount": 332,
+            "borrowedBoardableCount": 0,
+            "terminalOnlyCount": 0
+          },
+          {
+            "stationGroupId": "SG_7DDA5F34833E",
+            "station": "さいたま新都心",
+            "routeId": "R_969F8921",
+            "route": "東海道線",
+            "operatorId": "jr_east",
+            "boardableCount": 216,
+            "ownBoardableCount": 216,
+            "borrowedBoardableCount": 0,
+            "terminalOnlyCount": 0
+          },
+          {
+            "stationGroupId": "SG_8B6E45BE5EAA",
+            "station": "すずらんの里",
+            "routeId": "R_CBE9303B",
+            "route": "中央線",
+            "operatorId": "jr_east",
+            "boardableCount": 34,
+            "ownBoardableCount": 34,
+            "borrowedBoardableCount": 0,
+            "terminalOnlyCount": 0
           }
         ]
       },
       "artifacts": {
         "planner_departure_report": "data/v3_planner_departure_audit.json"
+      }
+    },
+    {
+      "id": "unified",
+      "title": "Unified gameplay timetable integrity",
+      "status": "pass",
+      "metrics": {
+        "unified_train_count": 41186,
+        "duplicate_id_group_count": 0,
+        "duplicate_signature_group_count": 0,
+        "duplicate_signature_row_count": 0,
+        "train_without_stop_count": 0,
+        "missing_station_key_stop_count": 0,
+        "time_order_issue_train_count": 0
+      },
+      "failures": [],
+      "warnings": [],
+      "samples": {
+        "duplicate_train_ids": [],
+        "trains_without_stops": [],
+        "missing_station_key_stops": [],
+        "time_order_issues": []
+      },
+      "artifacts": {
+        "unified_trains": "data/v3_trains_unified.json.gz"
+      }
+    },
+    {
+      "id": "bundle",
+      "title": "Generated v3 bundle station/route integrity",
+      "status": "warn",
+      "metrics": {
+        "bundle_station_group_count": 1804,
+        "bundle_physical_station_count": 2194,
+        "bundle_route_count": 112,
+        "bundle_trip_count": 41186,
+        "unified_train_count": 41186,
+        "map_visible_station_key_count": 1693,
+        "map_visible_station_point_count": 2058,
+        "train_station_key_count": 1802,
+        "train_stations_without_map_count": 0,
+        "map_stations_without_trains_count": 3,
+        "duplicate_map_name_count": 145,
+        "collapsed_duplicate_map_name_count": 0,
+        "tiny_route_count": 4,
+        "huge_route_count": 15,
+        "trains_with_unmapped_stops_count": 0
+      },
+      "failures": [],
+      "warnings": [
+        {
+          "code": "tiny_or_empty_routes",
+          "count": 4,
+          "message": "Some routes are tiny fragments or through-service aliases and should be reviewed."
+        },
+        {
+          "code": "huge_routes",
+          "count": 15,
+          "message": "Some routes are broad service families and should be checked for over-merge risk."
+        }
+      ],
+      "samples": {
+        "train_stations_without_map": [],
+        "collapsed_duplicate_map_names": [],
+        "tiny_or_empty_routes": [
+          {
+            "route_id": "R_E85CF337",
+            "short_name": "みなとみらい21線",
+            "operator_id": "tokyo_metro",
+            "mode": "subway",
+            "trip_count": 0,
+            "station_count": 0,
+            "min_stop_count": 0,
+            "max_stop_count": 0,
+            "avg_stop_count": 0,
+            "first_departure": null,
+            "last_departure": null,
+            "source_lines": [],
+            "source_operators": []
+          },
+          {
+            "route_id": "R_787615FA",
+            "short_name": "埼玉高速鉄道線",
+            "operator_id": "saitama_railway",
+            "mode": "private_rail",
+            "trip_count": 0,
+            "station_count": 0,
+            "min_stop_count": 0,
+            "max_stop_count": 0,
+            "avg_stop_count": 0,
+            "first_departure": null,
+            "last_departure": null,
+            "source_lines": [],
+            "source_operators": []
+          },
+          {
+            "route_id": "R_1BA7C304",
+            "short_name": "相鉄いずみ野線",
+            "operator_id": "tokyo_metro",
+            "mode": "subway",
+            "trip_count": 0,
+            "station_count": 0,
+            "min_stop_count": 0,
+            "max_stop_count": 0,
+            "avg_stop_count": 0,
+            "first_departure": null,
+            "last_departure": null,
+            "source_lines": [],
+            "source_operators": []
+          },
+          {
+            "route_id": "R_0896A82E",
+            "short_name": "相鉄本線",
+            "operator_id": "tokyo_metro",
+            "mode": "subway",
+            "trip_count": 0,
+            "station_count": 0,
+            "min_stop_count": 0,
+            "max_stop_count": 0,
+            "avg_stop_count": 0,
+            "first_departure": null,
+            "last_departure": null,
+            "source_lines": [],
+            "source_operators": []
+          }
+        ],
+        "huge_routes": [
+          {
+            "route_id": "R_3A079BF8",
+            "short_name": "13号線副都心線",
+            "operator_id": "tokyo_metro",
+            "mode": "subway",
+            "trip_count": 819,
+            "station_count": 120,
+            "min_stop_count": 7,
+            "max_stop_count": 55,
+            "avg_stop_count": 27.35,
+            "first_departure": "00:00",
+            "last_departure": "23:55",
+            "source_lines": [
+              [
+                "13号線副都心線",
+                819
+              ]
+            ],
+            "source_operators": [
+              [
+                "tokyo_metro",
+                819
+              ]
+            ]
+          },
+          {
+            "route_id": "R_8B989DA1",
+            "short_name": "5号線東西線",
+            "operator_id": "tokyo_metro",
+            "mode": "subway",
+            "trip_count": 1195,
+            "station_count": 118,
+            "min_stop_count": 10,
+            "max_stop_count": 41,
+            "avg_stop_count": 27.54,
+            "first_departure": "00:06",
+            "last_departure": "23:56",
+            "source_lines": [
+              [
+                "5号線東西線",
+                1195
+              ]
+            ],
+            "source_operators": [
+              [
+                "tokyo_metro",
+                1195
+              ]
+            ]
+          },
+          {
+            "route_id": "R_969F8921",
+            "short_name": "JR_EAST_TOKAIDO",
+            "operator_id": "jr_east",
+            "mode": "rail",
+            "trip_count": 314,
+            "station_count": 116,
+            "min_stop_count": 4,
+            "max_stop_count": 50,
+            "avg_stop_count": 31.56,
+            "first_departure": "04:27",
+            "last_departure": "23:47",
+            "source_lines": [
+              [
+                "JR_EAST_TOKAIDO",
+                314
+              ]
+            ],
+            "source_operators": [
+              [
+                "jr_east",
+                314
+              ]
+            ]
+          },
+          {
+            "route_id": "R_89376799",
+            "short_name": "JR_TOHOKU",
+            "operator_id": "jr_east",
+            "mode": "rail",
+            "trip_count": 253,
+            "station_count": 112,
+            "min_stop_count": 2,
+            "max_stop_count": 23,
+            "avg_stop_count": 11.51,
+            "first_departure": "05:10",
+            "last_departure": "24:02",
+            "source_lines": [
+              [
+                "JR_TOHOKU",
+                253
+              ]
+            ],
+            "source_operators": [
+              [
+                "jr_east",
+                253
+              ]
+            ]
+          },
+          {
+            "route_id": "R_367F9960",
+            "short_name": "2号線日比谷線",
+            "operator_id": "tokyo_metro",
+            "mode": "subway",
+            "trip_count": 680,
+            "station_count": 103,
+            "min_stop_count": 2,
+            "max_stop_count": 46,
+            "avg_stop_count": 27.59,
+            "first_departure": "00:01",
+            "last_departure": "23:57",
+            "source_lines": [
+              [
+                "2号線日比谷線",
+                680
+              ]
+            ],
+            "source_operators": [
+              [
+                "tokyo_metro",
+                680
+              ]
+            ]
+          },
+          {
+            "route_id": "R_FDF42D4D",
+            "short_name": "9号線千代田線",
+            "operator_id": "tokyo_metro",
+            "mode": "subway",
+            "trip_count": 925,
+            "station_count": 88,
+            "min_stop_count": 2,
+            "max_stop_count": 57,
+            "avg_stop_count": 23.13,
+            "first_departure": "00:00",
+            "last_departure": "23:56",
+            "source_lines": [
+              [
+                "9号線千代田線",
+                925
+              ]
+            ],
+            "source_operators": [
+              [
+                "tokyo_metro",
+                925
+              ]
+            ]
+          },
+          {
+            "route_id": "R_B3FC6367",
+            "short_name": "東海道線",
+            "operator_id": "jr_central",
+            "mode": "rail",
+            "trip_count": 1207,
+            "station_count": 86,
+            "min_stop_count": 2,
+            "max_stop_count": 41,
+            "avg_stop_count": 15.04,
+            "first_departure": "00:17",
+            "last_departure": "23:50",
+            "source_lines": [
+              [
+                "東海道線",
+                1207
+              ]
+            ],
+            "source_operators": [
+              [
+                "jr_central",
+                1207
+              ]
+            ]
+          },
+          {
+            "route_id": "R_BB751C47",
+            "short_name": "7号線南北線",
+            "operator_id": "tokyo_metro",
+            "mode": "subway",
+            "trip_count": 508,
+            "station_count": 83,
+            "min_stop_count": 10,
+            "max_stop_count": 53,
+            "avg_stop_count": 33.56,
+            "first_departure": "00:00",
+            "last_departure": "23:54",
+            "source_lines": [
+              [
+                "7号線南北線",
+                508
+              ]
+            ],
+            "source_operators": [
+              [
+                "tokyo_metro",
+                508
+              ]
+            ]
+          }
+        ]
+      },
+      "artifacts": {
+        "legacy_component_report": "data/v3_tokyo_bundle_audit.json"
+      }
+    },
+    {
+      "id": "raw-datasets",
+      "title": "Raw collected timetable dataset health",
+      "status": "warn",
+      "metrics": {
+        "dataset_count": 17,
+        "raw_train_count": 49880,
+        "raw_unique_signature_count": 42395,
+        "datasets_with_duplicate_signatures": 8,
+        "datasets_with_duplicate_train_numbers": 3,
+        "empty_dataset_count": 0
+      },
+      "failures": [],
+      "warnings": [
+        {
+          "code": "raw_dataset_duplicate_signatures",
+          "count": 8,
+          "message": "Raw collectors still contain source duplicates; this is allowed if the unified index dedupes them."
+        },
+        {
+          "code": "raw_dataset_duplicate_train_numbers",
+          "count": 3,
+          "message": "Some operators reuse train numbers or expose duplicate source entries; check unified id/signature results for gameplay safety."
+        }
+      ],
+      "samples": {
+        "empty_datasets": [],
+        "duplicate_signature_datasets": [
+          {
+            "path": "data/v3_tokyo_seibu_weekday_train_instances.json",
+            "dataset_id": "v3_tokyo_seibu_weekday_train_instances_v0_1",
+            "service_day": "2026-04-15",
+            "train_count": 6682,
+            "source_report_count": 187,
+            "unique_train_number_count": 6682,
+            "unique_signature_count": 4483,
+            "duplicate_train_number_groups": 0,
+            "duplicate_signature_groups": 2199,
+            "signature_deduped_train_count": 4483,
+            "post_signature_duplicate_train_number_groups": 0
+          },
+          {
+            "path": "data/v3_tokyo_tobu_weekday_train_instances.json",
+            "dataset_id": "v3_tokyo_tobu_weekday_train_instances_v0_1",
+            "service_day": "2026-04-15",
+            "train_count": 8937,
+            "source_report_count": 163,
+            "unique_train_number_count": 8937,
+            "unique_signature_count": 6945,
+            "duplicate_train_number_groups": 0,
+            "duplicate_signature_groups": 1992,
+            "signature_deduped_train_count": 6945,
+            "post_signature_duplicate_train_number_groups": 0
+          },
+          {
+            "path": "data/v3_tokyo_keisei_weekday_train_instances.json",
+            "dataset_id": "v3_tokyo_keisei_weekday_train_instances_v0_1",
+            "service_day": "2026-04-15",
+            "train_count": 4102,
+            "source_report_count": 189,
+            "unique_train_number_count": 4102,
+            "unique_signature_count": 2607,
+            "duplicate_train_number_groups": 0,
+            "duplicate_signature_groups": 1495,
+            "signature_deduped_train_count": 2607,
+            "post_signature_duplicate_train_number_groups": 0
+          },
+          {
+            "path": "data/v3_tokyo_keikyu_weekday_train_instances.json",
+            "dataset_id": "v3_tokyo_keikyu_weekday_train_instances_v0_1",
+            "service_day": "2026-04-15",
+            "train_count": 2334,
+            "source_report_count": 72,
+            "unique_train_number_count": 2334,
+            "unique_signature_count": 1328,
+            "duplicate_train_number_groups": 0,
+            "duplicate_signature_groups": 1006,
+            "signature_deduped_train_count": 1328,
+            "post_signature_duplicate_train_number_groups": 0
+          },
+          {
+            "path": "data/v3_tokyo_keio_weekday_train_instances.json",
+            "dataset_id": "v3_tokyo_keio_weekday_train_instances_v0_1",
+            "service_day": "2026-04-15",
+            "train_count": 1978,
+            "source_report_count": 70,
+            "unique_train_number_count": 1618,
+            "unique_signature_count": 1618,
+            "duplicate_train_number_groups": 264,
+            "duplicate_signature_groups": 360,
+            "signature_deduped_train_count": 1618,
+            "post_signature_duplicate_train_number_groups": 0
+          },
+          {
+            "path": "data/v3_tokyo_jr_central_tokaido_weekday_train_instances.json",
+            "dataset_id": "v3_tokyo_jr_central_tokaido_weekday_train_instances_v0_1",
+            "service_day": "2026-04-15",
+            "train_count": 1425,
+            "source_report_count": 77,
+            "unique_train_number_count": 1425,
+            "unique_signature_count": 1207,
+            "duplicate_train_number_groups": 0,
+            "duplicate_signature_groups": 218,
+            "signature_deduped_train_count": 1207,
+            "post_signature_duplicate_train_number_groups": 0
+          },
+          {
+            "path": "data/v3_tokyo_tokyu_weekday_train_instances.json",
+            "dataset_id": "v3_tokyo_tokyu_weekday_train_instances_v0_1",
+            "service_day": "2026-04-15",
+            "train_count": 3843,
+            "source_report_count": 2,
+            "unique_train_number_count": 3843,
+            "unique_signature_count": 3674,
+            "duplicate_train_number_groups": 0,
+            "duplicate_signature_groups": 169,
+            "signature_deduped_train_count": 3674,
+            "post_signature_duplicate_train_number_groups": 0
+          },
+          {
+            "path": "data/v3_tokyo_odakyu_weekday_train_instances.json",
+            "dataset_id": "v3_tokyo_odakyu_weekday_train_instances_v0_1",
+            "service_day": "2026-04-15",
+            "train_count": 1888,
+            "source_report_count": 0,
+            "unique_train_number_count": 1888,
+            "unique_signature_count": 1842,
+            "duplicate_train_number_groups": 0,
+            "duplicate_signature_groups": 46,
+            "signature_deduped_train_count": 1842,
+            "post_signature_duplicate_train_number_groups": 0
+          }
+        ],
+        "duplicate_train_number_datasets": [
+          {
+            "path": "data/v3_tokyo_tokyo_metro_weekday_train_instances.json.gz",
+            "dataset_id": "v3_tokyo_tokyo_metro_weekday_train_instances_v0_1",
+            "service_day": "2026-04-15",
+            "train_count": 7636,
+            "source_report_count": 370,
+            "unique_train_number_count": 4966,
+            "unique_signature_count": 7636,
+            "duplicate_train_number_groups": 527,
+            "duplicate_signature_groups": 0,
+            "signature_deduped_train_count": 7636,
+            "post_signature_duplicate_train_number_groups": 527
+          },
+          {
+            "path": "data/v3_tokyo_keio_weekday_train_instances.json",
+            "dataset_id": "v3_tokyo_keio_weekday_train_instances_v0_1",
+            "service_day": "2026-04-15",
+            "train_count": 1978,
+            "source_report_count": 70,
+            "unique_train_number_count": 1618,
+            "unique_signature_count": 1618,
+            "duplicate_train_number_groups": 264,
+            "duplicate_signature_groups": 360,
+            "signature_deduped_train_count": 1618,
+            "post_signature_duplicate_train_number_groups": 0
+          },
+          {
+            "path": "data/v3_tokyo_rinkai_weekday_train_instances.json",
+            "dataset_id": "v3_tokyo_rinkai_weekday_train_instances",
+            "service_day": "2026-04-13",
+            "train_count": 534,
+            "source_report_count": 0,
+            "unique_train_number_count": 501,
+            "unique_signature_count": 534,
+            "duplicate_train_number_groups": 33,
+            "duplicate_signature_groups": 0,
+            "signature_deduped_train_count": 534,
+            "post_signature_duplicate_train_number_groups": 33
+          }
+        ]
+      },
+      "artifacts": {
+        "legacy_component_report": "data/v3_timetable_audit_report.json"
       }
     }
   ]

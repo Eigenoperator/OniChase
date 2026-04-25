@@ -139,11 +139,12 @@ async function runInPage(page, probeName) {
       const fukutoshinRoute = routeIdByTitle('副都心線');
       resetRunnerAt('池袋', '16:55');
       const fukutoshinRows = departuresForStationGroup(stationIdByName('池袋'), hhmmToMinutes('16:55'), { routeId: fukutoshinRoute });
+      const minatomiraiIds = stationIdsByName('みなとみらい');
       const fukutoshinTarget = fukutoshinRows.find((row) =>
         minutesToHhmm(row.departureMinute) === '17:01' &&
-        formatTripLabelForBoarding({ trip: row.trip, routeIds: row.routeIds }, fukutoshinRoute).includes('みなとみらい')
+        (row.trip.stopTimes || []).some((stop) => stop.sequence > row.stop.sequence && minatomiraiIds.has(stop.stationGroupId))
       );
-      if (!fukutoshinTarget) throw new Error('Missing golden 池袋 17:01 副都心線 through-service');
+      if (!fukutoshinTarget) throw new Error('Missing golden 池袋 17:01 副都心線 through-service to みなとみらい');
       setSelectedTrip(fukutoshinTarget.trip.id, fukutoshinRoute);
       const fukutoshin = {
         departure: minutesToHhmm(fukutoshinTarget.departureMinute),

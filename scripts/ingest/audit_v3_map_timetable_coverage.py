@@ -4,6 +4,7 @@ from __future__ import annotations
 import gzip
 import json
 import re
+import argparse
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -417,10 +418,15 @@ def build_audit() -> dict[str, Any]:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Audit v3 rendered map/timetable coverage.")
+    parser.add_argument("--output", type=Path, default=OUTPUT_PATH, help="Path for the component JSON report.")
+    args = parser.parse_args()
+
     audit = build_audit()
-    write_json(OUTPUT_PATH, audit)
+    output_path = args.output if args.output.is_absolute() else ROOT / args.output
+    write_json(output_path, audit)
     print(json.dumps(audit["summary"], ensure_ascii=False, indent=2))
-    print(f"Wrote: {OUTPUT_PATH}")
+    print(f"Wrote: {output_path}")
     if audit["rendered_lines_without_trips"]:
         print("Rendered lines without exact timetable trips:")
         for item in audit["rendered_lines_without_trips"][:30]:

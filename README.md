@@ -120,12 +120,19 @@ Public multiplayer note:
 
 - unified v3 audit entry: [scripts/ingest/run_v3_data_quality_audits.py](/home/xincheng/toy/Chase/scripts/ingest/run_v3_data_quality_audits.py)
 - planner-facing departure audit: [scripts/ingest/audit_v3_planner_departures.py](/home/xincheng/toy/Chase/scripts/ingest/audit_v3_planner_departures.py)
+- map/timetable coverage audit: [scripts/ingest/audit_v3_map_timetable_coverage.py](/home/xincheng/toy/Chase/scripts/ingest/audit_v3_map_timetable_coverage.py)
+- generated bundle audit: [scripts/ingest/audit_v3_tokyo_bundle.py](/home/xincheng/toy/Chase/scripts/ingest/audit_v3_tokyo_bundle.py)
+- raw train dataset audit: [scripts/ingest/audit_v3_train_datasets.py](/home/xincheng/toy/Chase/scripts/ingest/audit_v3_train_datasets.py)
+- planner warning summary: [scripts/ingest/summarize_v3_planner_departure_audit.py](/home/xincheng/toy/Chase/scripts/ingest/summarize_v3_planner_departure_audit.py)
+- public display-name audit: [scripts/dev/audit_v3_display_names.py](/home/xincheng/toy/Chase/scripts/dev/audit_v3_display_names.py)
 - browser regression tests: [scripts/tests](/home/xincheng/toy/Chase/scripts/tests)
 
 Useful commands:
 
 ```bash
 cd /home/xincheng/toy/Chase
+python3 scripts/ingest/run_v3_data_quality_audits.py --list
 python3 scripts/ingest/run_v3_data_quality_audits.py --checks planner-departures
+python3 scripts/ingest/run_v3_data_quality_audits.py --checks all --strict
 python3 -m unittest scripts.tests.test_v3_planner_departure_audit
 ```

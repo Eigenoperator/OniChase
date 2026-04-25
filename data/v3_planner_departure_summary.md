@@ -45,6 +45,9 @@
 | 中央線快速 / 上大月 | jr_east | 4 |
 | 常磐線各駅停車 / 大和 | jr_east | 3 |
 | 埼京線・川越線 / 海老名 | jr_east | 2 |
+| 埼京線・川越線 / かしわ台 | jr_east | 2 |
+| 埼京線・川越線 / さがみ野 | jr_east | 2 |
+| 埼京線・川越線 / 相模大塚 | jr_east | 2 |
 
 ## Visible Station/Route Pairs With No Boardable Departure
 
@@ -74,6 +77,9 @@
 | 大井町線 | tokyu | 4 |
 | 都営三田線 | toei | 4 |
 | 東西線 | tokyo_metro | 3 |
+| 東急多摩川線 | tokyu | 2 |
+| 池上線 | tokyu | 2 |
+| 東急新横浜線 | tokyu | 2 |
 
 ## Terminal-Only Pairs By Route
 
@@ -91,3 +97,6 @@
 | 池上線 | tokyu | 1 |
 | 大師線 | tobu | 1 |
 | 青梅線 | jr_east | 1 |
+| 東海道線 | jr_east | 1 |
+| 両毛線 | jr_east | 1 |
+| 大井町線 | tokyu | 1 |

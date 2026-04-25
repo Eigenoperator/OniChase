@@ -1,6 +1,6 @@
 {
   "id": "v3_tokyo_bundle_audit_v0_1",
-  "generated_at": "2026-04-22T02:52:21+00:00",
+  "generated_at": "2026-04-25T00:00:28+00:00",
   "inputs": {
     "bundle": "data/v3_tokyo_bundle.json.gz",
     "map": "data/v3_tokyo_phase1_service_views.json",
@@ -9,7 +9,7 @@
   "summary": {
     "bundle_station_group_count": 1804,
     "bundle_physical_station_count": 2194,
-    "bundle_route_count": 130,
+    "bundle_route_count": 112,
     "bundle_trip_count": 41186,
     "unified_train_count": 41186,
     "map_visible_station_key_count": 1693,
@@ -19,17 +19,135 @@
     "map_stations_without_trains_count": 3,
     "duplicate_map_name_count": 145,
     "collapsed_duplicate_map_name_count": 0,
-    "tiny_route_count": 0,
-    "huge_route_count": 13,
+    "tiny_route_count": 4,
+    "huge_route_count": 15,
     "trains_with_unmapped_stops_count": 0
   },
   "priority_findings": [
     {
       "severity": "medium",
+      "code": "tiny_or_empty_routes",
+      "count": 4,
+      "summary": "Some route cards have very few trips or no usable station set and may be map-only fragments or route-id mismatches.",
+      "sample": [
+        {
+          "route_id": "R_E85CF337",
+          "short_name": "みなとみらい21線",
+          "operator_id": "tokyo_metro",
+          "mode": "subway",
+          "trip_count": 0,
+          "station_count": 0,
+          "min_stop_count": 0,
+          "max_stop_count": 0,
+          "avg_stop_count": 0,
+          "first_departure": null,
+          "last_departure": null,
+          "source_lines": [],
+          "source_operators": []
+        },
+        {
+          "route_id": "R_787615FA",
+          "short_name": "埼玉高速鉄道線",
+          "operator_id": "saitama_railway",
+          "mode": "private_rail",
+          "trip_count": 0,
+          "station_count": 0,
+          "min_stop_count": 0,
+          "max_stop_count": 0,
+          "avg_stop_count": 0,
+          "first_departure": null,
+          "last_departure": null,
+          "source_lines": [],
+          "source_operators": []
+        },
+        {
+          "route_id": "R_1BA7C304",
+          "short_name": "相鉄いずみ野線",
+          "operator_id": "tokyo_metro",
+          "mode": "subway",
+          "trip_count": 0,
+          "station_count": 0,
+          "min_stop_count": 0,
+          "max_stop_count": 0,
+          "avg_stop_count": 0,
+          "first_departure": null,
+          "last_departure": null,
+          "source_lines": [],
+          "source_operators": []
+        },
+        {
+          "route_id": "R_0896A82E",
+          "short_name": "相鉄本線",
+          "operator_id": "tokyo_metro",
+          "mode": "subway",
+          "trip_count": 0,
+          "station_count": 0,
+          "min_stop_count": 0,
+          "max_stop_count": 0,
+          "avg_stop_count": 0,
+          "first_departure": null,
+          "last_departure": null,
+          "source_lines": [],
+          "source_operators": []
+        }
+      ]
+    },
+    {
+      "severity": "medium",
       "code": "huge_routes",
-      "count": 13,
+      "count": 15,
       "summary": "Some routes are very broad and should be checked for over-merging or through-service scope.",
       "sample": [
+        {
+          "route_id": "R_3A079BF8",
+          "short_name": "13号線副都心線",
+          "operator_id": "tokyo_metro",
+          "mode": "subway",
+          "trip_count": 819,
+          "station_count": 120,
+          "min_stop_count": 7,
+          "max_stop_count": 55,
+          "avg_stop_count": 27.35,
+          "first_departure": "00:00",
+          "last_departure": "23:55",
+          "source_lines": [
+            [
+              "13号線副都心線",
+              819
+            ]
+          ],
+          "source_operators": [
+            [
+              "tokyo_metro",
+              819
+            ]
+          ]
+        },
+        {
+          "route_id": "R_8B989DA1",
+          "short_name": "5号線東西線",
+          "operator_id": "tokyo_metro",
+          "mode": "subway",
+          "trip_count": 1195,
+          "station_count": 118,
+          "min_stop_count": 10,
+          "max_stop_count": 41,
+          "avg_stop_count": 27.54,
+          "first_departure": "00:06",
+          "last_departure": "23:56",
+          "source_lines": [
+            [
+              "5号線東西線",
+              1195
+            ]
+          ],
+          "source_operators": [
+            [
+              "tokyo_metro",
+              1195
+            ]
+          ]
+        },
         {
           "route_id": "R_969F8921",
           "short_name": "JR_EAST_TOKAIDO",
@@ -52,31 +170,6 @@
             [
               "jr_east",
               314
-            ]
-          ]
-        },
-        {
-          "route_id": "R_3AD9C8A3",
-          "short_name": "8号線有楽町線",
-          "operator_id": "tokyo_metro",
-          "mode": "subway",
-          "trip_count": 635,
-          "station_count": 113,
-          "min_stop_count": 7,
-          "max_stop_count": 43,
-          "avg_stop_count": 28.38,
-          "first_departure": "04:59",
-          "last_departure": "23:55",
-          "source_lines": [
-            [
-              "8号線有楽町線",
-              635
-            ]
-          ],
-          "source_operators": [
-            [
-              "tokyo_metro",
-              635
             ]
           ]
         },
@@ -106,27 +199,52 @@
           ]
         },
         {
-          "route_id": "R_871DDFA7",
-          "short_name": "小田原線",
+          "route_id": "R_367F9960",
+          "short_name": "2号線日比谷線",
           "operator_id": "tokyo_metro",
           "mode": "subway",
-          "trip_count": 208,
-          "station_count": 87,
-          "min_stop_count": 8,
-          "max_stop_count": 57,
-          "avg_stop_count": 27.02,
-          "first_departure": "00:00",
-          "last_departure": "23:48",
+          "trip_count": 680,
+          "station_count": 103,
+          "min_stop_count": 2,
+          "max_stop_count": 46,
+          "avg_stop_count": 27.59,
+          "first_departure": "00:01",
+          "last_departure": "23:57",
           "source_lines": [
             [
-              "小田原線",
-              208
+              "2号線日比谷線",
+              680
             ]
           ],
           "source_operators": [
             [
               "tokyo_metro",
-              208
+              680
+            ]
+          ]
+        },
+        {
+          "route_id": "R_FDF42D4D",
+          "short_name": "9号線千代田線",
+          "operator_id": "tokyo_metro",
+          "mode": "subway",
+          "trip_count": 925,
+          "station_count": 88,
+          "min_stop_count": 2,
+          "max_stop_count": 57,
+          "avg_stop_count": 23.13,
+          "first_departure": "00:00",
+          "last_departure": "23:56",
+          "source_lines": [
+            [
+              "9号線千代田線",
+              925
+            ]
+          ],
+          "source_operators": [
+            [
+              "tokyo_metro",
+              925
             ]
           ]
         },
@@ -156,27 +274,27 @@
           ]
         },
         {
-          "route_id": "R_29839416",
-          "short_name": "伊勢崎線",
+          "route_id": "R_BB751C47",
+          "short_name": "7号線南北線",
           "operator_id": "tokyo_metro",
           "mode": "subway",
-          "trip_count": 72,
-          "station_count": 82,
-          "min_stop_count": 13,
-          "max_stop_count": 45,
-          "avg_stop_count": 27.36,
-          "first_departure": "04:58",
-          "last_departure": "23:57",
+          "trip_count": 508,
+          "station_count": 83,
+          "min_stop_count": 10,
+          "max_stop_count": 53,
+          "avg_stop_count": 33.56,
+          "first_departure": "00:00",
+          "last_departure": "23:54",
           "source_lines": [
             [
-              "伊勢崎線",
-              72
+              "7号線南北線",
+              508
             ]
           ],
           "source_operators": [
             [
               "tokyo_metro",
-              72
+              508
             ]
           ]
         },
@@ -227,56 +345,6 @@
             [
               "odakyu",
               1008
-            ]
-          ]
-        },
-        {
-          "route_id": "R_E67CFC31",
-          "short_name": "本線",
-          "operator_id": "keisei",
-          "mode": "private_rail",
-          "trip_count": 1019,
-          "station_count": 67,
-          "min_stop_count": 4,
-          "max_stop_count": 42,
-          "avg_stop_count": 22.37,
-          "first_departure": "00:06",
-          "last_departure": "23:51",
-          "source_lines": [
-            [
-              "本線",
-              1019
-            ]
-          ],
-          "source_operators": [
-            [
-              "keisei",
-              1019
-            ]
-          ]
-        },
-        {
-          "route_id": "R_3EA487D5",
-          "short_name": "東上本線",
-          "operator_id": "tobu",
-          "mode": "private_rail",
-          "trip_count": 2300,
-          "station_count": 46,
-          "min_stop_count": 2,
-          "max_stop_count": 33,
-          "avg_stop_count": 7.12,
-          "first_departure": "00:08",
-          "last_departure": "23:59",
-          "source_lines": [
-            [
-              "東上本線",
-              2300
-            ]
-          ],
-          "source_operators": [
-            [
-              "tobu",
-              2300
             ]
           ]
         }
@@ -5309,6 +5377,31 @@
         ]
       },
       {
+        "route_id": "R_8B989DA1",
+        "short_name": "5号線東西線",
+        "operator_id": "tokyo_metro",
+        "mode": "subway",
+        "trip_count": 1195,
+        "station_count": 118,
+        "min_stop_count": 10,
+        "max_stop_count": 41,
+        "avg_stop_count": 27.54,
+        "first_departure": "00:06",
+        "last_departure": "23:56",
+        "source_lines": [
+          [
+            "5号線東西線",
+            1195
+          ]
+        ],
+        "source_operators": [
+          [
+            "tokyo_metro",
+            1195
+          ]
+        ]
+      },
+      {
         "route_id": "R_7FBFAABB",
         "short_name": "新宿線",
         "operator_id": "seibu",
@@ -5384,6 +5477,56 @@
         ]
       },
       {
+        "route_id": "R_FDF42D4D",
+        "short_name": "9号線千代田線",
+        "operator_id": "tokyo_metro",
+        "mode": "subway",
+        "trip_count": 925,
+        "station_count": 88,
+        "min_stop_count": 2,
+        "max_stop_count": 57,
+        "avg_stop_count": 23.13,
+        "first_departure": "00:00",
+        "last_departure": "23:56",
+        "source_lines": [
+          [
+            "9号線千代田線",
+            925
+          ]
+        ],
+        "source_operators": [
+          [
+            "tokyo_metro",
+            925
+          ]
+        ]
+      },
+      {
+        "route_id": "R_3A079BF8",
+        "short_name": "13号線副都心線",
+        "operator_id": "tokyo_metro",
+        "mode": "subway",
+        "trip_count": 819,
+        "station_count": 120,
+        "min_stop_count": 7,
+        "max_stop_count": 55,
+        "avg_stop_count": 27.35,
+        "first_departure": "00:00",
+        "last_departure": "23:55",
+        "source_lines": [
+          [
+            "13号線副都心線",
+            819
+          ]
+        ],
+        "source_operators": [
+          [
+            "tokyo_metro",
+            819
+          ]
+        ]
+      },
+      {
         "route_id": "R_46D0A707",
         "short_name": "東横線",
         "operator_id": "tokyu",
@@ -5409,20 +5552,20 @@
         ]
       },
       {
-        "route_id": "R_44998026",
-        "short_name": "3号線銀座線",
+        "route_id": "R_9E6C13C0",
+        "short_name": "11号線半蔵門線",
         "operator_id": "tokyo_metro",
         "mode": "subway",
         "trip_count": 683,
-        "station_count": 49,
-        "min_stop_count": 4,
-        "max_stop_count": 19,
-        "avg_stop_count": 18.3,
-        "first_departure": "00:02",
-        "last_departure": "23:56",
+        "station_count": 60,
+        "min_stop_count": 5,
+        "max_stop_count": 58,
+        "avg_stop_count": 39.47,
+        "first_departure": "00:08",
+        "last_departure": "23:46",
         "source_lines": [
           [
-            "3号線銀座線",
+            "11号線半蔵門線",
             683
           ]
         ],
@@ -5430,6 +5573,31 @@
           [
             "tokyo_metro",
             683
+          ]
+        ]
+      },
+      {
+        "route_id": "R_367F9960",
+        "short_name": "2号線日比谷線",
+        "operator_id": "tokyo_metro",
+        "mode": "subway",
+        "trip_count": 680,
+        "station_count": 103,
+        "min_stop_count": 2,
+        "max_stop_count": 46,
+        "avg_stop_count": 27.59,
+        "first_departure": "00:01",
+        "last_departure": "23:57",
+        "source_lines": [
+          [
+            "2号線日比谷線",
+            680
+          ]
+        ],
+        "source_operators": [
+          [
+            "tokyo_metro",
+            680
           ]
         ]
       },
@@ -5484,6 +5652,31 @@
         ]
       },
       {
+        "route_id": "R_44998026",
+        "short_name": "3号線銀座線",
+        "operator_id": "tokyo_metro",
+        "mode": "subway",
+        "trip_count": 655,
+        "station_count": 19,
+        "min_stop_count": 4,
+        "max_stop_count": 19,
+        "avg_stop_count": 18.71,
+        "first_departure": "00:02",
+        "last_departure": "23:56",
+        "source_lines": [
+          [
+            "3号線銀座線",
+            655
+          ]
+        ],
+        "source_operators": [
+          [
+            "tokyo_metro",
+            655
+          ]
+        ]
+      },
+      {
         "route_id": "R_CC6D604B",
         "short_name": "TOEI_ASAKUSA",
         "operator_id": "toei",
@@ -5530,81 +5723,6 @@
           [
             "keio",
             647
-          ]
-        ]
-      },
-      {
-        "route_id": "R_43388863",
-        "short_name": "4号線丸ノ内線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 638,
-        "station_count": 63,
-        "min_stop_count": 3,
-        "max_stop_count": 25,
-        "avg_stop_count": 22.06,
-        "first_departure": "00:04",
-        "last_departure": "23:45",
-        "source_lines": [
-          [
-            "4号線丸ノ内線",
-            638
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            638
-          ]
-        ]
-      },
-      {
-        "route_id": "R_3AD9C8A3",
-        "short_name": "8号線有楽町線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 635,
-        "station_count": 113,
-        "min_stop_count": 7,
-        "max_stop_count": 43,
-        "avg_stop_count": 28.38,
-        "first_departure": "04:59",
-        "last_departure": "23:55",
-        "source_lines": [
-          [
-            "8号線有楽町線",
-            635
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            635
-          ]
-        ]
-      },
-      {
-        "route_id": "R_FDF42D4D",
-        "short_name": "9号線千代田線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 621,
-        "station_count": 71,
-        "min_stop_count": 2,
-        "max_stop_count": 50,
-        "avg_stop_count": 23.39,
-        "first_departure": "00:00",
-        "last_departure": "23:55",
-        "source_lines": [
-          [
-            "9号線千代田線",
-            621
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            621
           ]
         ]
       },
@@ -5659,52 +5777,27 @@
         ]
       },
       {
-        "route_id": "R_367F9960",
-        "short_name": "2号線日比谷線",
+        "route_id": "R_43388863",
+        "short_name": "4号線丸ノ内線",
         "operator_id": "tokyo_metro",
         "mode": "subway",
-        "trip_count": 574,
-        "station_count": 58,
-        "min_stop_count": 2,
-        "max_stop_count": 46,
-        "avg_stop_count": 29.5,
-        "first_departure": "00:01",
-        "last_departure": "23:52",
+        "trip_count": 564,
+        "station_count": 28,
+        "min_stop_count": 3,
+        "max_stop_count": 25,
+        "avg_stop_count": 23.32,
+        "first_departure": "00:04",
+        "last_departure": "23:45",
         "source_lines": [
           [
-            "2号線日比谷線",
-            574
+            "4号線丸ノ内線",
+            564
           ]
         ],
         "source_operators": [
           [
             "tokyo_metro",
-            574
-          ]
-        ]
-      },
-      {
-        "route_id": "R_8B989DA1",
-        "short_name": "5号線東西線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 574,
-        "station_count": 40,
-        "min_stop_count": 10,
-        "max_stop_count": 37,
-        "avg_stop_count": 25.51,
-        "first_departure": "04:58",
-        "last_departure": "23:48",
-        "source_lines": [
-          [
-            "5号線東西線",
-            574
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            574
+            564
           ]
         ]
       },
@@ -5859,6 +5952,31 @@
         ]
       },
       {
+        "route_id": "R_BB751C47",
+        "short_name": "7号線南北線",
+        "operator_id": "tokyo_metro",
+        "mode": "subway",
+        "trip_count": 508,
+        "station_count": 83,
+        "min_stop_count": 10,
+        "max_stop_count": 53,
+        "avg_stop_count": 33.56,
+        "first_departure": "00:00",
+        "last_departure": "23:54",
+        "source_lines": [
+          [
+            "7号線南北線",
+            508
+          ]
+        ],
+        "source_operators": [
+          [
+            "tokyo_metro",
+            508
+          ]
+        ]
+      },
+      {
         "route_id": "R_032D1D43",
         "short_name": "JR_EAST_KEIHIN_TOHOKU_NEGISHI",
         "operator_id": "jr_east",
@@ -5884,27 +6002,27 @@
         ]
       },
       {
-        "route_id": "R_AD0DED5A",
-        "short_name": "田園都市線",
+        "route_id": "R_3AD9C8A3",
+        "short_name": "8号線有楽町線",
         "operator_id": "tokyo_metro",
         "mode": "subway",
-        "trip_count": 506,
-        "station_count": 60,
-        "min_stop_count": 21,
-        "max_stop_count": 58,
-        "avg_stop_count": 42.29,
-        "first_departure": "05:01",
-        "last_departure": "23:46",
+        "trip_count": 494,
+        "station_count": 65,
+        "min_stop_count": 7,
+        "max_stop_count": 43,
+        "avg_stop_count": 28.3,
+        "first_departure": "05:00",
+        "last_departure": "23:50",
         "source_lines": [
           [
-            "田園都市線",
-            506
+            "8号線有楽町線",
+            494
           ]
         ],
         "source_operators": [
           [
             "tokyo_metro",
-            506
+            494
           ]
         ]
       },
@@ -6284,31 +6402,6 @@
         ]
       },
       {
-        "route_id": "R_BB751C47",
-        "short_name": "7号線南北線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 370,
-        "station_count": 59,
-        "min_stop_count": 12,
-        "max_stop_count": 52,
-        "avg_stop_count": 31.62,
-        "first_departure": "00:00",
-        "last_departure": "23:54",
-        "source_lines": [
-          [
-            "7号線南北線",
-            370
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            370
-          ]
-        ]
-      },
-      {
         "route_id": "R_A738E69E",
         "short_name": "池上線",
         "operator_id": "tokyu",
@@ -6509,56 +6602,6 @@
         ]
       },
       {
-        "route_id": "R_B620B76E",
-        "short_name": "総武線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 283,
-        "station_count": 39,
-        "min_stop_count": 22,
-        "max_stop_count": 39,
-        "avg_stop_count": 35.26,
-        "first_departure": "04:25",
-        "last_departure": "23:55",
-        "source_lines": [
-          [
-            "総武線",
-            283
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            283
-          ]
-        ]
-      },
-      {
-        "route_id": "R_41EE755E",
-        "short_name": "東上本線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 279,
-        "station_count": 74,
-        "min_stop_count": 9,
-        "max_stop_count": 55,
-        "avg_stop_count": 21.56,
-        "first_departure": "00:02",
-        "last_departure": "23:50",
-        "source_lines": [
-          [
-            "東上本線",
-            279
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            279
-          ]
-        ]
-      },
-      {
         "route_id": "R_5473C0D6",
         "short_name": "SHINKANSEN_TOHOKU_HOKKAIDO",
         "operator_id": "shinkansen",
@@ -6634,31 +6677,6 @@
         ]
       },
       {
-        "route_id": "R_392581F2",
-        "short_name": "東横線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 254,
-        "station_count": 59,
-        "min_stop_count": 11,
-        "max_stop_count": 51,
-        "avg_stop_count": 35.41,
-        "first_departure": "04:57",
-        "last_departure": "23:31",
-        "source_lines": [
-          [
-            "東横線",
-            254
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            254
-          ]
-        ]
-      },
-      {
         "route_id": "R_89376799",
         "short_name": "JR_TOHOKU",
         "operator_id": "jr_east",
@@ -6705,31 +6723,6 @@
           [
             "jr_east",
             251
-          ]
-        ]
-      },
-      {
-        "route_id": "R_8D82DD52",
-        "short_name": "中央線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 245,
-        "station_count": 55,
-        "min_stop_count": 15,
-        "max_stop_count": 33,
-        "avg_stop_count": 24.37,
-        "first_departure": "00:06",
-        "last_departure": "23:56",
-        "source_lines": [
-          [
-            "中央線",
-            245
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            245
           ]
         ]
       },
@@ -6859,31 +6852,6 @@
         ]
       },
       {
-        "route_id": "R_871DDFA7",
-        "short_name": "小田原線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 208,
-        "station_count": 87,
-        "min_stop_count": 8,
-        "max_stop_count": 57,
-        "avg_stop_count": 27.02,
-        "first_departure": "00:00",
-        "last_departure": "23:48",
-        "source_lines": [
-          [
-            "小田原線",
-            208
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            208
-          ]
-        ]
-      },
-      {
         "route_id": "R_929CE7C5",
         "short_name": "JR_EAST_KEIYO_MUSASHINO",
         "operator_id": "jr_east",
@@ -6980,31 +6948,6 @@
           [
             "seibu",
             162
-          ]
-        ]
-      },
-      {
-        "route_id": "R_9E6C13C0",
-        "short_name": "11号線半蔵門線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 158,
-        "station_count": 43,
-        "min_stop_count": 5,
-        "max_stop_count": 38,
-        "avg_stop_count": 30.49,
-        "first_departure": "00:08",
-        "last_departure": "23:32",
-        "source_lines": [
-          [
-            "11号線半蔵門線",
-            158
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            158
           ]
         ]
       },
@@ -7134,31 +7077,6 @@
         ]
       },
       {
-        "route_id": "R_5FB1FC89",
-        "short_name": "6号線三田線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 128,
-        "station_count": 60,
-        "min_stop_count": 33,
-        "max_stop_count": 53,
-        "avg_stop_count": 40.42,
-        "first_departure": "05:00",
-        "last_departure": "23:21",
-        "source_lines": [
-          [
-            "6号線三田線",
-            128
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            128
-          ]
-        ]
-      },
-      {
         "route_id": "R_100802B8",
         "short_name": "拝島線",
         "operator_id": "seibu",
@@ -7182,10 +7100,271 @@
             127
           ]
         ]
+      },
+      {
+        "route_id": "R_877FD261",
+        "short_name": "西武園線",
+        "operator_id": "seibu",
+        "mode": "private_rail",
+        "trip_count": 116,
+        "station_count": 2,
+        "min_stop_count": 2,
+        "max_stop_count": 2,
+        "avg_stop_count": 2.0,
+        "first_departure": "05:35",
+        "last_departure": "23:22",
+        "source_lines": [
+          [
+            "西武園線",
+            116
+          ]
+        ],
+        "source_operators": [
+          [
+            "seibu",
+            116
+          ]
+        ]
+      },
+      {
+        "route_id": "R_CFD5F9C3",
+        "short_name": "JR_JOBAN",
+        "operator_id": "jr_east",
+        "mode": "rail",
+        "trip_count": 113,
+        "station_count": 79,
+        "min_stop_count": 7,
+        "max_stop_count": 36,
+        "avg_stop_count": 20.29,
+        "first_departure": "05:21",
+        "last_departure": "23:32",
+        "source_lines": [
+          [
+            "JR_JOBAN",
+            113
+          ]
+        ],
+        "source_operators": [
+          [
+            "jr_east",
+            113
+          ]
+        ]
+      },
+      {
+        "route_id": "R_E3C3CE1D",
+        "short_name": "大師線",
+        "operator_id": "tobu",
+        "mode": "private_rail",
+        "trip_count": 108,
+        "station_count": 2,
+        "min_stop_count": 2,
+        "max_stop_count": 2,
+        "avg_stop_count": 2.0,
+        "first_departure": "05:32",
+        "last_departure": "23:59",
+        "source_lines": [
+          [
+            "大師線",
+            108
+          ]
+        ],
+        "source_operators": [
+          [
+            "tobu",
+            108
+          ]
+        ]
+      },
+      {
+        "route_id": "R_DA276403",
+        "short_name": "JR_UCHIBO",
+        "operator_id": "jr_east",
+        "mode": "rail",
+        "trip_count": 104,
+        "station_count": 46,
+        "min_stop_count": 3,
+        "max_stop_count": 26,
+        "avg_stop_count": 16.12,
+        "first_departure": "04:45",
+        "last_departure": "24:10",
+        "source_lines": [
+          [
+            "JR_UCHIBO",
+            104
+          ]
+        ],
+        "source_operators": [
+          [
+            "jr_east",
+            104
+          ]
+        ]
+      },
+      {
+        "route_id": "R_446823A8",
+        "short_name": "こどもの国線",
+        "operator_id": "tokyu",
+        "mode": "private_rail",
+        "trip_count": 103,
+        "station_count": 3,
+        "min_stop_count": 3,
+        "max_stop_count": 3,
+        "avg_stop_count": 3.0,
+        "first_departure": "00:05",
+        "last_departure": "23:40",
+        "source_lines": [
+          [
+            "こどもの国線",
+            103
+          ]
+        ],
+        "source_operators": [
+          [
+            "tokyu",
+            103
+          ]
+        ]
+      },
+      {
+        "route_id": "R_C45ADBFD",
+        "short_name": "JR_EAST_JOBAN_RAPID",
+        "operator_id": "jr_east",
+        "mode": "rail",
+        "trip_count": 92,
+        "station_count": 43,
+        "min_stop_count": 6,
+        "max_stop_count": 34,
+        "avg_stop_count": 11.97,
+        "first_departure": "04:33",
+        "last_departure": "24:33",
+        "source_lines": [
+          [
+            "JR_EAST_JOBAN_RAPID",
+            92
+          ]
+        ],
+        "source_operators": [
+          [
+            "jr_east",
+            92
+          ]
+        ]
       }
     ],
-    "tiny_or_empty_routes": [],
+    "tiny_or_empty_routes": [
+      {
+        "route_id": "R_E85CF337",
+        "short_name": "みなとみらい21線",
+        "operator_id": "tokyo_metro",
+        "mode": "subway",
+        "trip_count": 0,
+        "station_count": 0,
+        "min_stop_count": 0,
+        "max_stop_count": 0,
+        "avg_stop_count": 0,
+        "first_departure": null,
+        "last_departure": null,
+        "source_lines": [],
+        "source_operators": []
+      },
+      {
+        "route_id": "R_787615FA",
+        "short_name": "埼玉高速鉄道線",
+        "operator_id": "saitama_railway",
+        "mode": "private_rail",
+        "trip_count": 0,
+        "station_count": 0,
+        "min_stop_count": 0,
+        "max_stop_count": 0,
+        "avg_stop_count": 0,
+        "first_departure": null,
+        "last_departure": null,
+        "source_lines": [],
+        "source_operators": []
+      },
+      {
+        "route_id": "R_1BA7C304",
+        "short_name": "相鉄いずみ野線",
+        "operator_id": "tokyo_metro",
+        "mode": "subway",
+        "trip_count": 0,
+        "station_count": 0,
+        "min_stop_count": 0,
+        "max_stop_count": 0,
+        "avg_stop_count": 0,
+        "first_departure": null,
+        "last_departure": null,
+        "source_lines": [],
+        "source_operators": []
+      },
+      {
+        "route_id": "R_0896A82E",
+        "short_name": "相鉄本線",
+        "operator_id": "tokyo_metro",
+        "mode": "subway",
+        "trip_count": 0,
+        "station_count": 0,
+        "min_stop_count": 0,
+        "max_stop_count": 0,
+        "avg_stop_count": 0,
+        "first_departure": null,
+        "last_departure": null,
+        "source_lines": [],
+        "source_operators": []
+      }
+    ],
     "huge_routes": [
+      {
+        "route_id": "R_3A079BF8",
+        "short_name": "13号線副都心線",
+        "operator_id": "tokyo_metro",
+        "mode": "subway",
+        "trip_count": 819,
+        "station_count": 120,
+        "min_stop_count": 7,
+        "max_stop_count": 55,
+        "avg_stop_count": 27.35,
+        "first_departure": "00:00",
+        "last_departure": "23:55",
+        "source_lines": [
+          [
+            "13号線副都心線",
+            819
+          ]
+        ],
+        "source_operators": [
+          [
+            "tokyo_metro",
+            819
+          ]
+        ]
+      },
+      {
+        "route_id": "R_8B989DA1",
+        "short_name": "5号線東西線",
+        "operator_id": "tokyo_metro",
+        "mode": "subway",
+        "trip_count": 1195,
+        "station_count": 118,
+        "min_stop_count": 10,
+        "max_stop_count": 41,
+        "avg_stop_count": 27.54,
+        "first_departure": "00:06",
+        "last_departure": "23:56",
+        "source_lines": [
+          [
+            "5号線東西線",
+            1195
+          ]
+        ],
+        "source_operators": [
+          [
+            "tokyo_metro",
+            1195
+          ]
+        ]
+      },
       {
         "route_id": "R_969F8921",
         "short_name": "JR_EAST_TOKAIDO",
@@ -7208,31 +7387,6 @@
           [
             "jr_east",
             314
-          ]
-        ]
-      },
-      {
-        "route_id": "R_3AD9C8A3",
-        "short_name": "8号線有楽町線",
-        "operator_id": "tokyo_metro",
-        "mode": "subway",
-        "trip_count": 635,
-        "station_count": 113,
-        "min_stop_count": 7,
-        "max_stop_count": 43,
-        "avg_stop_count": 28.38,
-        "first_departure": "04:59",
-        "last_departure": "23:55",
-        "source_lines": [
-          [
-            "8号線有楽町線",
-            635
-          ]
-        ],
-        "source_operators": [
-          [
-            "tokyo_metro",
-            635
           ]
         ]
       },
@@ -7262,27 +7416,52 @@
         ]
       },
       {
-        "route_id": "R_871DDFA7",
-        "short_name": "小田原線",
+        "route_id": "R_367F9960",
+        "short_name": "2号線日比谷線",
         "operator_id": "tokyo_metro",
         "mode": "subway",
-        "trip_count": 208,
-        "station_count": 87,
-        "min_stop_count": 8,
-        "max_stop_count": 57,
-        "avg_stop_count": 27.02,
-        "first_departure": "00:00",
-        "last_departure": "23:48",
+        "trip_count": 680,
+        "station_count": 103,
+        "min_stop_count": 2,
+        "max_stop_count": 46,
+        "avg_stop_count": 27.59,
+        "first_departure": "00:01",
+        "last_departure": "23:57",
         "source_lines": [
           [
-            "小田原線",
-            208
+            "2号線日比谷線",
+            680
           ]
         ],
         "source_operators": [
           [
             "tokyo_metro",
-            208
+            680
+          ]
+        ]
+      },
+      {
+        "route_id": "R_FDF42D4D",
+        "short_name": "9号線千代田線",
+        "operator_id": "tokyo_metro",
+        "mode": "subway",
+        "trip_count": 925,
+        "station_count": 88,
+        "min_stop_count": 2,
+        "max_stop_count": 57,
+        "avg_stop_count": 23.13,
+        "first_departure": "00:00",
+        "last_departure": "23:56",
+        "source_lines": [
+          [
+            "9号線千代田線",
+            925
+          ]
+        ],
+        "source_operators": [
+          [
+            "tokyo_metro",
+            925
           ]
         ]
       },
@@ -7312,27 +7491,27 @@
         ]
       },
       {
-        "route_id": "R_29839416",
-        "short_name": "伊勢崎線",
+        "route_id": "R_BB751C47",
+        "short_name": "7号線南北線",
         "operator_id": "tokyo_metro",
         "mode": "subway",
-        "trip_count": 72,
-        "station_count": 82,
-        "min_stop_count": 13,
-        "max_stop_count": 45,
-        "avg_stop_count": 27.36,
-        "first_departure": "04:58",
-        "last_departure": "23:57",
+        "trip_count": 508,
+        "station_count": 83,
+        "min_stop_count": 10,
+        "max_stop_count": 53,
+        "avg_stop_count": 33.56,
+        "first_departure": "00:00",
+        "last_departure": "23:54",
         "source_lines": [
           [
-            "伊勢崎線",
-            72
+            "7号線南北線",
+            508
           ]
         ],
         "source_operators": [
           [
             "tokyo_metro",
-            72
+            508
           ]
         ]
       },
@@ -7515,16 +7694,16 @@
   },
   "operator_quality": [
     {
-      "operator_id": "tokyo_metro",
-      "route_count": 33,
-      "trip_count": 6716,
-      "tiny_route_count": 0
-    },
-    {
       "operator_id": "jr_east",
       "route_count": 24,
       "trip_count": 4690,
       "tiny_route_count": 0
+    },
+    {
+      "operator_id": "tokyo_metro",
+      "route_count": 14,
+      "trip_count": 6716,
+      "tiny_route_count": 3
     },
     {
       "operator_id": "tobu",
@@ -7591,6 +7770,12 @@
       "route_count": 1,
       "trip_count": 531,
       "tiny_route_count": 0
+    },
+    {
+      "operator_id": "saitama_railway",
+      "route_count": 1,
+      "trip_count": 0,
+      "tiny_route_count": 1
     },
     {
       "operator_id": "tama_monorail",

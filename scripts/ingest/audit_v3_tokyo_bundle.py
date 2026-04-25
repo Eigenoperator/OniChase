@@ -6,6 +6,7 @@ import json
 import math
 import re
 import unicodedata
+import argparse
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -388,10 +389,15 @@ def build_audit() -> dict[str, Any]:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Audit generated v3 Tokyo bundle station/route integrity.")
+    parser.add_argument("--output", type=Path, default=REPORT_PATH, help="Path for the component JSON report.")
+    args = parser.parse_args()
+
     report = build_audit()
-    write_json(REPORT_PATH, report)
+    output_path = args.output if args.output.is_absolute() else ROOT / args.output
+    write_json(output_path, report)
     print(json.dumps({
-        "report": str(REPORT_PATH.relative_to(ROOT)),
+        "report": str(output_path.relative_to(ROOT)) if output_path.is_relative_to(ROOT) else str(output_path),
         **report["summary"],
     }, ensure_ascii=False, indent=2))
     return 0

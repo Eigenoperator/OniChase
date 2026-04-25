@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import argparse
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -100,13 +101,41 @@ def dataset_report(path: Path) -> dict:
     }
 
 
-def main() -> int:
+def default_targets(include_shinkansen: bool = True) -> list[Path]:
     targets = sorted(DATA_DIR.glob("v3_tokyo_*weekday_train_instances.json*"))
-    report = [dataset_report(path) for path in targets]
     shinkansen_path = DATA_DIR / "shinkansen_v2_weekday_train_instances_merged.json"
-    if shinkansen_path.exists():
-        report.append(dataset_report(shinkansen_path))
-    REPORT_PATH.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if include_shinkansen and shinkansen_path.exists():
+        targets.append(shinkansen_path)
+    return targets
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Audit raw v3 train datasets for duplicate signatures and duplicate train numbers.")
+    parser.add_argument("--output", type=Path, default=REPORT_PATH, help="Path for the component JSON report.")
+    parser.add_argument(
+        "--path",
+        action="append",
+        type=Path,
+        default=[],
+        help="Specific dataset path to audit. Can be repeated. Defaults to all v3 Tokyo raw train datasets plus Shinkansen.",
+    )
+    parser.add_argument(
+        "--no-shinkansen",
+        action="store_true",
+        help="When using the default dataset list, skip the Shinkansen merged dataset.",
+    )
+    args = parser.parse_args()
+
+    targets = args.path or default_targets(include_shinkansen=not args.no_shinkansen)
+    targets = [path if path.is_absolute() else ROOT / path for path in targets]
+    missing = [path for path in targets if not path.exists()]
+    if missing:
+        for path in missing:
+            print(f"Missing dataset: {path}")
+        return 1
+    report = [dataset_report(path) for path in targets]
+    output_path = args.output if args.output.is_absolute() else ROOT / args.output
+    output_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0
 
