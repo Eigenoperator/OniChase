@@ -1,50 +1,37 @@
 # STATUS
 
 ## Current Focus
-Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` online playtest healthy.
+Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with nationwide real physical rail geometry and safer station identity.
 
 ## Done
-- `v1` Yamanote real-data prototype is complete enough for baseline playtests: real stations, weekday trains, planning, live capture, replay, and hunter visibility.
-- Main `v2` is the current nationwide Shinkansen playable build: GIS-first map, real weekday train instances, planning/live/capture/replay, and public online room flow via Render.
-- Public `v3` is the official MapLibre Tokyo page at `https://eigenoperator.github.io/OniChase/v3.html`, using the real Tokyo map/timetable bundles and the shared v2-style gameplay path.
-- `v3` data foundation includes `1804` station groups, `2194` physical stations, `113` service routes, `4612` track centerlines, and `41186` v2-compatible trip instances.
-- `v3` MapLibre gameplay now has role switching, planning/live timing, hourly replanning, plan board, train outlook, selected-train path/stops, player markers, live capture, replay simulation, and Japanese-original display.
-- `v3` multiplayer client has single-player entry, v3 Tokyo room lobby, Ready Room, room code copy, ready/unready, leave-room cleanup, and online plan sync.
-- v3 planner is now a three-layer `line -> train -> destination stop` flow with compact transfer grids, physical train filtering, and selected-train whole-future physical highlights.
-- v3 data/script stable set was rebuilt and audited: unified trains `41186`, duplicate unified ids `0`, duplicate unified signatures `0`, rendered lines without trips `0`, and local/public v3 room `/health` both report `dataset_name = v3-tokyo`.
-- v3 through-running display now classifies departures by the physical boarding line: Toyoko/Yokohama/Hiyoshi/Jiyugaoka no longer surface Tokyo Metro through-service aliases as separate line choices.
-- v3 route matching now keeps Shinkansen and ordinary JR lines separate; shared station/operator families no longer make Tokaido Line and Tokaido Shinkansen borrow each other's trains.
-- `AXIOMS.md` now records the through-running classification rule: Shinkansen routes stay separated by name, and non-Shinkansen through-running requires same physical track and platform.
-- v3 implements that rule in route display: Tokyo Station again shows Yamanote/Keihin-Tohoku/Yokosuka/Tokaido separately, while Jiyugaoka keeps only Tokyu physical boarding lines.
-- v3 through-running audit now covers Keikyu/Asakusa/Keisei, Tokyu/Fukutoshin/Seibu/Tobu, Meguro/Mita/Namboku/Sotetsu, Saitama Railway, and Minatomirai display boundaries.
-- v3 Tokyo Metro route titles now use common line names (`丸ノ内線`, `有楽町線`, `副都心線`, etc.) instead of numbered legal names in the UI.
-- Local two-browser v3 multiplayer smoke passed: Runner/Hunter created and joined one room, both ready states synced into Planning and then LIVE, and local/public room `/health` report `dataset_name = v3-tokyo`.
-- v3 selected-train highlights now score trip identity, selected route identity, normalized corridor aliases, and physical endpoint service; public Pages smoke confirms 山手線 stays all 山手線 while 副都心線 through-services split onto 副都心線 -> 東急東横線 -> みなとみらい21線.
-- v3 Current Plan ride rows now keep the route-color swatch plus the compact boarding/alighting-time subline only.
-- Public v3 two-browser playtests now include 30 Render rooms; the latest 10/10 battle reports/timelines show public Japanese line names, private-operator prefixes, and no internal route or station ids.
-- Heavy public v3 battle records now support generated 10-leg plans plus same-node/same-train capture checks; the latest 10/10 Render rooms completed with no issues.
-- v3 player-facing P0 now includes first-class replay UI that hides empty state, plus Tutorial / Advanced Setup entry modes with detailed demonstrations and browser regression coverage.
-- v3 release-check pass fixed the みなとみらい21線 selected-highlight boundary regression; the core suite passes `30` tests and data-quality has no hard integrity failures.
-- v3 planner route visibility now has no visible station/route no-boardable warnings and only `9` unsurfaced boardable trip-stop warnings after adding Sotetsu through aliases and fixing Metro-Odakyu limited-express route identity.
-- `V3_RELEASE_CANDIDATE_NOTES.md` now freezes the current v3 Tokyo MapLibre baseline and moves the remaining external/homonym data edges to v4 planning.
-- `diary/DIARY-2026-04-24.md` now records the v3 RC freeze day and the planner-audit reduction path.
+- `v1` is archived as the early Yamanote real-data prototype.
+- Main `v2` remains the nationwide Shinkansen playable build with planning/live/capture/replay and Render-backed online rooms.
+- Public `v3` is frozen as the Tokyo MapLibre release-candidate baseline at `https://eigenoperator.github.io/OniChase/v3.html`.
+- `v3` baseline data: `1804` station groups, `2194` physical stations, `113` service routes, `4612` track centerlines, and `41186` v2-compatible trip instances.
+- `v3` core suite passes `30` tests; data-quality has no hard integrity failures, no visible no-boardable station/route warnings, and only `9` known external/homonym unsurfaced-stop warnings.
+- `V3_RELEASE_CANDIDATE_NOTES.md` documents the frozen v3 baseline and moves external-line/homonym identity edges into v4.
+- `v4` first data slice now builds from local MLIT N02-2024: `10235` physical stations, `9048` station groups, `21932` track centerlines, and `178` operators.
+- `station_identity_v2` now preserves physical station coordinates while grouping gameplay/interchange identity by N02 group code first; same-name stations are not globally collapsed.
+- Reusable v4 scripts added: `scripts/ingest/build_v4_japan_physical_map.py` and `scripts/ingest/audit_v4_station_identity.py`.
+- Latest v4 identity audit reports `427` same-name split names, `0` multi-name station groups, and `0` line coverage warnings.
 
 ## In Progress
-- Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
-- Start v4 planning from the frozen v3 Tokyo MapLibre release-candidate baseline.
+- Turn the v4 nationwide physical bundle into a MapLibre-renderable layer set.
+- Design station identity v2 adapters from physical stations to gameplay station groups without breaking single-player/multiplayer parity.
 
 ## Blockers
-- `JR Central` still lacks a direct train-detail page like `JR East / JR West`; deeper precision still needs station-grid aggregation.
-- Firefox/geckodriver works for headless DOM gameplay probes; use Playwright for local SVG screenshot/bounds checks when system Python lacks Selenium.
-- The planner audit still reports `9` non-fatal unsurfaced stops from external/homonym edges: Fujikyu `赤坂`, Mito-line `大和`, Oito-line `有明`, and Hakone Tozan beyond `小田原`; large source caches remain local-only.
+- Raw MLIT N02-2024 source files are local-only and ignored by git; regenerated v4 artifacts require those local files or a documented download step.
+- v3 still has `9` non-fatal external/homonym data edges: Fujikyu `赤坂`, Mito-line `大和`, Oito-line `有明`, and Hakone Tozan beyond `小田原`.
+- Large collection caches remain local-only and should not be committed.
 
 ## Decisions
-- [2026-04-07] GIS-first Shinkansen became the main `v2`; public site keeps `v1`, `v2`, and now the new Tokyo `v3` sandbox.
-- [2026-04-13] `v3 phase 1` means real Tokyo-area map + real train data, preserving physical station locations rather than faking interchange coordinates.
-- [2026-04-19] `v3` UI interactions reuse the main `v2` code; `v3` owns data adapters and Tokyo real-data quality, not a separate interaction layer.
-- [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
+- [2026-04-07] GIS-first Shinkansen became the main `v2`; old prototypes stay archived.
+- [2026-04-13] Physical map stations must keep real locations; gameplay station groups may allow transfers without faking map coordinates.
+- [2026-04-19] `v3` reuses the v2 gameplay path; it owns data adapters and Tokyo real-data quality, not a separate ruleset.
+- [2026-04-24] `v3` is frozen as a release candidate; remaining external/homonym identity work belongs to `v4`.
+- [2026-04-25] `v4` starts from nationwide N02 physical geometry plus `station_identity_v2`, not from another Tokyo-only hand-built map.
 
 ## Next
-1. Start v4 planning from the frozen v3 RC: station identity, external-line boundaries, larger network growth, and performance.
-2. Clean the remaining unrelated dirty worktree items without committing caches or obsolete phase-1 artifacts.
-3. Choose the first v4 implementation slice after the v4 plan separates data identity, map scale, and performance work.
+1. Export v4 physical tracks/stations into MapLibre-friendly GeoJSON/PMTiles-style layer inputs.
+2. Add an identity lookup that maps timetable stops to station groups while preserving physical stations for rendering.
+3. Write the v4 source-download/regeneration note so another machine can rebuild the nationwide map.

@@ -267,3 +267,10 @@
 
 - Reduced v3 planner warning debt to a release-candidate level: no-boardable station/route pairs are `0`, forbidden same-operator borrowing is `0`, and the remaining `9` unsurfaced stops are documented as external/homonym data edges rather than gameplay blockers.
 - Created `V3_RELEASE_CANDIDATE_NOTES.md` to freeze the current v3 Tokyo MapLibre baseline, list verified commands/results, document the remaining known warnings, and move larger station-identity/external-line work to v4.
+
+## 2026-04-25
+
+- Started `v4` with the nationwide physical-map foundation instead of another Tokyo-only expansion pass.
+- Added reusable N02-2024 ingestion and identity-audit scripts that build `station_identity_v2` from source group codes while keeping physical stations separate from gameplay station groups.
+- Generated the first v4 nationwide physical bundle: `10235` physical stations, `9048` station groups, `21932` track centerlines, and `178` operators.
+- Verified the first station identity audit with `427` same-name split names, `0` multi-name station groups, and `0` line coverage warnings.
