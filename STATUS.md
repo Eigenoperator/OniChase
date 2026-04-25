@@ -17,10 +17,12 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - v4 MapLibre-ready public GeoJSON layers now exist under `docs/data/v4_maplibre`: `track_centerlines`, `station_groups`, `physical_stations`, and `line_inventory`.
 - v4 nationwide line inventory now lists `596` operator-line pairs, `552` unique line names, `178` operators, `0` stationless lines, and `0` trackless lines.
 - Public `v4.html` now displays the nationwide physical railway map with MapLibre, station labels, optional physical station dots, line search, and selected-line highlighting.
+- v4 map now includes a Japan land outline, low-zoom `596`-feature track overview, lazy high-detail track loading, lazy physical-station loading, and high-zoom station dots for labels.
+- v4 track-continuity audit reports `12` multi-component operator-line pairs out of `596`; the report is saved as `data/v4_track_continuity_audit.json`.
 
 ## In Progress
 - Start nationwide timetable-source planning from the `596` operator-line inventory.
-- Prepare the v4 MapLibre data contract for vector tiles / PMTiles once GeoJSON starts becoming too slow.
+- Continue reducing v4 map ambiguity from same-operator colors by adding official per-line colors.
 
 ## Blockers
 - Raw MLIT N02-2024 source files are local-only and ignored by git; regenerated v4 artifacts require those local files or a documented download step.
@@ -35,6 +37,6 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - [2026-04-25] `v4` starts from nationwide N02 physical geometry plus `station_identity_v2`, not from another Tokyo-only hand-built map.
 
 ## Next
-1. Add an identity lookup that maps timetable stops to station groups while preserving physical stations for rendering.
-2. Split the nationwide line inventory into timetable-collection source groups by operator.
-3. Start timetable-source discovery for high-priority national operators.
+1. Add official per-line colors so same-operator nearby lines no longer look like broken segments.
+2. Add an identity lookup that maps timetable stops to station groups while preserving physical stations for rendering.
+3. Split the nationwide line inventory into timetable-collection source groups by operator.

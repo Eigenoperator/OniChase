@@ -14,6 +14,9 @@ This is the first `v4` data slice: nationwide real physical rail geometry plus `
 - `data/v4_japan_physical_map.json.gz`
 - `data/v4_station_identity_audit.json`
 - `data/v4_nationwide_line_inventory.json`
+- `data/v4_track_continuity_audit.json`
+- `docs/data/v4_maplibre/japan_land.geojson`
+- `docs/data/v4_maplibre/track_overview.geojson`
 - `docs/data/v4_maplibre/track_centerlines.geojson`
 - `docs/data/v4_maplibre/station_groups.geojson`
 - `docs/data/v4_maplibre/physical_stations.geojson`
@@ -31,6 +34,7 @@ Current generated counts:
 - Line coverage warnings: `0`
 - Nationwide operator-line pairs: `596`
 - Unique line names: `552`
+- Track continuity warnings: `12` multi-component operator-line pairs
 
 ## Regenerate
 
@@ -38,8 +42,10 @@ Current generated counts:
 cd /home/xincheng/toy/Chase
 python3 scripts/ingest/build_v4_japan_physical_map.py
 python3 scripts/ingest/audit_v4_station_identity.py
+python3 scripts/ingest/build_v4_land_outline.py
 python3 scripts/ingest/build_v4_line_inventory.py
 python3 scripts/ingest/build_v4_maplibre_sources.py
+python3 scripts/ingest/audit_v4_track_continuity.py
 ```
 
 ## Station Identity V2
@@ -55,10 +61,12 @@ python3 scripts/ingest/build_v4_maplibre_sources.py
 `docs/data/v4_maplibre/manifest.json` is the public entry point for browser-side loading.
 
 - `track_centerlines.geojson`: nationwide physical rail LineString features.
+- `track_overview.geojson`: simplified low-zoom operator-line geometry.
+- `japan_land.geojson`: lightweight Japan land outline.
 - `station_groups.geojson`: gameplay/interchange identity points.
 - `physical_stations.geojson`: real physical station points.
 - `line_inventory.json`: all current nationwide operator-line pairs.
 
-The first export is GeoJSON so it can be loaded directly by MapLibre during development. Later performance work should convert this same layer contract into vector tiles or PMTiles.
+The first export is GeoJSON so it can be loaded directly by MapLibre during development. Low zoom uses `track_overview.geojson`; high-detail `track_centerlines.geojson` and physical-station dots are loaded lazily by the viewer. Later performance work should convert this same layer contract into vector tiles or PMTiles.
 
 The first public viewer is `https://eigenoperator.github.io/OniChase/v4.html`. It shows the nationwide physical track layer, station groups, optional high-zoom physical stations, and a searchable operator-line inventory with per-line geometry highlighting.

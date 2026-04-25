@@ -504,6 +504,8 @@
       lines: [],
       selectedLine: null,
       physicalVisible: false,
+      detailTracksLoaded: false,
+      physicalStationsLoaded: false,
     };
 
     const elements = {
@@ -547,13 +549,19 @@
           version: 8,
           glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
           sources: {
-            tracks: {
+            land: {
               type: 'geojson',
-              data: `${DATA_ROOT}track_centerlines.geojson`,
+              data: `${DATA_ROOT}japan_land.geojson`,
+              tolerance: 0.45,
+              maxzoom: 7,
+            },
+            trackOverview: {
+              type: 'geojson',
+              data: `${DATA_ROOT}track_overview.geojson`,
               promoteId: 'id',
-              tolerance: 0.85,
+              tolerance: 0.9,
               buffer: 32,
-              maxzoom: 13,
+              maxzoom: 9,
             },
             stationGroups: {
               type: 'geojson',
@@ -561,13 +569,6 @@
               promoteId: 'id',
               tolerance: 0.4,
               maxzoom: 14,
-            },
-            physicalStations: {
-              type: 'geojson',
-              data: `${DATA_ROOT}physical_stations.geojson`,
-              promoteId: 'id',
-              tolerance: 0.2,
-              maxzoom: 15,
             },
           },
           layers: [
@@ -593,9 +594,29 @@
 
     function addRailLayers(map) {
       map.addLayer({
-        id: 'track-casing',
+        id: 'land-fill',
+        type: 'fill',
+        source: 'land',
+        paint: {
+          'fill-color': '#f8f2e7',
+          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.74, 7, 0.84, 12, 0.9],
+        },
+      });
+      map.addLayer({
+        id: 'land-outline',
         type: 'line',
-        source: 'tracks',
+        source: 'land',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#cfd9dc',
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.58, 8, 0.78, 13, 0.88],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.45, 8, 0.85, 13, 1.25],
+        },
+      });
+      map.addLayer({
+        id: 'track-overview-casing',
+        type: 'line',
+        source: 'trackOverview',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#ffffff',
@@ -604,9 +625,9 @@
         },
       });
       map.addLayer({
-        id: 'tracks',
+        id: 'track-overview',
         type: 'line',
-        source: 'tracks',
+        source: 'trackOverview',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': ['get', 'operator_color'],
@@ -615,9 +636,9 @@
         },
       });
       map.addLayer({
-        id: 'selected-line-casing',
+        id: 'selected-line-overview-casing',
         type: 'line',
-        source: 'tracks',
+        source: 'trackOverview',
         filter: EMPTY_LINE_FILTER,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
@@ -627,9 +648,9 @@
         },
       });
       map.addLayer({
-        id: 'selected-line',
+        id: 'selected-line-overview',
         type: 'line',
-        source: 'tracks',
+        source: 'trackOverview',
         filter: EMPTY_LINE_FILTER,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
@@ -667,23 +688,122 @@
         },
       });
       map.addLayer({
-        id: 'physical-stations',
+        id: 'station-groups-all',
         type: 'circle',
-        source: 'physicalStations',
-        minzoom: 11.3,
-        layout: { visibility: 'none' },
+        source: 'stationGroups',
+        minzoom: 11.4,
+        filter: ['<', ['get', 'label_rank'], 120],
         paint: {
-          'circle-color': ['get', 'operator_color'],
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 11.3, 1.0, 14, 1.45, 17, 2.0],
+          'circle-color': '#172333',
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 11.4, 0.95, 14, 1.55, 17, 2.15],
           'circle-stroke-color': '#ffffff',
-          'circle-stroke-width': 0.65,
-          'circle-opacity': 0.86,
+          'circle-stroke-width': 0.55,
+          'circle-opacity': ['interpolate', ['linear'], ['zoom'], 11.4, 0.36, 13, 0.78, 16, 0.9],
         },
       });
       addLabelLayer(map, 'label-national', 3.8, 900, 12.5, 16);
       addLabelLayer(map, 'label-regional', 6.2, 260, 11.5, 14.5);
-      addLabelLayer(map, 'label-local', 8.8, 120, 10.5, 13.2);
-      addLabelLayer(map, 'label-all', 11.6, 0, 10, 12.4);
+      addLabelLayer(map, 'label-local', 9.1, 120, 10.7, 13.2);
+      addLabelLayer(map, 'label-all', 11.7, 0, 10.2, 12.4);
+    }
+
+    function addDetailedTrackLayers() {
+      if (state.detailTracksLoaded || map.getSource('tracks')) return;
+      state.detailTracksLoaded = true;
+      map.addSource('tracks', {
+        type: 'geojson',
+        data: `${DATA_ROOT}track_centerlines.geojson`,
+        promoteId: 'id',
+        tolerance: 0.55,
+        buffer: 24,
+        maxzoom: 14,
+      });
+      map.addLayer({
+        id: 'track-detail-casing',
+        type: 'line',
+        source: 'tracks',
+        minzoom: 8.2,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#ffffff',
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 8.2, 0.0, 9, 0.36, 13, 0.62],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 8.2, 0.7, 11, 1.35, 15, 2.35],
+        },
+      }, 'selected-line-overview-casing');
+      map.addLayer({
+        id: 'track-detail',
+        type: 'line',
+        source: 'tracks',
+        minzoom: 8.2,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': ['get', 'operator_color'],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 8.2, 0.0, 9, 0.56, 13, 0.88],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 8.2, 0.38, 11, 0.88, 15, 1.55],
+        },
+      }, 'selected-line-overview-casing');
+      map.addLayer({
+        id: 'selected-line-detail-casing',
+        type: 'line',
+        source: 'tracks',
+        minzoom: 8.2,
+        filter: state.selectedLine ? selectedLineFilter(state.selectedLine) : EMPTY_LINE_FILTER,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#ffffff',
+          'line-opacity': 0.94,
+          'line-width': ['interpolate', ['linear'], ['zoom'], 8.2, 3.2, 13, 5.6, 17, 7.2],
+        },
+      }, 'station-hubs');
+      map.addLayer({
+        id: 'selected-line-detail',
+        type: 'line',
+        source: 'tracks',
+        minzoom: 8.2,
+        filter: state.selectedLine ? selectedLineFilter(state.selectedLine) : EMPTY_LINE_FILTER,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': ['get', 'operator_color'],
+          'line-opacity': 1,
+          'line-width': ['interpolate', ['linear'], ['zoom'], 8.2, 2.1, 13, 4.2, 17, 5.6],
+        },
+      }, 'station-hubs');
+    }
+
+    function ensureDetailedTracksSoon() {
+      if (state.detailTracksLoaded || map.getZoom() < 8.15) return;
+      const run = () => addDetailedTrackLayers();
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(run, { timeout: 900 });
+      } else {
+        window.setTimeout(run, 120);
+      }
+    }
+
+    function addPhysicalStationLayer() {
+      if (state.physicalStationsLoaded || map.getSource('physicalStations')) return;
+      state.physicalStationsLoaded = true;
+      map.addSource('physicalStations', {
+        type: 'geojson',
+        data: `${DATA_ROOT}physical_stations.geojson`,
+        promoteId: 'id',
+        tolerance: 0.2,
+        maxzoom: 15,
+      });
+      map.addLayer({
+        id: 'physical-stations',
+        type: 'circle',
+        source: 'physicalStations',
+        minzoom: 11.3,
+        layout: { visibility: state.physicalVisible ? 'visible' : 'none' },
+        paint: {
+          'circle-color': ['get', 'operator_color'],
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 11.3, 0.8, 14, 1.25, 17, 1.85],
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 0.55,
+          'circle-opacity': 0.78,
+        },
+      }, 'label-national');
     }
 
     function addLabelLayer(map, id, minzoom, minRank, lowSize, highSize) {
@@ -786,13 +906,13 @@
 
     function selectLine(line) {
       state.selectedLine = line;
-      const filter = [
-        'all',
-        ['==', ['get', 'operator_id'], line.operatorId],
-        ['==', ['get', 'line_name'], line.lineName],
-      ];
-      map.setFilter('selected-line-casing', filter);
-      map.setFilter('selected-line', filter);
+      const filter = selectedLineFilter(line);
+      map.setFilter('selected-line-overview-casing', filter);
+      map.setFilter('selected-line-overview', filter);
+      if (state.detailTracksLoaded) {
+        map.setFilter('selected-line-detail-casing', filter);
+        map.setFilter('selected-line-detail', filter);
+      }
       elements.selectedSwatch.style.background = lineColor(line);
       elements.selectedTitle.textContent = line.lineName;
       elements.selectedDetail.textContent = `${line.operatorName} · ${formatNumber(line.physicalStationCount)} stations · ${formatNumber(line.trackCenterlineCount)} physical track segments`;
@@ -803,13 +923,26 @@
           duration: 720,
         });
       }
+      ensureDetailedTracksSoon();
       renderLineList();
+    }
+
+    function selectedLineFilter(line) {
+      return [
+        'all',
+        ['==', ['get', 'operator_id'], line.operatorId],
+        ['==', ['get', 'line_name'], line.lineName],
+      ];
     }
 
     function clearLine() {
       state.selectedLine = null;
-      map.setFilter('selected-line-casing', EMPTY_LINE_FILTER);
-      map.setFilter('selected-line', EMPTY_LINE_FILTER);
+      map.setFilter('selected-line-overview-casing', EMPTY_LINE_FILTER);
+      map.setFilter('selected-line-overview', EMPTY_LINE_FILTER);
+      if (state.detailTracksLoaded) {
+        map.setFilter('selected-line-detail-casing', EMPTY_LINE_FILTER);
+        map.setFilter('selected-line-detail', EMPTY_LINE_FILTER);
+      }
       elements.selectedSwatch.style.background = '#0f766e';
       elements.selectedTitle.textContent = 'No line selected';
       elements.selectedDetail.textContent = 'Click a line row to highlight its real physical geometry.';
@@ -825,11 +958,15 @@
 
     function updateZoomPill() {
       elements.zoomPill.textContent = `Zoom ${map.getZoom().toFixed(2)}`;
+      ensureDetailedTracksSoon();
     }
 
     function togglePhysicalStations() {
       state.physicalVisible = !state.physicalVisible;
-      map.setLayoutProperty('physical-stations', 'visibility', state.physicalVisible ? 'visible' : 'none');
+      if (state.physicalVisible) addPhysicalStationLayer();
+      if (map.getLayer('physical-stations')) {
+        map.setLayoutProperty('physical-stations', 'visibility', state.physicalVisible ? 'visible' : 'none');
+      }
       elements.togglePhysical.textContent = state.physicalVisible ? 'Hide Physical Stations' : 'Physical Stations';
     }
 

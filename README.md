@@ -133,6 +133,8 @@ Public multiplayer note:
 - v4 physical-map builder: [scripts/ingest/build_v4_japan_physical_map.py](/home/xincheng/toy/Chase/scripts/ingest/build_v4_japan_physical_map.py)
 - v4 MapLibre source exporter: [scripts/ingest/build_v4_maplibre_sources.py](/home/xincheng/toy/Chase/scripts/ingest/build_v4_maplibre_sources.py)
 - v4 nationwide line inventory: [scripts/ingest/build_v4_line_inventory.py](/home/xincheng/toy/Chase/scripts/ingest/build_v4_line_inventory.py)
+- v4 land outline builder: [scripts/ingest/build_v4_land_outline.py](/home/xincheng/toy/Chase/scripts/ingest/build_v4_land_outline.py)
+- v4 track continuity audit: [scripts/ingest/audit_v4_track_continuity.py](/home/xincheng/toy/Chase/scripts/ingest/audit_v4_track_continuity.py)
 - browser regression tests: [scripts/tests](/home/xincheng/toy/Chase/scripts/tests)
 
 Useful commands:
