@@ -13,7 +13,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 planner is now a three-layer `line -> train -> destination stop` flow with compact transfer grids, physical train filtering, and selected-train whole-future physical highlights.
 - Recent local work tightened Tokyo Metro route identity, through-service boarding visibility, physical alias route preservation, MapLibre loading, and reusable v3 audit entry points.
 - v3 data/script stable set was rebuilt and audited: unified trains `41186`, duplicate unified ids `0`, duplicate unified signatures `0`, rendered lines without trips `0`, and local/public v3 room `/health` both report `dataset_name = v3-tokyo`.
-- Committed and pushed the validated v3 stable set in `c66264e` (`Validate v3 Tokyo timetable bundle`).
 - Local headless Firefox single-player smoke test passed the core v3 flow: load map/timetable, enter Runner mode, choose line/train/destination, generate a plan, start countdown, and transition into `LIVE`.
 - v3 through-running display now classifies departures by the physical boarding line: Toyoko/Yokohama/Hiyoshi/Jiyugaoka no longer surface Tokyo Metro through-service aliases as separate line choices.
 - v3 route matching now keeps Shinkansen and ordinary JR lines separate; shared station/operator families no longer make Tokaido Line and Tokaido Shinkansen borrow each other's trains.
@@ -27,7 +26,8 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - Public v3 two-browser playtests now include 30 Render rooms; the latest 10/10 battle reports/timelines show public Japanese line names, private-operator prefixes, and no internal route or station ids.
 - Heavy public v3 battle records now support generated 10-leg plans plus same-node/same-train capture checks; the latest 10/10 Render rooms completed with no issues.
 - v3 player-facing P0 now includes first-class replay UI that hides empty state, plus Tutorial / Advanced Setup entry modes with detailed demonstrations and browser regression coverage.
-- v3 release-check pass fixed the みなとみらい21線 selected-highlight boundary regression; the core suite now passes `30` tests and data-quality has no hard integrity failures.
+- v3 release-check pass fixed the みなとみらい21線 selected-highlight boundary regression; the core suite passes `30` tests and data-quality has no hard integrity failures.
+- v3 planner route visibility no longer treats nearby geometry as boardable service: visible station/route no-boardable warnings dropped from `105` to `0`, with unsurfaced boardable trip-stop debt down from `337` to `331`.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
@@ -36,7 +36,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 ## Blockers
 - `JR Central` still lacks a direct train-detail page like `JR East / JR West`; deeper precision still needs station-grid aggregation.
 - Firefox/geckodriver works for headless DOM gameplay probes; use Playwright for local SVG screenshot/bounds checks when system Python lacks Selenium.
-- The planner audit still reports non-fatal warning debt: `337` unsurfaced boardable trip stops and `105` visible station/route pairs with no boardable departure; large untracked source caches remain local-only.
+- The planner audit still reports non-fatal warning debt: `331` unsurfaced boardable trip stops, mainly Tokyo Metro/JR through-service boundary stops whose external physical boarding routes are not fully surfaced yet; large untracked source caches remain local-only.
 
 ## Decisions
 - [2026-04-07] GIS-first Shinkansen became the main `v2`; public site keeps `v1`, `v2`, and now the new Tokyo `v3` sandbox.

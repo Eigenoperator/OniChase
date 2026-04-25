@@ -389,16 +389,7 @@ class PlannerDepartureAudit:
         self.physical_route_ids_by_group_id: dict[str, set[str]] = defaultdict(set)
         for station_group_id, route_ids in self.station_route_ids_by_group_id.items():
             for route_id in route_ids:
-                route = self.route_by_id.get(route_id)
-                if not route:
-                    continue
-                pattern_serves = self.route_pattern_serves_boarding_station(route_id, station_group_id)
-                geometry_serves = (
-                    not self.is_through_service_transfer_alias(route_id)
-                    and route.get("shortName") not in PHYSICAL_ALIAS_ROUTE_NAMES
-                    and self.route_physically_serves_station_group(route_id, station_group_id)
-                )
-                if pattern_serves or geometry_serves:
+                if self.route_can_board_at_station_group(route_id, station_group_id):
                     self.physical_route_ids_by_group_id[station_group_id].add(route_id)
         for station_group_id, stations in self.physical_stations_by_group_id.items():
             candidate_route_ids: set[str] = set()
@@ -418,7 +409,7 @@ class PlannerDepartureAudit:
                         break
                 if not operator_matches:
                     continue
-                if self.route_physically_serves_station_group(route_id, station_group_id):
+                if self.route_can_board_at_station_group(route_id, station_group_id):
                     self.physical_route_ids_by_group_id[station_group_id].add(route_id)
 
         self.trips = []
@@ -619,7 +610,21 @@ class PlannerDepartureAudit:
                     break
             if not operator_matches:
                 return False
-        return station_group_id in self.route_station_set_by_id.get(route_id, set()) or self.route_physically_serves_station_group(route_id, station_group_id)
+        return station_group_id in self.route_station_set_by_id.get(route_id, set())
+
+    def route_can_board_at_station_group(self, route_id: str, station_group_id: str) -> bool:
+        if not route_id or not station_group_id or self.is_through_service_transfer_alias(route_id):
+            return False
+        if station_group_id not in self.route_station_set_by_id.get(route_id, set()):
+            return False
+        route = self.route_by_id.get(route_id)
+        stations = self.physical_stations_by_group_id.get(station_group_id, [])
+        if not stations:
+            return True
+        for station in stations:
+            if self.route_operator_matches_station(route, station):
+                return True
+        return False
 
     def route_ids_for_station_and_transfers(self, station_group_id: str, physical_only: bool = False) -> set[str]:
         route_ids: set[str] = set()
@@ -730,10 +735,7 @@ class PlannerDepartureAudit:
         next_stop = self.next_stop_after(trip, board_stop)
         result = False
         if route_id == trip_route_id:
-            result = operator_matches_boarding_station and (
-                self.route_physically_serves_station_group(route_id, station_group_id)
-                or self.route_pattern_serves_planner_boarding_station(route_id, station_group_id)
-            )
+            result = operator_matches_boarding_station and self.route_pattern_serves_planner_boarding_station(route_id, station_group_id)
         elif (
             operator_matches_boarding_station
             and next_stop is not None

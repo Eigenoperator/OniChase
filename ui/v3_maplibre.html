@@ -2779,19 +2779,22 @@
       if (!route) return false;
       const stations = state.physicalStationsByGroupId.get(stationGroupId) || [];
       if (stations.length && !stations.some((station) => routeOperatorMatchesStation(route, station))) return false;
-      return Boolean(state.routeStationSetById.get(routeId)?.has(stationGroupId)) || routePhysicallyServesStationGroup(routeId, stationGroupId);
+      return Boolean(state.routeStationSetById.get(routeId)?.has(stationGroupId));
+    }
+
+    function routeCanBoardAtStationGroup(routeId, stationGroupId) {
+      if (!routeId || !stationGroupId || isThroughServiceTransferAlias(routeId)) return false;
+      if (!state.routeStationSetById.get(routeId)?.has(stationGroupId)) return false;
+      const route = state.routeById.get(routeId);
+      const stations = state.physicalStationsByGroupId.get(stationGroupId) || [];
+      return !stations.length || stations.some((station) => routeOperatorMatchesStation(route, station));
     }
 
     function buildPhysicalRouteIdsByGroup() {
       state.physicalRouteIdsByGroupId = new Map();
       state.stationRouteIdsByGroupId.forEach((routeIds, stationGroupId) => {
         routeIds.forEach((routeId) => {
-          const route = state.routeById.get(routeId);
-          const patternServes = routePatternServesBoardingStation(routeId, stationGroupId);
-          const geometryServes = !isThroughServiceTransferAlias(routeId) &&
-            !PHYSICAL_ALIAS_ROUTE_NAMES.has(route?.shortName) &&
-            routePhysicallyServesStationGroup(routeId, stationGroupId);
-          if (!geometryServes && !patternServes) return;
+          if (!routeCanBoardAtStationGroup(routeId, stationGroupId)) return;
           if (!state.physicalRouteIdsByGroupId.has(stationGroupId)) {
             state.physicalRouteIdsByGroupId.set(stationGroupId, new Set());
           }
@@ -2816,7 +2819,7 @@
           const route = state.routeById.get(routeId);
           if (!route || route.operatorId === 'shinkansen' || String(route.operatorId || '').startsWith('jr_')) return;
           if (!stations.some((station) => routeOperatorMatchesStation(route, station))) return;
-          if (!routePhysicallyServesStationGroup(routeId, stationGroupId)) return;
+          if (!routeCanBoardAtStationGroup(routeId, stationGroupId)) return;
           if (!state.physicalRouteIdsByGroupId.has(stationGroupId)) {
             state.physicalRouteIdsByGroupId.set(stationGroupId, new Set());
           }
@@ -2922,10 +2925,7 @@
         boardingStations.some((station) => routeOperatorMatchesStation(route, station));
       const nextStop = nextStopAfter(trip, boardStop);
       if (routeId === trip.routeId) {
-        result = operatorMatchesBoardingStation && (
-          routePhysicallyServesStationGroup(routeId, boardStop.stationGroupId) ||
-          routePatternServesPlannerBoardingStation(routeId, boardStop.stationGroupId)
-        );
+        result = operatorMatchesBoardingStation && routePatternServesPlannerBoardingStation(routeId, boardStop.stationGroupId);
       } else if (
         operatorMatchesBoardingStation &&
         nextStop &&

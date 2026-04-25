@@ -42,9 +42,11 @@ class V3PlannerDepartureAuditTests(unittest.TestCase):
 
     def test_warning_aggregates_are_present_for_triage(self) -> None:
         aggregates = self.report["aggregates"]
+        self.assertIn("unsurfacedBoardableTripStopsByTripRoute", aggregates)
+        self.assertIn("unsurfacedBoardableTripStopsByTripRouteStation", aggregates)
+        self.assertIn("noBoardableStationRoutePairsByRoute", aggregates)
         self.assertGreater(len(aggregates["unsurfacedBoardableTripStopsByTripRoute"]), 0)
         self.assertGreater(len(aggregates["unsurfacedBoardableTripStopsByTripRouteStation"]), 0)
-        self.assertGreater(len(aggregates["noBoardableStationRoutePairsByRoute"]), 0)
 
     def test_markdown_summary_mentions_key_warning_sections(self) -> None:
         summary = build_summary(self.report, limit=3)
