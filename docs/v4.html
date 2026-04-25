@@ -663,27 +663,28 @@
         type: 'circle',
         source: 'stationGroups',
         minzoom: 4,
+        maxzoom: 6.8,
         filter: ['>=', ['get', 'label_rank'], 900],
         paint: {
           'circle-color': '#172333',
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.2, 8, 3.2, 13, 4.4],
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.2, 6.8, 3.0],
           'circle-stroke-color': '#ffffff',
           'circle-stroke-width': 1.3,
-          'circle-opacity': 0.92,
+          'circle-opacity': ['interpolate', ['linear'], ['zoom'], 4, 0.9, 6.4, 0.9, 6.8, 0.0],
         },
       });
       map.addLayer({
         id: 'station-groups',
         type: 'circle',
         source: 'stationGroups',
-        minzoom: 6.5,
+        minzoom: 6.8,
         filter: ['>=', ['get', 'label_rank'], 120],
         paint: {
           'circle-color': '#172333',
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 6.5, 1.2, 10, 2.1, 14, 3.2],
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 6.8, 1.15, 10, 2.1, 14, 3.2],
           'circle-stroke-color': '#ffffff',
           'circle-stroke-width': 0.9,
-          'circle-opacity': ['interpolate', ['linear'], ['zoom'], 6.5, 0.48, 9, 0.8, 13, 0.92],
+          'circle-opacity': ['interpolate', ['linear'], ['zoom'], 6.8, 0.0, 7.15, 0.62, 9, 0.8, 13, 0.92],
         },
       });
       map.addLayer({
@@ -700,10 +701,11 @@
           'circle-opacity': ['interpolate', ['linear'], ['zoom'], 11.4, 0.36, 13, 0.78, 16, 0.9],
         },
       });
-      addLabelLayer(map, 'label-national', 3.8, 900, 12.5, 16);
-      addLabelLayer(map, 'label-regional', 6.2, 260, 11.5, 14.5);
-      addLabelLayer(map, 'label-local', 9.1, 120, 10.7, 13.2);
-      addLabelLayer(map, 'label-all', 11.7, 0, 10.2, 12.4);
+      addLabelLayer(map, 'label-national', 3.8, 6.8, 900, null, 12.5, 15.0);
+      addLabelLayer(map, 'label-major', 6.8, null, 900, null, 10.8, 12.8);
+      addLabelLayer(map, 'label-regional', 6.2, null, 260, 900, 11.2, 13.2);
+      addLabelLayer(map, 'label-local', 9.1, null, 120, 260, 10.8, 12.8);
+      addLabelLayer(map, 'label-all', 11.7, null, 0, 120, 10.4, 12.2);
     }
 
     function addDetailedTrackLayers() {
@@ -838,13 +840,31 @@
       }, 'label-national');
     }
 
-    function addLabelLayer(map, id, minzoom, minRank, lowSize, highSize) {
-      map.addLayer({
+    function labelRankFilter(minRank, maxRank) {
+      const minFilter = ['>=', ['get', 'label_rank'], minRank];
+      return maxRank === null ? minFilter : ['all', minFilter, ['<', ['get', 'label_rank'], maxRank]];
+    }
+
+    function labelOpacity(minzoom, maxzoom) {
+      if (maxzoom === null) {
+        return ['interpolate', ['linear'], ['zoom'], minzoom, 0.0, minzoom + 0.35, 1.0];
+      }
+      return [
+        'interpolate', ['linear'], ['zoom'],
+        minzoom, 0.0,
+        minzoom + 0.35, 1.0,
+        maxzoom - 0.35, 1.0,
+        maxzoom, 0.0,
+      ];
+    }
+
+    function addLabelLayer(map, id, minzoom, maxzoom, minRank, maxRank, lowSize, highSize) {
+      const layer = {
         id,
         type: 'symbol',
         source: 'stationGroups',
         minzoom,
-        filter: ['>=', ['get', 'label_rank'], minRank],
+        filter: labelRankFilter(minRank, maxRank),
         layout: {
           'text-field': ['get', 'name_ja'],
           'text-font': ['Noto Sans Regular'],
@@ -859,9 +879,11 @@
           'text-color': '#172333',
           'text-halo-color': 'rgba(255,255,255,0.92)',
           'text-halo-width': 1.25,
-          'text-opacity': ['interpolate', ['linear'], ['zoom'], minzoom, 0.0, minzoom + 0.35, 1.0],
+          'text-opacity': labelOpacity(minzoom, maxzoom),
         },
-      });
+      };
+      if (maxzoom !== null) layer.maxzoom = maxzoom;
+      map.addLayer(layer);
     }
 
     async function loadMetadata() {
