@@ -12,7 +12,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - `v3` multiplayer client has single-player entry, v3 Tokyo room lobby, Ready Room, room code copy, ready/unready, leave-room cleanup, and online plan sync.
 - v3 planner is now a three-layer `line -> train -> destination stop` flow with compact transfer grids, physical train filtering, and selected-train whole-future physical highlights.
 - v3 data/script stable set was rebuilt and audited: unified trains `41186`, duplicate unified ids `0`, duplicate unified signatures `0`, rendered lines without trips `0`, and local/public v3 room `/health` both report `dataset_name = v3-tokyo`.
-- Local headless Firefox single-player smoke test passed the core v3 flow: load map/timetable, enter Runner mode, choose line/train/destination, generate a plan, start countdown, and transition into `LIVE`.
 - v3 through-running display now classifies departures by the physical boarding line: Toyoko/Yokohama/Hiyoshi/Jiyugaoka no longer surface Tokyo Metro through-service aliases as separate line choices.
 - v3 route matching now keeps Shinkansen and ordinary JR lines separate; shared station/operator families no longer make Tokaido Line and Tokaido Shinkansen borrow each other's trains.
 - `AXIOMS.md` now records the through-running classification rule: Shinkansen routes stay separated by name, and non-Shinkansen through-running requires same physical track and platform.
@@ -28,6 +27,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - v3 release-check pass fixed the みなとみらい21線 selected-highlight boundary regression; the core suite passes `30` tests and data-quality has no hard integrity failures.
 - v3 planner route visibility now has no visible station/route no-boardable warnings and only `9` unsurfaced boardable trip-stop warnings after adding Sotetsu through aliases and fixing Metro-Odakyu limited-express route identity.
 - `V3_RELEASE_CANDIDATE_NOTES.md` now freezes the current v3 Tokyo MapLibre baseline and moves the remaining external/homonym data edges to v4 planning.
+- `diary/DIARY-2026-04-24.md` now records the v3 RC freeze day and the planner-audit reduction path.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
