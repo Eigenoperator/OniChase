@@ -19,6 +19,7 @@ The GitHub Pages site currently exposes only the active public playtest pages:
 - `v2` GIS Shinkansen client: `https://eigenoperator.github.io/OniChase/v2.html`
 - `v3` Tokyo network map: `https://eigenoperator.github.io/OniChase/v3.html`
 - `v4` Japan physical railway map: `https://eigenoperator.github.io/OniChase/v4.html`
+- `v4` continuity warning map: `https://eigenoperator.github.io/OniChase/v4_continuity.html`
 
 Browser source pages:
 
@@ -135,6 +136,7 @@ Public multiplayer note:
 - v4 nationwide line inventory: [scripts/ingest/build_v4_line_inventory.py](/home/xincheng/toy/Chase/scripts/ingest/build_v4_line_inventory.py)
 - v4 land outline builder: [scripts/ingest/build_v4_land_outline.py](/home/xincheng/toy/Chase/scripts/ingest/build_v4_land_outline.py)
 - v4 track continuity audit: [scripts/ingest/audit_v4_track_continuity.py](/home/xincheng/toy/Chase/scripts/ingest/audit_v4_track_continuity.py)
+- v4 continuity highlight renderer: [scripts/ingest/render_v4_track_continuity_highlights.py](/home/xincheng/toy/Chase/scripts/ingest/render_v4_track_continuity_highlights.py)
 - browser regression tests: [scripts/tests](/home/xincheng/toy/Chase/scripts/tests)
 
 Useful commands:

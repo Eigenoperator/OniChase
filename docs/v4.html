@@ -438,6 +438,7 @@
         <span>MapLibre prototype</span>
       </div>
       <div class="top-actions">
+        <button id="continuity-btn" type="button">Continuity Audit</button>
         <button id="fit-japan-btn" type="button">Fit Japan</button>
         <button id="clear-line-btn" type="button">Clear Line</button>
         <button id="toggle-physical-btn" type="button">Physical Stations</button>
@@ -523,6 +524,7 @@
       selectedSwatch: document.getElementById('selected-swatch'),
       selectedTitle: document.getElementById('selected-title'),
       selectedDetail: document.getElementById('selected-detail'),
+      continuity: document.getElementById('continuity-btn'),
       fitJapan: document.getElementById('fit-japan-btn'),
       clearLine: document.getElementById('clear-line-btn'),
       togglePhysical: document.getElementById('toggle-physical-btn'),
@@ -971,6 +973,7 @@
         updateMetrics();
         renderLineList();
         elements.search.addEventListener('input', renderLineList);
+        elements.continuity.addEventListener('click', () => { window.location.href = './v4_continuity.html'; });
         elements.fitJapan.addEventListener('click', fitJapan);
         elements.clearLine.addEventListener('click', clearLine);
         elements.togglePhysical.addEventListener('click', togglePhysicalStations);

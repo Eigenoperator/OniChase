@@ -19,6 +19,7 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - Public `v4.html` now displays the nationwide physical railway map with MapLibre, station labels, optional physical station dots, line search, and selected-line highlighting.
 - v4 map now includes Japan outline-only coastline rendering, low-zoom `596`-feature track overview, lazy high-detail track loading, lazy physical-station loading, and high-zoom station dots for labels.
 - v4 track-continuity audit reports `12` multi-component operator-line pairs out of `596`; the report is saved as `data/v4_track_continuity_audit.json`.
+- v4 continuity warnings now have a dedicated review map at `docs/v4_continuity.html` plus generated SVG/GeoJSON highlight outputs.
 
 ## In Progress
 - Start nationwide timetable-source planning from the `596` operator-line inventory.
@@ -38,6 +39,6 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - [2026-04-25] `v4` starts from nationwide N02 physical geometry plus `station_identity_v2`, not from another Tokyo-only hand-built map.
 
 ## Next
-1. Add official per-line colors so same-operator nearby lines no longer look like broken segments.
-2. Add an identity lookup that maps timetable stops to station groups while preserving physical stations for rendering.
-3. Split the nationwide line inventory into timetable-collection source groups by operator.
+1. Review the 12 highlighted continuity warnings and classify each as real gap, legitimate multi-section line, or source artifact.
+2. Add official per-line colors so same-operator nearby lines no longer look like broken segments.
+3. Add an identity lookup that maps timetable stops to station groups while preserving physical stations for rendering.

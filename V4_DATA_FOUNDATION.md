@@ -17,6 +17,8 @@ This is the first `v4` data slice: nationwide real physical rail geometry plus `
 - `data/v4_track_continuity_audit.json`
 - `docs/data/v4_maplibre/japan_land.geojson`
 - `docs/data/v4_maplibre/track_overview.geojson`
+- `docs/data/v4_maplibre/track_continuity_highlights.geojson`
+- `docs/data/v4_track_continuity_highlights.svg`
 - `docs/data/v4_maplibre/track_centerlines.geojson`
 - `docs/data/v4_maplibre/station_groups.geojson`
 - `docs/data/v4_maplibre/physical_stations.geojson`
@@ -46,6 +48,7 @@ python3 scripts/ingest/build_v4_land_outline.py
 python3 scripts/ingest/build_v4_line_inventory.py
 python3 scripts/ingest/build_v4_maplibre_sources.py
 python3 scripts/ingest/audit_v4_track_continuity.py
+python3 scripts/ingest/render_v4_track_continuity_highlights.py
 ```
 
 ## Station Identity V2
@@ -70,3 +73,5 @@ python3 scripts/ingest/audit_v4_track_continuity.py
 The first export is GeoJSON so it can be loaded directly by MapLibre during development. Low zoom uses `track_overview.geojson`; high-detail `track_centerlines.geojson` and physical-station dots are loaded lazily by the viewer. Later performance work should convert this same layer contract into vector tiles or PMTiles.
 
 The first public viewer is `https://eigenoperator.github.io/OniChase/v4.html`. It shows the nationwide physical track layer, station groups, optional high-zoom physical stations, and a searchable operator-line inventory with per-line geometry highlighting.
+
+The continuity-review map is `https://eigenoperator.github.io/OniChase/v4_continuity.html`.

@@ -278,3 +278,4 @@
 - Added the first public v4 MapLibre viewer at `docs/v4.html`, with nationwide physical tracks, zoom-tiered station labels, optional physical stations, line search, and selected-line geometry highlighting.
 - Improved the v4 viewer with a Japan land outline, low-zoom overview tracks, lazy high-detail track/physical-station loading, high-zoom station dots for all labels, and a track continuity audit that found `12` multi-component operator-line pairs out of `596`.
 - Adjusted the v4 land layer to outline-only rendering and increased coastline detail so the Japan outline remains precise at higher zoom levels.
+- Added a dedicated v4 track-continuity review map and generated SVG/GeoJSON highlight outputs for the `12` multi-component operator-line warnings.
