@@ -62,7 +62,7 @@ python3 scripts/ingest/audit_v4_track_continuity.py
 
 - `track_centerlines.geojson`: nationwide physical rail LineString features.
 - `track_overview.geojson`: simplified low-zoom operator-line geometry.
-- `japan_land.geojson`: lightweight Japan land outline.
+- `japan_land.geojson`: Japan outline only; the v4 viewer does not use a land-fill layer.
 - `station_groups.geojson`: gameplay/interchange identity points.
 - `physical_stations.geojson`: real physical station points.
 - `line_inventory.json`: all current nationwide operator-line pairs.

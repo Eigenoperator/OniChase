@@ -552,8 +552,8 @@
             land: {
               type: 'geojson',
               data: `${DATA_ROOT}japan_land.geojson`,
-              tolerance: 0.45,
-              maxzoom: 7,
+              tolerance: 0.04,
+              maxzoom: 14,
             },
             trackOverview: {
               type: 'geojson',
@@ -594,23 +594,14 @@
 
     function addRailLayers(map) {
       map.addLayer({
-        id: 'land-fill',
-        type: 'fill',
-        source: 'land',
-        paint: {
-          'fill-color': '#f8f2e7',
-          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.74, 7, 0.84, 12, 0.9],
-        },
-      });
-      map.addLayer({
         id: 'land-outline',
         type: 'line',
         source: 'land',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': '#cfd9dc',
-          'line-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.58, 8, 0.78, 13, 0.88],
-          'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.45, 8, 0.85, 13, 1.25],
+          'line-color': '#b8c8cf',
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.46, 8, 0.66, 13, 0.82, 17, 0.9],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.34, 8, 0.85, 12, 1.55, 17, 2.9],
         },
       });
       map.addLayer({

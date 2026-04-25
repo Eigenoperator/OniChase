@@ -277,3 +277,4 @@
 - Exported the v4 physical bundle into MapLibre-ready public GeoJSON sources and generated the first nationwide operated-line inventory: `596` operator-line pairs, `552` unique line names, and `178` operators.
 - Added the first public v4 MapLibre viewer at `docs/v4.html`, with nationwide physical tracks, zoom-tiered station labels, optional physical stations, line search, and selected-line geometry highlighting.
 - Improved the v4 viewer with a Japan land outline, low-zoom overview tracks, lazy high-detail track/physical-station loading, high-zoom station dots for all labels, and a track continuity audit that found `12` multi-component operator-line pairs out of `596`.
+- Adjusted the v4 land layer to outline-only rendering and increased coastline detail so the Japan outline remains precise at higher zoom levels.

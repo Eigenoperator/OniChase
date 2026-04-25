@@ -92,7 +92,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Build a lightweight Japan land outline layer for v4 MapLibre.")
     parser.add_argument("--source-url", default=DEFAULT_SOURCE_URL)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    parser.add_argument("--tolerance", type=float, default=0.012)
+    parser.add_argument("--tolerance", type=float, default=0.006)
     args = parser.parse_args()
 
     source = download_json(args.source_url)
