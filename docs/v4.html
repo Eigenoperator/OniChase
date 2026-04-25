@@ -701,11 +701,10 @@
           'circle-opacity': ['interpolate', ['linear'], ['zoom'], 11.4, 0.36, 13, 0.78, 16, 0.9],
         },
       });
-      addLabelLayer(map, 'label-national', 3.8, 6.8, 900, null, 12.5, 15.0);
-      addLabelLayer(map, 'label-major', 6.8, null, 900, null, 10.8, 12.8);
-      addLabelLayer(map, 'label-regional', 6.2, null, 260, 900, 11.2, 13.2);
-      addLabelLayer(map, 'label-local', 9.1, null, 120, 260, 10.8, 12.8);
-      addLabelLayer(map, 'label-all', 11.7, null, 0, 120, 10.4, 12.2);
+      addLabelLayer(map, 'label-hub', 3.8, 900, null, [3.8, 12.2, 8, 12.8, 12, 13.2, 16, 13.6]);
+      addLabelLayer(map, 'label-regional', 6.8, 260, 900, [6.8, 10.8, 10, 11.8, 14, 13.0, 16, 13.4]);
+      addLabelLayer(map, 'label-local', 9.4, 120, 260, [9.4, 10.4, 12, 11.5, 15, 12.5]);
+      addLabelLayer(map, 'label-all', 12.2, 0, 120, [12.2, 10.0, 14, 11.2, 17, 12.0]);
     }
 
     function addDetailedTrackLayers() {
@@ -837,7 +836,7 @@
           'circle-stroke-width': 0.55,
           'circle-opacity': 0.78,
         },
-      }, 'label-national');
+      }, 'label-hub');
     }
 
     function labelRankFilter(minRank, maxRank) {
@@ -845,21 +844,12 @@
       return maxRank === null ? minFilter : ['all', minFilter, ['<', ['get', 'label_rank'], maxRank]];
     }
 
-    function labelOpacity(minzoom, maxzoom) {
-      if (maxzoom === null) {
-        return ['interpolate', ['linear'], ['zoom'], minzoom, 0.0, minzoom + 0.35, 1.0];
-      }
-      return [
-        'interpolate', ['linear'], ['zoom'],
-        minzoom, 0.0,
-        minzoom + 0.35, 1.0,
-        maxzoom - 0.35, 1.0,
-        maxzoom, 0.0,
-      ];
+    function zoomInterpolate(stops) {
+      return ['interpolate', ['linear'], ['zoom'], ...stops];
     }
 
-    function addLabelLayer(map, id, minzoom, maxzoom, minRank, maxRank, lowSize, highSize) {
-      const layer = {
+    function addLabelLayer(map, id, minzoom, minRank, maxRank, sizeStops) {
+      map.addLayer({
         id,
         type: 'symbol',
         source: 'stationGroups',
@@ -868,22 +858,23 @@
         layout: {
           'text-field': ['get', 'name_ja'],
           'text-font': ['Noto Sans Regular'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], minzoom, lowSize, 14, highSize],
+          'text-size': zoomInterpolate(sizeStops),
           'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
-          'text-radial-offset': ['interpolate', ['linear'], ['zoom'], minzoom, 0.55, 14, 0.85],
-          'text-padding': 3,
+          'text-radial-offset': 0.55,
+          'text-justify': 'auto',
+          'text-padding': 2,
           'text-allow-overlap': false,
-          'symbol-sort-key': ['get', 'label_rank'],
+          'text-ignore-placement': false,
+          'text-optional': true,
+          'symbol-sort-key': ['*', -1, ['get', 'label_rank']],
         },
         paint: {
           'text-color': '#172333',
-          'text-halo-color': 'rgba(255,255,255,0.92)',
-          'text-halo-width': 1.25,
-          'text-opacity': labelOpacity(minzoom, maxzoom),
+          'text-halo-color': 'rgba(255,255,255,0.94)',
+          'text-halo-width': ['interpolate', ['linear'], ['zoom'], minzoom, 1.0, 14, 1.35],
+          'text-opacity': ['interpolate', ['linear'], ['zoom'], minzoom, 0.0, minzoom + 0.35, 1.0],
         },
-      };
-      if (maxzoom !== null) layer.maxzoom = maxzoom;
-      map.addLayer(layer);
+      });
     }
 
     async function loadMetadata() {
