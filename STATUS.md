@@ -16,7 +16,7 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - Latest v4 identity audit reports `427` same-name split names, `0` multi-name station groups, and `0` line coverage warnings.
 - v4 MapLibre-ready public GeoJSON layers now exist under `docs/data/v4_maplibre`: `track_centerlines`, `station_groups`, `physical_stations`, and `line_inventory`.
 - v4 nationwide line inventory now lists `596` operator-line pairs, `552` unique line names, `178` operators, `0` stationless lines, and `0` trackless lines.
-- Public `v4.html` now displays the nationwide physical railway map with MapLibre, v3-style stable zoom-tiered station labels, optional physical station dots, line search, and selected-line highlighting.
+- Public `v4.html` now displays the nationwide physical railway map with MapLibre, the same `station-labels` source and hub/major/local label-layer logic as v3, optional physical station dots, line search, and selected-line highlighting.
 - v4 map now includes two-level Japan outline-only coastline rendering, low-zoom `596`-feature track overview, lazy high-detail track loading, lazy physical-station loading, and high-zoom station dots for labels.
 - v4 track-continuity audit reports `12` multi-component operator-line pairs out of `596`; the report is saved as `data/v4_track_continuity_audit.json`.
 - v4 continuity warnings now have a dedicated review map at `docs/v4_continuity.html` plus generated SVG/GeoJSON highlight outputs.

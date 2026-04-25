@@ -90,6 +90,15 @@ def label_rank_for_group(group: dict[str, Any]) -> int:
     return min(rank, 1200)
 
 
+def v3_label_rank_for_group(group: dict[str, Any]) -> int:
+    rank = label_rank_for_group(group)
+    if rank >= 900:
+        return 99
+    if rank >= 260:
+        return 90
+    return min(89, max(10, int(round(30 + rank / 4))))
+
+
 def physical_station_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
     features = []
     for station in bundle.get("physicalStations", []):
@@ -139,6 +148,33 @@ def station_group_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
                     "label_rank": label_rank_for_group(group),
                     "grouping_method": group.get("groupingMethod"),
                     "source_group_codes": ",".join(group.get("sourceGroupCodes", [])),
+                },
+            }
+        )
+    return features
+
+
+def station_label_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
+    features = []
+    for group in bundle.get("stationGroups", []):
+        centroid = group["centroid"]
+        operator_ids = group.get("operatorIds", [])
+        label_rank = v3_label_rank_for_group(group)
+        features.append(
+            {
+                "type": "Feature",
+                "id": f"label-{group['id']}",
+                "geometry": {"type": "Point", "coordinates": [centroid["lon"], centroid["lat"]]},
+                "properties": {
+                    "id": f"label-{group['id']}",
+                    "station_group_id": group["id"],
+                    "name_ja": group["nameJa"],
+                    "name_en": group["nameJa"],
+                    "operator_ids": ",".join(operator_ids),
+                    "line_names": ",".join(group.get("lineNames", [])),
+                    "physical_station_count": group.get("physicalStationCount", 0),
+                    "label_rank": label_rank,
+                    "sort_rank": -label_rank,
                 },
             }
         )
@@ -227,6 +263,7 @@ def build_sources(bundle: dict[str, Any]) -> dict[str, dict[str, Any]]:
         "track_overview": feature_collection(track_overview_features(bundle)),
         "track_centerlines": feature_collection(track_centerline_features(bundle)),
         "station_groups": feature_collection(station_group_features(bundle)),
+        "station_labels": feature_collection(station_label_features(bundle)),
         "physical_stations": feature_collection(physical_station_features(bundle)),
     }
 

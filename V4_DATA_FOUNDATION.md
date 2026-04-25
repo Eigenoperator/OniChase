@@ -23,6 +23,7 @@ This is the first `v4` data slice: nationwide real physical rail geometry plus `
 - `docs/data/v4_track_continuity_highlights.svg`
 - `docs/data/v4_maplibre/track_centerlines.geojson`
 - `docs/data/v4_maplibre/station_groups.geojson`
+- `docs/data/v4_maplibre/station_labels.geojson`
 - `docs/data/v4_maplibre/physical_stations.geojson`
 - `docs/data/v4_maplibre/line_inventory.json`
 - `docs/data/v4_maplibre/manifest.json`
@@ -70,6 +71,7 @@ python3 scripts/ingest/render_v4_track_continuity_highlights.py
 - `japan_land.geojson`: high-detail Japan outline only; the v4 viewer does not use a land-fill layer.
 - `japan_land_overview.geojson`: lighter low-zoom Japan outline.
 - `station_groups.geojson`: gameplay/interchange identity points.
+- `station_labels.geojson`: v3-shaped station label source used by the v4 viewer.
 - `physical_stations.geojson`: real physical station points.
 - `line_inventory.json`: all current nationwide operator-line pairs.
 

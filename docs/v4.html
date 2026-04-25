@@ -573,6 +573,13 @@
               tolerance: 0.4,
               maxzoom: 14,
             },
+            'station-labels': {
+              type: 'geojson',
+              data: `${DATA_ROOT}station_labels.geojson`,
+              promoteId: 'id',
+              tolerance: 0.4,
+              maxzoom: 14,
+            },
           },
           layers: [
             {
@@ -701,10 +708,7 @@
           'circle-opacity': ['interpolate', ['linear'], ['zoom'], 11.4, 0.36, 13, 0.78, 16, 0.9],
         },
       });
-      addLabelLayer(map, 'label-hub', 3.8, 900, null, [3.8, 12.2, 8, 12.8, 12, 13.2, 16, 13.6]);
-      addLabelLayer(map, 'label-regional', 6.8, 260, 900, [6.8, 10.8, 10, 11.8, 14, 13.0, 16, 13.4]);
-      addLabelLayer(map, 'label-local', 9.4, 120, 260, [9.4, 10.4, 12, 11.5, 15, 12.5]);
-      addLabelLayer(map, 'label-all', 12.2, 0, 120, [12.2, 10.0, 14, 11.2, 17, 12.0]);
+      addLabelLayers(map);
     }
 
     function addDetailedTrackLayers() {
@@ -839,41 +843,58 @@
       }, 'label-hub');
     }
 
-    function labelRankFilter(minRank, maxRank) {
-      const minFilter = ['>=', ['get', 'label_rank'], minRank];
-      return maxRank === null ? minFilter : ['all', minFilter, ['<', ['get', 'label_rank'], maxRank]];
-    }
-
-    function zoomInterpolate(stops) {
-      return ['interpolate', ['linear'], ['zoom'], ...stops];
-    }
-
-    function addLabelLayer(map, id, minzoom, minRank, maxRank, sizeStops) {
+    function addLabelLayers(map) {
+      const baseLayout = {
+        'text-field': ['coalesce', ['get', 'name_ja'], ['get', 'name_en']],
+        'text-font': ['Open Sans Regular'],
+        'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+        'text-radial-offset': 0.55,
+        'text-justify': 'auto',
+        'text-allow-overlap': false,
+        'text-ignore-placement': false,
+        'text-optional': true,
+        'symbol-sort-key': ['get', 'sort_rank'],
+      };
+      const basePaint = {
+        'text-color': '#203247',
+        'text-halo-color': 'rgba(255,255,255,0.94)',
+        'text-halo-width': ['interpolate', ['linear'], ['zoom'], 5, 1.0, 12, 1.5],
+      };
       map.addLayer({
-        id,
+        id: 'label-hub',
         type: 'symbol',
-        source: 'stationGroups',
-        minzoom,
-        filter: labelRankFilter(minRank, maxRank),
+        source: 'station-labels',
+        minzoom: 5.0,
+        filter: ['>=', ['get', 'label_rank'], 99],
         layout: {
-          'text-field': ['get', 'name_ja'],
-          'text-font': ['Noto Sans Regular'],
-          'text-size': zoomInterpolate(sizeStops),
-          'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
-          'text-radial-offset': 0.55,
-          'text-justify': 'auto',
-          'text-padding': 2,
-          'text-allow-overlap': false,
-          'text-ignore-placement': false,
-          'text-optional': true,
-          'symbol-sort-key': ['*', -1, ['get', 'label_rank']],
+          ...baseLayout,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 5, 11, 9, 13, 14, 15],
         },
-        paint: {
-          'text-color': '#172333',
-          'text-halo-color': 'rgba(255,255,255,0.94)',
-          'text-halo-width': ['interpolate', ['linear'], ['zoom'], minzoom, 1.0, 14, 1.35],
-          'text-opacity': ['interpolate', ['linear'], ['zoom'], minzoom, 0.0, minzoom + 0.35, 1.0],
+        paint: basePaint,
+      });
+      map.addLayer({
+        id: 'label-major',
+        type: 'symbol',
+        source: 'station-labels',
+        minzoom: 7.4,
+        filter: ['all', ['>=', ['get', 'label_rank'], 90], ['<', ['get', 'label_rank'], 99]],
+        layout: {
+          ...baseLayout,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 7.4, 10.5, 11, 12.5, 15, 14],
         },
+        paint: basePaint,
+      });
+      map.addLayer({
+        id: 'label-local',
+        type: 'symbol',
+        source: 'station-labels',
+        minzoom: 11.0,
+        filter: ['<', ['get', 'label_rank'], 90],
+        layout: {
+          ...baseLayout,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 11, 10, 14, 12.2, 16, 13.4],
+        },
+        paint: basePaint,
       });
     }
 
