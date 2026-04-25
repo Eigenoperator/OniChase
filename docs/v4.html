@@ -610,46 +610,50 @@
         id: 'track-overview-casing',
         type: 'line',
         source: 'trackOverview',
+        maxzoom: 7.65,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#ffffff',
-          'line-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0.24, 7, 0.42, 12, 0.62],
-          'line-width': ['interpolate', ['linear'], ['zoom'], 3.5, 0.65, 7, 1.05, 11, 1.7, 15, 2.7],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0.24, 6.8, 0.42, 7.6, 0.0],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 3.5, 0.65, 7.6, 1.25],
         },
       });
       map.addLayer({
         id: 'track-overview',
         type: 'line',
         source: 'trackOverview',
+        maxzoom: 7.65,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': ['get', 'operator_color'],
-          'line-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0.52, 7, 0.68, 12, 0.86],
-          'line-width': ['interpolate', ['linear'], ['zoom'], 3.5, 0.35, 7, 0.62, 11, 1.05, 15, 1.85],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0.52, 6.8, 0.68, 7.6, 0.0],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 3.5, 0.35, 7.6, 0.78],
         },
       });
       map.addLayer({
         id: 'selected-line-overview-casing',
         type: 'line',
         source: 'trackOverview',
+        maxzoom: 7.65,
         filter: EMPTY_LINE_FILTER,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#ffffff',
-          'line-opacity': 0.94,
-          'line-width': ['interpolate', ['linear'], ['zoom'], 3.5, 2.2, 8, 3.6, 13, 5.6],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0.94, 7.6, 0.0],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 3.5, 2.2, 7.6, 3.4],
         },
       });
       map.addLayer({
         id: 'selected-line-overview',
         type: 'line',
         source: 'trackOverview',
+        maxzoom: 7.65,
         filter: EMPTY_LINE_FILTER,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': ['get', 'operator_color'],
-          'line-opacity': 1,
-          'line-width': ['interpolate', ['linear'], ['zoom'], 3.5, 1.45, 8, 2.5, 13, 4.2],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 1.0, 7.6, 0.0],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 3.5, 1.45, 7.6, 2.35],
         },
       });
       map.addLayer({
@@ -715,56 +719,56 @@
         id: 'track-detail-casing',
         type: 'line',
         source: 'tracks',
-        minzoom: 8.2,
+        minzoom: 7.55,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#ffffff',
-          'line-opacity': ['interpolate', ['linear'], ['zoom'], 8.2, 0.0, 9, 0.36, 13, 0.62],
-          'line-width': ['interpolate', ['linear'], ['zoom'], 8.2, 0.7, 11, 1.35, 15, 2.35],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 7.55, 0.0, 8.0, 0.32, 13, 0.62],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 7.55, 0.62, 11, 1.35, 15, 2.35],
         },
       }, 'selected-line-overview-casing');
       map.addLayer({
         id: 'track-detail',
         type: 'line',
         source: 'tracks',
-        minzoom: 8.2,
+        minzoom: 7.55,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': ['get', 'operator_color'],
-          'line-opacity': ['interpolate', ['linear'], ['zoom'], 8.2, 0.0, 9, 0.56, 13, 0.88],
-          'line-width': ['interpolate', ['linear'], ['zoom'], 8.2, 0.38, 11, 0.88, 15, 1.55],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 7.55, 0.0, 8.0, 0.52, 13, 0.88],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 7.55, 0.34, 11, 0.88, 15, 1.55],
         },
       }, 'selected-line-overview-casing');
       map.addLayer({
         id: 'selected-line-detail-casing',
         type: 'line',
         source: 'tracks',
-        minzoom: 8.2,
+        minzoom: 7.55,
         filter: state.selectedLine ? selectedLineFilter(state.selectedLine) : EMPTY_LINE_FILTER,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#ffffff',
           'line-opacity': 0.94,
-          'line-width': ['interpolate', ['linear'], ['zoom'], 8.2, 3.2, 13, 5.6, 17, 7.2],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 7.55, 2.8, 13, 5.6, 17, 7.2],
         },
       }, 'station-hubs');
       map.addLayer({
         id: 'selected-line-detail',
         type: 'line',
         source: 'tracks',
-        minzoom: 8.2,
+        minzoom: 7.55,
         filter: state.selectedLine ? selectedLineFilter(state.selectedLine) : EMPTY_LINE_FILTER,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': ['get', 'operator_color'],
           'line-opacity': 1,
-          'line-width': ['interpolate', ['linear'], ['zoom'], 8.2, 2.1, 13, 4.2, 17, 5.6],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 7.55, 1.9, 13, 4.2, 17, 5.6],
         },
       }, 'station-hubs');
     }
 
     function ensureDetailedTracksSoon() {
-      if (state.detailTracksLoaded || map.getZoom() < 8.15) return;
+      if (state.detailTracksLoaded || map.getZoom() < 7.25) return;
       const run = () => addDetailedTrackLayers();
       if ('requestIdleCallback' in window) {
         window.requestIdleCallback(run, { timeout: 900 });

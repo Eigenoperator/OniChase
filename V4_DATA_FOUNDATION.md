@@ -70,7 +70,7 @@ python3 scripts/ingest/render_v4_track_continuity_highlights.py
 - `physical_stations.geojson`: real physical station points.
 - `line_inventory.json`: all current nationwide operator-line pairs.
 
-The first export is GeoJSON so it can be loaded directly by MapLibre during development. Low zoom uses `track_overview.geojson`; high-detail `track_centerlines.geojson` and physical-station dots are loaded lazily by the viewer. Later performance work should convert this same layer contract into vector tiles or PMTiles.
+The first export is GeoJSON so it can be loaded directly by MapLibre during development. Low zoom uses `track_overview.geojson`, but it fades out by zoom `7.65`; high-detail `track_centerlines.geojson` takes over from zoom `7.55`, and physical-station dots are loaded lazily by the viewer. Later performance work should convert this same layer contract into vector tiles or PMTiles.
 
 The first public viewer is `https://eigenoperator.github.io/OniChase/v4.html`. It shows the nationwide physical track layer, station groups, optional high-zoom physical stations, and a searchable operator-line inventory with per-line geometry highlighting.
 

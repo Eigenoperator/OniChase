@@ -20,6 +20,7 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - v4 map now includes Japan outline-only coastline rendering, low-zoom `596`-feature track overview, lazy high-detail track loading, lazy physical-station loading, and high-zoom station dots for labels.
 - v4 track-continuity audit reports `12` multi-component operator-line pairs out of `596`; the report is saved as `data/v4_track_continuity_audit.json`.
 - v4 continuity warnings now have a dedicated review map at `docs/v4_continuity.html` plus generated SVG/GeoJSON highlight outputs.
+- v4 overview tracks now fade out by zoom `7.65`, and exact physical `track_centerlines` take over from zoom `7.55` to avoid straight overview lines overlapping real geometry.
 
 ## In Progress
 - Start nationwide timetable-source planning from the `596` operator-line inventory.
