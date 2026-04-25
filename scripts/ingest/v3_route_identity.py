@@ -101,6 +101,13 @@ def canonical_route_line(train: dict[str, Any]) -> str:
 
     if operator_id == "tokyo_metro":
         service_name = str(train.get("service_name") or "")
+        if _is_odakyu_limited_express(service_name):
+            stops = _station_names(train)
+            if stops & ODAKYU_ENOSHIMA_STATIONS:
+                return "小田急江ノ島線"
+            if stops & ODAKYU_TAMA_STATIONS:
+                return "小田急多摩線"
+            return "小田原線"
         signature_route = _tokyo_metro_signature_route(train)
         if signature_route:
             return signature_route

@@ -7,7 +7,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - `v1` Yamanote real-data prototype is complete enough for baseline playtests: real stations, weekday trains, planning, live capture, replay, and hunter visibility.
 - Main `v2` is the current nationwide Shinkansen playable build: GIS-first map, real weekday train instances, planning/live/capture/replay, and public online room flow via Render.
 - Public `v3` is the official MapLibre Tokyo page at `https://eigenoperator.github.io/OniChase/v3.html`, using the real Tokyo map/timetable bundles and the shared v2-style gameplay path.
-- `v3` data foundation includes `1804` station groups, `2194` physical stations, `112` service routes, `4612` track centerlines, and `41186` v2-compatible trip instances.
+- `v3` data foundation includes `1804` station groups, `2194` physical stations, `113` service routes, `4612` track centerlines, and `41186` v2-compatible trip instances.
 - `v3` MapLibre gameplay now has role switching, planning/live timing, hourly replanning, plan board, train outlook, selected-train path/stops, player markers, live capture, replay simulation, and Japanese-original display.
 - `v3` multiplayer client has single-player entry, v3 Tokyo room lobby, Ready Room, room code copy, ready/unready, leave-room cleanup, and online plan sync.
 - v3 planner is now a three-layer `line -> train -> destination stop` flow with compact transfer grids, physical train filtering, and selected-train whole-future physical highlights.
@@ -27,7 +27,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - Heavy public v3 battle records now support generated 10-leg plans plus same-node/same-train capture checks; the latest 10/10 Render rooms completed with no issues.
 - v3 player-facing P0 now includes first-class replay UI that hides empty state, plus Tutorial / Advanced Setup entry modes with detailed demonstrations and browser regression coverage.
 - v3 release-check pass fixed the みなとみらい21線 selected-highlight boundary regression; the core suite passes `30` tests and data-quality has no hard integrity failures.
-- v3 planner route visibility no longer treats nearby geometry as boardable service: visible station/route no-boardable warnings dropped from `105` to `0`, with unsurfaced boardable trip-stop debt down from `337` to `331`.
+- v3 planner route visibility now has no visible station/route no-boardable warnings and only `9` unsurfaced boardable trip-stop warnings after adding Sotetsu through aliases and fixing Metro-Odakyu limited-express route identity.
 
 ## In Progress
 - Continue hardening `v2` online playtest details: room state, ready/planning/live sync, single-player and multiplayer parity.
@@ -36,7 +36,7 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 ## Blockers
 - `JR Central` still lacks a direct train-detail page like `JR East / JR West`; deeper precision still needs station-grid aggregation.
 - Firefox/geckodriver works for headless DOM gameplay probes; use Playwright for local SVG screenshot/bounds checks when system Python lacks Selenium.
-- The planner audit still reports non-fatal warning debt: `331` unsurfaced boardable trip stops, mainly Tokyo Metro/JR through-service boundary stops whose external physical boarding routes are not fully surfaced yet; large untracked source caches remain local-only.
+- The planner audit still reports `9` non-fatal unsurfaced stops from external/homonym edges: Fujikyu `赤坂`, Mito-line `大和`, Oito-line `有明`, and Hakone Tozan beyond `小田原`; large source caches remain local-only.
 
 ## Decisions
 - [2026-04-07] GIS-first Shinkansen became the main `v2`; public site keeps `v1`, `v2`, and now the new Tokyo `v3` sandbox.
@@ -45,6 +45,6 @@ Stabilize public `v3` Tokyo gameplay on the MapLibre page while keeping `v2` onl
 - [2026-04-20] Before new feature work, enforce axioms: backfill missing diary, keep `STATUS.md` under 50 lines, and record meaningful changes in daily memory.
 
 ## Next
-1. Finish the v3 release checklist: explain or reduce the remaining planner WARN families, then tag the current MapLibre Tokyo build as the v3 baseline.
+1. Finish v3 release-candidate notes by documenting the remaining `9` planner warnings as known external/homonym data edges.
 2. Clean the remaining unrelated dirty worktree items without committing caches or obsolete phase-1 artifacts.
 3. Start v4 planning only after v3 release-candidate notes clearly list what is frozen versus what moves forward.

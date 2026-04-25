@@ -62,6 +62,9 @@ OPERATOR_NAME_TO_ID = {
     "tokyu": "tokyu",
     "西武鉄道": "seibu",
     "seibu": "seibu",
+    "相模鉄道": "sotetsu",
+    "相鉄": "sotetsu",
+    "sotetsu": "sotetsu",
     "京成電鉄": "keisei",
     "keisei": "keisei",
     "京浜急行電鉄": "keikyu",
@@ -101,16 +104,26 @@ PHYSICAL_ALIAS_ROUTE_SPECS = {
         "station_names": ["赤羽岩淵", "川口元郷", "南鳩ヶ谷", "鳩ヶ谷", "新井宿", "戸塚安行", "東川口", "浦和美園"],
     },
     "相鉄本線": {
-        "operator_id": "tokyo_metro",
+        "operator_id": "sotetsu",
         "operator_label": "相鉄",
         "color": "#003C8F",
-        "station_names": ["西谷", "羽沢横浜国大", "新横浜", "二俣川", "大和", "海老名"],
+        "station_names": [
+            "平沼橋", "西横浜", "天王町", "星川", "和田町", "上星川",
+            "西谷", "鶴ヶ峰", "二俣川", "希望ヶ丘", "三ツ境", "瀬谷",
+            "大和", "相模大塚", "さがみ野", "かしわ台", "海老名",
+        ],
     },
     "相鉄いずみ野線": {
-        "operator_id": "tokyo_metro",
+        "operator_id": "sotetsu",
         "operator_label": "相鉄",
         "color": "#003C8F",
         "station_names": ["二俣川", "南万騎が原", "緑園都市", "弥生台", "いずみ野", "いずみ中央", "ゆめが丘", "湘南台"],
+    },
+    "相鉄新横浜線": {
+        "operator_id": "sotetsu",
+        "operator_label": "相鉄",
+        "color": "#003C8F",
+        "station_names": ["西谷", "羽沢横浜国大", "新横浜"],
     },
 }
 
