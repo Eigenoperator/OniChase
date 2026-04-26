@@ -29,6 +29,7 @@ DEFAULT_PHYSICAL_MAP = ROOT / "data" / "v4_japan_physical_map.json.gz"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_gtfs_weekday_train_instances.json.gz"
 DEFAULT_AUDIT = ROOT / "data" / "v4_gtfs_train_instances_audit.json"
 DEFAULT_ODPT_RESOURCE_AUDIT = ROOT / "data" / "v4_odpt_gtfs_resource_audit.json"
+DEFAULT_MANUAL_GTFS_OVERRIDES = ROOT / "data" / "v4_manual_gtfs_feed_overrides.json"
 DEFAULT_SERVICE_DATE = "2026-04-27"
 
 
@@ -532,6 +533,27 @@ def collect_odpt_public_feed_leads(path: Path) -> list[dict[str, Any]]:
     return sorted(leads, key=lambda item: (item["operatorName"], item["feedName"], item["fileUrl"]))
 
 
+def collect_manual_feed_overrides(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    data = load_json(path)
+    leads: list[dict[str, Any]] = []
+    for feed in data.get("feeds", []):
+        if not feed.get("fileUrl"):
+            continue
+        leads.append(
+            {
+                "operatorId": feed["operatorId"],
+                "operatorName": feed["operatorName"],
+                "feedName": feed.get("feedName") or feed["operatorName"],
+                "feedKey": feed.get("feedKey") or safe_feed_key("manual_" + feed["operatorName"]),
+                "fileUrl": feed["fileUrl"],
+                "sourceKind": feed.get("sourceKind") or "manual_gtfs_feed_override",
+            }
+        )
+    return sorted(leads, key=lambda item: (item["operatorName"], item["feedName"], item["fileUrl"]))
+
+
 def dedupe_feeds(feeds: list[dict[str, Any]]) -> list[dict[str, Any]]:
     output: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -613,6 +635,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--audit-output", type=Path, default=DEFAULT_AUDIT)
     parser.add_argument("--odpt-resource-audit", type=Path, default=DEFAULT_ODPT_RESOURCE_AUDIT)
+    parser.add_argument("--manual-gtfs-overrides", type=Path, default=DEFAULT_MANUAL_GTFS_OVERRIDES)
     parser.add_argument("--max-feeds", type=int, default=0)
     args = parser.parse_args()
 
@@ -622,7 +645,11 @@ def main() -> int:
     service_day = parse_service_date(args.service_date)
     matcher = V4StationMatcher(physical_map)
     line_lookup = build_line_lookup(line_inventory)
-    feeds = dedupe_feeds(collect_feed_leads(registry) + collect_odpt_public_feed_leads(args.odpt_resource_audit))
+    feeds = dedupe_feeds(
+        collect_feed_leads(registry)
+        + collect_odpt_public_feed_leads(args.odpt_resource_audit)
+        + collect_manual_feed_overrides(args.manual_gtfs_overrides)
+    )
     if args.max_feeds:
         feeds = feeds[: args.max_feeds]
 

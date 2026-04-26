@@ -23,10 +23,13 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - v4 continuity warnings now have a dedicated review map at `docs/v4_continuity.html` plus generated SVG/GeoJSON highlight outputs.
 - v4 overview tracks now fade out by zoom `7.65`, and exact physical `track_centerlines` take over from zoom `7.55` to avoid straight overview lines overlapping real geometry.
 - v4 line rendering now uses line-level color when known and falls back to company color; current inventory marks `152` line-specific colors and `444` company fallbacks, audited by `scripts/ingest/audit_v4_line_colors.py`.
-- Reusable v4 timetable work now includes source discovery, ODPT CKAN resource discovery, and the first GTFS collector; `12` structured GTFS/GTFS-JP feed files are audited and `10` operators currently produce `4439` weekday train instances with `0` unmatched stops.
+- Reusable v4 timetable work now includes source discovery, ODPT CKAN resource discovery, manual GTFS overrides, v3-to-v4 station identity adaptation, a current combined train collection, and official PDF text capture.
+- Current v4 structured train collection: `43186` weekday train instances in `data/v4_current_weekday_train_instances.json.gz`, with `0` duplicate service instance ids and `0` short trains.
+- Current v4 public/new GTFS slice: `13` structured GTFS/GTFS-JP feed files are audited and `11` operators produce `4818` weekday train instances with `0` unmatched stops.
+- Current v4 official timetable PDF text corpus: `109` readable text documents across `35` operators, captured from `122` high/medium-confidence official PDF candidates.
 
 ## In Progress
-- Expand v4 timetable collection beyond the current public GTFS/GTFS-JP feeds into ODPT token-gated GTFS/API and official timetable-page collectors.
+- Parse the newly captured official timetable PDF text corpus into operator-specific train instances, starting with the cleanest one-line regional railways.
 - Expand the official per-line color table beyond the first v3/Tokyo/Shinkansen seed set.
 - If coastline performance regresses again, convert the two-level outline GeoJSON contract into PMTiles.
 
@@ -46,4 +49,4 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 ## Next
 1. Decide whether to hide or keep the reviewed meter-scale 肥薩線 N02 fragment in rendered geometry.
 2. Continue filling missing official per-line colors for non-Tokyo regional operators.
-3. Continue v4 timetable ingestion by resolving ODPT token access for Tokyo Metro/TWR/Tama Monorail/MIR/Yokohama Municipal and writing official-page collectors for operators without public GTFS.
+3. Continue v4 timetable ingestion by turning `data/v4_official_timetable_pdf_text_corpus.json.gz` into train-instance parsers and resolving ODPT token access for remaining token-gated GTFS feeds.

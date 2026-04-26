@@ -1,0 +1,30 @@
+{
+  "schema": "onichase.v4.manual_gtfs_feed_overrides.v1",
+  "notes": [
+    "Use this file for structured GTFS/GTFS-JP rail feeds that are valid railway data but are not auto-selected by generic route_type matching.",
+    "Do not add ordinary buses or rail replacement buses here.",
+    "All operators and station matching still flow through v4 station_identity_v2."
+  ],
+  "feeds": [
+    {
+      "operatorId": "富山地方鉄道",
+      "operatorName": "富山地方鉄道",
+      "feedName": "富山地方鉄道市内電車",
+      "feedKey": "manual_gtfs_chitetsu_shinaidensha",
+      "fileUrl": "https://api.gtfs-data.jp/v2/organizations/chitetsu/feeds/chitetsushinaidensha/files/feed.zip?uid=0abf15c1-4fed-4f52-817a-79ca7a70cf20",
+      "sourceKind": "manual_gtfs_feed_override",
+      "reason": "GTFS.jp feed is a real tram/light-rail timetable, but its route_type is encoded as bus."
+    }
+  ],
+  "deferredFeeds": [
+    {
+      "operatorId": "阿佐海岸鉄道",
+      "operatorName": "阿佐海岸鉄道",
+      "feedName": "阿佐海岸鉄道株式会社【DMV】",
+      "feedKey": "manual_gtfs_asatetu_dmv_expired",
+      "fileUrl": "https://api.gtfs-data.jp/v2/organizations/asatetu/feeds/asakaigantetsudo/files/feed.zip?uid=0cdfee7b-5fd6-4c88-9e74-ee6327c386b8",
+      "sourceKind": "manual_gtfs_feed_override_deferred",
+      "reason": "GTFS.jp feed is relevant to the 阿佐東線 DMV service but the available file is only valid through 2026-03-14, before the current v4 service day."
+    }
+  ]
+}
