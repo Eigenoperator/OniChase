@@ -12,6 +12,7 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - `V3_RELEASE_CANDIDATE_NOTES.md` documents the frozen v3 baseline and moves external-line/homonym identity edges into v4.
 - `v4` first data slice now builds from local MLIT N02-2024: `10235` physical stations, `9048` station groups, `21932` track centerlines, and `178` operators.
 - `station_identity_v2` now preserves physical station coordinates while grouping gameplay/interchange identity by N02 group code first; same-name stations are not globally collapsed.
+- `station_identity_v2` now adds prefecture/location notes to every v4 physical station and station group, with `10235/10235` physical stations assigned.
 - Reusable v4 scripts added: `scripts/ingest/build_v4_japan_physical_map.py` and `scripts/ingest/audit_v4_station_identity.py`.
 - Latest v4 identity audit reports `427` same-name split names, `0` multi-name station groups, and `0` line coverage warnings.
 - v4 MapLibre-ready public GeoJSON layers now exist under `docs/data/v4_maplibre`: `track_centerlines`, `station_groups`, `physical_stations`, and `line_inventory`.

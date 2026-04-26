@@ -9,6 +9,7 @@ This is the first `v4` data slice: nationwide real physical rail geometry plus `
 - Source family: MLIT N02 railway data, 2024 edition.
 - The raw N02 directory is intentionally ignored by git; keep or redownload it before regenerating the bundle.
 - Land outline source: geoBoundaries `gbOpen/JPN/ADM0`, fetched by `scripts/ingest/build_v4_land_outline.py`.
+- Prefecture note source: geoBoundaries `gbOpen/JPN/ADM1`, cached under ignored `data/raw_boundaries/`.
 
 ## Outputs
 
@@ -60,6 +61,7 @@ python3 scripts/ingest/render_v4_track_continuity_highlights.py
 - `stationGroups` are gameplay/interchange identity, not fake map coordinates.
 - N02 `N02_005g` group code is used first for station grouping.
 - Same-name stations are not globally collapsed; names like `市役所前`, `大和`, `赤坂`, and `有明` can remain separate groups.
+- `physicalStations` and `stationGroups` include `prefecture*` fields plus `locationNote` to disambiguate same-name stations without changing station identity.
 - If a source station has no group code later, fallback grouping must use both station name and local position.
 
 ## MapLibre Sources
@@ -71,7 +73,7 @@ python3 scripts/ingest/render_v4_track_continuity_highlights.py
 - `japan_land.geojson`: high-detail Japan outline only; the v4 viewer does not use a land-fill layer.
 - `japan_land_overview.geojson`: lighter low-zoom Japan outline.
 - `station_groups.geojson`: gameplay/interchange identity points.
-- `station_labels.geojson`: v3-shaped station label source used by the v4 viewer.
+- `station_labels.geojson`: v3-shaped station label source used by the v4 viewer; includes `location_note`.
 - `physical_stations.geojson`: real physical station points.
 - `line_inventory.json`: all current nationwide operator-line pairs.
 

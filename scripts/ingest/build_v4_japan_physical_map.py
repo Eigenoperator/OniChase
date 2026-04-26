@@ -16,6 +16,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_N02_STATIONS = ROOT / "data" / "raw_n02_24" / "UTF-8" / "N02-24_Station.geojson"
 DEFAULT_N02_SECTIONS = ROOT / "data" / "raw_n02_24" / "UTF-8" / "N02-24_RailroadSection.geojson"
+DEFAULT_PREFECTURES = ROOT / "data" / "raw_boundaries" / "geoBoundaries-JPN-ADM1_simplified.geojson"
+DEFAULT_PREFECTURES_URL = "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/JPN/ADM1/geoBoundaries-JPN-ADM1_simplified.geojson"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_japan_physical_map.json.gz"
 DEFAULT_AUDIT = ROOT / "data" / "v4_station_identity_audit.json"
 
@@ -50,6 +52,57 @@ OPERATOR_NAME_TO_ID = {
 }
 
 
+PREFECTURE_BY_ISO = {
+    "JP-01": ("北海道", "Hokkaido"),
+    "JP-02": ("青森県", "Aomori"),
+    "JP-03": ("岩手県", "Iwate"),
+    "JP-04": ("宮城県", "Miyagi"),
+    "JP-05": ("秋田県", "Akita"),
+    "JP-06": ("山形県", "Yamagata"),
+    "JP-07": ("福島県", "Fukushima"),
+    "JP-08": ("茨城県", "Ibaraki"),
+    "JP-09": ("栃木県", "Tochigi"),
+    "JP-10": ("群馬県", "Gunma"),
+    "JP-11": ("埼玉県", "Saitama"),
+    "JP-12": ("千葉県", "Chiba"),
+    "JP-13": ("東京都", "Tokyo"),
+    "JP-14": ("神奈川県", "Kanagawa"),
+    "JP-15": ("新潟県", "Niigata"),
+    "JP-16": ("富山県", "Toyama"),
+    "JP-17": ("石川県", "Ishikawa"),
+    "JP-18": ("福井県", "Fukui"),
+    "JP-19": ("山梨県", "Yamanashi"),
+    "JP-20": ("長野県", "Nagano"),
+    "JP-21": ("岐阜県", "Gifu"),
+    "JP-22": ("静岡県", "Shizuoka"),
+    "JP-23": ("愛知県", "Aichi"),
+    "JP-24": ("三重県", "Mie"),
+    "JP-25": ("滋賀県", "Shiga"),
+    "JP-26": ("京都府", "Kyoto"),
+    "JP-27": ("大阪府", "Osaka"),
+    "JP-28": ("兵庫県", "Hyogo"),
+    "JP-29": ("奈良県", "Nara"),
+    "JP-30": ("和歌山県", "Wakayama"),
+    "JP-31": ("鳥取県", "Tottori"),
+    "JP-32": ("島根県", "Shimane"),
+    "JP-33": ("岡山県", "Okayama"),
+    "JP-34": ("広島県", "Hiroshima"),
+    "JP-35": ("山口県", "Yamaguchi"),
+    "JP-36": ("徳島県", "Tokushima"),
+    "JP-37": ("香川県", "Kagawa"),
+    "JP-38": ("愛媛県", "Ehime"),
+    "JP-39": ("高知県", "Kochi"),
+    "JP-40": ("福岡県", "Fukuoka"),
+    "JP-41": ("佐賀県", "Saga"),
+    "JP-42": ("長崎県", "Nagasaki"),
+    "JP-43": ("熊本県", "Kumamoto"),
+    "JP-44": ("大分県", "Oita"),
+    "JP-45": ("宮崎県", "Miyazaki"),
+    "JP-46": ("鹿児島県", "Kagoshima"),
+    "JP-47": ("沖縄県", "Okinawa"),
+}
+
+
 def load_json(path: Path) -> Any:
     if path.suffix == ".gz":
         with gzip.open(path, "rt", encoding="utf-8") as handle:
@@ -65,6 +118,14 @@ def write_json(path: Path, payload: Any) -> None:
             handle.write(text)
         return
     path.write_text(text, encoding="utf-8")
+
+
+def download_to_cache(url: str, path: Path) -> None:
+    import urllib.request
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with urllib.request.urlopen(url, timeout=60) as response:
+        path.write_bytes(response.read())
 
 
 def normalize_key(value: Any) -> str:
@@ -133,6 +194,144 @@ def geometry_point(geometry: dict[str, Any]) -> tuple[float, float] | None:
     return round(lat, 7), round(lon, 7)
 
 
+def ring_bbox(ring: list[list[float]]) -> tuple[float, float, float, float]:
+    lons = [point[0] for point in ring]
+    lats = [point[1] for point in ring]
+    return min(lons), min(lats), max(lons), max(lats)
+
+
+def bbox_contains(bbox: tuple[float, float, float, float], lon: float, lat: float) -> bool:
+    min_lon, min_lat, max_lon, max_lat = bbox
+    return min_lon <= lon <= max_lon and min_lat <= lat <= max_lat
+
+
+def point_in_ring(lon: float, lat: float, ring: list[list[float]]) -> bool:
+    inside = False
+    j = len(ring) - 1
+    for i, point in enumerate(ring):
+        xi, yi = point[0], point[1]
+        xj, yj = ring[j][0], ring[j][1]
+        if ((yi > lat) != (yj > lat)) and (
+            lon < (xj - xi) * (lat - yi) / ((yj - yi) or 1e-12) + xi
+        ):
+            inside = not inside
+        j = i
+    return inside
+
+
+def point_in_polygon(lon: float, lat: float, polygon: list[list[list[float]]]) -> bool:
+    if not polygon or not point_in_ring(lon, lat, polygon[0]):
+        return False
+    return not any(point_in_ring(lon, lat, hole) for hole in polygon[1:])
+
+
+def point_segment_distance_squared(lon: float, lat: float, start: list[float], end: list[float]) -> float:
+    x1, y1 = start
+    x2, y2 = end
+    dx = x2 - x1
+    dy = y2 - y1
+    if dx == 0 and dy == 0:
+        return (lon - x1) ** 2 + (lat - y1) ** 2
+    t = max(0.0, min(1.0, ((lon - x1) * dx + (lat - y1) * dy) / (dx * dx + dy * dy)))
+    closest_lon = x1 + t * dx
+    closest_lat = y1 + t * dy
+    return (lon - closest_lon) ** 2 + (lat - closest_lat) ** 2
+
+
+def point_ring_distance_squared(lon: float, lat: float, ring: list[list[float]]) -> float:
+    if len(ring) < 2:
+        return float("inf")
+    return min(
+        point_segment_distance_squared(lon, lat, ring[index - 1], ring[index])
+        for index in range(1, len(ring))
+    )
+
+
+def polygon_bbox(polygon: list[list[list[float]]]) -> tuple[float, float, float, float]:
+    boxes = [ring_bbox(ring) for ring in polygon if ring]
+    return (
+        min(box[0] for box in boxes),
+        min(box[1] for box in boxes),
+        max(box[2] for box in boxes),
+        max(box[3] for box in boxes),
+    )
+
+
+def load_prefecture_index(path: Path, source_url: str) -> list[dict[str, Any]]:
+    if not path.exists():
+        download_to_cache(source_url, path)
+    features = load_json(path).get("features", [])
+    prefectures = []
+    for feature in features:
+        props = feature.get("properties", {})
+        code = str(props.get("shapeISO") or "").strip()
+        name_ja, name_en = PREFECTURE_BY_ISO.get(
+            code,
+            (str(props.get("shapeName") or code).strip(), str(props.get("shapeName") or code).strip()),
+        )
+        geometry = feature.get("geometry", {})
+        coords = geometry.get("coordinates") or []
+        if geometry.get("type") == "Polygon":
+            polygons = [coords]
+        elif geometry.get("type") == "MultiPolygon":
+            polygons = coords
+        else:
+            continue
+        indexed_polygons = [
+            {
+                "bbox": polygon_bbox(polygon),
+                "rings": polygon,
+            }
+            for polygon in polygons
+            if polygon
+        ]
+        if indexed_polygons:
+            prefectures.append(
+                {
+                    "code": code,
+                    "nameJa": name_ja,
+                    "nameEn": name_en,
+                    "bbox": (
+                        min(polygon["bbox"][0] for polygon in indexed_polygons),
+                        min(polygon["bbox"][1] for polygon in indexed_polygons),
+                        max(polygon["bbox"][2] for polygon in indexed_polygons),
+                        max(polygon["bbox"][3] for polygon in indexed_polygons),
+                    ),
+                    "polygons": indexed_polygons,
+                }
+            )
+    return prefectures
+
+
+def prefecture_for_point(prefectures: list[dict[str, Any]], lat: float, lon: float) -> dict[str, str] | None:
+    for prefecture in prefectures:
+        if not bbox_contains(prefecture["bbox"], lon, lat):
+            continue
+        for polygon in prefecture["polygons"]:
+            if bbox_contains(polygon["bbox"], lon, lat) and point_in_polygon(lon, lat, polygon["rings"]):
+                return {
+                    "code": prefecture["code"],
+                    "nameJa": prefecture["nameJa"],
+                    "nameEn": prefecture["nameEn"],
+                    "assignmentMethod": "contains",
+                }
+    nearest: tuple[float, dict[str, Any]] | None = None
+    for prefecture in prefectures:
+        for polygon in prefecture["polygons"]:
+            distance = point_ring_distance_squared(lon, lat, polygon["rings"][0])
+            if nearest is None or distance < nearest[0]:
+                nearest = (distance, prefecture)
+    if nearest and nearest[0] <= 0.08**2:
+        prefecture = nearest[1]
+        return {
+            "code": prefecture["code"],
+            "nameJa": prefecture["nameJa"],
+            "nameEn": prefecture["nameEn"],
+            "assignmentMethod": "nearest_boundary",
+        }
+    return None
+
+
 def fallback_group_key(name_key: str, lat: float, lon: float) -> str:
     # Roughly one urban block. This intentionally prevents same-name stations
     # in different cities from collapsing into one gameplay interchange.
@@ -147,7 +346,10 @@ def station_group_id_for(props: dict[str, Any], name_key: str, lat: float, lon: 
     return stable_id("SG_FALLBACK", key), "name_plus_position_fallback", None
 
 
-def build_physical_stations(station_features: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def build_physical_stations(
+    station_features: list[dict[str, Any]],
+    prefectures: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     physical_stations: list[dict[str, Any]] = []
     groups: dict[str, dict[str, Any]] = {}
 
@@ -164,6 +366,8 @@ def build_physical_stations(station_features: list[dict[str, Any]]) -> tuple[lis
         lat, lon = point
         name_key = normalize_key(name)
         operator_id = operator_id_for(operator_name)
+        prefecture = prefecture_for_point(prefectures, lat, lon) if prefectures else None
+        location_note = prefecture["nameJa"] if prefecture else None
         station_group_id, grouping_method, group_code = station_group_id_for(props, name_key, lat, lon)
         source_station_code = str(props.get("N02_005c") or "").strip() or None
         station_line = collect_points(feature.get("geometry", {}))
@@ -189,6 +393,11 @@ def build_physical_stations(station_features: list[dict[str, Any]]) -> tuple[lis
                 "lineName": line_name,
                 "sourceStationCode": source_station_code,
                 "sourceGroupCode": group_code,
+                "prefectureCode": prefecture["code"] if prefecture else None,
+                "prefectureNameJa": prefecture["nameJa"] if prefecture else None,
+                "prefectureNameEn": prefecture["nameEn"] if prefecture else None,
+                "prefectureAssignmentMethod": prefecture["assignmentMethod"] if prefecture else None,
+                "locationNote": location_note,
                 "lat": lat,
                 "lon": lon,
                 "stationLine": station_line,
@@ -213,6 +422,9 @@ def build_physical_stations(station_features: list[dict[str, Any]]) -> tuple[lis
                 "operatorIds": set(),
                 "operatorNames": set(),
                 "lineNames": set(),
+                "prefectureCodes": set(),
+                "prefectureNamesJa": set(),
+                "prefectureNamesEn": set(),
                 "physicalStationIds": [],
                 "_lat_sum": 0.0,
                 "_lon_sum": 0.0,
@@ -224,6 +436,10 @@ def build_physical_stations(station_features: list[dict[str, Any]]) -> tuple[lis
         group["operatorIds"].add(operator_id)
         group["operatorNames"].add(operator_name)
         group["lineNames"].add(line_name)
+        if prefecture:
+            group["prefectureCodes"].add(prefecture["code"])
+            group["prefectureNamesJa"].add(prefecture["nameJa"])
+            group["prefectureNamesEn"].add(prefecture["nameEn"])
         group["physicalStationIds"].append(physical_id)
         group["_lat_sum"] += lat
         group["_lon_sum"] += lon
@@ -231,6 +447,8 @@ def build_physical_stations(station_features: list[dict[str, Any]]) -> tuple[lis
     station_groups: list[dict[str, Any]] = []
     for group in groups.values():
         count = len(group["physicalStationIds"])
+        prefecture_names = sorted(group["prefectureNamesJa"])
+        prefecture_names_en = sorted(group["prefectureNamesEn"])
         station_groups.append(
             {
                 "id": group["id"],
@@ -242,6 +460,10 @@ def build_physical_stations(station_features: list[dict[str, Any]]) -> tuple[lis
                 "operatorIds": sorted(group["operatorIds"]),
                 "operatorNames": sorted(group["operatorNames"]),
                 "lineNames": sorted(group["lineNames"]),
+                "prefectureCodes": sorted(group["prefectureCodes"]),
+                "prefectureNamesJa": prefecture_names,
+                "prefectureNamesEn": prefecture_names_en,
+                "locationNote": " / ".join(prefecture_names) if prefecture_names else None,
                 "physicalStationIds": sorted(group["physicalStationIds"]),
                 "centroid": {
                     "lat": round(group["_lat_sum"] / count, 7),
@@ -355,6 +577,8 @@ def build_identity_audit(physical_stations: list[dict[str, Any]], station_groups
     name_to_physical: Counter[str] = Counter()
     group_methods = Counter(group["groupingMethod"] for group in station_groups)
     group_code_count = sum(1 for station in physical_stations if station.get("sourceGroupCode"))
+    prefecture_count = sum(1 for station in physical_stations if station.get("prefectureCode"))
+    prefecture_methods = Counter(station.get("prefectureAssignmentMethod") or "missing" for station in physical_stations)
 
     for station in physical_stations:
         name_key = station["nameKey"]
@@ -368,6 +592,13 @@ def build_identity_audit(physical_stations: list[dict[str, Any]], station_groups
             "stationGroupCount": len(group_ids),
             "physicalStationCount": name_to_physical[name_key],
             "sampleStationGroupIds": sorted(group_ids)[:8],
+            "sampleLocationNotes": sorted(
+                {
+                    groups_by_id[group_id].get("locationNote")
+                    for group_id in group_ids
+                    if group_id in groups_by_id and groups_by_id[group_id].get("locationNote")
+                }
+            )[:8],
         }
         for name_key, group_ids in name_to_groups.items()
         if len(group_ids) > 1
@@ -381,6 +612,7 @@ def build_identity_audit(physical_stations: list[dict[str, Any]], station_groups
             "nameKeys": group["nameKeys"],
             "operatorNames": group["operatorNames"][:8],
             "lineNames": group["lineNames"][:8],
+            "locationNote": group.get("locationNote"),
         }
         for group in station_groups
         if len(group["nameKeys"]) > 1
@@ -445,6 +677,9 @@ def build_identity_audit(physical_stations: list[dict[str, Any]], station_groups
             "groupingMethods": dict(sorted(group_methods.items())),
             "physicalStationsWithN02GroupCode": group_code_count,
             "physicalStationsWithoutN02GroupCode": len(physical_stations) - group_code_count,
+            "physicalStationsWithPrefecture": prefecture_count,
+            "physicalStationsWithoutPrefecture": len(physical_stations) - prefecture_count,
+            "prefectureAssignmentMethods": dict(sorted(prefecture_methods.items())),
             "sameNameSplitNameCount": len(same_name_split),
             "multiNameStationGroupCount": len(multi_name_groups),
             "lineCoverageWarningCount": len(missing_station_or_track),
@@ -455,10 +690,16 @@ def build_identity_audit(physical_stations: list[dict[str, Any]], station_groups
     }
 
 
-def build_bundle(station_path: Path, section_path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+def build_bundle(
+    station_path: Path,
+    section_path: Path,
+    prefecture_path: Path,
+    prefecture_url: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     station_features = load_json(station_path).get("features", [])
     section_features = load_json(section_path).get("features", [])
-    physical_stations, station_groups = build_physical_stations(station_features)
+    prefectures = load_prefecture_index(prefecture_path, prefecture_url)
+    physical_stations, station_groups = build_physical_stations(station_features, prefectures)
     tracks = build_track_centerlines(section_features, station_line_operator_pairs(physical_stations))
     audit = build_identity_audit(physical_stations, station_groups, tracks)
     operators = summarize_operators(physical_stations, station_groups, tracks)
@@ -470,10 +711,13 @@ def build_bundle(station_path: Path, section_path: Path) -> tuple[dict[str, Any]
             "id": "mlit_n02_2024",
             "stationPath": str(station_path.relative_to(ROOT) if station_path.is_relative_to(ROOT) else station_path),
             "railroadSectionPath": str(section_path.relative_to(ROOT) if section_path.is_relative_to(ROOT) else section_path),
+            "prefectureBoundaryPath": str(prefecture_path.relative_to(ROOT) if prefecture_path.is_relative_to(ROOT) else prefecture_path),
+            "prefectureBoundarySourceUrl": prefecture_url,
             "notes": [
                 "Physical stations preserve real N02 station geometries.",
                 "Station groups are gameplay/interchange identity only; they do not replace physical station coordinates.",
                 "N02_005g group code is used first, with name-plus-position fallback only when no source group code exists.",
+                "Prefecture fields are location notes for disambiguating same-name stations and are not used to merge station groups.",
             ],
         },
         "counts": {
@@ -494,11 +738,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Build v4 nationwide physical railway map from MLIT N02-2024.")
     parser.add_argument("--n02-stations", type=Path, default=DEFAULT_N02_STATIONS)
     parser.add_argument("--n02-sections", type=Path, default=DEFAULT_N02_SECTIONS)
+    parser.add_argument("--prefectures", type=Path, default=DEFAULT_PREFECTURES)
+    parser.add_argument("--prefectures-url", default=DEFAULT_PREFECTURES_URL)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--audit-output", type=Path, default=DEFAULT_AUDIT)
     args = parser.parse_args()
 
-    bundle, audit = build_bundle(args.n02_stations, args.n02_sections)
+    bundle, audit = build_bundle(args.n02_stations, args.n02_sections, args.prefectures, args.prefectures_url)
     write_json(args.output, bundle)
     write_json(args.audit_output, audit)
     print(
