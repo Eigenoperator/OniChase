@@ -23,10 +23,10 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - v4 continuity warnings now have a dedicated review map at `docs/v4_continuity.html` plus generated SVG/GeoJSON highlight outputs.
 - v4 overview tracks now fade out by zoom `7.65`, and exact physical `track_centerlines` take over from zoom `7.55` to avoid straight overview lines overlapping real geometry.
 - v4 line rendering now uses line-level color when known and falls back to company color; current inventory marks `152` line-specific colors and `444` company fallbacks, audited by `scripts/ingest/audit_v4_line_colors.py`.
-- `scripts/ingest/audit_v4_line_presence.py` verifies raw N02, v4 bundle, MapLibre exports, and inventory all contain the same `596` operator-line pairs with `0` warnings.
+- Reusable v4 audits now cover line presence, line colors, and timetable-source discovery; `v4_timetable_source_registry` scans `178` operators/`596` lines against v3 work, ODPT seeds, and GTFS.jp.
 
 ## In Progress
-- Start nationwide timetable-source planning from the `596` operator-line inventory.
+- Turn the v4 timetable-source registry into prioritized collectors and station-match audits.
 - Expand the official per-line color table beyond the first v3/Tokyo/Shinkansen seed set.
 - If coastline performance regresses again, convert the two-level outline GeoJSON contract into PMTiles.
 
@@ -46,4 +46,4 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 ## Next
 1. Decide whether to hide or keep the reviewed meter-scale 肥薩線 N02 fragment in rendered geometry.
 2. Continue filling missing official per-line colors for non-Tokyo regional operators.
-3. Implement timetable stop lookup with the v3 alias/station-group method while preserving physical stations for rendering.
+3. Start v4 timetable collection with operators that already have official GTFS/API leads, then fall back to official station timetable pages.

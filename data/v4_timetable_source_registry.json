@@ -1,0 +1,3549 @@
+{
+  "schema": "onichase.v4.timetable_source_registry.v1",
+  "generatedAt": "2026-04-26T03:19:30+00:00",
+  "sourcePolicy": [
+    "Prefer official GTFS/GTFS-JP/API sources before scraping timetable pages.",
+    "Reuse the v3 station alias and station-group matching method for v4 timetable stop matching.",
+    "Treat GTFS repository name matches as leads until route types and station coverage are audited."
+  ],
+  "inputs": {
+    "lineInventory": "/home/xincheng/toy/Chase/docs/data/v4_maplibre/line_inventory.json",
+    "gtfsRepositoryFilesUrl": "https://api.gtfs-data.jp/v2/files?target_date=all",
+    "odptCatalogSeeds": [
+      "京都市",
+      "函館市",
+      "多摩都市モノレール",
+      "東京地下鉄",
+      "東京臨海高速鉄道",
+      "東京都",
+      "東日本旅客鉄道",
+      "東武鉄道",
+      "横浜市",
+      "相模鉄道",
+      "首都圏新都市鉄道"
+    ]
+  },
+  "coverageSummary": {
+    "operatorCount": 178,
+    "operatorLineCount": 596,
+    "gtfsRepositoryFeedsScanned": 564,
+    "operatorLeadKnownTrainInstances": 51018,
+    "uniqueExistingDataFiles": 17,
+    "uniqueKnownTrainInstancesFromExistingFiles": 49880,
+    "sourceStatusCounts": {
+      "existing_work": 11,
+      "existing_work_and_external_candidate": 7,
+      "external_candidate_found": 11,
+      "needs_source_research": 144,
+      "needs_source_research_rejected_name_match_only": 5
+    },
+    "gtfsRepositoryMatchStats": {
+      "matchedFeeds": 16,
+      "operatorsWithMatches": 12,
+      "routeTypeInspectedFeeds": 16,
+      "routeTypeInspectionErrors": 0,
+      "maxCandidateDownloads": 40
+    },
+    "warnings": []
+  },
+  "operators": [
+    {
+      "operatorId": "irいしかわ鉄道",
+      "operatorName": "IRいしかわ鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "IRいしかわ鉄道線"
+      ],
+      "physicalStationCount": 19,
+      "trackCenterlineCount": 38,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "jr東海交通事業",
+      "operatorName": "JR東海交通事業",
+      "lineCount": 1,
+      "lineNames": [
+        "城北線"
+      ],
+      "physicalStationCount": 6,
+      "trackCenterlineCount": 14,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "willertrains",
+      "operatorName": "WILLER　TRAINS",
+      "lineCount": 2,
+      "lineNames": [
+        "宮津線",
+        "宮福線"
+      ],
+      "physicalStationCount": 33,
+      "trackCenterlineCount": 67,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "あいの風とやま鉄道",
+      "operatorName": "あいの風とやま鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "あいの風とやま鉄道線"
+      ],
+      "physicalStationCount": 23,
+      "trackCenterlineCount": 56,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "いすみ鉄道",
+      "operatorName": "いすみ鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "いすみ線"
+      ],
+      "physicalStationCount": 14,
+      "trackCenterlineCount": 28,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "えちごトキめき鉄道",
+      "operatorName": "えちごトキめき鉄道",
+      "lineCount": 2,
+      "lineNames": [
+        "妙高はねうまライン",
+        "日本海ひすいライン"
+      ],
+      "physicalStationCount": 23,
+      "trackCenterlineCount": 54,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "えちぜん鉄道",
+      "operatorName": "えちぜん鉄道",
+      "lineCount": 2,
+      "lineNames": [
+        "三国芦原線",
+        "勝山永平寺線"
+      ],
+      "physicalStationCount": 45,
+      "trackCenterlineCount": 90,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "くま川鉄道",
+      "operatorName": "くま川鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "湯前線"
+      ],
+      "physicalStationCount": 14,
+      "trackCenterlineCount": 28,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "こうべ未来都市機構",
+      "operatorName": "こうべ未来都市機構",
+      "lineCount": 1,
+      "lineNames": [
+        "摩耶ケーブル線"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "しなの鉄道",
+      "operatorName": "しなの鉄道",
+      "lineCount": 2,
+      "lineNames": [
+        "しなの鉄道線",
+        "北しなの線"
+      ],
+      "physicalStationCount": 27,
+      "trackCenterlineCount": 54,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "とさでん交通",
+      "operatorName": "とさでん交通",
+      "lineCount": 4,
+      "lineNames": [
+        "伊野線",
+        "後免線",
+        "桟橋線",
+        "駅前線"
+      ],
+      "physicalStationCount": 79,
+      "trackCenterlineCount": 154,
+      "sourceStatus": "external_candidate_found",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "とさでん交通株式会社",
+          "feedName": "空港連絡バス",
+          "feedPrefId": 39,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=tosaden-kotsu*GTFS-Tosadentraffic_Airportbus",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/tosaden-kotsu/feeds/GTFS-Tosadentraffic_Airportbus/files/feed.zip?uid=e5f5a6ef-fdf8-4690-b203-23d5016df10d",
+          "licenseId": "CC BY 4.0",
+          "fileFromDate": "2026-04-01",
+          "fileToDate": "2026-06-01",
+          "fileLastUpdatedAt": "2026-03-19T16:36:20.565588+09:00",
+          "routeTypes": [
+            3
+          ],
+          "sampleRouteNames": [
+            "空港連絡バス",
+            "空港連絡バス"
+          ],
+          "isRailLike": false,
+          "isBusOnly": true,
+          "candidateStatus": "rejected_bus_only_name_match"
+        },
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "とさでん交通株式会社",
+          "feedName": "路線バス",
+          "feedPrefId": 39,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=tosaden-kotsu*GTFS-Tosadentraffic_Regularbus",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/tosaden-kotsu/feeds/GTFS-Tosadentraffic_Regularbus/files/feed.zip?uid=d85738ab-3100-4de6-a40a-37bf671dc61c",
+          "licenseId": "CC BY 4.0",
+          "fileFromDate": "2026-04-01",
+          "fileToDate": "2026-10-02",
+          "fileLastUpdatedAt": "2026-03-19T16:47:41.703031+09:00",
+          "routeTypes": [
+            3
+          ],
+          "sampleRouteNames": [
+            "領石線",
+            "領石～高岡線",
+            "鳥越～種崎線",
+            "入明線",
+            "みづき坂～南NT線",
+            "鳥越線",
+            "長浜線",
+            "南NT線"
+          ],
+          "isRailLike": false,
+          "isBusOnly": true,
+          "candidateStatus": "rejected_bus_only_name_match"
+        },
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "とさでん交通株式会社",
+          "feedName": "路面電車",
+          "feedPrefId": 39,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=tosaden-kotsu*GTFS-Tosadentraffic_Streetcar",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/tosaden-kotsu/feeds/GTFS-Tosadentraffic_Streetcar/files/feed.zip?uid=86fd3e6d-a380-4d14-b7cd-9dbb12e13357",
+          "licenseId": "CC BY 4.0",
+          "fileFromDate": "2026-02-21",
+          "fileToDate": "2027-04-01",
+          "fileLastUpdatedAt": "2026-02-17T22:15:51.517435+09:00",
+          "routeTypes": [
+            0
+          ],
+          "sampleRouteNames": [
+            "とさでん路面電車",
+            "とさでん路面電車",
+            "とさでん路面電車",
+            "とさでん路面電車"
+          ],
+          "isRailLike": true,
+          "isBusOnly": false,
+          "candidateStatus": "rail_gtfs_candidate"
+        }
+      ]
+    },
+    {
+      "operatorId": "のと鉄道",
+      "operatorName": "のと鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "七尾線"
+      ],
+      "physicalStationCount": 8,
+      "trackCenterlineCount": 15,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "ひたちなか海浜鉄道",
+      "operatorName": "ひたちなか海浜鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "湊線"
+      ],
+      "physicalStationCount": 11,
+      "trackCenterlineCount": 21,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "yurikamome",
+      "operatorName": "ゆりかもめ",
+      "lineCount": 1,
+      "lineNames": [
+        "東京臨海新交通臨海線"
+      ],
+      "physicalStationCount": 16,
+      "trackCenterlineCount": 32,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 480,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Yurikamome PDF timetable collector",
+          "scripts": [
+            "scripts/ingest/build_v3_yurikamome_train_instances_from_pdfs.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_yurikamome_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 Yurikamome batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_yurikamome_weekday_train_instances.json": 480
+          },
+          "totalKnownTrainInstances": 480
+        }
+      ]
+    },
+    {
+      "operatorId": "わたらせ渓谷鐵道",
+      "operatorName": "わたらせ渓谷鐵道",
+      "lineCount": 1,
+      "lineNames": [
+        "わたらせ渓谷線"
+      ],
+      "physicalStationCount": 17,
+      "trackCenterlineCount": 34,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "アイジアルいわて銀河鉄道",
+      "operatorName": "アイジーアールいわて銀河鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "いわて銀河鉄道線"
+      ],
+      "physicalStationCount": 18,
+      "trackCenterlineCount": 65,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "アルピコ交通",
+      "operatorName": "アルピコ交通",
+      "lineCount": 1,
+      "lineNames": [
+        "上高地線"
+      ],
+      "physicalStationCount": 14,
+      "trackCenterlineCount": 27,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "ハピラインふくい",
+      "operatorName": "ハピラインふくい",
+      "lineCount": 1,
+      "lineNames": [
+        "ハピラインふくい線"
+      ],
+      "physicalStationCount": 19,
+      "trackCenterlineCount": 41,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "ラクテンチ",
+      "operatorName": "ラクテンチ",
+      "lineCount": 1,
+      "lineNames": [
+        "別府ラクテンチケーブル線"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "一畑電車",
+      "operatorName": "一畑電車",
+      "lineCount": 2,
+      "lineNames": [
+        "北松江線",
+        "大社線"
+      ],
+      "physicalStationCount": 27,
+      "trackCenterlineCount": 54,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "一般社団法人札幌市交通事業振興公社",
+      "operatorName": "一般社団法人札幌市交通事業振興公社",
+      "lineCount": 4,
+      "lineNames": [
+        "1条線",
+        "山鼻線",
+        "山鼻西線",
+        "都心線"
+      ],
+      "physicalStationCount": 29,
+      "trackCenterlineCount": 55,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "一般財団法人青函トンネル記念館",
+      "operatorName": "一般財団法人青函トンネル記念館",
+      "lineCount": 1,
+      "lineNames": [
+        "青函トンネル竜飛斜坑線"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "万葉線",
+      "operatorName": "万葉線",
+      "lineCount": 2,
+      "lineNames": [
+        "新湊港線",
+        "高岡軌道線"
+      ],
+      "physicalStationCount": 26,
+      "trackCenterlineCount": 50,
+      "sourceStatus": "external_candidate_found",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "万葉線",
+          "feedName": "万葉線",
+          "feedPrefId": 16,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=manyosen*manyosen",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/manyosen/feeds/manyosen/files/feed.zip?uid=9eb6d266-3969-4f24-a680-fbf9638fd8da",
+          "licenseId": "CC0 1.0",
+          "fileFromDate": "2026-02-03",
+          "fileToDate": "2027-02-02",
+          "fileLastUpdatedAt": "2026-02-05T18:02:32.533978+09:00",
+          "routeTypes": [
+            0
+          ],
+          "sampleRouteNames": [
+            "米島口～中新湊",
+            "高岡～越ノ潟",
+            "高岡駅～中新湊",
+            "越ノ潟～高岡駅",
+            "米島口～越ノ潟",
+            "中新湊～高岡駅",
+            "米島口～高岡駅",
+            "越ノ潟～米島口"
+          ],
+          "isRailLike": true,
+          "isBusOnly": false,
+          "candidateStatus": "rail_gtfs_candidate"
+        }
+      ]
+    },
+    {
+      "operatorId": "三岐鉄道",
+      "operatorName": "三岐鉄道",
+      "lineCount": 3,
+      "lineNames": [
+        "三岐線",
+        "北勢線",
+        "近鉄連絡線"
+      ],
+      "physicalStationCount": 28,
+      "trackCenterlineCount": 56,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "三陸鉄道",
+      "operatorName": "三陸鉄道",
+      "lineCount": 3,
+      "lineNames": [
+        "リアス線",
+        "北リアス線",
+        "南リアス線"
+      ],
+      "physicalStationCount": 43,
+      "trackCenterlineCount": 86,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "上信電鉄",
+      "operatorName": "上信電鉄",
+      "lineCount": 1,
+      "lineNames": [
+        "上信線"
+      ],
+      "physicalStationCount": 21,
+      "trackCenterlineCount": 41,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "上毛電気鉄道",
+      "operatorName": "上毛電気鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "上毛線"
+      ],
+      "physicalStationCount": 23,
+      "trackCenterlineCount": 46,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "上田電鉄",
+      "operatorName": "上田電鉄",
+      "lineCount": 1,
+      "lineNames": [
+        "別所線"
+      ],
+      "physicalStationCount": 15,
+      "trackCenterlineCount": 29,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "丹後海陸交通",
+      "operatorName": "丹後海陸交通",
+      "lineCount": 1,
+      "lineNames": [
+        "天橋立鋼索鉄道"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "jr_kyushu",
+      "operatorName": "九州旅客鉄道",
+      "lineCount": 23,
+      "lineNames": [
+        "三角線",
+        "久大線",
+        "九州新幹線",
+        "佐世保線",
+        "吉都線",
+        "唐津線",
+        "大村線",
+        "宮崎空港線",
+        "山陽線",
+        "後藤寺線",
+        "指宿枕崎線",
+        "日南線",
+        "日田彦山線",
+        "日豊線",
+        "筑肥線",
+        "筑豊線",
+        "篠栗線",
+        "肥薩線",
+        "西九州新幹線",
+        "豊肥線",
+        "長崎線",
+        "香椎線",
+        "鹿児島線"
+      ],
+      "physicalStationCount": 621,
+      "trackCenterlineCount": 1361,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 1138,
+      "sourceLeads": [
+        {
+          "sourceKind": "collector_available_not_full",
+          "title": "JR Kyushu station/train timetable parser",
+          "scripts": [
+            "scripts/ingest/build_jrkyushu_train_instances_from_station_timetable.py",
+            "scripts/ingest/parse_jrkyushu_train_timetable.py"
+          ],
+          "dataFiles": [
+            "data/shinkansen_v2_weekday_train_instances_merged.json"
+          ],
+          "scopeNote": "Parser exists and shinkansen merged data exists; full JR Kyushu conventional collection is not complete.",
+          "trainInstanceCounts": {
+            "data/shinkansen_v2_weekday_train_instances_merged.json": 1138
+          },
+          "totalKnownTrainInstances": 1138
+        }
+      ]
+    },
+    {
+      "operatorId": "井原鉄道",
+      "operatorName": "井原鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "井原線"
+      ],
+      "physicalStationCount": 15,
+      "trackCenterlineCount": 31,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "keisei",
+      "operatorName": "京成電鉄",
+      "lineCount": 7,
+      "lineNames": [
+        "千原線",
+        "千葉線",
+        "成田空港線",
+        "押上線",
+        "本線",
+        "東成田線",
+        "金町線"
+      ],
+      "physicalStationCount": 77,
+      "trackCenterlineCount": 165,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 4102,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Keisei station timetable collector",
+          "scripts": [
+            "scripts/ingest/build_v3_keisei_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_keisei_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 company-level Keisei batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_keisei_weekday_train_instances.json": 4102
+          },
+          "totalKnownTrainInstances": 4102
+        }
+      ]
+    },
+    {
+      "operatorId": "keikyu",
+      "operatorName": "京浜急行電鉄",
+      "lineCount": 5,
+      "lineNames": [
+        "久里浜線",
+        "大師線",
+        "本線",
+        "空港線",
+        "逗子線"
+      ],
+      "physicalStationCount": 77,
+      "trackCenterlineCount": 154,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 2334,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Keikyu timetable collector",
+          "scripts": [
+            "scripts/ingest/build_v3_keikyu_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_keikyu_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 company-level Keikyu batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_keikyu_weekday_train_instances.json": 2334
+          },
+          "totalKnownTrainInstances": 2334
+        }
+      ]
+    },
+    {
+      "operatorId": "keio",
+      "operatorName": "京王電鉄",
+      "lineCount": 6,
+      "lineNames": [
+        "井の頭線",
+        "京王線",
+        "動物園線",
+        "相模原線",
+        "競馬場線",
+        "高尾線"
+      ],
+      "physicalStationCount": 75,
+      "trackCenterlineCount": 153,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 1978,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Keio API collector",
+          "scripts": [
+            "scripts/ingest/build_v3_keio_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_keio_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 company-level Keio batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_keio_weekday_train_instances.json": 1978
+          },
+          "totalKnownTrainInstances": 1978
+        }
+      ]
+    },
+    {
+      "operatorId": "京福電気鉄道",
+      "operatorName": "京福電気鉄道",
+      "lineCount": 3,
+      "lineNames": [
+        "北野線",
+        "嵐山本線",
+        "鋼索線"
+      ],
+      "physicalStationCount": 25,
+      "trackCenterlineCount": 49,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "京都市",
+      "operatorName": "京都市",
+      "lineCount": 2,
+      "lineNames": [
+        "東西線",
+        "烏丸線"
+      ],
+      "physicalStationCount": 32,
+      "trackCenterlineCount": 63,
+      "sourceStatus": "external_candidate_found",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "odpt_rail_gtfs_candidate",
+          "title": "京都市営地下鉄 / Kyoto City Subway",
+          "url": "https://ckan.odpt.org/en/dataset/?res_format=GTFS%2FGTFS-JP&tags=%E9%89%84%E9%81%93-railway",
+          "scopeNote": "ODPT Challenge 2025 limited railway GTFS candidate."
+        }
+      ]
+    },
+    {
+      "operatorId": "京阪電気鉄道",
+      "operatorName": "京阪電気鉄道",
+      "lineCount": 8,
+      "lineNames": [
+        "中之島線",
+        "交野線",
+        "京津線",
+        "京阪本線",
+        "宇治線",
+        "石山坂本線",
+        "鋼索線",
+        "鴨東線"
+      ],
+      "physicalStationCount": 95,
+      "trackCenterlineCount": 194,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "仙台市",
+      "operatorName": "仙台市",
+      "lineCount": 2,
+      "lineNames": [
+        "南北線",
+        "東西線"
+      ],
+      "physicalStationCount": 30,
+      "trackCenterlineCount": 58,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "仙台空港鉄道",
+      "operatorName": "仙台空港鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "仙台空港線"
+      ],
+      "physicalStationCount": 4,
+      "trackCenterlineCount": 8,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "伊予鉄道",
+      "operatorName": "伊予鉄道",
+      "lineCount": 9,
+      "lineNames": [
+        "城北線",
+        "城南線",
+        "大手町線",
+        "本町線",
+        "横河原線",
+        "花園線",
+        "連絡線",
+        "郡中線",
+        "高浜線"
+      ],
+      "physicalStationCount": 72,
+      "trackCenterlineCount": 142,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "伊勢鉄道",
+      "operatorName": "伊勢鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "伊勢線"
+      ],
+      "physicalStationCount": 10,
+      "trackCenterlineCount": 20,
+      "sourceStatus": "external_candidate_found",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "伊勢鉄道",
+          "feedName": "伊勢鉄道",
+          "feedPrefId": 24,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=isetetu*iserailway",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/isetetu/feeds/iserailway/files/feed.zip?uid=a45ff368-7894-47f7-ae2b-3aa3c59c6605",
+          "licenseId": "CC BY 4.0",
+          "fileFromDate": "2026-03-14",
+          "fileToDate": "2027-03-31",
+          "fileLastUpdatedAt": "2026-03-05T11:31:49.531896+09:00",
+          "routeTypes": [
+            2
+          ],
+          "sampleRouteNames": [
+            "伊勢鉄道 伊勢線",
+            "特急 南紀",
+            "快速 みえ"
+          ],
+          "isRailLike": true,
+          "isBusOnly": false,
+          "candidateStatus": "rail_gtfs_candidate"
+        }
+      ]
+    },
+    {
+      "operatorId": "伊豆急行",
+      "operatorName": "伊豆急行",
+      "lineCount": 1,
+      "lineNames": [
+        "伊豆急行線"
+      ],
+      "physicalStationCount": 16,
+      "trackCenterlineCount": 31,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "伊豆箱根鉄道",
+      "operatorName": "伊豆箱根鉄道",
+      "lineCount": 2,
+      "lineNames": [
+        "大雄山線",
+        "駿豆線"
+      ],
+      "physicalStationCount": 25,
+      "trackCenterlineCount": 48,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "伊賀鉄道",
+      "operatorName": "伊賀鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "伊賀線"
+      ],
+      "physicalStationCount": 15,
+      "trackCenterlineCount": 29,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "会津鉄道",
+      "operatorName": "会津鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "会津線"
+      ],
+      "physicalStationCount": 21,
+      "trackCenterlineCount": 41,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "信楽高原鐵道",
+      "operatorName": "信楽高原鐵道",
+      "lineCount": 1,
+      "lineNames": [
+        "信楽線"
+      ],
+      "physicalStationCount": 6,
+      "trackCenterlineCount": 12,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "函館市",
+      "operatorName": "函館市",
+      "lineCount": 4,
+      "lineNames": [
+        "大森線",
+        "宝来・谷地頭線",
+        "本線",
+        "湯の川線"
+      ],
+      "physicalStationCount": 29,
+      "trackCenterlineCount": 56,
+      "sourceStatus": "external_candidate_found",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "odpt_rail_gtfs_candidate",
+          "title": "函館市電 / Hakodate City Tram",
+          "url": "https://ckan.odpt.org/en/dataset/?res_format=GTFS%2FGTFS-JP&tags=%E9%89%84%E9%81%93-railway",
+          "scopeNote": "ODPT railway GTFS candidate for Hakodate City Tram."
+        }
+      ]
+    },
+    {
+      "operatorId": "北九州高速鉄道",
+      "operatorName": "北九州高速鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "小倉線"
+      ],
+      "physicalStationCount": 13,
+      "trackCenterlineCount": 26,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "北大阪急行電鉄",
+      "operatorName": "北大阪急行電鉄",
+      "lineCount": 1,
+      "lineNames": [
+        "南北線"
+      ],
+      "physicalStationCount": 6,
+      "trackCenterlineCount": 11,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "北条鉄道",
+      "operatorName": "北条鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "北条線"
+      ],
+      "physicalStationCount": 8,
+      "trackCenterlineCount": 15,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "jr_hokkaido",
+      "operatorName": "北海道旅客鉄道",
+      "lineCount": 14,
+      "lineNames": [
+        "函館線",
+        "北海道新幹線",
+        "千歳線",
+        "宗谷線",
+        "室蘭線",
+        "富良野線",
+        "日高線",
+        "札沼線",
+        "根室線",
+        "海峡線",
+        "留萌線",
+        "石勝線",
+        "石北線",
+        "釧網線"
+      ],
+      "physicalStationCount": 343,
+      "trackCenterlineCount": 875,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "北総鉄道",
+      "operatorName": "北総鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "北総線"
+      ],
+      "physicalStationCount": 15,
+      "trackCenterlineCount": 34,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "北越急行",
+      "operatorName": "北越急行",
+      "lineCount": 1,
+      "lineNames": [
+        "ほくほく線"
+      ],
+      "physicalStationCount": 12,
+      "trackCenterlineCount": 25,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "北陸鉄道",
+      "operatorName": "北陸鉄道",
+      "lineCount": 2,
+      "lineNames": [
+        "浅野川線",
+        "石川線"
+      ],
+      "physicalStationCount": 29,
+      "trackCenterlineCount": 56,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "十国峠",
+      "operatorName": "十国峠",
+      "lineCount": 1,
+      "lineNames": [
+        "十国鋼索線"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "千葉都市モノレル",
+      "operatorName": "千葉都市モノレール",
+      "lineCount": 2,
+      "lineNames": [
+        "1号線",
+        "2号線"
+      ],
+      "physicalStationCount": 19,
+      "trackCenterlineCount": 38,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "南海電気鉄道",
+      "operatorName": "南海電気鉄道",
+      "lineCount": 8,
+      "lineNames": [
+        "加太線",
+        "南海本線",
+        "和歌山港線",
+        "多奈川線",
+        "空港線",
+        "鋼索線",
+        "高師浜線",
+        "高野線"
+      ],
+      "physicalStationCount": 109,
+      "trackCenterlineCount": 222,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "南阿蘇鉄道",
+      "operatorName": "南阿蘇鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "高森線"
+      ],
+      "physicalStationCount": 10,
+      "trackCenterlineCount": 19,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "叡山電鉄",
+      "operatorName": "叡山電鉄",
+      "lineCount": 2,
+      "lineNames": [
+        "叡山本線",
+        "鞍馬線"
+      ],
+      "physicalStationCount": 18,
+      "trackCenterlineCount": 36,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "名古屋ガイドウェイバス",
+      "operatorName": "名古屋ガイドウェイバス",
+      "lineCount": 1,
+      "lineNames": [
+        "ガイドウェイバス志段味線"
+      ],
+      "physicalStationCount": 9,
+      "trackCenterlineCount": 17,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "名古屋市",
+      "operatorName": "名古屋市",
+      "lineCount": 7,
+      "lineNames": [
+        "1号線東山線",
+        "2号線名城線",
+        "2号線名港線",
+        "3号線鶴舞線",
+        "4号線名城線",
+        "6号線桜通線",
+        "上飯田線"
+      ],
+      "physicalStationCount": 102,
+      "trackCenterlineCount": 200,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "名古屋臨海高速鉄道",
+      "operatorName": "名古屋臨海高速鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "西名古屋港線"
+      ],
+      "physicalStationCount": 11,
+      "trackCenterlineCount": 23,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "名古屋鉄道",
+      "operatorName": "名古屋鉄道",
+      "lineCount": 20,
+      "lineNames": [
+        "三河線",
+        "各務原線",
+        "名古屋本線",
+        "小牧線",
+        "尾西線",
+        "常滑線",
+        "広見線",
+        "河和線",
+        "津島線",
+        "瀬戸線",
+        "犬山線",
+        "知多新線",
+        "空港線",
+        "竹鼻線",
+        "築港線",
+        "羽島線",
+        "蒲郡線",
+        "西尾線",
+        "豊川線",
+        "豊田線"
+      ],
+      "physicalStationCount": 295,
+      "trackCenterlineCount": 615,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "和歌山電鐵",
+      "operatorName": "和歌山電鐵",
+      "lineCount": 1,
+      "lineNames": [
+        "貴志川線"
+      ],
+      "physicalStationCount": 14,
+      "trackCenterlineCount": 28,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "四国ケブル",
+      "operatorName": "四国ケーブル",
+      "lineCount": 1,
+      "lineNames": [
+        "八栗ケーブル"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "jr_shikoku",
+      "operatorName": "四国旅客鉄道",
+      "lineCount": 9,
+      "lineNames": [
+        "予土線",
+        "予讃線",
+        "内子線",
+        "土讃線",
+        "徳島線",
+        "本四備讃線",
+        "牟岐線",
+        "高徳線",
+        "鳴門線"
+      ],
+      "physicalStationCount": 271,
+      "trackCenterlineCount": 559,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "四日市あすなろう鉄道",
+      "operatorName": "四日市あすなろう鉄道",
+      "lineCount": 2,
+      "lineNames": [
+        "八王子線",
+        "内部線"
+      ],
+      "physicalStationCount": 10,
+      "trackCenterlineCount": 19,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "土佐くろしお鉄道",
+      "operatorName": "土佐くろしお鉄道",
+      "lineCount": 3,
+      "lineNames": [
+        "中村線",
+        "宿毛線",
+        "阿佐線"
+      ],
+      "physicalStationCount": 44,
+      "trackCenterlineCount": 88,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "埼玉新都市交通",
+      "operatorName": "埼玉新都市交通",
+      "lineCount": 1,
+      "lineNames": [
+        "伊奈線"
+      ],
+      "physicalStationCount": 13,
+      "trackCenterlineCount": 25,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "saitama_railway",
+      "operatorName": "埼玉高速鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "埼玉高速鉄道線"
+      ],
+      "physicalStationCount": 8,
+      "trackCenterlineCount": 15,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "tama_monorail",
+      "operatorName": "多摩都市モノレール",
+      "lineCount": 1,
+      "lineNames": [
+        "多摩都市モノレール線"
+      ],
+      "physicalStationCount": 19,
+      "trackCenterlineCount": 37,
+      "sourceStatus": "existing_work_and_external_candidate",
+      "knownTrainInstanceCount": 503,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Tama Monorail PDF timetable collector",
+          "scripts": [
+            "scripts/ingest/build_v3_tama_monorail_train_instances_from_pdfs.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_tama_monorail_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 Tama Monorail batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_tama_monorail_weekday_train_instances.json": 503
+          },
+          "totalKnownTrainInstances": 503
+        },
+        {
+          "sourceKind": "odpt_rail_gtfs_candidate",
+          "title": "多摩都市モノレール 鉄道関連情報",
+          "url": "https://ckan.odpt.org/en/dataset/?res_format=GTFS%2FGTFS-JP&tags=%E9%89%84%E9%81%93-railway",
+          "scopeNote": "ODPT railway GTFS candidate for Tama Monorail."
+        }
+      ]
+    },
+    {
+      "operatorId": "大井川鐵道",
+      "operatorName": "大井川鐵道",
+      "lineCount": 2,
+      "lineNames": [
+        "井川線",
+        "大井川本線"
+      ],
+      "physicalStationCount": 34,
+      "trackCenterlineCount": 67,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "大山観光電鉄",
+      "operatorName": "大山観光電鉄",
+      "lineCount": 1,
+      "lineNames": [
+        "大山鋼索線"
+      ],
+      "physicalStationCount": 3,
+      "trackCenterlineCount": 5,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "大阪モノレル",
+      "operatorName": "大阪モノレール",
+      "lineCount": 2,
+      "lineNames": [
+        "国際文化公園都市モノレール線(彩都線)",
+        "大阪モノレール線"
+      ],
+      "physicalStationCount": 19,
+      "trackCenterlineCount": 38,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "大阪市高速電気軌道",
+      "operatorName": "大阪市高速電気軌道",
+      "lineCount": 9,
+      "lineNames": [
+        "1号線(御堂筋線)",
+        "2号線(谷町線)",
+        "3号線(四つ橋線)",
+        "4号線(中央線)",
+        "5号線(千日前線)",
+        "6号線(堺筋線)",
+        "7号線(長堀鶴見緑地線)",
+        "8号線(今里筋線)",
+        "南港ポートタウン線"
+      ],
+      "physicalStationCount": 133,
+      "trackCenterlineCount": 270,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "天竜浜名湖鉄道",
+      "operatorName": "天竜浜名湖鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "天竜浜名湖線"
+      ],
+      "physicalStationCount": 39,
+      "trackCenterlineCount": 79,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "宇都宮ライトレル",
+      "operatorName": "宇都宮ライトレール",
+      "lineCount": 1,
+      "lineNames": [
+        "宇都宮芳賀ライトレール線"
+      ],
+      "physicalStationCount": 19,
+      "trackCenterlineCount": 37,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "富士山麓電気鉄道",
+      "operatorName": "富士山麓電気鉄道",
+      "lineCount": 2,
+      "lineNames": [
+        "大月線",
+        "河口湖線"
+      ],
+      "physicalStationCount": 19,
+      "trackCenterlineCount": 38,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "富山地方鉄道",
+      "operatorName": "富山地方鉄道",
+      "lineCount": 10,
+      "lineNames": [
+        "上滝線",
+        "不二越線",
+        "呉羽線",
+        "安野屋線",
+        "富山港線",
+        "富山都心線",
+        "富山駅南北接続線",
+        "支線",
+        "本線",
+        "立山線"
+      ],
+      "physicalStationCount": 116,
+      "trackCenterlineCount": 234,
+      "sourceStatus": "needs_source_research_rejected_name_match_only",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "富山地方鉄道",
+          "feedName": "富山地方鉄道バス",
+          "feedPrefId": 16,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=chitetsu*chitetsubus",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/chitetsu/feeds/chitetsubus/files/feed.zip?uid=21af3af6-d6ee-430c-8b61-bfc4474f8909",
+          "licenseId": "CC0 1.0",
+          "fileFromDate": "2025-10-16",
+          "fileToDate": "2026-10-15",
+          "fileLastUpdatedAt": "2025-10-21T11:39:14.317684+09:00",
+          "routeTypes": [
+            3
+          ],
+          "sampleRouteNames": [
+            "運転教育・済生会病院線",
+            "運転教育・済生会病院線",
+            "新桜・老人・石坂～中央病院線",
+            "新桜・老人・石坂～中央病院線※学休日運休",
+            "新桜・老人・石坂～中央病院線",
+            "新桜・老人・石坂～中央病院線",
+            "新桜・老人・石坂～中央病院線",
+            "新桜・老人・石坂～中央病院線※学休日運休"
+          ],
+          "isRailLike": false,
+          "isBusOnly": true,
+          "candidateStatus": "rejected_bus_only_name_match"
+        },
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "富山地方鉄道",
+          "feedName": "富山地方鉄道市内電車",
+          "feedPrefId": 16,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=chitetsu*chitetsushinaidensha",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/chitetsu/feeds/chitetsushinaidensha/files/feed.zip?uid=0abf15c1-4fed-4f52-817a-79ca7a70cf20",
+          "licenseId": "CC0 1.0",
+          "fileFromDate": "2026-03-14",
+          "fileToDate": "2027-03-13",
+          "fileLastUpdatedAt": "2026-02-27T17:19:04.256191+09:00",
+          "routeTypes": [
+            3
+          ],
+          "sampleRouteNames": [
+            "市内軌道線",
+            "市内軌道線",
+            "市内軌道線",
+            "市内軌道線",
+            "市内軌道線",
+            "富山港線（南富山）",
+            "富山港線（南富山）",
+            "富山港線（南富山）"
+          ],
+          "isRailLike": false,
+          "isBusOnly": true,
+          "candidateStatus": "rejected_bus_only_name_match"
+        }
+      ]
+    },
+    {
+      "operatorId": "小湊鐵道",
+      "operatorName": "小湊鐵道",
+      "lineCount": 1,
+      "lineNames": [
+        "小湊鐵道線"
+      ],
+      "physicalStationCount": 18,
+      "trackCenterlineCount": 35,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "小田急箱根",
+      "operatorName": "小田急箱根",
+      "lineCount": 2,
+      "lineNames": [
+        "鉄道線",
+        "鋼索線"
+      ],
+      "physicalStationCount": 17,
+      "trackCenterlineCount": 37,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "odakyu",
+      "operatorName": "小田急電鉄",
+      "lineCount": 3,
+      "lineNames": [
+        "多摩線",
+        "小田原線",
+        "江ノ島線"
+      ],
+      "physicalStationCount": 72,
+      "trackCenterlineCount": 152,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 1888,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Odakyu station timetable collector",
+          "scripts": [
+            "scripts/ingest/build_v3_odakyu_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_odakyu_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 company-level Odakyu batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_odakyu_weekday_train_instances.json": 1888
+          },
+          "totalKnownTrainInstances": 1888
+        }
+      ]
+    },
+    {
+      "operatorId": "山万",
+      "operatorName": "山万",
+      "lineCount": 1,
+      "lineNames": [
+        "ユーカリが丘線"
+      ],
+      "physicalStationCount": 6,
+      "trackCenterlineCount": 13,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "山形鉄道",
+      "operatorName": "山形鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "フラワー長井線"
+      ],
+      "physicalStationCount": 17,
+      "trackCenterlineCount": 38,
+      "sourceStatus": "external_candidate_found",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "山形鉄道株式会社",
+          "feedName": "山形鉄道",
+          "feedPrefId": 6,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=yamagatatetsudo*flowerliner",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/yamagatatetsudo/feeds/flowerliner/files/feed.zip?uid=f62087b1-e6f3-4d37-b6fa-b3fc18020d75",
+          "licenseId": "CC BY 4.0",
+          "fileFromDate": "2026-03-14",
+          "fileToDate": "2027-03-13",
+          "fileLastUpdatedAt": "2026-03-09T15:42:30.678381+09:00",
+          "routeTypes": [
+            2
+          ],
+          "sampleRouteNames": [
+            "フラワー長井線"
+          ],
+          "isRailLike": true,
+          "isBusOnly": false,
+          "candidateStatus": "rail_gtfs_candidate"
+        }
+      ]
+    },
+    {
+      "operatorId": "山陽電気鉄道",
+      "operatorName": "山陽電気鉄道",
+      "lineCount": 2,
+      "lineNames": [
+        "本線",
+        "網干線"
+      ],
+      "physicalStationCount": 50,
+      "trackCenterlineCount": 100,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "岡山電気軌道",
+      "operatorName": "岡山電気軌道",
+      "lineCount": 2,
+      "lineNames": [
+        "東山本線",
+        "清輝橋線"
+      ],
+      "physicalStationCount": 17,
+      "trackCenterlineCount": 34,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "岳南電車",
+      "operatorName": "岳南電車",
+      "lineCount": 1,
+      "lineNames": [
+        "岳南鉄道線"
+      ],
+      "physicalStationCount": 10,
+      "trackCenterlineCount": 19,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "島原鉄道",
+      "operatorName": "島原鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "島原鉄道線"
+      ],
+      "physicalStationCount": 24,
+      "trackCenterlineCount": 48,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "嵯峨野観光鉄道",
+      "operatorName": "嵯峨野観光鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "嵯峨野観光線"
+      ],
+      "physicalStationCount": 4,
+      "trackCenterlineCount": 9,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "平成筑豊鉄道",
+      "operatorName": "平成筑豊鉄道",
+      "lineCount": 4,
+      "lineNames": [
+        "伊田線",
+        "田川線",
+        "糸田線",
+        "門司港レトロ観光線"
+      ],
+      "physicalStationCount": 42,
+      "trackCenterlineCount": 86,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "広島電鉄",
+      "operatorName": "広島電鉄",
+      "lineCount": 7,
+      "lineNames": [
+        "宇品線",
+        "宮島線",
+        "本線",
+        "横川線",
+        "江波線",
+        "白島線",
+        "皆実線"
+      ],
+      "physicalStationCount": 88,
+      "trackCenterlineCount": 183,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "広島高速交通",
+      "operatorName": "広島高速交通",
+      "lineCount": 1,
+      "lineNames": [
+        "広島新交通1号線"
+      ],
+      "physicalStationCount": 22,
+      "trackCenterlineCount": 43,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "弘南鉄道",
+      "operatorName": "弘南鉄道",
+      "lineCount": 2,
+      "lineNames": [
+        "大鰐線",
+        "弘南線"
+      ],
+      "physicalStationCount": 27,
+      "trackCenterlineCount": 52,
+      "sourceStatus": "external_candidate_found",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "弘前市",
+          "feedName": "弘南鉄道",
+          "feedPrefId": 2,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=hirosakicity*kounan-tetsudou",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/hirosakicity/feeds/kounan-tetsudou/files/feed.zip?uid=9551fe79-07ce-46c3-9010-03c605fb18dd",
+          "licenseId": "CC BY 4.0",
+          "fileFromDate": "2026-04-01",
+          "fileToDate": "2027-03-31",
+          "fileLastUpdatedAt": "2026-04-01T09:31:19.441830+09:00",
+          "routeTypes": [
+            2
+          ],
+          "sampleRouteNames": [
+            "弘南線（弘前行き）",
+            "弘南線（弘前行き）",
+            "弘南線（黒石行き）",
+            "弘南線（黒石行き）",
+            "大鰐線（大鰐行き）",
+            "大鰐線（中央弘前行き）"
+          ],
+          "isRailLike": true,
+          "isBusOnly": false,
+          "candidateStatus": "rail_gtfs_candidate"
+        }
+      ]
+    },
+    {
+      "operatorId": "御岳登山鉄道",
+      "operatorName": "御岳登山鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "ケーブルカー"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "愛知環状鉄道",
+      "operatorName": "愛知環状鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "愛知環状鉄道線"
+      ],
+      "physicalStationCount": 23,
+      "trackCenterlineCount": 47,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "愛知高速交通",
+      "operatorName": "愛知高速交通",
+      "lineCount": 1,
+      "lineNames": [
+        "東部丘陵線"
+      ],
+      "physicalStationCount": 9,
+      "trackCenterlineCount": 17,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "新京成電鉄",
+      "operatorName": "新京成電鉄",
+      "lineCount": 1,
+      "lineNames": [
+        "新京成線"
+      ],
+      "physicalStationCount": 24,
+      "trackCenterlineCount": 48,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "明知鉄道",
+      "operatorName": "明知鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "明知線"
+      ],
+      "physicalStationCount": 11,
+      "trackCenterlineCount": 22,
+      "sourceStatus": "external_candidate_found",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "明知鉄道",
+          "feedName": "明知鉄道",
+          "feedPrefId": 21,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=aketetsu*akechirailway",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/aketetsu/feeds/akechirailway/files/feed.zip?uid=a2767f5e-23e9-4280-84af-6c4fa27d106d",
+          "licenseId": "CC BY 4.0",
+          "fileFromDate": "2026-03-14",
+          "fileToDate": "2027-03-31",
+          "fileLastUpdatedAt": "2026-03-01T21:29:31.446943+09:00",
+          "routeTypes": [
+            2
+          ],
+          "sampleRouteNames": [
+            "明知鉄道",
+            "急行7009D　大正ロマン1号",
+            "急行7010D　大正ロマン2号"
+          ],
+          "isRailLike": true,
+          "isBusOnly": false,
+          "candidateStatus": "rail_gtfs_candidate"
+        }
+      ]
+    },
+    {
+      "operatorId": "智頭急行",
+      "operatorName": "智頭急行",
+      "lineCount": 1,
+      "lineNames": [
+        "智頭線"
+      ],
+      "physicalStationCount": 14,
+      "trackCenterlineCount": 31,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "札幌市",
+      "operatorName": "札幌市",
+      "lineCount": 3,
+      "lineNames": [
+        "南北線",
+        "東西線",
+        "東豊線"
+      ],
+      "physicalStationCount": 49,
+      "trackCenterlineCount": 96,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "tokyo_monorail",
+      "operatorName": "東京モノレール",
+      "lineCount": 1,
+      "lineNames": [
+        "東京モノレール羽田線"
+      ],
+      "physicalStationCount": 11,
+      "trackCenterlineCount": 23,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 429,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Tokyo Monorail timetable collector",
+          "scripts": [
+            "scripts/ingest/build_v3_tokyo_tokyo_monorail_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_tokyo_monorail_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 Tokyo Monorail batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_tokyo_monorail_weekday_train_instances.json": 429
+          },
+          "totalKnownTrainInstances": 429
+        }
+      ]
+    },
+    {
+      "operatorId": "tokyo_metro",
+      "operatorName": "東京地下鉄",
+      "lineCount": 10,
+      "lineNames": [
+        "11号線半蔵門線",
+        "13号線副都心線",
+        "2号線日比谷線",
+        "3号線銀座線",
+        "4号線丸ノ内線",
+        "4号線丸ノ内線分岐線",
+        "5号線東西線",
+        "7号線南北線",
+        "8号線有楽町線",
+        "9号線千代田線"
+      ],
+      "physicalStationCount": 181,
+      "trackCenterlineCount": 373,
+      "sourceStatus": "existing_work_and_external_candidate",
+      "knownTrainInstanceCount": 7636,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Tokyo Metro official transfer API collector",
+          "scripts": [
+            "scripts/ingest/build_v3_tokyo_metro_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_tokyo_metro_weekday_train_instances.json.gz"
+          ],
+          "scopeNote": "v3 company-level Tokyo Metro batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_tokyo_metro_weekday_train_instances.json.gz": 7636
+          },
+          "totalKnownTrainInstances": 7636
+        },
+        {
+          "sourceKind": "odpt_rail_gtfs_candidate",
+          "title": "東京メトロ 鉄道関連情報",
+          "url": "https://ckan.odpt.org/en/dataset/?organization=tokyometro&res_format=GTFS%2FGTFS-JP",
+          "scopeNote": "ODPT railway GTFS candidate for Tokyo Metro."
+        }
+      ]
+    },
+    {
+      "operatorId": "rinkai",
+      "operatorName": "東京臨海高速鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "臨海副都心線"
+      ],
+      "physicalStationCount": 8,
+      "trackCenterlineCount": 15,
+      "sourceStatus": "existing_work_and_external_candidate",
+      "knownTrainInstanceCount": 534,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Rinkai Line timetable collector",
+          "scripts": [
+            "scripts/ingest/build_v3_tokyo_rinkai_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_rinkai_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 Rinkai batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_rinkai_weekday_train_instances.json": 534
+          },
+          "totalKnownTrainInstances": 534
+        },
+        {
+          "sourceKind": "odpt_rail_gtfs_candidate",
+          "title": "東京臨海高速鉄道 鉄道関連情報",
+          "url": "https://ckan.odpt.org/en/dataset/?organization=twr&res_format=GTFS%2FGTFS-JP&tags=%E9%89%84%E9%81%93-railway",
+          "scopeNote": "ODPT railway GTFS candidate for Rinkai Line."
+        }
+      ]
+    },
+    {
+      "operatorId": "toei",
+      "operatorName": "東京都",
+      "lineCount": 6,
+      "lineNames": [
+        "10号線新宿線",
+        "12号線大江戸線",
+        "1号線浅草線",
+        "6号線三田線",
+        "日暮里・舎人ライナー",
+        "荒川線"
+      ],
+      "physicalStationCount": 149,
+      "trackCenterlineCount": 318,
+      "sourceStatus": "existing_work_and_external_candidate",
+      "knownTrainInstanceCount": 2818,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Toei GTFS collector",
+          "scripts": [
+            "scripts/ingest/build_v3_toei_train_instances_from_gtfs.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_toei_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 Toei rail batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_toei_weekday_train_instances.json": 2818
+          },
+          "totalKnownTrainInstances": 2818
+        },
+        {
+          "sourceKind": "odpt_rail_gtfs_candidate",
+          "title": "東京都交通局 鉄道関連情報",
+          "url": "https://ckan.odpt.org/en/dataset/?organization=toei&res_format=GTFS%2FGTFS-JP",
+          "scopeNote": "Toei Subway, Tokyo Sakura Tram, and Nippori-Toneri Liner."
+        }
+      ]
+    },
+    {
+      "operatorId": "tokyu",
+      "operatorName": "東急電鉄",
+      "lineCount": 9,
+      "lineNames": [
+        "こどもの国線",
+        "世田谷線",
+        "大井町線",
+        "東急多摩川線",
+        "東急新横浜線",
+        "東横線",
+        "池上線",
+        "田園都市線",
+        "目黒線"
+      ],
+      "physicalStationCount": 110,
+      "trackCenterlineCount": 219,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 3843,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Tokyu station timetable collector",
+          "scripts": [
+            "scripts/ingest/build_v3_tokyu_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_tokyu_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 company-level Tokyu batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_tokyu_weekday_train_instances.json": 3843
+          },
+          "totalKnownTrainInstances": 3843
+        }
+      ]
+    },
+    {
+      "operatorId": "jr_east",
+      "operatorName": "東日本旅客鉄道",
+      "lineCount": 69,
+      "lineNames": [
+        "上越新幹線",
+        "上越線",
+        "両毛線",
+        "中央線",
+        "久留里線",
+        "五日市線",
+        "五能線",
+        "京葉線",
+        "仙山線",
+        "仙石線",
+        "伊東線",
+        "信越線",
+        "八戸線",
+        "八高線",
+        "内房線",
+        "北上線",
+        "北陸新幹線",
+        "南武線",
+        "只見線",
+        "吾妻線",
+        "外房線",
+        "大湊線",
+        "大糸線",
+        "大船渡線",
+        "奥羽線",
+        "小海線",
+        "山手線",
+        "山田線",
+        "川越線",
+        "左沢線",
+        "常磐線",
+        "弥彦線",
+        "成田線",
+        "日光線",
+        "東北新幹線",
+        "東北線",
+        "東海道線",
+        "東金線",
+        "根岸線",
+        "横浜線",
+        "横須賀線",
+        "武蔵野線",
+        "気仙沼線",
+        "水戸線",
+        "水郡線",
+        "津軽線",
+        "烏山線",
+        "田沢湖線",
+        "男鹿線",
+        "白新線",
+        "相模線",
+        "石巻線",
+        "磐越東線",
+        "磐越西線",
+        "篠ノ井線",
+        "米坂線",
+        "総武線",
+        "羽越線",
+        "花輪線",
+        "赤羽線",
+        "越後線",
+        "釜石線",
+        "陸羽東線",
+        "陸羽西線",
+        "青梅線",
+        "飯山線",
+        "高崎線",
+        "鶴見線",
+        "鹿島線"
+      ],
+      "physicalStationCount": 1803,
+      "trackCenterlineCount": 4145,
+      "sourceStatus": "existing_work_and_external_candidate",
+      "knownTrainInstanceCount": 4690,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_partial_collector",
+          "title": "JR East official station timetable collector",
+          "scripts": [
+            "scripts/ingest/discover_jreast_timetable.py",
+            "scripts/ingest/build_v3_tokyo_jreast_core_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_jreast_core_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 Tokyo-core conventional-line batch only; nationwide JR East remains open.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_jreast_core_weekday_train_instances.json": 4690
+          },
+          "totalKnownTrainInstances": 4690
+        },
+        {
+          "sourceKind": "odpt_rail_gtfs_candidate",
+          "title": "JR東日本 鉄道関連情報 / Train information of JR East",
+          "url": "https://ckan.odpt.org/organization/jreast?res_format=GTFS%2FGTFS-JP",
+          "scopeNote": "Kanto-area conventional lines only; Shinkansen and several edge lines are excluded by the ODPT catalog note."
+        }
+      ]
+    },
+    {
+      "operatorId": "tobu",
+      "operatorName": "東武鉄道",
+      "lineCount": 12,
+      "lineNames": [
+        "亀戸線",
+        "伊勢崎線",
+        "佐野線",
+        "大師線",
+        "宇都宮線",
+        "小泉線",
+        "日光線",
+        "東上本線",
+        "桐生線",
+        "越生線",
+        "野田線",
+        "鬼怒川線"
+      ],
+      "physicalStationCount": 218,
+      "trackCenterlineCount": 464,
+      "sourceStatus": "existing_work_and_external_candidate",
+      "knownTrainInstanceCount": 8937,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Tobu station timetable collector",
+          "scripts": [
+            "scripts/ingest/build_v3_tobu_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_tobu_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 company-level Tobu batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_tobu_weekday_train_instances.json": 8937
+          },
+          "totalKnownTrainInstances": 8937
+        },
+        {
+          "sourceKind": "odpt_rail_gtfs_candidate",
+          "title": "東武鉄道 鉄道関連情報 / Train information of Tobu",
+          "url": "https://ckan.odpt.org/dataset/tobu_train",
+          "scopeNote": "ODPT Challenge 2025 railway GTFS candidate for Tobu."
+        }
+      ]
+    },
+    {
+      "operatorId": "jr_central",
+      "operatorName": "東海旅客鉄道",
+      "lineCount": 13,
+      "lineNames": [
+        "中央線",
+        "参宮線",
+        "名松線",
+        "太多線",
+        "御殿場線",
+        "東海道新幹線",
+        "東海道線",
+        "武豊線",
+        "紀勢線",
+        "身延線",
+        "関西線",
+        "飯田線",
+        "高山線"
+      ],
+      "physicalStationCount": 439,
+      "trackCenterlineCount": 1031,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 1425,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_partial_collector",
+          "title": "JR Central Tokaido Shinkansen collector",
+          "scripts": [
+            "scripts/ingest/build_v3_jr_central_tokaido_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_jr_central_tokaido_weekday_train_instances.json"
+          ],
+          "scopeNote": "Tokaido Shinkansen only; conventional JR Central lines remain open.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_jr_central_tokaido_weekday_train_instances.json": 1425
+          },
+          "totalKnownTrainInstances": 1425
+        }
+      ]
+    },
+    {
+      "operatorId": "東葉高速鉄道",
+      "operatorName": "東葉高速鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "東葉高速線"
+      ],
+      "physicalStationCount": 9,
+      "trackCenterlineCount": 17,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "松浦鉄道",
+      "operatorName": "松浦鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "西九州線"
+      ],
+      "physicalStationCount": 57,
+      "trackCenterlineCount": 115,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "横浜シサイドライン",
+      "operatorName": "横浜シーサイドライン",
+      "lineCount": 1,
+      "lineNames": [
+        "金沢シーサイドライン"
+      ],
+      "physicalStationCount": 14,
+      "trackCenterlineCount": 27,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "横浜市",
+      "operatorName": "横浜市",
+      "lineCount": 3,
+      "lineNames": [
+        "1号線",
+        "3号線",
+        "4号線"
+      ],
+      "physicalStationCount": 43,
+      "trackCenterlineCount": 87,
+      "sourceStatus": "external_candidate_found",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "odpt_rail_gtfs_candidate",
+          "title": "横浜市営地下鉄 / Yokohama Municipal Subway",
+          "url": "https://ckan.odpt.org/en/dataset/?res_format=GTFS%2FGTFS-JP&tags=%E9%89%84%E9%81%93-railway",
+          "scopeNote": "ODPT railway GTFS candidate for Yokohama Municipal Subway."
+        }
+      ]
+    },
+    {
+      "operatorId": "横浜高速鉄道",
+      "operatorName": "横浜高速鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "みなとみらい21線"
+      ],
+      "physicalStationCount": 6,
+      "trackCenterlineCount": 11,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "樽見鉄道",
+      "operatorName": "樽見鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "樽見線"
+      ],
+      "physicalStationCount": 19,
+      "trackCenterlineCount": 39,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "比叡山鉄道",
+      "operatorName": "比叡山鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "比叡山鉄道線"
+      ],
+      "physicalStationCount": 4,
+      "trackCenterlineCount": 7,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "水島臨海鉄道",
+      "operatorName": "水島臨海鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "水島本線"
+      ],
+      "physicalStationCount": 10,
+      "trackCenterlineCount": 19,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "水間鉄道",
+      "operatorName": "水間鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "水間線"
+      ],
+      "physicalStationCount": 10,
+      "trackCenterlineCount": 19,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "江ノ島電鉄",
+      "operatorName": "江ノ島電鉄",
+      "lineCount": 1,
+      "lineNames": [
+        "江ノ島電鉄線"
+      ],
+      "physicalStationCount": 15,
+      "trackCenterlineCount": 29,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "沖縄都市モノレル",
+      "operatorName": "沖縄都市モノレール",
+      "lineCount": 1,
+      "lineNames": [
+        "沖縄都市モノレール線"
+      ],
+      "physicalStationCount": 19,
+      "trackCenterlineCount": 37,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "泉北高速鉄道",
+      "operatorName": "泉北高速鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "泉北高速鉄道線"
+      ],
+      "physicalStationCount": 6,
+      "trackCenterlineCount": 13,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "津軽鉄道",
+      "operatorName": "津軽鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "津軽鉄道線"
+      ],
+      "physicalStationCount": 12,
+      "trackCenterlineCount": 23,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "流鉄",
+      "operatorName": "流鉄",
+      "lineCount": 1,
+      "lineNames": [
+        "流山線"
+      ],
+      "physicalStationCount": 6,
+      "trackCenterlineCount": 11,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "湘南モノレル",
+      "operatorName": "湘南モノレール",
+      "lineCount": 1,
+      "lineNames": [
+        "江の島線"
+      ],
+      "physicalStationCount": 8,
+      "trackCenterlineCount": 16,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "熊本市",
+      "operatorName": "熊本市",
+      "lineCount": 5,
+      "lineNames": [
+        "上熊本線",
+        "健軍線",
+        "幹線",
+        "水前寺線",
+        "田崎線"
+      ],
+      "physicalStationCount": 39,
+      "trackCenterlineCount": 75,
+      "sourceStatus": "external_candidate_found",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "熊本市交通局",
+          "feedName": "熊本市電",
+          "feedPrefId": 43,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=kumamoto-shiden*kumamotoshiden",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/kumamoto-shiden/feeds/kumamotoshiden/files/feed.zip?uid=63e21e68-7eee-4bda-bba6-a6f40cb620ef",
+          "licenseId": "CC BY 2.1 JP",
+          "fileFromDate": "2025-06-01",
+          "fileToDate": "2027-03-31",
+          "fileLastUpdatedAt": "2025-05-27T10:27:56.890521+09:00",
+          "routeTypes": [
+            0
+          ],
+          "sampleRouteNames": [
+            "A系統",
+            "B系統"
+          ],
+          "isRailLike": true,
+          "isBusOnly": false,
+          "candidateStatus": "rail_gtfs_candidate"
+        }
+      ]
+    },
+    {
+      "operatorId": "熊本電気鉄道",
+      "operatorName": "熊本電気鉄道",
+      "lineCount": 2,
+      "lineNames": [
+        "菊池線",
+        "藤崎線"
+      ],
+      "physicalStationCount": 19,
+      "trackCenterlineCount": 38,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "甘木鉄道",
+      "operatorName": "甘木鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "甘木線"
+      ],
+      "physicalStationCount": 11,
+      "trackCenterlineCount": 21,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "由利高原鉄道",
+      "operatorName": "由利高原鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "鳥海山ろく線"
+      ],
+      "physicalStationCount": 12,
+      "trackCenterlineCount": 24,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "皿倉登山鉄道",
+      "operatorName": "皿倉登山鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "帆柱ケーブル線"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "sotetsu",
+      "operatorName": "相模鉄道",
+      "lineCount": 3,
+      "lineNames": [
+        "相鉄いずみ野線",
+        "相鉄新横浜線",
+        "相鉄本線"
+      ],
+      "physicalStationCount": 29,
+      "trackCenterlineCount": 58,
+      "sourceStatus": "external_candidate_found",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "odpt_rail_gtfs_candidate",
+          "title": "相模鉄道 鉄道関連情報 / Train information of Sotetsu",
+          "url": "https://ckan.odpt.org/en/dataset/?organization=sotetsu&res_format=GTFS%2FGTFS-JP",
+          "scopeNote": "ODPT Challenge 2025 railway GTFS candidate for Sotetsu."
+        }
+      ]
+    },
+    {
+      "operatorId": "真岡鐵道",
+      "operatorName": "真岡鐵道",
+      "lineCount": 1,
+      "lineNames": [
+        "真岡線"
+      ],
+      "physicalStationCount": 17,
+      "trackCenterlineCount": 33,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "神戸六甲鉄道",
+      "operatorName": "神戸六甲鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "六甲ケーブル線"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "神戸市",
+      "operatorName": "神戸市",
+      "lineCount": 5,
+      "lineNames": [
+        "北神線",
+        "山手線",
+        "海岸線",
+        "西神延伸線",
+        "西神線"
+      ],
+      "physicalStationCount": 30,
+      "trackCenterlineCount": 58,
+      "sourceStatus": "needs_source_research_rejected_name_match_only",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "神戸市",
+          "feedName": "神戸市コミュニティバス",
+          "feedPrefId": 28,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=kobecity*kobe-shiokaze",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/kobecity/feeds/kobe-shiokaze/files/feed.zip?uid=a7c878fb-df6a-4669-9713-7b7c6b216b7d",
+          "licenseId": "CC BY 2.1 JP",
+          "fileFromDate": "2025-08-01",
+          "fileToDate": "2026-09-30",
+          "fileLastUpdatedAt": "2026-02-05T22:46:46.890614+09:00",
+          "routeTypes": [
+            3
+          ],
+          "sampleRouteNames": [
+            "しおかぜ日中便",
+            "しおかぜ夜便（西ルート）",
+            "しおかぜ夜便（東ルート）",
+            "ヘルマンバス",
+            "ふきあい南北バス 神仙寺ルート",
+            "ふきあい南北バス 熊内ルート",
+            "はまちどり 月見山ルート",
+            "はまちどり 一ノ谷ルート"
+          ],
+          "isRailLike": false,
+          "isBusOnly": true,
+          "candidateStatus": "rejected_bus_only_name_match"
+        },
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "神戸市",
+          "feedName": "北区青葉台・柏尾台地区「さとやま」",
+          "feedPrefId": 28,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=kobecity*kobe-satoyama",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/kobecity/feeds/kobe-satoyama/files/feed.zip?uid=18b31e03-c7d1-4ed6-9721-c6bdbb131ff0",
+          "licenseId": "CC BY 4.0",
+          "fileFromDate": "2026-03-02",
+          "fileToDate": "2027-03-31",
+          "fileLastUpdatedAt": "2026-03-07T13:42:40.532916+09:00",
+          "routeTypes": [
+            3
+          ],
+          "sampleRouteNames": [
+            "さとやま"
+          ],
+          "isRailLike": false,
+          "isBusOnly": true,
+          "candidateStatus": "rejected_bus_only_name_match"
+        }
+      ]
+    },
+    {
+      "operatorId": "神戸新交通",
+      "operatorName": "神戸新交通",
+      "lineCount": 2,
+      "lineNames": [
+        "ポートアイランド線",
+        "六甲アイランド線"
+      ],
+      "physicalStationCount": 18,
+      "trackCenterlineCount": 38,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "神戸電鉄",
+      "operatorName": "神戸電鉄",
+      "lineCount": 5,
+      "lineNames": [
+        "三田線",
+        "公園都市線",
+        "有馬線",
+        "神戸高速線",
+        "粟生線"
+      ],
+      "physicalStationCount": 51,
+      "trackCenterlineCount": 103,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "福井鉄道",
+      "operatorName": "福井鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "福武線"
+      ],
+      "physicalStationCount": 25,
+      "trackCenterlineCount": 51,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "福岡市",
+      "operatorName": "福岡市",
+      "lineCount": 3,
+      "lineNames": [
+        "1号線(空港線)",
+        "2号線(箱崎線)",
+        "3号線(七隈線)"
+      ],
+      "physicalStationCount": 38,
+      "trackCenterlineCount": 75,
+      "sourceStatus": "needs_source_research_rejected_name_match_only",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "福岡市",
+          "feedName": "今宿姪浜線乗合バス",
+          "feedPrefId": 40,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=fukuokacity*ImajukuMeinohamaLine",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/fukuokacity/feeds/ImajukuMeinohamaLine/files/feed.zip?uid=ebed48fa-8489-4ee5-943e-186c01768042",
+          "licenseId": "CC BY 4.0",
+          "fileFromDate": "2025-04-01",
+          "fileToDate": "2027-03-31",
+          "fileLastUpdatedAt": "2026-04-07T10:20:37.543197+09:00",
+          "routeTypes": [
+            3
+          ],
+          "sampleRouteNames": [
+            "今宿姪浜線乗合バス（なぎさ号）"
+          ],
+          "isRailLike": false,
+          "isBusOnly": true,
+          "candidateStatus": "rejected_bus_only_name_match"
+        }
+      ]
+    },
+    {
+      "operatorId": "福島交通",
+      "operatorName": "福島交通",
+      "lineCount": 1,
+      "lineNames": [
+        "飯坂線"
+      ],
+      "physicalStationCount": 12,
+      "trackCenterlineCount": 23,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "秋田内陸縦貫鉄道",
+      "operatorName": "秋田内陸縦貫鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "秋田内陸線"
+      ],
+      "physicalStationCount": 29,
+      "trackCenterlineCount": 59,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "秩父鉄道",
+      "operatorName": "秩父鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "秩父本線"
+      ],
+      "physicalStationCount": 37,
+      "trackCenterlineCount": 74,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "立山黒部貫光",
+      "operatorName": "立山黒部貫光",
+      "lineCount": 1,
+      "lineNames": [
+        "鋼索線"
+      ],
+      "physicalStationCount": 4,
+      "trackCenterlineCount": 6,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "筑波観光鉄道",
+      "operatorName": "筑波観光鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "筑波山鋼索鉄道線"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "筑豊電気鉄道",
+      "operatorName": "筑豊電気鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "筑豊電気鉄道線"
+      ],
+      "physicalStationCount": 21,
+      "trackCenterlineCount": 41,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "紀州鉄道",
+      "operatorName": "紀州鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "紀州鉄道線"
+      ],
+      "physicalStationCount": 5,
+      "trackCenterlineCount": 9,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "肥薩おれんじ鉄道",
+      "operatorName": "肥薩おれんじ鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "肥薩おれんじ鉄道線"
+      ],
+      "physicalStationCount": 28,
+      "trackCenterlineCount": 56,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "能勢電鉄",
+      "operatorName": "能勢電鉄",
+      "lineCount": 2,
+      "lineNames": [
+        "妙見線",
+        "日生線"
+      ],
+      "physicalStationCount": 16,
+      "trackCenterlineCount": 30,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "舞浜リゾトライン",
+      "operatorName": "舞浜リゾートライン",
+      "lineCount": 1,
+      "lineNames": [
+        "ディズニーリゾートライン"
+      ],
+      "physicalStationCount": 4,
+      "trackCenterlineCount": 8,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "芝山鉄道",
+      "operatorName": "芝山鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "芝山鉄道線"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "若桜鉄道",
+      "operatorName": "若桜鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "若桜線"
+      ],
+      "physicalStationCount": 9,
+      "trackCenterlineCount": 18,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "jr_west",
+      "operatorName": "西日本旅客鉄道",
+      "lineCount": 51,
+      "lineNames": [
+        "JR東西線",
+        "おおさか東線",
+        "七尾線",
+        "伯備線",
+        "加古川線",
+        "北陸新幹線",
+        "北陸線",
+        "博多南線",
+        "可部線",
+        "吉備線",
+        "呉線",
+        "和歌山線",
+        "因美線",
+        "城端線",
+        "境線",
+        "大糸線",
+        "大阪環状線",
+        "奈良線",
+        "姫新線",
+        "宇部線",
+        "宇野線",
+        "小浜線",
+        "小野田線",
+        "山口線",
+        "山陰線",
+        "山陽新幹線",
+        "山陽線",
+        "岩徳線",
+        "播但線",
+        "木次線",
+        "本四備讃線",
+        "東海道線",
+        "桜井線",
+        "桜島線",
+        "氷見線",
+        "津山線",
+        "湖西線",
+        "片町線",
+        "福塩線",
+        "福知山線",
+        "紀勢線",
+        "美祢線",
+        "舞鶴線",
+        "芸備線",
+        "草津線",
+        "赤穂線",
+        "越美北線",
+        "関西空港線",
+        "関西線",
+        "阪和線",
+        "高山線"
+      ],
+      "physicalStationCount": 1264,
+      "trackCenterlineCount": 2797,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 1138,
+      "sourceLeads": [
+        {
+          "sourceKind": "collector_available_not_full",
+          "title": "JR West station/train timetable parser",
+          "scripts": [
+            "scripts/ingest/build_jrwest_train_instances_from_station_timetable.py",
+            "scripts/ingest/parse_jrwest_train_timetable.py"
+          ],
+          "dataFiles": [
+            "data/shinkansen_v2_weekday_train_instances_merged.json"
+          ],
+          "scopeNote": "Parser exists and shinkansen merged data exists; full JR West conventional collection is not complete.",
+          "trainInstanceCounts": {
+            "data/shinkansen_v2_weekday_train_instances_merged.json": 1138
+          },
+          "totalKnownTrainInstances": 1138
+        }
+      ]
+    },
+    {
+      "operatorId": "西日本鉄道",
+      "operatorName": "西日本鉄道",
+      "lineCount": 4,
+      "lineNames": [
+        "天神大牟田線",
+        "太宰府線",
+        "甘木線",
+        "貝塚線"
+      ],
+      "physicalStationCount": 75,
+      "trackCenterlineCount": 148,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "seibu",
+      "operatorName": "西武鉄道",
+      "lineCount": 12,
+      "lineNames": [
+        "国分寺線",
+        "多摩川線",
+        "多摩湖線",
+        "山口線",
+        "拝島線",
+        "新宿線",
+        "池袋線",
+        "狭山線",
+        "西武園線",
+        "西武有楽町線",
+        "西武秩父線",
+        "豊島線"
+      ],
+      "physicalStationCount": 105,
+      "trackCenterlineCount": 218,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 6682,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Seibu station timetable collector",
+          "scripts": [
+            "scripts/ingest/build_v3_seibu_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_seibu_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 company-level Seibu batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_seibu_weekday_train_instances.json": 6682
+          },
+          "totalKnownTrainInstances": 6682
+        }
+      ]
+    },
+    {
+      "operatorId": "豊橋鉄道",
+      "operatorName": "豊橋鉄道",
+      "lineCount": 2,
+      "lineNames": [
+        "東田本線",
+        "渥美線"
+      ],
+      "physicalStationCount": 30,
+      "trackCenterlineCount": 58,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "近江鉄道",
+      "operatorName": "近江鉄道",
+      "lineCount": 3,
+      "lineNames": [
+        "八日市線",
+        "多賀線",
+        "本線"
+      ],
+      "physicalStationCount": 35,
+      "trackCenterlineCount": 71,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "近畿日本鉄道",
+      "operatorName": "近畿日本鉄道",
+      "lineCount": 23,
+      "lineNames": [
+        "けいはんな線",
+        "京都線",
+        "信貴線",
+        "南大阪線",
+        "吉野線",
+        "名古屋線",
+        "大阪線",
+        "天理線",
+        "奈良線",
+        "山田線",
+        "御所線",
+        "志摩線",
+        "橿原線",
+        "湯の山線",
+        "生駒線",
+        "生駒鋼索線",
+        "田原本線",
+        "西信貴鋼索線",
+        "道明寺線",
+        "鈴鹿線",
+        "長野線",
+        "難波線",
+        "鳥羽線"
+      ],
+      "physicalStationCount": 309,
+      "trackCenterlineCount": 636,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "道南いさりび鉄道",
+      "operatorName": "道南いさりび鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "道南いさりび鉄道線"
+      ],
+      "physicalStationCount": 12,
+      "trackCenterlineCount": 28,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "遠州鉄道",
+      "operatorName": "遠州鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "鉄道線"
+      ],
+      "physicalStationCount": 18,
+      "trackCenterlineCount": 35,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "野岩鉄道",
+      "operatorName": "野岩鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "会津鬼怒川線"
+      ],
+      "physicalStationCount": 9,
+      "trackCenterlineCount": 17,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "銚子電気鉄道",
+      "operatorName": "銚子電気鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "銚子電気鉄道線"
+      ],
+      "physicalStationCount": 10,
+      "trackCenterlineCount": 19,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "錦川鉄道",
+      "operatorName": "錦川鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "錦川清流線"
+      ],
+      "physicalStationCount": 13,
+      "trackCenterlineCount": 26,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "長崎電気軌道",
+      "operatorName": "長崎電気軌道",
+      "lineCount": 5,
+      "lineNames": [
+        "大浦支線",
+        "本線",
+        "桜町支線",
+        "蛍茶屋支線",
+        "赤迫支線"
+      ],
+      "physicalStationCount": 43,
+      "trackCenterlineCount": 93,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "長良川鉄道",
+      "operatorName": "長良川鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "越美南線"
+      ],
+      "physicalStationCount": 38,
+      "trackCenterlineCount": 76,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "長野電鉄",
+      "operatorName": "長野電鉄",
+      "lineCount": 1,
+      "lineNames": [
+        "長野線"
+      ],
+      "physicalStationCount": 24,
+      "trackCenterlineCount": 49,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "関東鉄道",
+      "operatorName": "関東鉄道",
+      "lineCount": 2,
+      "lineNames": [
+        "常総線",
+        "竜ヶ崎線"
+      ],
+      "physicalStationCount": 28,
+      "trackCenterlineCount": 54,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "阪堺電気軌道",
+      "operatorName": "阪堺電気軌道",
+      "lineCount": 2,
+      "lineNames": [
+        "上町線",
+        "阪堺線"
+      ],
+      "physicalStationCount": 42,
+      "trackCenterlineCount": 86,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "阪急電鉄",
+      "operatorName": "阪急電鉄",
+      "lineCount": 10,
+      "lineNames": [
+        "京都線",
+        "今津線",
+        "伊丹線",
+        "千里線",
+        "宝塚線",
+        "嵐山線",
+        "甲陽線",
+        "神戸線",
+        "神戸高速線",
+        "箕面線"
+      ],
+      "physicalStationCount": 104,
+      "trackCenterlineCount": 210,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "阪神電気鉄道",
+      "operatorName": "阪神電気鉄道",
+      "lineCount": 4,
+      "lineNames": [
+        "本線",
+        "武庫川線",
+        "神戸高速線",
+        "阪神なんば線"
+      ],
+      "physicalStationCount": 56,
+      "trackCenterlineCount": 110,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "阿佐海岸鉄道",
+      "operatorName": "阿佐海岸鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "阿佐東線"
+      ],
+      "physicalStationCount": 4,
+      "trackCenterlineCount": 7,
+      "sourceStatus": "needs_source_research_rejected_name_match_only",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "阿佐海岸鉄道株式会社",
+          "feedName": "阿佐海岸鉄道株式会社【DMV】",
+          "feedPrefId": 36,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=asatetu*asakaigantetsudo",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/asatetu/feeds/asakaigantetsudo/files/feed.zip?uid=0cdfee7b-5fd6-4c88-9e74-ee6327c386b8",
+          "licenseId": "CC BY 4.0",
+          "fileFromDate": "2025-03-15",
+          "fileToDate": "2026-03-14",
+          "fileLastUpdatedAt": "2025-03-10T15:11:22.418075+09:00",
+          "routeTypes": [
+            3
+          ],
+          "sampleRouteNames": [
+            "DMV　海南宍喰線",
+            "DMV　海南室戸線"
+          ],
+          "isRailLike": false,
+          "isBusOnly": true,
+          "candidateStatus": "rejected_bus_only_name_match"
+        }
+      ]
+    },
+    {
+      "operatorId": "阿武隈急行",
+      "operatorName": "阿武隈急行",
+      "lineCount": 1,
+      "lineNames": [
+        "阿武隈急行線"
+      ],
+      "physicalStationCount": 24,
+      "trackCenterlineCount": 53,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "青い森鉄道",
+      "operatorName": "青い森鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "青い森鉄道線"
+      ],
+      "physicalStationCount": 27,
+      "trackCenterlineCount": 71,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "静岡鉄道",
+      "operatorName": "静岡鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "静岡清水線"
+      ],
+      "physicalStationCount": 15,
+      "trackCenterlineCount": 29,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "鞍馬寺",
+      "operatorName": "鞍馬寺",
+      "lineCount": 1,
+      "lineNames": [
+        "鞍馬山鋼索鉄道"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "養老鉄道",
+      "operatorName": "養老鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "養老線"
+      ],
+      "physicalStationCount": 27,
+      "trackCenterlineCount": 54,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "tsukuba_express",
+      "operatorName": "首都圏新都市鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "常磐新線"
+      ],
+      "physicalStationCount": 20,
+      "trackCenterlineCount": 40,
+      "sourceStatus": "existing_work_and_external_candidate",
+      "knownTrainInstanceCount": 463,
+      "sourceLeads": [
+        {
+          "sourceKind": "existing_v3_collector",
+          "title": "Tsukuba Express API collector",
+          "scripts": [
+            "scripts/ingest/build_v3_tsukuba_express_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v3_tokyo_tsukuba_express_weekday_train_instances.json"
+          ],
+          "scopeNote": "v3 Tsukuba Express batch.",
+          "trainInstanceCounts": {
+            "data/v3_tokyo_tsukuba_express_weekday_train_instances.json": 463
+          },
+          "totalKnownTrainInstances": 463
+        },
+        {
+          "sourceKind": "odpt_rail_gtfs_candidate",
+          "title": "首都圏新都市鉄道（つくばエクスプレス） 鉄道関連情報",
+          "url": "https://ckan.odpt.org/en/dataset/?res_format=GTFS%2FGTFS-JP&tags=%E9%89%84%E9%81%93-railway",
+          "scopeNote": "ODPT railway GTFS candidate for Tsukuba Express."
+        }
+      ]
+    },
+    {
+      "operatorId": "高尾登山電鉄",
+      "operatorName": "高尾登山電鉄",
+      "lineCount": 1,
+      "lineNames": [
+        "高尾鋼索線"
+      ],
+      "physicalStationCount": 2,
+      "trackCenterlineCount": 3,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "高松琴平電気鉄道",
+      "operatorName": "高松琴平電気鉄道",
+      "lineCount": 3,
+      "lineNames": [
+        "志度線",
+        "琴平線",
+        "長尾線"
+      ],
+      "physicalStationCount": 55,
+      "trackCenterlineCount": 109,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "鹿児島市",
+      "operatorName": "鹿児島市",
+      "lineCount": 4,
+      "lineNames": [
+        "唐湊線",
+        "第一期線",
+        "第二期線",
+        "谷山線"
+      ],
+      "physicalStationCount": 39,
+      "trackCenterlineCount": 83,
+      "sourceStatus": "needs_source_research_rejected_name_match_only",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": [
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "鹿児島市",
+          "feedName": "鹿児島市コミュニティバス「あいばす」",
+          "feedPrefId": 46,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=kagoshimacity*aibus",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/kagoshimacity/feeds/aibus/files/feed.zip?uid=0265c291-e661-46d1-9045-7755852c847a",
+          "licenseId": "CC BY 4.0",
+          "fileFromDate": "2026-04-01",
+          "fileToDate": "2027-03-31",
+          "fileLastUpdatedAt": "2026-04-03T11:48:13.011835+09:00",
+          "routeTypes": [
+            3
+          ],
+          "sampleRouteNames": [
+            "あいばす⑥谷山北部地域",
+            "あいばす⑥谷山北部地域",
+            "あいばす⑥谷山北部地域",
+            "あいばす⑥谷山北部地域",
+            "あいばす②谷山地域",
+            "あいばす②谷山地域",
+            "あいばす①吉野地域",
+            "あいばす①吉野地域"
+          ],
+          "isRailLike": false,
+          "isBusOnly": true,
+          "candidateStatus": "rejected_bus_only_name_match"
+        }
+      ]
+    },
+    {
+      "operatorId": "鹿島臨海鉄道",
+      "operatorName": "鹿島臨海鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "大洗鹿島線"
+      ],
+      "physicalStationCount": 15,
+      "trackCenterlineCount": 30,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    },
+    {
+      "operatorId": "黒部峡谷鉄道",
+      "operatorName": "黒部峡谷鉄道",
+      "lineCount": 1,
+      "lineNames": [
+        "本線"
+      ],
+      "physicalStationCount": 10,
+      "trackCenterlineCount": 19,
+      "sourceStatus": "needs_source_research",
+      "knownTrainInstanceCount": 0,
+      "sourceLeads": []
+    }
+  ]
+}
