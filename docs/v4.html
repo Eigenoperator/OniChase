@@ -634,7 +634,7 @@
         maxzoom: 7.65,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': ['get', 'operator_color'],
+          'line-color': ['coalesce', ['get', 'line_color'], ['get', 'operator_color']],
           'line-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0.52, 6.8, 0.68, 7.6, 0.0],
           'line-width': ['interpolate', ['linear'], ['zoom'], 3.5, 0.35, 7.6, 0.78],
         },
@@ -660,7 +660,7 @@
         filter: EMPTY_LINE_FILTER,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': ['get', 'operator_color'],
+          'line-color': ['coalesce', ['get', 'line_color'], ['get', 'operator_color']],
           'line-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 1.0, 7.6, 0.0],
           'line-width': ['interpolate', ['linear'], ['zoom'], 3.5, 1.45, 7.6, 2.35],
         },
@@ -741,7 +741,7 @@
         minzoom: 7.55,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': ['get', 'operator_color'],
+          'line-color': ['coalesce', ['get', 'line_color'], ['get', 'operator_color']],
           'line-opacity': ['interpolate', ['linear'], ['zoom'], 7.55, 0.0, 8.0, 0.52, 13, 0.88],
           'line-width': ['interpolate', ['linear'], ['zoom'], 7.55, 0.34, 11, 0.88, 15, 1.55],
         },
@@ -767,7 +767,7 @@
         filter: state.selectedLine ? selectedLineFilter(state.selectedLine) : EMPTY_LINE_FILTER,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': ['get', 'operator_color'],
+          'line-color': ['coalesce', ['get', 'line_color'], ['get', 'operator_color']],
           'line-opacity': 1,
           'line-width': ['interpolate', ['linear'], ['zoom'], 7.55, 1.9, 13, 4.2, 17, 5.6],
         },
@@ -921,7 +921,7 @@
     }
 
     function lineColor(line) {
-      return line?.operatorColor || colorFromLine(line) || '#0f766e';
+      return line?.lineColor || line?.operatorColor || colorFromLine(line) || '#0f766e';
     }
 
     function colorFromLine(line) {

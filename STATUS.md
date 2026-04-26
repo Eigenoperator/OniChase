@@ -22,10 +22,11 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - v4 track-continuity audit reports `12` multi-component operator-line pairs out of `596`; the report is saved as `data/v4_track_continuity_audit.json`.
 - v4 continuity warnings now have a dedicated review map at `docs/v4_continuity.html` plus generated SVG/GeoJSON highlight outputs.
 - v4 overview tracks now fade out by zoom `7.65`, and exact physical `track_centerlines` take over from zoom `7.55` to avoid straight overview lines overlapping real geometry.
+- v4 line rendering now uses line-level color when known and falls back to company color; current inventory marks `108` line-specific colors and `488` company fallbacks.
 
 ## In Progress
 - Start nationwide timetable-source planning from the `596` operator-line inventory.
-- Continue reducing v4 map ambiguity from same-operator colors by adding official per-line colors.
+- Expand the official per-line color table beyond the first v3/Tokyo/Shinkansen seed set.
 - If coastline performance regresses again, convert the two-level outline GeoJSON contract into PMTiles.
 
 ## Blockers
@@ -42,5 +43,5 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 
 ## Next
 1. Review the 12 highlighted continuity warnings and classify each as real gap, legitimate multi-section line, or source artifact.
-2. Add official per-line colors so same-operator nearby lines no longer look like broken segments.
+2. Continue filling missing official per-line colors for non-Tokyo regional operators.
 3. Add an identity lookup that maps timetable stops to station groups while preserving physical stations for rendering.

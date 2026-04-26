@@ -8,7 +8,7 @@ from typing import Any
 
 from build_v4_japan_physical_map import DEFAULT_OUTPUT, write_json, load_json
 from build_v4_line_inventory import build_line_inventory
-from v4_visual_identity import color_for_operator
+from v4_visual_identity import color_for_operator, color_for_operator_line, color_source_for_operator_line
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -196,6 +196,9 @@ def track_centerline_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
     features = []
     for track in bundle.get("trackCenterlines", []):
         operator_id = track["operatorId"]
+        line_name = track["lineName"]
+        operator_color = color_for_operator(operator_id)
+        line_color = color_for_operator_line(operator_id, line_name)
         features.append(
             {
                 "type": "Feature",
@@ -205,8 +208,10 @@ def track_centerline_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
                     "id": track["id"],
                     "operator_id": operator_id,
                     "operator_name": track["operatorName"],
-                    "operator_color": color_for_operator(operator_id),
-                    "line_name": track["lineName"],
+                    "operator_color": operator_color,
+                    "line_name": line_name,
+                    "line_color": line_color,
+                    "line_color_source": color_source_for_operator_line(operator_id, line_name),
                     "railway_class": track.get("railwayClass"),
                     "railway_type": track.get("railwayType"),
                     "source_feature_index": track.get("source", {}).get("featureIndex"),
@@ -221,6 +226,8 @@ def track_overview_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
     for track in bundle.get("trackCenterlines", []):
         operator_id = track["operatorId"]
         line_name = track["lineName"]
+        operator_color = color_for_operator(operator_id)
+        line_color = color_for_operator_line(operator_id, line_name)
         key = (operator_id, line_name)
         entry = grouped.setdefault(
             key,
@@ -228,7 +235,9 @@ def track_overview_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
                 "id": f"OVERVIEW_{track['id']}",
                 "operatorId": operator_id,
                 "operatorName": track["operatorName"],
-                "operatorColor": color_for_operator(operator_id),
+                "operatorColor": operator_color,
+                "lineColor": line_color,
+                "lineColorSource": color_source_for_operator_line(operator_id, line_name),
                 "lineName": line_name,
                 "railwayClasses": set(),
                 "railwayTypes": set(),
@@ -260,6 +269,8 @@ def track_overview_features(bundle: dict[str, Any]) -> list[dict[str, Any]]:
                     "operator_name": entry["operatorName"],
                     "operator_color": entry["operatorColor"],
                     "line_name": entry["lineName"],
+                    "line_color": entry["lineColor"],
+                    "line_color_source": entry["lineColorSource"],
                     "track_centerline_count": entry["trackCenterlineCount"],
                     "railway_classes": ",".join(sorted(entry["railwayClasses"])),
                     "railway_types": ",".join(sorted(entry["railwayTypes"])),
