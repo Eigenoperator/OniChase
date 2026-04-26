@@ -22,7 +22,7 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - v4 track-continuity audit now uses 500m endpoint snap and reports `6` reviewed multi-component operator-line pairs, `0` unreviewed.
 - v4 continuity warnings now have a dedicated review map at `docs/v4_continuity.html` plus generated SVG/GeoJSON highlight outputs.
 - v4 overview tracks now fade out by zoom `7.65`, and exact physical `track_centerlines` take over from zoom `7.55` to avoid straight overview lines overlapping real geometry.
-- v4 line rendering now uses line-level color when known and falls back to company color; current inventory marks `108` line-specific colors and `488` company fallbacks.
+- v4 line rendering now uses line-level color when known and falls back to company color; current inventory marks `152` line-specific colors and `444` company fallbacks, audited by `scripts/ingest/audit_v4_line_colors.py`.
 - `scripts/ingest/audit_v4_line_presence.py` verifies raw N02, v4 bundle, MapLibre exports, and inventory all contain the same `596` operator-line pairs with `0` warnings.
 
 ## In Progress
