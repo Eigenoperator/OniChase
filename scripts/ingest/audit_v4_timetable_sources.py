@@ -27,6 +27,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_INVENTORY = ROOT / "docs" / "data" / "v4_maplibre" / "line_inventory.json"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_timetable_source_registry.json"
+DEFAULT_GTFS_ROUTE_INDEX = ROOT / "data" / "v4_gtfs_repository_route_index.json"
+DEFAULT_OFFICIAL_SITE_CANDIDATES = ROOT / "data" / "v4_official_site_timetable_candidates.json"
 
 GTFS_REPOSITORY_FILES_URL = "https://api.gtfs-data.jp/v2/files?target_date=all"
 
@@ -42,7 +44,7 @@ ODPT_RAIL_GTFS_LEADS: dict[str, list[dict[str, Any]]] = {
         {
             "sourceKind": "odpt_rail_gtfs_candidate",
             "title": "横浜市営地下鉄 / Yokohama Municipal Subway",
-            "url": "https://ckan.odpt.org/en/dataset/?res_format=GTFS%2FGTFS-JP&tags=%E9%89%84%E9%81%93-railway",
+            "url": "https://ckan.odpt.org/en/dataset/yokohama_municipal_train",
             "scopeNote": "ODPT railway GTFS candidate for Yokohama Municipal Subway.",
         }
     ],
@@ -50,7 +52,7 @@ ODPT_RAIL_GTFS_LEADS: dict[str, list[dict[str, Any]]] = {
         {
             "sourceKind": "odpt_rail_gtfs_candidate",
             "title": "函館市電 / Hakodate City Tram",
-            "url": "https://ckan.odpt.org/en/dataset/?res_format=GTFS%2FGTFS-JP&tags=%E9%89%84%E9%81%93-railway",
+            "url": "https://ckan.odpt.org/en/dataset/hakodate_city_alllines",
             "scopeNote": "ODPT railway GTFS candidate for Hakodate City Tram.",
         }
     ],
@@ -90,7 +92,7 @@ ODPT_RAIL_GTFS_LEADS: dict[str, list[dict[str, Any]]] = {
         {
             "sourceKind": "odpt_rail_gtfs_candidate",
             "title": "首都圏新都市鉄道（つくばエクスプレス） 鉄道関連情報",
-            "url": "https://ckan.odpt.org/en/dataset/?res_format=GTFS%2FGTFS-JP&tags=%E9%89%84%E9%81%93-railway",
+            "url": "https://ckan.odpt.org/en/dataset/train-mir",
             "scopeNote": "ODPT railway GTFS candidate for Tsukuba Express.",
         }
     ],
@@ -98,7 +100,7 @@ ODPT_RAIL_GTFS_LEADS: dict[str, list[dict[str, Any]]] = {
         {
             "sourceKind": "odpt_rail_gtfs_candidate",
             "title": "東京都交通局 鉄道関連情報",
-            "url": "https://ckan.odpt.org/en/dataset/?organization=toei&res_format=GTFS%2FGTFS-JP",
+            "url": "https://ckan.odpt.org/en/dataset/train-toei",
             "scopeNote": "Toei Subway, Tokyo Sakura Tram, and Nippori-Toneri Liner.",
         }
     ],
@@ -106,7 +108,7 @@ ODPT_RAIL_GTFS_LEADS: dict[str, list[dict[str, Any]]] = {
         {
             "sourceKind": "odpt_rail_gtfs_candidate",
             "title": "多摩都市モノレール 鉄道関連情報",
-            "url": "https://ckan.odpt.org/en/dataset/?res_format=GTFS%2FGTFS-JP&tags=%E9%89%84%E9%81%93-railway",
+            "url": "https://ckan.odpt.org/en/dataset/train-tamamonorail",
             "scopeNote": "ODPT railway GTFS candidate for Tama Monorail.",
         }
     ],
@@ -114,7 +116,7 @@ ODPT_RAIL_GTFS_LEADS: dict[str, list[dict[str, Any]]] = {
         {
             "sourceKind": "odpt_rail_gtfs_candidate",
             "title": "東京臨海高速鉄道 鉄道関連情報",
-            "url": "https://ckan.odpt.org/en/dataset/?organization=twr&res_format=GTFS%2FGTFS-JP&tags=%E9%89%84%E9%81%93-railway",
+            "url": "https://ckan.odpt.org/en/dataset/train-twr",
             "scopeNote": "ODPT railway GTFS candidate for Rinkai Line.",
         }
     ],
@@ -122,10 +124,42 @@ ODPT_RAIL_GTFS_LEADS: dict[str, list[dict[str, Any]]] = {
         {
             "sourceKind": "odpt_rail_gtfs_candidate",
             "title": "東京メトロ 鉄道関連情報",
-            "url": "https://ckan.odpt.org/en/dataset/?organization=tokyometro&res_format=GTFS%2FGTFS-JP",
+            "url": "https://ckan.odpt.org/en/dataset/train-tokyometro",
             "scopeNote": "ODPT railway GTFS candidate for Tokyo Metro.",
         }
     ],
+}
+
+
+MANUAL_OFFICIAL_TIMETABLE_LEADS: dict[str, list[dict[str, Any]]] = {
+    "WILLER　TRAINS": [{"title": "京都丹後鉄道 時刻表", "url": "https://trains.willer.co.jp/timetable/"}],
+    "こうべ未来都市機構": [{"title": "まやビューライン 営業時間・料金", "url": "https://koberope.jp/maya/price/"}],
+    "アイジーアールいわて銀河鉄道": [{"title": "IGRいわて銀河鉄道 時刻表", "url": "https://igr.jp/timetable/"}],
+    "一般社団法人札幌市交通事業振興公社": [{"title": "札幌市交通局 時刻表", "url": "https://www.city.sapporo.jp/st/time/index.html"}],
+    "一般財団法人青函トンネル記念館": [{"title": "青函トンネル記念館 公式サイト", "url": "http://seikan-tunnel-museum.jp/"}],
+    "上田電鉄": [{"title": "上田電鉄 時刻表", "url": "https://www.uedadentetsu.com/timetable/"}],
+    "仙台市": [{"title": "仙台市交通局 時刻表", "url": "https://www.navi.kotsu.city.sendai.jp/"}],
+    "会津鉄道": [{"title": "会津鉄道 時刻表", "url": "https://aizutetsudo.jp/timetable"}],
+    "北大阪急行電鉄": [{"title": "北大阪急行電鉄 公式サイト", "url": "https://www.kita-kyu.co.jp/"}],
+    "北海道旅客鉄道": [{"title": "JR北海道 各駅時刻表検索", "url": "https://www.jrhokkaido.co.jp/network/station/station.html"}],
+    "北総鉄道": [{"title": "北総鉄道 時刻表", "url": "https://hokuso.ekitan.com/jp/pc/T1"}],
+    "十国峠": [{"title": "十国峠 パノラマケーブルカー運賃・営業時間", "url": "https://www.jukkoku-cable.jp/guide/index.html"}],
+    "名古屋ガイドウェイバス": [{"title": "名古屋ガイドウェイバス 公式サイト", "url": "https://www.guideway.co.jp/"}],
+    "名古屋市": [{"title": "名古屋市交通局 地下鉄時刻表", "url": "https://www.kotsu.city.nagoya.jp/subway/timetable.html"}],
+    "大阪市高速電気軌道": [{"title": "Osaka Metro 駅ガイド", "url": "https://subway.osakametro.co.jp/station_guide/"}],
+    "山万": [{"title": "山万ユーカリが丘線 時刻表", "url": "https://town.yukarigaoka.jp/yukariline/timetable/"}],
+    "嵯峨野観光鉄道": [{"title": "嵯峨野観光鉄道 時刻表のご案内", "url": "https://www.sagano-kanko.co.jp/train-info"}],
+    "広島高速交通": [{"title": "アストラムライン 駅・時刻表", "url": "https://www.astramline.co.jp/station/timetable.html"}],
+    "新京成電鉄": [{"title": "新京成電鉄 公式サイト", "url": "https://www.shinkeisei.co.jp/"}],
+    "札幌市": [{"title": "札幌市交通局 時刻表", "url": "https://www.city.sapporo.jp/st/time/index.html"}],
+    "神戸六甲鉄道": [{"title": "六甲ケーブル 時刻表・運賃", "url": "https://www.rokkocable.com/information/"}],
+    "福岡市": [{"title": "福岡市地下鉄 路線図・駅時刻表", "url": "https://subway.city.fukuoka.lg.jp/schedule/index.php"}],
+    "立山黒部貫光": [{"title": "立山黒部アルペンルート 時刻表", "url": "https://www.alpen-route.com/timetable/"}],
+    "紀州鉄道": [{"title": "紀州鉄道 公式サイト", "url": "https://kishu-railway.com/"}],
+    "能勢電鉄": [{"title": "能勢電鉄 時刻表", "url": "https://noseden.ekitan.com/norikae/timetable"}],
+    "舞浜リゾートライン": [{"title": "ディズニーリゾートライン", "url": "https://www.tokyodisneyresort.jp/tdr/resortline.html"}],
+    "鞍馬寺": [{"title": "鞍馬寺 山内案内", "url": "https://www.kuramadera.or.jp/annai.html"}],
+    "鹿児島市": [{"title": "鹿児島市交通局 路線・運賃・時刻表検索", "url": "https://www.kotsu-city-kagoshima.jp/wp/timesearch/"}],
 }
 
 
@@ -315,6 +349,7 @@ def normalized_name(value: str) -> str:
         "旅客鉄道株式会社": "旅客鉄道",
         "鉄道株式会社": "鉄道",
         "電鉄株式会社": "電鉄",
+        "電気鉄道": "電鉄",
         "交通局": "",
         "bureauoftransportation": "",
         "cityof": "",
@@ -322,6 +357,26 @@ def normalized_name(value: str) -> str:
     for old, new in replacements.items():
         text = text.replace(old, new)
     return text
+
+
+def source_lead_key(lead: dict[str, Any]) -> tuple[str, str, str]:
+    return (
+        str(lead.get("sourceKind") or ""),
+        str(lead.get("fileUrl") or lead.get("url") or lead.get("feedPageUrl") or ""),
+        str(lead.get("title") or lead.get("feedName") or lead.get("organizationName") or ""),
+    )
+
+
+def dedupe_source_leads(leads: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    seen: set[tuple[str, str, str]] = set()
+    deduped: list[dict[str, Any]] = []
+    for lead in leads:
+        key = source_lead_key(lead)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(lead)
+    return deduped
 
 
 def fetch_json_url(url: str, timeout: int = 60) -> Any:
@@ -371,6 +426,25 @@ def annotate_existing_work() -> dict[str, list[dict[str, Any]]]:
     return annotated
 
 
+def manual_official_timetable_leads() -> dict[str, list[dict[str, Any]]]:
+    leads_by_operator: dict[str, list[dict[str, Any]]] = {}
+    for operator_name, leads in MANUAL_OFFICIAL_TIMETABLE_LEADS.items():
+        out: list[dict[str, Any]] = []
+        for lead in leads:
+            out.append(
+                {
+                    "sourceKind": "manual_official_timetable_page_candidate",
+                    "candidateStatus": "manual_seed",
+                    "title": lead["title"],
+                    "url": lead["url"],
+                    "scopeNote": "Manual official-source seed for operators whose timetable entry was missed by first-pass automated discovery.",
+                }
+            )
+        leads_by_operator[operator_name] = out
+    return leads_by_operator
+
+
+
 def fetch_gtfs_repository_index(no_network: bool) -> tuple[list[dict[str, Any]], list[str]]:
     if no_network:
         return [], ["GTFS repository index fetch skipped by --no-network."]
@@ -394,7 +468,7 @@ def is_name_match(operator_name: str, feed: dict[str, Any]) -> bool:
     haystack = [org, feed_name, org_id, feed_id]
     if op in haystack:
         return True
-    if len(op) >= 5 and any(op in value or value in op for value in haystack if len(value) >= 5):
+    if len(op) >= 4 and any(op in value or value in op for value in haystack if len(value) >= 4):
         return True
     return False
 
@@ -495,6 +569,184 @@ def match_gtfs_repository_feeds(
     return matches, stats
 
 
+def load_gtfs_route_index(path: Path | None) -> tuple[list[dict[str, Any]], list[str]]:
+    if not path or not path.exists():
+        return [], []
+    try:
+        with open(path, encoding="utf-8") as handle:
+            data = json.load(handle)
+    except OSError as exc:
+        return [], [f"GTFS route index read failed: {type(exc).__name__}: {exc}"]
+    feeds = data.get("feeds", []) if isinstance(data, dict) else []
+    return [feed for feed in feeds if isinstance(feed, dict)], []
+
+
+def load_official_site_candidates(path: Path | None) -> tuple[dict[str, list[dict[str, Any]]], dict[str, Any], list[str]]:
+    if not path or not path.exists():
+        return {}, {}, []
+    try:
+        with open(path, encoding="utf-8") as handle:
+            data = json.load(handle)
+    except OSError as exc:
+        return {}, {}, [f"Official site candidate read failed: {type(exc).__name__}: {exc}"]
+
+    matches: dict[str, list[dict[str, Any]]] = {}
+    for operator in data.get("operators", []):
+        operator_name = operator.get("operatorName")
+        if not operator_name:
+            continue
+        leads: list[dict[str, Any]] = []
+        for candidate in operator.get("candidates", []):
+            if candidate.get("candidateStatus") not in {"high_confidence", "medium_confidence"}:
+                continue
+            leads.append(
+                {
+                    "sourceKind": "official_timetable_page_candidate",
+                    "candidateStatus": candidate.get("candidateStatus"),
+                    "title": candidate.get("title") or candidate.get("label") or candidate.get("url"),
+                    "label": candidate.get("label"),
+                    "url": candidate.get("url"),
+                    "domain": candidate.get("domain"),
+                    "officialWebsite": candidate.get("officialWebsite"),
+                    "score": candidate.get("score"),
+                    "foundAs": candidate.get("foundAs"),
+                    "scopeNote": "Discovered by crawling a Wikidata official website; verify page structure before writing a collector.",
+                }
+            )
+        if leads:
+            matches[operator_name] = leads[:8]
+    return matches, data.get("counts", {}), []
+
+
+def text_values_for_route_index_feed(feed: dict[str, Any]) -> list[str]:
+    values = [
+        str(feed.get("organizationName") or ""),
+        str(feed.get("feedName") or ""),
+        str(feed.get("organizationId") or ""),
+        str(feed.get("feedId") or ""),
+    ]
+    for agency in feed.get("agencies") or []:
+        values.append(str(agency.get("agencyName") or ""))
+        values.append(str(agency.get("agencyUrl") or ""))
+    return values
+
+
+def line_match_score(line_name: str, route_name: str) -> int:
+    line = normalized_name(line_name)
+    route = normalized_name(route_name)
+    if not line or not route:
+        return 0
+    if min(len(line), len(route)) < 5:
+        return 0
+    if line == route:
+        return 100
+    if len(line) >= 5 and line in route:
+        return 80
+    if len(route) >= 5 and route in line:
+        return 70
+    return 0
+
+
+def match_gtfs_route_index(
+    operators: list[dict[str, Any]],
+    lines_by_operator: dict[str, list[dict[str, Any]]],
+    route_index_feeds: list[dict[str, Any]],
+) -> tuple[dict[str, list[dict[str, Any]]], dict[str, Any]]:
+    matches: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    rail_feeds = [feed for feed in route_index_feeds if feed.get("status") == "ok" and feed.get("isRailLike")]
+
+    unique_line_owner: dict[str, str] = {}
+    ambiguous_lines: set[str] = set()
+    for operator in operators:
+        operator_name = operator["operatorName"]
+        for line in lines_by_operator.get(operator_name, []):
+            key = normalized_name(line["lineName"])
+            if len(key) < 5:
+                continue
+            if key in unique_line_owner and unique_line_owner[key] != operator_name:
+                ambiguous_lines.add(key)
+            else:
+                unique_line_owner[key] = operator_name
+    for key in ambiguous_lines:
+        unique_line_owner.pop(key, None)
+
+    for feed in rail_feeds:
+        feed_values = " ".join(text_values_for_route_index_feed(feed))
+        normalized_feed_text = normalized_name(feed_values)
+        route_names: list[str] = []
+        for route in feed.get("routes") or []:
+            route_names.extend(
+                str(route.get(key) or "")
+                for key in ("shortName", "longName", "routeDesc")
+                if route.get(key)
+            )
+
+        matched: dict[str, set[str]] = defaultdict(set)
+        for operator in operators:
+            operator_name = operator["operatorName"]
+            operator_norm = normalized_name(operator_name)
+            if is_name_match(operator_name, {
+                "organization_name": feed_values,
+                "feed_name": "",
+                "organization_id": "",
+                "feed_id": "",
+            }):
+                matched[operator_name].add("operator_or_agency_name")
+                continue
+            if operator_norm and len(operator_norm) >= 3 and operator_norm in normalized_feed_text:
+                matched[operator_name].add("operator_or_agency_name")
+
+        for route_name in route_names:
+            route_norm = normalized_name(route_name)
+            if route_norm in unique_line_owner:
+                matched[unique_line_owner[route_norm]].add("unique_route_line_name")
+                continue
+            for operator in operators:
+                operator_name = operator["operatorName"]
+                for line in lines_by_operator.get(operator_name, []):
+                    score = line_match_score(line["lineName"], route_name)
+                    if score >= 80:
+                        matched[operator_name].add("route_line_name")
+
+        for operator_name, reasons in matched.items():
+            matches[operator_name].append(
+                {
+                    "sourceKind": "gtfs_repository_route_index_candidate",
+                    "organizationName": feed.get("organizationName"),
+                    "feedName": feed.get("feedName"),
+                    "feedPrefId": feed.get("feedPrefId"),
+                    "feedPageUrl": feed.get("feedPageUrl"),
+                    "fileUrl": feed.get("fileUrl"),
+                    "licenseId": feed.get("licenseId"),
+                    "fileFromDate": feed.get("fileFromDate"),
+                    "fileToDate": feed.get("fileToDate"),
+                    "fileLastUpdatedAt": feed.get("fileLastUpdatedAt"),
+                    "candidateStatus": "rail_gtfs_candidate",
+                    "matchedBy": sorted(reasons),
+                    "routeTypes": feed.get("routeTypes"),
+                    "agencyNames": [
+                        agency.get("agencyName")
+                        for agency in (feed.get("agencies") or [])
+                        if agency.get("agencyName")
+                    ][:8],
+                    "sampleRouteNames": [
+                        route_name for route_name in route_names if route_name
+                    ][:12],
+                    "routeCount": feed.get("routeCount"),
+                    "stopCount": feed.get("stopCount"),
+                    "stopTimeCount": feed.get("stopTimeCount"),
+                }
+            )
+
+    stats = {
+        "routeIndexFeeds": len(route_index_feeds),
+        "railLikeRouteIndexFeeds": len(rail_feeds),
+        "matchedFeeds": sum(len(items) for items in matches.values()),
+        "operatorsWithMatches": len(matches),
+    }
+    return matches, stats
+
+
 def build_registry(args: argparse.Namespace) -> dict[str, Any]:
     with open(args.inventory, encoding="utf-8") as handle:
         inventory = json.load(handle)
@@ -505,13 +757,23 @@ def build_registry(args: argparse.Namespace) -> dict[str, Any]:
         lines_by_operator[line["operatorName"]].append(line)
 
     gtfs_feeds, warnings = fetch_gtfs_repository_index(args.no_network)
+    route_index_feeds, route_index_warnings = load_gtfs_route_index(args.gtfs_route_index)
+    warnings.extend(route_index_warnings)
+    official_site_matches, official_site_stats, official_site_warnings = load_official_site_candidates(args.official_site_candidates)
+    warnings.extend(official_site_warnings)
     gtfs_matches, gtfs_stats = match_gtfs_repository_feeds(
         operators,
         gtfs_feeds,
         inspect_route_types=not args.skip_route_type_inspection,
         max_downloads=args.max_candidate_downloads,
     )
+    route_index_matches, route_index_stats = match_gtfs_route_index(
+        operators,
+        lines_by_operator,
+        route_index_feeds,
+    )
     existing_work = annotate_existing_work()
+    manual_official_work = manual_official_timetable_leads()
 
     operator_entries: list[dict[str, Any]] = []
     status_counts: dict[str, int] = defaultdict(int)
@@ -523,7 +785,11 @@ def build_registry(args: argparse.Namespace) -> dict[str, Any]:
         source_leads: list[dict[str, Any]] = []
         source_leads.extend(existing_work.get(operator_name, []))
         source_leads.extend(ODPT_RAIL_GTFS_LEADS.get(operator_name, []))
+        source_leads.extend(manual_official_work.get(operator_name, []))
         source_leads.extend(gtfs_matches.get(operator_name, []))
+        source_leads.extend(route_index_matches.get(operator_name, []))
+        source_leads.extend(official_site_matches.get(operator_name, []))
+        source_leads = dedupe_source_leads(source_leads)
 
         known = sum(int(lead.get("totalKnownTrainInstances") or 0) for lead in source_leads)
         total_known_train_instances += known
@@ -545,12 +811,21 @@ def build_registry(args: argparse.Namespace) -> dict[str, Any]:
         has_rejected_name_match = any(
             lead.get("candidateStatus") == "rejected_bus_only_name_match" for lead in source_leads
         )
+        has_official_page = any(
+            lead.get("sourceKind") in {
+                "official_timetable_page_candidate",
+                "manual_official_timetable_page_candidate",
+            }
+            for lead in source_leads
+        )
         if has_existing and has_rail_gtfs:
             source_status = "existing_work_and_external_candidate"
         elif has_existing:
             source_status = "existing_work"
         elif has_rail_gtfs:
             source_status = "external_candidate_found"
+        elif has_official_page:
+            source_status = "official_page_candidate_found"
         elif has_unverified_candidate:
             source_status = "unverified_candidate_found"
         elif has_rejected_name_match:
@@ -583,6 +858,8 @@ def build_registry(args: argparse.Namespace) -> dict[str, Any]:
         "uniqueKnownTrainInstancesFromExistingFiles": sum(unique_existing_file_counts.values()),
         "sourceStatusCounts": dict(sorted(status_counts.items())),
         "gtfsRepositoryMatchStats": gtfs_stats,
+        "gtfsRouteIndexMatchStats": route_index_stats,
+        "officialSiteCandidateStats": official_site_stats,
         "warnings": warnings,
     }
 
@@ -597,6 +874,8 @@ def build_registry(args: argparse.Namespace) -> dict[str, Any]:
         "inputs": {
             "lineInventory": str(args.inventory),
             "gtfsRepositoryFilesUrl": None if args.no_network else GTFS_REPOSITORY_FILES_URL,
+            "gtfsRouteIndex": str(args.gtfs_route_index) if args.gtfs_route_index else None,
+            "officialSiteCandidates": str(args.official_site_candidates) if args.official_site_candidates else None,
             "odptCatalogSeeds": sorted(ODPT_RAIL_GTFS_LEADS),
         },
         "coverageSummary": coverage_summary,
@@ -609,6 +888,8 @@ def main() -> int:
     parser.add_argument("--inventory", type=Path, default=DEFAULT_INVENTORY)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--no-network", action="store_true")
+    parser.add_argument("--gtfs-route-index", type=Path, default=DEFAULT_GTFS_ROUTE_INDEX)
+    parser.add_argument("--official-site-candidates", type=Path, default=DEFAULT_OFFICIAL_SITE_CANDIDATES)
     parser.add_argument("--skip-route-type-inspection", action="store_true")
     parser.add_argument("--max-candidate-downloads", type=int, default=40)
     args = parser.parse_args()
