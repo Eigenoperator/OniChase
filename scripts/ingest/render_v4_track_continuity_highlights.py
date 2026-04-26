@@ -206,7 +206,7 @@ def render_svg(
         [
             '<rect x="1300" y="0" width="500" height="1280" fill="#ffffff"/>',
             '<text x="1340" y="58" class="legend-title">V4 Track Continuity Audit</text>',
-            '<text x="1340" y="86" class="small">12 multi-component operator-line pairs highlighted</text>',
+            f'<text x="1340" y="86" class="small">{len(highlights)} multi-component operator-line pairs highlighted</text>',
             '<text x="1340" y="108" class="small">Gray: all nationwide railway overview</text>',
         ]
     )

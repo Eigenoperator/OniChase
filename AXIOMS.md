@@ -109,3 +109,9 @@
 - Non-Shinkansen through-running exists only when trains actually run on the same physical track and stop at the same platform/boarding face.
 - Shared operators, shared station groups, transfer permission, nearby geometry, or parallel corridors do not by themselves make two lines through-running equivalents.
 - Ordinary lines such as Tokaido Line, Yokosuka Line, Yamanote Line, and Keihin-Tohoku Line must remain separate categories unless the specific train movement truly uses the same track and platform as another service.
+
+## 16. V4 Timetable Station Matching Reuses V3 Method
+
+- V4 timetable stop matching must reuse the v3 station alias and station-group matching method.
+- Do not create a separate v4-only station identity system for timetable ingestion unless Scorp explicitly approves a versioned replacement.
+- Physical station coordinates and line geometry remain separate from gameplay station groups, following the existing v3/v4 identity split.

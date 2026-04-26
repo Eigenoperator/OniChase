@@ -19,7 +19,7 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - v4 nationwide line inventory now lists `596` operator-line pairs, `552` unique line names, `178` operators, `0` stationless lines, and `0` trackless lines.
 - Public `v4.html` now displays the nationwide physical railway map with MapLibre, the same `station-labels` source and hub/major/local label-layer logic as v3, optional physical station dots, line search, and selected-line highlighting.
 - v4 map now includes two-level Japan outline-only coastline rendering, low-zoom `596`-feature track overview, lazy high-detail track loading, lazy physical-station loading, and high-zoom station dots for labels.
-- v4 track-continuity audit reports `12` multi-component operator-line pairs out of `596`; the report is saved as `data/v4_track_continuity_audit.json`.
+- v4 track-continuity audit now uses 500m endpoint snap and reports `6` reviewed multi-component operator-line pairs, `0` unreviewed.
 - v4 continuity warnings now have a dedicated review map at `docs/v4_continuity.html` plus generated SVG/GeoJSON highlight outputs.
 - v4 overview tracks now fade out by zoom `7.65`, and exact physical `track_centerlines` take over from zoom `7.55` to avoid straight overview lines overlapping real geometry.
 - v4 line rendering now uses line-level color when known and falls back to company color; current inventory marks `108` line-specific colors and `488` company fallbacks.
@@ -41,8 +41,9 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - [2026-04-19] `v3` reuses the v2 gameplay path; it owns data adapters and Tokyo real-data quality, not a separate ruleset.
 - [2026-04-24] `v3` is frozen as a release candidate; remaining external/homonym identity work belongs to `v4`.
 - [2026-04-25] `v4` starts from nationwide N02 physical geometry plus `station_identity_v2`, not from another Tokyo-only hand-built map.
+- [2026-04-25] v4 timetable stop matching should reuse the v3 station alias/station-group method, not invent a separate identity system.
 
 ## Next
-1. Review the 12 highlighted continuity warnings and classify each as real gap, legitimate multi-section line, or source artifact.
+1. Decide whether to hide or keep the reviewed meter-scale 肥薩線 N02 fragment in rendered geometry.
 2. Continue filling missing official per-line colors for non-Tokyo regional operators.
-3. Add an identity lookup that maps timetable stops to station groups while preserving physical stations for rendering.
+3. Implement timetable stop lookup with the v3 alias/station-group method while preserving physical stations for rendering.
