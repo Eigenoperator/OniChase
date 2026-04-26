@@ -23,10 +23,10 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - v4 continuity warnings now have a dedicated review map at `docs/v4_continuity.html` plus generated SVG/GeoJSON highlight outputs.
 - v4 overview tracks now fade out by zoom `7.65`, and exact physical `track_centerlines` take over from zoom `7.55` to avoid straight overview lines overlapping real geometry.
 - v4 line rendering now uses line-level color when known and falls back to company color; current inventory marks `152` line-specific colors and `444` company fallbacks, audited by `scripts/ingest/audit_v4_line_colors.py`.
-- Reusable v4 timetable work now includes source discovery plus the first GTFS collector; `8` GTFS/GTFS-JP rail feeds produce `1354` weekday train instances with `0` unmatched stops.
+- Reusable v4 timetable work now includes source discovery, ODPT CKAN resource discovery, and the first GTFS collector; `12` structured GTFS/GTFS-JP feed files are audited and `10` operators currently produce `4439` weekday train instances with `0` unmatched stops.
 
 ## In Progress
-- Expand v4 timetable collection beyond the first `8` GTFS/GTFS-JP feeds into ODPT direct GTFS/API and official timetable-page collectors.
+- Expand v4 timetable collection beyond the current public GTFS/GTFS-JP feeds into ODPT token-gated GTFS/API and official timetable-page collectors.
 - Expand the official per-line color table beyond the first v3/Tokyo/Shinkansen seed set.
 - If coastline performance regresses again, convert the two-level outline GeoJSON contract into PMTiles.
 
@@ -46,4 +46,4 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 ## Next
 1. Decide whether to hide or keep the reviewed meter-scale 肥薩線 N02 fragment in rendered geometry.
 2. Continue filling missing official per-line colors for non-Tokyo regional operators.
-3. Convert the collected v4 GTFS train instances into the v4 gameplay bundle once station-group routing rules are ready.
+3. Continue v4 timetable ingestion by resolving ODPT token access for Tokyo Metro/TWR/Tama Monorail/MIR/Yokohama Municipal and writing official-page collectors for operators without public GTFS.

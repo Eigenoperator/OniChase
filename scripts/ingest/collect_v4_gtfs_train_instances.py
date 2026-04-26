@@ -14,6 +14,7 @@ import gzip
 import io
 import json
 import math
+import re
 import urllib.request
 import zipfile
 from collections import Counter, defaultdict
@@ -27,6 +28,7 @@ DEFAULT_REGISTRY = ROOT / "data" / "v4_timetable_source_registry.json"
 DEFAULT_PHYSICAL_MAP = ROOT / "data" / "v4_japan_physical_map.json.gz"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_gtfs_weekday_train_instances.json.gz"
 DEFAULT_AUDIT = ROOT / "data" / "v4_gtfs_train_instances_audit.json"
+DEFAULT_ODPT_RESOURCE_AUDIT = ROOT / "data" / "v4_odpt_gtfs_resource_audit.json"
 DEFAULT_SERVICE_DATE = "2026-04-27"
 
 
@@ -174,6 +176,7 @@ def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 class V4StationMatcher:
     def __init__(self, physical_map: dict[str, Any]) -> None:
         self.physical_by_name: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        self.physical_by_operator: dict[str, list[tuple[str, dict[str, Any]]]] = defaultdict(list)
         self.physical_by_operator_name: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
         self.physical_by_operator_line_name: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
         self.groups_by_id = {group["id"]: group for group in physical_map["stationGroups"]}
@@ -182,6 +185,7 @@ class V4StationMatcher:
             line_key = normalize_line(station.get("lineName") or "")
             for name_key in normalize_name_variants(station.get("nameJa") or ""):
                 self.physical_by_name[name_key].append(station)
+                self.physical_by_operator[operator_key].append((name_key, station))
                 self.physical_by_operator_name[(operator_key, name_key)].append(station)
                 self.physical_by_operator_line_name[(operator_key, line_key, name_key)].append(station)
 
@@ -212,6 +216,20 @@ class V4StationMatcher:
             if candidates:
                 method = "name_only"
                 break
+
+        if not candidates:
+            for name_key in normalize_name_variants(stop_name):
+                if len(name_key) < 3:
+                    continue
+                suffix_candidates = [
+                    station
+                    for station_key, station in self.physical_by_operator.get(operator_key, [])
+                    if station_key.endswith(name_key) or name_key.endswith(station_key)
+                ]
+                if suffix_candidates:
+                    candidates = suffix_candidates
+                    method = "operator_name_suffix"
+                    break
 
         if not candidates:
             return {
@@ -485,6 +503,47 @@ def collect_feed_leads(registry: dict[str, Any]) -> list[dict[str, Any]]:
     return sorted(leads_by_url.values(), key=lambda item: (item["operatorName"], item["feedName"]))
 
 
+def safe_feed_key(value: str) -> str:
+    text = re.sub(r"[^0-9A-Za-z一-龥ぁ-んァ-ヶー]+", "_", value).strip("_")
+    return text or "feed"
+
+
+def collect_odpt_public_feed_leads(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    audit = load_json(path)
+    leads: list[dict[str, Any]] = []
+    for operator in audit.get("operators", []):
+        for download in operator.get("publicDownloads", []):
+            if not download.get("url"):
+                continue
+            date_key = download.get("detectedDate") or "undated"
+            leads.append(
+                {
+                    "operatorId": operator["operatorId"],
+                    "operatorName": operator["operatorName"],
+                    "feedName": f"{operator.get('title') or operator['operatorName']} {date_key}",
+                    "feedKey": safe_feed_key("ODPT_" + operator["operatorName"] + "_" + date_key),
+                    "fileUrl": download["url"],
+                    "sourceKind": "odpt_public_gtfs_discovered",
+                    "catalogUrl": operator.get("catalogUrl"),
+                }
+            )
+    return sorted(leads, key=lambda item: (item["operatorName"], item["feedName"], item["fileUrl"]))
+
+
+def dedupe_feeds(feeds: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    output: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for feed in feeds:
+        key = feed["fileUrl"].split("?uid=")[0]
+        if key in seen:
+            continue
+        seen.add(key)
+        output.append(feed)
+    return output
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--registry", type=Path, default=DEFAULT_REGISTRY)
@@ -493,6 +552,7 @@ def main() -> int:
     parser.add_argument("--service-date", default=DEFAULT_SERVICE_DATE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--audit-output", type=Path, default=DEFAULT_AUDIT)
+    parser.add_argument("--odpt-resource-audit", type=Path, default=DEFAULT_ODPT_RESOURCE_AUDIT)
     parser.add_argument("--max-feeds", type=int, default=0)
     args = parser.parse_args()
 
@@ -502,7 +562,7 @@ def main() -> int:
     service_day = parse_service_date(args.service_date)
     matcher = V4StationMatcher(physical_map)
     line_lookup = build_line_lookup(line_inventory)
-    feeds = collect_feed_leads(registry)
+    feeds = dedupe_feeds(collect_feed_leads(registry) + collect_odpt_public_feed_leads(args.odpt_resource_audit))
     if args.max_feeds:
         feeds = feeds[: args.max_feeds]
 
