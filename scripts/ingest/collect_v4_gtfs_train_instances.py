@@ -544,6 +544,66 @@ def dedupe_feeds(feeds: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return output
 
 
+def minutes_from_hhmm(value: str | None) -> int | None:
+    if not value:
+        return None
+    parts = value.split(":")
+    if len(parts) < 2:
+        return None
+    return int(parts[0]) * 60 + int(parts[1])
+
+
+def audit_train_integrity(train_instances: list[dict[str, Any]], physical_map: dict[str, Any]) -> dict[str, Any]:
+    groups = {group["id"] for group in physical_map["stationGroups"]}
+    id_counts = Counter(train["train_number"] for train in train_instances)
+    duplicate_ids = sorted(train_id for train_id, count in id_counts.items() if count > 1)
+    operator_counts = Counter(train["operator_name"] for train in train_instances)
+    missing_station_refs: list[dict[str, Any]] = []
+    bad_time_order: list[dict[str, Any]] = []
+    short_trains: list[str] = []
+
+    for train in train_instances:
+        stop_times = train.get("stop_times") or []
+        if len(stop_times) < 2:
+            short_trains.append(train["train_number"])
+        previous_minutes = -1
+        for stop in stop_times:
+            station_id = stop.get("station_id")
+            if station_id not in groups:
+                missing_station_refs.append(
+                    {
+                        "trainNumber": train["train_number"],
+                        "stationId": station_id,
+                        "stationNameRaw": stop.get("station_name_raw"),
+                    }
+                )
+            current_minutes = minutes_from_hhmm(stop.get("departure_hhmm") or stop.get("arrival_hhmm"))
+            if current_minutes is None:
+                continue
+            if current_minutes < previous_minutes:
+                bad_time_order.append(
+                    {
+                        "trainNumber": train["train_number"],
+                        "previousMinutes": previous_minutes,
+                        "currentMinutes": current_minutes,
+                        "stationNameRaw": stop.get("station_name_raw"),
+                    }
+                )
+            previous_minutes = max(previous_minutes, current_minutes)
+
+    return {
+        "operatorTrainCounts": dict(sorted(operator_counts.items())),
+        "duplicateTrainIdCount": len(duplicate_ids),
+        "duplicateTrainIdsSample": duplicate_ids[:20],
+        "missingStationReferenceCount": len(missing_station_refs),
+        "missingStationReferencesSample": missing_station_refs[:20],
+        "badTimeOrderCount": len(bad_time_order),
+        "badTimeOrderSample": bad_time_order[:20],
+        "shortTrainInstanceCount": len(short_trains),
+        "shortTrainInstancesSample": short_trains[:20],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--registry", type=Path, default=DEFAULT_REGISTRY)
@@ -591,6 +651,7 @@ def main() -> int:
         "feed_count": len(feeds),
         "train_instances": sorted(all_trains, key=lambda item: item["train_number"]),
     }
+    integrity = audit_train_integrity(all_trains, physical_map)
     audit = {
         "schema": "onichase.v4.gtfs_train_instances_audit.v1",
         "serviceDay": service_day.isoformat(),
@@ -598,6 +659,11 @@ def main() -> int:
         "trainInstanceCount": len(all_trains),
         "stopTimeCount": sum(len(train["stop_times"]) for train in all_trains),
         "unmatchedStopCount": len(unmatched),
+        "duplicateTrainIdCount": integrity["duplicateTrainIdCount"],
+        "missingStationReferenceCount": integrity["missingStationReferenceCount"],
+        "badTimeOrderCount": integrity["badTimeOrderCount"],
+        "shortTrainInstanceCount": integrity["shortTrainInstanceCount"],
+        "integrity": integrity,
         "feedAudits": feed_audits,
         "unmatchedStops": unmatched,
     }
