@@ -30,6 +30,9 @@ DEFAULT_AUDIT = ROOT / "data" / "v4_current_train_collection_audit.json"
 DEFAULT_EXTRA_COLLECTIONS = [
     ROOT / "data" / "v4_jreast_official_weekday_train_instances.json.gz",
     ROOT / "data" / "v4_jreast_tohoku_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_jreast_joban_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_jreast_core_gap_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_jreast_residual_gap_official_weekday_train_instances.json.gz",
     ROOT / "data" / "v4_jrcentral_navitime_weekday_train_instances.json.gz",
     ROOT / "data" / "v4_jrwest_official_weekday_train_instances.json.gz",
     ROOT / "data" / "v4_jrhokkaido_vtime_weekday_train_instances.json.gz",
