@@ -216,6 +216,8 @@ def parse_station_list_page(html: str, list_url: str) -> dict[str, Any]:
 
 def route_matches_line(route_name: str, line_name: str) -> bool:
     route_key = normalize_key(route_name)
+    if "新幹線" in route_name and "新幹線" not in line_name:
+        return False
     if line_name == "東北線":
         if any(token in route_name for token in ("新幹線", "京浜東北", "根岸線")):
             return False
