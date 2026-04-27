@@ -1602,6 +1602,7 @@
       globalGraphPathCache: new Map(),
       physicalStationsByGroupId: new Map(),
       stationGroupIdsByTransferKey: new Map(),
+      transferEquivalentGroupIdsByGroupId: new Map(),
       physicalRouteIdsByGroupId: new Map(),
       tripById: new Map(),
       stationTripsByGroupId: new Map(),
@@ -2711,22 +2712,69 @@
       );
     }
 
+    const TRANSFER_EQUIVALENCE_RADIUS_M = 700;
+
+    function stationGroupCoordinate(stationGroupId) {
+      const group = state.stationGroupById.get(stationGroupId);
+      if (group?.centroid && Number.isFinite(group.centroid.lon) && Number.isFinite(group.centroid.lat)) {
+        return [group.centroid.lon, group.centroid.lat];
+      }
+      const station = state.stationByGroupId.get(stationGroupId);
+      if (station && Number.isFinite(station.lon) && Number.isFinite(station.lat)) return [station.lon, station.lat];
+      return null;
+    }
+
+    function coordinateDistanceMeters(left, right) {
+      if (!left || !right) return Number.POSITIVE_INFINITY;
+      const toRad = (value) => value * Math.PI / 180;
+      const lon1 = toRad(left[0]);
+      const lat1 = toRad(left[1]);
+      const lon2 = toRad(right[0]);
+      const lat2 = toRad(right[1]);
+      const dLon = lon2 - lon1;
+      const dLat = lat2 - lat1;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * (Math.sin(dLon / 2) ** 2);
+      return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function canTransferBetweenSameNameGroups(leftGroupId, rightGroupId) {
+      if (leftGroupId === rightGroupId) return true;
+      const leftKey = transferKeyForGroup(leftGroupId);
+      const rightKey = transferKeyForGroup(rightGroupId);
+      if (!leftKey || leftKey !== rightKey) return false;
+      const distance = coordinateDistanceMeters(stationGroupCoordinate(leftGroupId), stationGroupCoordinate(rightGroupId));
+      return distance <= TRANSFER_EQUIVALENCE_RADIUS_M;
+    }
+
     function buildStationTransferIndex() {
       state.stationGroupIdsByTransferKey = new Map();
+      state.transferEquivalentGroupIdsByGroupId = new Map();
       state.stationGroupById.forEach((group, stationGroupId) => {
         const key = transferKeyForGroup(stationGroupId);
+        state.transferEquivalentGroupIdsByGroupId.set(stationGroupId, new Set([stationGroupId]));
         if (!key) return;
         if (!state.stationGroupIdsByTransferKey.has(key)) {
           state.stationGroupIdsByTransferKey.set(key, new Set());
         }
         state.stationGroupIdsByTransferKey.get(key).add(stationGroupId);
       });
+      state.stationGroupIdsByTransferKey.forEach((groupIds) => {
+        const ids = [...groupIds];
+        for (let leftIndex = 0; leftIndex < ids.length; leftIndex += 1) {
+          for (let rightIndex = leftIndex + 1; rightIndex < ids.length; rightIndex += 1) {
+            const leftGroupId = ids[leftIndex];
+            const rightGroupId = ids[rightIndex];
+            if (!canTransferBetweenSameNameGroups(leftGroupId, rightGroupId)) continue;
+            state.transferEquivalentGroupIdsByGroupId.get(leftGroupId).add(rightGroupId);
+            state.transferEquivalentGroupIdsByGroupId.get(rightGroupId).add(leftGroupId);
+          }
+        }
+      });
     }
 
     function equivalentStationGroupIds(stationGroupId) {
       if (!stationGroupId) return [];
-      const key = transferKeyForGroup(stationGroupId);
-      const ids = key ? [...(state.stationGroupIdsByTransferKey.get(key) || [])] : [];
+      const ids = [...(state.transferEquivalentGroupIdsByGroupId.get(stationGroupId) || new Set([stationGroupId]))];
       if (!ids.includes(stationGroupId)) ids.unshift(stationGroupId);
       return ids;
     }
@@ -2734,9 +2782,7 @@
     function stationGroupsTransferEquivalent(leftGroupId, rightGroupId) {
       if (!leftGroupId || !rightGroupId) return false;
       if (leftGroupId === rightGroupId) return true;
-      const leftKey = transferKeyForGroup(leftGroupId);
-      const rightKey = transferKeyForGroup(rightGroupId);
-      return Boolean(leftKey && rightKey && leftKey === rightKey);
+      return Boolean(state.transferEquivalentGroupIdsByGroupId.get(leftGroupId)?.has(rightGroupId));
     }
 
     const PHYSICAL_ROUTE_STATION_DISTANCE_SQ = 0.000018;
