@@ -1306,6 +1306,7 @@
       JR_KAWAGOE: ['川越線', '八高線'],
       JR_JOBAN: ['常磐線', '常磐線各駅停車', '千代田線', '9号線千代田線'],
       RINKAI: ['りんかい線', '臨海副都心線', '埼京線', '川越線'],
+      '1号線浅草線': ['浅草線', '1号線浅草線', '都営浅草線', '京急本線', '空港線', '久里浜線', '逗子線', '押上線', '京成本線', '成田空港線'],
       '2号線日比谷線': ['日比谷線', '伊勢崎線'],
       '5号線東西線': ['東西線', '中央線', '総武線'],
       '6号線三田線': ['三田線', '目黒線', '東急新横浜線', '相鉄本線', '相鉄いずみ野線', '相鉄新横浜線'],
@@ -3898,6 +3899,12 @@
 
     function formatTripLabel(trip) {
       if (!trip) return '列車';
+      if (trip.throughStitched && Array.isArray(trip.throughRouteIds)) {
+        const throughNames = trip.throughRouteIds
+          .map((routeId) => routeTitle(routeId))
+          .filter((name, index, list) => name && list.indexOf(name) === index);
+        if (throughNames.length >= 2) return throughNames.join('+');
+      }
       const serviceName = serviceNameJaLabel(trip) || '列車';
       const publicNumber = publicTripNumber(trip);
       return `${serviceName}${shouldShowTripNumber(trip, serviceName) ? publicNumber : ''}`;
@@ -4043,7 +4050,7 @@
       if (!current || !candidate) return false;
       const names = new Set([current.shortName, candidate.shortName]);
       if (names.has('RINKAI') && names.has('JR_EAST_SAIKYO_KAWAGOE')) return true;
-      if (names.has('TOEI_ASAKUSA')) {
+      if (names.has('TOEI_ASAKUSA') || names.has('1号線浅草線')) {
         const operators = new Set([current.operatorId, candidate.operatorId]);
         if (operators.has('keikyu') || operators.has('keisei')) return true;
       }
@@ -6379,6 +6386,138 @@
       return { ...trip, stopTimes: [...stops, ...extraStops], circularExtended: true };
     }
 
+    const ASAKUSA_THROUGH_BOUNDARIES = Object.freeze([
+      { stationName: '泉岳寺', operators: ['toei', 'keikyu'] },
+      { stationName: '押上', operators: ['toei', 'keisei'] },
+    ]);
+
+    function throughRunCode(trip) {
+      const raw = String(trip?.publicServiceNumber || trip?.serviceNumber || '').normalize('NFKC').toUpperCase();
+      const match = raw.match(/(\d{3,4})([A-Z]{1,2})[A-Z0]*$/u);
+      if (!match) return '';
+      return `${Number(match[1])}${match[2][0]}`;
+    }
+
+    function tripRouteOperatorId(trip) {
+      return state.routeById.get(trip?.routeId)?.operatorId || '';
+    }
+
+    function tripRouteShortName(trip) {
+      return state.routeById.get(trip?.routeId)?.shortName || '';
+    }
+
+    function isAsakusaThroughEligibleTrip(trip) {
+      const operatorId = tripRouteOperatorId(trip);
+      if (operatorId === 'toei') return tripRouteShortName(trip) === '1号線浅草線';
+      return operatorId === 'keikyu' || operatorId === 'keisei';
+    }
+
+    function boundaryForTripStop(stop) {
+      const stationName = displayNameForGroup(stop?.stationGroupId || '');
+      return ASAKUSA_THROUGH_BOUNDARIES.find((boundary) => boundary.stationName === stationName) || null;
+    }
+
+    function canStitchThroughTrips(leftTrip, rightTrip, boundary) {
+      if (!leftTrip || !rightTrip || leftTrip.id === rightTrip.id || !boundary) return false;
+      const leftOperator = tripRouteOperatorId(leftTrip);
+      const rightOperator = tripRouteOperatorId(rightTrip);
+      if (leftOperator === rightOperator) return false;
+      if (!boundary.operators.includes(leftOperator) || !boundary.operators.includes(rightOperator)) return false;
+      const leftIsAsakusa = leftOperator === 'toei' && tripRouteShortName(leftTrip) === '1号線浅草線';
+      const rightIsAsakusa = rightOperator === 'toei' && tripRouteShortName(rightTrip) === '1号線浅草線';
+      if (!leftIsAsakusa && !rightIsAsakusa) return false;
+      const leftCode = throughRunCode(leftTrip);
+      return Boolean(leftCode && leftCode === throughRunCode(rightTrip));
+    }
+
+    function stitchTripChainStopTimes(tripChain) {
+      const stitchedStops = [];
+      tripChain.forEach((trip, tripIndex) => {
+        const sourceStops = trip.stopTimes || [];
+        const stopsToAppend = tripIndex === 0 ? sourceStops : sourceStops.slice(1);
+        stopsToAppend.forEach((stop) => {
+          stitchedStops.push({
+            ...stop,
+            sequence: stitchedStops.length + 1,
+          });
+        });
+      });
+      return stitchedStops;
+    }
+
+    function stitchAsakusaThroughTrips(trips) {
+      const startsByBoundaryAndCode = new Map();
+      trips.forEach((trip) => {
+        const stops = trip.stopTimes || [];
+        const firstStop = stops[0];
+        const code = throughRunCode(trip);
+        const boundary = firstStop && code && isAsakusaThroughEligibleTrip(trip) ? boundaryForTripStop(firstStop) : null;
+        if (!boundary) return;
+        const key = `${boundary.stationName}|${code}`;
+        if (!startsByBoundaryAndCode.has(key)) startsByBoundaryAndCode.set(key, []);
+        startsByBoundaryAndCode.get(key).push(trip);
+      });
+
+      const continuationByTripId = new Map();
+      const continuationBoundaryByTripId = new Map();
+      trips.forEach((trip) => {
+        const stops = trip.stopTimes || [];
+        const lastStop = stops[stops.length - 1];
+        const code = throughRunCode(trip);
+        const boundary = lastStop && code && isAsakusaThroughEligibleTrip(trip) ? boundaryForTripStop(lastStop) : null;
+        if (!boundary) return;
+        const arrivalSec = lastStop.arrivalTimeSec ?? lastStop.departureTimeSec;
+        const candidates = (startsByBoundaryAndCode.get(`${boundary.stationName}|${code}`) || [])
+          .filter((candidate) => canStitchThroughTrips(trip, candidate, boundary))
+          .map((candidate) => {
+            const first = candidate.stopTimes?.[0];
+            const departureSec = first?.departureTimeSec ?? first?.arrivalTimeSec;
+            return { trip: candidate, gapSec: departureSec - arrivalSec };
+          })
+          .filter((candidate) => candidate.gapSec >= 0 && candidate.gapSec <= 300)
+          .sort((a, b) => a.gapSec - b.gapSec || String(a.trip.id).localeCompare(String(b.trip.id)));
+        const best = candidates[0]?.trip;
+        if (!best) return;
+        continuationByTripId.set(trip.id, best);
+        continuationBoundaryByTripId.set(trip.id, boundary.stationName);
+      });
+
+      const predecessorTripIds = new Set([...continuationByTripId.values()].map((trip) => trip.id));
+      const stitchedSourceTripIds = new Set();
+      const stitchedTrips = [];
+      trips.forEach((trip) => {
+        if (!continuationByTripId.has(trip.id) || predecessorTripIds.has(trip.id)) return;
+        const chain = [trip];
+        const boundaries = [];
+        const seen = new Set([trip.id]);
+        let current = trip;
+        while (continuationByTripId.has(current.id)) {
+          const next = continuationByTripId.get(current.id);
+          if (!next || seen.has(next.id) || chain.length >= 4) break;
+          boundaries.push(continuationBoundaryByTripId.get(current.id));
+          chain.push(next);
+          seen.add(next.id);
+          current = next;
+        }
+        if (chain.length < 2) return;
+        chain.forEach((sourceTrip) => stitchedSourceTripIds.add(sourceTrip.id));
+        stitchedTrips.push({
+          ...trip,
+          id: chain.map((sourceTrip) => sourceTrip.id).join('__through__'),
+          stopTimes: stitchTripChainStopTimes(chain),
+          throughStitched: true,
+          throughSourceTripIds: chain.map((sourceTrip) => sourceTrip.id),
+          throughRouteIds: chain.map((sourceTrip) => sourceTrip.routeId),
+          throughBoundaryStationName: boundaries.filter(Boolean).join('・'),
+        });
+      });
+      if (!stitchedTrips.length) return trips;
+      return [
+        ...trips.filter((trip) => !stitchedSourceTripIds.has(trip.id)),
+        ...stitchedTrips,
+      ];
+    }
+
     function normalizeTripForGameplay(trip) {
       return extendCircularTripForContinuousRide(trip);
     }
@@ -6414,7 +6553,8 @@
         state.tripById = new Map();
         state.stationTripsByGroupId = new Map();
         state.departureQueryCache = new Map();
-        trips.map(normalizeTripForGameplay).forEach((trip) => {
+        const gameplayTrips = stitchAsakusaThroughTrips(trips);
+        gameplayTrips.map(normalizeTripForGameplay).forEach((trip) => {
           state.tripById.set(trip.id, trip);
           const seen = new Set();
           (trip.stopTimes || []).forEach((stop) => {
@@ -6425,7 +6565,7 @@
           });
         });
         state.timetableStatus = 'ready';
-        loadPill.textContent = `Map ready - timetable ${trips.length || 0} trips`;
+        loadPill.textContent = `Map ready - timetable ${gameplayTrips.length || 0} trips`;
         renderGame();
       } catch (error) {
         console.error(error);
