@@ -26,6 +26,12 @@ MAJOR_STATION_FALLBACKS = {
     "hunter": ["新宿", "大阪", "新大阪", "横浜"],
 }
 
+SYNTHETIC_LINE_NAME_OVERRIDES = {
+    "JR_JOBAN": "常磐線",
+    "JR_EAST_JOBAN_RAPID": "常磐線",
+    "JR_TOHOKU": "東北線",
+}
+
 
 def load_json(path: Path) -> dict[str, Any]:
     opener = gzip.open if path.suffix == ".gz" else open
@@ -161,7 +167,9 @@ def route_key_for_train(
     id_to_name: dict[str, str],
 ) -> tuple[str, str]:
     raw_operator_id = resolve_operator_id(train.get("operator_id"), train.get("operator_name"), name_to_id, id_to_name)
-    raw_line_name = train.get("line_name") or (train.get("stop_times") or [{}])[0].get("line_name") or "未設定路線"
+    original_line_name = train.get("line_name") or (train.get("stop_times") or [{}])[0].get("line_name") or "未設定路線"
+    raw_line_was_synthetic = is_synthetic_line_name(original_line_name)
+    raw_line_name = SYNTHETIC_LINE_NAME_OVERRIDES.get(original_line_name, original_line_name)
     physical_counts: dict[tuple[str, str], int] = defaultdict(int)
     physical_operator_counts: dict[str, int] = defaultdict(int)
     for stop in train.get("stop_times") or []:
@@ -175,13 +183,12 @@ def route_key_for_train(
     if physical_counts:
         dominant_key, dominant_count = max(physical_counts.items(), key=lambda item: item[1])
         stop_count = max(1, len(train.get("stop_times") or []))
-        top_level_mismatch = dominant_key[0] != raw_operator_id or dominant_key[1] != raw_line_name
-        if top_level_mismatch and (dominant_count >= 3 and dominant_count / stop_count >= 0.55):
+        if raw_line_was_synthetic and dominant_count >= 2:
             return dominant_key
-        if is_synthetic_line_name(raw_line_name) and dominant_count >= 2:
+        if raw_operator_id in {"", "unknown_operator"} and dominant_count >= 3 and dominant_count / stop_count >= 0.55:
             return dominant_key
         dominant_operator_id, dominant_operator_count = max(physical_operator_counts.items(), key=lambda item: item[1])
-        if dominant_operator_id != raw_operator_id and dominant_operator_count / stop_count >= 0.55:
+        if raw_operator_id in {"", "unknown_operator"} and dominant_operator_count / stop_count >= 0.55:
             operator_lines = {
                 key: count
                 for key, count in physical_counts.items()
@@ -411,6 +418,7 @@ def build_timetable(
         for stop in train.get("stop_times", []):
             station_group_id = stop.get("station_group_id") or stop.get("station_id")
             stop_line_name = stop.get("physical_line_name") or stop.get("line_name") or line_name
+            stop_line_name = SYNTHETIC_LINE_NAME_OVERRIDES.get(stop_line_name, stop_line_name)
             stop_operator_id = resolve_operator_id(
                 None if stop.get("physical_operator_name") else train.get("operator_id"),
                 stop.get("physical_operator_name") or stop.get("operator_name") or train.get("operator_name"),
