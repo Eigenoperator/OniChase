@@ -14,8 +14,8 @@ DEFAULT_BUNDLE = ROOT / "data" / "v4_japan_physical_map.json.gz"
 DEFAULT_AUDIT = ROOT / "data" / "v4_track_continuity_audit.json"
 DEFAULT_LAND = ROOT / "docs" / "data" / "v4_maplibre" / "japan_land.geojson"
 DEFAULT_OVERVIEW = ROOT / "docs" / "data" / "v4_maplibre" / "track_overview.geojson"
-DEFAULT_HIGHLIGHT_GEOJSON = ROOT / "docs" / "data" / "v4_maplibre" / "track_continuity_highlights.geojson"
-DEFAULT_SVG = ROOT / "docs" / "data" / "v4_track_continuity_highlights.svg"
+DEFAULT_HIGHLIGHT_GEOJSON = ROOT / "data" / "v4_track_continuity_highlights.geojson"
+DEFAULT_SVG = ROOT / "data" / "v4_track_continuity_highlights.svg"
 
 COLORS = [
     "#E63946",

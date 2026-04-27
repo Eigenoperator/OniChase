@@ -20,7 +20,7 @@ Build `v4` from the frozen `v3` Tokyo MapLibre release candidate, starting with 
 - Public `v4.html` now displays the nationwide physical railway map with MapLibre, the same `station-labels` source and hub/major/local label-layer logic as v3, optional physical station dots, line search, and selected-line highlighting.
 - v4 map now includes two-level Japan outline-only coastline rendering, low-zoom `596`-feature track overview, lazy high-detail track loading, lazy physical-station loading, and high-zoom station dots for labels.
 - v4 track-continuity audit now uses 500m endpoint snap and reports `6` reviewed multi-component operator-line pairs, `0` unreviewed.
-- v4 continuity warnings now have a dedicated review map at `docs/v4_continuity.html` plus generated SVG/GeoJSON highlight outputs.
+- v4 track-continuity audit remains an internal data check with generated SVG/GeoJSON artifacts; the public continuity review page has been removed.
 - v4 overview tracks now fade out by zoom `7.65`, and exact physical `track_centerlines` take over from zoom `7.55` to avoid straight overview lines overlapping real geometry.
 - v4 line rendering now uses line-level color when known and falls back to company color; current inventory marks `152` line-specific colors and `444` company fallbacks, audited by `scripts/ingest/audit_v4_line_colors.py`.
 - Reusable v4 timetable work now includes source discovery, ODPT CKAN resource discovery, manual GTFS overrides, v3-to-v4 station identity adaptation, a current combined train collection, and official PDF text capture.
