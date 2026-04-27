@@ -1215,6 +1215,7 @@
       SHINKANSEN_JOETSU: '上越新幹線',
       SHINKANSEN_KYUSHU: '九州新幹線',
       SHINKANSEN_NISHI_KYUSHU: '西九州新幹線',
+      SHINKANSEN_SANYO_KYUSHU: '山陽・九州新幹線',
       SHINKANSEN_TOHOKU_HOKKAIDO: '東北・北海道新幹線',
       SHINKANSEN_TOKAIDO_SANYO: '東海道・山陽新幹線',
       SHINKANSEN_YAMAGATA: '山形新幹線',
@@ -1271,6 +1272,7 @@
       SHINKANSEN_JOETSU: ['上越新幹線'],
       SHINKANSEN_KYUSHU: ['九州新幹線'],
       SHINKANSEN_NISHI_KYUSHU: ['西九州新幹線'],
+      SHINKANSEN_SANYO_KYUSHU: ['山陽新幹線', '九州新幹線'],
       SHINKANSEN_TOHOKU_HOKKAIDO: ['東北新幹線', '北海道新幹線'],
       SHINKANSEN_TOKAIDO_SANYO: ['東海道新幹線', '山陽新幹線'],
       SHINKANSEN_YAMAGATA: ['東北新幹線', '奥羽線'],
@@ -1411,6 +1413,7 @@
       SHINKANSEN_JOETSU: '新',
       SHINKANSEN_KYUSHU: '新',
       SHINKANSEN_NISHI_KYUSHU: '新',
+      SHINKANSEN_SANYO_KYUSHU: '新',
       SHINKANSEN_TOHOKU_HOKKAIDO: '新',
       SHINKANSEN_TOKAIDO_SANYO: '新',
       SHINKANSEN_YAMAGATA: '新',
@@ -1627,6 +1630,35 @@
       'Tsukuba Express',
       'Yurikamome',
     ]);
+    const VIRTUAL_CORRIDOR_ROUTES = Object.freeze({
+      VIRTUAL_SHINKANSEN_SANYO_KYUSHU: {
+        id: 'VIRTUAL_SHINKANSEN_SANYO_KYUSHU',
+        operatorId: 'shinkansen',
+        operatorName: 'JR Shinkansen',
+        shortName: 'SHINKANSEN_SANYO_KYUSHU',
+        longName: 'JR Shinkansen SHINKANSEN_SANYO_KYUSHU',
+        color: '#0072bc',
+        textColor: '#ffffff',
+        mode: 'shinkansen',
+        tags: {
+          source: 'v4_virtual_corridor',
+          sourceOperatorId: 'shinkansen',
+          lineName: 'SHINKANSEN_SANYO_KYUSHU',
+          displayRule: 'operating_corridor',
+          physicalLines: ['山陽新幹線', '九州新幹線'],
+        },
+      },
+    });
+    const SANYO_KYUSHU_CORRIDOR_ROUTE_ID = 'VIRTUAL_SHINKANSEN_SANYO_KYUSHU';
+    const SANYO_SHINKANSEN_STATIONS = new Set([
+      '新大阪', '新神戸', '西明石', '姫路', '相生', '岡山', '新倉敷', '福山', '新尾道', '三原',
+      '東広島', '広島', '新岩国', '徳山', '新山口', '厚狭', '新下関', '小倉', '博多',
+    ]);
+    const KYUSHU_SHINKANSEN_STATIONS = new Set([
+      '博多', '新鳥栖', '久留米', '筑後船小屋', '新大牟田', '新玉名', '熊本', '新八代',
+      '新水俣', '出水', '川内', '鹿児島中央',
+    ]);
+    const HOKKAIDO_SHINKANSEN_STATIONS = new Set(['新函館北斗', '木古内', '奥津軽いまべつ']);
 
     const state = {
       bundle: null,
@@ -2422,6 +2454,40 @@
       return route?.operatorId === 'shinkansen' && /^SHINKANSEN_/u.test(String(route.shortName || ''));
     }
 
+    function stationDisplayNameForStop(stop) {
+      return displayNameForGroup(stop?.stationGroupId || '');
+    }
+
+    function tripUsesShinkansenStationSet(trip, stationSet, boundaryStationName) {
+      return (trip?.stopTimes || []).some((stop) => {
+        const name = stationDisplayNameForStop(stop);
+        return name !== boundaryStationName && stationSet.has(name);
+      });
+    }
+
+    function routeIdByShortName(shortName) {
+      for (const [routeId, route] of state.routeById.entries()) {
+        if (route?.shortName === shortName) return routeId;
+      }
+      return null;
+    }
+
+    function shinkansenCorridorChoiceRouteId(trip) {
+      const route = tripRoute(trip);
+      if (!isShinkansenCorridorRoute(route?.id)) return null;
+      const shortName = String(route?.shortName || '');
+      if (['SHINKANSEN_AKITA', 'SHINKANSEN_YAMAGATA'].includes(shortName)) {
+        const hasHokkaidoSegment = tripUsesShinkansenStationSet(trip, HOKKAIDO_SHINKANSEN_STATIONS, '');
+        if (hasHokkaidoSegment) return routeIdByShortName('SHINKANSEN_TOHOKU_HOKKAIDO') || route.id;
+      }
+      if (['SHINKANSEN_TOKAIDO_SANYO', 'SHINKANSEN_KYUSHU'].includes(shortName)) {
+        const hasSanyo = tripUsesShinkansenStationSet(trip, SANYO_SHINKANSEN_STATIONS, '博多');
+        const hasKyushu = tripUsesShinkansenStationSet(trip, KYUSHU_SHINKANSEN_STATIONS, '博多');
+        if (hasSanyo && hasKyushu) return SANYO_KYUSHU_CORRIDOR_ROUTE_ID;
+      }
+      return route.id;
+    }
+
     function isLimitedExpressTrip(trip) {
       const serviceName = String(trip?.serviceName || trip?.service_name || '');
       return Boolean(publicLimitedExpressBaseName(trip).name) || serviceName.includes('ライナー') || /limited\s*express/i.test(serviceName);
@@ -3005,6 +3071,26 @@
       });
     }
 
+    function buildVirtualCorridorRouteIndexes() {
+      Object.values(VIRTUAL_CORRIDOR_ROUTES).forEach((route) => {
+        const physicalLineNames = route.tags?.physicalLines || [];
+        const stationGroupIds = new Set();
+        physicalLineNames.forEach((lineName) => {
+          (state.trackGeometriesByLineName.get(lineName) || []).forEach((track) => {
+            (track.stationGroupIds || []).forEach((stationGroupId) => stationGroupIds.add(stationGroupId));
+          });
+        });
+        if (!stationGroupIds.size) {
+          state.physicalStationsByGroupId.forEach((stations, stationGroupId) => {
+            if (stations.some((station) => physicalLineNames.includes(station.tags?.lineName))) {
+              stationGroupIds.add(stationGroupId);
+            }
+          });
+        }
+        state.routeStationSetById.set(route.id, stationGroupIds);
+      });
+    }
+
     function routeIdsForStationAndTransfers(stationGroupId, { physicalOnly = false } = {}) {
       const routeIds = new Set();
       equivalentStationGroupIds(stationGroupId).forEach((groupId) => {
@@ -3186,7 +3272,7 @@
 
     function departureMatchesRoute(row, routeId) {
       if (!routeId) return true;
-      if (isShinkansenCorridorRoute(routeId) && row.trip?.routeId === routeId) return true;
+      if (routeChoiceIdsForDeparture(row).includes(routeId)) return true;
       return (row.routeIds || boardableRouteIdsForStop(row.trip, row.stop)).includes(routeId);
     }
 
@@ -3194,6 +3280,7 @@
       state.stationGroupById = new Map((bundle.stationGroups || []).map((group) => [group.id, group]));
       state.labelByGroupId = new Map((bundle.labelRepresentations || []).map((label) => [label.stationGroupId, label]));
       state.routeById = new Map((bundle.serviceRoutes || []).map((route) => [route.id, route]));
+      Object.values(VIRTUAL_CORRIDOR_ROUTES).forEach((route) => state.routeById.set(route.id, route));
       state.stationByGroupId = new Map();
       state.physicalStationsByGroupId = new Map();
       state.routeDistanceSqCache = new Map();
@@ -3242,6 +3329,7 @@
         });
         state.routeStationSetById.set(pattern.routeId, routeSet);
       });
+      buildVirtualCorridorRouteIndexes();
       buildStationTransferIndex();
       buildPhysicalRouteIdsByGroup();
       buildPhysicalStationRouteIndex();
@@ -4083,7 +4171,7 @@
           departureHhmm: minutesToHhmm(row.departureMinute),
           routeIds: row.routeIds || boardableRouteIdsForStop(row.trip, row.stop),
         }))
-        .filter((entry) => entry.routeIds.length && hasDownstreamStop(entry.trip, entry.boardStop));
+        .filter((entry) => (entry.routeIds.length || routeChoiceIdsForDeparture(entry).length) && hasDownstreamStop(entry.trip, entry.boardStop));
       const deduped = dedupeBoardableDepartures(entries);
       return Number.isFinite(options.limit) ? deduped.slice(0, options.limit) : deduped;
     }
@@ -5148,7 +5236,8 @@
     }
 
     function routeChoiceIdsForDeparture(entry) {
-      if (isShinkansenCorridorRoute(entry?.trip?.routeId)) return [entry.trip.routeId];
+      const shinkansenChoiceRouteId = shinkansenCorridorChoiceRouteId(entry?.trip);
+      if (shinkansenChoiceRouteId) return [shinkansenChoiceRouteId];
       return (entry?.routeIds || []).filter((routeId) => !isThroughServiceTransferAlias(routeId));
     }
 
