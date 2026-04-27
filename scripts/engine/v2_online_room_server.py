@@ -31,6 +31,10 @@ DATASET_PRESETS = {
         "bundle_path": ROOT / "data" / "v3_tokyo_map_bundle.json.gz",
         "timetable_path": ROOT / "data" / "v3_tokyo_timetable_bundle.json.gz",
     },
+    "v4-nationwide": {
+        "bundle_path": ROOT / "data" / "v4_gameplay_map_bundle.json.gz",
+        "timetable_path": ROOT / "data" / "v4_gameplay_timetable_bundle.json.gz",
+    },
 }
 
 BUNDLE: dict[str, Any] = {}
@@ -776,7 +780,7 @@ def parse_args() -> argparse.Namespace:
         "--dataset",
         choices=sorted(DATASET_PRESETS),
         default="shinkansen",
-        help="Named dataset preset. Use 'v3-tokyo' for the MapLibre Tokyo bundle plus deferred timetable.",
+        help="Named dataset preset. Use 'v3-tokyo' or 'v4-nationwide' for MapLibre bundles plus deferred timetables.",
     )
     parser.add_argument(
         "--bundle",

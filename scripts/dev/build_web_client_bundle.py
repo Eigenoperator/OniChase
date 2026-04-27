@@ -15,11 +15,13 @@ NOJEKYLL = DOCS_DIR / ".nojekyll"
 V1_SOURCE_HTML = UI_DIR / "web_client.html"
 V2_SOURCE_HTML = UI_DIR / "v2_web_client.html"
 V3_MAPLIBRE_SOURCE_HTML = DOCS_DIR / "v3.html"
+V4_MAPLIBRE_SOURCE_HTML = DOCS_DIR / "v4.html"
 V3_LOCAL_MIRROR_HTML = UI_DIR / "v3_maplibre.html"
 INDEX_HTML = DOCS_DIR / "index.html"
 V1_TARGET_HTML = DOCS_DIR / "v1.html"
 V2_TARGET_HTML = DOCS_DIR / "v2.html"
 V3_TARGET_HTML = DOCS_DIR / "v3.html"
+V4_TARGET_HTML = DOCS_DIR / "v4.html"
 
 DATA_FILES = [
     ROOT / "data" / "yamanote_stations.json",
@@ -34,6 +36,10 @@ DATA_FILES = [
     ROOT / "data" / "v3_tokyo_map_bundle.json.gz",
     ROOT / "data" / "v3_tokyo_timetable_bundle.json.gz",
     ROOT / "data" / "v3_tokyo_timetable_compact.json.gz",
+    ROOT / "data" / "v4_gameplay_map_bundle.json.gz",
+    ROOT / "data" / "v4_gameplay_timetable_bundle.json.gz",
+    ROOT / "data" / "v4_gameplay_timetable_compact.json.gz",
+    ROOT / "data" / "v4_gameplay_manifest.json",
 ]
 
 
@@ -56,6 +62,7 @@ def build_landing_page() -> str:
       --v1: #80c241;
       --v2: #cc8b2c;
       --v3: #1565c0;
+      --v4: #0f766e;
     }
     * { box-sizing: border-box; }
     body {
@@ -100,7 +107,7 @@ def build_landing_page() -> str:
     }
     .cards {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 22px;
     }
     .card {
@@ -121,6 +128,7 @@ def build_landing_page() -> str:
     .card.v1 .eyebrow { color: var(--v1); }
     .card.v2 .eyebrow { color: var(--v2); }
     .card.v3 .eyebrow { color: var(--v3); }
+    .card.v4 .eyebrow { color: var(--v4); }
     .card h2 {
       margin: 0;
       font-size: 30px;
@@ -157,6 +165,7 @@ def build_landing_page() -> str:
     .card.v1 a.button { background: #dff1c4; }
     .card.v2 a.button { background: #f6dfba; }
     .card.v3 a.button { background: #d8e7fb; }
+    .card.v4 a.button { background: #cdece7; }
     @media (max-width: 900px) {
       .cards { grid-template-columns: 1fr; }
       .hero h1 { font-size: 38px; }
@@ -168,7 +177,7 @@ def build_landing_page() -> str:
     <div class="shell">
       <section class="hero">
         <h1>OniChase</h1>
-        <p>Choose a version. <strong>V1</strong> is the archived Yamanote prototype. <strong>V2</strong> is the current playable nationwide Shinkansen build. <strong>V3</strong> is the official Tokyo MapLibre real-geometry timetable sandbox.</p>
+        <p>Choose a version. <strong>V1</strong> is the archived Yamanote prototype. <strong>V2</strong> is the current playable nationwide Shinkansen build. <strong>V3</strong> is the official Tokyo MapLibre gameplay release candidate. <strong>V4</strong> brings the same gameplay shell to the nationwide real railway map.</p>
       </section>
       <section class="cards">
         <article class="card v1">
@@ -210,6 +219,19 @@ def build_landing_page() -> str:
             <a class="button" href="./v3.html">Open V3</a>
           </div>
         </article>
+        <article class="card v4">
+          <div class="eyebrow">V4</div>
+          <h2>Japan Gameplay</h2>
+          <p>Nationwide real physical railway substrate with station identity v2, MapLibre layers, real weekday timetable data, and the v3 single/multiplayer planning loop.</p>
+          <div class="meta">
+            <div>Map: all-Japan physical rail geometry</div>
+            <div>Scope: 21,932 track centerlines, 10,239 physical stations, 122,263 trips</div>
+            <div>Use: single-player or two-player room playtest</div>
+          </div>
+          <div class="actions">
+            <a class="button" href="./v4.html">Open V4</a>
+          </div>
+        </article>
       </section>
     </div>
   </main>
@@ -223,10 +245,12 @@ def build() -> None:
     v1_html = V1_SOURCE_HTML.read_text(encoding="utf-8").replace("__DATA_BASE__", "./data")
     v2_html = V2_SOURCE_HTML.read_text(encoding="utf-8").replace("__DATA_BASE__", "./data")
     v3_html = V3_MAPLIBRE_SOURCE_HTML.read_text(encoding="utf-8")
+    v4_html = V4_MAPLIBRE_SOURCE_HTML.read_text(encoding="utf-8")
     INDEX_HTML.write_text(build_landing_page(), encoding="utf-8")
     V1_TARGET_HTML.write_text(v1_html, encoding="utf-8")
     V2_TARGET_HTML.write_text(v2_html, encoding="utf-8")
     V3_TARGET_HTML.write_text(v3_html, encoding="utf-8")
+    V4_TARGET_HTML.write_text(v4_html, encoding="utf-8")
     V3_LOCAL_MIRROR_HTML.write_text(v3_html, encoding="utf-8")
     old_v3_maplibre = DOCS_DIR / "v3_maplibre.html"
     if old_v3_maplibre.exists():
