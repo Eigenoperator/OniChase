@@ -1327,6 +1327,18 @@
       田園都市線: ['田園都市線', '半蔵門線', '11号線半蔵門線'],
       東横線: ['東横線', '副都心線', '13号線副都心線', 'みなとみらい21線'],
       目黒線: ['目黒線', '南北線', '7号線南北線', '三田線', '6号線三田線', '東急新横浜線', '相鉄本線', '相鉄いずみ野線', '相鉄新横浜線'],
+      東海道新幹線: ['東海道新幹線', '山陽新幹線'],
+      山陽新幹線: ['山陽新幹線', '東海道新幹線', '九州新幹線'],
+      九州新幹線: ['九州新幹線', '山陽新幹線'],
+      東海道線: ['東海道線', '山陽線', '湖西線', '北陸線', '関西空港線', '阪和線', '大阪環状線', '山陰線', '福知山線', '紀勢線', '高山線', '因美線', '伯備線', '本四備讃線'],
+      山陽線: ['山陽線', '東海道線', '赤穂線', '伯備線', '本四備讃線', '山陰線', '因美線'],
+      湖西線: ['湖西線', '東海道線', '北陸線'],
+      北陸線: ['北陸線', '湖西線', '東海道線'],
+      関西空港線: ['関西空港線', '阪和線', '東海道線', '大阪環状線'],
+      阪和線: ['阪和線', '関西空港線', '東海道線', '大阪環状線', '紀勢線'],
+      福知山線: ['福知山線', '東海道線', '山陰線'],
+      山陰線: ['山陰線', '福知山線', '東海道線', '山陽線', '舞鶴線'],
+      紀勢線: ['紀勢線', '阪和線', '東海道線'],
     });
     const SERVICE_NAME_JA_LABELS = Object.freeze({
       Asama: 'あさま',
@@ -2362,6 +2374,10 @@
       const englishBaseName = serviceName.replace(/^limited\s*express\s+/i, '').trim();
       const mapped = SERVICE_NAME_JA_LABELS[serviceName] || SERVICE_NAME_JA_LABELS[englishBaseName] || serviceName;
       const cleaned = mapped.replace(/^特急/u, '').trim();
+      const routeName = routeJapaneseName(trip?.routeId);
+      if (cleaned && routeName && cleaned === routeName) {
+        return { name: '', embeddedNumber: '' };
+      }
       const namedMatch = cleaned.match(/^(.+?)(\d{1,3})号$/u);
       if (namedMatch) return { name: namedMatch[1], embeddedNumber: namedMatch[2] };
       if (/^(?:特急|準特急|通勤特急|快速特急|快特|急行|快速|普通|各停|各駅停車|区間急行|区間準急|準急)$/u.test(cleaned)) {
@@ -2963,15 +2979,6 @@
 
     function buildPhysicalRouteIdsByGroup() {
       state.physicalRouteIdsByGroupId = new Map();
-      state.stationRouteIdsByGroupId.forEach((routeIds, stationGroupId) => {
-        routeIds.forEach((routeId) => {
-          if (!routeCanBoardAtStationGroup(routeId, stationGroupId)) return;
-          if (!state.physicalRouteIdsByGroupId.has(stationGroupId)) {
-            state.physicalRouteIdsByGroupId.set(stationGroupId, new Set());
-          }
-          state.physicalRouteIdsByGroupId.get(stationGroupId).add(routeId);
-        });
-      });
       const routeIdsByOperatorId = new Map();
       state.routeById.forEach((route, routeId) => {
         if (!route?.operatorId) return;
@@ -2979,22 +2986,16 @@
         routeIdsByOperatorId.get(route.operatorId).add(routeId);
       });
       state.physicalStationsByGroupId.forEach((stations, stationGroupId) => {
-        const candidateRouteIds = new Set();
         stations.forEach((station) => {
           (station.operatorIds || []).forEach((operatorId) => {
-            (routeIdsByOperatorId.get(operatorId) || new Set()).forEach((routeId) => candidateRouteIds.add(routeId));
+            (routeIdsByOperatorId.get(operatorId) || new Set()).forEach((routeId) => {
+              if (!routeMatchesPhysicalStationLine(routeId, station)) return;
+              if (!state.physicalRouteIdsByGroupId.has(stationGroupId)) {
+                state.physicalRouteIdsByGroupId.set(stationGroupId, new Set());
+              }
+              state.physicalRouteIdsByGroupId.get(stationGroupId).add(routeId);
+            });
           });
-        });
-        candidateRouteIds.forEach((routeId) => {
-          if (isThroughServiceTransferAlias(routeId)) return;
-          const route = state.routeById.get(routeId);
-          if (!route || route.operatorId === 'shinkansen' || String(route.operatorId || '').startsWith('jr_')) return;
-          if (!stations.some((station) => routeOperatorMatchesStation(route, station))) return;
-          if (!routeCanBoardAtStationGroup(routeId, stationGroupId)) return;
-          if (!state.physicalRouteIdsByGroupId.has(stationGroupId)) {
-            state.physicalRouteIdsByGroupId.set(stationGroupId, new Set());
-          }
-          state.physicalRouteIdsByGroupId.get(stationGroupId).add(routeId);
         });
       });
     }
@@ -3060,6 +3061,49 @@
       return count;
     }
 
+    function physicalTrackLineAliasTokensForRoute(routeId) {
+      const tokens = new Set();
+      const route = state.routeById.get(routeId);
+      const addToken = (value) => {
+        const normalized = normalizedTrackLineAlias(value);
+        if (!normalized) return;
+        tokens.add(normalized);
+        const withoutPrefix = normalized.replace(TRACK_LINE_ALIAS_PREFIX_RE, '');
+        if (withoutPrefix) tokens.add(withoutPrefix);
+      };
+      addToken(route?.tags?.lineName);
+      addToken(route?.shortName);
+      addToken(ROUTE_JA_LABELS[route?.shortName]);
+      return tokens;
+    }
+
+    function stationTrackLineAliasTokens(station) {
+      const tokens = new Set();
+      const addToken = (value) => {
+        const normalized = normalizedTrackLineAlias(value);
+        if (!normalized) return;
+        tokens.add(normalized);
+        const withoutPrefix = normalized.replace(TRACK_LINE_ALIAS_PREFIX_RE, '');
+        if (withoutPrefix) tokens.add(withoutPrefix);
+      };
+      addToken(station?.tags?.lineName);
+      return tokens;
+    }
+
+    function routeMatchesPhysicalStationLine(routeId, station) {
+      const route = state.routeById.get(routeId);
+      if (!route || !station || isThroughServiceTransferAlias(routeId)) return false;
+      if (!routeOperatorMatchesStation(route, station)) return false;
+      const routeAliases = physicalTrackLineAliasTokensForRoute(routeId);
+      if (!routeAliases.size) return false;
+      return [...stationTrackLineAliasTokens(station)].some((alias) => routeAliases.has(alias));
+    }
+
+    function routePhysicallyBoardsAtStationGroup(routeId, stationGroupId) {
+      const stations = state.physicalStationsByGroupId.get(stationGroupId) || [];
+      return stations.some((station) => routeMatchesPhysicalStationLine(routeId, station));
+    }
+
     function canBorrowTripForBoardingLine(tripRouteId, selectedRouteId) {
       if (!tripRouteId || !selectedRouteId || tripRouteId === selectedRouteId) return false;
       const tripRoute = state.routeById.get(tripRouteId);
@@ -3094,16 +3138,19 @@
       const boardingStations = state.physicalStationsByGroupId.get(boardStop.stationGroupId) || [];
       const operatorMatchesBoardingStation = !boardingStations.length ||
         boardingStations.some((station) => routeOperatorMatchesStation(route, station));
+      const physicallyBoardsHere = routePhysicallyBoardsAtStationGroup(routeId, boardStop.stationGroupId);
       const nextStop = nextStopAfter(trip, boardStop);
       if (routeId === trip.routeId) {
-        result = operatorMatchesBoardingStation && routePatternServesPlannerBoardingStation(routeId, boardStop.stationGroupId);
+        result = operatorMatchesBoardingStation && physicallyBoardsHere && routePatternServesPlannerBoardingStation(routeId, boardStop.stationGroupId);
       } else if (
         operatorMatchesBoardingStation &&
         nextStop &&
+        physicallyBoardsHere &&
         canBorrowTripForBoardingLine(trip.routeId, routeId) &&
         routePatternServesPlannerBoardingStation(routeId, boardStop.stationGroupId)
       ) {
-        result = routePatternServesPlannerBoardingStation(routeId, nextStop.stationGroupId);
+        result = routePatternServesPlannerBoardingStation(routeId, nextStop.stationGroupId) ||
+          (!isShinkansenTrip(trip) && isLimitedExpressTrip(trip));
       }
       state.routeCanRepresentCache.set(cacheKey, result);
       return result;
@@ -3886,6 +3933,9 @@
     function isThroughServiceTransferAlias(routeId) {
       const route = state.routeById.get(routeId);
       if (!route) return true;
+      if (route.operatorId === 'shinkansen' && /^SHINKANSEN_/u.test(String(route.shortName || ''))) {
+        return true;
+      }
       if (PHYSICAL_ALIAS_ROUTE_NAMES.has(route.shortName)) return false;
       if (route.operatorId === 'tokyo_metro' && !TOKYO_METRO_PHYSICAL_ROUTE_NAMES.has(route.shortName)) {
         return true;
@@ -4117,6 +4167,7 @@
 
     function formatTripLabelForBoarding(entry, selectedRouteId = null) {
       const base = formatTripLabel(entry?.trip);
+      if (isShinkansenTrip(entry?.trip) || isLimitedExpressTrip(entry?.trip)) return base;
       if (!entry?.trip || !selectedRouteId || selectedRouteId === entry.trip.routeId) return base;
       if (!(entry.routeIds || []).includes(selectedRouteId)) return base;
       const routeNames = [routeTitle(entry.trip.routeId), routeTitle(selectedRouteId)]

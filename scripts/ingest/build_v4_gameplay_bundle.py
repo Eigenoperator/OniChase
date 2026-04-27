@@ -81,7 +81,11 @@ def parse_hhmm_minutes(value: str | None) -> int | None:
         return None
 
 
-def normalize_trip_stop_times(raw_stops: list[dict[str, Any]], valid_station_group_ids: set[str]) -> list[dict[str, Any]]:
+def normalize_trip_stop_times(
+    raw_stops: list[dict[str, Any]],
+    valid_station_group_ids: set[str],
+    physical_station_by_id: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
     normalized = []
     previous_minute: int | None = None
     day_offset = 0
@@ -112,6 +116,7 @@ def normalize_trip_stop_times(raw_stops: list[dict[str, Any]], valid_station_gro
             if departure < arrival:
                 departure = arrival
         previous_minute = departure
+        physical_station = physical_station_by_id.get(stop.get("physical_station_id") or stop.get("physicalStationId") or "")
         normalized.append(
             {
                 "sequence": len(normalized) + 1,
@@ -120,11 +125,26 @@ def normalize_trip_stop_times(raw_stops: list[dict[str, Any]], valid_station_gro
                 "departureTimeSec": departure * 60,
                 "physicalStationId": stop.get("physical_station_id"),
                 "sourceLineId": stop.get("line_id"),
-                "sourceLineName": stop.get("line_name"),
-                "sourceOperatorName": stop.get("operator_name"),
+                "sourceLineName": physical_station.get("lineName") if physical_station else stop.get("line_name"),
+                "sourceOperatorName": physical_station.get("operatorName") if physical_station else stop.get("operator_name"),
             }
         )
     return normalized
+
+
+def public_service_name_for_train(train: dict[str, Any], line_name: str) -> str:
+    service_detail = str(train.get("service_name_detail") or "").strip()
+    train_type = str(train.get("train_type") or "").strip()
+    service_name = str(train.get("service_name") or "").strip()
+    operator_id = str(train.get("operator_id") or "").strip()
+    original_line_name = str(train.get("line_name") or "").strip()
+    if operator_id == "shinkansen" or original_line_name.startswith("SHINKANSEN_"):
+        return service_name or train_type or line_name
+    if service_detail and train_type == "特急":
+        return service_detail
+    if train_type == "特急":
+        return service_name or train_type or line_name
+    return line_name
 
 
 def operator_maps(physical_map: dict[str, Any]) -> tuple[dict[str, str], dict[str, str]]:
@@ -161,10 +181,43 @@ def is_synthetic_line_name(line_name: str | None) -> bool:
     return value.startswith(("JR_", "SHINKANSEN_", "TOEI_", "TOKYO_", "YURIKAMOME"))
 
 
+def physical_route_key_for_stop(
+    stop: dict[str, Any],
+    train: dict[str, Any],
+    physical_station_by_id: dict[str, dict[str, Any]],
+    name_to_id: dict[str, str],
+    id_to_name: dict[str, str],
+) -> tuple[str, str] | None:
+    physical_station = physical_station_by_id.get(stop.get("physical_station_id") or stop.get("physicalStationId") or "")
+    if physical_station and physical_station.get("lineName"):
+        return (
+            resolve_operator_id(
+                physical_station.get("operatorId"),
+                physical_station.get("operatorName"),
+                name_to_id,
+                id_to_name,
+            ),
+            physical_station.get("lineName") or "未設定路線",
+        )
+    physical_line_name = stop.get("physical_line_name")
+    if physical_line_name:
+        return (
+            resolve_operator_id(
+                None if stop.get("physical_operator_name") else train.get("operator_id"),
+                stop.get("physical_operator_name") or stop.get("operator_name") or train.get("operator_name"),
+                name_to_id,
+                id_to_name,
+            ),
+            SYNTHETIC_LINE_NAME_OVERRIDES.get(physical_line_name, physical_line_name),
+        )
+    return None
+
+
 def route_key_for_train(
     train: dict[str, Any],
     name_to_id: dict[str, str],
     id_to_name: dict[str, str],
+    physical_station_by_id: dict[str, dict[str, Any]],
 ) -> tuple[str, str]:
     raw_operator_id = resolve_operator_id(train.get("operator_id"), train.get("operator_name"), name_to_id, id_to_name)
     original_line_name = train.get("line_name") or (train.get("stop_times") or [{}])[0].get("line_name") or "未設定路線"
@@ -173,16 +226,19 @@ def route_key_for_train(
     physical_counts: dict[tuple[str, str], int] = defaultdict(int)
     physical_operator_counts: dict[str, int] = defaultdict(int)
     for stop in train.get("stop_times") or []:
-        physical_operator_name = stop.get("physical_operator_name")
-        physical_line_name = stop.get("physical_line_name")
-        if not physical_operator_name or not physical_line_name:
+        physical_key = physical_route_key_for_stop(stop, train, physical_station_by_id, name_to_id, id_to_name)
+        if not physical_key:
             continue
-        physical_operator_id = resolve_operator_id(None, physical_operator_name, name_to_id, id_to_name)
-        physical_counts[(physical_operator_id, physical_line_name)] += 1
-        physical_operator_counts[physical_operator_id] += 1
+        physical_counts[physical_key] += 1
+        physical_operator_counts[physical_key[0]] += 1
     if physical_counts:
         dominant_key, dominant_count = max(physical_counts.items(), key=lambda item: item[1])
         stop_count = max(1, len(train.get("stop_times") or []))
+        raw_key = (raw_operator_id, raw_line_name)
+        if raw_line_was_synthetic and str(original_line_name).startswith("SHINKANSEN_"):
+            return raw_key
+        if raw_key not in physical_counts and dominant_count >= 2:
+            return dominant_key
         if raw_line_was_synthetic and dominant_count >= 2:
             return dominant_key
         if raw_operator_id in {"", "unknown_operator"} and dominant_count >= 3 and dominant_count / stop_count >= 0.55:
@@ -360,9 +416,10 @@ def enrich_routes_from_trains(
     line_station_groups: dict[tuple[str, str], set[str]],
     id_to_name: dict[str, str],
     name_to_id: dict[str, str],
+    physical_station_by_id: dict[str, dict[str, Any]],
 ) -> None:
     for train in trains:
-        operator_id, line_name = route_key_for_train(train, name_to_id, id_to_name)
+        operator_id, line_name = route_key_for_train(train, name_to_id, id_to_name, physical_station_by_id)
         operator_name = train.get("operator_name") or id_to_name.get(operator_id) or operator_id
         operator_name = id_to_name.get(operator_id, operator_name)
         route_id = route_id_for(operator_id, line_name)
@@ -392,6 +449,7 @@ def build_timetable(
     name_to_id: dict[str, str],
     id_to_name: dict[str, str],
     valid_station_group_ids: set[str],
+    physical_station_by_id: dict[str, dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], dict[str, set[str]], dict[tuple[str, str], set[str]], dict[str, int]]:
     trip_instances = []
     route_station_groups: dict[str, set[str]] = defaultdict(set)
@@ -399,15 +457,16 @@ def build_timetable(
     stats = {"skipped_short": 0, "skipped_no_route": 0}
     seen_ids: set[str] = set()
     for index, train in enumerate(trains):
-        operator_id, line_name = route_key_for_train(train, name_to_id, id_to_name)
+        operator_id, line_name = route_key_for_train(train, name_to_id, id_to_name, physical_station_by_id)
         if not operator_id or not line_name:
             stats["skipped_no_route"] += 1
             continue
         route_id = route_id_for(operator_id, line_name)
-        stop_times = normalize_trip_stop_times(train.get("stop_times") or [], valid_station_group_ids)
+        stop_times = normalize_trip_stop_times(train.get("stop_times") or [], valid_station_group_ids, physical_station_by_id)
         if len(stop_times) < 2:
             stats["skipped_short"] += 1
             continue
+        service_name = public_service_name_for_train(train, line_name)
         base_id = train.get("service_instance_id") or train.get("source_trip_id") or f"v4-trip-{index}"
         trip_id = str(base_id)
         if trip_id in seen_ids:
@@ -417,14 +476,13 @@ def build_timetable(
         route_station_groups[route_id].update(station_group_ids)
         for stop in train.get("stop_times", []):
             station_group_id = stop.get("station_group_id") or stop.get("station_id")
-            stop_line_name = stop.get("physical_line_name") or stop.get("line_name") or line_name
-            stop_line_name = SYNTHETIC_LINE_NAME_OVERRIDES.get(stop_line_name, stop_line_name)
-            stop_operator_id = resolve_operator_id(
-                None if stop.get("physical_operator_name") else train.get("operator_id"),
-                stop.get("physical_operator_name") or stop.get("operator_name") or train.get("operator_name"),
+            stop_operator_id, stop_line_name = physical_route_key_for_stop(
+                stop,
+                train,
+                physical_station_by_id,
                 name_to_id,
                 id_to_name,
-            )
+            ) or (operator_id, line_name)
             if station_group_id and station_group_id in valid_station_group_ids:
                 line_station_groups[(operator_id, line_name)].add(station_group_id)
                 line_station_groups[(stop_operator_id, stop_line_name)].add(station_group_id)
@@ -432,8 +490,8 @@ def build_timetable(
             {
                 "id": trip_id,
                 "routeId": route_id,
-                "serviceName": train.get("service_name") or train.get("train_type") or line_name,
-                "serviceNameJa": train.get("service_name") or train.get("train_type") or line_name,
+                "serviceName": service_name,
+                "serviceNameJa": service_name,
                 "serviceNumber": train.get("service_number") or train.get("train_number") or "",
                 "publicServiceNumber": train.get("service_number") or train.get("train_number") or "",
                 "operatingNumber": train.get("train_number") or train.get("service_number") or "",
@@ -492,6 +550,7 @@ def build_bundle(map_input: Path, trains_input: Path) -> tuple[dict[str, Any], d
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     id_to_name, name_to_id = operator_maps(physical_map)
     valid_station_group_ids = {group["id"] for group in physical_map.get("stationGroups", [])}
+    physical_station_by_id = {station["id"]: station for station in physical_map.get("physicalStations", [])}
     physical_line_station_groups: dict[tuple[str, str], set[str]] = defaultdict(set)
     for station in physical_map.get("physicalStations", []):
         operator_id = station.get("operatorId") or "unknown_operator"
@@ -505,6 +564,7 @@ def build_bundle(map_input: Path, trains_input: Path) -> tuple[dict[str, Any], d
         name_to_id,
         id_to_name,
         valid_station_group_ids,
+        physical_station_by_id,
     )
     line_station_groups: dict[tuple[str, str], set[str]] = defaultdict(set)
     for key, value in physical_line_station_groups.items():
@@ -513,7 +573,7 @@ def build_bundle(map_input: Path, trains_input: Path) -> tuple[dict[str, Any], d
         line_station_groups[key].update(value)
 
     track_centerlines, service_geometry, routes_by_id = build_track_exports(physical_map, line_station_groups)
-    enrich_routes_from_trains(trains, routes_by_id, line_station_groups, id_to_name, name_to_id)
+    enrich_routes_from_trains(trains, routes_by_id, line_station_groups, id_to_name, name_to_id, physical_station_by_id)
     for route_id, station_ids in route_station_groups.items():
         route = routes_by_id.get(route_id)
         if not route:
