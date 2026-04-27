@@ -1714,6 +1714,10 @@
     const UENO_TOKYO_REPLACED_PHYSICAL_ROUTE_NAMES = new Set([
       '東海道線', '東海道本線', '東北線', '東北本線', '宇都宮線', 'JR_EAST_TOKAIDO',
     ]);
+    const CHUO_TOKYO_DIRECTION_STATIONS = new Set([
+      '御茶ノ水', '四ツ谷', '新宿', '中野', '三鷹', '国分寺', '立川',
+      '八王子', '高尾', '青梅', '大月',
+    ]);
     const KEIHIN_TOHOKU_SIGNATURE_STATIONS = new Set([
       '大井町', '大森', '蒲田', '新子安', '東神奈川', '桜木町', '関内', '石川町', '山手',
       '根岸', '磯子', '新杉田', '洋光台', '港南台', '本郷台', '御徒町', '鶯谷',
@@ -2601,6 +2605,29 @@
         if (route?.shortName === shortName) return routeId;
       }
       return null;
+    }
+
+    function routeIdByShortNameAndOperator(shortName, operatorId) {
+      for (const [routeId, route] of state.routeById.entries()) {
+        if (route?.shortName === shortName && route?.operatorId === operatorId) return routeId;
+      }
+      return null;
+    }
+
+    function chuoTokyoChoiceRouteId(entry) {
+      const trip = entry?.trip;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      if (!trip || !boardStop) return null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
+      if (boardName !== '東京' || nextName !== '神田') return null;
+      const route = tripRoute(trip);
+      const stationNames = new Set(tripStationNames(trip));
+      const hasChuoDirectionStop = [...CHUO_TOKYO_DIRECTION_STATIONS].some((name) => stationNames.has(name));
+      const looksLikeChuoDirection = route?.shortName === '中央線' ||
+        (['5号線東西線', '東西線'].includes(route?.shortName) && hasChuoDirectionStop);
+      if (!looksLikeChuoDirection) return null;
+      return routeIdByShortNameAndOperator('中央線', 'jr_east');
     }
 
     function shinkansenCorridorChoiceRouteId(trip) {
@@ -4321,13 +4348,15 @@
 
     function dedupeBoardableDepartures(entries) {
       const seen = new Set();
+      const looseLogicalIndexByKey = new Map();
       const deduped = [];
       entries.forEach((entry) => {
         const logicalRouteKey = routeChoiceIdsForDeparture(entry).join('+') || entry.trip.routeId || '';
-        const virtualRouteKey = logicalRouteKey.startsWith('VIRTUAL_');
+        const usesLooseLogicalKey = logicalRouteKey.startsWith('VIRTUAL_') ||
+          logicalRouteKey === routeIdByShortNameAndOperator('中央線', 'jr_east');
         const stops = entry.trip.stopTimes || [];
         const nextStop = stops.find((stop) => stop.sequence > entry.boardStop.sequence);
-        const looseVirtualKey = virtualRouteKey
+        const looseLogicalKey = usesLooseLogicalKey
           ? [
               logicalRouteKey,
               displayNameForGroup(entry.boardStop.stationGroupId),
@@ -4337,7 +4366,14 @@
               nextStop ? displayNameForGroup(nextStop.stationGroupId) : '',
             ].join('|')
           : '';
-        if (looseVirtualKey && seen.has(looseVirtualKey)) return;
+        if (looseLogicalKey && looseLogicalIndexByKey.has(looseLogicalKey)) {
+          const existingIndex = looseLogicalIndexByKey.get(looseLogicalKey);
+          const existing = deduped[existingIndex];
+          if (entry.trip.routeId === logicalRouteKey && existing?.trip?.routeId !== logicalRouteKey) {
+            deduped[existingIndex] = entry;
+          }
+          return;
+        }
         const downstream = (entry.trip.stopTimes || [])
           .filter((stop) => stop.sequence >= entry.boardStop.sequence)
           .map((stop) => [
@@ -4353,7 +4389,10 @@
           downstream,
         ].join('|');
         if (seen.has(key)) return;
-        if (looseVirtualKey) seen.add(looseVirtualKey);
+        if (looseLogicalKey) {
+          seen.add(looseLogicalKey);
+          looseLogicalIndexByKey.set(looseLogicalKey, deduped.length);
+        }
         seen.add(key);
         deduped.push(entry);
       });
@@ -4415,6 +4454,9 @@
 
     function formatTripLabelForBoarding(entry, selectedRouteId = null) {
       const base = formatTripLabel(entry?.trip);
+      if (entry?.trip && selectedRouteId && selectedRouteId !== entry.trip.routeId && chuoTokyoChoiceRouteId(entry) === selectedRouteId) {
+        return routeTitle(selectedRouteId);
+      }
       if (isShinkansenTrip(entry?.trip) || isLimitedExpressTrip(entry?.trip)) return base;
       if (!entry?.trip || !selectedRouteId || selectedRouteId === entry.trip.routeId) return base;
       if (routeChoiceIdsForDeparture(entry).includes(selectedRouteId)) return routeTitle(selectedRouteId);
@@ -5393,6 +5435,8 @@
     function routeChoiceIdsForDeparture(entry) {
       const shinkansenChoiceRouteId = shinkansenCorridorChoiceRouteId(entry?.trip);
       if (shinkansenChoiceRouteId) return [shinkansenChoiceRouteId];
+      const chuoChoiceRouteId = chuoTokyoChoiceRouteId(entry);
+      if (chuoChoiceRouteId) return [chuoChoiceRouteId];
       const jrEastChoiceRouteId = jrEastCorridorChoiceRouteId(entry);
       if (jrEastChoiceRouteId) return [jrEastChoiceRouteId];
       return (entry?.routeIds || []).filter((routeId) => !isThroughServiceTransferAlias(routeId));
