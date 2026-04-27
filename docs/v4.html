@@ -2417,6 +2417,11 @@
       return route?.operatorId === 'shinkansen' || String(route?.shortName || '').startsWith('SHINKANSEN_') || routeName.includes('新幹線');
     }
 
+    function isShinkansenCorridorRoute(routeId) {
+      const route = state.routeById.get(routeId);
+      return route?.operatorId === 'shinkansen' && /^SHINKANSEN_/u.test(String(route.shortName || ''));
+    }
+
     function isLimitedExpressTrip(trip) {
       const serviceName = String(trip?.serviceName || trip?.service_name || '');
       return Boolean(publicLimitedExpressBaseName(trip).name) || serviceName.includes('ライナー') || /limited\s*express/i.test(serviceName);
@@ -3181,6 +3186,7 @@
 
     function departureMatchesRoute(row, routeId) {
       if (!routeId) return true;
+      if (isShinkansenCorridorRoute(routeId) && row.trip?.routeId === routeId) return true;
       return (row.routeIds || boardableRouteIdsForStop(row.trip, row.stop)).includes(routeId);
     }
 
@@ -5121,24 +5127,29 @@
     function routeChoicesFromDepartures(departures) {
       const byRoute = new Map();
       departures.forEach((entry) => {
-        const entryRouteIds = entry.routeIds?.length ? entry.routeIds : [];
+        const entryRouteIds = routeChoiceIdsForDeparture(entry);
         entryRouteIds.forEach((routeId) => {
-        if (isThroughServiceTransferAlias(routeId)) return;
-        const current = byRoute.get(routeId) || {
-          routeId,
-          firstDepartureMinute: entry.departureMinute,
-          firstDepartureHhmm: entry.departureHhmm,
-          trainCount: 0,
-        };
-        current.firstDepartureMinute = Math.min(current.firstDepartureMinute, entry.departureMinute);
-        current.firstDepartureHhmm = minutesToHhmm(current.firstDepartureMinute);
-        current.trainCount += 1;
-        byRoute.set(routeId, current);
+          if (isThroughServiceTransferAlias(routeId) && !isShinkansenCorridorRoute(routeId)) return;
+          const current = byRoute.get(routeId) || {
+            routeId,
+            firstDepartureMinute: entry.departureMinute,
+            firstDepartureHhmm: entry.departureHhmm,
+            trainCount: 0,
+          };
+          current.firstDepartureMinute = Math.min(current.firstDepartureMinute, entry.departureMinute);
+          current.firstDepartureHhmm = minutesToHhmm(current.firstDepartureMinute);
+          current.trainCount += 1;
+          byRoute.set(routeId, current);
         });
       });
       return [...byRoute.values()].sort((a, b) =>
         a.firstDepartureMinute - b.firstDepartureMinute || routeTitle(a.routeId).localeCompare(routeTitle(b.routeId))
       );
+    }
+
+    function routeChoiceIdsForDeparture(entry) {
+      if (isShinkansenCorridorRoute(entry?.trip?.routeId)) return [entry.trip.routeId];
+      return (entry?.routeIds || []).filter((routeId) => !isThroughServiceTransferAlias(routeId));
     }
 
     function plannerStep(index, title, sub, body) {
@@ -5159,7 +5170,7 @@
     function choosePlanningRoute(routeId) {
       const preview = planCursorPreview(state.activeMode);
       const pending = preview ? pendingDepartureContext(preview) : null;
-      if (pending && !(pending.routeIds || []).includes(routeId)) clearPendingTrip();
+      if (pending && !routeChoiceIdsForDeparture(pending).includes(routeId)) clearPendingTrip();
       setSelectedRoute(routeId);
     }
 
@@ -5182,9 +5193,10 @@
       if (pending) {
         const departures = availableDepartures(preview);
         const routeChoices = routeChoicesFromDepartures(departures);
-        const selectedRouteId = (pending.routeIds || []).includes(state.selectedRouteId)
+        const pendingChoiceRouteIds = routeChoiceIdsForDeparture(pending);
+        const selectedRouteId = pendingChoiceRouteIds.includes(state.selectedRouteId)
           ? state.selectedRouteId
-          : (pending.routeIds || [pending.trip.routeId])[0];
+          : (pendingChoiceRouteIds[0] || pending.trip.routeId);
         const trainRows = availableRouteDepartures(preview, selectedRouteId);
         html += plannerStep(
           1,
