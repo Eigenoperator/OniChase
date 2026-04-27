@@ -1690,7 +1690,10 @@
     const UENO_TOKYO_CORE_STATIONS = new Set(['品川', '新橋', '東京', '上野', '尾久', '赤羽']);
     const UENO_TOKYO_SOUTH_STATIONS = new Set(['熱海', '小田原', '平塚', '大船', '横浜', '川崎', '品川', '新橋', '東京']);
     const UENO_TOKYO_NORTH_STATIONS = new Set(['東京', '上野', '尾久', '赤羽', '浦和', 'さいたま新都心', '大宮', '小山', '小金井', '宇都宮', '籠原', '熊谷', '高崎', '取手', '土浦', '水戸', '勝田']);
-    const UENO_TOKYO_TRIP_ROUTE_NAMES = new Set(['東海道線', '東北線', '高崎線', '常磐線', '伊東線', '上越線', '両毛線', 'JR_EAST_UENO_TOKYO']);
+    const UENO_TOKYO_TRIP_ROUTE_NAMES = new Set([
+      '東海道線', '東北線', '東北本線', '宇都宮線', '高崎線', '常磐線',
+      '伊東線', '上越線', '両毛線', 'JR_EAST_TOKAIDO', 'JR_EAST_UENO_TOKYO',
+    ]);
     const KEIHIN_TOHOKU_SIGNATURE_STATIONS = new Set([
       '大井町', '大森', '蒲田', '新子安', '東神奈川', '桜木町', '関内', '石川町', '山手',
       '根岸', '磯子', '新杉田', '洋光台', '港南台', '本郷台', '御徒町', '鶯谷',
@@ -2550,8 +2553,12 @@
     function jrEastCorridorChoiceRouteId(entry) {
       const trip = entry?.trip || entry;
       if (isKeihinTohokuNegishiTrip(trip)) return JR_KEIHIN_TOHOKU_NEGISHI_ROUTE_ID;
-      if (!isUenoTokyoLineTrip(trip)) return null;
       const boardName = stationDisplayNameForStop(entry?.boardStop || entry?.stop || null);
+      const route = tripRoute(trip);
+      if (UENO_TOKYO_CORE_STATIONS.has(boardName) && UENO_TOKYO_TRIP_ROUTE_NAMES.has(route?.shortName)) {
+        return JR_UENO_TOKYO_CORRIDOR_ROUTE_ID;
+      }
+      if (!isUenoTokyoLineTrip(trip)) return null;
       return UENO_TOKYO_CORE_STATIONS.has(boardName) ? JR_UENO_TOKYO_CORRIDOR_ROUTE_ID : null;
     }
 
