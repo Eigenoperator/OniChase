@@ -455,6 +455,8 @@
             <div class="metric"><strong id="metric-groups">-</strong><span>Station Groups</span></div>
             <div class="metric"><strong id="metric-stations">-</strong><span>Physical Stations</span></div>
             <div class="metric"><strong id="metric-lines">-</strong><span>Lines</span></div>
+            <div class="metric"><strong id="metric-trains">-</strong><span>Trains</span></div>
+            <div class="metric"><strong id="metric-health">-</strong><span>Health</span></div>
           </div>
         </section>
 
@@ -500,6 +502,7 @@
     const EMPTY_LINE_FILTER = ['==', ['get', 'operator_id'], '__none__'];
     const state = {
       manifest: null,
+      websiteData: null,
       inventory: null,
       lines: [],
       selectedLine: null,
@@ -518,6 +521,8 @@
       groups: document.getElementById('metric-groups'),
       stations: document.getElementById('metric-stations'),
       lines: document.getElementById('metric-lines'),
+      trains: document.getElementById('metric-trains'),
+      health: document.getElementById('metric-health'),
       search: document.getElementById('line-search'),
       lineList: document.getElementById('line-list'),
       lineListTitle: document.getElementById('line-list-title'),
@@ -897,14 +902,16 @@
     }
 
     async function loadMetadata() {
-      const [manifest, inventory] = await Promise.all([
+      const [manifest, inventory, websiteData] = await Promise.all([
         fetch(`${DATA_ROOT}manifest.json`).then((response) => response.json()),
         fetch(`${DATA_ROOT}line_inventory.json`).then((response) => response.json()),
+        fetch('data/v4_website_data_manifest.json').then((response) => response.json()).catch(() => null),
       ]);
       state.manifest = manifest;
       state.inventory = inventory;
+      state.websiteData = websiteData;
       state.lines = inventory.lines || [];
-      return { manifest, inventory };
+      return { manifest, inventory, websiteData };
     }
 
     function updateMetrics() {
@@ -914,8 +921,22 @@
       elements.groups.textContent = formatNumber(layers.station_groups?.featureCount);
       elements.stations.textContent = formatNumber(layers.physical_stations?.featureCount);
       elements.lines.textContent = formatNumber(counts.operatorLinePairs);
-      elements.summaryCopy.textContent = `${formatNumber(counts.operatorLinePairs)} operator-line pairs, ${formatNumber(counts.uniqueLineNames)} unique line names, ${formatNumber(counts.operators)} operators.`;
-      elements.loadPill.textContent = `Map ready · ${formatNumber(counts.operatorLinePairs)} lines`;
+      const trainCounts = state.websiteData?.counts || {};
+      elements.trains.textContent = trainCounts.trainInstances ? formatNumber(trainCounts.trainInstances) : '-';
+      const healthClean = [
+        trainCounts.duplicateServiceInstanceIds,
+        trainCounts.badTimeOrderTrains,
+        trainCounts.missingStationGroupStops,
+        trainCounts.missingPhysicalStationStops,
+      ].every((value) => Number(value || 0) === 0);
+      elements.health.textContent = state.websiteData ? (healthClean ? 'OK' : 'WARN') : '-';
+      const trainSummary = trainCounts.trainInstances
+        ? ` Timetable uploaded: ${formatNumber(trainCounts.trainInstances)} trains across ${formatNumber(trainCounts.operatorsWithTrainData)} operators.`
+        : '';
+      elements.summaryCopy.textContent = `${formatNumber(counts.operatorLinePairs)} operator-line pairs, ${formatNumber(counts.uniqueLineNames)} unique line names, ${formatNumber(counts.operators)} map operators.${trainSummary}`;
+      elements.loadPill.textContent = trainCounts.trainInstances
+        ? `Map ready · ${formatNumber(counts.operatorLinePairs)} lines · ${formatNumber(trainCounts.trainInstances)} trains`
+        : `Map ready · ${formatNumber(counts.operatorLinePairs)} lines`;
     }
 
     function lineColor(line) {
