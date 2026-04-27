@@ -6386,10 +6386,8 @@
       return { ...trip, stopTimes: [...stops, ...extraStops], circularExtended: true };
     }
 
-    const ASAKUSA_THROUGH_BOUNDARIES = Object.freeze([
-      { stationName: '泉岳寺', operators: ['toei', 'keikyu'] },
-      { stationName: '押上', operators: ['toei', 'keisei'] },
-    ]);
+    const THROUGH_STITCH_MAX_GAP_SEC = 300;
+    const THROUGH_STITCH_MAX_CHAIN = 6;
 
     function throughRunCode(trip) {
       const raw = String(trip?.publicServiceNumber || trip?.serviceNumber || '').normalize('NFKC').toUpperCase();
@@ -6406,28 +6404,25 @@
       return state.routeById.get(trip?.routeId)?.shortName || '';
     }
 
-    function isAsakusaThroughEligibleTrip(trip) {
+    function isThroughStitchEligibleTrip(trip) {
       const operatorId = tripRouteOperatorId(trip);
-      if (operatorId === 'toei') return tripRouteShortName(trip) === '1号線浅草線';
-      return operatorId === 'keikyu' || operatorId === 'keisei';
+      if (!operatorId || operatorId === 'shinkansen') return false;
+      return Boolean(throughRunCode(trip) && (trip?.stopTimes || []).length >= 2);
     }
 
-    function boundaryForTripStop(stop) {
-      const stationName = displayNameForGroup(stop?.stationGroupId || '');
-      return ASAKUSA_THROUGH_BOUNDARIES.find((boundary) => boundary.stationName === stationName) || null;
-    }
-
-    function canStitchThroughTrips(leftTrip, rightTrip, boundary) {
-      if (!leftTrip || !rightTrip || leftTrip.id === rightTrip.id || !boundary) return false;
+    function canStitchThroughTrips(leftTrip, rightTrip) {
+      if (!leftTrip || !rightTrip || leftTrip.id === rightTrip.id) return false;
+      if (!isThroughStitchEligibleTrip(leftTrip) || !isThroughStitchEligibleTrip(rightTrip)) return false;
       const leftOperator = tripRouteOperatorId(leftTrip);
       const rightOperator = tripRouteOperatorId(rightTrip);
       if (leftOperator === rightOperator) return false;
-      if (!boundary.operators.includes(leftOperator) || !boundary.operators.includes(rightOperator)) return false;
-      const leftIsAsakusa = leftOperator === 'toei' && tripRouteShortName(leftTrip) === '1号線浅草線';
-      const rightIsAsakusa = rightOperator === 'toei' && tripRouteShortName(rightTrip) === '1号線浅草線';
-      if (!leftIsAsakusa && !rightIsAsakusa) return false;
       const leftCode = throughRunCode(leftTrip);
-      return Boolean(leftCode && leftCode === throughRunCode(rightTrip));
+      if (!leftCode || leftCode !== throughRunCode(rightTrip)) return false;
+      const leftLastStop = leftTrip.stopTimes[leftTrip.stopTimes.length - 1];
+      const rightFirstStop = rightTrip.stopTimes[0];
+      if (!leftLastStop?.stationGroupId || leftLastStop.stationGroupId !== rightFirstStop?.stationGroupId) return false;
+      if (isThroughServicePartnerRoute(leftTrip.routeId, rightTrip.routeId)) return true;
+      return routeAliasesOverlap(leftTrip.routeId, rightTrip.routeId);
     }
 
     function stitchTripChainStopTimes(tripChain) {
@@ -6445,17 +6440,16 @@
       return stitchedStops;
     }
 
-    function stitchAsakusaThroughTrips(trips) {
-      const startsByBoundaryAndCode = new Map();
+    function stitchThroughRunningTrips(trips) {
+      const startsByStationAndCode = new Map();
       trips.forEach((trip) => {
         const stops = trip.stopTimes || [];
         const firstStop = stops[0];
         const code = throughRunCode(trip);
-        const boundary = firstStop && code && isAsakusaThroughEligibleTrip(trip) ? boundaryForTripStop(firstStop) : null;
-        if (!boundary) return;
-        const key = `${boundary.stationName}|${code}`;
-        if (!startsByBoundaryAndCode.has(key)) startsByBoundaryAndCode.set(key, []);
-        startsByBoundaryAndCode.get(key).push(trip);
+        if (!firstStop?.stationGroupId || !code || !isThroughStitchEligibleTrip(trip)) return;
+        const key = `${firstStop.stationGroupId}|${code}`;
+        if (!startsByStationAndCode.has(key)) startsByStationAndCode.set(key, []);
+        startsByStationAndCode.get(key).push(trip);
       });
 
       const continuationByTripId = new Map();
@@ -6464,22 +6458,21 @@
         const stops = trip.stopTimes || [];
         const lastStop = stops[stops.length - 1];
         const code = throughRunCode(trip);
-        const boundary = lastStop && code && isAsakusaThroughEligibleTrip(trip) ? boundaryForTripStop(lastStop) : null;
-        if (!boundary) return;
+        if (!lastStop?.stationGroupId || !code || !isThroughStitchEligibleTrip(trip)) return;
         const arrivalSec = lastStop.arrivalTimeSec ?? lastStop.departureTimeSec;
-        const candidates = (startsByBoundaryAndCode.get(`${boundary.stationName}|${code}`) || [])
-          .filter((candidate) => canStitchThroughTrips(trip, candidate, boundary))
+        const candidates = (startsByStationAndCode.get(`${lastStop.stationGroupId}|${code}`) || [])
+          .filter((candidate) => canStitchThroughTrips(trip, candidate))
           .map((candidate) => {
             const first = candidate.stopTimes?.[0];
             const departureSec = first?.departureTimeSec ?? first?.arrivalTimeSec;
             return { trip: candidate, gapSec: departureSec - arrivalSec };
           })
-          .filter((candidate) => candidate.gapSec >= 0 && candidate.gapSec <= 300)
+          .filter((candidate) => candidate.gapSec >= 0 && candidate.gapSec <= THROUGH_STITCH_MAX_GAP_SEC)
           .sort((a, b) => a.gapSec - b.gapSec || String(a.trip.id).localeCompare(String(b.trip.id)));
         const best = candidates[0]?.trip;
         if (!best) return;
         continuationByTripId.set(trip.id, best);
-        continuationBoundaryByTripId.set(trip.id, boundary.stationName);
+        continuationBoundaryByTripId.set(trip.id, displayNameForGroup(lastStop.stationGroupId));
       });
 
       const predecessorTripIds = new Set([...continuationByTripId.values()].map((trip) => trip.id));
@@ -6493,7 +6486,7 @@
         let current = trip;
         while (continuationByTripId.has(current.id)) {
           const next = continuationByTripId.get(current.id);
-          if (!next || seen.has(next.id) || chain.length >= 4) break;
+          if (!next || seen.has(next.id) || chain.length >= THROUGH_STITCH_MAX_CHAIN) break;
           boundaries.push(continuationBoundaryByTripId.get(current.id));
           chain.push(next);
           seen.add(next.id);
@@ -6553,7 +6546,7 @@
         state.tripById = new Map();
         state.stationTripsByGroupId = new Map();
         state.departureQueryCache = new Map();
-        const gameplayTrips = stitchAsakusaThroughTrips(trips);
+        const gameplayTrips = stitchThroughRunningTrips(trips);
         gameplayTrips.map(normalizeTripForGameplay).forEach((trip) => {
           state.tripById.set(trip.id, trip);
           const seen = new Set();
