@@ -3,10 +3,13 @@
 
 The collection currently combines:
 - frozen v3 timetable data rematched to v4 station_identity_v2;
+- v4 JR company collectors, where available, for nationwide JR expansion;
 - new v4 public GTFS/GTFS-JP feeds for operators not already covered by v3.
 
 This avoids double-counting sources such as Toei, which exists in both the v3
-release corpus and the public ODPT GTFS collector.
+release corpus and the public ODPT GTFS collector.  JR company collector
+service ids are source-prefixed, so they can coexist with the frozen v3 Tokyo
+and Shinkansen corpus while filling the nationwide conventional-line gaps.
 """
 
 from __future__ import annotations
@@ -24,6 +27,29 @@ DEFAULT_V3_ADAPTED = ROOT / "data" / "v4_existing_v3_weekday_train_instances.jso
 DEFAULT_V4_GTFS = ROOT / "data" / "v4_gtfs_weekday_train_instances.json.gz"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_current_weekday_train_instances.json.gz"
 DEFAULT_AUDIT = ROOT / "data" / "v4_current_train_collection_audit.json"
+DEFAULT_EXTRA_COLLECTIONS = [
+    ROOT / "data" / "v4_jreast_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_jreast_tohoku_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_jrcentral_navitime_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_jrwest_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_jrhokkaido_vtime_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_jrshikoku_navitime_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_jrkyushu_navitime_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_kintetsu_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_meitetsu_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_yuirail_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_hankyu_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_nankai_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_osaka_metro_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_iyotetsu_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_keihan_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_nagoya_subway_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_hiroden_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_shintetsu_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_kobe_subway_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_navitime_non_jr_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_special_manual_weekday_train_instances.json.gz",
+]
 
 V3_COVERED_OPERATOR_NAMES = {
     "JR Shinkansen",
@@ -56,31 +82,191 @@ def write_json(path: Path, data: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.suffix == ".gz":
         with gzip.open(path, "wt", encoding="utf-8") as handle:
-            json.dump(data, handle, ensure_ascii=False, indent=2)
-            handle.write("\n")
+            json.dump(data, handle, ensure_ascii=False, separators=(",", ":"))
     else:
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def collection_label(path: Path, payload: dict[str, Any]) -> str:
+    return str(payload.get("id") or path.stem.replace("_weekday_train_instances", ""))
+
+
+def stop_station_key(stop: dict[str, Any]) -> str:
+    return str(
+        stop.get("station_group_id")
+        or stop.get("stationGroupId")
+        or stop.get("station_id")
+        or stop.get("stationId")
+        or stop.get("station_name")
+        or stop.get("stationName")
+        or stop.get("name")
+        or ""
+    )
+
+
+def train_signature(train: dict[str, Any]) -> tuple[Any, ...]:
+    """A source-independent signature for one real train movement.
+
+    Service ids intentionally differ between collectors, so current collection
+    dedupe must compare the operator, train number/name, station sequence, and
+    stop times instead.
+    """
+
+    stops = train.get("stop_times") or []
+    stop_signature = tuple(
+        (
+            stop_station_key(stop),
+            stop.get("arrival_time") or stop.get("arrivalTime") or "",
+            stop.get("departure_time") or stop.get("departureTime") or "",
+        )
+        for stop in stops
+    )
+    return (
+        train.get("operator_id") or train.get("operator_name") or "",
+        train.get("train_number") or train.get("service_name") or train.get("display_name") or "",
+        stop_signature,
+    )
+
+
+def source_priority(source_collection: str) -> int:
+    if source_collection.startswith("v4_jr"):
+        return 0
+    if source_collection == "v3_rematched_to_v4":
+        return 1
+    if source_collection == "v4_public_gtfs":
+        return 2
+    return 3
+
+
+def stop_has_time(stop: dict[str, Any]) -> bool:
+    return bool(
+        stop.get("arrival_time")
+        or stop.get("arrivalTime")
+        or stop.get("arrival_hhmm")
+        or stop.get("departure_time")
+        or stop.get("departureTime")
+        or stop.get("departure_hhmm")
+    )
+
+
+def unresolved_station_ref(stop: dict[str, Any]) -> str | None:
+    for key in ("physical_station_id", "station_id", "stationId", "station_group_id", "stationGroupId"):
+        value = stop.get(key)
+        if isinstance(value, str) and value.startswith(("JREAST_UNMATCHED", "UNMATCHED")):
+            return value
+    return None
+
+
+def invalid_train_reason(train: dict[str, Any]) -> str | None:
+    stops = train.get("stop_times") or []
+    if len(stops) < 2:
+        return "short_train"
+    if any(unresolved_station_ref(stop) for stop in stops):
+        return "unmatched_station_ref"
+    if not any(stop_has_time(stop) for stop in stops):
+        return "all_stop_times_missing"
+    return None
+
+
+def choose_best_train(current: dict[str, Any] | None, candidate: dict[str, Any]) -> dict[str, Any]:
+    if current is None:
+        return candidate
+    current_priority = source_priority(str(current.get("source_collection") or ""))
+    candidate_priority = source_priority(str(candidate.get("source_collection") or ""))
+    if candidate_priority != current_priority:
+        return candidate if candidate_priority < current_priority else current
+    current_stop_count = len(current.get("stop_times") or [])
+    candidate_stop_count = len(candidate.get("stop_times") or [])
+    if candidate_stop_count != current_stop_count:
+        return candidate if candidate_stop_count > current_stop_count else current
+    return min([current, candidate], key=lambda item: str(item.get("service_instance_id") or ""))
+
+
+def dedupe_trains(trains: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    by_signature: dict[tuple[Any, ...], dict[str, Any]] = {}
+    signature_source_ids: dict[tuple[Any, ...], list[str]] = {}
+    for train in trains:
+        signature = train_signature(train)
+        signature_source_ids.setdefault(signature, []).append(str(train.get("service_instance_id") or ""))
+        by_signature[signature] = choose_best_train(by_signature.get(signature), train)
+
+    duplicate_groups = [
+        ids for ids in signature_source_ids.values()
+        if len(ids) > 1
+    ]
+    deduped = sorted(by_signature.values(), key=lambda item: item["service_instance_id"])
+    return deduped, {
+        "duplicateSignatureGroupCount": len(duplicate_groups),
+        "duplicateSignatureRowCount": sum(len(ids) - 1 for ids in duplicate_groups),
+        "duplicateSignatureSample": duplicate_groups[:20],
+    }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--v3-adapted", type=Path, default=DEFAULT_V3_ADAPTED)
     parser.add_argument("--v4-gtfs", type=Path, default=DEFAULT_V4_GTFS)
+    parser.add_argument(
+        "--extra-collection",
+        type=Path,
+        action="append",
+        default=None,
+        help=(
+            "Additional train collection to merge. Can be provided multiple times. "
+            "Defaults to the current v4 JR company collectors."
+        ),
+    )
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--audit-output", type=Path, default=DEFAULT_AUDIT)
     args = parser.parse_args()
 
     v3_data = load_json(args.v3_adapted)
     gtfs_data = load_json(args.v4_gtfs)
+    extra_paths = args.extra_collection if args.extra_collection is not None else DEFAULT_EXTRA_COLLECTIONS
     trains: list[dict[str, Any]] = []
     source_counts: Counter[str] = Counter()
+    dropped_invalid_counts: Counter[str] = Counter()
+    dropped_invalid_samples: list[dict[str, str]] = []
     excluded_gtfs_counts: Counter[str] = Counter()
+    skipped_extra_collections: list[str] = []
 
     for train in v3_data["train_instances"]:
         item = dict(train)
         item["source_collection"] = "v3_rematched_to_v4"
-        trains.append(item)
-        source_counts["v3_rematched_to_v4"] += 1
+        reason = invalid_train_reason(item)
+        if reason:
+            dropped_invalid_counts[reason] += 1
+            if len(dropped_invalid_samples) < 20:
+                dropped_invalid_samples.append({
+                    "serviceInstanceId": str(item.get("service_instance_id")),
+                    "sourceCollection": "v3_rematched_to_v4",
+                    "reason": reason,
+                })
+        else:
+            trains.append(item)
+            source_counts["v3_rematched_to_v4"] += 1
+
+    for path in extra_paths:
+        if not path.exists():
+            skipped_extra_collections.append(str(path))
+            continue
+        payload = load_json(path)
+        label = collection_label(path, payload)
+        for train in payload["train_instances"]:
+            item = dict(train)
+            item["source_collection"] = label
+            reason = invalid_train_reason(item)
+            if reason:
+                dropped_invalid_counts[reason] += 1
+                if len(dropped_invalid_samples) < 20:
+                    dropped_invalid_samples.append({
+                        "serviceInstanceId": str(item.get("service_instance_id")),
+                        "sourceCollection": label,
+                        "reason": reason,
+                    })
+            else:
+                trains.append(item)
+                source_counts[label] += 1
 
     for train in gtfs_data["train_instances"]:
         operator_name = train.get("operator_name")
@@ -89,8 +275,21 @@ def main() -> int:
             continue
         item = dict(train)
         item["source_collection"] = "v4_public_gtfs"
-        trains.append(item)
-        source_counts["v4_public_gtfs"] += 1
+        reason = invalid_train_reason(item)
+        if reason:
+            dropped_invalid_counts[reason] += 1
+            if len(dropped_invalid_samples) < 20:
+                dropped_invalid_samples.append({
+                    "serviceInstanceId": str(item.get("service_instance_id")),
+                    "sourceCollection": "v4_public_gtfs",
+                    "reason": reason,
+                })
+        else:
+            trains.append(item)
+            source_counts["v4_public_gtfs"] += 1
+
+    raw_train_count = len(trains)
+    trains, signature_audit = dedupe_trains(trains)
 
     ids = [train["service_instance_id"] for train in trains]
     id_counts = Counter(ids)
@@ -104,6 +303,7 @@ def main() -> int:
         "version": "0.1.0",
         "sources": [
             str(args.v3_adapted),
+            *[str(path) for path in extra_paths],
             str(args.v4_gtfs),
         ],
         "train_instances": sorted(trains, key=lambda item: item["service_instance_id"]),
@@ -111,17 +311,25 @@ def main() -> int:
     audit = {
         "schema": "onichase.v4.current_train_collection_audit.v1",
         "sourceCounts": dict(sorted(source_counts.items())),
+        "droppedInvalidTrainCounts": dict(sorted(dropped_invalid_counts.items())),
+        "droppedInvalidTrainSamples": dropped_invalid_samples,
+        "rawTrainInstanceCount": raw_train_count,
         "trainInstanceCount": len(trains),
         "operatorTrainCounts": dict(sorted(operator_counts.items())),
         "excludedGtfsOperatorCounts": dict(sorted(excluded_gtfs_counts.items())),
+        "skippedExtraCollections": skipped_extra_collections,
         "duplicateServiceInstanceIdCount": len(duplicate_ids),
         "duplicateServiceInstanceIdsSample": duplicate_ids[:20],
+        **signature_audit,
         "shortTrainInstanceCount": short_count,
     }
     write_json(args.output, output)
     write_json(args.audit_output, audit)
     print(f"Wrote {args.output}: {len(trains)} trains")
-    print(f"Wrote {args.audit_output}: duplicate_ids={len(duplicate_ids)} short={short_count}")
+    print(
+        f"Wrote {args.audit_output}: duplicate_ids={len(duplicate_ids)} "
+        f"duplicate_signatures={signature_audit['duplicateSignatureGroupCount']} short={short_count}"
+    )
     return 0
 
 
