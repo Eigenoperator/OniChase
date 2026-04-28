@@ -6,6 +6,7 @@ on:
     branches:
       - main
     paths:
+      - ".github/workflows/deploy-render-v4.yml"
       - "render.yaml"
       - "scripts/engine/v2_online_room_server.py"
       - "scripts/ingest/build_v4_room_server_bundle.py"
@@ -22,9 +23,10 @@ jobs:
           RENDER_V4_DEPLOY_HOOK_URL: ${{ secrets.RENDER_V4_DEPLOY_HOOK_URL }}
         run: |
           if [ -z "$RENDER_V4_DEPLOY_HOOK_URL" ]; then
-            echo "Missing GitHub secret: RENDER_V4_DEPLOY_HOOK_URL"
-            echo "Create a Render Deploy Hook for onichase-v4-room-server and save it as this repository secret."
-            exit 1
+            echo "RENDER_V4_DEPLOY_HOOK_URL is not configured; skipping optional Render v4 room-server deploy."
+            echo "GitHub Pages static deployment is handled by deploy-pages.yml."
+            echo "Create a Render Deploy Hook for onichase-v4-room-server and save it as this repository secret to enable this job."
+            exit 0
           fi
           curl --fail --show-error --silent --request POST "$RENDER_V4_DEPLOY_HOOK_URL"
           echo "Triggered Render v4 room server deploy."
