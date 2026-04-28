@@ -113,7 +113,7 @@
 - For v4 player-facing route choices, Ueno-Tokyo through-running is a chain: `東海道線` south of `東京`, `上野東京ライン` only for the `東京`-`上野` boundary segment, and `東北線`/`宇都宮線`/`高崎線`/`常磐線` north of `上野` by the current branch/platform. Raw northern trunk labels such as `東北線`/`東北本線`/`宇都宮線` must not appear as Tokyo-station through-running choices, and raw southern labels such as `東海道線` must not appear as Ueno-station through-running choices.
 - Selected-train row labels must not expose raw subway registry names like `2号線日比谷線`; use the public line name such as `日比谷線`.
 - Selected-train row labels for limited express and Shinkansen services must include the public train number when one exists.
-- Selected-train row labels for ordinary through-running services should show the train's current operating company's line name for the boarding segment, not an abstract through-service alias or another company's downstream line.
+- Selected-train row labels for ordinary through-running services should show the line the train is currently heading toward in the direct-service chain: for `A-B-C`, an `A-B` segment train heading toward `C` displays the `C` line, while the reverse direction displays the `A` line even when the vehicle belongs to company `C`; for `A-B(-D)-C`, the branch line appears only when the train is actually heading toward branch `D`.
 - Shared operators, shared station groups, transfer permission, nearby geometry, or parallel corridors do not by themselves make two lines through-running equivalents.
 - Ordinary lines such as Tokaido Line, Yokosuka Line, Yamanote Line, and Keihin-Tohoku Line must remain separate categories unless the specific train movement truly uses the same track and platform as another service.
 

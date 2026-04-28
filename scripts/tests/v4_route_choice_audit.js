@@ -190,6 +190,7 @@ async function auditRouteChoices(page) {
       checkedLabels: 0,
       rawNumberedLineLabelCount: 0,
       limitedOrShinkansenMissingNumberCount: 0,
+      throughDirectionLabelMismatchCount: 0,
       samples: [],
     };
     function addGlobalChoiceSample(kind, stationName, entry, routeId, nextStop) {
@@ -245,6 +246,21 @@ async function auditRouteChoices(page) {
             globalTrainLabelScan.limitedOrShinkansenMissingNumberCount += 1;
             addGlobalTrainLabelSample('limited_or_shinkansen_missing_number', stationName, entry, routeId, label);
           }
+          const directionRouteId = directionTerminalRouteIdForTrainLabel(entry, routeId);
+          const directionLabel = directionRouteId ? routeTitle(directionRouteId) : '';
+          const directionTraceRouteCount = new Set((entry.trip?.lineTrace || [])
+            .map((trace) => trace?.routeId)
+            .filter((candidateRouteId) => candidateRouteId && state.routeById.has(candidateRouteId) && !isThroughServiceTransferAlias(candidateRouteId))).size;
+          if (
+            directionTraceRouteCount >= 2 &&
+            directionLabel &&
+            !isShinkansenTrip(entry.trip) &&
+            !isLimitedExpressTrip(entry.trip) &&
+            label !== directionLabel
+          ) {
+            globalTrainLabelScan.throughDirectionLabelMismatchCount += 1;
+            addGlobalTrainLabelSample('through_direction_label_mismatch', stationName, entry, routeId, label);
+          }
           if (isShinkansenCorridorRoute(routeId)) return;
           const allowedStations = allowedVirtualRouteStations[routeId];
           if (allowedStations) {
@@ -268,10 +284,14 @@ async function auditRouteChoices(page) {
         ...globalChoiceScan,
       });
     }
-    if (globalTrainLabelScan.rawNumberedLineLabelCount || globalTrainLabelScan.limitedOrShinkansenMissingNumberCount) {
+    if (
+      globalTrainLabelScan.rawNumberedLineLabelCount ||
+      globalTrainLabelScan.limitedOrShinkansenMissingNumberCount ||
+      globalTrainLabelScan.throughDirectionLabelMismatchCount
+    ) {
       anomalies.push({
         kind: 'global_selected_train_label_scan',
-        reason: 'Selected-train labels must not expose raw x号線 names, and limited express/Shinkansen labels must include public train numbers when available.',
+        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, and ordinary through-running labels must follow the direction-side line.',
         ...globalTrainLabelScan,
       });
     }

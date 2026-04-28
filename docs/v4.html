@@ -5028,15 +5028,54 @@
       ].find((routeId) => routeId && state.routeById.has(routeId) && !isThroughServiceTransferAlias(routeId)) || null;
     }
 
-    function ordinaryBoardingSegmentLineLabel(entry) {
-      const routeId = boardingSegmentRouteIdForTrainLabel(entry);
+    function directionTerminalRouteIdForTrainLabel(entry, selectedRouteId = null) {
+      const trip = entry?.trip;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      if (!trip?.lineTrace?.length || !boardStop) return null;
+      const currentSequence = boardStop.sequence;
+      const stops = trip.stopTimes || [];
+      const terminalStop = stops[stops.length - 1] || null;
+      const previousTerminalStop = stops[stops.length - 2] || null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      const terminalName = stationDisplayNameForStop(terminalStop);
+      const selectedRouteTitle = selectedRouteId ? routeTitle(selectedRouteId) : '';
+      if (boardName === '上野') {
+        if (selectedRouteTitle === '高崎線' && UENO_TOKYO_TAKASAKI_BRANCH_STATIONS.has(terminalName)) return selectedRouteId;
+        if (selectedRouteTitle === '常磐線' && UENO_TOKYO_JOBAN_SIDE_STATIONS.has(terminalName)) return selectedRouteId;
+        if (
+          (selectedRouteTitle === '東北線' || selectedRouteTitle === '宇都宮線') &&
+          UENO_TOKYO_UTSUNOMIYA_BRANCH_STATIONS.has(terminalName)
+        ) return selectedRouteId;
+      }
+      const futureTraceRouteIds = trip.lineTrace
+        .filter((trace) => trace?.routeId && state.routeById.has(trace.routeId) && trace.toSequence > currentSequence)
+        .sort((a, b) => a.fromSequence - b.fromSequence || a.toSequence - b.toSequence)
+        .map((trace) => trace.routeId)
+        .filter((routeId, index, routeIds) =>
+          !isThroughServiceTransferAlias(routeId) && routeIds.indexOf(routeId) === index
+        );
+      if (!futureTraceRouteIds.length) return null;
+      const terminalSideRouteIds = terminalStop?.stationGroupId
+        ? futureTraceRouteIds.filter((routeId) =>
+            routeServesAdjacentStops(routeId, previousTerminalStop, terminalStop)
+          )
+        : [];
+      if (terminalSideRouteIds.length) return terminalSideRouteIds[terminalSideRouteIds.length - 1];
+      if (selectedRouteId && state.routeById.has(selectedRouteId) && !isThroughServiceTransferAlias(selectedRouteId)) {
+        return selectedRouteId;
+      }
+      return futureTraceRouteIds[futureTraceRouteIds.length - 1] || null;
+    }
+
+    function ordinaryBoardingSegmentLineLabel(entry, selectedRouteId = null) {
+      const routeId = directionTerminalRouteIdForTrainLabel(entry, selectedRouteId) || boardingSegmentRouteIdForTrainLabel(entry);
       const label = routeId ? routeTitle(routeId) : '';
       return label && !/^\d+号線/u.test(label) ? label : '';
     }
 
     function formatTripLabelForBoarding(entry, selectedRouteId = null) {
       const base = formatTripLabel(entry?.trip);
-      const segmentLabel = ordinaryBoardingSegmentLineLabel(entry);
+      const segmentLabel = ordinaryBoardingSegmentLineLabel(entry, selectedRouteId);
       if (isShinkansenTrip(entry?.trip) || isLimitedExpressTrip(entry?.trip)) return base;
       if (entry?.trip && selectedRouteId && selectedRouteId !== entry.trip.routeId && chuoCorridorChoiceRouteId(entry) === selectedRouteId) {
         return segmentLabel || routeTitle(selectedRouteId);
