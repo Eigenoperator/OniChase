@@ -2840,6 +2840,12 @@
       if (!UENO_TOKYO_CORE_STATIONS.has(boardName)) return null;
       const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
       if (
+        boardName === '東京' &&
+        (nextName === '上野' || UENO_TOKYO_NORTH_STATIONS.has(nextName))
+      ) {
+        return JR_UENO_TOKYO_CORRIDOR_ROUTE_ID;
+      }
+      if (
         (boardName === '東京' && nextName === '上野') ||
         (boardName === '上野' && nextName === '東京')
       ) {
@@ -2853,9 +2859,29 @@
       const boardName = stationDisplayNameForStop(boardStop);
       const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
       const route = tripRoute(trip);
+      if (
+        boardName === '東京' &&
+        UENO_TOKYO_TRIP_ROUTE_NAMES.has(route?.shortName) &&
+        (nextName === '上野' || UENO_TOKYO_NORTH_STATIONS.has(nextName))
+      ) {
+        return JR_UENO_TOKYO_CORRIDOR_ROUTE_ID;
+      }
+      if (
+        boardName === '東京' &&
+        UENO_TOKYO_TRIP_ROUTE_NAMES.has(route?.shortName) &&
+        UENO_TOKYO_TOKAIDO_SIDE_STATIONS.has(nextName)
+      ) {
+        return routeIdByShortNameAndOperator('東海道線', 'jr_east');
+      }
       const hasUenoTokyoFace = boardingFaceRouteNamesForStop(trip, boardStop)
         .some((name) => name === '上野東京ライン' || name === 'JR_EAST_UENO_TOKYO');
       if (!hasUenoTokyoFace && route?.shortName !== 'JR_EAST_UENO_TOKYO') return null;
+      if (
+        boardName === '東京' &&
+        (nextName === '上野' || UENO_TOKYO_NORTH_STATIONS.has(nextName))
+      ) {
+        return JR_UENO_TOKYO_CORRIDOR_ROUTE_ID;
+      }
       if (UENO_TOKYO_TOKAIDO_SIDE_STATIONS.has(boardName) || UENO_TOKYO_TOKAIDO_SIDE_STATIONS.has(nextName)) {
         return routeIdByShortNameAndOperator('東海道線', 'jr_east');
       }

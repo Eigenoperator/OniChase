@@ -268,15 +268,30 @@ async function auditRouteChoices(page) {
       });
     }
 
+    const forbiddenTokyoNorthTrunkChoices = new Set(['東北線', '東北本線', '宇都宮線', '高崎線', '常磐線']);
+    const forbiddenTokyoNorthChoices = knownStationChoices['東京']
+      .filter((choice) => forbiddenTokyoNorthTrunkChoices.has(choice.route))
+      .map((choice) => choice.route);
+    if (forbiddenTokyoNorthChoices.length) {
+      anomalies.push({
+        kind: 'tokyo_station_raw_north_trunk_choice',
+        station: '東京',
+        reason: 'At Tokyo, Ueno-Tokyo through-running must show southbound as 東海道線 and northbound as 上野東京ライン; raw northern trunk choices must not appear.',
+        choices: knownStationChoices['東京'],
+        forbiddenChoices: [...new Set(forbiddenTokyoNorthChoices)].sort((a, b) => a.localeCompare(b, 'ja')),
+      });
+    }
+
     for (const stationName of ['東京']) {
       for (const entry of entriesAt(stationName)) {
+        if (!nextStopFor(entry)) continue;
         const choices = routeTitlesForEntry(entry);
-        if (choices.includes('東海道線') || choices.includes('東北線') || choices.includes('高崎線')) {
+        if (choices.includes('東海道線') || [...forbiddenTokyoNorthTrunkChoices].some((route) => choices.includes(route))) {
           const nextStation = summarizeEntry(stationName, entry).nextStation;
-          if (nextStation !== '上野') continue;
+          if (nextStation !== '上野' && !choices.some((choice) => forbiddenTokyoNorthTrunkChoices.has(choice))) continue;
           anomalies.push({
             kind: 'central_ueno_tokyo_physical_choice',
-            reason: 'Tokyo -> Ueno core movements should expose 上野東京ライン rather than raw source trunk labels.',
+            reason: 'Tokyo station through-running should expose northbound movements as 上野東京ライン and southbound movements as 東海道線.',
             ...summarizeEntry(stationName, entry),
           });
         }
