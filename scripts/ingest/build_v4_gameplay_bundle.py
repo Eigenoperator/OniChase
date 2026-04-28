@@ -27,9 +27,31 @@ MAJOR_STATION_FALLBACKS = {
 }
 
 SYNTHETIC_LINE_NAME_OVERRIDES = {
+    "JR_EAST_CHUO_RAPID": "中央線",
+    "JR_EAST_CHUO_SOBU_LOCAL": "中央線",
+    "JR_EAST_KEIHIN_TOHOKU_NEGISHI": "京浜東北線",
+    "JR_EAST_KEIYO_MUSASHINO": "京葉線",
+    "JR_EAST_SAIKYO_KAWAGOE": "埼京線",
+    "JR_EAST_SHONAN_SHINJUKU": "湘南新宿ライン",
+    "JR_EAST_SOBU_RAPID": "総武線",
+    "JR_EAST_TOKAIDO": "東海道線",
+    "JR_EAST_UENO_TOKYO": "上野東京ライン",
+    "JR_EAST_YOKOSUKA": "横須賀線",
     "JR_JOBAN": "常磐線",
     "JR_EAST_JOBAN_RAPID": "常磐線",
+    "JR_KAWAGOE": "川越線",
+    "JR_NARITA": "成田線",
+    "JR_OME": "青梅線",
+    "JR_UCHIBO": "内房線",
+    "JR_SOTOBO": "外房線",
+    "JR_TOGANE": "東金線",
+    "JR_KASHIMA": "鹿島線",
+    "JR_ITO": "伊東線",
+    "JR_JOETSU_LOCAL": "上越線",
+    "JR_RYOMO": "両毛線",
     "JR_TOHOKU": "東北線",
+    "JR_YAMANOTE": "山手線",
+    "RINKAI": "りんかい線",
 }
 
 
@@ -181,6 +203,19 @@ def is_synthetic_line_name(line_name: str | None) -> bool:
     return value.startswith(("JR_", "SHINKANSEN_", "TOEI_", "TOKYO_", "YURIKAMOME"))
 
 
+def canonical_line_name(line_name: str | None) -> str:
+    value = str(line_name or "").strip()
+    return SYNTHETIC_LINE_NAME_OVERRIDES.get(value, value)
+
+
+def line_names_match(left: str | None, right: str | None) -> bool:
+    left_value = canonical_line_name(left).replace(" ", "")
+    right_value = canonical_line_name(right).replace(" ", "")
+    if not left_value or not right_value:
+        return False
+    return left_value == right_value or left_value.endswith(right_value) or right_value.endswith(left_value)
+
+
 def physical_route_key_for_stop(
     stop: dict[str, Any],
     train: dict[str, Any],
@@ -213,6 +248,62 @@ def physical_route_key_for_stop(
     return None
 
 
+def trace_route_key_for_stop(
+    stop: dict[str, Any],
+    train: dict[str, Any],
+    physical_station_by_id: dict[str, dict[str, Any]],
+    name_to_id: dict[str, str],
+    id_to_name: dict[str, str],
+) -> tuple[str, str] | None:
+    raw_line_name = canonical_line_name(stop.get("line_name"))
+    raw_operator_id = resolve_operator_id(
+        train.get("operator_id"),
+        train.get("operator_name") or stop.get("operator_name"),
+        name_to_id,
+        id_to_name,
+    )
+    physical_key = physical_route_key_for_stop(stop, train, physical_station_by_id, name_to_id, id_to_name)
+    if raw_line_name and (is_synthetic_line_name(stop.get("line_name")) or is_synthetic_line_name(train.get("line_name"))):
+        return (
+            raw_operator_id,
+            raw_line_name,
+        )
+    if raw_line_name and physical_key and "新幹線" in physical_key[1] and "新幹線" not in raw_line_name:
+        return (raw_operator_id, raw_line_name)
+    if raw_line_name and physical_key and line_names_match(physical_key[1], raw_line_name):
+        return physical_key
+    if physical_key:
+        return physical_key
+    if raw_line_name:
+        return (raw_operator_id, raw_line_name)
+    return None
+
+
+def ensure_route_export(
+    routes_by_id: dict[str, dict[str, Any]],
+    operator_id: str,
+    line_name: str,
+    operator_name: str,
+    color: str | None = None,
+    source: str = "v4_timetable",
+) -> None:
+    route_id = route_id_for(operator_id, line_name)
+    routes_by_id.setdefault(
+        route_id,
+        {
+            "id": route_id,
+            "operatorId": operator_id,
+            "operatorName": operator_name or operator_id,
+            "shortName": line_name,
+            "longName": f"{operator_name or operator_id} {line_name}",
+            "color": color or color_for_operator_line(operator_id, line_name),
+            "textColor": "#102033",
+            "mode": "shinkansen" if "新幹線" in line_name or str(line_name).startswith("SHINKANSEN_") else "rail",
+            "tags": {"source": source, "sourceOperatorId": operator_id, "lineName": line_name},
+        },
+    )
+
+
 def route_key_for_train(
     train: dict[str, Any],
     name_to_id: dict[str, str],
@@ -222,7 +313,7 @@ def route_key_for_train(
     raw_operator_id = resolve_operator_id(train.get("operator_id"), train.get("operator_name"), name_to_id, id_to_name)
     original_line_name = train.get("line_name") or (train.get("stop_times") or [{}])[0].get("line_name") or "未設定路線"
     raw_line_was_synthetic = is_synthetic_line_name(original_line_name)
-    raw_line_name = SYNTHETIC_LINE_NAME_OVERRIDES.get(original_line_name, original_line_name)
+    raw_line_name = canonical_line_name(original_line_name)
     physical_counts: dict[tuple[str, str], int] = defaultdict(int)
     physical_operator_counts: dict[str, int] = defaultdict(int)
     for stop in train.get("stop_times") or []:
@@ -252,6 +343,104 @@ def route_key_for_train(
             }
             return max(operator_lines.items(), key=lambda item: item[1])[0]
     return raw_operator_id, raw_line_name
+
+
+def build_line_trace(
+    raw_stops: list[dict[str, Any]],
+    normalized_stops: list[dict[str, Any]],
+    train: dict[str, Any],
+    physical_station_by_id: dict[str, dict[str, Any]],
+    name_to_id: dict[str, str],
+    id_to_name: dict[str, str],
+    fallback_operator_id: str,
+    fallback_line_name: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    raw_by_group_sequence: dict[tuple[str, int], dict[str, Any]] = {}
+    raw_by_group: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for raw_stop in sorted(raw_stops or [], key=lambda item: item.get("sequence", 0)):
+        station_group_id = raw_stop.get("station_group_id") or raw_stop.get("station_id")
+        if not station_group_id:
+            continue
+        sequence = int(raw_stop.get("sequence") or len(raw_by_group[station_group_id]) + 1)
+        raw_by_group_sequence[(station_group_id, sequence)] = raw_stop
+        raw_by_group[station_group_id].append(raw_stop)
+
+    stop_keys: list[tuple[str, str]] = []
+    group_seen: dict[str, int] = defaultdict(int)
+    fallback_key = (fallback_operator_id, fallback_line_name)
+    for normalized_stop in normalized_stops:
+        station_group_id = normalized_stop["stationGroupId"]
+        group_seen[station_group_id] += 1
+        raw_stop = raw_by_group_sequence.get((station_group_id, group_seen[station_group_id]))
+        if raw_stop is None and raw_by_group.get(station_group_id):
+            raw_stop = raw_by_group[station_group_id].pop(0)
+        key = trace_route_key_for_stop(raw_stop or {}, train, physical_station_by_id, name_to_id, id_to_name) or fallback_key
+        stop_keys.append(key)
+
+    line_trace: list[dict[str, Any]] = []
+    if len(normalized_stops) < 2:
+        return line_trace, []
+
+    current_key: tuple[str, str] | None = None
+    current_start_index = 0
+    for index in range(len(normalized_stops) - 1):
+        segment_key = stop_keys[index] if index < len(stop_keys) else fallback_key
+        if not segment_key[0] or not segment_key[1]:
+            segment_key = fallback_key
+        if current_key is None:
+            current_key = segment_key
+            current_start_index = index
+            continue
+        if segment_key == current_key:
+            continue
+        line_trace.append(
+            line_trace_entry(current_key, normalized_stops, current_start_index, index - 1, id_to_name)
+        )
+        current_key = segment_key
+        current_start_index = index
+    if current_key is not None:
+        line_trace.append(
+            line_trace_entry(current_key, normalized_stops, current_start_index, len(normalized_stops) - 2, id_to_name)
+        )
+
+    seen_lines: set[str] = set()
+    line_sequence = []
+    for entry in line_trace:
+        route_id = entry["routeId"]
+        if route_id in seen_lines:
+            continue
+        seen_lines.add(route_id)
+        line_sequence.append(
+            {
+                "operatorId": entry["operatorId"],
+                "operatorName": entry["operatorName"],
+                "lineName": entry["lineName"],
+                "routeId": route_id,
+            }
+        )
+    return line_trace, line_sequence
+
+
+def line_trace_entry(
+    key: tuple[str, str],
+    normalized_stops: list[dict[str, Any]],
+    start_segment_index: int,
+    end_segment_index: int,
+    id_to_name: dict[str, str],
+) -> dict[str, Any]:
+    operator_id, line_name = key
+    from_stop = normalized_stops[start_segment_index]
+    to_stop = normalized_stops[end_segment_index + 1]
+    return {
+        "fromSequence": from_stop["sequence"],
+        "toSequence": to_stop["sequence"],
+        "fromStationGroupId": from_stop["stationGroupId"],
+        "toStationGroupId": to_stop["stationGroupId"],
+        "operatorId": operator_id,
+        "operatorName": id_to_name.get(operator_id, operator_id),
+        "lineName": line_name,
+        "routeId": route_id_for(operator_id, line_name),
+    }
 
 
 def choose_default_group(station_groups: list[dict[str, Any]], names: list[str], fallback_index: int = 0) -> str:
@@ -424,22 +613,16 @@ def enrich_routes_from_trains(
         operator_name = id_to_name.get(operator_id, operator_name)
         route_id = route_id_for(operator_id, line_name)
         color = f"#{str(train.get('route_color') or '').lstrip('#')}" if train.get("route_color") else color_for_operator_line(operator_id, line_name)
-        routes_by_id.setdefault(
-            route_id,
-            {
-                "id": route_id,
-                "operatorId": operator_id,
-                "operatorName": operator_name,
-                "shortName": line_name,
-                "longName": f"{operator_name} {line_name}",
-                "color": color,
-                "textColor": "#102033",
-                "mode": "shinkansen" if "新幹線" in line_name else "rail",
-                "tags": {"source": "v4_timetable", "sourceOperatorId": operator_id, "lineName": line_name},
-            },
-        )
+        ensure_route_export(routes_by_id, operator_id, line_name, operator_name, color)
+        stop_keys_seen: set[tuple[str, str]] = set()
         for stop in train.get("stop_times", []):
             station_group_id = stop.get("station_group_id") or stop.get("station_id")
+            trace_key = trace_route_key_for_stop(stop, train, physical_station_by_id, name_to_id, id_to_name)
+            if trace_key and trace_key not in stop_keys_seen:
+                trace_operator_id, trace_line_name = trace_key
+                trace_operator_name = id_to_name.get(trace_operator_id, trace_operator_id)
+                ensure_route_export(routes_by_id, trace_operator_id, trace_line_name, trace_operator_name)
+                stop_keys_seen.add(trace_key)
             if station_group_id:
                 line_station_groups[(operator_id, line_name)].add(station_group_id)
 
@@ -474,6 +657,25 @@ def build_timetable(
         seen_ids.add(trip_id)
         station_group_ids = [stop["stationGroupId"] for stop in stop_times]
         route_station_groups[route_id].update(station_group_ids)
+        line_trace, line_sequence = build_line_trace(
+            train.get("stop_times") or [],
+            stop_times,
+            train,
+            physical_station_by_id,
+            name_to_id,
+            id_to_name,
+            operator_id,
+            line_name,
+        )
+        for trace in line_trace:
+            trace_route_id = trace["routeId"]
+            traced_station_ids = [
+                stop["stationGroupId"]
+                for stop in stop_times
+                if trace["fromSequence"] <= stop["sequence"] <= trace["toSequence"]
+            ]
+            route_station_groups[trace_route_id].update(traced_station_ids)
+            line_station_groups[(trace["operatorId"], trace["lineName"])].update(traced_station_ids)
         for stop in train.get("stop_times", []):
             station_group_id = stop.get("station_group_id") or stop.get("station_id")
             stop_operator_id, stop_line_name = physical_route_key_for_stop(
@@ -500,6 +702,8 @@ def build_timetable(
                 "destination": train.get("destination"),
                 "sourceTripId": train.get("source_trip_id"),
                 "sourceFeedKey": train.get("source_feed_key"),
+                "lineTrace": line_trace,
+                "lineSequence": line_sequence,
                 "stopTimes": stop_times,
             }
         )
@@ -508,7 +712,10 @@ def build_timetable(
 
 def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -> dict[str, Any]:
     station_group_ids = sorted({stop["stationGroupId"] for trip in trip_instances for stop in trip.get("stopTimes", [])})
-    route_ids = sorted({trip["routeId"] for trip in trip_instances})
+    route_ids = sorted(
+        {trip["routeId"] for trip in trip_instances}
+        | {trace["routeId"] for trip in trip_instances for trace in trip.get("lineTrace", [])}
+    )
     service_names = sorted({trip.get("serviceName") or "" for trip in trip_instances})
     station_index = {value: index for index, value in enumerate(station_group_ids)}
     route_index = {value: index for index, value in enumerate(route_ids)}
@@ -529,6 +736,15 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
                     ]
                     for stop in trip.get("stopTimes", [])
                 ],
+                [
+                    [
+                        trace.get("fromSequence"),
+                        trace.get("toSequence"),
+                        route_index[trace["routeId"]],
+                    ]
+                    for trace in trip.get("lineTrace", [])
+                    if trace.get("routeId") in route_index
+                ],
             ]
         )
     return {
@@ -536,6 +752,7 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
         "version": "v4.gameplay.1",
         "generatedAt": generated_at,
         "sourceBundle": "v4_gameplay_map_bundle.json.gz",
+        "lineTraceEncoding": "sequence-route-ranges-v1",
         "stationGroupIds": station_group_ids,
         "routeIds": route_ids,
         "serviceNames": service_names,

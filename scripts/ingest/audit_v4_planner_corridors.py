@@ -162,6 +162,14 @@ def decode_compact_timetable(payload: dict[str, Any]) -> list[dict[str, Any]]:
                 "routeId": route_ids[row[1]] if row[1] < len(route_ids) else "",
                 "serviceName": service_names[row[2]] if row[2] < len(service_names) else "",
                 "serviceNumber": row[3] or "",
+                "lineTrace": [
+                    {
+                        "fromSequence": trace[0],
+                        "toSequence": trace[1],
+                        "routeId": route_ids[trace[2]] if trace[2] < len(route_ids) else "",
+                    }
+                    for trace in (row[5] if len(row) > 5 else []) or []
+                ],
                 "stopTimes": [
                     {
                         "sequence": index + 1,

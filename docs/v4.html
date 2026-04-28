@@ -3298,7 +3298,11 @@
     }
 
     function tripCorridorAliasTokens(trip) {
-      return trackLineAliasTokensForRoute(trip?.routeId);
+      const tokens = trackLineAliasTokensForRoute(trip?.routeId);
+      (trip?.lineTrace || []).forEach((trace) => {
+        trackLineAliasTokensForRoute(trace.routeId).forEach((token) => tokens.add(token));
+      });
+      return tokens;
     }
 
     function routeTrackAliasOverlapCount(routeId, corridorAliases) {
@@ -3375,10 +3379,42 @@
       return (trip?.stopTimes || []).find((stop) => stop.sequence > boardStop.sequence) || null;
     }
 
+    function tracedRouteIdForTripSegment(trip, currentStop, nextStop) {
+      if (!trip?.lineTrace?.length || !currentStop || !nextStop) return null;
+      const currentSequence = currentStop.sequence;
+      const nextSequence = nextStop.sequence;
+      const exact = trip.lineTrace.find((trace) =>
+        trace.routeId &&
+        state.routeById.has(trace.routeId) &&
+        currentSequence >= trace.fromSequence &&
+        nextSequence <= trace.toSequence
+      );
+      if (exact) return exact.routeId;
+      const boundary = trip.lineTrace.find((trace) =>
+        trace.routeId &&
+        state.routeById.has(trace.routeId) &&
+        currentSequence >= trace.fromSequence &&
+        currentSequence < trace.toSequence
+      );
+      return boundary?.routeId || null;
+    }
+
+    function tracedRouteIdsForTripStop(trip, boardStop) {
+      const nextStop = nextStopAfter(trip, boardStop);
+      const routeId = tracedRouteIdForTripSegment(trip, boardStop, nextStop);
+      return routeId ? [routeId] : [];
+    }
+
     function routeCanRepresentTripDeparture(trip, boardStop, routeId) {
       if (!trip?.routeId || !boardStop?.stationGroupId || !routeId) return false;
       const cacheKey = `${trip.id || ''}|${boardStop.sequence || 0}|${routeId}`;
       if (state.routeCanRepresentCache.has(cacheKey)) return state.routeCanRepresentCache.get(cacheKey);
+      const tracedRouteIds = tracedRouteIdsForTripStop(trip, boardStop);
+      if (tracedRouteIds.length) {
+        const result = tracedRouteIds.includes(routeId);
+        state.routeCanRepresentCache.set(cacheKey, result);
+        return result;
+      }
       let result = false;
       if (isThroughServiceTransferAlias(routeId)) return false;
       if (!routesShareBoardingOperator(trip.routeId, routeId) && !routeAliasesOverlap(trip.routeId, routeId)) return false;
@@ -4587,6 +4623,10 @@
     }
 
     function routeIdForTripSegment(trip, currentStop, nextStop) {
+      const tracedRouteId = tracedRouteIdForTripSegment(trip, currentStop, nextStop);
+      if (tracedRouteId && coordinatesForTripSegment(tracedRouteId, currentStop, nextStop).length >= 2) {
+        return tracedRouteId;
+      }
       const candidates = candidateSegmentRouteIds(trip, currentStop, nextStop);
       const corridorAliases = tripCorridorAliasTokens(trip);
       let best = null;
@@ -6577,7 +6617,17 @@
         arrivalTimeSec: Number.isFinite(stop.arrivalTimeSec) ? stop.arrivalTimeSec + loopDurationSec : stop.arrivalTimeSec,
         departureTimeSec: Number.isFinite(stop.departureTimeSec) ? stop.departureTimeSec + loopDurationSec : stop.departureTimeSec,
       }));
-      return { ...trip, stopTimes: [...stops, ...extraStops], circularExtended: true };
+      const extendedStops = [...stops, ...extraStops];
+      const lineTrace = trip.lineTrace?.length
+        ? [{
+            ...trip.lineTrace[0],
+            fromSequence: extendedStops[0].sequence,
+            toSequence: extendedStops[extendedStops.length - 1].sequence,
+            fromStationGroupId: extendedStops[0].stationGroupId,
+            toStationGroupId: extendedStops[extendedStops.length - 1].stationGroupId,
+          }]
+        : trip.lineTrace;
+      return { ...trip, stopTimes: extendedStops, lineTrace, circularExtended: true };
     }
 
     const THROUGH_STITCH_MAX_GAP_SEC = 300;
@@ -6632,6 +6682,43 @@
         });
       });
       return stitchedStops;
+    }
+
+    function stitchTripChainLineTrace(tripChain) {
+      const stitchedTrace = [];
+      let stitchedSequence = 0;
+      tripChain.forEach((trip, tripIndex) => {
+        const sourceStops = trip.stopTimes || [];
+        const sequenceMap = new Map();
+        if (tripIndex > 0 && sourceStops[0]) sequenceMap.set(sourceStops[0].sequence, stitchedSequence);
+        const stopsToAppend = tripIndex === 0 ? sourceStops : sourceStops.slice(1);
+        stopsToAppend.forEach((stop) => {
+          stitchedSequence += 1;
+          sequenceMap.set(stop.sequence, stitchedSequence);
+        });
+        (trip.lineTrace || []).forEach((trace) => {
+          const mappedStops = sourceStops
+            .filter((stop) => stop.sequence >= trace.fromSequence && stop.sequence <= trace.toSequence)
+            .map((stop) => ({ stop, sequence: sequenceMap.get(stop.sequence) }))
+            .filter((item) => Number.isFinite(item.sequence));
+          if (mappedStops.length < 2 || !trace.routeId) return;
+          const entry = {
+            ...trace,
+            fromSequence: mappedStops[0].sequence,
+            toSequence: mappedStops[mappedStops.length - 1].sequence,
+            fromStationGroupId: mappedStops[0].stop.stationGroupId,
+            toStationGroupId: mappedStops[mappedStops.length - 1].stop.stationGroupId,
+          };
+          const previous = stitchedTrace[stitchedTrace.length - 1];
+          if (previous?.routeId === entry.routeId && previous.toSequence >= entry.fromSequence - 1) {
+            previous.toSequence = entry.toSequence;
+            previous.toStationGroupId = entry.toStationGroupId;
+            return;
+          }
+          stitchedTrace.push(entry);
+        });
+      });
+      return stitchedTrace;
     }
 
     function stitchThroughRunningTrips(trips) {
@@ -6692,6 +6779,10 @@
           ...trip,
           id: chain.map((sourceTrip) => sourceTrip.id).join('__through__'),
           stopTimes: stitchTripChainStopTimes(chain),
+          lineTrace: stitchTripChainLineTrace(chain),
+          lineSequence: chain
+            .flatMap((sourceTrip) => sourceTrip.lineSequence || [])
+            .filter((line, index, list) => line?.routeId && list.findIndex((item) => item?.routeId === line.routeId) === index),
           throughStitched: true,
           throughSourceTripIds: chain.map((sourceTrip) => sourceTrip.id),
           throughRouteIds: chain.map((sourceTrip) => sourceTrip.routeId),
@@ -6720,6 +6811,13 @@
         routeId: routeIds[row[1]] || '',
         serviceName: serviceNames[row[2]] || '',
         serviceNumber: row[3] || '',
+        lineTrace: (row[5] || []).map((trace) => ({
+          fromSequence: trace[0],
+          toSequence: trace[1],
+          routeId: routeIds[trace[2]] || '',
+        })).filter((trace) => trace.routeId),
+        lineSequence: Array.from(new Set((row[5] || []).map((trace) => routeIds[trace[2]] || '').filter(Boolean)))
+          .map((routeId) => ({ routeId })),
         stopTimes: (row[4] || []).map((stop, index) => ({
           sequence: index + 1,
           stationGroupId: stationGroupIds[stop[0]] || '',
