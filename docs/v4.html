@@ -1743,9 +1743,13 @@
     ]);
     const SOBU_RAPID_UNDERGROUND_BRANCH_STATIONS = new Set(['東京', '新日本橋', '馬喰町']);
     const CHUO_TOKYO_DIRECTION_STATIONS = new Set([
-      '御茶ノ水', '四ツ谷', '新宿', '中野', '三鷹', '国分寺', '立川',
+      '神田', '御茶ノ水', '四ツ谷', '新宿', '中野', '三鷹', '国分寺', '立川',
       '八王子', '高尾', '青梅', '大月',
     ]);
+    const CHUO_RAPID_CORRIDOR_ROUTE_NAMES = new Set([
+      '中央線', '青梅線', 'JR_EAST_CHUO_RAPID', 'JR_CHUO', 'JR_OME',
+    ]);
+    const CHUO_RAPID_CORRIDOR_TRACE_NAMES = new Set(['中央線', '青梅線']);
     const KEIHIN_TOHOKU_SIGNATURE_STATIONS = new Set([
       '大井町', '大森', '蒲田', '新子安', '東神奈川', '桜木町', '関内', '石川町', '山手',
       '根岸', '磯子', '新杉田', '洋光台', '港南台', '本郷台', '御徒町', '鶯谷',
@@ -2657,19 +2661,21 @@
       return null;
     }
 
-    function chuoTokyoChoiceRouteId(entry) {
+    function chuoRapidChoiceRouteId(entry) {
       const trip = entry?.trip;
       const boardStop = entry?.boardStop || entry?.stop || null;
       if (!trip || !boardStop) return null;
-      const boardName = stationDisplayNameForStop(boardStop);
-      const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
-      if (boardName !== '東京' || nextName !== '神田') return null;
       const route = tripRoute(trip);
       const stationNames = new Set(tripStationNames(trip));
       const hasChuoDirectionStop = [...CHUO_TOKYO_DIRECTION_STATIONS].some((name) => stationNames.has(name));
-      const looksLikeChuoDirection = route?.shortName === '中央線' ||
+      const traceNames = tripLineTraceNames(trip);
+      const looksLikeChuoDirection =
+        CHUO_RAPID_CORRIDOR_ROUTE_NAMES.has(route?.shortName) ||
+        traceNames.some((lineName) => CHUO_RAPID_CORRIDOR_TRACE_NAMES.has(lineName)) ||
         (['5号線東西線', '東西線'].includes(route?.shortName) && hasChuoDirectionStop);
       if (!looksLikeChuoDirection) return null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      if (!CHUO_TOKYO_DIRECTION_STATIONS.has(boardName) && boardName !== '東京') return null;
       return routeIdByShortNameAndOperator('中央線', 'jr_east');
     }
 
@@ -4526,7 +4532,7 @@
 
     function formatTripLabelForBoarding(entry, selectedRouteId = null) {
       const base = formatTripLabel(entry?.trip);
-      if (entry?.trip && selectedRouteId && selectedRouteId !== entry.trip.routeId && chuoTokyoChoiceRouteId(entry) === selectedRouteId) {
+      if (entry?.trip && selectedRouteId && selectedRouteId !== entry.trip.routeId && chuoRapidChoiceRouteId(entry) === selectedRouteId) {
         return routeTitle(selectedRouteId);
       }
       if (isShinkansenTrip(entry?.trip) || isLimitedExpressTrip(entry?.trip)) return base;
@@ -5511,7 +5517,7 @@
     function routeChoiceIdsForDeparture(entry) {
       const shinkansenChoiceRouteId = shinkansenCorridorChoiceRouteId(entry?.trip);
       if (shinkansenChoiceRouteId) return [shinkansenChoiceRouteId];
-      const chuoChoiceRouteId = chuoTokyoChoiceRouteId(entry);
+      const chuoChoiceRouteId = chuoRapidChoiceRouteId(entry);
       if (chuoChoiceRouteId) return [chuoChoiceRouteId];
       const yokosukaSobuChoiceRouteId = yokosukaSobuRapidChoiceRouteId(entry);
       if (yokosukaSobuChoiceRouteId) return [yokosukaSobuChoiceRouteId];
