@@ -282,6 +282,19 @@ async function auditRouteChoices(page) {
       });
     }
 
+    const forbiddenUenoSouthChoices = knownStationChoices['上野']
+      .filter((choice) => choice.route === '東海道線')
+      .map((choice) => choice.route);
+    if (forbiddenUenoSouthChoices.length) {
+      anomalies.push({
+        kind: 'ueno_station_raw_south_trunk_choice',
+        station: '上野',
+        reason: 'At Ueno, Tokyo-bound through-running must show 上野東京ライン; raw southern trunk choices such as 東海道線 must not appear.',
+        choices: knownStationChoices['上野'],
+        forbiddenChoices: [...new Set(forbiddenUenoSouthChoices)].sort((a, b) => a.localeCompare(b, 'ja')),
+      });
+    }
+
     for (const stationName of ['東京']) {
       for (const entry of entriesAt(stationName)) {
         if (!nextStopFor(entry)) continue;
@@ -295,6 +308,18 @@ async function auditRouteChoices(page) {
             ...summarizeEntry(stationName, entry),
           });
         }
+      }
+    }
+
+    for (const entry of entriesAt('上野')) {
+      if (!nextStopFor(entry)) continue;
+      const summary = summarizeEntry('上野', entry);
+      if (summary.choices.includes('東海道線')) {
+        anomalies.push({
+          kind: 'ueno_tokaido_through_choice',
+          reason: 'Ueno is the northern boundary of the Ueno-Tokyo chain; southbound through movements should use 上野東京ライン, not 東海道線.',
+          ...summary,
+        });
       }
     }
 
