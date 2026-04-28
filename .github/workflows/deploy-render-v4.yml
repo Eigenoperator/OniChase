@@ -1,0 +1,30 @@
+name: Deploy Render V4 Room Server
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "render.yaml"
+      - "scripts/engine/v2_online_room_server.py"
+      - "scripts/ingest/build_v4_room_server_bundle.py"
+      - "data/v4_room_server_bundle.json.gz"
+      - "data/v4_room_server_trips.sqlite"
+
+jobs:
+  deploy:
+    if: ${{ !contains(github.event.head_commit.message, '[skip render]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        env:
+          RENDER_V4_DEPLOY_HOOK_URL: ${{ secrets.RENDER_V4_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_V4_DEPLOY_HOOK_URL" ]; then
+            echo "Missing GitHub secret: RENDER_V4_DEPLOY_HOOK_URL"
+            echo "Create a Render Deploy Hook for onichase-v4-room-server and save it as this repository secret."
+            exit 1
+          fi
+          curl --fail --show-error --silent --request POST "$RENDER_V4_DEPLOY_HOOK_URL"
+          echo "Triggered Render v4 room server deploy."
