@@ -1750,6 +1750,12 @@
       '中央線', '青梅線', 'JR_EAST_CHUO_RAPID', 'JR_CHUO', 'JR_OME',
     ]);
     const CHUO_RAPID_CORRIDOR_TRACE_NAMES = new Set(['中央線', '青梅線']);
+    const OME_BRANCH_STATIONS = new Set([
+      '立川', '西立川', '東中神', '中神', '昭島', '拝島', '牛浜', '福生',
+      '羽村', '小作', '河辺', '東青梅', '青梅', '宮ノ平', '日向和田',
+      '石神前', '二俣尾', '軍畑', '沢井', '御嶽', '川井', '古里',
+      '鳩ノ巣', '白丸', '奥多摩',
+    ]);
     const KEIHIN_TOHOKU_SIGNATURE_STATIONS = new Set([
       '大井町', '大森', '蒲田', '新子安', '東神奈川', '桜木町', '関内', '石川町', '山手',
       '根岸', '磯子', '新杉田', '洋光台', '港南台', '本郷台', '御徒町', '鶯谷',
@@ -2674,7 +2680,15 @@
         traceNames.some((lineName) => CHUO_RAPID_CORRIDOR_TRACE_NAMES.has(lineName)) ||
         (['5号線東西線', '東西線'].includes(route?.shortName) && hasChuoDirectionStop);
       if (!looksLikeChuoDirection) return null;
+      const boardTraceNames = tracedRouteIdsForTripStop(trip, boardStop)
+        .map((routeId) => state.routeById.get(routeId)?.shortName)
+        .filter(Boolean);
       const boardName = stationDisplayNameForStop(boardStop);
+      const usesOmeBranch = boardTraceNames.includes('青梅線') ||
+        [...stationNames].some((name) => name !== '立川' && OME_BRANCH_STATIONS.has(name));
+      if (OME_BRANCH_STATIONS.has(boardName) && usesOmeBranch) {
+        return routeIdByShortNameAndOperator('青梅線', 'jr_east');
+      }
       if (!CHUO_TOKYO_DIRECTION_STATIONS.has(boardName) && boardName !== '東京') return null;
       return routeIdByShortNameAndOperator('中央線', 'jr_east');
     }
