@@ -21,7 +21,7 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 - v4 gameplay bundle now exports `120420` playable compact trips, `618` service routes/patterns, and skips only `5` short gameplay trips.
 - v4 room-server bundle now has `9052` station groups and `120420` SQLite-backed trips.
 - v4 planner corridor audit passes the first `6` major hub checks with `0` warnings.
-- Local v4 browser probes pass axioms/entry/replay checks and confirm stop-level display routes: 東京/神田/秋葉原 no longer expose stray `東北線`, 鎌倉 exposes `湘南新宿ライン` instead of raw `東北線`, 御茶ノ水/新宿 split orange `中央線快速` from yellow `中央・総武線各駅停車`, and 立川 splits `青梅線`/`中央線` by outgoing segment.
+- Local v4 browser probes pass axioms/entry/replay checks and confirm stop-level display routes: 東京/神田/秋葉原 no longer expose stray `東北線`, 鎌倉 exposes `湘南新宿ライン` instead of raw `東北線`, 鎌倉 `横須賀線・総武快速線` now stitches same-operator Tokyo splits such as `492S -> 493F` through to 千葉, 御茶ノ水/新宿 split orange `中央線快速` from yellow `中央・総武線各駅停車`, and 立川 splits `青梅線`/`中央線` by outgoing segment.
 
 ## In Progress
 - Promote the v4 nationwide gameplay bundle into a public playtest pass.

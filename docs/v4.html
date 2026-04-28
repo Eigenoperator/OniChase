@@ -6833,12 +6833,70 @@
       return `${Number(match[1])}${match[2][0]}`;
     }
 
+    function throughRunCodeParts(trip) {
+      const raw = String(trip?.publicServiceNumber || trip?.serviceNumber || '').normalize('NFKC').toUpperCase();
+      const match = raw.match(/(\d{3,4})([A-Z]{1,2})[A-Z0]*$/u);
+      if (!match) return null;
+      return { number: Number(match[1]), suffix: match[2][0] };
+    }
+
     function tripRouteOperatorId(trip) {
       return state.routeById.get(trip?.routeId)?.operatorId || '';
     }
 
     function tripRouteShortName(trip) {
       return state.routeById.get(trip?.routeId)?.shortName || '';
+    }
+
+    function tripTerminalTraceRouteNames(trip, terminal) {
+      const traces = trip?.lineTrace || [];
+      const trace = terminal === 'first' ? traces[0] : traces[traces.length - 1];
+      const route = state.routeById.get(trace?.routeId || '');
+      return new Set([trace?.lineName, route?.shortName, route?.tags?.lineName].filter(Boolean));
+    }
+
+    function terminalTraceHasAny(trip, terminal, names) {
+      const traceNames = tripTerminalTraceRouteNames(trip, terminal);
+      return [...names].some((name) => traceNames.has(name));
+    }
+
+    function isYokosukaSobuRapidStitchPair(leftTrip, rightTrip) {
+      const leftLastStop = leftTrip?.stopTimes?.at(-1);
+      const rightFirstStop = rightTrip?.stopTimes?.[0];
+      if (displayNameForGroup(leftLastStop?.stationGroupId) !== '東京') return false;
+      if (displayNameForGroup(rightFirstStop?.stationGroupId) !== '東京') return false;
+      const corridorNames = new Set(['横須賀線', '総武線']);
+      return terminalTraceHasAny(leftTrip, 'last', corridorNames) &&
+        terminalTraceHasAny(rightTrip, 'first', corridorNames);
+    }
+
+    function throughRunCodesCanContinue(leftTrip, rightTrip) {
+      const leftCode = throughRunCode(leftTrip);
+      if (leftCode && leftCode === throughRunCode(rightTrip)) return true;
+      if (!isYokosukaSobuRapidStitchPair(leftTrip, rightTrip)) return false;
+      const left = throughRunCodeParts(leftTrip);
+      const right = throughRunCodeParts(rightTrip);
+      if (!left || !right) return false;
+      return right.number === left.number + 1 &&
+        ((left.suffix === 'S' && right.suffix === 'F') || (left.suffix === 'F' && right.suffix === 'S'));
+    }
+
+    function predecessorThroughRunCodesForStartTrip(trip) {
+      const codes = new Set();
+      const code = throughRunCode(trip);
+      if (code) codes.add(code);
+      const firstStop = trip?.stopTimes?.[0];
+      if (
+        displayNameForGroup(firstStop?.stationGroupId) === '東京' &&
+        terminalTraceHasAny(trip, 'first', new Set(['横須賀線', '総武線']))
+      ) {
+        const parts = throughRunCodeParts(trip);
+        if (parts && parts.number > 0) {
+          if (parts.suffix === 'F') codes.add(`${parts.number - 1}S`);
+          if (parts.suffix === 'S') codes.add(`${parts.number - 1}F`);
+        }
+      }
+      return [...codes];
     }
 
     function isThroughStitchEligibleTrip(trip) {
@@ -6852,12 +6910,14 @@
       if (!isThroughStitchEligibleTrip(leftTrip) || !isThroughStitchEligibleTrip(rightTrip)) return false;
       const leftOperator = tripRouteOperatorId(leftTrip);
       const rightOperator = tripRouteOperatorId(rightTrip);
-      if (leftOperator === rightOperator) return false;
-      const leftCode = throughRunCode(leftTrip);
-      if (!leftCode || leftCode !== throughRunCode(rightTrip)) return false;
+      const sameOperator = leftOperator === rightOperator;
+      if (sameOperator && !isYokosukaSobuRapidStitchPair(leftTrip, rightTrip)) return false;
+      if (!sameOperator && !throughRunCode(leftTrip)) return false;
+      if (!throughRunCodesCanContinue(leftTrip, rightTrip)) return false;
       const leftLastStop = leftTrip.stopTimes[leftTrip.stopTimes.length - 1];
       const rightFirstStop = rightTrip.stopTimes[0];
       if (!leftLastStop?.stationGroupId || leftLastStop.stationGroupId !== rightFirstStop?.stationGroupId) return false;
+      if (sameOperator && isYokosukaSobuRapidStitchPair(leftTrip, rightTrip)) return true;
       if (isThroughServicePartnerRoute(leftTrip.routeId, rightTrip.routeId)) return true;
       return routeAliasesOverlap(leftTrip.routeId, rightTrip.routeId);
     }
@@ -6919,11 +6979,12 @@
       trips.forEach((trip) => {
         const stops = trip.stopTimes || [];
         const firstStop = stops[0];
-        const code = throughRunCode(trip);
-        if (!firstStop?.stationGroupId || !code || !isThroughStitchEligibleTrip(trip)) return;
-        const key = `${firstStop.stationGroupId}|${code}`;
-        if (!startsByStationAndCode.has(key)) startsByStationAndCode.set(key, []);
-        startsByStationAndCode.get(key).push(trip);
+        if (!firstStop?.stationGroupId || !isThroughStitchEligibleTrip(trip)) return;
+        predecessorThroughRunCodesForStartTrip(trip).forEach((code) => {
+          const key = `${firstStop.stationGroupId}|${code}`;
+          if (!startsByStationAndCode.has(key)) startsByStationAndCode.set(key, []);
+          startsByStationAndCode.get(key).push(trip);
+        });
       });
 
       const continuationByTripId = new Map();
