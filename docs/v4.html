@@ -1787,6 +1787,10 @@
       '東海道線', '東北線', '東北本線', '宇都宮線', '高崎線', '常磐線',
       '伊東線', '上越線', '両毛線', 'JR_EAST_TOKAIDO', 'JR_EAST_UENO_TOKYO',
     ]);
+    const UENO_TOKYO_BOARDING_FACE_ROUTE_NAMES = new Set([
+      '東海道線', '東北線', '東北本線', '宇都宮線', '高崎線', '常磐線',
+      '伊東線', '上越線', '両毛線',
+    ]);
     const UENO_TOKYO_NORTH_ROUTE_NAMES = new Set([
       '東北線', '東北本線', '宇都宮線', '高崎線', '常磐線', '上越線', '両毛線',
     ]);
@@ -2694,6 +2698,32 @@
         .filter(Boolean);
     }
 
+    function routeNamesForRouteIds(routeIds) {
+      return (routeIds || [])
+        .map((routeId) => {
+          const route = state.routeById.get(routeId);
+          return [route?.shortName, route?.tags?.lineName, routeTitle(routeId)].filter(Boolean);
+        })
+        .flat();
+    }
+
+    function boardingFaceRouteNamesForStop(trip, boardStop) {
+      if (!trip || !boardStop) return [];
+      const nextStop = nextStopAfter(trip, boardStop);
+      const tracedRouteId = tracedRouteIdForTripSegment(trip, boardStop, nextStop);
+      if (tracedRouteId) return routeNamesForRouteIds([tracedRouteId]);
+      return routeNamesForRouteIds([
+        boardStop.outgoingRouteId,
+        boardStop.displayRouteId,
+        trip.routeId,
+      ].filter(Boolean));
+    }
+
+    function boardingFaceHasAny(trip, boardStop, names) {
+      const faceNames = new Set(boardingFaceRouteNamesForStop(trip, boardStop));
+      return [...names].some((name) => faceNames.has(name));
+    }
+
     function isYokosukaSobuRapidTrip(trip) {
       if (!isJrEastConventionalTrip(trip) || isKeihinTohokuNegishiTrip(trip)) return false;
       const route = tripRoute(trip);
@@ -2712,14 +2742,27 @@
 
     function yokosukaSobuRapidChoiceRouteId(entry) {
       const trip = entry?.trip || entry;
-      return isYokosukaSobuRapidTrip(trip) ? JR_YOKOSUKA_SOBU_RAPID_CORRIDOR_ROUTE_ID : null;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      return isYokosukaSobuRapidTrip(trip) &&
+        (!boardStop || boardingFaceHasAny(trip, boardStop, YOKOSUKA_SOBU_RAPID_PHYSICAL_ROUTE_NAMES))
+        ? JR_YOKOSUKA_SOBU_RAPID_CORRIDOR_ROUTE_ID
+        : null;
     }
 
     function jrEastCorridorChoiceRouteId(entry) {
       const trip = entry?.trip || entry;
       if (isKeihinTohokuNegishiTrip(trip)) return JR_KEIHIN_TOHOKU_NEGISHI_ROUTE_ID;
-      const boardName = stationDisplayNameForStop(entry?.boardStop || entry?.stop || null);
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      const boardName = stationDisplayNameForStop(boardStop);
       const route = tripRoute(trip);
+      const sameUenoTokyoBoardingFace = boardingFaceHasAny(trip, boardStop, UENO_TOKYO_BOARDING_FACE_ROUTE_NAMES);
+      if (
+        sameUenoTokyoBoardingFace &&
+        UENO_TOKYO_LINE_RANGE_STATIONS.has(boardName) &&
+        UENO_TOKYO_TRIP_ROUTE_NAMES.has(route?.shortName)
+      ) {
+        return JR_UENO_TOKYO_CORRIDOR_ROUTE_ID;
+      }
       if (
         UENO_TOKYO_CORE_STATIONS.has(boardName) &&
         UENO_TOKYO_NORTH_ROUTE_NAMES.has(route?.shortName) &&

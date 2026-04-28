@@ -108,6 +108,7 @@
 - Shinkansen services are never merged by broad JR family, shared station, or shared corridor.
 - Different named Shinkansen routes must remain separately classified by their own Shinkansen route name.
 - Non-Shinkansen through-running exists only when trains actually run on the same physical track and stop at the same platform/boarding face.
+- The unified principle for deciding whether two services should be treated as the same line, equivalent direct service, or mergeable player-facing line is whether a player would board/alight on the same platform or same boarding face for the relevant movement.
 - Shared operators, shared station groups, transfer permission, nearby geometry, or parallel corridors do not by themselves make two lines through-running equivalents.
 - Ordinary lines such as Tokaido Line, Yokosuka Line, Yamanote Line, and Keihin-Tohoku Line must remain separate categories unless the specific train movement truly uses the same track and platform as another service.
 

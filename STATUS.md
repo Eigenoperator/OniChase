@@ -24,7 +24,7 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 - Local v4 browser probes pass axioms/entry/replay checks and confirm stop-level display routes: 東京/神田/秋葉原 no longer expose stray `東北線`, 鎌倉 exposes `湘南新宿ライン` instead of raw `東北線`, 鎌倉 `横須賀線・総武快速線` now stitches same-operator Tokyo splits such as `492S -> 493F` through to 千葉, 御茶ノ水/新宿 split orange `中央線快速` from yellow `中央・総武線各駅停車`, and 立川 splits `青梅線`/`中央線` by outgoing segment.
 - v4 through-service display audit covers all browser-stitched trips: `678` stitched through trips, `0` stale `東海道線+総武線` / `総武線+東海道線` labels, and expected labels for `横須賀線・総武快速線`, `京急`/`都営浅草線`, and `京成`/`都営浅草線`.
 - Reusable v4 through-service audit reports `1026` split-trip candidates: `942` covered by existing browser rules, `52` confirmed direct-service rules, `26` reviewed likely reused-number/data-context non-UI cases, and `6` still needing review.
-- v4 route-choice QA confirms 東京 keeps legitimate `東海道線` rows alongside `上野東京ライン`, and visible duplicate source rows are deduped by public train number.
+- v4 route-choice QA now applies the platform/boarding-face axiom: 東京 same-platform `東海道線` rows merge into `上野東京ライン`, while visible duplicate source rows are deduped by public train number.
 - Pages web bundle was slimmed by pruning unreferenced `docs/data` artifacts; local `docs/` now builds to about `44M` while v4 still loads and passes the 青梅 probe.
 
 ## In Progress
@@ -47,4 +47,4 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 ## Next
 1. Run visual/manual v4 playtest QA from major hubs plus branch/corridor stations: Tokyo, Osaka, Nagoya, Fukuoka, Sapporo, Hiroshima, 青梅, 立川, and 御茶ノ水.
 2. Decide whether to hide or keep the reviewed meter-scale 肥薩線 N02 fragment in rendered geometry.
-3. Review the `6` `needs_review` split candidates and the new player-facing duplicate-departure samples in `data/v4_through_service_audit.json`.
+3. Review the `6` `needs_review` split candidates plus remaining platform-face anomalies such as 品川 non-Tokaido trips exposing `東海道線`.
