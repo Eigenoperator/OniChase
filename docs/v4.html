@@ -1785,6 +1785,9 @@
     const YOKOSUKA_SOBU_RAPID_PHYSICAL_ROUTE_NAMES = new Set([
       '横須賀線', '総武線',
     ]);
+    const JR_EAST_OPERATING_ROUTE_PREFERS_TRIP_ROUTE = new Set([
+      '山手線', 'JR_YAMANOTE',
+    ]);
     const YOKOSUKA_SOBU_RAPID_SIGNATURE_STATIONS = new Set([
       '久里浜', '衣笠', '横須賀', '田浦', '東逗子', '逗子', '鎌倉', '北鎌倉',
       '大船', '戸塚', '東戸塚', '保土ヶ谷', '横浜', '新川崎', '武蔵小杉',
@@ -5642,6 +5645,19 @@
       const jrEastChoiceRouteId = jrEastCorridorChoiceRouteId(entry);
       if (jrEastChoiceRouteId) return [jrEastChoiceRouteId];
       const tripRouteId = entry?.trip?.routeId || entry?.routeId || null;
+      const tripRoute = state.routeById.get(tripRouteId);
+      if (
+        tripRouteId &&
+        JR_EAST_OPERATING_ROUTE_PREFERS_TRIP_ROUTE.has(tripRoute?.shortName) &&
+        !isThroughServiceTransferAlias(tripRouteId)
+      ) {
+        return [tripRouteId];
+      }
+      const stopRouteIds = (entry?.routeIds?.length
+        ? entry.routeIds
+        : tracedRouteIdsForTripStop(entry?.trip, entry?.boardStop || entry?.stop || null)
+      ).filter((routeId) => !isThroughServiceTransferAlias(routeId));
+      if (stopRouteIds.length) return stopRouteIds;
       if (tripRouteId && !isThroughServiceTransferAlias(tripRouteId)) return [tripRouteId];
       return (entry?.routeIds || []).filter((routeId) => !isThroughServiceTransferAlias(routeId));
     }
@@ -6983,26 +6999,27 @@
       const stationGroupIds = payload.stationGroupIds || [];
       const routeIds = payload.routeIds || [];
       const serviceNames = payload.serviceNames || [];
+      const compactRouteId = (index) => Number.isInteger(index) ? routeIds[index] || '' : '';
       return (payload.trips || []).map((row) => ({
         id: row[0],
-        routeId: routeIds[row[1]] || '',
+        routeId: compactRouteId(row[1]),
         serviceName: serviceNames[row[2]] || '',
         serviceNumber: row[3] || '',
         lineTrace: (row[5] || []).map((trace) => ({
           fromSequence: trace[0],
           toSequence: trace[1],
-          routeId: routeIds[trace[2]] || '',
+          routeId: compactRouteId(trace[2]),
         })).filter((trace) => trace.routeId),
-        lineSequence: Array.from(new Set((row[5] || []).map((trace) => routeIds[trace[2]] || '').filter(Boolean)))
+        lineSequence: Array.from(new Set((row[5] || []).map((trace) => compactRouteId(trace[2])).filter(Boolean)))
           .map((routeId) => ({ routeId })),
         stopTimes: (row[4] || []).map((stop, index) => ({
           sequence: index + 1,
           stationGroupId: stationGroupIds[stop[0]] || '',
           arrivalTimeSec: stop[1],
           departureTimeSec: stop[2],
-          displayRouteId: routeIds[stop[3]] || '',
-          outgoingRouteId: routeIds[stop[4]] || '',
-          incomingRouteId: routeIds[stop[5]] || '',
+          displayRouteId: compactRouteId(stop[3]),
+          outgoingRouteId: compactRouteId(stop[4]),
+          incomingRouteId: compactRouteId(stop[5]),
         })),
       }));
     }
