@@ -186,6 +186,12 @@ async function auditRouteChoices(page) {
       virtualOutsideAllowedStationCount: 0,
       samples: [],
     };
+    const globalTrainLabelScan = {
+      checkedLabels: 0,
+      rawNumberedLineLabelCount: 0,
+      limitedOrShinkansenMissingNumberCount: 0,
+      samples: [],
+    };
     function addGlobalChoiceSample(kind, stationName, entry, routeId, nextStop) {
       if (globalChoiceScan.samples.length >= 80) return;
       globalChoiceScan.samples.push({
@@ -199,6 +205,20 @@ async function auditRouteChoices(page) {
         tripId: entry.trip?.id || '',
       });
     }
+    function addGlobalTrainLabelSample(kind, stationName, entry, routeId, label) {
+      if (globalTrainLabelScan.samples.length >= 80) return;
+      globalTrainLabelScan.samples.push({
+        kind,
+        station: stationName,
+        selectedRoute: routeTitle(routeId),
+        label,
+        departure: minutesToHhmm(entry.departureMinute),
+        serviceName: entry.trip?.serviceName || '',
+        serviceNumber: publicTripNumber(entry.trip),
+        tripRoute: routeTitle(entry.trip?.routeId || ''),
+        tripId: entry.trip?.id || '',
+      });
+    }
     for (const [stationGroupId, group] of state.stationGroupById.entries()) {
       const stationName = group.names?.ja || group.primaryName || stationGroupId;
       for (const entry of departuresForStationGroup(stationGroupId, START_MINUTE)) {
@@ -208,6 +228,23 @@ async function auditRouteChoices(page) {
         const routeIds = routeChoiceIdsForDeparture(entry);
         globalChoiceScan.checkedChoices += routeIds.length;
         routeIds.forEach((routeId) => {
+          const label = formatTripLabelForBoarding(entry, routeId);
+          globalTrainLabelScan.checkedLabels += 1;
+          if (/\d+号線/u.test(label)) {
+            globalTrainLabelScan.rawNumberedLineLabelCount += 1;
+            addGlobalTrainLabelSample('raw_numbered_line_label', stationName, entry, routeId, label);
+          }
+          const publicNumber = publicTripNumber(entry.trip);
+          const shouldDisplayPublicNumber = isShinkansenTrip(entry.trip) ||
+            (isLimitedExpressTrip(entry.trip) && looksLikePublicTrainNumber(publicNumber));
+          if (
+            publicNumber &&
+            shouldDisplayPublicNumber &&
+            !String(label).includes(publicNumber)
+          ) {
+            globalTrainLabelScan.limitedOrShinkansenMissingNumberCount += 1;
+            addGlobalTrainLabelSample('limited_or_shinkansen_missing_number', stationName, entry, routeId, label);
+          }
           if (isShinkansenCorridorRoute(routeId)) return;
           const allowedStations = allowedVirtualRouteStations[routeId];
           if (allowedStations) {
@@ -229,6 +266,13 @@ async function auditRouteChoices(page) {
         kind: 'global_route_choice_segment_scan',
         reason: 'Every player-facing route choice must either be an allowed virtual corridor at that station or serve the current boarding stop -> next stop segment.',
         ...globalChoiceScan,
+      });
+    }
+    if (globalTrainLabelScan.rawNumberedLineLabelCount || globalTrainLabelScan.limitedOrShinkansenMissingNumberCount) {
+      anomalies.push({
+        kind: 'global_selected_train_label_scan',
+        reason: 'Selected-train labels must not expose raw x号線 names, and limited express/Shinkansen labels must include public train numbers when available.',
+        ...globalTrainLabelScan,
       });
     }
     const knownStationChoices = Object.fromEntries(
@@ -375,6 +419,7 @@ async function auditRouteChoices(page) {
       tripCount: state.tripById?.size || 0,
       knownStationChoices,
       globalChoiceScan,
+      globalTrainLabelScan,
       anomalyCount: anomalies.length,
       anomalies: anomalies.slice(0, 80),
     };
