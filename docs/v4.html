@@ -3916,6 +3916,24 @@
       return fallbackRouteId ? [fallbackRouteId] : [];
     }
 
+    function adjacentDirectionRouteIdForChoice(entry) {
+      const trip = entry?.trip;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      const nextStop = nextStopAfter(trip, boardStop);
+      if (!trip?.lineTrace?.length || !boardStop || !nextStop) return null;
+      const currentSequence = boardStop.sequence;
+      const candidates = trip.lineTrace
+        .filter((trace) => trace?.routeId && state.routeById.has(trace.routeId) && trace.toSequence > currentSequence)
+        .sort((a, b) => a.fromSequence - b.fromSequence || a.toSequence - b.toSequence)
+        .map((trace) => trace.routeId)
+        .filter((routeId, index, routeIds) =>
+          !isThroughServiceTransferAlias(routeId) &&
+          routeIds.indexOf(routeId) === index &&
+          routeServesAdjacentStops(routeId, boardStop, nextStop)
+        );
+      return candidates[0] || null;
+    }
+
     function routeCanRepresentTripDeparture(trip, boardStop, routeId) {
       if (!trip?.routeId || !boardStop?.stationGroupId || !routeId) return false;
       const cacheKey = `${trip.id || ''}|${boardStop.sequence || 0}|${routeId}`;
@@ -5078,6 +5096,12 @@
     }
 
     function ordinaryBoardingSegmentLineLabel(entry, selectedRouteId = null) {
+      const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
+      const selectedRoute = selectedRouteId ? state.routeById.get(selectedRouteId) : null;
+      if (selectedRouteId && adjacentDirectionRouteId === selectedRouteId && selectedRoute && !isJrRoute(selectedRoute)) {
+        const adjacentLabel = routeTitle(selectedRouteId);
+        if (adjacentLabel && !/^\d+号線/u.test(adjacentLabel)) return adjacentLabel;
+      }
       const routeId = directionTerminalRouteIdForTrainLabel(entry, selectedRouteId) || boardingSegmentRouteIdForTrainLabel(entry);
       const label = routeId ? routeTitle(routeId) : '';
       return label && !/^\d+号線/u.test(label) ? label : '';
@@ -6086,6 +6110,8 @@
       const boardStop = entry?.boardStop || entry?.stop || null;
       const nextStop = nextStopAfter(entry?.trip, boardStop);
       const isUenoTokyoCoreSegment = Boolean(uenoTokyoCoreSegmentChoiceRouteId(entry, entry?.trip, boardStop));
+      const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
+      if (adjacentDirectionRouteId && !isJrRoute(tripRoute)) return [adjacentDirectionRouteId];
       if (
         tripRouteId &&
         JR_EAST_OPERATING_ROUTE_PREFERS_TRIP_ROUTE.has(tripRoute?.shortName) &&

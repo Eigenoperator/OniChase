@@ -185,6 +185,7 @@ async function auditRouteChoices(page) {
       segmentMismatchCount: 0,
       virtualOutsideAllowedStationCount: 0,
       genericRouteLabelCount: 0,
+      yokohamaThroughRemoteRouteCount: 0,
       samples: [],
     };
     const globalTrainLabelScan = {
@@ -192,6 +193,7 @@ async function auditRouteChoices(page) {
       rawNumberedLineLabelCount: 0,
       limitedOrShinkansenMissingNumberCount: 0,
       throughDirectionLabelMismatchCount: 0,
+      yokohamaThroughRemoteLabelCount: 0,
       samples: [],
     };
     function addGlobalChoiceSample(kind, stationName, entry, routeId, nextStop) {
@@ -236,6 +238,23 @@ async function auditRouteChoices(page) {
             globalChoiceScan.genericRouteLabelCount += 1;
             addGlobalChoiceSample('generic_route_label', stationName, entry, routeId, nextStop);
           }
+          if (
+            stationName === '横浜' &&
+            ['東京メトロ副都心線', '東京メトロ有楽町線', '京急本線'].includes(routeTitle(routeId)) &&
+            ['13号線副都心線', '8号線有楽町線'].includes(entry.trip?.serviceName || '')
+          ) {
+            globalChoiceScan.yokohamaThroughRemoteRouteCount += 1;
+            addGlobalChoiceSample('yokohama_through_remote_route', stationName, entry, routeId, nextStop);
+          }
+          if (
+            stationName === '横浜' &&
+            ['13号線副都心線', '8号線有楽町線'].includes(entry.trip?.serviceName || '') &&
+            ['東急東横線', 'みなとみらい線'].includes(routeTitle(routeId)) &&
+            label !== routeTitle(routeId)
+          ) {
+            globalTrainLabelScan.yokohamaThroughRemoteLabelCount += 1;
+            addGlobalTrainLabelSample('yokohama_through_remote_label', stationName, entry, routeId, label);
+          }
           if (/\d+号線/u.test(label)) {
             globalTrainLabelScan.rawNumberedLineLabelCount += 1;
             addGlobalTrainLabelSample('raw_numbered_line_label', stationName, entry, routeId, label);
@@ -251,7 +270,10 @@ async function auditRouteChoices(page) {
             globalTrainLabelScan.limitedOrShinkansenMissingNumberCount += 1;
             addGlobalTrainLabelSample('limited_or_shinkansen_missing_number', stationName, entry, routeId, label);
           }
-          const directionRouteId = directionTerminalRouteIdForTrainLabel(entry, routeId);
+          const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
+          const directionRouteId = adjacentDirectionRouteId === routeId && !isJrRoute(state.routeById.get(routeId))
+            ? adjacentDirectionRouteId
+            : directionTerminalRouteIdForTrainLabel(entry, routeId);
           const directionLabel = directionRouteId ? routeTitle(directionRouteId) : '';
           const directionTraceRouteCount = new Set((entry.trip?.lineTrace || [])
             .map((trace) => trace?.routeId)
@@ -285,22 +307,24 @@ async function auditRouteChoices(page) {
     if (
       globalChoiceScan.segmentMismatchCount ||
       globalChoiceScan.virtualOutsideAllowedStationCount ||
-      globalChoiceScan.genericRouteLabelCount
+      globalChoiceScan.genericRouteLabelCount ||
+      globalChoiceScan.yokohamaThroughRemoteRouteCount
     ) {
       anomalies.push({
         kind: 'global_route_choice_segment_scan',
-        reason: 'Every player-facing route choice must either be an allowed virtual corridor at that station or serve the current boarding stop -> next stop segment, and must not expose a generic route label.',
+        reason: 'Every player-facing route choice must either be an allowed virtual corridor at that station or serve the current boarding stop -> next stop segment, must not expose a generic route label, and must not expose remote through-service routes at Yokohama.',
         ...globalChoiceScan,
       });
     }
     if (
       globalTrainLabelScan.rawNumberedLineLabelCount ||
       globalTrainLabelScan.limitedOrShinkansenMissingNumberCount ||
-      globalTrainLabelScan.throughDirectionLabelMismatchCount
+      globalTrainLabelScan.throughDirectionLabelMismatchCount ||
+      globalTrainLabelScan.yokohamaThroughRemoteLabelCount
     ) {
       anomalies.push({
         kind: 'global_selected_train_label_scan',
-        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, and ordinary through-running labels must follow the direction-side line.',
+        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, ordinary through-running labels must follow the direction-side line, and Yokohama through-running labels must not expose remote lines.',
         ...globalTrainLabelScan,
       });
     }
