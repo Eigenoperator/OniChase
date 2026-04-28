@@ -23,7 +23,7 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 - v4 planner corridor audit passes the first `6` major hub checks with `0` warnings.
 - Local v4 browser probes pass axioms/entry/replay checks and confirm stop-level display routes: 東京/神田/秋葉原 no longer expose stray `東北線`, 鎌倉 exposes `湘南新宿ライン` instead of raw `東北線`, 鎌倉 `横須賀線・総武快速線` now stitches same-operator Tokyo splits such as `492S -> 493F` through to 千葉, 御茶ノ水/新宿 split orange `中央線快速` from yellow `中央・総武線各駅停車`, and 立川 splits `青梅線`/`中央線` by outgoing segment.
 - v4 through-service display audit covers all browser-stitched trips: `678` stitched through trips, `0` stale `東海道線+総武線` / `総武線+東海道線` labels, and expected labels for `横須賀線・総武快速線`, `京急`/`都営浅草線`, and `京成`/`都営浅草線`.
-- Reusable v4 through-service audit reports `1026` split-trip candidates, `994` currently browser-stitchable candidates after reviewed direct-service rules, `52` confirmed direct-service split candidates, and `32` remaining uncovered review candidates.
+- Reusable v4 through-service audit reports `1026` split-trip candidates: `942` covered by existing browser rules, `52` confirmed direct-service rules, `26` reviewed likely reused-number/data-context non-UI cases, and `6` still needing review.
 
 ## In Progress
 - Promote the v4 nationwide gameplay bundle into a public playtest pass.
@@ -45,4 +45,4 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 ## Next
 1. Run visual/manual v4 playtest QA from major hubs: Tokyo, Osaka, Nagoya, Fukuoka, Sapporo, and Hiroshima.
 2. Decide whether to hide or keep the reviewed meter-scale 肥薩線 N02 fragment in rendered geometry.
-3. Review `data/v4_through_service_audit.json` uncovered split candidates and decide which direct-service pairs should become explicit v4 stitch rules.
+3. Review the `6` `needs_review` split candidates in `data/v4_through_service_audit.json` and decide which direct-service pairs should become explicit v4 stitch rules.

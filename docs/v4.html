@@ -4270,7 +4270,8 @@
           const serviceName = serviceNameJaLabel(trip);
           const publicNumber = publicTripNumber(trip);
           if (serviceName && serviceName !== '列車') {
-            return `${serviceName}${publicNumber && !String(serviceName).includes(publicNumber) ? publicNumber : ''}`;
+            const serviceLabel = `${serviceName}${publicNumber && !String(serviceName).includes(publicNumber) ? publicNumber : ''}`;
+            return `${serviceLabel} 直通`;
           }
         }
         const throughNames = throughRouteIds

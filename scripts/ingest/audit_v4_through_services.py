@@ -277,6 +277,19 @@ def split_candidate_strength(
     return ""
 
 
+def train_number_evidence(left: dict[str, Any], right: dict[str, Any]) -> dict[str, Any]:
+    left_number = public_train_number(left)
+    right_number = public_train_number(right)
+    return {
+        "leftPublicNumber": left_number,
+        "rightPublicNumber": right_number,
+        "samePublicNumber": bool(left_number and left_number == right_number),
+        "leftThroughCode": through_run_code(left),
+        "rightThroughCode": through_run_code(right),
+        "throughCodesCompatible": bool(through_run_code(left) and through_run_code(left) == through_run_code(right)),
+    }
+
+
 def is_browser_stitch_candidate(
     station_groups: dict[str, dict[str, Any]],
     routes: dict[str, dict[str, Any]],
@@ -305,6 +318,21 @@ def is_browser_stitch_candidate(
     if "TOEI_ASAKUSA" in names or "1号線浅草線" in names:
         return "keikyu" in operators or "keisei" in operators
     return False
+
+
+def split_candidate_decision_reason(
+    classification: str,
+    browser_candidate: bool,
+    confirmed_rule: dict[str, Any] | None,
+    false_positive_rule: dict[str, Any] | None,
+) -> str:
+    if classification == "confirmed_direct":
+        return f"confirmed reviewed direct-service rule at {confirmed_rule.get('station')} for {list(confirmed_rule.get('routes') or [])}"
+    if classification == "likely_reused_number_or_data_context":
+        return f"kept out of UI by reviewed false-positive/data-context rule at {false_positive_rule.get('station')} for {list(false_positive_rule.get('routes') or [])}"
+    if browser_candidate:
+        return "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+    return "candidate has same station/time/number evidence but no reviewed direct-service rule yet"
 
 
 def reviewed_split_rule(
@@ -471,14 +499,16 @@ def audit_split_candidates(
             strength_counts[strength] += 1
             confirmed_rule = reviewed_split_rule(station_groups, routes, left, right, CONFIRMED_SPLIT_THROUGH_RULES)
             false_positive_rule = reviewed_split_rule(station_groups, routes, left, right, LIKELY_FALSE_POSITIVE_SPLIT_RULES)
+            browser_candidate = is_browser_stitch_candidate(station_groups, routes, left, right)
             if confirmed_rule:
                 classification = str(confirmed_rule.get("classification") or "confirmed_direct")
             elif false_positive_rule:
                 classification = str(false_positive_rule.get("classification") or "likely_false_positive")
+            elif browser_candidate:
+                classification = "covered_by_existing_browser_rule"
             else:
                 classification = "needs_review"
             classification_counts[classification] += 1
-            browser_candidate = is_browser_stitch_candidate(station_groups, routes, left, right)
             if browser_candidate:
                 browser_candidate_count += 1
                 browser_pair_counts[route_pair] += 1
@@ -492,6 +522,19 @@ def audit_split_candidates(
                 "strength": strength,
                 "classification": classification,
                 "browserStitchable": browser_candidate,
+                "decision": {
+                    "sameStationGroup": True,
+                    "maxGapSec": max_gap_sec,
+                    "gapWithinLimit": gap <= max_gap_sec,
+                    "routePair": route_pair,
+                    "trainNumberEvidence": train_number_evidence(left, right),
+                    "reason": split_candidate_decision_reason(
+                        classification,
+                        browser_candidate,
+                        confirmed_rule,
+                        false_positive_rule,
+                    ),
+                },
                 "left": {
                     "tripId": left.get("id"),
                     "sourceFeedKey": left.get("sourceFeedKey"),
@@ -581,6 +624,27 @@ def main() -> int:
             "mapBundle": rel(args.map_bundle),
             "timetable": rel(args.timetable),
             "maxGapSec": args.max_gap_sec,
+        },
+        "methodology": {
+            "purpose": "Make through-running handling inspectable without treating every shared station or reused train number as a real direct train.",
+            "internalLineTraceTransitions": [
+                "Scan each full timetable trip's lineTrace.",
+                "When adjacent lineTrace ranges use different routeIds, record a route-transition observation inside one trip.",
+                "This is review-oriented only: it may be a real direct/branch movement or a segment-identity issue.",
+            ],
+            "splitTripCandidates": [
+                "Index every trip start by stationGroupId and departure time.",
+                "For each trip end, inspect trips that start at the same stationGroupId within maxGapSec.",
+                "Require different routeIds and compatible public train-number evidence before counting a candidate.",
+                "Compatible evidence is exact same public train number, same normalized through-code, or the Yokosuka/Sobu Rapid S/F successor rule.",
+            ],
+            "classificationOrder": [
+                "confirmed_direct: route pair and boundary station are in the reviewed direct-service rule table.",
+                "likely_reused_number_or_data_context: reviewed as likely reused-number or source-context noise, so it must not become player-facing direct service.",
+                "covered_by_existing_browser_rule: current browser stitch logic already handles it.",
+                "needs_review: evidence exists, but no reviewed direct-service decision exists yet.",
+            ],
+            "physicalCaution": "AXIOMS still apply: a candidate is not accepted only because of shared station group, shared operator, nearby geometry, or transfer permission.",
         },
         "counts": {
             "tripCount": len(trips),

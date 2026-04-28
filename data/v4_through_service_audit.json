@@ -1,10 +1,31 @@
 {
   "schema": "onichase.v4.through_service_audit.v1",
-  "generatedAt": "2026-04-28T20:51:50+00:00",
+  "generatedAt": "2026-04-28T21:00:08+00:00",
   "inputs": {
     "mapBundle": "data/v4_gameplay_map_bundle.json.gz",
     "timetable": "data/v4_gameplay_timetable_bundle.json.gz",
     "maxGapSec": 300
+  },
+  "methodology": {
+    "purpose": "Make through-running handling inspectable without treating every shared station or reused train number as a real direct train.",
+    "internalLineTraceTransitions": [
+      "Scan each full timetable trip's lineTrace.",
+      "When adjacent lineTrace ranges use different routeIds, record a route-transition observation inside one trip.",
+      "This is review-oriented only: it may be a real direct/branch movement or a segment-identity issue."
+    ],
+    "splitTripCandidates": [
+      "Index every trip start by stationGroupId and departure time.",
+      "For each trip end, inspect trips that start at the same stationGroupId within maxGapSec.",
+      "Require different routeIds and compatible public train-number evidence before counting a candidate.",
+      "Compatible evidence is exact same public train number, same normalized through-code, or the Yokosuka/Sobu Rapid S/F successor rule."
+    ],
+    "classificationOrder": [
+      "confirmed_direct: route pair and boundary station are in the reviewed direct-service rule table.",
+      "likely_reused_number_or_data_context: reviewed as likely reused-number or source-context noise, so it must not become player-facing direct service.",
+      "covered_by_existing_browser_rule: current browser stitch logic already handles it.",
+      "needs_review: evidence exists, but no reviewed direct-service decision exists yet."
+    ],
+    "physicalCaution": "AXIOMS still apply: a candidate is not accepted only because of shared station group, shared operator, nearby geometry, or transfer permission."
   },
   "counts": {
     "tripCount": 120420,
@@ -1945,16 +1966,32 @@
     },
     "byClassification": {
       "confirmed_direct": 52,
+      "covered_by_existing_browser_rule": 942,
       "likely_reused_number_or_data_context": 26,
-      "needs_review": 948
+      "needs_review": 6
     },
     "samples": [
       {
         "station": "東京",
         "gapSec": 180,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1004S",
+            "rightPublicNumber": "1005F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1004S",
+            "rightThroughCode": "1005F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1004S:d73cf919bd",
           "sourceFeedKey": "v3_release_candidate",
@@ -1978,8 +2015,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1008F",
+            "rightPublicNumber": "1009S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1008F",
+            "rightThroughCode": "1009S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1008F:0b425b81d4",
           "sourceFeedKey": "v3_release_candidate",
@@ -2003,8 +2055,23 @@
         "station": "東京",
         "gapSec": 180,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1028S",
+            "rightPublicNumber": "1029F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1028S",
+            "rightThroughCode": "1029F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1028S:c53e2838d8",
           "sourceFeedKey": "v3_release_candidate",
@@ -2028,8 +2095,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1034S",
+            "rightPublicNumber": "1035F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1034S",
+            "rightThroughCode": "1035F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1034S:13376ee565",
           "sourceFeedKey": "v3_release_candidate",
@@ -2053,8 +2135,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1050F",
+            "rightPublicNumber": "1051S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1050F",
+            "rightThroughCode": "1051S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1050F:ee4625cbbc",
           "sourceFeedKey": "v3_release_candidate",
@@ -2078,8 +2175,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1068S",
+            "rightPublicNumber": "1069F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1068S",
+            "rightThroughCode": "1069F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1068S:6f46632918",
           "sourceFeedKey": "v3_release_candidate",
@@ -2103,8 +2215,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1088S",
+            "rightPublicNumber": "1089F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1088S",
+            "rightThroughCode": "1089F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1088S:473bd0630b",
           "sourceFeedKey": "v3_release_candidate",
@@ -2128,8 +2255,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1102S",
+            "rightPublicNumber": "1103F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1102S",
+            "rightThroughCode": "1103F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1102S:0fd76e4511",
           "sourceFeedKey": "v3_release_candidate",
@@ -2153,8 +2295,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1114F",
+            "rightPublicNumber": "1115S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1114F",
+            "rightThroughCode": "1115S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1114F:c1337b344e",
           "sourceFeedKey": "v3_release_candidate",
@@ -2178,8 +2335,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1136S",
+            "rightPublicNumber": "1137F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1136S",
+            "rightThroughCode": "1137F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1136S:792b1bd74e",
           "sourceFeedKey": "v3_release_candidate",
@@ -2203,8 +2375,23 @@
         "station": "東京",
         "gapSec": 180,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1146S",
+            "rightPublicNumber": "1147F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1146S",
+            "rightThroughCode": "1147F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1146S:eaaa37bdcc",
           "sourceFeedKey": "v3_release_candidate",
@@ -2228,8 +2415,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1160F",
+            "rightPublicNumber": "1161S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1160F",
+            "rightThroughCode": "1161S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1160F:8dadb9a3ce",
           "sourceFeedKey": "v3_release_candidate",
@@ -2253,8 +2455,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1172F",
+            "rightPublicNumber": "1173S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1172F",
+            "rightThroughCode": "1173S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1172F:4819ccfbd0",
           "sourceFeedKey": "v3_release_candidate",
@@ -2278,8 +2495,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1176S",
+            "rightPublicNumber": "1177F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1176S",
+            "rightThroughCode": "1177F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1176S:1d701e1432",
           "sourceFeedKey": "v3_release_candidate",
@@ -2303,8 +2535,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1180F",
+            "rightPublicNumber": "1181S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1180F",
+            "rightThroughCode": "1181S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1180F:3de00eaa3b",
           "sourceFeedKey": "v3_release_candidate",
@@ -2328,8 +2575,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1204F",
+            "rightPublicNumber": "1205S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1204F",
+            "rightThroughCode": "1205S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1204F:79eb420dfd",
           "sourceFeedKey": "v3_release_candidate",
@@ -2353,8 +2615,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1226S",
+            "rightPublicNumber": "1227F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1226S",
+            "rightThroughCode": "1227F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1226S:383864fa00",
           "sourceFeedKey": "v3_release_candidate",
@@ -2378,8 +2655,23 @@
         "station": "東京",
         "gapSec": 180,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1250S",
+            "rightPublicNumber": "1251F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1250S",
+            "rightThroughCode": "1251F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1250S:ed26f13c82",
           "sourceFeedKey": "v3_release_candidate",
@@ -2403,8 +2695,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1258S",
+            "rightPublicNumber": "1259F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1258S",
+            "rightThroughCode": "1259F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1258S:fce465f423",
           "sourceFeedKey": "v3_release_candidate",
@@ -2428,8 +2735,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1262F",
+            "rightPublicNumber": "1263S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1262F",
+            "rightThroughCode": "1263S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1262F:4f5a96e0d6",
           "sourceFeedKey": "v3_release_candidate",
@@ -2453,8 +2775,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1266S",
+            "rightPublicNumber": "1267F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1266S",
+            "rightThroughCode": "1267F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1266S:9d6f609f23",
           "sourceFeedKey": "v3_release_candidate",
@@ -2478,8 +2815,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1286F",
+            "rightPublicNumber": "1287S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1286F",
+            "rightThroughCode": "1287S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1286F:d78004e3a6",
           "sourceFeedKey": "v3_release_candidate",
@@ -2503,8 +2855,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1288F",
+            "rightPublicNumber": "1289S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1288F",
+            "rightThroughCode": "1289S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1288F:b75a3d3b54",
           "sourceFeedKey": "v3_release_candidate",
@@ -2528,8 +2895,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1302F",
+            "rightPublicNumber": "1303S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1302F",
+            "rightThroughCode": "1303S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1302F:b2c5fe6504",
           "sourceFeedKey": "v3_release_candidate",
@@ -2553,8 +2935,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1308S",
+            "rightPublicNumber": "1309F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1308S",
+            "rightThroughCode": "1309F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1308S:b270b9ed48",
           "sourceFeedKey": "v3_release_candidate",
@@ -2578,8 +2975,23 @@
         "station": "東京",
         "gapSec": 180,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1314S",
+            "rightPublicNumber": "1315F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1314S",
+            "rightThroughCode": "1315F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1314S:cb1dbd7cf5",
           "sourceFeedKey": "v3_release_candidate",
@@ -2603,8 +3015,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1328F",
+            "rightPublicNumber": "1329S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1328F",
+            "rightThroughCode": "1329S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1328F:6e86cdaccb",
           "sourceFeedKey": "v3_release_candidate",
@@ -2628,8 +3055,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1340S",
+            "rightPublicNumber": "1341F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1340S",
+            "rightThroughCode": "1341F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1340S:bebfbb9804",
           "sourceFeedKey": "v3_release_candidate",
@@ -2653,8 +3095,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1368F",
+            "rightPublicNumber": "1369S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1368F",
+            "rightThroughCode": "1369S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1368F:58441e1fe3",
           "sourceFeedKey": "v3_release_candidate",
@@ -2678,8 +3135,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1376F",
+            "rightPublicNumber": "1377S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1376F",
+            "rightThroughCode": "1377S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1376F:d1051e84c9",
           "sourceFeedKey": "v3_release_candidate",
@@ -2703,8 +3175,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1380S",
+            "rightPublicNumber": "1381F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1380S",
+            "rightThroughCode": "1381F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1380S:d30fe2bd90",
           "sourceFeedKey": "v3_release_candidate",
@@ -2728,8 +3215,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1426F",
+            "rightPublicNumber": "1427S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1426F",
+            "rightThroughCode": "1427S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1426F:fb4fadece9",
           "sourceFeedKey": "v3_release_candidate",
@@ -2753,8 +3255,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1436F",
+            "rightPublicNumber": "1437S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1436F",
+            "rightThroughCode": "1437S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1436F:14dad1fa2f",
           "sourceFeedKey": "v3_release_candidate",
@@ -2778,8 +3295,23 @@
         "station": "東京",
         "gapSec": 180,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1446F",
+            "rightPublicNumber": "1447S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1446F",
+            "rightThroughCode": "1447S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1446F:8da717da7c",
           "sourceFeedKey": "v3_release_candidate",
@@ -2803,8 +3335,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1460S",
+            "rightPublicNumber": "1461F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1460S",
+            "rightThroughCode": "1461F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1460S:63ddd0fe0c",
           "sourceFeedKey": "v3_release_candidate",
@@ -2828,8 +3375,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1462S",
+            "rightPublicNumber": "1463F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1462S",
+            "rightThroughCode": "1463F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1462S:0439a5d3a7",
           "sourceFeedKey": "v3_release_candidate",
@@ -2853,8 +3415,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1466F",
+            "rightPublicNumber": "1467S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1466F",
+            "rightThroughCode": "1467S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1466F:d4228219d1",
           "sourceFeedKey": "v3_release_candidate",
@@ -2878,8 +3455,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1472S",
+            "rightPublicNumber": "1473F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1472S",
+            "rightThroughCode": "1473F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1472S:08d31f197a",
           "sourceFeedKey": "v3_release_candidate",
@@ -2903,8 +3495,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1488S",
+            "rightPublicNumber": "1489F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1488S",
+            "rightThroughCode": "1489F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1488S:e6c1e4e0c3",
           "sourceFeedKey": "v3_release_candidate",
@@ -2928,8 +3535,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1502S",
+            "rightPublicNumber": "1503F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1502S",
+            "rightThroughCode": "1503F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1502S:3091345401",
           "sourceFeedKey": "v3_release_candidate",
@@ -2953,8 +3575,23 @@
         "station": "東京",
         "gapSec": 180,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1504S",
+            "rightPublicNumber": "1505F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1504S",
+            "rightThroughCode": "1505F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1504S:5c9c662d6d",
           "sourceFeedKey": "v3_release_candidate",
@@ -2978,8 +3615,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1550F",
+            "rightPublicNumber": "1551S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1550F",
+            "rightThroughCode": "1551S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1550F:d2c366d026",
           "sourceFeedKey": "v3_release_candidate",
@@ -3003,8 +3655,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1558F",
+            "rightPublicNumber": "1559S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1558F",
+            "rightThroughCode": "1559S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1558F:3e97560441",
           "sourceFeedKey": "v3_release_candidate",
@@ -3028,8 +3695,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1576S",
+            "rightPublicNumber": "1577F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1576S",
+            "rightThroughCode": "1577F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1576S:afd95db916",
           "sourceFeedKey": "v3_release_candidate",
@@ -3053,8 +3735,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1580F",
+            "rightPublicNumber": "1581S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1580F",
+            "rightThroughCode": "1581S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1580F:3da1a33310",
           "sourceFeedKey": "v3_release_candidate",
@@ -3078,8 +3775,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1586S",
+            "rightPublicNumber": "1587F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1586S",
+            "rightThroughCode": "1587F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1586S:9939a3fd8a",
           "sourceFeedKey": "v3_release_candidate",
@@ -3103,8 +3815,23 @@
         "station": "東京",
         "gapSec": 300,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1590F",
+            "rightPublicNumber": "1591S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1590F",
+            "rightThroughCode": "1591S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1590F:4868542e59",
           "sourceFeedKey": "v3_release_candidate",
@@ -3128,8 +3855,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1608F",
+            "rightPublicNumber": "1609S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1608F",
+            "rightThroughCode": "1609S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1608F:3adf8eb239",
           "sourceFeedKey": "v3_release_candidate",
@@ -3153,8 +3895,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1614F",
+            "rightPublicNumber": "1615S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1614F",
+            "rightThroughCode": "1615S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1614F:1146024c9f",
           "sourceFeedKey": "v3_release_candidate",
@@ -3178,8 +3935,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1616F",
+            "rightPublicNumber": "1617S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1616F",
+            "rightThroughCode": "1617S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1616F:45b25713af",
           "sourceFeedKey": "v3_release_candidate",
@@ -3203,8 +3975,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1628S",
+            "rightPublicNumber": "1629F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1628S",
+            "rightThroughCode": "1629F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1628S:c91a5bd94d",
           "sourceFeedKey": "v3_release_candidate",
@@ -3228,8 +4015,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1630S",
+            "rightPublicNumber": "1631F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1630S",
+            "rightThroughCode": "1631F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1630S:5fb5475e2a",
           "sourceFeedKey": "v3_release_candidate",
@@ -3253,8 +4055,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1644F",
+            "rightPublicNumber": "1645S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1644F",
+            "rightThroughCode": "1645S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1644F:c59f54e18c",
           "sourceFeedKey": "v3_release_candidate",
@@ -3278,8 +4095,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1656F",
+            "rightPublicNumber": "1657S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1656F",
+            "rightThroughCode": "1657S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1656F:714cda45dc",
           "sourceFeedKey": "v3_release_candidate",
@@ -3303,8 +4135,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1664S",
+            "rightPublicNumber": "1665F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1664S",
+            "rightThroughCode": "1665F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1664S:bf74dc8e39",
           "sourceFeedKey": "v3_release_candidate",
@@ -3328,8 +4175,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1666S",
+            "rightPublicNumber": "1667F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1666S",
+            "rightThroughCode": "1667F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1666S:2f66090e95",
           "sourceFeedKey": "v3_release_candidate",
@@ -3353,8 +4215,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1692S",
+            "rightPublicNumber": "1693F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1692S",
+            "rightThroughCode": "1693F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1692S:abf5c0c9b6",
           "sourceFeedKey": "v3_release_candidate",
@@ -3378,8 +4255,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1712S",
+            "rightPublicNumber": "1713F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1712S",
+            "rightThroughCode": "1713F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1712S:3eb8205141",
           "sourceFeedKey": "v3_release_candidate",
@@ -3403,8 +4295,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1732F",
+            "rightPublicNumber": "1733S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1732F",
+            "rightThroughCode": "1733S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1732F:2969d016e2",
           "sourceFeedKey": "v3_release_candidate",
@@ -3428,8 +4335,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1742F",
+            "rightPublicNumber": "1743S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1742F",
+            "rightThroughCode": "1743S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1742F:c7f1bd2c59",
           "sourceFeedKey": "v3_release_candidate",
@@ -3453,8 +4375,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1746S",
+            "rightPublicNumber": "1747F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1746S",
+            "rightThroughCode": "1747F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1746S:31ec94a101",
           "sourceFeedKey": "v3_release_candidate",
@@ -3478,8 +4415,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1762F",
+            "rightPublicNumber": "1763S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1762F",
+            "rightThroughCode": "1763S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1762F:58d3d7bddf",
           "sourceFeedKey": "v3_release_candidate",
@@ -3503,8 +4455,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1768S",
+            "rightPublicNumber": "1769F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1768S",
+            "rightThroughCode": "1769F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1768S:58f4e15c3a",
           "sourceFeedKey": "v3_release_candidate",
@@ -3528,8 +4495,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1774F",
+            "rightPublicNumber": "1775S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1774F",
+            "rightThroughCode": "1775S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1774F:cc4d4d460c",
           "sourceFeedKey": "v3_release_candidate",
@@ -3553,8 +4535,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1780S",
+            "rightPublicNumber": "1781F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1780S",
+            "rightThroughCode": "1781F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1780S:32ec08febb",
           "sourceFeedKey": "v3_release_candidate",
@@ -3578,8 +4575,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1782S",
+            "rightPublicNumber": "1783F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1782S",
+            "rightThroughCode": "1783F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1782S:3ada72237e",
           "sourceFeedKey": "v3_release_candidate",
@@ -3603,8 +4615,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1788F",
+            "rightPublicNumber": "1789S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1788F",
+            "rightThroughCode": "1789S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1788F:f9900303bb",
           "sourceFeedKey": "v3_release_candidate",
@@ -3628,8 +4655,23 @@
         "station": "東京",
         "gapSec": 180,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1790S",
+            "rightPublicNumber": "1791F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1790S",
+            "rightThroughCode": "1791F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1790S:b99c3584c2",
           "sourceFeedKey": "v3_release_candidate",
@@ -3653,8 +4695,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1802F",
+            "rightPublicNumber": "1803S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1802F",
+            "rightThroughCode": "1803S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1802F:60d143d171",
           "sourceFeedKey": "v3_release_candidate",
@@ -3678,8 +4735,23 @@
         "station": "東京",
         "gapSec": 300,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1816S",
+            "rightPublicNumber": "1817F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1816S",
+            "rightThroughCode": "1817F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1816S:750a1cf576",
           "sourceFeedKey": "v3_release_candidate",
@@ -3703,8 +4775,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1818F",
+            "rightPublicNumber": "1819S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1818F",
+            "rightThroughCode": "1819S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1818F:01f3bd6526",
           "sourceFeedKey": "v3_release_candidate",
@@ -3728,8 +4815,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1836S",
+            "rightPublicNumber": "1837F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1836S",
+            "rightThroughCode": "1837F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1836S:3286d85539",
           "sourceFeedKey": "v3_release_candidate",
@@ -3753,8 +4855,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1844S",
+            "rightPublicNumber": "1845F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1844S",
+            "rightThroughCode": "1845F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1844S:db1a558067",
           "sourceFeedKey": "v3_release_candidate",
@@ -3778,8 +4895,23 @@
         "station": "東京",
         "gapSec": 180,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1848S",
+            "rightPublicNumber": "1849F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1848S",
+            "rightThroughCode": "1849F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1848S:3d4e788720",
           "sourceFeedKey": "v3_release_candidate",
@@ -3803,8 +4935,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1850S",
+            "rightPublicNumber": "1851F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1850S",
+            "rightThroughCode": "1851F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1850S:13b37f6974",
           "sourceFeedKey": "v3_release_candidate",
@@ -3828,8 +4975,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1854F",
+            "rightPublicNumber": "1855S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1854F",
+            "rightThroughCode": "1855S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1854F:84b0699ba8",
           "sourceFeedKey": "v3_release_candidate",
@@ -3853,8 +5015,23 @@
         "station": "東京",
         "gapSec": 240,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1864F",
+            "rightPublicNumber": "1865S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1864F",
+            "rightThroughCode": "1865S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1864F:03cdf5935b",
           "sourceFeedKey": "v3_release_candidate",
@@ -3878,8 +5055,23 @@
         "station": "東京",
         "gapSec": 60,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1878F",
+            "rightPublicNumber": "1879S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1878F",
+            "rightThroughCode": "1879S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1878F:a6e831a3e9",
           "sourceFeedKey": "v3_release_candidate",
@@ -3903,8 +5095,23 @@
         "station": "東京",
         "gapSec": 180,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:総武線 -> jr_east:東海道線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1886F",
+            "rightPublicNumber": "1887S",
+            "samePublicNumber": false,
+            "leftThroughCode": "1886F",
+            "rightThroughCode": "1887S",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1886F:097f5b28a7",
           "sourceFeedKey": "v3_release_candidate",
@@ -3928,8 +5135,23 @@
         "station": "東京",
         "gapSec": 120,
         "strength": "browser_code",
-        "classification": "needs_review",
+        "classification": "covered_by_existing_browser_rule",
         "browserStitchable": true,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:東海道線 -> jr_east:総武線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "1888S",
+            "rightPublicNumber": "1889F",
+            "samePublicNumber": false,
+            "leftThroughCode": "1888S",
+            "rightThroughCode": "1889F",
+            "throughCodesCompatible": false
+          },
+          "reason": "covered by existing browser stitch rule: Yokosuka/Sobu Rapid S/F continuation, Toei Asakusa partner, Rinkai/Saikyo, or reviewed exact-number rule"
+        },
         "left": {
           "tripId": "jr_east:1888S:0dfaf41dbf",
           "sourceFeedKey": "v3_release_candidate",
@@ -3957,6 +5179,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_east:川越線 -> toei:10号線新宿線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "980K",
+            "rightPublicNumber": "300980K0",
+            "samePublicNumber": false,
+            "leftThroughCode": "980K",
+            "rightThroughCode": "980K",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 新宿 for ['川越線', '10号線新宿線']"
+        },
         "left": {
           "tripId": "jr_east_official:川越:train_090_092811",
           "sourceFeedKey": "jreast_official_2605",
@@ -3982,6 +5219,21 @@
         "strength": "browser_code",
         "classification": "needs_review",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_kyushu:日豊線 -> jr_kyushu:鹿児島線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "000A011A",
+            "rightPublicNumber": "800A011A",
+            "samePublicNumber": false,
+            "leftThroughCode": "11A",
+            "rightThroughCode": "11A",
+            "throughCodesCompatible": true
+          },
+          "reason": "candidate has same station/time/number evidence but no reviewed direct-service rule yet"
+        },
         "left": {
           "tripId": "jr_kyushu_navitime:日豊線:00000010:000a011a:2026-04-27",
           "sourceFeedKey": "jr_kyushu_navitime_2026-04-27",
@@ -4007,6 +5259,21 @@
         "strength": "browser_code",
         "classification": "needs_review",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_kyushu:筑豊線 -> jr_kyushu:久大線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "8011001E",
+            "rightPublicNumber": "8001001E",
+            "samePublicNumber": false,
+            "leftThroughCode": "1001E",
+            "rightThroughCode": "1001E",
+            "throughCodesCompatible": true
+          },
+          "reason": "candidate has same station/time/number evidence but no reviewed direct-service rule yet"
+        },
         "left": {
           "tripId": "jr_kyushu_navitime:筑豊線:00000018:8011001e:2026-04-27",
           "sourceFeedKey": "jr_kyushu_navitime_2026-04-27",
@@ -4032,6 +5299,21 @@
         "strength": "browser_code",
         "classification": "needs_review",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_kyushu:鹿児島線 -> jr_kyushu:日豊線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "000A011A",
+            "rightPublicNumber": "800A011A",
+            "samePublicNumber": false,
+            "leftThroughCode": "11A",
+            "rightThroughCode": "11A",
+            "throughCodesCompatible": true
+          },
+          "reason": "candidate has same station/time/number evidence but no reviewed direct-service rule yet"
+        },
         "left": {
           "tripId": "jr_kyushu_navitime:鹿児島線:00000010:000a011a:2026-04-27",
           "sourceFeedKey": "jr_kyushu_navitime_2026-04-27",
@@ -4057,6 +5339,21 @@
         "strength": "browser_code",
         "classification": "needs_review",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_kyushu:鹿児島線 -> jr_kyushu:日豊線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "800A00ED",
+            "rightPublicNumber": "800A000E",
+            "samePublicNumber": false,
+            "leftThroughCode": "800A",
+            "rightThroughCode": "800A",
+            "throughCodesCompatible": true
+          },
+          "reason": "candidate has same station/time/number evidence but no reviewed direct-service rule yet"
+        },
         "left": {
           "tripId": "jr_kyushu_navitime:鹿児島線:00000010:800a00ed:2026-04-27",
           "sourceFeedKey": "jr_kyushu_navitime_2026-04-27",
@@ -4082,6 +5379,21 @@
         "strength": "browser_code",
         "classification": "needs_review",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "jr_kyushu:鹿児島線 -> jr_kyushu:日豊線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "800A00FC",
+            "rightPublicNumber": "800A000A",
+            "samePublicNumber": false,
+            "leftThroughCode": "800A",
+            "rightThroughCode": "800A",
+            "throughCodesCompatible": true
+          },
+          "reason": "candidate has same station/time/number evidence but no reviewed direct-service rule yet"
+        },
         "left": {
           "tripId": "jr_kyushu_navitime:鹿児島線:00000010:800a00fc:2026-04-27",
           "sourceFeedKey": "jr_kyushu_navitime_2026-04-27",
@@ -4107,6 +5419,21 @@
         "strength": "browser_code",
         "classification": "needs_review",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "odakyu:江ノ島線 -> odakyu:小田原線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01FE006B",
+            "rightPublicNumber": "81FE006B",
+            "samePublicNumber": false,
+            "leftThroughCode": "6B",
+            "rightThroughCode": "6B",
+            "throughCodesCompatible": true
+          },
+          "reason": "candidate has same station/time/number evidence but no reviewed direct-service rule yet"
+        },
         "left": {
           "tripId": "odakyu:01fe006b_2026-04-15:291fbaae60",
           "sourceFeedKey": "v3_release_candidate",
@@ -4132,6 +5459,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tobu:野田線 -> tobu:伊勢崎線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "025B005F",
+            "rightPublicNumber": "825B005F",
+            "samePublicNumber": false,
+            "leftThroughCode": "5F",
+            "rightThroughCode": "5F",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 浅草 for ['野田線', '伊勢崎線']"
+        },
         "left": {
           "tripId": "tobu:TOBU_025b005f_2026-04-15:9e9cc44800",
           "sourceFeedKey": "v3_release_candidate",
@@ -4157,6 +5499,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tobu:野田線 -> tobu:伊勢崎線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "025B011F",
+            "rightPublicNumber": "825B011F",
+            "samePublicNumber": false,
+            "leftThroughCode": "11F",
+            "rightThroughCode": "11F",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 浅草 for ['野田線', '伊勢崎線']"
+        },
         "left": {
           "tripId": "tobu:TOBU_025b011f_2026-04-15:31a72f91c1",
           "sourceFeedKey": "v3_release_candidate",
@@ -4182,6 +5539,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tobu:伊勢崎線 -> tobu:野田線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "808600C0",
+            "rightPublicNumber": "008600CC",
+            "samePublicNumber": false,
+            "leftThroughCode": "8600C",
+            "rightThroughCode": "8600C",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 柏 for ['伊勢崎線', '野田線']"
+        },
         "left": {
           "tripId": "tobu:TOBU_808600c0_2026-04-15:304de74490",
           "sourceFeedKey": "v3_release_candidate",
@@ -4207,6 +5579,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tobu:東上本線 -> tobu:野田線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "808601EA",
+            "rightPublicNumber": "008601E0",
+            "samePublicNumber": false,
+            "leftThroughCode": "8601E",
+            "rightThroughCode": "8601E",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 柏 for ['東上本線', '野田線']"
+        },
         "left": {
           "tripId": "tobu:TOBU_808601ea_2026-04-15:a3ea1fbc49",
           "sourceFeedKey": "v3_release_candidate",
@@ -4232,6 +5619,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tobu:東上本線 -> tobu:野田線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "808601EF",
+            "rightPublicNumber": "008601EA",
+            "samePublicNumber": false,
+            "leftThroughCode": "8601E",
+            "rightThroughCode": "8601E",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 柏 for ['東上本線', '野田線']"
+        },
         "left": {
           "tripId": "tobu:TOBU_808601ef_2026-04-15:e3d5a9b6d2",
           "sourceFeedKey": "v3_release_candidate",
@@ -4257,6 +5659,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tobu:東上本線 -> tobu:野田線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "808601FC",
+            "rightPublicNumber": "008601FB",
+            "samePublicNumber": false,
+            "leftThroughCode": "8601F",
+            "rightThroughCode": "8601F",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 柏 for ['東上本線', '野田線']"
+        },
         "left": {
           "tripId": "tobu:TOBU_808601fc_2026-04-15:7331c4d7ec",
           "sourceFeedKey": "v3_release_candidate",
@@ -4282,6 +5699,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tobu:東上本線 -> tobu:野田線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "808601FF",
+            "rightPublicNumber": "008601FE",
+            "samePublicNumber": false,
+            "leftThroughCode": "8601F",
+            "rightThroughCode": "8601F",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 柏 for ['東上本線', '野田線']"
+        },
         "left": {
           "tripId": "tobu:TOBU_808601ff_2026-04-15:581586f652",
           "sourceFeedKey": "v3_release_candidate",
@@ -4307,6 +5739,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "toei:10号線新宿線 -> jr_east:東北線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "310987K0",
+            "rightPublicNumber": "987K",
+            "samePublicNumber": false,
+            "leftThroughCode": "987K",
+            "rightThroughCode": "987K",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 新宿 for ['10号線新宿線', '東北線']"
+        },
         "left": {
           "tripId": "toei:310987K0:d1caf611e6",
           "sourceFeedKey": "v3_release_candidate",
@@ -4332,6 +5779,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "toei:10号線新宿線 -> jr_east:東北線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "311181K0",
+            "rightPublicNumber": "1181K",
+            "samePublicNumber": false,
+            "leftThroughCode": "1181K",
+            "rightThroughCode": "1181K",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 新宿 for ['10号線新宿線', '東北線']"
+        },
         "left": {
           "tripId": "toei:311181K0:9fd4b66913",
           "sourceFeedKey": "v3_release_candidate",
@@ -4357,6 +5819,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:田園都市線 -> tokyu:東横線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AA005A",
+            "rightPublicNumber": "81AC005A",
+            "samePublicNumber": false,
+            "leftThroughCode": "5A",
+            "rightThroughCode": "5A",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01aa005a_2026-04-15:2dd93645f5",
           "sourceFeedKey": "v3_release_candidate",
@@ -4382,6 +5859,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:田園都市線 -> tokyu:東横線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AA005B",
+            "rightPublicNumber": "81AC005B",
+            "samePublicNumber": false,
+            "leftThroughCode": "5B",
+            "rightThroughCode": "5B",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01aa005b_2026-04-15:34fd2e4305",
           "sourceFeedKey": "v3_release_candidate",
@@ -4407,6 +5899,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:田園都市線 -> tokyu:東横線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AA005C",
+            "rightPublicNumber": "81AC005C",
+            "samePublicNumber": false,
+            "leftThroughCode": "5C",
+            "rightThroughCode": "5C",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01aa005c_2026-04-15:a7a39b8ee9",
           "sourceFeedKey": "v3_release_candidate",
@@ -4432,6 +5939,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:田園都市線 -> tokyu:東横線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AA005D",
+            "rightPublicNumber": "81AC005D",
+            "samePublicNumber": false,
+            "leftThroughCode": "5D",
+            "rightThroughCode": "5D",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01aa005d_2026-04-15:31e64d008b",
           "sourceFeedKey": "v3_release_candidate",
@@ -4457,6 +5979,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:田園都市線 -> tokyu:東横線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AA005E",
+            "rightPublicNumber": "81AC005E",
+            "samePublicNumber": false,
+            "leftThroughCode": "5E",
+            "rightThroughCode": "5E",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01aa005e_2026-04-15:66c979fdf0",
           "sourceFeedKey": "v3_release_candidate",
@@ -4482,6 +6019,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:田園都市線 -> tokyu:東横線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AA005F",
+            "rightPublicNumber": "81AC005F",
+            "samePublicNumber": false,
+            "leftThroughCode": "5F",
+            "rightThroughCode": "5F",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01aa005f_2026-04-15:66ddad0205",
           "sourceFeedKey": "v3_release_candidate",
@@ -4507,6 +6059,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:東横線 -> tokyu:田園都市線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AC001A",
+            "rightPublicNumber": "81AA001A",
+            "samePublicNumber": false,
+            "leftThroughCode": "1A",
+            "rightThroughCode": "1A",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01ac001a_2026-04-15:743f67379f",
           "sourceFeedKey": "v3_release_candidate",
@@ -4532,6 +6099,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:東横線 -> tokyu:田園都市線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AC011B",
+            "rightPublicNumber": "81AA011B",
+            "samePublicNumber": false,
+            "leftThroughCode": "11B",
+            "rightThroughCode": "11B",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01ac011b_2026-04-15:837dc94394",
           "sourceFeedKey": "v3_release_candidate",
@@ -4557,6 +6139,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:東横線 -> tokyu:田園都市線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AC011C",
+            "rightPublicNumber": "81AA011C",
+            "samePublicNumber": false,
+            "leftThroughCode": "11C",
+            "rightThroughCode": "11C",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01ac011c_2026-04-15:391cd59ee8",
           "sourceFeedKey": "v3_release_candidate",
@@ -4582,6 +6179,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:東横線 -> tokyu:田園都市線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AC011D",
+            "rightPublicNumber": "81AA011D",
+            "samePublicNumber": false,
+            "leftThroughCode": "11D",
+            "rightThroughCode": "11D",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01ac011d_2026-04-15:8d7ec493bb",
           "sourceFeedKey": "v3_release_candidate",
@@ -4607,6 +6219,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:東横線 -> tokyu:田園都市線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AC012A",
+            "rightPublicNumber": "81AA012A",
+            "samePublicNumber": false,
+            "leftThroughCode": "12A",
+            "rightThroughCode": "12A",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01ac012a_2026-04-15:ae3cc73b42",
           "sourceFeedKey": "v3_release_candidate",
@@ -4632,6 +6259,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:東横線 -> tokyu:田園都市線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AC012B",
+            "rightPublicNumber": "81AA012B",
+            "samePublicNumber": false,
+            "leftThroughCode": "12B",
+            "rightThroughCode": "12B",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01ac012b_2026-04-15:11035c6a8a",
           "sourceFeedKey": "v3_release_candidate",
@@ -4657,6 +6299,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:東横線 -> tokyu:田園都市線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AC012C",
+            "rightPublicNumber": "81AA012C",
+            "samePublicNumber": false,
+            "leftThroughCode": "12C",
+            "rightThroughCode": "12C",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01ac012c_2026-04-15:55d29d13c1",
           "sourceFeedKey": "v3_release_candidate",
@@ -4682,6 +6339,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:東横線 -> tokyu:田園都市線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AC012D",
+            "rightPublicNumber": "81AA012D",
+            "samePublicNumber": false,
+            "leftThroughCode": "12D",
+            "rightThroughCode": "12D",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01ac012d_2026-04-15:647dd3031b",
           "sourceFeedKey": "v3_release_candidate",
@@ -4707,6 +6379,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:東横線 -> tokyu:田園都市線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AC012E",
+            "rightPublicNumber": "81AA012E",
+            "samePublicNumber": false,
+            "leftThroughCode": "12E",
+            "rightThroughCode": "12E",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01ac012e_2026-04-15:26d26f3934",
           "sourceFeedKey": "v3_release_candidate",
@@ -4732,6 +6419,21 @@
         "strength": "browser_code",
         "classification": "likely_reused_number_or_data_context",
         "browserStitchable": false,
+        "decision": {
+          "sameStationGroup": true,
+          "maxGapSec": 300,
+          "gapWithinLimit": true,
+          "routePair": "tokyu:東横線 -> tokyu:田園都市線",
+          "trainNumberEvidence": {
+            "leftPublicNumber": "01AC013D",
+            "rightPublicNumber": "81AA013D",
+            "samePublicNumber": false,
+            "leftThroughCode": "13D",
+            "rightThroughCode": "13D",
+            "throughCodesCompatible": true
+          },
+          "reason": "kept out of UI by reviewed false-positive/data-context rule at 渋谷 for ['東横線', '田園都市線']"
+        },
         "left": {
           "tripId": "tokyu:01ac013d_2026-04-15:b3d5720767",
           "sourceFeedKey": "v3_release_candidate",
