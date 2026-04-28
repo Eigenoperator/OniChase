@@ -1782,6 +1782,14 @@
       '土浦', '神立', '高浜', '石岡', '羽鳥', '岩間', '友部', '内原', '赤塚',
       '水戸', '勝田', '佐和', '東海', '大甕', '常陸多賀', '日立', '小木津', '十王', '高萩',
     ]);
+    const UENO_TOKYO_OMIYA_UTSUNOMIYA_NEXT_STATIONS = new Set([
+      '土呂', '東大宮', '蓮田', '白岡', '久喜', '栗橋', '古河', '野木', '間々田',
+      '小山', '小金井', '自治医大', '石橋', '雀宮', '宇都宮',
+    ]);
+    const UENO_TOKYO_OMIYA_TAKASAKI_NEXT_STATIONS = new Set([
+      '宮原', '上尾', '桶川', '北本', '鴻巣', '熊谷', '籠原', '深谷', '本庄',
+      '新町', '倉賀野', '高崎', '新前橋', '前橋',
+    ]);
     const UENO_TOKYO_NORTH_STATIONS = new Set(['東京', '上野', '尾久', '赤羽', '浦和', 'さいたま新都心', '大宮', '小山', '小金井', '宇都宮', '籠原', '熊谷', '高崎', '取手', '土浦', '水戸', '勝田']);
     const UENO_TOKYO_TRIP_ROUTE_NAMES = new Set([
       '東海道線', '東北線', '東北本線', '宇都宮線', '高崎線', '常磐線',
@@ -2743,16 +2751,38 @@
     function yokosukaSobuRapidChoiceRouteId(entry) {
       const trip = entry?.trip || entry;
       const boardStop = entry?.boardStop || entry?.stop || null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
+      const isSobuRapidUndergroundMovement =
+        SOBU_RAPID_UNDERGROUND_BRANCH_STATIONS.has(boardName) &&
+        (YOKOSUKA_SOBU_RAPID_SIGNATURE_STATIONS.has(nextName) || SOBU_RAPID_UNDERGROUND_BRANCH_STATIONS.has(nextName));
       return isYokosukaSobuRapidTrip(trip) &&
-        (!boardStop || boardingFaceHasAny(trip, boardStop, YOKOSUKA_SOBU_RAPID_PHYSICAL_ROUTE_NAMES))
+        (!boardStop || isSobuRapidUndergroundMovement || boardingFaceHasAny(trip, boardStop, YOKOSUKA_SOBU_RAPID_PHYSICAL_ROUTE_NAMES))
         ? JR_YOKOSUKA_SOBU_RAPID_CORRIDOR_ROUTE_ID
         : null;
+    }
+
+    function omiyaUenoTokyoBranchChoiceRouteId(trip, boardStop) {
+      if (!isJrEastConventionalTrip(trip) || !boardStop) return null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      if (boardName !== '大宮') return null;
+      const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
+      if (UENO_TOKYO_OMIYA_UTSUNOMIYA_NEXT_STATIONS.has(nextName)) {
+        return routeIdByShortNameAndOperator('東北線', 'jr_east') ||
+          routeIdByShortNameAndOperator('宇都宮線', 'jr_east');
+      }
+      if (UENO_TOKYO_OMIYA_TAKASAKI_NEXT_STATIONS.has(nextName)) {
+        return routeIdByShortNameAndOperator('高崎線', 'jr_east');
+      }
+      return null;
     }
 
     function jrEastCorridorChoiceRouteId(entry) {
       const trip = entry?.trip || entry;
       if (isKeihinTohokuNegishiTrip(trip)) return JR_KEIHIN_TOHOKU_NEGISHI_ROUTE_ID;
       const boardStop = entry?.boardStop || entry?.stop || null;
+      const omiyaBranchRouteId = omiyaUenoTokyoBranchChoiceRouteId(trip, boardStop);
+      if (omiyaBranchRouteId) return omiyaBranchRouteId;
       const boardName = stationDisplayNameForStop(boardStop);
       const route = tripRoute(trip);
       const sameUenoTokyoBoardingFace = boardingFaceHasAny(trip, boardStop, UENO_TOKYO_BOARDING_FACE_ROUTE_NAMES);
@@ -3598,6 +3628,7 @@
     }
 
     function nextStopAfter(trip, boardStop) {
+      if (!trip || !boardStop) return null;
       return (trip?.stopTimes || []).find((stop) => stop.sequence > boardStop.sequence) || null;
     }
 
@@ -3621,12 +3652,27 @@
       return boundary?.routeId || null;
     }
 
+    function routeServesAdjacentStops(routeId, currentStop, nextStop) {
+      if (!routeId || !state.routeById.has(routeId) || !currentStop?.stationGroupId) return false;
+      if (!routePatternServesPlannerBoardingStation(routeId, currentStop.stationGroupId)) return false;
+      return !nextStop?.stationGroupId || routePatternServesPlannerBoardingStation(routeId, nextStop.stationGroupId);
+    }
+
     function tracedRouteIdsForTripStop(trip, boardStop) {
-      if (boardStop?.outgoingRouteId && state.routeById.has(boardStop.outgoingRouteId)) return [boardStop.outgoingRouteId];
-      if (boardStop?.displayRouteId && state.routeById.has(boardStop.displayRouteId)) return [boardStop.displayRouteId];
       const nextStop = nextStopAfter(trip, boardStop);
-      const routeId = tracedRouteIdForTripSegment(trip, boardStop, nextStop);
-      return routeId ? [routeId] : [];
+      const candidateRouteIds = [
+        tracedRouteIdForTripSegment(trip, boardStop, nextStop),
+        boardStop?.outgoingRouteId,
+        boardStop?.displayRouteId,
+        nextStop?.incomingRouteId,
+        nextStop?.displayRouteId,
+      ].filter(Boolean);
+      for (const routeId of candidateRouteIds) {
+        if (routeServesAdjacentStops(routeId, boardStop, nextStop)) return [routeId];
+      }
+      if (nextStop) return [];
+      const fallbackRouteId = candidateRouteIds.find((routeId) => state.routeById.has(routeId));
+      return fallbackRouteId ? [fallbackRouteId] : [];
     }
 
     function routeCanRepresentTripDeparture(trip, boardStop, routeId) {
@@ -5700,6 +5746,8 @@
     function routeChoicesFromDepartures(departures) {
       const byRoute = new Map();
       departures.forEach((entry) => {
+        const boardStop = entry?.boardStop || entry?.stop || null;
+        if (!hasDownstreamStop(entry?.trip, boardStop)) return;
         const entryRouteIds = routeChoiceIdsForDeparture(entry);
         entryRouteIds.forEach((routeId) => {
           if (isThroughServiceTransferAlias(routeId) && !isShinkansenCorridorRoute(routeId)) return;
@@ -5742,7 +5790,19 @@
         ? entry.routeIds
         : tracedRouteIdsForTripStop(entry?.trip, entry?.boardStop || entry?.stop || null)
       ).filter((routeId) => !isThroughServiceTransferAlias(routeId));
-      if (stopRouteIds.length) return stopRouteIds;
+      const filteredStopRouteIds = stopRouteIds.filter((routeId) => {
+        const stopRoute = state.routeById.get(routeId);
+        if (
+          tripRoute?.operatorId === 'jr_east' &&
+          stopRoute?.operatorId === 'jr_east' &&
+          UENO_TOKYO_BOARDING_FACE_ROUTE_NAMES.has(stopRoute?.shortName) &&
+          !UENO_TOKYO_TRIP_ROUTE_NAMES.has(tripRoute?.shortName)
+        ) {
+          return false;
+        }
+        return true;
+      });
+      if (filteredStopRouteIds.length) return filteredStopRouteIds;
       if (tripRouteId && !isThroughServiceTransferAlias(tripRouteId)) return [tripRouteId];
       return (entry?.routeIds || []).filter((routeId) => !isThroughServiceTransferAlias(routeId));
     }
