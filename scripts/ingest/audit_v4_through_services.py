@@ -59,6 +59,13 @@ LIKELY_FALSE_POSITIVE_SPLIT_RULES = [
     {"station": "新宿", "routes": ("10号線新宿線", "東北線"), "classification": "likely_reused_number_or_data_context"},
     {"station": "新宿", "routes": ("川越線", "10号線新宿線"), "classification": "likely_reused_number_or_data_context"},
 ]
+CHUO_RAPID_CORRIDOR_ROUTE_NAMES = {"中央線", "青梅線", "5号線東西線", "東西線", "五日市線"}
+OME_BRANCH_STATIONS = {
+    "立川", "西立川", "東中神", "中神", "昭島", "拝島", "牛浜", "福生",
+    "羽村", "小作", "河辺", "東青梅", "青梅", "宮ノ平", "日向和田",
+    "石神前", "二俣尾", "軍畑", "沢井", "御嶽", "川井", "古里",
+    "鳩ノ巣", "白丸", "奥多摩",
+}
 
 
 def load_json(path: Path) -> Any:
@@ -189,6 +196,49 @@ def trip_trace_route_names(routes: dict[str, dict[str, Any]], trip: dict[str, An
         route = routes.get(route_id) or {}
         names.append(str(trace.get("lineName") or route.get("shortName") or (route.get("tags") or {}).get("lineName") or ""))
     return [name for name in names if name]
+
+
+def next_trip_stop(trip: dict[str, Any], stop: dict[str, Any]) -> dict[str, Any] | None:
+    sequence = int(stop.get("sequence") or 0)
+    return next(
+        (candidate for candidate in trip.get("stopTimes") or [] if int(candidate.get("sequence") or 0) > sequence),
+        None,
+    )
+
+
+def stop_display_route_id(stop: dict[str, Any], trip: dict[str, Any]) -> str:
+    return str(stop.get("outgoingRouteId") or stop.get("displayRouteId") or trip.get("routeId") or "")
+
+
+def is_chuo_ome_branch_segment(
+    station_groups: dict[str, dict[str, Any]],
+    routes: dict[str, dict[str, Any]],
+    trip: dict[str, Any],
+    stop: dict[str, Any],
+) -> bool:
+    next_stop = next_trip_stop(trip, stop)
+    if not next_stop:
+        return False
+    board_name = stop_station_name(station_groups, stop)
+    next_name = stop_station_name(station_groups, next_stop)
+    if board_name not in OME_BRANCH_STATIONS or next_name not in OME_BRANCH_STATIONS:
+        return False
+    route_names = {route_title(routes.get(str(trip.get("routeId") or "")), str(trip.get("routeId") or ""))}
+    route_names.update(trip_trace_route_names(routes, trip))
+    route_names.add(route_title(routes.get(stop_display_route_id(stop, trip)), stop_display_route_id(stop, trip)))
+    return bool(route_names & CHUO_RAPID_CORRIDOR_ROUTE_NAMES)
+
+
+def player_facing_route_title(
+    station_groups: dict[str, dict[str, Any]],
+    routes: dict[str, dict[str, Any]],
+    trip: dict[str, Any],
+    stop: dict[str, Any],
+) -> str:
+    if is_chuo_ome_branch_segment(station_groups, routes, trip, stop):
+        return "青梅線"
+    route_id = stop_display_route_id(stop, trip)
+    return route_title(routes.get(route_id), route_id)
 
 
 def terminal_trace_has_any(routes: dict[str, dict[str, Any]], trip: dict[str, Any], terminal: str, names: set[str]) -> bool:
@@ -575,6 +625,113 @@ def audit_split_candidates(
     }
 
 
+def audit_player_facing_departures(
+    station_groups: dict[str, dict[str, Any]],
+    routes: dict[str, dict[str, Any]],
+    trips: list[dict[str, Any]],
+) -> dict[str, Any]:
+    display_conflict_counts: Counter[str] = Counter()
+    display_conflict_samples: list[dict[str, Any]] = []
+    rows_by_logical_departure: dict[tuple[str, str, int, str, str], list[dict[str, Any]]] = defaultdict(list)
+
+    for trip in trips:
+        stops = trip.get("stopTimes") or []
+        for stop in stops:
+            departure = stop_time_sec(stop, "departure")
+            if departure is None or not stop.get("stationGroupId"):
+                continue
+            next_stop = next_trip_stop(trip, stop)
+            if not next_stop:
+                continue
+            station_group_id = str(stop.get("stationGroupId") or "")
+            station_name = stop_station_name(station_groups, stop)
+            next_station_name = stop_station_name(station_groups, next_stop)
+            raw_display_route_id = stop_display_route_id(stop, trip)
+            raw_display_route = route_title(routes.get(raw_display_route_id), raw_display_route_id)
+            player_route = player_facing_route_title(station_groups, routes, trip, stop)
+
+            if is_chuo_ome_branch_segment(station_groups, routes, trip, stop) and raw_display_route != "青梅線":
+                pair = f"{station_name} -> {next_station_name}: {raw_display_route} should display as 青梅線"
+                display_conflict_counts[pair] += 1
+                add_sample(
+                    display_conflict_samples,
+                    {
+                        "kind": "branch_segment_display_route_conflict",
+                        "tripId": trip.get("id"),
+                        "sourceFeedKey": trip.get("sourceFeedKey"),
+                        "serviceName": trip.get("serviceName"),
+                        "serviceNumber": public_train_number(trip),
+                        "station": station_name,
+                        "nextStation": next_station_name,
+                        "time": seconds_to_hhmm(departure),
+                        "tripRoute": route_title(routes.get(str(trip.get("routeId") or "")), str(trip.get("routeId") or "")),
+                        "rawDisplayRoute": raw_display_route,
+                        "expectedPlayerRoute": "青梅線",
+                        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here.",
+                    },
+                )
+
+            logical_key = (
+                station_group_id,
+                player_route,
+                departure,
+                public_train_number(trip),
+                next_station_name,
+            )
+            rows_by_logical_departure[logical_key].append(
+                {
+                    "tripId": trip.get("id"),
+                    "sourceFeedKey": trip.get("sourceFeedKey"),
+                    "serviceName": trip.get("serviceName"),
+                    "serviceNumber": public_train_number(trip),
+                    "tripRoute": route_title(routes.get(str(trip.get("routeId") or "")), str(trip.get("routeId") or "")),
+                    "rawDisplayRoute": raw_display_route,
+                    "playerRoute": player_route,
+                }
+            )
+
+    duplicate_counts: Counter[str] = Counter()
+    duplicate_samples: list[dict[str, Any]] = []
+    for (station_group_id, player_route, departure, service_number, next_station_name), rows in rows_by_logical_departure.items():
+        if len(rows) < 2 or not service_number:
+            continue
+        distinct_trip_ids = {str(row.get("tripId") or "") for row in rows}
+        distinct_sources = {str(row.get("sourceFeedKey") or "") for row in rows}
+        if len(distinct_trip_ids) < 2:
+            continue
+        station_name = station_title(station_groups.get(station_group_id), station_group_id)
+        label = f"{station_name} {seconds_to_hhmm(departure)} {player_route} {service_number} -> {next_station_name}"
+        duplicate_counts[label] += len(rows)
+        add_sample(
+            duplicate_samples,
+            {
+                "kind": "player_facing_duplicate_departure",
+                "station": station_name,
+                "time": seconds_to_hhmm(departure),
+                "playerRoute": player_route,
+                "serviceNumber": service_number,
+                "nextStation": next_station_name,
+                "rowCount": len(rows),
+                "sourceCount": len(distinct_sources),
+                "rows": rows[:8],
+                "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels.",
+            },
+        )
+
+    return {
+        "counts": {
+            "branchSegmentDisplayRouteConflictCount": sum(display_conflict_counts.values()),
+            "playerFacingDuplicateDepartureGroupCount": len(duplicate_counts),
+            "playerFacingDuplicateDepartureRowCount": sum(duplicate_counts.values()),
+        },
+        "topBranchSegmentDisplayRouteConflicts": dict(display_conflict_counts.most_common(100)),
+        "branchSegmentDisplayRouteConflictSamples": display_conflict_samples,
+        "topPlayerFacingDuplicateDepartures": dict(duplicate_counts.most_common(100)),
+        "playerFacingDuplicateDepartureSamples": duplicate_samples,
+        "note": "Player-facing audit normalizes physical branch segments before checking duplicates, matching the browser route-choice intent.",
+    }
+
+
 def add_virtual_corridor_routes(routes: dict[str, dict[str, Any]]) -> None:
     routes.setdefault(
         "VIRTUAL_JR_EAST_YOKOSUKA_SOBU_RAPID",
@@ -616,6 +773,7 @@ def main() -> int:
         station_groups, routes, trips
     )
     split = audit_split_candidates(station_groups, routes, trips, args.max_gap_sec)
+    player_facing = audit_player_facing_departures(station_groups, routes, trips)
 
     audit = {
         "schema": "onichase.v4.through_service_audit.v1",
@@ -644,6 +802,11 @@ def main() -> int:
                 "covered_by_existing_browser_rule: current browser stitch logic already handles it.",
                 "needs_review: evidence exists, but no reviewed direct-service decision exists yet.",
             ],
+            "playerFacingDepartures": [
+                "Normalize departures to the line a player should see before route-list and duplicate checks.",
+                "For the Chuo/Ome corridor, if both the boarding station and next station are on the Ome physical branch, the player-facing boarding line is Ome Line even when source displayRouteId says Chuo Line.",
+                "After normalization, group departures by station, player-facing route, departure time, public train number, and next station to expose duplicate rows from overlapping sources.",
+            ],
             "physicalCaution": "AXIOMS still apply: a candidate is not accepted only because of shared station group, shared operator, nearby geometry, or transfer permission.",
         },
         "counts": {
@@ -651,6 +814,7 @@ def main() -> int:
             "internalLineTraceTransitionTripCount": internal_trip_count,
             "internalLineTraceRouteTransitionCount": sum(internal_route_pairs.values()),
             **split["counts"],
+            **player_facing["counts"],
         },
         "internalLineTraceTransitions": {
             "topRoutePairs": dict(internal_route_pairs.most_common(100)),
@@ -669,10 +833,16 @@ def main() -> int:
             for key, value in split.items()
             if key != "counts"
         },
+        "playerFacingDepartures": {
+            key: value
+            for key, value in player_facing.items()
+            if key != "counts"
+        },
         "notes": [
             "internalLineTraceTransitionTripCount means the timetable has one trip with changing segment route ids; review top pairs before treating them as confirmed direct-service rules.",
             "splitCandidateCount means two different trips terminate/start at the same station within maxGapSec and have compatible train-number evidence.",
             "uncoveredSplitCandidateCount is intentionally review-oriented: it may include real direct services not yet covered by browser stitching, plus false positives from reused train numbers.",
+            "branchSegmentDisplayRouteConflictCount catches cases like Ome branch departures whose source stop display route says Chuo Line even though the next physical segment is Ome Line.",
         ],
     }
     write_json(args.output, audit)
@@ -683,7 +853,8 @@ def main() -> int:
         f"{internal_trip_count} internal lineTrace-transition trips, "
         f"{split['counts']['splitCandidateCount']} split candidates, "
         f"{split['counts']['browserStitchableCandidateCount']} browser-stitchable, "
-        f"{split['counts']['uncoveredSplitCandidateCount']} uncovered candidates"
+        f"{split['counts']['uncoveredSplitCandidateCount']} uncovered candidates, "
+        f"{player_facing['counts']['branchSegmentDisplayRouteConflictCount']} branch display conflicts"
     )
     print(f"wrote {rel(args.output)}")
     return 0

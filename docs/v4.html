@@ -2784,6 +2784,11 @@
         .map((routeId) => state.routeById.get(routeId)?.shortName)
         .filter(Boolean);
       const boardName = stationDisplayNameForStop(boardStop);
+      const nextStop = nextStopAfter(trip, boardStop);
+      const nextName = nextStop ? stationDisplayNameForStop(nextStop) : '';
+      if (OME_BRANCH_STATIONS.has(boardName) && OME_BRANCH_STATIONS.has(nextName)) {
+        return routeIdByShortNameAndOperator('青梅線', 'jr_east');
+      }
       if (OME_BRANCH_STATIONS.has(boardName) && boardTraceNames.length) {
         if (boardTraceNames.includes('青梅線')) return routeIdByShortNameAndOperator('青梅線', 'jr_east');
         if (boardTraceNames.includes('中央線')) return routeIdByShortNameAndOperator('中央線', 'jr_east');
@@ -4582,6 +4587,7 @@
         const logicalRouteKey = routeChoiceIdsForDeparture(entry).join('+') || entry.trip.routeId || '';
         const usesLooseLogicalKey = logicalRouteKey.startsWith('VIRTUAL_') ||
           logicalRouteKey === routeIdByShortNameAndOperator('中央線', 'jr_east') ||
+          logicalRouteKey === routeIdByShortNameAndOperator('青梅線', 'jr_east') ||
           logicalRouteKey === JR_CHUO_RAPID_ROUTE_ID ||
           logicalRouteKey === JR_CHUO_SOBU_LOCAL_ROUTE_ID;
         const stops = entry.trip.stopTimes || [];
@@ -4591,6 +4597,7 @@
               logicalRouteKey,
               displayNameForGroup(entry.boardStop.stationGroupId),
               entry.departureMinute,
+              publicTripNumber(entry.trip),
               stops[0] ? displayNameForGroup(stops[0].stationGroupId) : '',
               stops.at(-1) ? displayNameForGroup(stops.at(-1).stationGroupId) : '',
               nextStop ? displayNameForGroup(nextStop.stationGroupId) : '',

@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v4.through_service_audit.v1",
-  "generatedAt": "2026-04-28T21:00:08+00:00",
+  "generatedAt": "2026-04-28T21:06:20+00:00",
   "inputs": {
     "mapBundle": "data/v4_gameplay_map_bundle.json.gz",
     "timetable": "data/v4_gameplay_timetable_bundle.json.gz",
@@ -25,6 +25,11 @@
       "covered_by_existing_browser_rule: current browser stitch logic already handles it.",
       "needs_review: evidence exists, but no reviewed direct-service decision exists yet."
     ],
+    "playerFacingDepartures": [
+      "Normalize departures to the line a player should see before route-list and duplicate checks.",
+      "For the Chuo/Ome corridor, if both the boarding station and next station are on the Ome physical branch, the player-facing boarding line is Ome Line even when source displayRouteId says Chuo Line.",
+      "After normalization, group departures by station, player-facing route, departure time, public train number, and next station to expose duplicate rows from overlapping sources."
+    ],
     "physicalCaution": "AXIOMS still apply: a candidate is not accepted only because of shared station group, shared operator, nearby geometry, or transfer permission."
   },
   "counts": {
@@ -33,7 +38,10 @@
     "internalLineTraceRouteTransitionCount": 174470,
     "splitCandidateCount": 1026,
     "browserStitchableCandidateCount": 994,
-    "uncoveredSplitCandidateCount": 32
+    "uncoveredSplitCandidateCount": 32,
+    "branchSegmentDisplayRouteConflictCount": 1901,
+    "playerFacingDuplicateDepartureGroupCount": 41658,
+    "playerFacingDuplicateDepartureRowCount": 86376
   },
   "internalLineTraceTransitions": {
     "topRoutePairs": {
@@ -6455,9 +6463,3748 @@
       }
     ]
   },
+  "playerFacingDepartures": {
+    "topBranchSegmentDisplayRouteConflicts": {
+      "拝島 -> 昭島: 五日市線 should display as 青梅線": 135,
+      "立川 -> 西立川: 中央線 should display as 青梅線": 129,
+      "河辺 -> 小作: 中央線 should display as 青梅線": 69,
+      "小作 -> 羽村: 中央線 should display as 青梅線": 69,
+      "羽村 -> 福生: 中央線 should display as 青梅線": 69,
+      "福生 -> 牛浜: 中央線 should display as 青梅線": 69,
+      "牛浜 -> 拝島: 中央線 should display as 青梅線": 69,
+      "拝島 -> 昭島: 中央線 should display as 青梅線": 69,
+      "昭島 -> 中神: 中央線 should display as 青梅線": 69,
+      "中神 -> 東中神: 中央線 should display as 青梅線": 69,
+      "東中神 -> 西立川: 中央線 should display as 青梅線": 69,
+      "西立川 -> 立川: 中央線 should display as 青梅線": 69,
+      "青梅 -> 東青梅: 中央線 should display as 青梅線": 68,
+      "東青梅 -> 河辺: 中央線 should display as 青梅線": 68,
+      "拝島 -> 牛浜: 五日市線 should display as 青梅線": 67,
+      "西立川 -> 東中神: 中央線 should display as 青梅線": 62,
+      "東中神 -> 中神: 中央線 should display as 青梅線": 62,
+      "中神 -> 昭島: 中央線 should display as 青梅線": 62,
+      "昭島 -> 拝島: 中央線 should display as 青梅線": 62,
+      "拝島 -> 牛浜: 中央線 should display as 青梅線": 62,
+      "牛浜 -> 福生: 中央線 should display as 青梅線": 62,
+      "福生 -> 羽村: 中央線 should display as 青梅線": 62,
+      "羽村 -> 小作: 中央線 should display as 青梅線": 62,
+      "小作 -> 河辺: 中央線 should display as 青梅線": 62,
+      "河辺 -> 東青梅: 中央線 should display as 青梅線": 62,
+      "東青梅 -> 青梅: 中央線 should display as 青梅線": 62,
+      "拝島 -> 牛浜: 拝島線 should display as 青梅線": 62
+    },
+    "branchSegmentDisplayRouteConflictSamples": [
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1004H:c82534c85a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1004H",
+        "station": "青梅",
+        "nextStation": "東青梅",
+        "time": "10:42",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1004H:c82534c85a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1004H",
+        "station": "東青梅",
+        "nextStation": "河辺",
+        "time": "10:45",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1004H:c82534c85a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1004H",
+        "station": "河辺",
+        "nextStation": "小作",
+        "time": "10:47",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1004H:c82534c85a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1004H",
+        "station": "小作",
+        "nextStation": "羽村",
+        "time": "10:50",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1004H:c82534c85a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1004H",
+        "station": "羽村",
+        "nextStation": "福生",
+        "time": "10:53",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1004H:c82534c85a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1004H",
+        "station": "福生",
+        "nextStation": "牛浜",
+        "time": "10:55",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1004H:c82534c85a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1004H",
+        "station": "牛浜",
+        "nextStation": "拝島",
+        "time": "10:57",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1004H:c82534c85a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1004H",
+        "station": "拝島",
+        "nextStation": "昭島",
+        "time": "11:00",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1004H:c82534c85a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1004H",
+        "station": "昭島",
+        "nextStation": "中神",
+        "time": "11:03",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1004H:c82534c85a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1004H",
+        "station": "中神",
+        "nextStation": "東中神",
+        "time": "11:05",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1004H:c82534c85a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1004H",
+        "station": "東中神",
+        "nextStation": "西立川",
+        "time": "11:07",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1004H:c82534c85a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1004H",
+        "station": "西立川",
+        "nextStation": "立川",
+        "time": "11:09",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1010H:ba0441815c",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1010H",
+        "station": "青梅",
+        "nextStation": "東青梅",
+        "time": "10:56",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1010H:ba0441815c",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1010H",
+        "station": "東青梅",
+        "nextStation": "河辺",
+        "time": "10:59",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1010H:ba0441815c",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1010H",
+        "station": "河辺",
+        "nextStation": "小作",
+        "time": "11:01",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1010H:ba0441815c",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1010H",
+        "station": "小作",
+        "nextStation": "羽村",
+        "time": "11:04",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1010H:ba0441815c",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1010H",
+        "station": "羽村",
+        "nextStation": "福生",
+        "time": "11:07",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1010H:ba0441815c",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1010H",
+        "station": "福生",
+        "nextStation": "牛浜",
+        "time": "11:09",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1010H:ba0441815c",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1010H",
+        "station": "牛浜",
+        "nextStation": "拝島",
+        "time": "11:11",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1010H:ba0441815c",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1010H",
+        "station": "拝島",
+        "nextStation": "昭島",
+        "time": "11:14",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1010H:ba0441815c",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1010H",
+        "station": "昭島",
+        "nextStation": "中神",
+        "time": "11:17",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1010H:ba0441815c",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1010H",
+        "station": "中神",
+        "nextStation": "東中神",
+        "time": "11:19",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1010H:ba0441815c",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1010H",
+        "station": "東中神",
+        "nextStation": "西立川",
+        "time": "11:21",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1010H:ba0441815c",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1010H",
+        "station": "西立川",
+        "nextStation": "立川",
+        "time": "11:22",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1024T:89d9f808f1",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1024T",
+        "station": "青梅",
+        "nextStation": "東青梅",
+        "time": "10:03",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1024T:89d9f808f1",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1024T",
+        "station": "東青梅",
+        "nextStation": "河辺",
+        "time": "10:05",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1024T:89d9f808f1",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1024T",
+        "station": "河辺",
+        "nextStation": "小作",
+        "time": "10:10",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1024T:89d9f808f1",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1024T",
+        "station": "小作",
+        "nextStation": "羽村",
+        "time": "10:13",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1024T:89d9f808f1",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1024T",
+        "station": "羽村",
+        "nextStation": "福生",
+        "time": "10:16",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1024T:89d9f808f1",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1024T",
+        "station": "福生",
+        "nextStation": "牛浜",
+        "time": "10:18",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1024T:89d9f808f1",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1024T",
+        "station": "牛浜",
+        "nextStation": "拝島",
+        "time": "10:20",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1024T:89d9f808f1",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1024T",
+        "station": "拝島",
+        "nextStation": "昭島",
+        "time": "10:26",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1024T:89d9f808f1",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1024T",
+        "station": "昭島",
+        "nextStation": "中神",
+        "time": "10:29",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1024T:89d9f808f1",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1024T",
+        "station": "中神",
+        "nextStation": "東中神",
+        "time": "10:31",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1024T:89d9f808f1",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1024T",
+        "station": "東中神",
+        "nextStation": "西立川",
+        "time": "10:33",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1024T:89d9f808f1",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1024T",
+        "station": "西立川",
+        "nextStation": "立川",
+        "time": "10:35",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1034T:0ad639ab0f",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1034T",
+        "station": "青梅",
+        "nextStation": "東青梅",
+        "time": "10:19",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1034T:0ad639ab0f",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1034T",
+        "station": "東青梅",
+        "nextStation": "河辺",
+        "time": "10:22",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1034T:0ad639ab0f",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1034T",
+        "station": "河辺",
+        "nextStation": "小作",
+        "time": "10:24",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1034T:0ad639ab0f",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1034T",
+        "station": "小作",
+        "nextStation": "羽村",
+        "time": "10:27",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1034T:0ad639ab0f",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1034T",
+        "station": "羽村",
+        "nextStation": "福生",
+        "time": "10:30",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1034T:0ad639ab0f",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1034T",
+        "station": "福生",
+        "nextStation": "牛浜",
+        "time": "10:32",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1034T:0ad639ab0f",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1034T",
+        "station": "牛浜",
+        "nextStation": "拝島",
+        "time": "10:34",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1034T:0ad639ab0f",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1034T",
+        "station": "拝島",
+        "nextStation": "昭島",
+        "time": "10:37",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1034T:0ad639ab0f",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1034T",
+        "station": "昭島",
+        "nextStation": "中神",
+        "time": "10:40",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1034T:0ad639ab0f",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1034T",
+        "station": "中神",
+        "nextStation": "東中神",
+        "time": "10:42",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1034T:0ad639ab0f",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1034T",
+        "station": "東中神",
+        "nextStation": "西立川",
+        "time": "10:44",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1034T:0ad639ab0f",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1034T",
+        "station": "西立川",
+        "nextStation": "立川",
+        "time": "10:45",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1087T:6aad76c60a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1087T",
+        "station": "立川",
+        "nextStation": "西立川",
+        "time": "11:40",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1087T:6aad76c60a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1087T",
+        "station": "西立川",
+        "nextStation": "東中神",
+        "time": "11:43",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1087T:6aad76c60a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1087T",
+        "station": "東中神",
+        "nextStation": "中神",
+        "time": "11:45",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1087T:6aad76c60a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1087T",
+        "station": "中神",
+        "nextStation": "昭島",
+        "time": "11:47",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1087T:6aad76c60a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1087T",
+        "station": "昭島",
+        "nextStation": "拝島",
+        "time": "11:49",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1087T:6aad76c60a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1087T",
+        "station": "拝島",
+        "nextStation": "牛浜",
+        "time": "11:54",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1087T:6aad76c60a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1087T",
+        "station": "牛浜",
+        "nextStation": "福生",
+        "time": "11:57",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1087T:6aad76c60a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1087T",
+        "station": "福生",
+        "nextStation": "羽村",
+        "time": "11:59",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1087T:6aad76c60a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1087T",
+        "station": "羽村",
+        "nextStation": "小作",
+        "time": "12:01",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1087T:6aad76c60a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1087T",
+        "station": "小作",
+        "nextStation": "河辺",
+        "time": "12:04",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1087T:6aad76c60a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1087T",
+        "station": "河辺",
+        "nextStation": "東青梅",
+        "time": "12:07",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1087T:6aad76c60a",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1087T",
+        "station": "東青梅",
+        "nextStation": "青梅",
+        "time": "12:09",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1091T:c0634289fc",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1091T",
+        "station": "立川",
+        "nextStation": "西立川",
+        "time": "11:04",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1091T:c0634289fc",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1091T",
+        "station": "西立川",
+        "nextStation": "東中神",
+        "time": "11:08",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1091T:c0634289fc",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1091T",
+        "station": "東中神",
+        "nextStation": "中神",
+        "time": "11:10",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1091T:c0634289fc",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1091T",
+        "station": "中神",
+        "nextStation": "昭島",
+        "time": "11:12",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1091T:c0634289fc",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1091T",
+        "station": "昭島",
+        "nextStation": "拝島",
+        "time": "11:14",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1091T:c0634289fc",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1091T",
+        "station": "拝島",
+        "nextStation": "牛浜",
+        "time": "11:17",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1091T:c0634289fc",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1091T",
+        "station": "牛浜",
+        "nextStation": "福生",
+        "time": "11:20",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1091T:c0634289fc",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1091T",
+        "station": "福生",
+        "nextStation": "羽村",
+        "time": "11:21",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1091T:c0634289fc",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1091T",
+        "station": "羽村",
+        "nextStation": "小作",
+        "time": "11:24",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1091T:c0634289fc",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1091T",
+        "station": "小作",
+        "nextStation": "河辺",
+        "time": "11:27",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1091T:c0634289fc",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1091T",
+        "station": "河辺",
+        "nextStation": "東青梅",
+        "time": "11:30",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1091T:c0634289fc",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "青梅線",
+        "serviceNumber": "1091T",
+        "station": "東青梅",
+        "nextStation": "青梅",
+        "time": "11:32",
+        "tripRoute": "青梅線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1099T:33648c3a4e",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1099T",
+        "station": "立川",
+        "nextStation": "西立川",
+        "time": "11:17",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1099T:33648c3a4e",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1099T",
+        "station": "西立川",
+        "nextStation": "東中神",
+        "time": "11:21",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1099T:33648c3a4e",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1099T",
+        "station": "東中神",
+        "nextStation": "中神",
+        "time": "11:23",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1099T:33648c3a4e",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1099T",
+        "station": "中神",
+        "nextStation": "昭島",
+        "time": "11:25",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1099T:33648c3a4e",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1099T",
+        "station": "昭島",
+        "nextStation": "拝島",
+        "time": "11:27",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1099T:33648c3a4e",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1099T",
+        "station": "拝島",
+        "nextStation": "牛浜",
+        "time": "11:30",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1099T:33648c3a4e",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1099T",
+        "station": "牛浜",
+        "nextStation": "福生",
+        "time": "11:33",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      },
+      {
+        "kind": "branch_segment_display_route_conflict",
+        "tripId": "jr_east:1099T:33648c3a4e",
+        "sourceFeedKey": "v3_release_candidate",
+        "serviceName": "中央線",
+        "serviceNumber": "1099T",
+        "station": "福生",
+        "nextStation": "羽村",
+        "time": "11:34",
+        "tripRoute": "中央線",
+        "rawDisplayRoute": "中央線",
+        "expectedPlayerRoute": "青梅線",
+        "reason": "Both the boarding stop and next stop are on the Ome physical branch; the player-facing boarding line must not be Central Line here."
+      }
+    ],
+    "topPlayerFacingDuplicateDepartures": {
+      "高円寺 10:56 中央線 1003H -> 阿佐ヶ谷": 3,
+      "阿佐ヶ谷 10:58 中央線 1003H -> 荻窪": 3,
+      "西荻窪 11:03 中央線 1003H -> 吉祥寺": 3,
+      "三鷹 11:08 中央線 1003H -> 武蔵境": 3,
+      "武蔵境 11:10 中央線 1003H -> 東小金井": 3,
+      "東小金井 11:12 中央線 1003H -> 武蔵小金井": 3,
+      "武蔵小金井 11:19 中央線 1003H -> 国分寺": 3,
+      "国立 11:26 中央線 1003H -> 立川": 3,
+      "高円寺 10:46 中央線 1009H -> 阿佐ヶ谷": 3,
+      "阿佐ヶ谷 10:48 中央線 1009H -> 荻窪": 3,
+      "西荻窪 10:52 中央線 1009H -> 吉祥寺": 3,
+      "三鷹 10:57 中央線 1009H -> 武蔵境": 3,
+      "武蔵境 11:00 中央線 1009H -> 東小金井": 3,
+      "東小金井 11:02 中央線 1009H -> 武蔵小金井": 3,
+      "武蔵小金井 11:04 中央線 1009H -> 国分寺": 3,
+      "国立 11:16 中央線 1009H -> 立川": 3,
+      "高円寺 10:31 中央線 1023H -> 阿佐ヶ谷": 3,
+      "阿佐ヶ谷 10:33 中央線 1023H -> 荻窪": 3,
+      "西荻窪 10:37 中央線 1023H -> 吉祥寺": 3,
+      "三鷹 10:45 中央線 1023H -> 武蔵境": 3,
+      "武蔵境 10:48 中央線 1023H -> 東小金井": 3,
+      "東小金井 10:50 中央線 1023H -> 武蔵小金井": 3,
+      "武蔵小金井 10:52 中央線 1023H -> 国分寺": 3,
+      "国立 11:04 中央線 1023H -> 立川": 3,
+      "日野 11:11 中央線 1023H -> 豊田": 3,
+      "豊田 11:14 中央線 1023H -> 八王子": 3,
+      "西八王子 11:21 中央線 1023H -> 高尾": 3,
+      "高円寺 11:11 中央線 1031T -> 阿佐ヶ谷": 3,
+      "阿佐ヶ谷 11:13 中央線 1031T -> 荻窪": 3,
+      "西荻窪 11:17 中央線 1031T -> 吉祥寺": 3,
+      "三鷹 11:27 中央線 1031T -> 武蔵境": 3,
+      "武蔵境 11:29 中央線 1031T -> 東小金井": 3,
+      "東小金井 11:31 中央線 1031T -> 武蔵小金井": 3,
+      "武蔵小金井 11:34 中央線 1031T -> 国分寺": 3,
+      "国立 11:41 中央線 1031T -> 立川": 3,
+      "日野 11:48 中央線 1031T -> 豊田": 3,
+      "高円寺 10:49 中央線 1039T -> 阿佐ヶ谷": 3,
+      "阿佐ヶ谷 10:51 中央線 1039T -> 荻窪": 3,
+      "西荻窪 10:55 中央線 1039T -> 吉祥寺": 3,
+      "三鷹 11:04 中央線 1039T -> 武蔵境": 3,
+      "武蔵境 11:06 中央線 1039T -> 東小金井": 3,
+      "東小金井 11:09 中央線 1039T -> 武蔵小金井": 3,
+      "武蔵小金井 11:11 中央線 1039T -> 国分寺": 3,
+      "国立 11:24 中央線 1039T -> 立川": 3,
+      "日野 11:30 中央線 1039T -> 豊田": 3,
+      "豊田 11:33 中央線 1039T -> 八王子": 3,
+      "西八王子 11:41 中央線 1039T -> 高尾": 3,
+      "高円寺 10:21 中央線 1041T -> 阿佐ヶ谷": 3,
+      "阿佐ヶ谷 10:23 中央線 1041T -> 荻窪": 3,
+      "西荻窪 10:28 中央線 1041T -> 吉祥寺": 3,
+      "三鷹 10:36 中央線 1041T -> 武蔵境": 3,
+      "武蔵境 10:38 中央線 1041T -> 東小金井": 3,
+      "東小金井 10:41 中央線 1041T -> 武蔵小金井": 3,
+      "武蔵小金井 10:43 中央線 1041T -> 国分寺": 3,
+      "国立 10:54 中央線 1041T -> 立川": 3,
+      "日野 11:01 中央線 1041T -> 豊田": 3,
+      "豊田 11:04 中央線 1041T -> 八王子": 3,
+      "西八王子 11:11 中央線 1041T -> 高尾": 3,
+      "三鷹 11:25 中央線 1049T -> 国分寺": 3,
+      "日野 11:41 中央線 1049T -> 豊田": 3,
+      "豊田 11:44 中央線 1049T -> 八王子": 3,
+      "西八王子 11:52 中央線 1049T -> 高尾": 3,
+      "高円寺 11:18 中央線 1053T -> 阿佐ヶ谷": 3,
+      "阿佐ヶ谷 11:20 中央線 1053T -> 荻窪": 3,
+      "西荻窪 11:25 中央線 1053T -> 吉祥寺": 3,
+      "三鷹 11:30 中央線 1053T -> 武蔵境": 3,
+      "武蔵境 11:32 中央線 1053T -> 東小金井": 3,
+      "東小金井 11:34 中央線 1053T -> 武蔵小金井": 3,
+      "武蔵小金井 11:37 中央線 1053T -> 国分寺": 3,
+      "国立 11:48 中央線 1053T -> 立川": 3,
+      "日野 11:59 中央線 1053T -> 豊田": 3,
+      "豊田 12:02 中央線 1053T -> 八王子": 3,
+      "西八王子 12:09 中央線 1053T -> 高尾": 3,
+      "三鷹 10:34 中央線 1085T -> 国分寺": 3,
+      "日野 10:50 中央線 1085T -> 豊田": 3,
+      "豊田 10:53 中央線 1085T -> 八王子": 3,
+      "西八王子 11:01 中央線 1085T -> 高尾": 3,
+      "高円寺 10:59 中央線 1087T -> 阿佐ヶ谷": 3,
+      "阿佐ヶ谷 11:01 中央線 1087T -> 荻窪": 3,
+      "西荻窪 11:05 中央線 1087T -> 吉祥寺": 3,
+      "三鷹 11:15 中央線 1087T -> 武蔵境": 3,
+      "武蔵境 11:17 中央線 1087T -> 東小金井": 3,
+      "東小金井 11:20 中央線 1087T -> 武蔵小金井": 3,
+      "武蔵小金井 11:22 中央線 1087T -> 国分寺": 3,
+      "国立 11:32 中央線 1087T -> 立川": 3,
+      "立川 11:40 青梅線 1087T -> 西立川": 3,
+      "西立川 11:43 青梅線 1087T -> 東中神": 3,
+      "東中神 11:45 青梅線 1087T -> 中神": 3,
+      "中神 11:47 青梅線 1087T -> 昭島": 3,
+      "昭島 11:49 青梅線 1087T -> 拝島": 3,
+      "拝島 11:54 青梅線 1087T -> 牛浜": 3,
+      "牛浜 11:57 青梅線 1087T -> 福生": 3,
+      "福生 11:59 青梅線 1087T -> 羽村": 3,
+      "羽村 12:01 青梅線 1087T -> 小作": 3,
+      "小作 12:04 青梅線 1087T -> 河辺": 3,
+      "河辺 12:07 青梅線 1087T -> 東青梅": 3,
+      "東青梅 12:09 青梅線 1087T -> 青梅": 3,
+      "三鷹 10:51 中央線 1091T -> 国分寺": 3,
+      "立川 11:04 青梅線 1091T -> 西立川": 3,
+      "西立川 11:08 青梅線 1091T -> 東中神": 3
+    },
+    "playerFacingDuplicateDepartureSamples": [
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "08:37",
+        "playerRoute": "花園線",
+        "serviceNumber": "0837",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:0837:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:0837:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "08:41",
+        "playerRoute": "城南線",
+        "serviceNumber": "0837",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:0837:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:0837:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "08:43",
+        "playerRoute": "城南線",
+        "serviceNumber": "0837",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:0837:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:0837:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "08:45",
+        "playerRoute": "城南線",
+        "serviceNumber": "0837",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:0837:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:0837:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "08:48",
+        "playerRoute": "城南線",
+        "serviceNumber": "0837",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:0837:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:0837:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "08:49",
+        "playerRoute": "城南線",
+        "serviceNumber": "0837",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:0837:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:0837:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "09:27",
+        "playerRoute": "花園線",
+        "serviceNumber": "0927",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:0927:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:0927:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "09:31",
+        "playerRoute": "城南線",
+        "serviceNumber": "0927",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:0927:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:0927:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "09:33",
+        "playerRoute": "城南線",
+        "serviceNumber": "0927",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:0927:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:0927:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "09:35",
+        "playerRoute": "城南線",
+        "serviceNumber": "0927",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:0927:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:0927:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "09:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "0927",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:0927:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:0927:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "09:39",
+        "playerRoute": "城南線",
+        "serviceNumber": "0927",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:0927:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:0927:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "10:27",
+        "playerRoute": "花園線",
+        "serviceNumber": "1027",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1027:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1027:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "10:31",
+        "playerRoute": "城南線",
+        "serviceNumber": "1027",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1027:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1027:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "10:33",
+        "playerRoute": "城南線",
+        "serviceNumber": "1027",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1027:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1027:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "10:35",
+        "playerRoute": "城南線",
+        "serviceNumber": "1027",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1027:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1027:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "10:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "1027",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1027:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1027:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "10:39",
+        "playerRoute": "城南線",
+        "serviceNumber": "1027",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1027:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1027:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "11:27",
+        "playerRoute": "花園線",
+        "serviceNumber": "1127",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1127:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1127",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1127:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1127",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "11:31",
+        "playerRoute": "城南線",
+        "serviceNumber": "1127",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1127:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1127",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1127:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1127",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "11:33",
+        "playerRoute": "城南線",
+        "serviceNumber": "1127",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1127:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1127",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1127:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1127",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "11:35",
+        "playerRoute": "城南線",
+        "serviceNumber": "1127",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1127:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1127",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1127:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1127",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "11:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "1127",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1127:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1127",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1127:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1127",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "11:39",
+        "playerRoute": "城南線",
+        "serviceNumber": "1127",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1127:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1127",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1127:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1127",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "12:27",
+        "playerRoute": "花園線",
+        "serviceNumber": "1227",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1227:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1227",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1227:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1227",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "12:31",
+        "playerRoute": "城南線",
+        "serviceNumber": "1227",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1227:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1227",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1227:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1227",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "12:33",
+        "playerRoute": "城南線",
+        "serviceNumber": "1227",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1227:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1227",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1227:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1227",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "12:35",
+        "playerRoute": "城南線",
+        "serviceNumber": "1227",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1227:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1227",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1227:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1227",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "12:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "1227",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1227:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1227",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1227:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1227",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "12:39",
+        "playerRoute": "城南線",
+        "serviceNumber": "1227",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1227:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1227",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1227:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1227",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "13:27",
+        "playerRoute": "花園線",
+        "serviceNumber": "1327",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1327:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1327",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1327:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1327",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "13:31",
+        "playerRoute": "城南線",
+        "serviceNumber": "1327",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1327:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1327",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1327:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1327",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "13:33",
+        "playerRoute": "城南線",
+        "serviceNumber": "1327",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1327:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1327",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1327:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1327",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "13:35",
+        "playerRoute": "城南線",
+        "serviceNumber": "1327",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1327:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1327",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1327:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1327",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "13:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "1327",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1327:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1327",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1327:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1327",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "13:39",
+        "playerRoute": "城南線",
+        "serviceNumber": "1327",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1327:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1327",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1327:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1327",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "14:27",
+        "playerRoute": "花園線",
+        "serviceNumber": "1427",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1427:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1427",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1427:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1427",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "14:31",
+        "playerRoute": "城南線",
+        "serviceNumber": "1427",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1427:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1427",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1427:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1427",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "14:33",
+        "playerRoute": "城南線",
+        "serviceNumber": "1427",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1427:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1427",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1427:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1427",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "14:35",
+        "playerRoute": "城南線",
+        "serviceNumber": "1427",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1427:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1427",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1427:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1427",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "14:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "1427",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1427:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1427",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1427:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1427",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "14:39",
+        "playerRoute": "城南線",
+        "serviceNumber": "1427",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1427:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1427",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1427:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1427",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "15:27",
+        "playerRoute": "花園線",
+        "serviceNumber": "1527",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1527:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1527",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1527:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1527",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "15:31",
+        "playerRoute": "城南線",
+        "serviceNumber": "1527",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1527:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1527",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1527:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1527",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "15:33",
+        "playerRoute": "城南線",
+        "serviceNumber": "1527",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1527:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1527",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1527:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1527",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "15:35",
+        "playerRoute": "城南線",
+        "serviceNumber": "1527",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1527:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1527",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1527:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1527",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "15:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "1527",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1527:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1527",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1527:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1527",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "15:39",
+        "playerRoute": "城南線",
+        "serviceNumber": "1527",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1527:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1527",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1527:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1527",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "16:27",
+        "playerRoute": "花園線",
+        "serviceNumber": "1627",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1627:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1627",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1627:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1627",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "16:31",
+        "playerRoute": "城南線",
+        "serviceNumber": "1627",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1627:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1627",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1627:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1627",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "16:33",
+        "playerRoute": "城南線",
+        "serviceNumber": "1627",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1627:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1627",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1627:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1627",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "16:35",
+        "playerRoute": "城南線",
+        "serviceNumber": "1627",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1627:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1627",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1627:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1627",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "16:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "1627",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1627:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1627",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1627:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1627",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "16:39",
+        "playerRoute": "城南線",
+        "serviceNumber": "1627",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1627:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1627",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1627:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1627",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "17:27",
+        "playerRoute": "花園線",
+        "serviceNumber": "1727",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1727:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1727",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1727:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1727",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "17:31",
+        "playerRoute": "城南線",
+        "serviceNumber": "1727",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1727:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1727",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1727:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1727",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "17:33",
+        "playerRoute": "城南線",
+        "serviceNumber": "1727",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1727:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1727",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1727:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1727",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "17:35",
+        "playerRoute": "城南線",
+        "serviceNumber": "1727",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1727:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1727",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1727:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1727",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "17:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "1727",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1727:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1727",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1727:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1727",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "17:39",
+        "playerRoute": "城南線",
+        "serviceNumber": "1727",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1727:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1727",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1727:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1727",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "18:27",
+        "playerRoute": "花園線",
+        "serviceNumber": "1827",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1827:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1827",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1827:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1827",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "18:31",
+        "playerRoute": "城南線",
+        "serviceNumber": "1827",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1827:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1827",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1827:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1827",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "18:33",
+        "playerRoute": "城南線",
+        "serviceNumber": "1827",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1827:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1827",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1827:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1827",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "18:35",
+        "playerRoute": "城南線",
+        "serviceNumber": "1827",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1827:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1827",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1827:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1827",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "18:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "1827",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1827:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1827",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1827:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1827",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "18:39",
+        "playerRoute": "城南線",
+        "serviceNumber": "1827",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1827:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1827",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1827:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1827",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "19:27",
+        "playerRoute": "花園線",
+        "serviceNumber": "1927",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1927:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1927:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "19:31",
+        "playerRoute": "城南線",
+        "serviceNumber": "1927",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1927:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1927:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "19:33",
+        "playerRoute": "城南線",
+        "serviceNumber": "1927",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1927:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1927:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "19:35",
+        "playerRoute": "城南線",
+        "serviceNumber": "1927",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1927:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1927:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "19:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "1927",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1927:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1927:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "19:39",
+        "playerRoute": "城南線",
+        "serviceNumber": "1927",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:1927:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:1927:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "1927",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "松山市駅",
+        "time": "20:27",
+        "playerRoute": "花園線",
+        "serviceNumber": "2027",
+        "nextStation": "南堀端",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:2027:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "2027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:2027:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "2027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "花園線",
+            "playerRoute": "花園線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "市役所前",
+        "time": "20:31",
+        "playerRoute": "城南線",
+        "serviceNumber": "2027",
+        "nextStation": "県庁前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:2027:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "2027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:2027:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "2027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "県庁前",
+        "time": "20:33",
+        "playerRoute": "城南線",
+        "serviceNumber": "2027",
+        "nextStation": "大街道",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:2027:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "2027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:2027:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "2027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "大街道",
+        "time": "20:35",
+        "playerRoute": "城南線",
+        "serviceNumber": "2027",
+        "nextStation": "勝山町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:2027:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "2027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:2027:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "2027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "勝山町",
+        "time": "20:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "2027",
+        "nextStation": "警察署前",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:2027:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "2027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:2027:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "2027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "警察署前",
+        "time": "20:39",
+        "playerRoute": "城南線",
+        "serviceNumber": "2027",
+        "nextStation": "上一万",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10012:loop_2:松山市:2027:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "2027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10013:forward:松山市:2027:道後温泉",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "2027",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "道後温泉",
+        "time": "08:37",
+        "playerRoute": "城南線",
+        "serviceNumber": "0837",
+        "nextStation": "道後公園",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10013:reverse:道後温泉:0837:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10015:reverse:道後温泉:0837:JR松山駅前",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      },
+      {
+        "kind": "player_facing_duplicate_departure",
+        "station": "道後公園",
+        "time": "08:38",
+        "playerRoute": "城南線",
+        "serviceNumber": "0837",
+        "nextStation": "南町",
+        "rowCount": 2,
+        "sourceCount": 1,
+        "rows": [
+          {
+            "tripId": "iyotetsu:10013:reverse:道後温泉:0837:松山市",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          },
+          {
+            "tripId": "iyotetsu:10015:reverse:道後温泉:0837:JR松山駅前",
+            "sourceFeedKey": "iyotetsu_official_route_search_reconstructed",
+            "serviceName": "城南線",
+            "serviceNumber": "0837",
+            "tripRoute": "城南線",
+            "rawDisplayRoute": "城南線",
+            "playerRoute": "城南線"
+          }
+        ],
+        "reason": "Multiple source trips collapse to the same player-facing departure row; UI dedupe must use the normalized player-facing route, not raw source route labels."
+      }
+    ],
+    "note": "Player-facing audit normalizes physical branch segments before checking duplicates, matching the browser route-choice intent."
+  },
   "notes": [
     "internalLineTraceTransitionTripCount means the timetable has one trip with changing segment route ids; review top pairs before treating them as confirmed direct-service rules.",
     "splitCandidateCount means two different trips terminate/start at the same station within maxGapSec and have compatible train-number evidence.",
-    "uncoveredSplitCandidateCount is intentionally review-oriented: it may include real direct services not yet covered by browser stitching, plus false positives from reused train numbers."
+    "uncoveredSplitCandidateCount is intentionally review-oriented: it may include real direct services not yet covered by browser stitching, plus false positives from reused train numbers.",
+    "branchSegmentDisplayRouteConflictCount catches cases like Ome branch departures whose source stop display route says Chuo Line even though the next physical segment is Ome Line."
   ]
 }
