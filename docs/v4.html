@@ -1344,6 +1344,14 @@
       山陰線: ['山陰線', '福知山線', '東海道線', '山陽線', '舞鶴線'],
       紀勢線: ['紀勢線', '阪和線', '東海道線'],
     });
+    const REVIEWED_THROUGH_STITCH_RULES = Object.freeze([
+      { station: '東室蘭', routes: ['函館線', '室蘭線'], labelMode: 'service' },
+      { station: '札幌', routes: ['千歳線', '函館線'], labelMode: 'service' },
+      { station: '旭川', routes: ['函館線', '宗谷線'], labelMode: 'service' },
+      { station: '旭川', routes: ['石北線', '函館線'], labelMode: 'service' },
+      { station: '会津高原尾瀬口', routes: ['会津鬼怒川線', '会津線'], labelMode: 'service' },
+      { station: '太秦天神川', routes: ['京津線', '東西線'], labelMode: 'service' },
+    ]);
     const SERVICE_NAME_JA_LABELS = Object.freeze({
       Asama: 'あさま',
       Azusa: 'あずさ',
@@ -4255,14 +4263,36 @@
     function formatTripLabel(trip) {
       if (!trip) return '列車';
       if (trip.throughStitched && Array.isArray(trip.throughRouteIds)) {
-        const throughNames = trip.throughRouteIds
+        const throughRouteIds = isYokosukaSobuRapidTrip(trip)
+          ? [JR_YOKOSUKA_SOBU_RAPID_CORRIDOR_ROUTE_ID]
+          : trip.throughRouteIds;
+        if (trip.throughReviewedDirect && !isYokosukaSobuRapidTrip(trip)) {
+          const serviceName = serviceNameJaLabel(trip);
+          const publicNumber = publicTripNumber(trip);
+          if (serviceName && serviceName !== '列車') {
+            return `${serviceName}${publicNumber && !String(serviceName).includes(publicNumber) ? publicNumber : ''}`;
+          }
+        }
+        const throughNames = throughRouteIds
           .map((routeId) => routeTitle(routeId))
           .filter((name, index, list) => name && list.indexOf(name) === index);
         if (throughNames.length >= 2) return throughNames.join('+');
+        if (throughNames.length === 1) return throughNames[0];
       }
       const serviceName = serviceNameJaLabel(trip) || '列車';
       const publicNumber = publicTripNumber(trip);
       return `${serviceName}${shouldShowTripNumber(trip, serviceName) ? publicNumber : ''}`;
+    }
+
+    function throughRouteChainLabel(trip) {
+      if (!trip?.throughStitched || !Array.isArray(trip.throughRouteIds)) return '';
+      const routeIds = isYokosukaSobuRapidTrip(trip)
+        ? [JR_YOKOSUKA_SOBU_RAPID_CORRIDOR_ROUTE_ID]
+        : trip.throughRouteIds;
+      return routeIds
+        .map((routeId) => routeTitle(routeId))
+        .filter((name, index, list) => name && list.indexOf(name) === index)
+        .join(' -> ');
     }
 
     function hasDownstreamStop(trip, boardStop) {
@@ -4641,6 +4671,8 @@
       const parts = [];
       if (origin) parts.push(`始発 ${displayNameForGroup(origin.stationGroupId)}`);
       if (terminal) parts.push(`終点 ${displayNameForGroup(terminal.stationGroupId)}`);
+      const throughChain = throughRouteChainLabel(trip);
+      if (throughChain && throughChain !== formatTripLabel(trip)) parts.push(`直通 ${throughChain}`);
       if (nextStop) {
         parts.push(`次 ${displayNameForGroup(nextStop.stationGroupId)}`);
       }
@@ -6833,6 +6865,18 @@
       return `${Number(match[1])}${match[2][0]}`;
     }
 
+    function exactThroughRunNumber(trip) {
+      return String(trip?.publicServiceNumber || trip?.serviceNumber || '')
+        .normalize('NFKC')
+        .toUpperCase()
+        .replace(/\s+/gu, '');
+    }
+
+    function sameExactThroughRunNumber(leftTrip, rightTrip) {
+      const leftNumber = exactThroughRunNumber(leftTrip);
+      return Boolean(leftNumber && leftNumber === exactThroughRunNumber(rightTrip));
+    }
+
     function throughRunCodeParts(trip) {
       const raw = String(trip?.publicServiceNumber || trip?.serviceNumber || '').normalize('NFKC').toUpperCase();
       const match = raw.match(/(\d{3,4})([A-Z]{1,2})[A-Z0]*$/u);
@@ -6899,10 +6943,54 @@
       return [...codes];
     }
 
+    function throughLookupKeysForStartTrip(trip) {
+      const keys = new Set();
+      const exact = exactThroughRunNumber(trip);
+      if (exact) keys.add(`exact:${exact}`);
+      predecessorThroughRunCodesForStartTrip(trip).forEach((code) => keys.add(`code:${code}`));
+      return [...keys];
+    }
+
+    function throughLookupKeysForEndTrip(trip) {
+      const keys = new Set();
+      const exact = exactThroughRunNumber(trip);
+      if (exact) keys.add(`exact:${exact}`);
+      const code = throughRunCode(trip);
+      if (code) keys.add(`code:${code}`);
+      return [...keys];
+    }
+
     function isThroughStitchEligibleTrip(trip) {
       const operatorId = tripRouteOperatorId(trip);
       if (!operatorId || operatorId === 'shinkansen') return false;
-      return Boolean(throughRunCode(trip) && (trip?.stopTimes || []).length >= 2);
+      return Boolean((throughRunCode(trip) || exactThroughRunNumber(trip)) && (trip?.stopTimes || []).length >= 2);
+    }
+
+    function routeNameTokensForThroughRule(routeId) {
+      const route = state.routeById.get(routeId);
+      return new Set([
+        route?.shortName,
+        route?.tags?.lineName,
+        routeTitle(routeId),
+      ].filter(Boolean));
+    }
+
+    function routeMatchesThroughRuleName(routeId, name) {
+      return routeNameTokensForThroughRule(routeId).has(name);
+    }
+
+    function reviewedThroughStitchRule(leftTrip, rightTrip) {
+      const leftLastStop = leftTrip?.stopTimes?.at(-1);
+      const rightFirstStop = rightTrip?.stopTimes?.[0];
+      if (!leftLastStop?.stationGroupId || leftLastStop.stationGroupId !== rightFirstStop?.stationGroupId) return null;
+      const stationName = displayNameForGroup(leftLastStop.stationGroupId);
+      return REVIEWED_THROUGH_STITCH_RULES.find((rule) => {
+        if (rule.station !== stationName || !Array.isArray(rule.routes) || rule.routes.length !== 2) return false;
+        const [leftName, rightName] = rule.routes;
+        const direct = routeMatchesThroughRuleName(leftTrip.routeId, leftName) && routeMatchesThroughRuleName(rightTrip.routeId, rightName);
+        const reverse = routeMatchesThroughRuleName(leftTrip.routeId, rightName) && routeMatchesThroughRuleName(rightTrip.routeId, leftName);
+        return direct || reverse;
+      }) || null;
     }
 
     function canStitchThroughTrips(leftTrip, rightTrip) {
@@ -6911,12 +6999,16 @@
       const leftOperator = tripRouteOperatorId(leftTrip);
       const rightOperator = tripRouteOperatorId(rightTrip);
       const sameOperator = leftOperator === rightOperator;
-      if (sameOperator && !isYokosukaSobuRapidStitchPair(leftTrip, rightTrip)) return false;
-      if (!sameOperator && !throughRunCode(leftTrip)) return false;
-      if (!throughRunCodesCanContinue(leftTrip, rightTrip)) return false;
       const leftLastStop = leftTrip.stopTimes[leftTrip.stopTimes.length - 1];
       const rightFirstStop = rightTrip.stopTimes[0];
       if (!leftLastStop?.stationGroupId || leftLastStop.stationGroupId !== rightFirstStop?.stationGroupId) return false;
+      if (
+        reviewedThroughStitchRule(leftTrip, rightTrip) &&
+        (sameExactThroughRunNumber(leftTrip, rightTrip) || throughRunCodesCanContinue(leftTrip, rightTrip))
+      ) return true;
+      if (sameOperator && !isYokosukaSobuRapidStitchPair(leftTrip, rightTrip)) return false;
+      if (!sameOperator && !throughRunCode(leftTrip)) return false;
+      if (!throughRunCodesCanContinue(leftTrip, rightTrip)) return false;
       if (sameOperator && isYokosukaSobuRapidStitchPair(leftTrip, rightTrip)) return true;
       if (isThroughServicePartnerRoute(leftTrip.routeId, rightTrip.routeId)) return true;
       return routeAliasesOverlap(leftTrip.routeId, rightTrip.routeId);
@@ -6975,15 +7067,15 @@
     }
 
     function stitchThroughRunningTrips(trips) {
-      const startsByStationAndCode = new Map();
+      const startsByStationAndKey = new Map();
       trips.forEach((trip) => {
         const stops = trip.stopTimes || [];
         const firstStop = stops[0];
         if (!firstStop?.stationGroupId || !isThroughStitchEligibleTrip(trip)) return;
-        predecessorThroughRunCodesForStartTrip(trip).forEach((code) => {
-          const key = `${firstStop.stationGroupId}|${code}`;
-          if (!startsByStationAndCode.has(key)) startsByStationAndCode.set(key, []);
-          startsByStationAndCode.get(key).push(trip);
+        throughLookupKeysForStartTrip(trip).forEach((lookupKey) => {
+          const key = `${firstStop.stationGroupId}|${lookupKey}`;
+          if (!startsByStationAndKey.has(key)) startsByStationAndKey.set(key, []);
+          startsByStationAndKey.get(key).push(trip);
         });
       });
 
@@ -6992,10 +7084,17 @@
       trips.forEach((trip) => {
         const stops = trip.stopTimes || [];
         const lastStop = stops[stops.length - 1];
-        const code = throughRunCode(trip);
-        if (!lastStop?.stationGroupId || !code || !isThroughStitchEligibleTrip(trip)) return;
+        if (!lastStop?.stationGroupId || !isThroughStitchEligibleTrip(trip)) return;
         const arrivalSec = lastStop.arrivalTimeSec ?? lastStop.departureTimeSec;
-        const candidates = (startsByStationAndCode.get(`${lastStop.stationGroupId}|${code}`) || [])
+        const seenCandidateIds = new Set();
+        const rawCandidates = throughLookupKeysForEndTrip(trip)
+          .flatMap((lookupKey) => startsByStationAndKey.get(`${lastStop.stationGroupId}|${lookupKey}`) || [])
+          .filter((candidate) => {
+            if (seenCandidateIds.has(candidate.id)) return false;
+            seenCandidateIds.add(candidate.id);
+            return true;
+          });
+        const candidates = rawCandidates
           .filter((candidate) => canStitchThroughTrips(trip, candidate))
           .map((candidate) => {
             const first = candidate.stopTimes?.[0];
@@ -7029,6 +7128,8 @@
         }
         if (chain.length < 2) return;
         chain.forEach((sourceTrip) => stitchedSourceTripIds.add(sourceTrip.id));
+        const reviewedDirect = chain.slice(0, -1)
+          .some((sourceTrip, index) => reviewedThroughStitchRule(sourceTrip, chain[index + 1]));
         stitchedTrips.push({
           ...trip,
           id: chain.map((sourceTrip) => sourceTrip.id).join('__through__'),
@@ -7038,6 +7139,7 @@
             .flatMap((sourceTrip) => sourceTrip.lineSequence || [])
             .filter((line, index, list) => line?.routeId && list.findIndex((item) => item?.routeId === line.routeId) === index),
           throughStitched: true,
+          throughReviewedDirect: reviewedDirect,
           throughSourceTripIds: chain.map((sourceTrip) => sourceTrip.id),
           throughRouteIds: chain.map((sourceTrip) => sourceTrip.routeId),
           throughBoundaryStationName: boundaries.filter(Boolean).join('・'),
