@@ -1129,6 +1129,7 @@
       keikyu: '京急',
       keio: '京王',
       keisei: '京成',
+      千葉都市モノレル: '千葉都市モノレール',
       odakyu: '小田急',
       rinkai: '東京臨海高速鉄道',
       seibu: '西武',
@@ -2611,10 +2612,18 @@
     function normalizeRouteLineLabel(route, name) {
       let label = String(name || '');
       if (!label) return label;
+      if (route?.operatorId === '横浜市') {
+        if (label === '1号線' || label === '3号線') return '横浜市営地下鉄ブルーライン';
+        if (label === '4号線') return '横浜市営地下鉄グリーンライン';
+      }
+      if (route?.operatorId === '千葉都市モノレル' && (label === '1号線' || label === '2号線')) {
+        return `千葉都市モノレール${label.replace(/線$/u, '')}`;
+      }
       if (ROUTE_JA_LABELS[label]) label = ROUTE_JA_LABELS[label];
       label = label
         .replace(/^(\d+)号線[（(]([^）)]+)[）)]$/u, '$2')
         .replace(/^\d+号線/u, '');
+      if (label === 'みなとみらい21線') label = 'みなとみらい線';
       if (route?.operatorId === 'toei') label = label.replace(/^都営/u, '');
       if (route?.operatorId === 'tokyo_metro') label = label.replace(/^東京メトロ/u, '');
       return label;
@@ -2623,6 +2632,7 @@
     function routeDisplayName(route, name) {
       const label = normalizeRouteLineLabel(route, name);
       if (!route || !label) return label;
+      if (route.shortName === 'みなとみらい21線' && label === 'みなとみらい線') return label;
       const operator = PHYSICAL_ALIAS_OPERATOR_LABELS[route.shortName]
         || (!isJrRoute(route) ? routeOperatorLabel(route) : '');
       if (!operator || label.startsWith(operator)) return label;

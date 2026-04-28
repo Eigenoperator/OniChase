@@ -184,6 +184,7 @@ async function auditRouteChoices(page) {
       checkedChoices: 0,
       segmentMismatchCount: 0,
       virtualOutsideAllowedStationCount: 0,
+      genericRouteLabelCount: 0,
       samples: [],
     };
     const globalTrainLabelScan = {
@@ -231,6 +232,10 @@ async function auditRouteChoices(page) {
         routeIds.forEach((routeId) => {
           const label = formatTripLabelForBoarding(entry, routeId);
           globalTrainLabelScan.checkedLabels += 1;
+          if (routeTitle(routeId) === '路線') {
+            globalChoiceScan.genericRouteLabelCount += 1;
+            addGlobalChoiceSample('generic_route_label', stationName, entry, routeId, nextStop);
+          }
           if (/\d+号線/u.test(label)) {
             globalTrainLabelScan.rawNumberedLineLabelCount += 1;
             addGlobalTrainLabelSample('raw_numbered_line_label', stationName, entry, routeId, label);
@@ -277,10 +282,14 @@ async function auditRouteChoices(page) {
         });
       }
     }
-    if (globalChoiceScan.segmentMismatchCount || globalChoiceScan.virtualOutsideAllowedStationCount) {
+    if (
+      globalChoiceScan.segmentMismatchCount ||
+      globalChoiceScan.virtualOutsideAllowedStationCount ||
+      globalChoiceScan.genericRouteLabelCount
+    ) {
       anomalies.push({
         kind: 'global_route_choice_segment_scan',
-        reason: 'Every player-facing route choice must either be an allowed virtual corridor at that station or serve the current boarding stop -> next stop segment.',
+        reason: 'Every player-facing route choice must either be an allowed virtual corridor at that station or serve the current boarding stop -> next stop segment, and must not expose a generic route label.',
         ...globalChoiceScan,
       });
     }
