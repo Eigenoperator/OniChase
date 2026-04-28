@@ -4585,7 +4585,9 @@
       const deduped = [];
       entries.forEach((entry) => {
         const logicalRouteKey = routeChoiceIdsForDeparture(entry).join('+') || entry.trip.routeId || '';
+        const publicNumber = publicTripNumber(entry.trip);
         const usesLooseLogicalKey = logicalRouteKey.startsWith('VIRTUAL_') ||
+          Boolean(publicNumber) ||
           logicalRouteKey === routeIdByShortNameAndOperator('中央線', 'jr_east') ||
           logicalRouteKey === routeIdByShortNameAndOperator('青梅線', 'jr_east') ||
           logicalRouteKey === JR_CHUO_RAPID_ROUTE_ID ||
@@ -4597,7 +4599,7 @@
               logicalRouteKey,
               displayNameForGroup(entry.boardStop.stationGroupId),
               entry.departureMinute,
-              publicTripNumber(entry.trip),
+              publicNumber,
               stops[0] ? displayNameForGroup(stops[0].stationGroupId) : '',
               stops.at(-1) ? displayNameForGroup(stops.at(-1).stationGroupId) : '',
               nextStop ? displayNameForGroup(nextStop.stationGroupId) : '',
