@@ -27,6 +27,7 @@ DEFAULT_V3_ADAPTED = ROOT / "data" / "v4_existing_v3_weekday_train_instances.jso
 DEFAULT_V4_GTFS = ROOT / "data" / "v4_gtfs_weekday_train_instances.json.gz"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_current_weekday_train_instances.json.gz"
 DEFAULT_AUDIT = ROOT / "data" / "v4_current_train_collection_audit.json"
+MAX_STOP_MATCH_DISTANCE_M = 1500.0
 DEFAULT_EXTRA_COLLECTIONS = [
     ROOT / "data" / "v4_jreast_official_weekday_train_instances.json.gz",
     ROOT / "data" / "v4_jreast_tohoku_official_weekday_train_instances.json.gz",
@@ -152,6 +153,19 @@ def stop_has_time(stop: dict[str, Any]) -> bool:
     )
 
 
+def excessive_match_distance_ref(stop: dict[str, Any]) -> float | None:
+    value = stop.get("match_distance_m")
+    if value in (None, ""):
+        return None
+    try:
+        distance = float(value)
+    except (TypeError, ValueError):
+        return None
+    if distance > MAX_STOP_MATCH_DISTANCE_M:
+        return distance
+    return None
+
+
 def unresolved_station_ref(stop: dict[str, Any]) -> str | None:
     for key in ("physical_station_id", "station_id", "stationId", "station_group_id", "stationGroupId"):
         value = stop.get(key)
@@ -166,6 +180,8 @@ def invalid_train_reason(train: dict[str, Any]) -> str | None:
         return "short_train"
     if any(unresolved_station_ref(stop) for stop in stops):
         return "unmatched_station_ref"
+    if any(excessive_match_distance_ref(stop) is not None for stop in stops):
+        return "excessive_station_match_distance"
     if not any(stop_has_time(stop) for stop in stops):
         return "all_stop_times_missing"
     return None
@@ -229,22 +245,37 @@ def main() -> int:
     trains: list[dict[str, Any]] = []
     source_counts: Counter[str] = Counter()
     dropped_invalid_counts: Counter[str] = Counter()
+    dropped_invalid_by_source: Counter[str] = Counter()
+    dropped_invalid_by_source_reason: Counter[str] = Counter()
     dropped_invalid_samples: list[dict[str, str]] = []
     excluded_gtfs_counts: Counter[str] = Counter()
     skipped_extra_collections: list[str] = []
+
+    def record_invalid_train(item: dict[str, Any], label: str, reason: str) -> None:
+        dropped_invalid_counts[reason] += 1
+        dropped_invalid_by_source[label] += 1
+        dropped_invalid_by_source_reason[f"{label}|{reason}"] += 1
+        if len(dropped_invalid_samples) < 40:
+            sample = {
+                "serviceInstanceId": str(item.get("service_instance_id")),
+                "sourceCollection": label,
+                "reason": reason,
+            }
+            excessive_distances = [
+                float(stop.get("match_distance_m"))
+                for stop in item.get("stop_times", [])
+                if excessive_match_distance_ref(stop) is not None
+            ]
+            if excessive_distances:
+                sample["maxMatchDistanceM"] = f"{max(excessive_distances):.1f}"
+            dropped_invalid_samples.append(sample)
 
     for train in v3_data["train_instances"]:
         item = dict(train)
         item["source_collection"] = "v3_rematched_to_v4"
         reason = invalid_train_reason(item)
         if reason:
-            dropped_invalid_counts[reason] += 1
-            if len(dropped_invalid_samples) < 20:
-                dropped_invalid_samples.append({
-                    "serviceInstanceId": str(item.get("service_instance_id")),
-                    "sourceCollection": "v3_rematched_to_v4",
-                    "reason": reason,
-                })
+            record_invalid_train(item, "v3_rematched_to_v4", reason)
         else:
             trains.append(item)
             source_counts["v3_rematched_to_v4"] += 1
@@ -260,13 +291,7 @@ def main() -> int:
             item["source_collection"] = label
             reason = invalid_train_reason(item)
             if reason:
-                dropped_invalid_counts[reason] += 1
-                if len(dropped_invalid_samples) < 20:
-                    dropped_invalid_samples.append({
-                        "serviceInstanceId": str(item.get("service_instance_id")),
-                        "sourceCollection": label,
-                        "reason": reason,
-                    })
+                record_invalid_train(item, label, reason)
             else:
                 trains.append(item)
                 source_counts[label] += 1
@@ -280,13 +305,7 @@ def main() -> int:
         item["source_collection"] = "v4_public_gtfs"
         reason = invalid_train_reason(item)
         if reason:
-            dropped_invalid_counts[reason] += 1
-            if len(dropped_invalid_samples) < 20:
-                dropped_invalid_samples.append({
-                    "serviceInstanceId": str(item.get("service_instance_id")),
-                    "sourceCollection": "v4_public_gtfs",
-                    "reason": reason,
-                })
+            record_invalid_train(item, "v4_public_gtfs", reason)
         else:
             trains.append(item)
             source_counts["v4_public_gtfs"] += 1
@@ -315,6 +334,8 @@ def main() -> int:
         "schema": "onichase.v4.current_train_collection_audit.v1",
         "sourceCounts": dict(sorted(source_counts.items())),
         "droppedInvalidTrainCounts": dict(sorted(dropped_invalid_counts.items())),
+        "droppedInvalidTrainCountsBySource": dict(sorted(dropped_invalid_by_source.items())),
+        "droppedInvalidTrainCountsBySourceReason": dict(sorted(dropped_invalid_by_source_reason.items())),
         "droppedInvalidTrainSamples": dropped_invalid_samples,
         "rawTrainInstanceCount": raw_train_count,
         "trainInstanceCount": len(trains),

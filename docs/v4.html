@@ -2593,9 +2593,6 @@
       if (UENO_TOKYO_LINE_RANGE_STATIONS.has(boardName) && UENO_TOKYO_REPLACED_PHYSICAL_ROUTE_NAMES.has(route?.shortName)) {
         return JR_UENO_TOKYO_CORRIDOR_ROUTE_ID;
       }
-      if (UENO_TOKYO_LINE_RANGE_STATIONS.has(boardName) && (entry?.routeIds || []).some(routeHasUenoTokyoReplacedPhysicalName)) {
-        return JR_UENO_TOKYO_CORRIDOR_ROUTE_ID;
-      }
       if (!isUenoTokyoLineTrip(trip)) return null;
       return UENO_TOKYO_LINE_RANGE_STATIONS.has(boardName) ? JR_UENO_TOKYO_CORRIDOR_ROUTE_ID : null;
     }
@@ -3449,16 +3446,9 @@
         ? `${trip.id || ''}|${boardStop.sequence || 0}|${stationGroupId}`
         : `${trip.id || ''}|*|${stationGroupId}`;
       if (state.boardableRouteIdsCache.has(cacheKey)) return state.boardableRouteIdsCache.get(cacheKey);
-      const physicalRouteIds = routeIdsForStationAndTransfers(stationGroupId, { physicalOnly: true });
       const routeIds = new Set();
-      if (boardStop && routeCanRepresentTripDeparture(trip, boardStop, trip.routeId)) {
-        routeIds.add(trip.routeId);
-      }
-      physicalRouteIds.forEach((routeId) => {
-        if (!boardStop || !routeCanRepresentTripDeparture(trip, boardStop, routeId)) return;
-        routeIds.add(routeId);
-      });
-      if (!routeIds.size && !physicalRouteIds.size && !isThroughServiceTransferAlias(trip.routeId)) routeIds.add(trip.routeId);
+      tracedRouteIdsForTripStop(trip, boardStop).forEach((routeId) => routeIds.add(routeId));
+      if (!routeIds.size && !isThroughServiceTransferAlias(trip.routeId)) routeIds.add(trip.routeId);
       const result = [...routeIds];
       state.boardableRouteIdsCache.set(cacheKey, result);
       return result;

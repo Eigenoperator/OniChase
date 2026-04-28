@@ -30,8 +30,8 @@ This is the first `v4` data slice: nationwide real physical rail geometry plus `
 
 Current generated counts:
 
-- Physical stations: `10235`
-- Station groups: `9048`
+- Physical stations: `10239`
+- Station groups: `9052`
 - Track centerlines: `21932`
 - Operators: `178`
 - Same-name split names: `427`
@@ -39,6 +39,9 @@ Current generated counts:
 - Nationwide operator-line pairs: `596`
 - Unique line names: `552`
 - Track continuity warnings: `12` multi-component operator-line pairs
+- Current train collection: `120425` weekday train instances across `22` source collections and `179` operators
+- Current gameplay export: `618` service routes/patterns and `120420` compact playable trips
+- Current room-server export: `9052` station groups and `120420` SQLite-backed trips
 
 ## Regenerate
 
@@ -50,6 +53,11 @@ python3 scripts/ingest/build_v4_land_outline.py
 python3 scripts/ingest/build_v4_line_inventory.py
 python3 scripts/ingest/build_v4_maplibre_sources.py
 python3 scripts/ingest/audit_v4_track_continuity.py
+python3 scripts/ingest/build_v4_current_train_collection.py
+python3 scripts/ingest/audit_v4_current_train_health.py
+python3 scripts/ingest/build_v4_gameplay_bundle.py
+python3 scripts/ingest/build_v4_room_server_bundle.py
+python3 scripts/ingest/audit_v4_planner_corridors.py
 ```
 
 ## Station Identity V2

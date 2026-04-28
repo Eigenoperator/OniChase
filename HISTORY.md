@@ -279,3 +279,13 @@
 - Improved the v4 viewer with a Japan land outline, low-zoom overview tracks, lazy high-detail track/physical-station loading, high-zoom station dots for all labels, and a track continuity audit that found `12` multi-component operator-line pairs out of `596`.
 - Adjusted the v4 land layer to outline-only rendering and increased coastline detail so the Japan outline remains precise at higher zoom levels.
 - Added a dedicated v4 track-continuity review map and generated SVG/GeoJSON highlight outputs for the `12` multi-component operator-line warnings.
+
+## 2026-04-28
+
+- Checkpointed the expanded v4 nationwide timetable work into the stable handoff files.
+- Rebuilt the current v4 train collection from the available v3-rematched, GTFS, JR, private railway, subway, tram, NAVITIME, and manual supplemental sources; the collection now contains `127938` weekday train instances across `22` source collections and `179` operators.
+- Re-ran the v4 train health audit successfully: `0` duplicate service ids, `0` duplicate signatures, `0` short train instances, `0` missing station-group stops, `0` missing physical-station stops, and `0` bad time-order trains.
+- Rebuilt the v4 gameplay bundle from the current physical map and train collection. The gameplay export now contains `10239` physical stations, `9052` station groups, `617` service routes/patterns, and `127933` compact playable trips; only `5` source trains are skipped as short gameplay trips.
+- Rebuilt the v4 room-server bundle and SQLite trip store with `9052` station groups and `127933` trips.
+- Re-ran the v4 planner corridor audit for the first `6` major hub checks, with `0` warnings.
+- Tightened the v4 train/category model after route-choice contamination appeared in 上野東京ライン: current collection now drops source trains with station matches more than `1500m` away, and the browser no longer lets a departure borrow arbitrary physical routes from the boarding station as player-facing categories. The rebuilt v4 collection now contains `120425` trains, the gameplay bundle contains `120420` compact trips and `618` service routes, and sampled 上野東京ライン contamination checks for 東京・上野・品川・新橋 return `0` bad rows.
