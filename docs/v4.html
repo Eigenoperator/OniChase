@@ -5522,6 +5522,19 @@
       return (entry?.routeIds || []).filter((routeId) => !isThroughServiceTransferAlias(routeId));
     }
 
+    function logicalRouteIdsForStation(stationGroupId) {
+      if (!stationGroupId) return [];
+      if (state.timetableStatus === 'ready') {
+        const minute = Number.isFinite(state.currentGameMinute) ? state.currentGameMinute : hhmmToMinutes(state.startTime || '06:00');
+        const departureRouteIds = routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, minute))
+          .map((choice) => choice.routeId);
+        if (departureRouteIds.length) return departureRouteIds;
+      }
+      return [...routeIdsForStationAndTransfers(stationGroupId)]
+        .filter((routeId) => !isThroughServiceTransferAlias(routeId))
+        .sort((a, b) => routeTitle(a).localeCompare(routeTitle(b)));
+    }
+
     function plannerStep(index, title, sub, body) {
       return `
         <div class="planner-step">
@@ -6576,10 +6589,10 @@
       }
       const group = state.stationGroupById.get(state.selectedStationGroupId);
       const station = state.stationByGroupId.get(state.selectedStationGroupId);
-      const routeIds = [...(state.stationRouteIdsByGroupId.get(state.selectedStationGroupId) || new Set())];
+      const routeIds = logicalRouteIdsForStation(state.selectedStationGroupId);
       const routeTags = routeIds.slice(0, 12).map((routeId) => {
         const route = state.routeById.get(routeId);
-        return `<button class="tag" type="button" data-route-chip="${routeId}">${route?.shortName || routeId}</button>`;
+        return `<button class="tag" type="button" data-route-chip="${routeId}">${routeJapaneseName(route || routeId)}</button>`;
       }).join('');
       stationCardEl.innerHTML = `
         <h3>${displayNameForGroup(state.selectedStationGroupId)}</h3>
