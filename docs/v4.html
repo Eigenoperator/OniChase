@@ -1790,6 +1790,16 @@
       '宮原', '上尾', '桶川', '北本', '鴻巣', '熊谷', '籠原', '深谷', '本庄',
       '新町', '倉賀野', '高崎', '新前橋', '前橋',
     ]);
+    const UENO_TOKYO_TAKASAKI_BRANCH_STATIONS = new Set([
+      '宮原', '上尾', '北上尾', '桶川', '北本', '鴻巣', '北鴻巣', '吹上',
+      '行田', '熊谷', '籠原', '深谷', '岡部', '本庄', '神保原',
+      '新町', '倉賀野', '高崎', '新前橋', '前橋',
+    ]);
+    const UENO_TOKYO_UTSUNOMIYA_BRANCH_STATIONS = new Set([
+      '土呂', '東大宮', '蓮田', '白岡', '新白岡', '久喜', '東鷲宮', '栗橋',
+      '古河', '野木', '間々田', '小山', '小金井', '自治医大', '石橋',
+      '雀宮', '宇都宮',
+    ]);
     const UENO_TOKYO_TOKAIDO_SIDE_STATIONS = new Set([
       '沼津', '三島', '熱海', '湯河原', '小田原', '国府津', '平塚', '茅ケ崎',
       '藤沢', '大船', '戸塚', '横浜', '川崎', '品川', '新橋', '東京',
@@ -2859,6 +2869,9 @@
       const boardName = stationDisplayNameForStop(boardStop);
       const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
       const route = tripRoute(trip);
+      const downstreamNames = new Set((trip?.stopTimes || [])
+        .filter((stop) => stop.sequence > boardStop.sequence)
+        .map(stationDisplayNameForStop));
       if (
         boardName === '東京' &&
         UENO_TOKYO_TRIP_ROUTE_NAMES.has(route?.shortName) &&
@@ -2883,7 +2896,11 @@
       if (
         boardName === '上野' &&
         UENO_TOKYO_TRIP_ROUTE_NAMES.has(route?.shortName) &&
-        (UENO_TOKYO_OMIYA_TAKASAKI_NEXT_STATIONS.has(nextName) || ['高崎線', '上越線', '両毛線'].includes(route?.shortName))
+        (
+          UENO_TOKYO_OMIYA_TAKASAKI_NEXT_STATIONS.has(nextName) ||
+          [...UENO_TOKYO_TAKASAKI_BRANCH_STATIONS].some((name) => downstreamNames.has(name)) ||
+          ['高崎線', '上越線', '両毛線'].includes(route?.shortName)
+        )
       ) {
         return routeIdByShortNameAndOperator('高崎線', 'jr_east');
       }
@@ -2897,7 +2914,12 @@
       if (
         boardName === '上野' &&
         UENO_TOKYO_TRIP_ROUTE_NAMES.has(route?.shortName) &&
-        (nextName === '尾久' || nextName === '赤羽' || UENO_TOKYO_OMIYA_UTSUNOMIYA_NEXT_STATIONS.has(nextName))
+        (
+          nextName === '尾久' ||
+          nextName === '赤羽' ||
+          UENO_TOKYO_OMIYA_UTSUNOMIYA_NEXT_STATIONS.has(nextName) ||
+          [...UENO_TOKYO_UTSUNOMIYA_BRANCH_STATIONS].some((name) => downstreamNames.has(name))
+        )
       ) {
         return routeIdByShortNameAndOperator('東北線', 'jr_east') ||
           routeIdByShortNameAndOperator('宇都宮線', 'jr_east');

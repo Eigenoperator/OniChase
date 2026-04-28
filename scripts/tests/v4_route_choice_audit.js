@@ -294,6 +294,11 @@ async function auditRouteChoices(page) {
         forbiddenChoices: [...new Set(forbiddenUenoSouthChoices)].sort((a, b) => a.localeCompare(b, 'ja')),
       });
     }
+    const uenoTakasakiBranchStations = new Set([
+      '宮原', '上尾', '北上尾', '桶川', '北本', '鴻巣', '北鴻巣', '吹上',
+      '行田', '熊谷', '籠原', '深谷', '岡部', '本庄', '神保原',
+      '新町', '倉賀野', '高崎', '新前橋', '前橋',
+    ]);
 
     for (const stationName of ['東京']) {
       for (const entry of entriesAt(stationName)) {
@@ -319,6 +324,18 @@ async function auditRouteChoices(page) {
           kind: 'ueno_tokaido_through_choice',
           reason: 'Ueno is the northern boundary of the Ueno-Tokyo chain; southbound through movements should use 上野東京ライン, not 東海道線.',
           ...summary,
+        });
+      }
+      const downstreamNames = (entry.trip?.stopTimes || [])
+        .filter((stop) => stop.sequence > entry.stop.sequence)
+        .map((stop) => displayNameForGroup(stop.stationGroupId));
+      const entersTakasakiBranch = downstreamNames.some((name) => uenoTakasakiBranchStations.has(name));
+      if (entersTakasakiBranch && summary.choices.includes('東北線')) {
+        anomalies.push({
+          kind: 'ueno_takasaki_branch_hidden_by_tohoku_choice',
+          reason: 'At Ueno, northbound through movements that enter the Takasaki branch must show 高崎線 rather than 東北線.',
+          ...summary,
+          downstreamSample: downstreamNames.slice(0, 16),
         });
       }
     }
