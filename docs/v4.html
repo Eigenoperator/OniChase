@@ -1829,6 +1829,12 @@
       '神田', '御茶ノ水', '四ツ谷', '新宿', '中野', '三鷹', '国分寺', '立川',
       '八王子', '高尾', '青梅', '大月',
     ]);
+    const CHUO_RAPID_STATIONS = new Set([
+      '東京', '神田', '御茶ノ水', '四ツ谷', '新宿', '中野', '高円寺', '阿佐ケ谷',
+      '荻窪', '西荻窪', '吉祥寺', '三鷹', '武蔵境', '東小金井', '武蔵小金井',
+      '国分寺', '西国分寺', '国立', '立川', '日野', '豊田', '八王子',
+      '西八王子', '高尾',
+    ]);
     const CHUO_RAPID_CORRIDOR_ROUTE_NAMES = new Set([
       '中央線', '青梅線', 'JR_EAST_CHUO_RAPID', 'JR_CHUO', 'JR_OME',
     ]);
@@ -1861,6 +1867,19 @@
       '根岸', '磯子', '新杉田', '洋光台', '港南台', '本郷台', '御徒町', '鶯谷',
       '日暮里', '西日暮里', '田端', '上中里', '王子', '東十条', '川口', '西川口',
       '蕨', '南浦和', '与野',
+    ]);
+    const KEIHIN_TOHOKU_NEGISHI_STATIONS = new Set([
+      '大宮', 'さいたま新都心', '与野', '北浦和', '浦和', '南浦和', '蕨',
+      '西川口', '川口', '赤羽', '東十条', '王子', '上中里', '田端',
+      '西日暮里', '日暮里', '鶯谷', '上野', '御徒町', '秋葉原', '神田',
+      '東京', '有楽町', '新橋', '浜松町', '田町', '高輪ゲートウェイ',
+      '品川', '大井町', '大森', '蒲田', '川崎', '鶴見', '新子安',
+      '東神奈川', '横浜', '桜木町', '関内', '石川町', '山手', '根岸',
+      '磯子', '新杉田', '洋光台', '港南台', '本郷台', '大船',
+    ]);
+    const RINKAI_STATIONS = new Set([
+      '大崎', '大井町', '品川シーサイド', '天王洲アイル', '東京テレポート',
+      '国際展示場', '東雲', '新木場',
     ]);
     const SANYO_SHINKANSEN_STATIONS = new Set([
       '新大阪', '新神戸', '西明石', '姫路', '相生', '岡山', '新倉敷', '福山', '新尾道', '三原',
@@ -2747,6 +2766,11 @@
       return route?.shortName === 'JR_EAST_UENO_TOKYO' || routeJapaneseName(route) === '上野東京ライン';
     }
 
+    function queryStationAllowedForCorridor(entry, allowedStations) {
+      const queryStationName = entry?.queryStationGroupId ? displayNameForGroup(entry.queryStationGroupId) : '';
+      return !queryStationName || allowedStations.has(queryStationName);
+    }
+
     function isYokosukaSobuRapidTrip(trip) {
       if (!isJrEastConventionalTrip(trip) || isKeihinTohokuNegishiTrip(trip)) return false;
       const route = tripRoute(trip);
@@ -2768,6 +2792,14 @@
       const boardStop = entry?.boardStop || entry?.stop || null;
       const boardName = stationDisplayNameForStop(boardStop);
       const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
+      if (!queryStationAllowedForCorridor(entry, YOKOSUKA_SOBU_RAPID_SIGNATURE_STATIONS)) return null;
+      if (
+        boardStop &&
+        !YOKOSUKA_SOBU_RAPID_SIGNATURE_STATIONS.has(boardName) &&
+        !YOKOSUKA_SOBU_RAPID_SIGNATURE_STATIONS.has(nextName)
+      ) {
+        return null;
+      }
       const isSobuRapidUndergroundMovement =
         SOBU_RAPID_UNDERGROUND_BRANCH_STATIONS.has(boardName) &&
         (YOKOSUKA_SOBU_RAPID_SIGNATURE_STATIONS.has(nextName) || SOBU_RAPID_UNDERGROUND_BRANCH_STATIONS.has(nextName));
@@ -2851,8 +2883,16 @@
 
     function jrEastCorridorChoiceRouteId(entry) {
       const trip = entry?.trip || entry;
-      if (isKeihinTohokuNegishiTrip(trip)) return JR_KEIHIN_TOHOKU_NEGISHI_ROUTE_ID;
       const boardStop = entry?.boardStop || entry?.stop || null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
+      if (
+        isKeihinTohokuNegishiTrip(trip) &&
+        queryStationAllowedForCorridor(entry, KEIHIN_TOHOKU_NEGISHI_STATIONS) &&
+        (!boardStop || KEIHIN_TOHOKU_NEGISHI_STATIONS.has(boardName) || KEIHIN_TOHOKU_NEGISHI_STATIONS.has(nextName))
+      ) {
+        return JR_KEIHIN_TOHOKU_NEGISHI_ROUTE_ID;
+      }
       const coreSegmentRouteId = uenoTokyoCoreSegmentChoiceRouteId(entry, trip, boardStop);
       if (coreSegmentRouteId) return coreSegmentRouteId;
       const omiyaBranchRouteId = omiyaUenoTokyoBranchChoiceRouteId(trip, boardStop);
@@ -2902,7 +2942,16 @@
       const trip = entry?.trip;
       const boardStop = entry?.boardStop || entry?.stop || null;
       if (!trip || !boardStop) return null;
-      if (isChuoSobuLocalTrip(trip)) return JR_CHUO_SOBU_LOCAL_ROUTE_ID;
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextStop = nextStopAfter(trip, boardStop);
+      const nextName = nextStop ? stationDisplayNameForStop(nextStop) : '';
+      if (
+        isChuoSobuLocalTrip(trip) &&
+        queryStationAllowedForCorridor(entry, CHUO_SOBU_LOCAL_SIGNATURE_STATIONS) &&
+        (CHUO_SOBU_LOCAL_SIGNATURE_STATIONS.has(boardName) || CHUO_SOBU_LOCAL_SIGNATURE_STATIONS.has(nextName))
+      ) {
+        return JR_CHUO_SOBU_LOCAL_ROUTE_ID;
+      }
       const route = tripRoute(trip);
       const stationNames = new Set(tripStationNames(trip));
       const hasChuoDirectionStop = [...CHUO_TOKYO_DIRECTION_STATIONS].some((name) => stationNames.has(name));
@@ -2914,9 +2963,6 @@
       const boardTraceNames = tracedRouteIdsForTripStop(trip, boardStop)
         .map((routeId) => state.routeById.get(routeId)?.shortName)
         .filter(Boolean);
-      const boardName = stationDisplayNameForStop(boardStop);
-      const nextStop = nextStopAfter(trip, boardStop);
-      const nextName = nextStop ? stationDisplayNameForStop(nextStop) : '';
       if (OME_BRANCH_STATIONS.has(boardName) && OME_BRANCH_STATIONS.has(nextName)) {
         return routeIdByShortNameAndOperator('青梅線', 'jr_east');
       }
@@ -2930,8 +2976,25 @@
       ) {
         return routeIdByShortNameAndOperator('青梅線', 'jr_east');
       }
-      if (!CHUO_TOKYO_DIRECTION_STATIONS.has(boardName) && boardName !== '東京') return null;
+      if (!queryStationAllowedForCorridor(entry, CHUO_RAPID_STATIONS)) return null;
+      if (!CHUO_RAPID_STATIONS.has(boardName) || !CHUO_RAPID_STATIONS.has(nextName)) return null;
       return JR_CHUO_RAPID_ROUTE_ID;
+    }
+
+    function rinkaiChoiceRouteId(entry) {
+      const trip = entry?.trip;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      if (!trip || !boardStop) return null;
+      if (!queryStationAllowedForCorridor(entry, RINKAI_STATIONS)) return null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
+      if (!RINKAI_STATIONS.has(boardName) || !RINKAI_STATIONS.has(nextName)) return null;
+      const segmentRouteNames = boardingFaceRouteNamesForStop(trip, boardStop);
+      const looksLikeRinkaiThroughSegment = segmentRouteNames.some((name) =>
+        ['りんかい線', '臨海副都心線', '埼京線', 'JR_EAST_SAIKYO_KAWAGOE'].includes(name)
+      );
+      if (!looksLikeRinkaiThroughSegment) return null;
+      return routeIdByShortName('RINKAI') || routeIdByShortNameAndOperator('りんかい線', 'rinkai');
     }
 
     function shinkansenCorridorChoiceRouteId(trip) {
@@ -3716,14 +3779,22 @@
       return !nextStop?.stationGroupId || routePatternServesPlannerBoardingStation(routeId, nextStop.stationGroupId);
     }
 
+    function routeMatchesTripAdjacentSegment(routeId, trip, currentStop, nextStop) {
+      if (!routeId || !currentStop) return false;
+      if (routeServesAdjacentStops(routeId, currentStop, nextStop)) return true;
+      return [
+        tracedRouteIdForTripSegment(trip, currentStop, nextStop),
+        currentStop?.outgoingRouteId,
+        currentStop?.displayRouteId,
+      ].includes(routeId);
+    }
+
     function tracedRouteIdsForTripStop(trip, boardStop) {
       const nextStop = nextStopAfter(trip, boardStop);
       const candidateRouteIds = [
         tracedRouteIdForTripSegment(trip, boardStop, nextStop),
         boardStop?.outgoingRouteId,
         boardStop?.displayRouteId,
-        nextStop?.incomingRouteId,
-        nextStop?.displayRouteId,
       ].filter(Boolean);
       for (const routeId of candidateRouteIds) {
         if (routeServesAdjacentStops(routeId, boardStop, nextStop)) return [routeId];
@@ -4671,14 +4742,16 @@
     function departuresForStationGroup(stationGroupId, currentMinute, options = {}) {
       if (state.timetableStatus !== 'ready') return [];
       const routeId = options.routeId || null;
-      const cacheKey = `${stationGroupId || ''}|${currentMinute}|${routeId || '*'}`;
+      const includeTransferEquivalents = Boolean(options.includeTransferEquivalents);
+      const cacheKey = `${stationGroupId || ''}|${currentMinute}|${routeId || '*'}|${includeTransferEquivalents ? 'xfer' : 'exact'}`;
       if (state.departureQueryCache.has(cacheKey)) {
         const cached = state.departureQueryCache.get(cacheKey);
         return Number.isFinite(options.limit) ? cached.slice(0, options.limit) : cached;
       }
       const rows = [];
       const seenRows = new Set();
-      for (const searchGroupId of equivalentStationGroupIds(stationGroupId)) {
+      const searchGroupIds = includeTransferEquivalents ? equivalentStationGroupIds(stationGroupId) : [stationGroupId];
+      for (const searchGroupId of searchGroupIds) {
         for (const trip of state.stationTripsByGroupId.get(searchGroupId) || []) {
           for (const stop of trip.stopTimes || []) {
             if (stop.stationGroupId !== searchGroupId) continue;
@@ -5834,25 +5907,44 @@
       if (chuoChoiceRouteId) return [chuoChoiceRouteId];
       const yokosukaSobuChoiceRouteId = yokosukaSobuRapidChoiceRouteId(entry);
       if (yokosukaSobuChoiceRouteId) return [yokosukaSobuChoiceRouteId];
+      const rinkaiChoiceRouteIdForEntry = rinkaiChoiceRouteId(entry);
+      if (rinkaiChoiceRouteIdForEntry) return [rinkaiChoiceRouteIdForEntry];
       const jrEastChoiceRouteId = jrEastCorridorChoiceRouteId(entry);
       if (jrEastChoiceRouteId) return [jrEastChoiceRouteId];
       const tripRouteId = entry?.trip?.routeId || entry?.routeId || null;
       const tripRoute = state.routeById.get(tripRouteId);
       const boardStop = entry?.boardStop || entry?.stop || null;
+      const nextStop = nextStopAfter(entry?.trip, boardStop);
       const isUenoTokyoCoreSegment = Boolean(uenoTokyoCoreSegmentChoiceRouteId(entry, entry?.trip, boardStop));
       if (
         tripRouteId &&
         JR_EAST_OPERATING_ROUTE_PREFERS_TRIP_ROUTE.has(tripRoute?.shortName) &&
-        !isThroughServiceTransferAlias(tripRouteId)
+        !isThroughServiceTransferAlias(tripRouteId) &&
+        (!boardStop || !nextStop || routeMatchesTripAdjacentSegment(tripRouteId, entry?.trip, boardStop, nextStop))
       ) {
         return [tripRouteId];
       }
-      const stopRouteIds = (entry?.routeIds?.length
-        ? entry.routeIds
-        : tracedRouteIdsForTripStop(entry?.trip, boardStop)
-      ).filter((routeId) => !isThroughServiceTransferAlias(routeId));
+      const canUseSegmentCandidateRoutes =
+        !entry?.queryStationGroupId ||
+        !boardStop?.stationGroupId ||
+        entry.queryStationGroupId === boardStop.stationGroupId;
+      const segmentCandidateRouteIds = canUseSegmentCandidateRoutes ? [
+        tracedRouteIdForTripSegment(entry?.trip, boardStop, nextStop),
+        boardStop?.outgoingRouteId,
+        boardStop?.displayRouteId,
+      ] : [];
+      const stopRouteIds = [
+        ...segmentCandidateRouteIds,
+        ...(entry?.routeIds || []),
+        ...tracedRouteIdsForTripStop(entry?.trip, boardStop),
+      ].filter((routeId, index, routeIds) =>
+        routeId &&
+        routeIds.indexOf(routeId) === index &&
+        !isThroughServiceTransferAlias(routeId)
+      );
       const filteredStopRouteIds = stopRouteIds.filter((routeId) => {
         if (isUenoTokyoRouteId(routeId) && !isUenoTokyoCoreSegment) return false;
+        if (boardStop && nextStop && !routeMatchesTripAdjacentSegment(routeId, entry?.trip, boardStop, nextStop)) return false;
         const stopRoute = state.routeById.get(routeId);
         if (
           tripRoute?.operatorId === 'jr_east' &&
@@ -5866,11 +5958,14 @@
       });
       if (filteredStopRouteIds.length) return filteredStopRouteIds;
       if (isUenoTokyoRouteId(tripRouteId) && !isUenoTokyoCoreSegment) return [];
-      if (tripRouteId && !isThroughServiceTransferAlias(tripRouteId)) return [tripRouteId];
-      return (entry?.routeIds || []).filter((routeId) =>
-        !isThroughServiceTransferAlias(routeId) &&
-        (!isUenoTokyoRouteId(routeId) || isUenoTokyoCoreSegment)
-      );
+      if (
+        tripRouteId &&
+        !isThroughServiceTransferAlias(tripRouteId) &&
+        (!boardStop || !nextStop || routeMatchesTripAdjacentSegment(tripRouteId, entry?.trip, boardStop, nextStop))
+      ) {
+        return [tripRouteId];
+      }
+      return [];
     }
 
     function logicalRouteIdsForStation(stationGroupId) {

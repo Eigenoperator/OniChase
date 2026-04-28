@@ -107,6 +107,7 @@ async function auditRouteChoices(page) {
         stop: entry.stop,
         routeIds: entry.routeIds || [],
         departureMinute: entry.departureMinute,
+        queryStationGroupId: entry.queryStationGroupId,
       }).map(routeTitle);
     }
 
@@ -146,6 +147,90 @@ async function auditRouteChoices(page) {
     }
 
     const anomalies = [];
+    const allowedVirtualRouteStations = {
+      VIRTUAL_JR_EAST_UENO_TOKYO: new Set(['東京', '上野']),
+      VIRTUAL_JR_EAST_YOKOSUKA_SOBU_RAPID: new Set([
+        '久里浜', '衣笠', '横須賀', '田浦', '東逗子', '逗子', '鎌倉', '北鎌倉',
+        '大船', '戸塚', '東戸塚', '保土ヶ谷', '横浜', '新川崎', '武蔵小杉',
+        '西大井', '品川', '新橋', '東京', '新日本橋', '馬喰町', '錦糸町',
+        '新小岩', '市川', '船橋', '津田沼', '稲毛', '千葉',
+      ]),
+      VIRTUAL_JR_EAST_CHUO_RAPID: new Set([
+        '東京', '神田', '御茶ノ水', '四ツ谷', '新宿', '中野', '高円寺', '阿佐ケ谷',
+        '荻窪', '西荻窪', '吉祥寺', '三鷹', '武蔵境', '東小金井', '武蔵小金井',
+        '国分寺', '西国分寺', '国立', '立川', '日野', '豊田', '八王子',
+        '西八王子', '高尾',
+      ]),
+      VIRTUAL_JR_EAST_CHUO_SOBU_LOCAL: new Set([
+        '三鷹', '吉祥寺', '西荻窪', '荻窪', '阿佐ケ谷', '高円寺', '中野',
+        '東中野', '大久保', '新宿', '代々木', '千駄ケ谷', '信濃町', '四ツ谷',
+        '市ケ谷', '飯田橋', '水道橋', '御茶ノ水', '秋葉原', '浅草橋', '両国',
+        '錦糸町', '亀戸', '平井', '新小岩', '小岩', '市川', '本八幡',
+        '下総中山', '西船橋', '船橋', '東船橋', '津田沼', '幕張本郷', '幕張',
+        '新検見川', '稲毛', '西千葉', '千葉',
+      ]),
+      VIRTUAL_JR_EAST_KEIHIN_TOHOKU_NEGISHI: new Set([
+        '大宮', 'さいたま新都心', '与野', '北浦和', '浦和', '南浦和', '蕨',
+        '西川口', '川口', '赤羽', '東十条', '王子', '上中里', '田端',
+        '西日暮里', '日暮里', '鶯谷', '上野', '御徒町', '秋葉原', '神田',
+        '東京', '有楽町', '新橋', '浜松町', '田町', '高輪ゲートウェイ',
+        '品川', '大井町', '大森', '蒲田', '川崎', '鶴見', '新子安',
+        '東神奈川', '横浜', '桜木町', '関内', '石川町', '山手', '根岸',
+        '磯子', '新杉田', '洋光台', '港南台', '本郷台', '大船',
+      ]),
+    };
+    const globalChoiceScan = {
+      checkedRows: 0,
+      checkedChoices: 0,
+      segmentMismatchCount: 0,
+      virtualOutsideAllowedStationCount: 0,
+      samples: [],
+    };
+    function addGlobalChoiceSample(kind, stationName, entry, routeId, nextStop) {
+      if (globalChoiceScan.samples.length >= 80) return;
+      globalChoiceScan.samples.push({
+        kind,
+        station: stationName,
+        route: routeTitle(routeId),
+        departure: minutesToHhmm(entry.departureMinute),
+        nextStation: displayNameForGroup(nextStop.stationGroupId),
+        terminal: displayNameForGroup((entry.trip?.stopTimes || []).at(-1)?.stationGroupId || ''),
+        tripRoute: routeTitle(entry.trip?.routeId || ''),
+        tripId: entry.trip?.id || '',
+      });
+    }
+    for (const [stationGroupId, group] of state.stationGroupById.entries()) {
+      const stationName = group.names?.ja || group.primaryName || stationGroupId;
+      for (const entry of departuresForStationGroup(stationGroupId, START_MINUTE)) {
+        const nextStop = nextStopFor(entry);
+        if (!nextStop) continue;
+        globalChoiceScan.checkedRows += 1;
+        const routeIds = routeChoiceIdsForDeparture(entry);
+        globalChoiceScan.checkedChoices += routeIds.length;
+        routeIds.forEach((routeId) => {
+          if (isShinkansenCorridorRoute(routeId)) return;
+          const allowedStations = allowedVirtualRouteStations[routeId];
+          if (allowedStations) {
+            if (!allowedStations.has(stationName)) {
+              globalChoiceScan.virtualOutsideAllowedStationCount += 1;
+              addGlobalChoiceSample('virtual_outside_allowed_station', stationName, entry, routeId, nextStop);
+            }
+            return;
+          }
+          if (!routeMatchesTripAdjacentSegment(routeId, entry.trip, entry.stop, nextStop)) {
+            globalChoiceScan.segmentMismatchCount += 1;
+            addGlobalChoiceSample('choice_not_current_next_segment', stationName, entry, routeId, nextStop);
+          }
+        });
+      }
+    }
+    if (globalChoiceScan.segmentMismatchCount || globalChoiceScan.virtualOutsideAllowedStationCount) {
+      anomalies.push({
+        kind: 'global_route_choice_segment_scan',
+        reason: 'Every player-facing route choice must either be an allowed virtual corridor at that station or serve the current boarding stop -> next stop segment.',
+        ...globalChoiceScan,
+      });
+    }
     const knownStationChoices = Object.fromEntries(
       ['東京', '上野', '品川', '新橋', '大宮', '青梅'].map((stationName) => [stationName, choicesAt(stationName)])
     );
@@ -232,6 +317,7 @@ async function auditRouteChoices(page) {
       stationCount: state.stationGroupById.size,
       tripCount: state.tripById?.size || 0,
       knownStationChoices,
+      globalChoiceScan,
       anomalyCount: anomalies.length,
       anomalies: anomalies.slice(0, 80),
     };
