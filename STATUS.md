@@ -26,7 +26,7 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 - Reusable v4 through-service audit reports `1026` split-trip candidates: `942` covered by existing browser rules, `52` confirmed direct-service rules, `26` reviewed likely reused-number/data-context non-UI cases, and `6` still needing review.
 - v4 route-choice QA now globally scans all `9052` station groups for player-facing route choices that do not match the current boarding stop -> next stop segment, escape their allowed virtual-corridor station set, or violate selected-train label rules; latest scan reports `0` anomalies after enforcing the `東海道線`-`東京`-`上野東京ライン`-`上野`-branch chain and direction-side ordinary through labels with no raw `x号線`.
 - Pages web bundle was slimmed by pruning unreferenced `docs/data` artifacts; local `docs/` now builds to about `44M` while v4 still loads and passes the 青梅 probe.
-- Render v4 room-server deployment is manual-only; push-triggered server deploy is disabled after repeated failures.
+- Render v4 room-server deployment is forbidden unless Scorp explicitly reverses the axiom; push-triggered server deploy is disabled after repeated failures.
 
 ## In Progress
 - Promote the v4 nationwide gameplay bundle into a public playtest pass.
