@@ -6,9 +6,11 @@ import argparse
 import gzip
 import json
 import random
+import sqlite3
 import string
 import threading
 import time
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -22,28 +24,40 @@ DATASET_PRESETS = {
     "shinkansen": {
         "bundle_path": ROOT / "data" / "v3_shinkansen_bundle.json",
         "timetable_path": None,
+        "trip_store_path": None,
     },
     "v2-shinkansen": {
         "bundle_path": ROOT / "data" / "v3_shinkansen_bundle.json",
         "timetable_path": None,
+        "trip_store_path": None,
     },
     "v3-tokyo": {
         "bundle_path": ROOT / "data" / "v3_tokyo_map_bundle.json.gz",
         "timetable_path": ROOT / "data" / "v3_tokyo_timetable_bundle.json.gz",
+        "trip_store_path": None,
     },
     "v4-nationwide": {
+        "bundle_path": ROOT / "data" / "v4_room_server_bundle.json.gz",
+        "timetable_path": None,
+        "trip_store_path": ROOT / "data" / "v4_room_server_trips.sqlite",
+    },
+    "v4-nationwide-full": {
         "bundle_path": ROOT / "data" / "v4_gameplay_map_bundle.json.gz",
         "timetable_path": ROOT / "data" / "v4_gameplay_timetable_bundle.json.gz",
+        "trip_store_path": None,
     },
 }
 
 BUNDLE: dict[str, Any] = {}
-TRIP_LOOKUP: dict[str, dict[str, Any]] = {}
+TRIP_LOOKUP: dict[str, Any] = {}
 STATION_GROUP_LOOKUP: dict[str, dict[str, Any]] = {}
+COMPACT_STATION_GROUP_IDS: list[str] = []
+COMPACT_SERVICE_NAMES: list[str] = []
 TRIP_INSTANCE_COUNT = 0
 DATASET_NAME = "unconfigured"
 BUNDLE_PATH: Path | None = None
 TIMETABLE_PATH: Path | None = None
+TRIP_STORE_PATH: Path | None = None
 DEFAULT_RUNNER_START_STATION_ID = "SG_TOKYO"
 DEFAULT_HUNTER_START_STATION_ID = "SG_SHIN_OSAKA"
 
@@ -80,10 +94,119 @@ def choose_default_station(preferred_ids: list[str], fallback_index: int = 0) ->
     return station_ids[min(fallback_index, len(station_ids) - 1)]
 
 
-def configure_dataset(dataset_name: str, bundle_path: Path, timetable_path: Path | None = None) -> None:
+def trip_id(trip: Any) -> str:
+    if isinstance(trip, str):
+        return trip
+    return str(trip.get("id") if isinstance(trip, dict) else trip[0])
+
+
+def trip_stop_times(trip: Any) -> list[Any]:
+    return trip.get("stopTimes", []) if isinstance(trip, dict) else trip[4]
+
+
+def trip_service_name(trip: Any) -> str:
+    if isinstance(trip, dict):
+        return str(trip.get("serviceName") or trip.get("serviceNameJa") or trip.get("id") or "")
+    service_index = trip[2]
+    if isinstance(service_index, int) and 0 <= service_index < len(COMPACT_SERVICE_NAMES):
+        return COMPACT_SERVICE_NAMES[service_index]
+    return trip_id(trip)
+
+
+def trip_service_number(trip: Any) -> str:
+    if isinstance(trip, dict):
+        return str(trip.get("serviceNumber") or "")
+    return str(trip[3] or "")
+
+
+def stop_station_group_id(stop: Any) -> str:
+    if isinstance(stop, dict):
+        return str(stop["stationGroupId"])
+    station_index = stop[0]
+    if isinstance(station_index, int) and 0 <= station_index < len(COMPACT_STATION_GROUP_IDS):
+        return COMPACT_STATION_GROUP_IDS[station_index]
+    return str(station_index)
+
+
+def stop_sequence(stop: Any) -> int:
+    if isinstance(stop, dict):
+        return int(stop["sequence"])
+    if len(stop) >= 4:
+        return int(stop[3])
+    return 0
+
+
+def stop_arrival_seconds(stop: Any) -> int:
+    if isinstance(stop, dict):
+        value = stop.get("arrivalTimeSec")
+        if value is None:
+            value = stop["departureTimeSec"]
+        return int(value)
+    value = stop[1] if len(stop) > 1 else None
+    if value is None:
+        value = stop[2]
+    return int(value)
+
+
+def stop_departure_seconds(stop: Any) -> int:
+    if isinstance(stop, dict):
+        value = stop.get("departureTimeSec")
+        if value is None:
+            value = stop["arrivalTimeSec"]
+        return int(value)
+    value = stop[2] if len(stop) > 2 else None
+    if value is None:
+        value = stop[1]
+    return int(value)
+
+
+class SQLiteTripLookup:
+    def __init__(self, path: Path, cache_size: int = 4096) -> None:
+        self.path = path
+        self.cache_size = cache_size
+        self._lock = threading.Lock()
+        self._cache: OrderedDict[str, Any] = OrderedDict()
+        self._connection = sqlite3.connect(path, check_same_thread=False)
+        self._count = int(self._connection.execute("SELECT COUNT(*) FROM trips").fetchone()[0])
+
+    def __len__(self) -> int:
+        return self._count
+
+    def get(self, trip_id_value: str) -> Any | None:
+        with self._lock:
+            cached = self._cache.get(trip_id_value)
+            if cached is not None:
+                self._cache.move_to_end(trip_id_value)
+                return cached
+            row = self._connection.execute(
+                "SELECT route_index, service_index, service_number, stops_json FROM trips WHERE id = ?",
+                (trip_id_value,),
+            ).fetchone()
+            if row is None:
+                return None
+            trip = [
+                trip_id_value,
+                row[0],
+                row[1],
+                row[2] or "",
+                json.loads(row[3]),
+            ]
+            self._cache[trip_id_value] = trip
+            if len(self._cache) > self.cache_size:
+                self._cache.popitem(last=False)
+            return trip
+
+
+def configure_dataset(
+    dataset_name: str,
+    bundle_path: Path,
+    timetable_path: Path | None = None,
+    trip_store_path: Path | None = None,
+) -> None:
     global BUNDLE, TRIP_LOOKUP, STATION_GROUP_LOOKUP
+    global COMPACT_STATION_GROUP_IDS, COMPACT_SERVICE_NAMES
     global TRIP_INSTANCE_COUNT
-    global DATASET_NAME, BUNDLE_PATH, TIMETABLE_PATH
+    global DATASET_NAME, BUNDLE_PATH, TIMETABLE_PATH, TRIP_STORE_PATH
     global DEFAULT_RUNNER_START_STATION_ID, DEFAULT_HUNTER_START_STATION_ID
 
     bundle = load_json(bundle_path)
@@ -95,19 +218,41 @@ def configure_dataset(dataset_name: str, bundle_path: Path, timetable_path: Path
             f"{bundle_path} uses deferred timetable data; pass --timetable or use --dataset v3-tokyo"
         )
 
+    compact_timetable = bundle.get("compactTimetable")
+    if trip_store_path is not None:
+        if not compact_timetable:
+            raise ValueError(f"{bundle_path} has no compactTimetable metadata for trip store loading")
+        COMPACT_STATION_GROUP_IDS = compact_timetable.get("stationGroupIds", [])
+        COMPACT_SERVICE_NAMES = compact_timetable.get("serviceNames", [])
+        trip_lookup = SQLiteTripLookup(trip_store_path)
+        trip_instance_count = len(trip_lookup)
+    elif compact_timetable:
+        COMPACT_STATION_GROUP_IDS = compact_timetable.get("stationGroupIds", [])
+        COMPACT_SERVICE_NAMES = compact_timetable.get("serviceNames", [])
+        trip_instances = compact_timetable.get("trips", [])
+        trip_lookup = {trip_id(trip): trip for trip in trip_instances}
+        trip_instance_count = len(trip_instances)
+    else:
+        COMPACT_STATION_GROUP_IDS = []
+        COMPACT_SERVICE_NAMES = []
+        trip_instances = bundle.get("tripInstances", [])
+        trip_lookup = {trip_id(trip): trip for trip in trip_instances}
+        trip_instance_count = len(trip_instances)
+
     station_lookup = {group["id"]: group for group in bundle.get("stationGroups", [])}
-    trip_instances = bundle.get("tripInstances", [])
-    trip_lookup = {trip["id"]: trip for trip in trip_instances}
-    if not trip_lookup:
+    if len(trip_lookup) == 0:
         raise ValueError(f"Dataset {dataset_name} has no tripInstances")
 
-    BUNDLE = bundle
+    # The room server only needs metadata after indexing. Keeping full map geometry
+    # here is the difference between v4 fitting in small Render instances or not.
+    BUNDLE = {"metadata": bundle.get("metadata", {})}
     TRIP_LOOKUP = trip_lookup
     STATION_GROUP_LOOKUP = station_lookup
-    TRIP_INSTANCE_COUNT = len(trip_instances)
+    TRIP_INSTANCE_COUNT = trip_instance_count
     DATASET_NAME = dataset_name
     BUNDLE_PATH = bundle_path
     TIMETABLE_PATH = timetable_path
+    TRIP_STORE_PATH = trip_store_path
 
     metadata = bundle.get("metadata", {})
     DEFAULT_RUNNER_START_STATION_ID = metadata.get("defaultRunnerStartStationId") or choose_default_station(["SG_TOKYO"], 0)
@@ -125,12 +270,12 @@ def minutes_to_hhmm(value: int) -> str:
     return f"{value // 60:02d}:{value % 60:02d}"
 
 
-def stop_arrival_minutes(stop: dict[str, Any]) -> int:
-    return int((stop.get("arrivalTimeSec") if stop.get("arrivalTimeSec") is not None else stop["departureTimeSec"]) / 60)
+def stop_arrival_minutes(stop: Any) -> int:
+    return int(stop_arrival_seconds(stop) / 60)
 
 
-def stop_departure_minutes(stop: dict[str, Any]) -> int:
-    return int((stop.get("departureTimeSec") if stop.get("departureTimeSec") is not None else stop["arrivalTimeSec"]) / 60)
+def stop_departure_minutes(stop: Any) -> int:
+    return int(stop_departure_seconds(stop) / 60)
 
 
 def make_room_id() -> str:
@@ -188,10 +333,10 @@ def station_group_label(station_group_id: str | None) -> str | None:
     return group.get("primaryName") or station_group_id
 
 
-def find_boarding_stop(trip: dict[str, Any], station_group_id: str, earliest_minute: int) -> dict[str, Any] | None:
+def find_boarding_stop(trip: Any, station_group_id: str, earliest_minute: int) -> Any | None:
     matches = [
-        stop for stop in trip["stopTimes"]
-        if stop["stationGroupId"] == station_group_id and stop_departure_minutes(stop) >= earliest_minute
+        stop for stop in trip_stop_times(trip)
+        if stop_station_group_id(stop) == station_group_id and stop_departure_minutes(stop) >= earliest_minute
     ]
     if not matches:
         return None
@@ -199,11 +344,11 @@ def find_boarding_stop(trip: dict[str, Any], station_group_id: str, earliest_min
     return matches[0]
 
 
-def find_alight_stop(trip: dict[str, Any], boarded_sequence: int, station_group_id: str) -> dict[str, Any] | None:
-    for stop in trip["stopTimes"]:
-        if stop["sequence"] <= boarded_sequence:
+def find_alight_stop(trip: Any, boarded_sequence: int, station_group_id: str) -> Any | None:
+    for stop in trip_stop_times(trip):
+        if stop_sequence(stop) <= boarded_sequence:
             continue
-        if stop["stationGroupId"] != station_group_id:
+        if stop_station_group_id(stop) != station_group_id:
             continue
         return stop
     return None
@@ -226,8 +371,8 @@ def preview_player_for_room(room: RoomState, seat: str, time_cap_minute: int) ->
     player = room.players[seat]
     current_minute = hhmm_to_minutes(room.start_time_hhmm)
     current_state: dict[str, Any] = {"kind": "NODE", "station_group_id": player.start_station_id}
-    current_trip: dict[str, Any] | None = None
-    current_board_stop: dict[str, Any] | None = None
+    current_trip: Any | None = None
+    current_board_stop: Any | None = None
 
     for step in player.steps:
         if step["type"] == "WAIT_UNTIL":
@@ -250,7 +395,7 @@ def preview_player_for_room(room: RoomState, seat: str, time_cap_minute: int) ->
             if board_minute > time_cap_minute:
                 break
             current_minute = board_minute
-            current_state = {"kind": "TRAIN", "trip_id": trip["id"]}
+            current_state = {"kind": "TRAIN", "trip_id": trip_id(trip)}
             current_trip = trip
             current_board_stop = board_stop
             continue
@@ -258,7 +403,7 @@ def preview_player_for_room(room: RoomState, seat: str, time_cap_minute: int) ->
         if step["type"] == "RIDE_TO_STATION":
             if current_state["kind"] != "TRAIN" or current_trip is None or current_board_stop is None:
                 break
-            alight_stop = find_alight_stop(current_trip, current_board_stop["sequence"], step["station_id"])
+            alight_stop = find_alight_stop(current_trip, stop_sequence(current_board_stop), step["station_id"])
             if alight_stop is None:
                 break
             arrival_minute = stop_arrival_minutes(alight_stop)
@@ -273,13 +418,13 @@ def preview_player_for_room(room: RoomState, seat: str, time_cap_minute: int) ->
                 return {
                     "time_hhmm": minutes_to_hhmm(time_cap_minute),
                     "kind": "TRAIN",
-                    "trip_id": current_trip["id"],
+                    "trip_id": trip_id(current_trip),
                     "service_label": format_trip_label(current_trip),
                     "station_group_id": None,
-                    "map_position": segment_position(previous_stop["stationGroupId"], next_stop["stationGroupId"], progress),
+                    "map_position": segment_position(stop_station_group_id(previous_stop), stop_station_group_id(next_stop), progress),
                 }
             current_minute = arrival_minute
-            current_state = {"kind": "NODE", "station_group_id": alight_stop["stationGroupId"]}
+            current_state = {"kind": "NODE", "station_group_id": stop_station_group_id(alight_stop)}
             current_trip = None
             current_board_stop = None
 
@@ -296,8 +441,8 @@ def preview_player_for_room(room: RoomState, seat: str, time_cap_minute: int) ->
     trip = current_trip
     if trip is not None and current_board_stop is not None:
         next_stop = None
-        for stop in trip["stopTimes"]:
-            if stop["sequence"] > current_board_stop["sequence"]:
+        for stop in trip_stop_times(trip):
+            if stop_sequence(stop) > stop_sequence(current_board_stop):
                 next_stop = stop
                 break
         if next_stop is not None:
@@ -307,25 +452,26 @@ def preview_player_for_room(room: RoomState, seat: str, time_cap_minute: int) ->
                 progress = 1.0
             else:
                 progress = (time_cap_minute - departure_minute) / (arrival_minute - departure_minute)
-            map_position = segment_position(current_board_stop["stationGroupId"], next_stop["stationGroupId"], progress)
+            map_position = segment_position(stop_station_group_id(current_board_stop), stop_station_group_id(next_stop), progress)
         else:
-            map_position = station_position(current_board_stop["stationGroupId"])
+            map_position = station_position(stop_station_group_id(current_board_stop))
     else:
         map_position = None
 
+    trip_for_label = TRIP_LOOKUP.get(current_state["trip_id"])
     return {
         "time_hhmm": minutes_to_hhmm(time_cap_minute),
         "kind": "TRAIN",
         "trip_id": current_state["trip_id"],
-        "service_label": format_trip_label(TRIP_LOOKUP[current_state["trip_id"]]),
+        "service_label": format_trip_label(trip_for_label) if trip_for_label is not None else current_state["trip_id"],
         "station_group_id": None,
         "map_position": map_position,
     }
 
 
-def format_trip_label(trip: dict[str, Any]) -> str:
-    name = trip.get("serviceName") or trip["id"]
-    number = trip.get("serviceNumber")
+def format_trip_label(trip: Any) -> str:
+    name = trip_service_name(trip) or trip_id(trip)
+    number = trip_service_number(trip)
     return f"{name} {number}".strip()
 
 
@@ -630,6 +776,7 @@ class RoomRequestHandler(BaseHTTPRequestHandler):
                     "dataset_id": BUNDLE.get("metadata", {}).get("datasetId"),
                     "bundle_path": display_path(BUNDLE_PATH),
                     "timetable_path": display_path(TIMETABLE_PATH),
+                    "trip_store_path": display_path(TRIP_STORE_PATH),
                     "trip_count": TRIP_INSTANCE_COUNT,
                     "unique_trip_id_count": len(TRIP_LOOKUP),
                     "duplicate_trip_id_count": TRIP_INSTANCE_COUNT - len(TRIP_LOOKUP),
@@ -794,6 +941,12 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional deferred timetable bundle path, used by datasets such as v3 Tokyo.",
     )
+    parser.add_argument(
+        "--trip-store",
+        dest="trip_store_path",
+        default=None,
+        help="Optional SQLite trip lookup store for large datasets such as v4 nationwide.",
+    )
     return parser.parse_args()
 
 
@@ -802,7 +955,8 @@ def main() -> None:
     preset = DATASET_PRESETS[args.dataset]
     bundle_path = resolve_path(args.bundle_path) or preset["bundle_path"]
     timetable_path = resolve_path(args.timetable_path) or preset["timetable_path"]
-    configure_dataset(args.dataset, bundle_path, timetable_path)
+    trip_store_path = resolve_path(args.trip_store_path) or preset.get("trip_store_path")
+    configure_dataset(args.dataset, bundle_path, timetable_path, trip_store_path)
     server = ThreadingHTTPServer((args.host, args.port), RoomRequestHandler)
     print(
         f"OniChase room server listening on http://{args.host}:{args.port} "
