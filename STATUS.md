@@ -26,6 +26,7 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 - Reusable v4 through-service audit reports `1026` split-trip candidates: `942` covered by existing browser rules, `52` confirmed direct-service rules, `26` reviewed likely reused-number/data-context non-UI cases, and `6` still needing review.
 - v4 route-choice QA now applies the platform/boarding-face axiom: 東京 same-platform `東海道線` rows merge into `上野東京ライン`, while visible duplicate source rows are deduped by public train number.
 - Pages web bundle was slimmed by pruning unreferenced `docs/data` artifacts; local `docs/` now builds to about `44M` while v4 still loads and passes the 青梅 probe.
+- Render v4 room-server deployment is manual-only; push-triggered server deploy is disabled after repeated failures.
 
 ## In Progress
 - Promote the v4 nationwide gameplay bundle into a public playtest pass.
@@ -35,7 +36,6 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 ## Blockers
 - Raw MLIT N02-2024 source files are local-only and ignored by git; regenerated v4 artifacts require those local files or a documented download step.
 - Large collection caches remain local-only and should not be committed.
-- `8444` source trains are dropped by the global excessive station-match-distance gate and need source-specific triage before any are restored; `35` more are dropped for unmatched station refs.
 
 ## Decisions
 - [2026-04-07] GIS-first Shinkansen became the main `v2`; old prototypes stay archived.
