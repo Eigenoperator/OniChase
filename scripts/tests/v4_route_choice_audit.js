@@ -147,7 +147,7 @@ async function auditRouteChoices(page) {
 
     const anomalies = [];
     const knownStationChoices = Object.fromEntries(
-      ['東京', '品川', '大宮', '青梅'].map((stationName) => [stationName, choicesAt(stationName)])
+      ['東京', '上野', '品川', '新橋', '大宮', '青梅'].map((stationName) => [stationName, choicesAt(stationName)])
     );
     const routeChoiceTitles = Object.fromEntries(
       Object.entries(knownStationChoices).map(([stationName, choices]) => [
@@ -156,12 +156,21 @@ async function auditRouteChoices(page) {
       ])
     );
 
-    if (routeChoiceTitles['東京']?.has('東北線') || routeChoiceTitles['東京']?.has('東海道線')) {
+    const allUenoTokyoChoiceStations = [];
+    for (const [stationGroupId, group] of state.stationGroupById.entries()) {
+      const choices = routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, START_MINUTE));
+      if (choices.some((choice) => routeTitle(choice.routeId) === '上野東京ライン')) {
+        allUenoTokyoChoiceStations.push(group.names?.ja || group.primaryName || stationGroupId);
+      }
+    }
+    const unexpectedUenoTokyoStations = [...new Set(allUenoTokyoChoiceStations)]
+      .filter((stationName) => !['東京', '上野'].includes(stationName))
+      .sort((a, b) => a.localeCompare(b, 'ja'));
+    if (unexpectedUenoTokyoStations.length) {
       anomalies.push({
-        kind: 'tokyo_physical_trunk_route_choice',
-        station: '東京',
-        reason: 'Tokyo route choices should use the reviewed virtual corridors, not expose Tohoku/Tokaido physical source labels.',
-        choices: knownStationChoices['東京'],
+        kind: 'ueno_tokyo_line_outside_core_station_scan',
+        reason: 'The weakened Ueno-Tokyo Line display rule only allows 上野東京ライン at Tokyo and Ueno.',
+        stations: unexpectedUenoTokyoStations,
       });
     }
 
@@ -174,13 +183,15 @@ async function auditRouteChoices(page) {
       });
     }
 
-    for (const stationName of ['東京', '品川']) {
+    for (const stationName of ['東京']) {
       for (const entry of entriesAt(stationName)) {
         const choices = routeTitlesForEntry(entry);
         if (choices.includes('東海道線') || choices.includes('東北線') || choices.includes('高崎線')) {
+          const nextStation = summarizeEntry(stationName, entry).nextStation;
+          if (nextStation !== '上野') continue;
           anomalies.push({
             kind: 'central_ueno_tokyo_physical_choice',
-            reason: `${stationName} should expose the Ueno-Tokyo corridor instead of parallel physical source labels for through-running trains.`,
+            reason: 'Tokyo -> Ueno core movements should expose 上野東京ライン rather than raw source trunk labels.',
             ...summarizeEntry(stationName, entry),
           });
         }

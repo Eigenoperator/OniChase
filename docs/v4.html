@@ -1764,7 +1764,7 @@
     const JR_CHUO_RAPID_ROUTE_ID = 'VIRTUAL_JR_EAST_CHUO_RAPID';
     const JR_CHUO_SOBU_LOCAL_ROUTE_ID = 'VIRTUAL_JR_EAST_CHUO_SOBU_LOCAL';
     const SANYO_KYUSHU_CORRIDOR_ROUTE_ID = 'VIRTUAL_SHINKANSEN_SANYO_KYUSHU';
-    const UENO_TOKYO_CORE_STATIONS = new Set(['品川', '新橋', '東京', '上野', '尾久', '赤羽']);
+    const UENO_TOKYO_CORE_STATIONS = new Set(['東京', '上野']);
     const UENO_TOKYO_LINE_RANGE_STATIONS = new Set([
       // 東海道線 side, matching the Ueno-Tokyo Line diagram range.
       '沼津', '三島', '熱海', '湯河原', '小田原', '国府津', '平塚', '茅ケ崎', '藤沢',
@@ -1789,6 +1789,16 @@
     const UENO_TOKYO_OMIYA_TAKASAKI_NEXT_STATIONS = new Set([
       '宮原', '上尾', '桶川', '北本', '鴻巣', '熊谷', '籠原', '深谷', '本庄',
       '新町', '倉賀野', '高崎', '新前橋', '前橋',
+    ]);
+    const UENO_TOKYO_TOKAIDO_SIDE_STATIONS = new Set([
+      '沼津', '三島', '熱海', '湯河原', '小田原', '国府津', '平塚', '茅ケ崎',
+      '藤沢', '大船', '戸塚', '横浜', '川崎', '品川', '新橋', '東京',
+    ]);
+    const UENO_TOKYO_JOBAN_SIDE_STATIONS = new Set([
+      '日暮里', '三河島', '南千住', '北千住', '松戸', '柏', '我孫子', '天王台',
+      '取手', '藤代', '龍ケ崎市', '牛久', 'ひたち野うしく', '荒川沖', '土浦',
+      '神立', '高浜', '石岡', '羽鳥', '岩間', '友部', '内原', '赤塚', '水戸',
+      '勝田', '佐和', '東海', '大甕', '常陸多賀', '日立', '小木津', '十王', '高萩',
     ]);
     const UENO_TOKYO_NORTH_STATIONS = new Set(['東京', '上野', '尾久', '赤羽', '浦和', 'さいたま新都心', '大宮', '小山', '小金井', '宇都宮', '籠原', '熊谷', '高崎', '取手', '土浦', '水戸', '勝田']);
     const UENO_TOKYO_TRIP_ROUTE_NAMES = new Set([
@@ -2732,6 +2742,11 @@
       return [...names].some((name) => faceNames.has(name));
     }
 
+    function isUenoTokyoRouteId(routeId) {
+      const route = state.routeById.get(routeId || '');
+      return route?.shortName === 'JR_EAST_UENO_TOKYO' || routeJapaneseName(route) === '上野東京ライン';
+    }
+
     function isYokosukaSobuRapidTrip(trip) {
       if (!isJrEastConventionalTrip(trip) || isKeihinTohokuNegishiTrip(trip)) return false;
       const route = tripRoute(trip);
@@ -2774,6 +2789,63 @@
       if (UENO_TOKYO_OMIYA_TAKASAKI_NEXT_STATIONS.has(nextName)) {
         return routeIdByShortNameAndOperator('高崎線', 'jr_east');
       }
+      if (['さいたま新都心', '浦和', '赤羽'].includes(nextName)) {
+        const route = tripRoute(trip);
+        if (['高崎線', '上越線', '両毛線'].includes(route?.shortName)) {
+          return routeIdByShortNameAndOperator('高崎線', 'jr_east');
+        }
+        return routeIdByShortNameAndOperator('東北線', 'jr_east') ||
+          routeIdByShortNameAndOperator('宇都宮線', 'jr_east');
+      }
+      return null;
+    }
+
+    function uenoTokyoCoreSegmentChoiceRouteId(entry, trip, boardStop) {
+      if (!isJrEastConventionalTrip(trip) || !boardStop) return null;
+      const queryStationName = entry?.queryStationGroupId ? displayNameForGroup(entry.queryStationGroupId) : '';
+      if (queryStationName && !UENO_TOKYO_CORE_STATIONS.has(queryStationName)) return null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      if (!UENO_TOKYO_CORE_STATIONS.has(boardName)) return null;
+      const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
+      if (
+        (boardName === '東京' && nextName === '上野') ||
+        (boardName === '上野' && nextName === '東京')
+      ) {
+        return JR_UENO_TOKYO_CORRIDOR_ROUTE_ID;
+      }
+      return null;
+    }
+
+    function weakenedUenoTokyoReplacementRouteId(trip, boardStop) {
+      if (!isJrEastConventionalTrip(trip) || !boardStop) return null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
+      const route = tripRoute(trip);
+      const hasUenoTokyoFace = boardingFaceRouteNamesForStop(trip, boardStop)
+        .some((name) => name === '上野東京ライン' || name === 'JR_EAST_UENO_TOKYO');
+      if (!hasUenoTokyoFace && route?.shortName !== 'JR_EAST_UENO_TOKYO') return null;
+      if (UENO_TOKYO_TOKAIDO_SIDE_STATIONS.has(boardName) || UENO_TOKYO_TOKAIDO_SIDE_STATIONS.has(nextName)) {
+        return routeIdByShortNameAndOperator('東海道線', 'jr_east');
+      }
+      if (UENO_TOKYO_JOBAN_SIDE_STATIONS.has(boardName) || UENO_TOKYO_JOBAN_SIDE_STATIONS.has(nextName)) {
+        return routeIdByShortNameAndOperator('常磐線', 'jr_east');
+      }
+      if (
+        UENO_TOKYO_OMIYA_TAKASAKI_NEXT_STATIONS.has(boardName) ||
+        UENO_TOKYO_OMIYA_TAKASAKI_NEXT_STATIONS.has(nextName) ||
+        ['高崎線', '上越線', '両毛線'].includes(route?.shortName)
+      ) {
+        return routeIdByShortNameAndOperator('高崎線', 'jr_east');
+      }
+      if (
+        UENO_TOKYO_OMIYA_UTSUNOMIYA_NEXT_STATIONS.has(boardName) ||
+        UENO_TOKYO_OMIYA_UTSUNOMIYA_NEXT_STATIONS.has(nextName) ||
+        ['尾久', '赤羽', '浦和', 'さいたま新都心', '大宮'].includes(boardName) ||
+        ['尾久', '赤羽', '浦和', 'さいたま新都心', '大宮'].includes(nextName)
+      ) {
+        return routeIdByShortNameAndOperator('東北線', 'jr_east') ||
+          routeIdByShortNameAndOperator('宇都宮線', 'jr_east');
+      }
       return null;
     }
 
@@ -2781,27 +2853,13 @@
       const trip = entry?.trip || entry;
       if (isKeihinTohokuNegishiTrip(trip)) return JR_KEIHIN_TOHOKU_NEGISHI_ROUTE_ID;
       const boardStop = entry?.boardStop || entry?.stop || null;
+      const coreSegmentRouteId = uenoTokyoCoreSegmentChoiceRouteId(entry, trip, boardStop);
+      if (coreSegmentRouteId) return coreSegmentRouteId;
       const omiyaBranchRouteId = omiyaUenoTokyoBranchChoiceRouteId(trip, boardStop);
       if (omiyaBranchRouteId) return omiyaBranchRouteId;
-      const boardName = stationDisplayNameForStop(boardStop);
-      const route = tripRoute(trip);
-      const sameUenoTokyoBoardingFace = boardingFaceHasAny(trip, boardStop, UENO_TOKYO_BOARDING_FACE_ROUTE_NAMES);
-      if (
-        sameUenoTokyoBoardingFace &&
-        UENO_TOKYO_LINE_RANGE_STATIONS.has(boardName) &&
-        UENO_TOKYO_TRIP_ROUTE_NAMES.has(route?.shortName)
-      ) {
-        return JR_UENO_TOKYO_CORRIDOR_ROUTE_ID;
-      }
-      if (
-        UENO_TOKYO_CORE_STATIONS.has(boardName) &&
-        UENO_TOKYO_NORTH_ROUTE_NAMES.has(route?.shortName) &&
-        tripStationNames(trip).some((name) => UENO_TOKYO_NORTH_STATIONS.has(name))
-      ) {
-        return JR_UENO_TOKYO_CORRIDOR_ROUTE_ID;
-      }
-      if (!isUenoTokyoLineTrip(trip)) return null;
-      return UENO_TOKYO_LINE_RANGE_STATIONS.has(boardName) ? JR_UENO_TOKYO_CORRIDOR_ROUTE_ID : null;
+      const weakenedUenoTokyoRouteId = weakenedUenoTokyoReplacementRouteId(trip, boardStop);
+      if (weakenedUenoTokyoRouteId) return weakenedUenoTokyoRouteId;
+      return null;
     }
 
     function routeIdByShortName(shortName) {
@@ -4627,7 +4685,7 @@
             const departureMinute = stopDepartureMinutes(stop);
             if (departureMinute < currentMinute) continue;
             const routeIds = boardableRouteIdsForStop(trip, stop);
-            const row = { departureMinute, trip, stop, routeIds };
+            const row = { departureMinute, trip, stop, routeIds, queryStationGroupId: stationGroupId };
             if (!departureMatchesRoute(row, routeId)) break;
             const key = `${trip.id}|${stop.sequence}|${departureMinute}`;
             if (!seenRows.has(key)) {
@@ -4657,6 +4715,7 @@
           departureMinute: row.departureMinute,
           departureHhmm: minutesToHhmm(row.departureMinute),
           routeIds: row.routeIds || boardableRouteIdsForStop(row.trip, row.stop),
+          queryStationGroupId: row.queryStationGroupId,
         }))
         .filter((entry) => (entry.routeIds.length || routeChoiceIdsForDeparture(entry).length) && hasDownstreamStop(entry.trip, entry.boardStop));
       const deduped = dedupeBoardableDepartures(entries);
@@ -5779,6 +5838,8 @@
       if (jrEastChoiceRouteId) return [jrEastChoiceRouteId];
       const tripRouteId = entry?.trip?.routeId || entry?.routeId || null;
       const tripRoute = state.routeById.get(tripRouteId);
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      const isUenoTokyoCoreSegment = Boolean(uenoTokyoCoreSegmentChoiceRouteId(entry, entry?.trip, boardStop));
       if (
         tripRouteId &&
         JR_EAST_OPERATING_ROUTE_PREFERS_TRIP_ROUTE.has(tripRoute?.shortName) &&
@@ -5788,9 +5849,10 @@
       }
       const stopRouteIds = (entry?.routeIds?.length
         ? entry.routeIds
-        : tracedRouteIdsForTripStop(entry?.trip, entry?.boardStop || entry?.stop || null)
+        : tracedRouteIdsForTripStop(entry?.trip, boardStop)
       ).filter((routeId) => !isThroughServiceTransferAlias(routeId));
       const filteredStopRouteIds = stopRouteIds.filter((routeId) => {
+        if (isUenoTokyoRouteId(routeId) && !isUenoTokyoCoreSegment) return false;
         const stopRoute = state.routeById.get(routeId);
         if (
           tripRoute?.operatorId === 'jr_east' &&
@@ -5803,8 +5865,12 @@
         return true;
       });
       if (filteredStopRouteIds.length) return filteredStopRouteIds;
+      if (isUenoTokyoRouteId(tripRouteId) && !isUenoTokyoCoreSegment) return [];
       if (tripRouteId && !isThroughServiceTransferAlias(tripRouteId)) return [tripRouteId];
-      return (entry?.routeIds || []).filter((routeId) => !isThroughServiceTransferAlias(routeId));
+      return (entry?.routeIds || []).filter((routeId) =>
+        !isThroughServiceTransferAlias(routeId) &&
+        (!isUenoTokyoRouteId(routeId) || isUenoTokyoCoreSegment)
+      );
     }
 
     function logicalRouteIdsForStation(stationGroupId) {

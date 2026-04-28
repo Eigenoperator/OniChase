@@ -110,6 +110,7 @@
 - Different named Shinkansen routes must remain separately classified by their own Shinkansen route name.
 - Non-Shinkansen through-running exists only when trains actually run on the same physical track and stop at the same platform/boarding face.
 - The unified principle for deciding whether two services should be treated as the same line, equivalent direct service, or mergeable player-facing line is whether a player would board/alight on the same platform or same boarding face for the relevant movement.
+- For v4 player-facing route choices, `上野東京ライン` is only a `東京`-`上野` core-segment label. Outside that core segment, the same direct-running trains should display by their current physical boarding segment, such as `東海道線` to the south and `東北線`/`宇都宮線`/`高崎線`/`常磐線` to the north.
 - Shared operators, shared station groups, transfer permission, nearby geometry, or parallel corridors do not by themselves make two lines through-running equivalents.
 - Ordinary lines such as Tokaido Line, Yokosuka Line, Yamanote Line, and Keihin-Tohoku Line must remain separate categories unless the specific train movement truly uses the same track and platform as another service.
 
