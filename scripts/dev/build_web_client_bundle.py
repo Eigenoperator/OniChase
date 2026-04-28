@@ -26,20 +26,34 @@ V4_TARGET_HTML = DOCS_DIR / "v4.html"
 DATA_FILES = [
     ROOT / "data" / "yamanote_stations.json",
     ROOT / "data" / "yamanote_weekday_train_instances_merged.json",
-    ROOT / "data" / "shinkansen_v2_bundle.json",
-    ROOT / "data" / "shinkansen_v2_weekday_train_instances_merged.json",
-    ROOT / "data" / "v3_tokyo_phase1_service_views.json",
-    ROOT / "data" / "v3_train_manifest.json",
-    ROOT / "data" / "v3_trains_unified.json.gz",
-    ROOT / "data" / "v3_station_departures.json.gz",
-    ROOT / "data" / "v3_tokyo_bundle.json.gz",
     ROOT / "data" / "v3_tokyo_map_bundle.json.gz",
-    ROOT / "data" / "v3_tokyo_timetable_bundle.json.gz",
     ROOT / "data" / "v3_tokyo_timetable_compact.json.gz",
     ROOT / "data" / "v4_gameplay_map_bundle.json.gz",
-    ROOT / "data" / "v4_gameplay_timetable_bundle.json.gz",
     ROOT / "data" / "v4_gameplay_timetable_compact.json.gz",
     ROOT / "data" / "v4_gameplay_manifest.json",
+]
+STALE_DOCS_DATA_PATHS = [
+    "shinkansen_v2_bundle.json",
+    "shinkansen_v2_weekday_train_instances_merged.json",
+    "v3_gis",
+    "v3_station_departures.json.gz",
+    "v3_tokyo_bundle.json.gz",
+    "v3_tokyo_phase1_service_views.json",
+    "v3_tokyo_tiles",
+    "v3_tokyo_timetable_bundle.json.gz",
+    "v3_train_manifest.json",
+    "v3_trains_unified.json.gz",
+    "v4_current_train_collection_audit.json",
+    "v4_current_train_health_audit.json",
+    "v4_current_weekday_train_instances.json.gz",
+    "v4_gameplay_timetable_bundle.json.gz",
+    "v4_japan_physical_map.json.gz",
+    "v4_jr_company_timetable_coverage_audit.json",
+    "v4_maplibre",
+    "v4_non_jr_timetable_coverage_audit.json",
+    "v4_route_display_rules.json",
+    "v4_timetable_source_registry.json",
+    "v4_website_data_manifest.json",
 ]
 
 
@@ -242,6 +256,12 @@ def build_landing_page() -> str:
 
 def build() -> None:
     DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    for name in STALE_DOCS_DATA_PATHS:
+        path = DOCS_DATA_DIR / name
+        if path.is_dir():
+            shutil.rmtree(path)
+        elif path.exists():
+            path.unlink()
     v1_html = V1_SOURCE_HTML.read_text(encoding="utf-8").replace("__DATA_BASE__", "./data")
     v2_html = V2_SOURCE_HTML.read_text(encoding="utf-8").replace("__DATA_BASE__", "./data")
     v3_html = V3_MAPLIBRE_SOURCE_HTML.read_text(encoding="utf-8")

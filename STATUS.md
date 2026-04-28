@@ -24,8 +24,8 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 - Local v4 browser probes pass axioms/entry/replay checks and confirm stop-level display routes: 東京/神田/秋葉原 no longer expose stray `東北線`, 鎌倉 exposes `湘南新宿ライン` instead of raw `東北線`, 鎌倉 `横須賀線・総武快速線` now stitches same-operator Tokyo splits such as `492S -> 493F` through to 千葉, 御茶ノ水/新宿 split orange `中央線快速` from yellow `中央・総武線各駅停車`, and 立川 splits `青梅線`/`中央線` by outgoing segment.
 - v4 through-service display audit covers all browser-stitched trips: `678` stitched through trips, `0` stale `東海道線+総武線` / `総武線+東海道線` labels, and expected labels for `横須賀線・総武快速線`, `京急`/`都営浅草線`, and `京成`/`都営浅草線`.
 - Reusable v4 through-service audit reports `1026` split-trip candidates: `942` covered by existing browser rules, `52` confirmed direct-service rules, `26` reviewed likely reused-number/data-context non-UI cases, and `6` still needing review.
-- v4 青梅 station route-choice QA now normalizes 青梅-branch departures to `青梅線` before display/dedupe; browser probe shows no `中央線` choice and no sampled duplicate visible rows at 青梅 after `06:00`.
-- Reusable v4 through-service audit now includes player-facing departure checks and reports `1901` Chuo/Ome branch display conflicts for review evidence.
+- v4 青梅 route-choice QA normalizes 青梅-branch departures to `青梅線`, dedupes duplicate source rows, and audit reports `1901` Chuo/Ome branch display conflicts.
+- Pages web bundle was slimmed by pruning unreferenced `docs/data` artifacts; local `docs/` now builds to about `44M` while v4 still loads and passes the 青梅 probe.
 
 ## In Progress
 - Promote the v4 nationwide gameplay bundle into a public playtest pass.
