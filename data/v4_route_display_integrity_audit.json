@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v4.route_display_integrity_audit.v1",
-  "generatedAt": "2026-04-28T19:46:57+00:00",
+  "generatedAt": "2026-04-28T19:53:52+00:00",
   "inputs": {
     "mapBundle": "data/v4_gameplay_map_bundle.json.gz",
     "timetable": "data/v4_gameplay_timetable_bundle.json.gz"
@@ -10,13 +10,15 @@
     "missingLineTraceSegmentCount": 0,
     "ambiguousLineTraceSegmentCount": 0,
     "tripRouteNotInLineTraceCount": 5427,
-    "primaryRouteSegmentConflictCount": 558470,
-    "duplicateTrainStationCount": 45,
-    "duplicateTrainStationRouteMembershipCount": 90,
-    "repeatedStationStopCount": 26813,
+    "primaryRouteSegmentConflictCount": 557089,
+    "duplicateTrainStationCount": 0,
+    "duplicateTrainStationRouteMembershipCount": 0,
+    "repeatedStationStopCount": 16085,
     "missingLineSequenceTripCount": 0,
     "lineSequenceMismatchTripCount": 0,
-    "throughBoundaryStationDecisionCount": 174470
+    "throughBoundaryStationDecisionCount": 174470,
+    "missingStopDisplayRouteCount": 0,
+    "stopDisplayRouteMismatchCount": 0
   },
   "bySource": {
     "missingLineTraceSegments": {},
@@ -37,7 +39,7 @@
       "iyotetsu_official_route_search_reconstructed": 2692,
       "jr_central_navitime_2026-04-27": 2469,
       "jr_hokkaido_vtime_20260427": 3154,
-      "jr_kyushu_navitime_2026-04-27": 23549,
+      "jr_kyushu_navitime_2026-04-27": 23527,
       "jr_shikoku_navitime_2026-04-27": 6625,
       "jr_west_official_20260427": 27665,
       "jreast_official_2605": 60506,
@@ -48,19 +50,19 @@
       "meitetsu_official_2026-04-27": 60333,
       "nagoya_subway_official_station_diagram_json": 1922,
       "nankai_official_station_timetable": 4158,
-      "navitime_non_jr_2026-04-27": 84434,
+      "navitime_non_jr_2026-04-27": 83099,
       "shintetsu_official_all_train_pdf": 2500,
       "v3_release_candidate": 234919,
       "万葉線": 811,
       "熊本市電": 5675,
       "熊本電鉄電車": 98,
-      "路面電車": 4509
+      "路面電車": 4485
     },
-    "duplicateTrainStations": {
-      "路面電車": 45
-    },
+    "duplicateTrainStations": {},
     "missingLineSequence": {},
-    "lineSequenceMismatch": {}
+    "lineSequenceMismatch": {},
+    "missingStopDisplayRoute": {},
+    "stopDisplayRouteMismatch": {}
   },
   "topPrimaryTracePairs": {
     "東北線 -> 京浜東北線": 18347,
@@ -98,7 +100,7 @@
     "JR東西線 -> 片町線": 3414,
     "宮島線 -> 本線": 3411,
     "5号線東西線 -> 4号線丸ノ内線": 3358,
-    "1号線 -> 3号線": 3336,
+    "1号線 -> 3号線": 3334,
     "空港線 -> 常滑線": 3303,
     "埼玉高速鉄道線 -> 7号線南北線": 3201,
     "千里線 -> 6号線(堺筋線)": 3014,
@@ -117,7 +119,6 @@
     "西尾線 -> 名古屋本線": 2283,
     "近鉄連絡線 -> 名古屋線": 2210,
     "犬山線 -> 常滑線": 2182,
-    "相鉄本線 -> 相鉄いずみ野線": 2156,
     "根岸線 -> 横浜線": 2106,
     "東北線 -> 湘南新宿ライン": 2090,
     "本線 -> 蛍茶屋支線": 2072,
@@ -134,6 +135,7 @@
     "犬山線 -> 各務原線": 1824,
     "空港線 -> 犬山線": 1807,
     "富山駅南北接続線 -> 富山港線": 1807,
+    "相鉄本線 -> 相鉄いずみ野線": 1798,
     "後免線 -> 伊野線": 1737,
     "東北線 -> 高崎線": 1717,
     "江波線 -> 本線": 1702,
@@ -144,9 +146,7 @@
     "目黒線 -> 東横線": 1634,
     "健軍線 -> 幹線": 1592
   },
-  "topDuplicateTrainStationRoutePairs": {
-    "はりまや橋: 伊野線 + 桟橋線": 45
-  },
+  "topDuplicateTrainStationRoutePairs": {},
   "topThroughBoundaryRouteDecisions": {
     "練馬: 池袋線 -> 西武有楽町線": 948,
     "武蔵小杉: 東横線 -> 東海道線": 849,
@@ -1376,638 +1376,7 @@
         "sequence": 9
       }
     ],
-    "duplicateTrainStations": [
-      {
-        "tripId": "とさでん交通:路面電車:●_06時38分_系統17040",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "後免線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:●_06時40分_系統17040",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "後免線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:●_06時48分_系統17110",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:●_07時59分_系統9170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          7,
-          8
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:●_08時05分_系統9170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          7,
-          8
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_05時55分_系統17070",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "桟橋線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_05時58分_系統17150",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_06時02分_系統17060",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "後免線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_06時12分_系統17110",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_06時25分_系統17060",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "後免線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_06時33分_系統17110",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_06時52分_系統17060",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "後免線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_06時55分_系統17130",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_06時58分_系統17110",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_07時02分_系統17010",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "後免線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_07時25分_系統17010",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "後免線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_07時53分_系統11170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          16,
-          17
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_08時03分_系統11170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          16,
-          17
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_08時09分_系統11170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          16,
-          17
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_08時24分_系統13170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          20,
-          21
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_08時29分_系統15170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          34,
-          35
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_08時36分_系統11170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          16,
-          17
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_08時49分_系統9170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          7,
-          8
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_08時51分_系統11170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          16,
-          17
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_08時57分_系統9170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          7,
-          8
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_09時04分_系統9170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          7,
-          8
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_09時12分_系統13170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          20,
-          21
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_09時19分_系統9170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          7,
-          8
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_15時28分_系統17110",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_15時34分_系統11170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          16,
-          17
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_15時35分_系統17110",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_15時38分_系統17060",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "後免線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_15時48分_系統17110",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_16時19分_系統15170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          34,
-          35
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_16時43分_系統17110",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_16時48分_系統17110",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_16時50分_系統17060",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "後免線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_17時10分_系統17060",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "後免線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_17時18分_系統17040",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "後免線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_17時28分_系統17110",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_17時35分_系統17040",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "後免線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          6,
-          7
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_20時48分_系統15170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          34,
-          35
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_21時31分_系統13170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          20,
-          21
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_21時33分_系統15170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          34,
-          35
-        ]
-      },
-      {
-        "tripId": "とさでん交通:路面電車:平日_21時35分_系統11170",
-        "sourceFeedKey": "路面電車",
-        "station": "はりまや橋",
-        "tripRoute": "伊野線",
-        "segmentRoutesAtStation": [
-          "伊野線",
-          "桟橋線"
-        ],
-        "sequences": [
-          16,
-          17
-        ]
-      }
-    ],
+    "duplicateTrainStations": [],
     "lineSequenceMismatches": [],
     "throughBoundaryRouteDecisions": [
       {
@@ -2550,6 +1919,7 @@
         "outgoingDisplayRoute": "京都線",
         "rule": "boarding display route must use the outgoing segment after this station"
       }
-    ]
+    ],
+    "stopDisplayRouteMismatches": []
   }
 }

@@ -21,7 +21,7 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 - v4 gameplay bundle now exports `120420` playable compact trips, `618` service routes/patterns, and skips only `5` short gameplay trips.
 - v4 room-server bundle now has `9052` station groups and `120420` SQLite-backed trips.
 - v4 planner corridor audit passes the first `6` major hub checks with `0` warnings.
-- Local v4 browser probes loaded `v4.html`, surfaced Tokyo route choices, passed entry/replay checks, and confirmed 池袋 `東京メトロ副都心線` plus 東京/上野/品川/新橋 `上野東京ライン` filtering have no sampled contamination rows.
+- Local v4 browser probes pass axioms/entry/replay checks and confirm stop-level display routes: 東京 exposes `横須賀線・総武快速線` and not `東北線`, 立川 splits `青梅線`/`中央線` by outgoing segment, and sampled same-station duplicate route rows are `0`.
 
 ## In Progress
 - Promote the v4 nationwide gameplay bundle into a public playtest pass.

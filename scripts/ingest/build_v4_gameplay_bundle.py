@@ -142,6 +142,7 @@ def normalize_trip_stop_times(
         normalized.append(
             {
                 "sequence": len(normalized) + 1,
+                "sourceSequence": int(stop.get("sequence") or index + 1),
                 "stationGroupId": station_group_id,
                 "arrivalTimeSec": arrival * 60,
                 "departureTimeSec": departure * 60,
@@ -152,6 +153,25 @@ def normalize_trip_stop_times(
             }
         )
     return normalized
+
+
+def collapse_consecutive_duplicate_stops(stop_times: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    collapsed: list[dict[str, Any]] = []
+    for stop in stop_times:
+        if collapsed and collapsed[-1]["stationGroupId"] == stop["stationGroupId"]:
+            previous = collapsed[-1]
+            previous["departureTimeSec"] = max(previous.get("departureTimeSec") or 0, stop.get("departureTimeSec") or 0)
+            previous["arrivalTimeSec"] = min(previous.get("arrivalTimeSec") or previous["departureTimeSec"], stop.get("arrivalTimeSec") or stop.get("departureTimeSec") or previous["arrivalTimeSec"])
+            previous["sourceSequence"] = stop.get("sourceSequence") or previous.get("sourceSequence")
+            previous["physicalStationId"] = stop.get("physicalStationId") or previous.get("physicalStationId")
+            previous["sourceLineId"] = stop.get("sourceLineId") or previous.get("sourceLineId")
+            previous["sourceLineName"] = stop.get("sourceLineName") or previous.get("sourceLineName")
+            previous["sourceOperatorName"] = stop.get("sourceOperatorName") or previous.get("sourceOperatorName")
+            continue
+        collapsed.append(dict(stop))
+    for sequence, stop in enumerate(collapsed, start=1):
+        stop["sequence"] = sequence
+    return collapsed
 
 
 def public_service_name_for_train(train: dict[str, Any], line_name: str) -> str:
@@ -356,6 +376,7 @@ def build_line_trace(
     fallback_line_name: str,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     raw_by_group_sequence: dict[tuple[str, int], dict[str, Any]] = {}
+    raw_by_source_sequence: dict[int, dict[str, Any]] = {}
     raw_by_group: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for raw_stop in sorted(raw_stops or [], key=lambda item: item.get("sequence", 0)):
         station_group_id = raw_stop.get("station_group_id") or raw_stop.get("station_id")
@@ -363,6 +384,7 @@ def build_line_trace(
             continue
         sequence = int(raw_stop.get("sequence") or len(raw_by_group[station_group_id]) + 1)
         raw_by_group_sequence[(station_group_id, sequence)] = raw_stop
+        raw_by_source_sequence[sequence] = raw_stop
         raw_by_group[station_group_id].append(raw_stop)
 
     stop_keys: list[tuple[str, str]] = []
@@ -371,7 +393,9 @@ def build_line_trace(
     for normalized_stop in normalized_stops:
         station_group_id = normalized_stop["stationGroupId"]
         group_seen[station_group_id] += 1
-        raw_stop = raw_by_group_sequence.get((station_group_id, group_seen[station_group_id]))
+        raw_stop = raw_by_source_sequence.get(int(normalized_stop.get("sourceSequence") or 0))
+        if raw_stop is None:
+            raw_stop = raw_by_group_sequence.get((station_group_id, group_seen[station_group_id]))
         if raw_stop is None and raw_by_group.get(station_group_id):
             raw_stop = raw_by_group[station_group_id].pop(0)
         key = trace_route_key_for_stop(raw_stop or {}, train, physical_station_by_id, name_to_id, id_to_name) or fallback_key
@@ -419,6 +443,35 @@ def build_line_trace(
             }
         )
     return line_trace, line_sequence
+
+
+def route_id_for_trip_segment(trip_line_trace: list[dict[str, Any]], current_stop: dict[str, Any], next_stop: dict[str, Any]) -> str:
+    current_sequence = current_stop["sequence"]
+    next_sequence = next_stop["sequence"]
+    exact = [
+        trace["routeId"]
+        for trace in trip_line_trace
+        if trace.get("routeId") and current_sequence >= trace["fromSequence"] and next_sequence <= trace["toSequence"]
+    ]
+    if len(exact) == 1:
+        return exact[0]
+    boundary = [
+        trace["routeId"]
+        for trace in trip_line_trace
+        if trace.get("routeId") and current_sequence >= trace["fromSequence"] and current_sequence < trace["toSequence"]
+    ]
+    return boundary[0] if len(boundary) == 1 else ""
+
+
+def attach_stop_route_identity(stop_times: list[dict[str, Any]], line_trace: list[dict[str, Any]], trip_route_id: str) -> None:
+    for index, stop in enumerate(stop_times):
+        previous_stop = stop_times[index - 1] if index > 0 else None
+        next_stop = stop_times[index + 1] if index + 1 < len(stop_times) else None
+        incoming_route_id = route_id_for_trip_segment(line_trace, previous_stop, stop) if previous_stop else ""
+        outgoing_route_id = route_id_for_trip_segment(line_trace, stop, next_stop) if next_stop else ""
+        stop["incomingRouteId"] = incoming_route_id
+        stop["outgoingRouteId"] = outgoing_route_id
+        stop["displayRouteId"] = outgoing_route_id or incoming_route_id or trip_route_id
 
 
 def line_trace_entry(
@@ -645,7 +698,9 @@ def build_timetable(
             stats["skipped_no_route"] += 1
             continue
         route_id = route_id_for(operator_id, line_name)
-        stop_times = normalize_trip_stop_times(train.get("stop_times") or [], valid_station_group_ids, physical_station_by_id)
+        stop_times = collapse_consecutive_duplicate_stops(
+            normalize_trip_stop_times(train.get("stop_times") or [], valid_station_group_ids, physical_station_by_id)
+        )
         if len(stop_times) < 2:
             stats["skipped_short"] += 1
             continue
@@ -667,6 +722,7 @@ def build_timetable(
             operator_id,
             line_name,
         )
+        attach_stop_route_identity(stop_times, line_trace, route_id)
         for trace in line_trace:
             trace_route_id = trace["routeId"]
             traced_station_ids = [
@@ -715,6 +771,9 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
     route_ids = sorted(
         {trip["routeId"] for trip in trip_instances}
         | {trace["routeId"] for trip in trip_instances for trace in trip.get("lineTrace", [])}
+        | {stop["displayRouteId"] for trip in trip_instances for stop in trip.get("stopTimes", []) if stop.get("displayRouteId")}
+        | {stop["outgoingRouteId"] for trip in trip_instances for stop in trip.get("stopTimes", []) if stop.get("outgoingRouteId")}
+        | {stop["incomingRouteId"] for trip in trip_instances for stop in trip.get("stopTimes", []) if stop.get("incomingRouteId")}
     )
     service_names = sorted({trip.get("serviceName") or "" for trip in trip_instances})
     station_index = {value: index for index, value in enumerate(station_group_ids)}
@@ -733,6 +792,9 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
                         station_index[stop["stationGroupId"]],
                         stop.get("arrivalTimeSec"),
                         stop.get("departureTimeSec"),
+                        route_index[stop["displayRouteId"]] if stop.get("displayRouteId") in route_index else None,
+                        route_index[stop["outgoingRouteId"]] if stop.get("outgoingRouteId") in route_index else None,
+                        route_index[stop["incomingRouteId"]] if stop.get("incomingRouteId") in route_index else None,
                     ]
                     for stop in trip.get("stopTimes", [])
                 ],

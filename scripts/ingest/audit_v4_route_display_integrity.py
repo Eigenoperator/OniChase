@@ -117,6 +117,8 @@ def main() -> int:
     missing_line_sequence_count = 0
     line_sequence_mismatch_count = 0
     through_boundary_station_count = 0
+    missing_stop_display_route_count = 0
+    stop_display_route_mismatch_count = 0
 
     missing_trace_by_source: Counter[str] = Counter()
     ambiguous_trace_by_source: Counter[str] = Counter()
@@ -125,6 +127,8 @@ def main() -> int:
     duplicate_station_by_source: Counter[str] = Counter()
     missing_line_sequence_by_source: Counter[str] = Counter()
     line_sequence_mismatch_by_source: Counter[str] = Counter()
+    missing_stop_display_route_by_source: Counter[str] = Counter()
+    stop_display_route_mismatch_by_source: Counter[str] = Counter()
 
     primary_trace_pair_counts: Counter[str] = Counter()
     station_duplicate_pair_counts: Counter[str] = Counter()
@@ -137,6 +141,7 @@ def main() -> int:
     duplicate_train_station_samples: list[dict[str, Any]] = []
     line_sequence_mismatch_samples: list[dict[str, Any]] = []
     through_boundary_station_samples: list[dict[str, Any]] = []
+    stop_display_route_mismatch_samples: list[dict[str, Any]] = []
 
     for trip in trips:
         source = train_source(trip)
@@ -231,6 +236,25 @@ def main() -> int:
             outgoing_route_by_sequence[sequence] = route_id
             if route_id:
                 station_route_ids[station_group_id].add(route_id)
+            display_route_id = str(stop.get("displayRouteId") or "")
+            expected_display_route_id = route_id or trip_route_id
+            if not display_route_id:
+                missing_stop_display_route_count += 1
+                missing_stop_display_route_by_source[source] += 1
+            elif expected_display_route_id and display_route_id != expected_display_route_id:
+                stop_display_route_mismatch_count += 1
+                stop_display_route_mismatch_by_source[source] += 1
+                add_sample(
+                    stop_display_route_mismatch_samples,
+                    {
+                        "tripId": trip.get("id"),
+                        "sourceFeedKey": trip.get("sourceFeedKey"),
+                        "station": station_title(station_groups.get(station_group_id), station_group_id),
+                        "sequence": stop.get("sequence"),
+                        "expectedDisplayRoute": route_title(routes.get(expected_display_route_id), expected_display_route_id),
+                        "actualDisplayRoute": route_title(routes.get(display_route_id), display_route_id),
+                    },
+                )
             if trip_route_id and route_id and trip_route_id != route_id:
                 primary_segment_conflict_count += 1
                 primary_segment_conflict_by_source[source] += 1
@@ -322,6 +346,8 @@ def main() -> int:
             "missingLineSequenceTripCount": missing_line_sequence_count,
             "lineSequenceMismatchTripCount": line_sequence_mismatch_count,
             "throughBoundaryStationDecisionCount": through_boundary_station_count,
+            "missingStopDisplayRouteCount": missing_stop_display_route_count,
+            "stopDisplayRouteMismatchCount": stop_display_route_mismatch_count,
         },
         "bySource": {
             "missingLineTraceSegments": dict(sorted(missing_trace_by_source.items())),
@@ -331,6 +357,8 @@ def main() -> int:
             "duplicateTrainStations": dict(sorted(duplicate_station_by_source.items())),
             "missingLineSequence": dict(sorted(missing_line_sequence_by_source.items())),
             "lineSequenceMismatch": dict(sorted(line_sequence_mismatch_by_source.items())),
+            "missingStopDisplayRoute": dict(sorted(missing_stop_display_route_by_source.items())),
+            "stopDisplayRouteMismatch": dict(sorted(stop_display_route_mismatch_by_source.items())),
         },
         "topPrimaryTracePairs": dict(primary_trace_pair_counts.most_common(80)),
         "topDuplicateTrainStationRoutePairs": dict(station_duplicate_pair_counts.most_common(80)),
@@ -343,6 +371,7 @@ def main() -> int:
             "duplicateTrainStations": duplicate_train_station_samples,
             "lineSequenceMismatches": line_sequence_mismatch_samples,
             "throughBoundaryRouteDecisions": through_boundary_station_samples,
+            "stopDisplayRouteMismatches": stop_display_route_mismatch_samples,
         },
     }
     write_json(args.output, audit)

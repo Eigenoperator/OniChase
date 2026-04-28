@@ -2684,9 +2684,14 @@
         .map((routeId) => state.routeById.get(routeId)?.shortName)
         .filter(Boolean);
       const boardName = stationDisplayNameForStop(boardStop);
-      const usesOmeBranch = boardTraceNames.includes('青梅線') ||
-        [...stationNames].some((name) => name !== '立川' && OME_BRANCH_STATIONS.has(name));
-      if (OME_BRANCH_STATIONS.has(boardName) && usesOmeBranch) {
+      if (OME_BRANCH_STATIONS.has(boardName) && boardTraceNames.length) {
+        if (boardTraceNames.includes('青梅線')) return routeIdByShortNameAndOperator('青梅線', 'jr_east');
+        if (boardTraceNames.includes('中央線')) return routeIdByShortNameAndOperator('中央線', 'jr_east');
+      }
+      if (
+        OME_BRANCH_STATIONS.has(boardName) &&
+        [...stationNames].some((name) => name !== '立川' && OME_BRANCH_STATIONS.has(name))
+      ) {
         return routeIdByShortNameAndOperator('青梅線', 'jr_east');
       }
       if (!CHUO_TOKYO_DIRECTION_STATIONS.has(boardName) && boardName !== '東京') return null;
@@ -3463,6 +3468,8 @@
     }
 
     function tracedRouteIdsForTripStop(trip, boardStop) {
+      if (boardStop?.outgoingRouteId && state.routeById.has(boardStop.outgoingRouteId)) return [boardStop.outgoingRouteId];
+      if (boardStop?.displayRouteId && state.routeById.has(boardStop.displayRouteId)) return [boardStop.displayRouteId];
       const nextStop = nextStopAfter(trip, boardStop);
       const routeId = tracedRouteIdForTripSegment(trip, boardStop, nextStop);
       return routeId ? [routeId] : [];
@@ -6896,6 +6903,9 @@
           stationGroupId: stationGroupIds[stop[0]] || '',
           arrivalTimeSec: stop[1],
           departureTimeSec: stop[2],
+          displayRouteId: routeIds[stop[3]] || '',
+          outgoingRouteId: routeIds[stop[4]] || '',
+          incomingRouteId: routeIds[stop[5]] || '',
         })),
       }));
     }
