@@ -750,6 +750,7 @@ def build_timetable(
                 "routeId": route_id,
                 "serviceName": service_name,
                 "serviceNameJa": service_name,
+                "displayName": train.get("display_name") or train.get("displayName") or "",
                 "serviceNumber": train.get("service_number") or train.get("train_number") or "",
                 "publicServiceNumber": train.get("service_number") or train.get("train_number") or "",
                 "operatingNumber": train.get("train_number") or train.get("service_number") or "",
@@ -776,9 +777,13 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
         | {stop["incomingRouteId"] for trip in trip_instances for stop in trip.get("stopTimes", []) if stop.get("incomingRouteId")}
     )
     service_names = sorted({trip.get("serviceName") or "" for trip in trip_instances})
+    display_names = sorted({trip.get("displayName") or "" for trip in trip_instances})
+    headsigns = sorted({trip.get("headsign") or "" for trip in trip_instances})
     station_index = {value: index for index, value in enumerate(station_group_ids)}
     route_index = {value: index for index, value in enumerate(route_ids)}
     service_index = {value: index for index, value in enumerate(service_names)}
+    display_index = {value: index for index, value in enumerate(display_names)}
+    headsign_index = {value: index for index, value in enumerate(headsigns)}
     rows = []
     for trip in trip_instances:
         rows.append(
@@ -807,6 +812,8 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
                     for trace in trip.get("lineTrace", [])
                     if trace.get("routeId") in route_index
                 ],
+                display_index[trip.get("displayName") or ""],
+                headsign_index[trip.get("headsign") or ""],
             ]
         )
     return {
@@ -818,6 +825,8 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
         "stationGroupIds": station_group_ids,
         "routeIds": route_ids,
         "serviceNames": service_names,
+        "displayNames": display_names,
+        "headsigns": headsigns,
         "trips": rows,
     }
 

@@ -2621,6 +2621,7 @@
     function normalizeRouteLineLabel(route, name) {
       let label = String(name || '');
       if (!label) return label;
+      if (label.length > 200) label = label.slice(0, 200);
       if (route?.operatorId === '横浜市') {
         if (label === '1号線' || label === '3号線') return '横浜市営地下鉄ブルーライン';
         if (label === '4号線') return '横浜市営地下鉄グリーンライン';
@@ -2666,26 +2667,32 @@
     }
 
     function publicLimitedExpressBaseName(trip) {
-      const serviceName = String(trip?.serviceNameJa || trip?.serviceName || trip?.service_name || '').trim();
-      const englishBaseName = serviceName.replace(/^limited\s*express\s+/i, '').trim();
-      const mapped = SERVICE_NAME_JA_LABELS[serviceName] || SERVICE_NAME_JA_LABELS[englishBaseName] || serviceName;
-      if (isRouteLikeServiceName(mapped, trip) || isRouteLikeServiceName(serviceName, trip)) {
-        return { name: '', embeddedNumber: '' };
-      }
-      const cleaned = mapped.replace(/^特急/u, '').trim();
+      const rawNames = [
+        trip?.serviceNameJa,
+        trip?.service_name_ja,
+        trip?.trainNameJa,
+        trip?.train_name_ja,
+        trip?.displayName,
+        trip?.display_name,
+        trip?.serviceName,
+        trip?.service_name,
+      ].map((value) => String(value || '').trim()).filter(Boolean);
       const routeName = routeJapaneseName(trip?.routeId);
-      if (cleaned && routeName && cleaned === routeName) {
-        return { name: '', embeddedNumber: '' };
+      for (const rawName of rawNames) {
+        const englishBaseName = rawName.replace(/^limited\s*express\s+/i, '').trim();
+        const mapped = SERVICE_NAME_JA_LABELS[rawName] || SERVICE_NAME_JA_LABELS[englishBaseName] || rawName;
+        if (isRouteLikeServiceName(mapped, trip) || isRouteLikeServiceName(rawName, trip)) continue;
+        const cleaned = mapped.replace(/^特急/u, '').trim();
+        if (cleaned && routeName && cleaned === routeName) continue;
+        if (/^(?:普通|快速|急行|特急|快特|準急|各停|各駅停車|区間急行|区間準急|準特急)\s*.+(?:行き|方面)$/u.test(cleaned)) continue;
+        if (/線(?:普通|快速|急行|特急|快特|準急|各停|各駅停車|区間急行|区間準急|準特急)$/u.test(cleaned)) continue;
+        const namedMatch = cleaned.match(/^(.+?)\s*(\d{1,3})号$/u);
+        if (namedMatch) return { name: namedMatch[1], embeddedNumber: namedMatch[2] };
+        if (/^(?:特急|準特急|通勤特急|快速特急|快特|急行|快速|普通|各停|各駅停車|区間急行|区間準急|準急)$/u.test(cleaned)) continue;
+        if (!cleaned || cleaned === mapped && GENERIC_ENGLISH_SERVICE_NAMES.has(cleaned)) continue;
+        return { name: cleaned, embeddedNumber: '' };
       }
-      const namedMatch = cleaned.match(/^(.+?)\s*(\d{1,3})号$/u);
-      if (namedMatch) return { name: namedMatch[1], embeddedNumber: namedMatch[2] };
-      if (/^(?:特急|準特急|通勤特急|快速特急|快特|急行|快速|普通|各停|各駅停車|区間急行|区間準急|準急)$/u.test(cleaned)) {
-        return { name: '', embeddedNumber: '' };
-      }
-      if (!cleaned || cleaned === mapped && GENERIC_ENGLISH_SERVICE_NAMES.has(cleaned)) {
-        return { name: '', embeddedNumber: '' };
-      }
-      return { name: cleaned, embeddedNumber: '' };
+      return { name: '', embeddedNumber: '' };
     }
 
     function isRouteLikeServiceName(serviceName, trip) {
@@ -3146,8 +3153,36 @@
 
     function isLimitedExpressTrip(trip) {
       const serviceName = String(trip?.serviceName || trip?.service_name || '');
+      if (publicLimitedExpressBaseName(trip).name) return true;
       if (isRouteLikeServiceName(serviceName, trip)) return false;
-      return Boolean(publicLimitedExpressBaseName(trip).name) || serviceName.includes('ライナー') || /limited\s*express/i.test(serviceName);
+      return serviceName.includes('ライナー') || /limited\s*express/i.test(serviceName);
+    }
+
+    function namedTrainChoiceLabel(trip) {
+      if (!trip || isShinkansenTrip(trip) || !isLimitedExpressTrip(trip)) return '';
+      if (isMeitetsuTrip(trip)) return '';
+      const limitedExpress = publicLimitedExpressBaseName(trip);
+      const label = limitedExpress.name || serviceNameJaLabel(trip);
+      if (!label || label === '列車' || isRouteLikeServiceName(label, trip)) return '';
+      return label;
+    }
+
+    function namedTrainChoiceRouteId(trip) {
+      const label = namedTrainChoiceLabel(trip);
+      return label ? `VIRTUAL_NAMED_TRAIN:${encodeURIComponent(label)}` : null;
+    }
+
+    function isNamedTrainChoiceRouteId(routeId) {
+      return String(routeId || '').startsWith('VIRTUAL_NAMED_TRAIN:');
+    }
+
+    function namedTrainChoiceTitle(routeId) {
+      if (!isNamedTrainChoiceRouteId(routeId)) return '';
+      try {
+        return decodeURIComponent(String(routeId).slice('VIRTUAL_NAMED_TRAIN:'.length));
+      } catch (_error) {
+        return String(routeId).slice('VIRTUAL_NAMED_TRAIN:'.length);
+      }
     }
 
     function looksLikePublicTrainNumber(value) {
@@ -4684,6 +4719,10 @@
 
     function formatTripLabel(trip) {
       if (!trip) return '列車';
+      if (isMeitetsuTrip(trip)) {
+        const label = routeTitle(trip.routeId);
+        return label && !/^\d+号線/u.test(label) ? label : '名鉄';
+      }
       if (trip.throughStitched && Array.isArray(trip.throughRouteIds)) {
         const throughRouteIds = isYokosukaSobuRapidTrip(trip)
           ? [JR_YOKOSUKA_SOBU_RAPID_CORRIDOR_ROUTE_ID]
@@ -4840,6 +4879,7 @@
     }
 
     function isThroughServiceTransferAlias(routeId) {
+      if (isNamedTrainChoiceRouteId(routeId)) return false;
       const route = state.routeById.get(routeId);
       if (!route) return true;
       if (route.operatorId === 'shinkansen' && /^SHINKANSEN_/u.test(String(route.shortName || ''))) {
@@ -6151,16 +6191,19 @@
     }
 
     function routeTitle(routeId) {
+      if (isNamedTrainChoiceRouteId(routeId)) return namedTrainChoiceTitle(routeId);
       const route = state.routeById.get(routeId);
       return routeJapaneseName(route || routeId) || '路線';
     }
 
     function routeSubtitle(routeId) {
+      if (isNamedTrainChoiceRouteId(routeId)) return '列車名';
       const route = state.routeById.get(routeId);
       return PHYSICAL_ALIAS_OPERATOR_LABELS[route?.shortName] || operatorJaLabel(route?.operatorId) || routeId || '';
     }
 
     function routeColor(routeId) {
+      if (isNamedTrainChoiceRouteId(routeId)) return '#8A5A00';
       return state.routeById.get(routeId)?.color || '#667487';
     }
 
@@ -6198,6 +6241,8 @@
     }
 
     function routeChoiceIdsForDeparture(entry) {
+      const namedTrainRouteId = namedTrainChoiceRouteId(entry?.trip);
+      if (namedTrainRouteId) return [namedTrainRouteId];
       const shinkansenChoiceRouteId = shinkansenCorridorChoiceRouteId(entry?.trip);
       if (shinkansenChoiceRouteId) return [shinkansenChoiceRouteId];
       const chuoChoiceRouteId = chuoCorridorChoiceRouteId(entry);
@@ -7735,12 +7780,16 @@
       const stationGroupIds = payload.stationGroupIds || [];
       const routeIds = payload.routeIds || [];
       const serviceNames = payload.serviceNames || [];
+      const displayNames = payload.displayNames || [];
+      const headsigns = payload.headsigns || [];
       const compactRouteId = (index) => Number.isInteger(index) ? routeIds[index] || '' : '';
       return (payload.trips || []).map((row) => ({
         id: row[0],
         routeId: compactRouteId(row[1]),
         serviceName: serviceNames[row[2]] || '',
         serviceNumber: row[3] || '',
+        displayName: displayNames[row[6]] || '',
+        headsign: headsigns[row[7]] || '',
         lineTrace: (row[5] || []).map((trace) => ({
           fromSequence: trace[0],
           toSequence: trace[1],

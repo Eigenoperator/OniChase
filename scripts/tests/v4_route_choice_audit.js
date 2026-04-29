@@ -195,6 +195,7 @@ async function auditRouteChoices(page) {
       throughDirectionLabelMismatchCount: 0,
       meitetsuLabelFormatMismatchCount: 0,
       yokohamaThroughRemoteLabelCount: 0,
+      namedLimitedExpressNotSeparatedCount: 0,
       samples: [],
     };
     function addGlobalChoiceSample(kind, stationName, entry, routeId, nextStop) {
@@ -235,6 +236,11 @@ async function auditRouteChoices(page) {
         routeIds.forEach((routeId) => {
           const label = formatTripLabelForBoarding(entry, routeId);
           globalTrainLabelScan.checkedLabels += 1;
+          const namedTrainRouteId = namedTrainChoiceRouteId(entry.trip);
+          if (namedTrainRouteId && routeId !== namedTrainRouteId) {
+            globalTrainLabelScan.namedLimitedExpressNotSeparatedCount += 1;
+            addGlobalTrainLabelSample('named_limited_express_not_separated', stationName, entry, routeId, label);
+          }
           if (routeTitle(routeId) === '路線') {
             globalChoiceScan.genericRouteLabelCount += 1;
             addGlobalChoiceSample('generic_route_label', stationName, entry, routeId, nextStop);
@@ -300,6 +306,7 @@ async function auditRouteChoices(page) {
             }
           }
           if (isShinkansenCorridorRoute(routeId)) return;
+          if (isNamedTrainChoiceRouteId(routeId)) return;
           const allowedStations = allowedVirtualRouteStations[routeId];
           if (allowedStations) {
             if (!allowedStations.has(stationName)) {
@@ -332,11 +339,12 @@ async function auditRouteChoices(page) {
       globalTrainLabelScan.limitedOrShinkansenMissingNumberCount ||
       globalTrainLabelScan.throughDirectionLabelMismatchCount ||
       globalTrainLabelScan.meitetsuLabelFormatMismatchCount ||
-      globalTrainLabelScan.yokohamaThroughRemoteLabelCount
+      globalTrainLabelScan.yokohamaThroughRemoteLabelCount ||
+      globalTrainLabelScan.namedLimitedExpressNotSeparatedCount
     ) {
       anomalies.push({
         kind: 'global_selected_train_label_scan',
-        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, ordinary through-running labels must follow the direction-side line, Meitetsu train labels must stay on their own Meitetsu line, and Yokohama through-running labels must not expose remote lines.',
+        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, ordinary through-running labels must follow the direction-side line, Meitetsu train labels must stay on their own Meitetsu line, Yokohama through-running labels must not expose remote lines, and named limited-express/named train services must be separated as their own route choices.',
         ...globalTrainLabelScan,
       });
     }
@@ -349,6 +357,16 @@ async function auditRouteChoices(page) {
         new Set(choices.map((choice) => choice.route)),
       ])
     );
+    for (const stationName of ['大宮', '八王子']) {
+      if (!routeChoiceTitles[stationName]?.has('むさしの号')) {
+        anomalies.push({
+          kind: 'musashino_named_train_choice_missing',
+          station: stationName,
+          reason: 'The Omiya-Hachioji Musashino service should be a separate named-train choice instead of being buried under a physical line.',
+          choices: knownStationChoices[stationName],
+        });
+      }
+    }
 
     const allUenoTokyoChoiceStations = [];
     for (const [stationGroupId, group] of state.stationGroupById.entries()) {
