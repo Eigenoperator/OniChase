@@ -29,6 +29,7 @@ DEFAULT_V4_GTFS = ROOT / "data" / "v4_gtfs_weekday_train_instances.json.gz"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_current_weekday_train_instances.json.gz"
 DEFAULT_AUDIT = ROOT / "data" / "v4_current_train_collection_audit.json"
 MAX_STOP_MATCH_DISTANCE_M = 1500.0
+MAX_DIRECT_CONTEXT_MATCH_DISTANCE_M = 30000.0
 DEFAULT_EXTRA_COLLECTIONS = [
     ROOT / "data" / "v4_jreast_official_weekday_train_instances.json.gz",
     ROOT / "data" / "v4_jreast_tohoku_official_weekday_train_instances.json.gz",
@@ -193,13 +194,105 @@ def invalid_train_reason(train: dict[str, Any]) -> str | None:
         return "short_train"
     if has_reviewed_closed_operator_foreign_stops(train):
         return "closed_operator_foreign_physical_stop"
+    if is_probable_navitime_source_pollution(train):
+        return "source_pollution_low_target_line_touch"
     if any(unresolved_station_ref(stop) for stop in stops):
         return "unmatched_station_ref"
-    if any(excessive_match_distance_ref(stop) is not None for stop in stops) and not is_known_direct_service_context_match(train):
+    if any(excessive_match_distance_ref(stop) is not None for stop in stops) and not is_valid_direct_service_context_match(train):
         return "excessive_station_match_distance"
     if not any(stop_has_time(stop) for stop in stops):
         return "all_stop_times_missing"
     return None
+
+
+def train_target_line_touch_count(train: dict[str, Any]) -> int:
+    line_name = str(train.get("line_name") or train.get("service_name") or "")
+    touch_counts = train.get("service_line_touch_counts") or {}
+    if isinstance(touch_counts, dict) and line_name in touch_counts:
+        try:
+            return int(touch_counts[line_name] or 0)
+        except (TypeError, ValueError):
+            pass
+    operator_name = str(train.get("operator_name") or train.get("operator_id") or "")
+    touched_ids = {
+        str(stop.get("physical_station_id") or "")
+        for stop in train.get("stop_times") or []
+        if str(stop.get("physical_operator_name") or "") == operator_name
+        and (not line_name or str(stop.get("physical_line_name") or "") == line_name)
+        and stop.get("physical_station_id")
+    }
+    if touched_ids:
+        return len(touched_ids)
+    return sum(
+        1
+        for stop in train.get("stop_times") or []
+        if str(stop.get("match_method") or "").startswith(("operator_line_", "operator_name_"))
+    )
+
+
+def train_target_line_touch_ratio(train: dict[str, Any]) -> float:
+    stop_count = len(train.get("stop_times") or [])
+    if stop_count <= 0:
+        return 0.0
+    return train_target_line_touch_count(train) / stop_count
+
+
+def train_has_foreign_physical_operator(train: dict[str, Any]) -> bool:
+    operator_name = str(train.get("operator_name") or train.get("operator_id") or "")
+    return any(
+        stop.get("physical_operator_name")
+        and str(stop.get("physical_operator_name")) != operator_name
+        for stop in train.get("stop_times") or []
+    )
+
+
+def is_probable_navitime_source_pollution(train: dict[str, Any]) -> bool:
+    """Reject nationwide NAVITIME fallback rows that barely touch the target line.
+
+    NAVITIME pages for generic names such as "本線" can leak trains from nearby
+    or similarly named companies into another operator's scrape.  A real
+    through-service should have a meaningful footprint on the target line; a
+    polluted row usually only matches one or two duplicate station names.
+    """
+
+    if not str(train.get("source_collection") or train.get("source_feed_key") or "").startswith("v4_navitime_non_jr"):
+        return False
+    if not train_has_foreign_physical_operator(train):
+        return False
+    if train_target_line_touch_count(train) >= 2 and train_target_line_touch_ratio(train) >= 0.18:
+        return False
+    return True
+
+
+def is_valid_direct_service_context_match(train: dict[str, Any]) -> bool:
+    if is_known_direct_service_context_match(train):
+        return True
+    return is_probable_through_service_context_match(train)
+
+
+def is_probable_through_service_context_match(train: dict[str, Any]) -> bool:
+    """Allow nationwide direct services whose boundary stops are context-matched."""
+
+    if train_target_line_touch_count(train) < 2:
+        return False
+    if train_target_line_touch_ratio(train) < 0.18:
+        return False
+    source_collection = str(train.get("source_collection") or "")
+    if not train_has_foreign_physical_operator(train) and not source_collection.startswith("v4_jr"):
+        return False
+    excessive_stops = [
+        stop for stop in train.get("stop_times") or []
+        if excessive_match_distance_ref(stop) is not None
+    ]
+    if not excessive_stops:
+        return False
+    if max(float(excessive_match_distance_ref(stop) or 0) for stop in excessive_stops) > MAX_DIRECT_CONTEXT_MATCH_DISTANCE_M:
+        return False
+    return all(
+        stop.get("match_method") == "context_nearest_group"
+        and stop.get("station_group_id")
+        for stop in excessive_stops
+    )
 
 
 def has_reviewed_closed_operator_foreign_stops(train: dict[str, Any]) -> bool:

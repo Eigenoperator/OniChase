@@ -217,6 +217,10 @@ def resolve_operator_id(
     name_to_id: dict[str, str],
     id_to_name: dict[str, str],
 ) -> str:
+    if raw_operator_id is not None:
+        raw_operator_id = str(raw_operator_id)
+    if raw_operator_name is not None:
+        raw_operator_name = str(raw_operator_name)
     if raw_operator_id and raw_operator_id in id_to_name:
         return raw_operator_id
     if raw_operator_name and raw_operator_name in name_to_id:
@@ -966,14 +970,20 @@ def build_bundle(map_input: Path, trains_input: Path) -> tuple[dict[str, Any], d
     return map_bundle, full_timetable, compact, manifest
 
 
-def write_outputs(payloads: tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]], output_dirs: list[Path]) -> None:
+def write_outputs(
+    payloads: tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]],
+    output_dirs: list[Path],
+    *,
+    write_full_timetable: bool = False,
+) -> None:
     map_bundle, full_timetable, compact, manifest = payloads
     names = {
         "v4_gameplay_map_bundle.json.gz": map_bundle,
-        "v4_gameplay_timetable_bundle.json.gz": full_timetable,
         "v4_gameplay_timetable_compact.json.gz": compact,
         "v4_gameplay_manifest.json": manifest,
     }
+    if write_full_timetable:
+        names["v4_gameplay_timetable_bundle.json.gz"] = full_timetable
     for output_dir in output_dirs:
         for filename, payload in names.items():
             write_json(output_dir / filename, payload)
@@ -985,13 +995,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--trains-input", type=Path, default=DEFAULT_TRAINS_INPUT)
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     parser.add_argument("--docs-data-dir", type=Path, default=DEFAULT_DOCS_DATA_DIR)
+    parser.add_argument(
+        "--write-full-timetable",
+        action="store_true",
+        help="Also write the legacy full timetable bundle. The website uses the compact bundle.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     payloads = build_bundle(args.map_input, args.trains_input)
-    write_outputs(payloads, [args.data_dir, args.docs_data_dir])
+    write_outputs(payloads, [args.data_dir, args.docs_data_dir], write_full_timetable=args.write_full_timetable)
     manifest = payloads[3]
     print(json.dumps(manifest["counts"], ensure_ascii=False, indent=2))
 
