@@ -3561,7 +3561,10 @@
 
     const TRANSFER_EQUIVALENCE_RADIUS_M = 700;
     const DEFAULT_INTERCHANGE_TRANSFER_MINUTES = 0;
-    const REVIEWED_NOT_DIRECT_TRANSFER_NAME_SETS = new Set([
+    const REVIEWED_DIRECT_TRANSFER_NAME_SETS = new Set([
+      ['名古屋', '名鉄名古屋'].sort().join('|'),
+      ['名古屋', '近鉄名古屋'].sort().join('|'),
+      ['名鉄名古屋', '近鉄名古屋'].sort().join('|'),
       ['蒲田', '京急蒲田'].sort().join('|'),
     ]);
 
@@ -3601,13 +3604,13 @@
       if (!leftKey || leftKey !== rightKey) return null;
       const leftName = displayNameForGroup(leftGroupId);
       const rightName = displayNameForGroup(rightGroupId);
-      if (REVIEWED_NOT_DIRECT_TRANSFER_NAME_SETS.has(transferNamePairKey(leftName, rightName))) return null;
       const distance = coordinateDistanceMeters(stationGroupCoordinate(leftGroupId), stationGroupCoordinate(rightGroupId));
-      if (distance > TRANSFER_EQUIVALENCE_RADIUS_M) return null;
+      const reviewedDirect = REVIEWED_DIRECT_TRANSFER_NAME_SETS.has(transferNamePairKey(leftName, rightName));
+      if (!reviewedDirect && distance > TRANSFER_EQUIVALENCE_RADIUS_M) return null;
       return {
         transferMinutes: DEFAULT_INTERCHANGE_TRANSFER_MINUTES,
         distanceMeters: Math.round(distance),
-        reason: 'normalized_nearby_station_name',
+        reason: reviewedDirect ? 'reviewed_direct_interchange' : 'normalized_nearby_station_name',
       };
     }
 

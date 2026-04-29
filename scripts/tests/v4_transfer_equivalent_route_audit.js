@@ -263,14 +263,15 @@ async function auditTransferEquivalentRoutes(page) {
     }
     const kamataGroupId = groupIdsByDisplayName('蒲田')[0];
     const keikyuKamataGroupId = groupIdsByDisplayName('京急蒲田')[0];
-    if (kamataGroupId && keikyuKamataGroupId && stationGroupsTransferEquivalent(kamataGroupId, keikyuKamataGroupId)) {
+    const kamataTransferMinutes = kamataGroupId && keikyuKamataGroupId && typeof transferMinutesBetweenStationGroups === 'function'
+      ? transferMinutesBetweenStationGroups(kamataGroupId, keikyuKamataGroupId)
+      : null;
+    if (!kamataGroupId || !keikyuKamataGroupId || !stationGroupsTransferEquivalent(kamataGroupId, keikyuKamataGroupId) || kamataTransferMinutes !== 0) {
       anomalies.push({
-        kind: 'forbidden_kamata_keikyu_kamata_interchange',
-        reason: '蒲田 and 京急蒲田 are separate stations for this v4 playtest and must not be instant transfer-equivalent.',
+        kind: 'required_kamata_keikyu_kamata_interchange_missing',
+        reason: 'For this v4 playtest, 蒲田 and 京急蒲田 must be direct transfer-equivalent, with walking time left as a future refinement.',
         stationGroupIds: [kamataGroupId, keikyuKamataGroupId],
-        transferMinutes: typeof transferMinutesBetweenStationGroups === 'function'
-          ? transferMinutesBetweenStationGroups(kamataGroupId, keikyuKamataGroupId)
-          : null,
+        transferMinutes: kamataTransferMinutes,
       });
     }
 

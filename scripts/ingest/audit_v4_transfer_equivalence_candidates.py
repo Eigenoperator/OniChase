@@ -33,11 +33,10 @@ REVIEWED_DIRECT_NAME_SETS = {
     frozenset(("名古屋", "名鉄名古屋")),
     frozenset(("名古屋", "近鉄名古屋")),
     frozenset(("名鉄名古屋", "近鉄名古屋")),
-}
-
-REVIEWED_NOT_DIRECT_NAME_SETS = {
     frozenset(("蒲田", "京急蒲田")),
 }
+
+REVIEWED_NOT_DIRECT_NAME_SETS: set[frozenset[str]] = set()
 
 
 def load_json(path: Path) -> Any:
@@ -145,7 +144,10 @@ def main() -> int:
                 if distance_m > args.review_radius_m:
                     continue
                 decision = classify_pair(left_name, right_name, distance_m, args.direct_radius_m)
-                is_currently_direct = distance_m <= args.direct_radius_m and decision != "reviewed_not_direct"
+                is_currently_direct = (
+                    decision == "reviewed_direct"
+                    or (distance_m <= args.direct_radius_m and decision != "reviewed_not_direct")
+                )
                 counts[decision] += 1
                 candidates.append({
                     "decision": decision,
