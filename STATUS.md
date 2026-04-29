@@ -25,6 +25,7 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 - v4 through-service display audit covers all browser-stitched trips: `678` stitched through trips, `0` stale `東海道線+総武線` / `総武線+東海道線` labels, and expected labels for `横須賀線・総武快速線`, `京急`/`都営浅草線`, and `京成`/`都営浅草線`.
 - Reusable v4 through-service audit reports `1026` split-trip candidates: `942` covered by existing browser rules, `52` confirmed direct-service rules, `26` reviewed likely reused-number/data-context non-UI cases, and `6` still needing review.
 - v4 route-choice QA now globally scans all `9052` station groups for segment mismatches, virtual-corridor leaks, generic `路線`, remote Yokohama through routes/labels, selected-train label violations, JR East northern-trunk scope, major-station Shinkansen visibility, and transfer-equivalent station group route completeness; latest scans report `1675021` rows, `1675374` choices/labels, `57` equivalent clusters, and `0` anomalies/missing routes.
+- v4 v3-release-candidate quality audit now scans all old-source lines still retained in v4: `39605` retained trains across `108` lines, with `291` hard anomalies all from Tokyo Metro Chiyoda old Shinjuku-group rows rematched onto Marunouchi Shinjuku.
 - Pages web bundle was slimmed by pruning unreferenced `docs/data` artifacts; local `docs/` now builds to about `44M` while v4 still loads and passes the 青梅 probe.
 - Render v4 room-server deployment is forbidden unless Scorp explicitly reverses the axiom; push-triggered server deploy is disabled after repeated failures.
 
@@ -47,4 +48,3 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 ## Next
 1. Run visual/manual v4 playtest QA from major hubs plus branch/corridor stations: Tokyo, Osaka, Nagoya, Fukuoka, Sapporo, Hiroshima, 青梅, 立川, and 御茶ノ水.
 2. Decide whether to hide or keep the reviewed meter-scale 肥薩線 N02 fragment in rendered geometry.
-3. Review the remaining `6` `needs_review` split candidates from the reusable v4 through-service audit.
