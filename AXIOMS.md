@@ -104,6 +104,7 @@
 - This is especially important when the interchange spans different operators or companies.
 - Gameplay may still group nearby physical stations into one transfer-capable station group, but the map and physical-network layers must preserve the distinct real station locations and distinct real line geometry.
 - In the current v4 playtest, nearby JR/private-rail terminal station groups with normalized matching names, such as `名古屋` / `名鉄名古屋` / `近鉄名古屋`, are treated as direct transfer-equivalent for planning. The transfer edge must carry an explicit transfer-time field, currently `0`, so a future walking system can replace it with nonzero time without changing the station identity model.
+- Branded-prefix station names are transfer candidates, not automatic truth. Reviewed exceptions such as `蒲田` / `京急蒲田` must remain non-direct until a future walking-time system explicitly models them.
 
 ## 15. Through-Running Classification Must Be Physical
 

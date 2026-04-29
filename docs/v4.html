@@ -3561,6 +3561,13 @@
 
     const TRANSFER_EQUIVALENCE_RADIUS_M = 700;
     const DEFAULT_INTERCHANGE_TRANSFER_MINUTES = 0;
+    const REVIEWED_NOT_DIRECT_TRANSFER_NAME_SETS = new Set([
+      ['蒲田', '京急蒲田'].sort().join('|'),
+    ]);
+
+    function transferNamePairKey(leftName, rightName) {
+      return [leftName, rightName].sort().join('|');
+    }
 
     function stationGroupCoordinate(stationGroupId) {
       const group = state.stationGroupById.get(stationGroupId);
@@ -3592,6 +3599,9 @@
       const leftKey = transferKeyForGroup(leftGroupId);
       const rightKey = transferKeyForGroup(rightGroupId);
       if (!leftKey || leftKey !== rightKey) return null;
+      const leftName = displayNameForGroup(leftGroupId);
+      const rightName = displayNameForGroup(rightGroupId);
+      if (REVIEWED_NOT_DIRECT_TRANSFER_NAME_SETS.has(transferNamePairKey(leftName, rightName))) return null;
       const distance = coordinateDistanceMeters(stationGroupCoordinate(leftGroupId), stationGroupCoordinate(rightGroupId));
       if (distance > TRANSFER_EQUIVALENCE_RADIUS_M) return null;
       return {

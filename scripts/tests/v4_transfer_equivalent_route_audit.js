@@ -261,6 +261,18 @@ async function auditTransferEquivalentRoutes(page) {
         equivalentNames: [...nagoyaEquivalentIds].map(groupName).sort((a, b) => a.localeCompare(b, 'ja')),
       });
     }
+    const kamataGroupId = groupIdsByDisplayName('蒲田')[0];
+    const keikyuKamataGroupId = groupIdsByDisplayName('京急蒲田')[0];
+    if (kamataGroupId && keikyuKamataGroupId && stationGroupsTransferEquivalent(kamataGroupId, keikyuKamataGroupId)) {
+      anomalies.push({
+        kind: 'forbidden_kamata_keikyu_kamata_interchange',
+        reason: '蒲田 and 京急蒲田 are separate stations for this v4 playtest and must not be instant transfer-equivalent.',
+        stationGroupIds: [kamataGroupId, keikyuKamataGroupId],
+        transferMinutes: typeof transferMinutesBetweenStationGroups === 'function'
+          ? transferMinutesBetweenStationGroups(kamataGroupId, keikyuKamataGroupId)
+          : null,
+      });
+    }
 
     return {
       anomalyCount: anomalies.length,

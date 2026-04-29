@@ -55,6 +55,9 @@ TRANSFER_PREFIX_RE = re.compile(
     r"^(?:JR|ＪＲ|東京メトロ|都営|東京モノレール|モノレール|京急|京成|京王|小田急|東急|東武|西武|相鉄|近鉄|名鉄|阪急|阪神|京阪|南海|西鉄|京福|叡山|りんかい|ゆりかもめ)"
 )
 DEFAULT_INTERCHANGE_TRANSFER_MINUTES = 0
+REVIEWED_NOT_DIRECT_NAME_SETS = {
+    frozenset(("蒲田", "京急蒲田")),
+}
 
 SANYO_SHINKANSEN_STATIONS = {
     "新大阪",
@@ -253,6 +256,10 @@ class PlannerCorridorAuditor:
         for group_ids in by_key.values():
             for left_index, left_group_id in enumerate(group_ids):
                 for right_group_id in group_ids[left_index + 1 :]:
+                    left_name = self.display_name_for_group(left_group_id)
+                    right_name = self.display_name_for_group(right_group_id)
+                    if frozenset((left_name, right_name)) in REVIEWED_NOT_DIRECT_NAME_SETS:
+                        continue
                     distance = self.coordinate_distance_meters(
                         self.station_group_coordinate(left_group_id),
                         self.station_group_coordinate(right_group_id),
