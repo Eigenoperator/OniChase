@@ -1109,6 +1109,7 @@
   <script>
     const MAP_DATA_URL = './data/v4_gameplay_map_bundle.json.gz';
     const TIMETABLE_URL = './data/v4_gameplay_timetable_compact.json.gz';
+    const TRANSFER_REVIEW_URL = './data/v4_transfer_equivalence_review.json';
     const V3_REPLAY_SCHEMA_VERSION = 'v4.replay.1';
     const V3_REPLAY_COLLECTION_SCHEMA_VERSION = 'v4.replay.collection.1';
     const V3_DATASET_NAME = 'v4-nationwide';
@@ -1953,6 +1954,8 @@
       stationGroupIdsByTransferKey: new Map(),
       transferEquivalentGroupIdsByGroupId: new Map(),
       transferEquivalentLinksByGroupId: new Map(),
+      reviewedDirectTransferNameSets: new Set(),
+      reviewedNotDirectTransferNameSets: new Set(),
       physicalRouteIdsByGroupId: new Map(),
       tripById: new Map(),
       stationTripsByGroupId: new Map(),
@@ -3655,12 +3658,12 @@
 
     const TRANSFER_EQUIVALENCE_RADIUS_M = 700;
     const DEFAULT_INTERCHANGE_TRANSFER_MINUTES = 0;
-    const REVIEWED_DIRECT_TRANSFER_NAME_SETS = new Set([
-      ['名古屋', '名鉄名古屋'].sort().join('|'),
-      ['名古屋', '近鉄名古屋'].sort().join('|'),
-      ['名鉄名古屋', '近鉄名古屋'].sort().join('|'),
-      ['蒲田', '京急蒲田'].sort().join('|'),
-    ]);
+    const FALLBACK_REVIEWED_DIRECT_TRANSFER_NAME_SETS = [
+      ['名古屋', '名鉄名古屋'],
+      ['名古屋', '近鉄名古屋'],
+      ['名鉄名古屋', '近鉄名古屋'],
+      ['蒲田', '京急蒲田'],
+    ];
 
     function transferNamePairKey(leftName, rightName) {
       return [leftName, rightName].sort().join('|');
@@ -3699,13 +3702,32 @@
       const leftName = displayNameForGroup(leftGroupId);
       const rightName = displayNameForGroup(rightGroupId);
       const distance = coordinateDistanceMeters(stationGroupCoordinate(leftGroupId), stationGroupCoordinate(rightGroupId));
-      const reviewedDirect = REVIEWED_DIRECT_TRANSFER_NAME_SETS.has(transferNamePairKey(leftName, rightName));
+      const pairKey = transferNamePairKey(leftName, rightName);
+      const reviewedDirect = state.reviewedDirectTransferNameSets.has(pairKey);
+      const reviewedNotDirect = state.reviewedNotDirectTransferNameSets.has(pairKey);
+      if (reviewedNotDirect) return null;
       if (!reviewedDirect && distance > TRANSFER_EQUIVALENCE_RADIUS_M) return null;
       return {
         transferMinutes: DEFAULT_INTERCHANGE_TRANSFER_MINUTES,
         distanceMeters: Math.round(distance),
         reason: reviewedDirect ? 'reviewed_direct_interchange' : 'normalized_nearby_station_name',
       };
+    }
+
+    async function loadTransferReview() {
+      let payload = null;
+      try {
+        const response = await fetch(TRANSFER_REVIEW_URL, { cache: 'no-store' });
+        if (response.ok) payload = await response.json();
+      } catch (_error) {
+        payload = null;
+      }
+      const directSets = payload?.reviewedDirectNameSets?.length
+        ? payload.reviewedDirectNameSets
+        : FALLBACK_REVIEWED_DIRECT_TRANSFER_NAME_SETS;
+      const notDirectSets = payload?.reviewedNotDirectNameSets || [];
+      state.reviewedDirectTransferNameSets = new Set(directSets.map((items) => [...items].sort().join('|')));
+      state.reviewedNotDirectTransferNameSets = new Set(notDirectSets.map((items) => [...items].sort().join('|')));
     }
 
     function buildStationTransferIndex() {
@@ -7904,6 +7926,7 @@
       }
       loadOnlineConfig();
       const t0 = performance.now();
+      await loadTransferReview();
       const bundle = await fetchJsonMaybeGz(MAP_DATA_URL);
       state.bundle = bundle;
       buildIndexes(bundle);

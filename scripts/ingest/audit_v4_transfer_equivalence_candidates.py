@@ -21,6 +21,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PHYSICAL_MAP = ROOT / "data" / "v4_japan_physical_map.json.gz"
+DEFAULT_TRANSFER_REVIEW = ROOT / "data" / "v4_transfer_equivalence_review.json"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_transfer_equivalence_candidate_audit.json"
 
 DIRECT_TRANSFER_RADIUS_M = 700
@@ -29,13 +30,7 @@ PREFIX_RE = re.compile(
     r"^(?:JR|ＪＲ|東京メトロ|都営|東京モノレール|モノレール|京急|京成|京王|小田急|東急|東武|西武|相鉄|近鉄|名鉄|阪急|阪神|京阪|南海|西鉄|京福|叡山|りんかい|ゆりかもめ)"
 )
 
-REVIEWED_DIRECT_NAME_SETS = {
-    frozenset(("名古屋", "名鉄名古屋")),
-    frozenset(("名古屋", "近鉄名古屋")),
-    frozenset(("名鉄名古屋", "近鉄名古屋")),
-    frozenset(("蒲田", "京急蒲田")),
-}
-
+REVIEWED_DIRECT_NAME_SETS: set[frozenset[str]] = set()
 REVIEWED_NOT_DIRECT_NAME_SETS: set[frozenset[str]] = set()
 
 
@@ -48,6 +43,16 @@ def load_json(path: Path) -> Any:
 def write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def load_transfer_review(path: Path) -> tuple[set[frozenset[str]], set[frozenset[str]]]:
+    if not path.exists():
+        return set(), set()
+    payload = load_json(path)
+    return (
+        {frozenset(item) for item in payload.get("reviewedDirectNameSets", [])},
+        {frozenset(item) for item in payload.get("reviewedNotDirectNameSets", [])},
+    )
 
 
 def display_name(group: dict[str, Any]) -> str:
@@ -110,10 +115,13 @@ def summarize_group(group: dict[str, Any]) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--physical-map", type=Path, default=DEFAULT_PHYSICAL_MAP)
+    parser.add_argument("--transfer-review", type=Path, default=DEFAULT_TRANSFER_REVIEW)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--direct-radius-m", type=float, default=DIRECT_TRANSFER_RADIUS_M)
     parser.add_argument("--review-radius-m", type=float, default=REVIEW_CANDIDATE_RADIUS_M)
     args = parser.parse_args()
+    global REVIEWED_DIRECT_NAME_SETS, REVIEWED_NOT_DIRECT_NAME_SETS
+    REVIEWED_DIRECT_NAME_SETS, REVIEWED_NOT_DIRECT_NAME_SETS = load_transfer_review(args.transfer_review)
 
     payload = load_json(args.physical_map)
     groups = payload["stationGroups"]
@@ -172,7 +180,7 @@ def main() -> int:
     hard_anomaly_count = counts["active_unreviewed_direct"]
     output = {
         "schema": "onichase.v4.transfer_equivalence_candidate_audit.v1",
-        "inputs": {"physicalMap": str(args.physical_map)},
+        "inputs": {"physicalMap": str(args.physical_map), "transferReview": str(args.transfer_review)},
         "rules": {
             "directRadiusM": args.direct_radius_m,
             "reviewCandidateRadiusM": args.review_radius_m,

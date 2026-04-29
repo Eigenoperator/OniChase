@@ -32,16 +32,13 @@ DEFAULT_MAP_BUNDLE = ROOT / "docs" / "data" / "v4_gameplay_map_bundle.json.gz"
 DEFAULT_TIMETABLE = ROOT / "docs" / "data" / "v4_gameplay_timetable_compact.json.gz"
 DEFAULT_CURRENT = ROOT / "data" / "v4_current_weekday_train_instances.json.gz"
 DEFAULT_SOURCE_REGISTRY = ROOT / "data" / "v4_timetable_source_registry.json"
+DEFAULT_TRANSFER_REVIEW = ROOT / "data" / "v4_transfer_equivalence_review.json"
 DEFAULT_DROPPED_DIRECT = ROOT / "data" / "v4_dropped_direct_service_audit.json"
 DEFAULT_TRANSFER_CANDIDATES = ROOT / "data" / "v4_transfer_equivalence_candidate_audit.json"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_data_quality_audit.json"
 
-REQUIRED_DIRECT_TRANSFER_NAME_SETS = {
-    frozenset(("名古屋", "名鉄名古屋")),
-    frozenset(("名古屋", "近鉄名古屋")),
-    frozenset(("名鉄名古屋", "近鉄名古屋")),
-    frozenset(("蒲田", "京急蒲田")),
-}
+REQUIRED_DIRECT_TRANSFER_NAME_SETS: set[frozenset[str]] = set()
+REVIEWED_NOT_DIRECT_TRANSFER_NAME_SETS: set[frozenset[str]] = set()
 
 EXPECTED_STATION_SERVICE_COUNTS = [
     {"station": "東京", "service": "ひたち", "minimum": 30},
@@ -80,6 +77,16 @@ def maybe_load_json(path: Path) -> Any | None:
     if not path.exists():
         return None
     return load_json(path)
+
+
+def load_transfer_review(path: Path) -> tuple[set[frozenset[str]], set[frozenset[str]]]:
+    if not path.exists():
+        return set(), set()
+    payload = load_json(path)
+    return (
+        {frozenset(item) for item in payload.get("reviewedDirectNameSets", [])},
+        {frozenset(item) for item in payload.get("reviewedNotDirectNameSets", [])},
+    )
 
 
 def write_json(path: Path, payload: Any) -> None:
@@ -413,8 +420,9 @@ def transfer_equivalent_group_ids(map_bundle: dict[str, Any]) -> dict[str, set[s
                 left_name = station_group_name(left)
                 right_name = station_group_name(right)
                 reviewed_direct = frozenset((left_name, right_name)) in REQUIRED_DIRECT_TRANSFER_NAME_SETS
+                reviewed_not_direct = frozenset((left_name, right_name)) in REVIEWED_NOT_DIRECT_TRANSFER_NAME_SETS
                 distance = coordinate_distance_meters(group_coordinate(left), group_coordinate(right))
-                if reviewed_direct or distance <= 700:
+                if reviewed_direct or (distance <= 700 and not reviewed_not_direct):
                     equivalents[left["id"]].add(right["id"])
                     equivalents[right["id"]].add(left["id"])
     return equivalents
@@ -606,12 +614,15 @@ def main() -> int:
     parser.add_argument("--timetable", type=Path, default=DEFAULT_TIMETABLE)
     parser.add_argument("--current", type=Path, default=DEFAULT_CURRENT)
     parser.add_argument("--source-registry", type=Path, default=DEFAULT_SOURCE_REGISTRY)
+    parser.add_argument("--transfer-review", type=Path, default=DEFAULT_TRANSFER_REVIEW)
     parser.add_argument("--dropped-direct-audit", type=Path, default=DEFAULT_DROPPED_DIRECT)
     parser.add_argument("--transfer-candidate-audit", type=Path, default=DEFAULT_TRANSFER_CANDIDATES)
     parser.add_argument("--browser-audit-json", type=Path, help="Optional JSON output from scripts/tests/v4_route_choice_audit.js.")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--fail-on-error", action="store_true")
     args = parser.parse_args()
+    global REQUIRED_DIRECT_TRANSFER_NAME_SETS, REVIEWED_NOT_DIRECT_TRANSFER_NAME_SETS
+    REQUIRED_DIRECT_TRANSFER_NAME_SETS, REVIEWED_NOT_DIRECT_TRANSFER_NAME_SETS = load_transfer_review(args.transfer_review)
 
     map_bundle = load_json(args.map_bundle)
     timetable_payload = load_json(args.timetable)
@@ -644,6 +655,7 @@ def main() -> int:
             "timetable": rel(args.timetable),
             "current": rel(args.current),
             "sourceRegistry": rel(args.source_registry),
+            "transferReview": rel(args.transfer_review),
             "droppedDirectAudit": rel(args.dropped_direct_audit),
             "transferCandidateAudit": rel(args.transfer_candidate_audit),
             "browserAuditJson": rel(args.browser_audit_json) if args.browser_audit_json else None,

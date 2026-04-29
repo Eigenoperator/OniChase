@@ -15,6 +15,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MAP_BUNDLE = ROOT / "docs" / "data" / "v4_gameplay_map_bundle.json.gz"
 DEFAULT_TIMETABLE = ROOT / "docs" / "data" / "v4_gameplay_timetable_compact.json.gz"
+DEFAULT_TRANSFER_REVIEW = ROOT / "data" / "v4_transfer_equivalence_review.json"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_planner_corridor_audit.json"
 
 ROUTE_JA_LABELS = {
@@ -55,12 +56,7 @@ TRANSFER_PREFIX_RE = re.compile(
     r"^(?:JR|ＪＲ|東京メトロ|都営|東京モノレール|モノレール|京急|京成|京王|小田急|東急|東武|西武|相鉄|近鉄|名鉄|阪急|阪神|京阪|南海|西鉄|京福|叡山|りんかい|ゆりかもめ)"
 )
 DEFAULT_INTERCHANGE_TRANSFER_MINUTES = 0
-REVIEWED_DIRECT_NAME_SETS = {
-    frozenset(("名古屋", "名鉄名古屋")),
-    frozenset(("名古屋", "近鉄名古屋")),
-    frozenset(("名鉄名古屋", "近鉄名古屋")),
-    frozenset(("蒲田", "京急蒲田")),
-}
+REVIEWED_DIRECT_NAME_SETS: set[frozenset[str]] = set()
 REVIEWED_NOT_DIRECT_NAME_SETS: set[frozenset[str]] = set()
 
 SANYO_SHINKANSEN_STATIONS = {
@@ -146,6 +142,16 @@ def load_json(path: Path) -> Any:
     opener = gzip.open if path.suffix == ".gz" else open
     with opener(path, "rt", encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def load_transfer_review(path: Path) -> tuple[set[frozenset[str]], set[frozenset[str]]]:
+    if not path.exists():
+        return set(), set()
+    payload = load_json(path)
+    return (
+        {frozenset(item) for item in payload.get("reviewedDirectNameSets", [])},
+        {frozenset(item) for item in payload.get("reviewedNotDirectNameSets", [])},
+    )
 
 
 def seconds_to_hhmm(seconds: int) -> str:
@@ -471,9 +477,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Audit v4 planner route choices against corridor display rules.")
     parser.add_argument("--map-bundle", type=Path, default=DEFAULT_MAP_BUNDLE)
     parser.add_argument("--timetable", type=Path, default=DEFAULT_TIMETABLE)
+    parser.add_argument("--transfer-review", type=Path, default=DEFAULT_TRANSFER_REVIEW)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--after", default="06:00")
     args = parser.parse_args()
+    global REVIEWED_DIRECT_NAME_SETS, REVIEWED_NOT_DIRECT_NAME_SETS
+    REVIEWED_DIRECT_NAME_SETS, REVIEWED_NOT_DIRECT_NAME_SETS = load_transfer_review(args.transfer_review)
 
     auditor = PlannerCorridorAuditor(load_json(args.map_bundle), load_json(args.timetable))
     hubs = [auditor.audit_hub(hub, hhmm_to_seconds(args.after)) for hub in HUBS]
@@ -483,6 +492,7 @@ def main() -> None:
         "generatedAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
         "mapBundle": str(args.map_bundle.relative_to(ROOT)),
         "timetable": str(args.timetable.relative_to(ROOT)),
+        "transferReview": str(args.transfer_review.relative_to(ROOT)),
         "after": args.after,
         "summary": {
             "hubCount": len(hubs),
