@@ -132,7 +132,7 @@ async function auditRouteChoices(page) {
     function choicesAt(stationName) {
       const stationGroupId = firstStationIdByName(stationName);
       if (!stationGroupId) return [];
-      return routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, START_MINUTE))
+      return routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, START_MINUTE, { includeTransferEquivalents: true }))
         .map((choice) => ({
           route: routeTitle(choice.routeId),
           firstDeparture: choice.firstDepartureHhmm,
@@ -143,7 +143,7 @@ async function auditRouteChoices(page) {
     function entriesAt(stationName) {
       const stationGroupId = firstStationIdByName(stationName);
       if (!stationGroupId) return [];
-      return departuresForStationGroup(stationGroupId, START_MINUTE);
+      return departuresForStationGroup(stationGroupId, START_MINUTE, { includeTransferEquivalents: true });
     }
 
     const anomalies = [];
@@ -365,6 +365,25 @@ async function auditRouteChoices(page) {
         reason: 'Ome route choices should not be polluted by through-service terminal rows whose next boarding segment does not exist.',
         choices: knownStationChoices['青梅'],
       });
+    }
+
+    const requiredShinkansenChoices = {
+      東京: ['東海道・山陽新幹線', '東北・北海道新幹線', '上越新幹線', '北陸新幹線'],
+      品川: ['東海道・山陽新幹線'],
+      大宮: ['東北・北海道新幹線', '上越新幹線', '北陸新幹線'],
+    };
+    for (const [stationName, requiredRoutes] of Object.entries(requiredShinkansenChoices)) {
+      const choices = routeChoiceTitles[stationName] || new Set();
+      const missingRoutes = requiredRoutes.filter((routeName) => !choices.has(routeName));
+      if (missingRoutes.length) {
+        anomalies.push({
+          kind: 'major_station_shinkansen_choice_missing',
+          station: stationName,
+          reason: 'Major Shinkansen stations must keep Shinkansen route choices visible even when the selected station group is a transfer-equivalent conventional group.',
+          missingRoutes,
+          choices: knownStationChoices[stationName],
+        });
+      }
     }
 
     const forbiddenTokyoNorthTrunkChoices = new Set(['東北線', '東北本線', '宇都宮線', '高崎線', '常磐線']);

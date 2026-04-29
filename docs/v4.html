@@ -4910,7 +4910,7 @@
       const entries = departuresForStationGroup(
         preview.currentState.stationGroupId,
         effectiveDepartureMinute(playerId, preview.currentMinute),
-        { routeId: options.routeId || null },
+        { routeId: options.routeId || null, includeTransferEquivalents: true },
       )
         .map((row) => ({
           trip: row.trip,
@@ -6194,7 +6194,7 @@
       if (!stationGroupId) return [];
       if (state.timetableStatus === 'ready') {
         const minute = Number.isFinite(state.currentGameMinute) ? state.currentGameMinute : hhmmToMinutes(state.startTime || '06:00');
-        const departureRouteIds = routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, minute))
+        const departureRouteIds = routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, minute, { includeTransferEquivalents: true }))
           .map((choice) => choice.routeId);
         if (departureRouteIds.length) return departureRouteIds;
       }
