@@ -5021,7 +5021,11 @@
     function pendingDepartureContext(preview, playerId = state.activeMode) {
       const tripId = pendingTripId(playerId);
       if (!tripId || preview.currentState.kind !== 'NODE') return null;
-      const departures = departuresForStationGroup(preview.currentState.stationGroupId, effectiveDepartureMinute(playerId, preview.currentMinute));
+      const departures = departuresForStationGroup(
+        preview.currentState.stationGroupId,
+        effectiveDepartureMinute(playerId, preview.currentMinute),
+        { includeTransferEquivalents: true },
+      );
       const match = departures.find((row) => row.trip.id === tripId && hasDownstreamStop(row.trip, row.stop));
       if (!match) return null;
       return {

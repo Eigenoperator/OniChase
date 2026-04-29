@@ -108,12 +108,15 @@ async function auditTransferEquivalentRoutes(page) {
     }
 
     const samples = [];
+    const pendingDestinationSamples = [];
     const stationGroupSummaries = [];
     let checkedClusters = 0;
     let checkedStationGroups = 0;
     let checkedExactRoutes = 0;
     let missingRouteCount = 0;
     let clustersWithMissingRoutes = 0;
+    let checkedPendingTrips = 0;
+    let missingPendingDestinationCount = 0;
 
     for (const equivalentIds of clusters.values()) {
       checkedClusters += 1;
@@ -165,6 +168,49 @@ async function auditTransferEquivalentRoutes(page) {
       }
     }
 
+    const previousActiveMode = state.activeMode;
+    const previousRunner = { ...state.players.runner, steps: [...(state.players.runner?.steps || [])] };
+    const previousSelectedRouteId = state.selectedRouteId;
+    const previousSelectedTripId = state.selectedTripId;
+    const previousPendingTripIds = { ...state.pendingTripIds };
+    state.activeMode = 'runner';
+    for (const equivalentIds of clusters.values()) {
+      for (const stationGroupId of equivalentIds) {
+        state.players.runner = { start_station_id: stationGroupId, input_mode: 'plan', steps: [] };
+        state.pendingTripIds.runner = null;
+        const preview = planCursorPreview('runner');
+        const mergedRouteIds = routeChoicesForGroup(stationGroupId, true);
+        for (const routeId of mergedRouteIds) {
+          const rows = availableRouteDepartures(preview, routeId, 1, 'runner');
+          if (!rows.length) continue;
+          const row = rows[0];
+          checkedPendingTrips += 1;
+          state.pendingTripIds.runner = row.trip.id;
+          const pending = pendingDepartureContext(preview, 'runner');
+          if (!pending || !pending.destinations.length) {
+            missingPendingDestinationCount += 1;
+            if (pendingDestinationSamples.length < MAX_SAMPLES) {
+              pendingDestinationSamples.push({
+                station: groupName(stationGroupId),
+                stationGroupId,
+                route: routeTitle(routeId),
+                tripId: row.trip.id,
+                departureHhmm: row.departureHhmm,
+                boardStation: groupName(row.boardStop.stationGroupId),
+                exactStationGroupIds: equivalentIds,
+              });
+            }
+          }
+          state.pendingTripIds.runner = null;
+        }
+      }
+    }
+    state.activeMode = previousActiveMode;
+    state.players.runner = previousRunner;
+    state.selectedRouteId = previousSelectedRouteId;
+    state.selectedTripId = previousSelectedTripId;
+    state.pendingTripIds = previousPendingTripIds;
+
     const anomalies = [];
     if (missingRouteCount) {
       anomalies.push({
@@ -175,14 +221,24 @@ async function auditTransferEquivalentRoutes(page) {
         samples,
       });
     }
+    if (missingPendingDestinationCount) {
+      anomalies.push({
+        kind: 'transfer_equivalent_pending_destinations_missing',
+        reason: 'A train chosen from a merged transfer-equivalent route list must still resolve to a pending trip with downstream alighting stops.',
+        missingPendingDestinationCount,
+        samples: pendingDestinationSamples,
+      });
+    }
 
     return {
       anomalyCount: anomalies.length,
       checkedClusters,
       checkedStationGroups,
       checkedExactRoutes,
+      checkedPendingTrips,
       missingRouteCount,
       clustersWithMissingRoutes,
+      missingPendingDestinationCount,
       shinkansenEquivalentStationSamples: stationGroupSummaries,
       anomalies,
     };
