@@ -32,8 +32,10 @@ DEFAULT_MAP_BUNDLE = ROOT / "docs" / "data" / "v4_gameplay_map_bundle.json.gz"
 DEFAULT_TIMETABLE = ROOT / "docs" / "data" / "v4_gameplay_timetable_compact.json.gz"
 DEFAULT_CURRENT = ROOT / "data" / "v4_current_weekday_train_instances.json.gz"
 DEFAULT_SOURCE_REGISTRY = ROOT / "data" / "v4_timetable_source_registry.json"
+DEFAULT_COLLECTION_COVERAGE_REVIEW = ROOT / "data" / "v4_collection_coverage_review.json"
 DEFAULT_TRANSFER_REVIEW = ROOT / "data" / "v4_transfer_equivalence_review.json"
 DEFAULT_DROPPED_DIRECT = ROOT / "data" / "v4_dropped_direct_service_audit.json"
+DEFAULT_DROPPED_DIRECT_REVIEW = ROOT / "data" / "v4_dropped_direct_service_review.json"
 DEFAULT_TRANSFER_CANDIDATES = ROOT / "data" / "v4_transfer_equivalence_candidate_audit.json"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_data_quality_audit.json"
 
@@ -92,6 +94,30 @@ def load_transfer_review(path: Path) -> tuple[set[frozenset[str]], set[frozenset
 def write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def reviewed_collection_coverage_sets(review: dict[str, Any] | None) -> dict[str, set[str]]:
+    review = review or {}
+    return {
+        "routeIdsWithoutTrips": set(review.get("reviewedRouteIdsWithoutTrips", [])),
+        "operatorIdsWithoutKnownTrains": set(review.get("reviewedOperatorIdsWithoutKnownTrains", [])),
+        "lowCurrentLineKeys": set(review.get("reviewedLowCurrentLineKeys", [])),
+    }
+
+
+def dropped_direct_group_key(group: dict[str, Any]) -> str:
+    return "|".join(
+        str(group.get(key) or "")
+        for key in ("source", "operatorName", "lineName", "baseName")
+    )
+
+
+def reviewed_dropped_direct_group_keys(review: dict[str, Any] | None) -> set[str]:
+    review = review or {}
+    return {
+        dropped_direct_group_key(item)
+        for item in review.get("reviewedGroups", [])
+    } | set(review.get("reviewedGroupKeys", []))
 
 
 def rel(path: Path) -> str:
@@ -195,9 +221,12 @@ def audit_collection_coverage(
     current_payload: dict[str, Any],
     routes: dict[str, dict[str, Any]],
     trips: list[dict[str, Any]],
+    coverage_review: dict[str, Any] | None,
 ) -> dict[str, Any]:
     issues: list[dict[str, Any]] = []
     warnings: list[dict[str, Any]] = []
+    reviewed = reviewed_collection_coverage_sets(coverage_review)
+    reviewed_counts: Counter[str] = Counter()
     current_counts_by_line: Counter[tuple[str, str]] = Counter(current_train_line_key(train) for train in current_payload.get("train_instances", []))
     trip_counts_by_route: Counter[str] = Counter(trip.get("routeId") or "" for trip in trips)
 
@@ -215,7 +244,12 @@ def audit_collection_coverage(
                 "mode": route.get("mode") or "",
             }
         )
-    warnings.extend({"kind": "route_has_no_gameplay_trips", **item} for item in no_trip_routes[:120])
+    for item in no_trip_routes:
+        if item["routeId"] in reviewed["routeIdsWithoutTrips"]:
+            reviewed_counts["route_has_no_gameplay_trips"] += 1
+            continue
+        if len(warnings) < 120:
+            warnings.append({"kind": "route_has_no_gameplay_trips", **item})
 
     registry_zero_known = []
     if registry:
@@ -227,10 +261,14 @@ def audit_collection_coverage(
                 for lead in operator.get("sourceLeads", [])
                 if lead.get("candidateStatus") == "high_confidence"
             ]
+            operator_id = str(operator.get("operatorId") or "")
             if known_count == 0 and high_conf_leads:
+                if operator_id in reviewed["operatorIdsWithoutKnownTrains"]:
+                    reviewed_counts["registry_high_confidence_source_but_no_known_trains"] += 1
+                    continue
                 registry_zero_known.append(
                     {
-                        "operatorId": operator.get("operatorId"),
+                        "operatorId": operator_id,
                         "operatorName": operator.get("operatorName"),
                         "lineNames": operator.get("lineNames", [])[:12],
                         "sourceStatus": source_status,
@@ -244,15 +282,21 @@ def audit_collection_coverage(
                 )
         warnings.extend({"kind": "registry_high_confidence_source_but_no_known_trains", **item} for item in registry_zero_known[:120])
 
-    suspicious_low_current_lines = [
-        {
-            "operatorName": operator,
-            "lineName": line,
-            "currentTrainCount": count,
-        }
-        for (operator, line), count in current_counts_by_line.items()
-        if line and 0 < count <= 2 and not any(token in line for token in ("鋼索", "ケーブル", "ロープウェイ"))
-    ]
+    suspicious_low_current_lines = []
+    for (operator, line), count in current_counts_by_line.items():
+        if not line or count > 2 or any(token in line for token in ("鋼索", "ケーブル", "ロープウェイ")):
+            continue
+        line_key = f"{operator}|{line}"
+        if line_key in reviewed["lowCurrentLineKeys"]:
+            reviewed_counts["line_has_very_few_current_trains"] += 1
+            continue
+        suspicious_low_current_lines.append(
+            {
+                "operatorName": operator,
+                "lineName": line,
+                "currentTrainCount": count,
+            }
+        )
     suspicious_low_current_lines.sort(key=lambda item: (item["currentTrainCount"], item["operatorName"], item["lineName"]))
     warnings.extend({"kind": "line_has_very_few_current_trains", **item} for item in suspicious_low_current_lines[:80])
 
@@ -264,6 +308,7 @@ def audit_collection_coverage(
             "routeWithoutGameplayTripCount": len(no_trip_routes),
             "registryHighConfidenceNoKnownTrainCount": len(registry_zero_known),
             "veryLowCurrentLineCount": len(suspicious_low_current_lines),
+            "reviewedCountsByKind": dict(sorted(reviewed_counts.items())),
             "issueCount": len(issues),
             "warningCount": len(warnings),
         },
@@ -551,13 +596,18 @@ def audit_transfers(map_bundle: dict[str, Any], transfer_candidate_audit: dict[s
     }
 
 
-def audit_dropped_direct_services(dropped_direct_audit: dict[str, Any] | None) -> dict[str, Any]:
+def audit_dropped_direct_services(dropped_direct_audit: dict[str, Any] | None, dropped_direct_review: dict[str, Any] | None) -> dict[str, Any]:
     if not dropped_direct_audit:
         return {"summary": {"available": False, "issueCount": 0, "warningCount": 0}, "issues": [], "warnings": []}
     warnings = []
+    reviewed_keys = reviewed_dropped_direct_group_keys(dropped_direct_review)
+    reviewed_count = 0
     for group in dropped_direct_audit.get("suspiciousGroups", []):
         missing_count = int(group.get("missingFromCurrentServiceKeyCount") or 0)
         if missing_count <= 0:
+            continue
+        if dropped_direct_group_key(group) in reviewed_keys:
+            reviewed_count += 1
             continue
         warnings.append(
             {
@@ -577,6 +627,7 @@ def audit_dropped_direct_services(dropped_direct_audit: dict[str, Any] | None) -
             "available": True,
             "sourceSuspiciousGroupCount": dropped_direct_audit.get("counts", {}).get("suspiciousGroupCount", 0),
             "missingCurrentSuspiciousGroupCount": len(warnings),
+            "reviewedMissingCurrentSuspiciousGroupCount": reviewed_count,
             "issueCount": 0,
             "warningCount": len(warnings),
         },
@@ -614,8 +665,10 @@ def main() -> int:
     parser.add_argument("--timetable", type=Path, default=DEFAULT_TIMETABLE)
     parser.add_argument("--current", type=Path, default=DEFAULT_CURRENT)
     parser.add_argument("--source-registry", type=Path, default=DEFAULT_SOURCE_REGISTRY)
+    parser.add_argument("--collection-coverage-review", type=Path, default=DEFAULT_COLLECTION_COVERAGE_REVIEW)
     parser.add_argument("--transfer-review", type=Path, default=DEFAULT_TRANSFER_REVIEW)
     parser.add_argument("--dropped-direct-audit", type=Path, default=DEFAULT_DROPPED_DIRECT)
+    parser.add_argument("--dropped-direct-review", type=Path, default=DEFAULT_DROPPED_DIRECT_REVIEW)
     parser.add_argument("--transfer-candidate-audit", type=Path, default=DEFAULT_TRANSFER_CANDIDATES)
     parser.add_argument("--browser-audit-json", type=Path, help="Optional JSON output from scripts/tests/v4_route_choice_audit.js.")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
@@ -628,7 +681,9 @@ def main() -> int:
     timetable_payload = load_json(args.timetable)
     current_payload = load_json(args.current)
     source_registry = maybe_load_json(args.source_registry)
+    collection_coverage_review = maybe_load_json(args.collection_coverage_review)
     dropped_direct = maybe_load_json(args.dropped_direct_audit)
+    dropped_direct_review = maybe_load_json(args.dropped_direct_review)
     transfer_candidates = maybe_load_json(args.transfer_candidate_audit)
     browser_audit = maybe_load_json(args.browser_audit_json) if args.browser_audit_json else None
 
@@ -637,12 +692,12 @@ def main() -> int:
     trips = decode_compact_timetable(timetable_payload)
 
     sections = {
-        "collectionCoverage": audit_collection_coverage(source_registry, current_payload, routes, trips),
+        "collectionCoverage": audit_collection_coverage(source_registry, current_payload, routes, trips, collection_coverage_review),
         "tripIntegrity": audit_trip_integrity(station_groups, routes, trips),
         "trainDisplay": audit_train_display(routes, trips),
         "knownStationCoverage": audit_known_station_coverage(map_bundle, routes, trips),
         "transferEquivalence": audit_transfers(map_bundle, transfer_candidates),
-        "droppedDirectServices": audit_dropped_direct_services(dropped_direct),
+        "droppedDirectServices": audit_dropped_direct_services(dropped_direct, dropped_direct_review),
         "browserRouteChoices": merge_browser_audit(browser_audit),
     }
     error_count = sum(int(section.get("summary", {}).get("issueCount") or 0) for section in sections.values())
@@ -655,8 +710,10 @@ def main() -> int:
             "timetable": rel(args.timetable),
             "current": rel(args.current),
             "sourceRegistry": rel(args.source_registry),
+            "collectionCoverageReview": rel(args.collection_coverage_review),
             "transferReview": rel(args.transfer_review),
             "droppedDirectAudit": rel(args.dropped_direct_audit),
+            "droppedDirectReview": rel(args.dropped_direct_review),
             "transferCandidateAudit": rel(args.transfer_candidate_audit),
             "browserAuditJson": rel(args.browser_audit_json) if args.browser_audit_json else None,
         },
