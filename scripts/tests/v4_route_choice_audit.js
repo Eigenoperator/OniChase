@@ -367,6 +367,25 @@ async function auditRouteChoices(page) {
         });
       }
     }
+    [
+      ['東京', 'ひたち', 30],
+      ['東京', 'ときわ', 35],
+      ['上野', 'ひたち', 30],
+      ['上野', 'ときわ', 35],
+    ].forEach(([stationName, routeName, minimumTrainCount]) => {
+      const choice = knownStationChoices[stationName]?.find((item) => item.route === routeName);
+      if (!choice || choice.trainCount < minimumTrainCount) {
+        anomalies.push({
+          kind: 'joban_limited_express_choice_underfilled',
+          station: stationName,
+          route: routeName,
+          minimumTrainCount,
+          actualTrainCount: choice?.trainCount || 0,
+          reason: 'Tokyo/Ueno Joban limited express choices should include both northbound and southbound JR East official trains.',
+          choices: knownStationChoices[stationName],
+        });
+      }
+    });
 
     const allUenoTokyoChoiceStations = [];
     for (const [stationGroupId, group] of state.stationGroupById.entries()) {
