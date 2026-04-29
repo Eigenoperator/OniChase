@@ -119,7 +119,7 @@ def train_signature(train: dict[str, Any]) -> str:
 
     hasher = hashlib.sha1()
     display_name = str(train.get("display_name") or train.get("service_name_detail") or "")
-    if re_match_joban_limited_express(display_name):
+    if reviewed_direct_service_allowed_context_stops(train) is not None:
         for part in (
             train.get("operator_id") or train.get("operator_name") or "",
             train.get("train_number") or "",
@@ -203,31 +203,47 @@ def invalid_train_reason(train: dict[str, Any]) -> str | None:
 def is_known_direct_service_context_match(train: dict[str, Any]) -> bool:
     """Allow reviewed JR East direct services whose boundary stops are context-matched.
 
-    JR East official pages for Joban limited express services can be collected
-    under the physical 常磐線 page while still stopping at 品川/東京/上野.  東京 is
-    not a 常磐線 physical station in the map, so the collector resolves it by
-    neighboring-stop context and records a large match distance.  That is a
-    legitimate direct-service stop, not a bad station match.
+    JR East official pages for named limited express services can be collected
+    under one physical line while still stopping at reviewed boundary stations
+    on another physical line.  Those boundary stops are resolved by neighboring
+    context and can carry a large match distance.  That is a legitimate
+    direct-service stop, not a bad station match.
     """
 
-    if train.get("operator_id") != "jr_east":
-        return False
-    display_name = str(train.get("display_name") or train.get("service_name_detail") or "")
-    if not re_match_joban_limited_express(display_name):
+    allowed_stops = reviewed_direct_service_allowed_context_stops(train)
+    if not allowed_stops:
         return False
     return all(
         excessive_match_distance_ref(stop) is None
         or (
             stop.get("match_method") == "context_nearest_group"
-            and stop.get("station_name_raw") in {"品川", "東京", "上野"}
+            and stop.get("station_name_raw") in allowed_stops
             and stop.get("station_group_id")
         )
         for stop in train.get("stop_times") or []
     )
 
 
-def re_match_joban_limited_express(display_name: str) -> bool:
-    return bool(display_name.startswith(("ひたち ", "ときわ ")))
+def reviewed_direct_service_allowed_context_stops(train: dict[str, Any]) -> set[str] | None:
+    if train.get("operator_id") != "jr_east":
+        return None
+    display_name = str(train.get("display_name") or train.get("service_name_detail") or "")
+    rules = {
+        "ひたち ": {"品川", "東京", "上野"},
+        "ときわ ": {"品川", "東京", "上野"},
+        "成田エクスプレス ": {"東京", "武蔵小杉"},
+        "あずさ ": {"東京"},
+        "かいじ ": {"東京"},
+        "わかしお ": {"東京"},
+        "さざなみ ": {"東京"},
+        "踊り子 ": {"東京"},
+        "サフィール踊り子 ": {"東京"},
+        "しらゆき ": {"新井", "高田"},
+    }
+    for prefix, allowed_stops in rules.items():
+        if display_name.startswith(prefix):
+            return allowed_stops
+    return None
 
 
 def choose_best_train(current: dict[str, Any] | None, candidate: dict[str, Any]) -> dict[str, Any]:

@@ -370,18 +370,25 @@ async function auditRouteChoices(page) {
     [
       ['東京', 'ひたち', 30],
       ['東京', 'ときわ', 35],
+      ['東京', '成田エクスプレス', 35],
+      ['東京', 'あずさ', 5],
+      ['東京', 'かいじ', 8],
+      ['東京', 'わかしお', 10],
+      ['東京', 'さざなみ', 4],
       ['上野', 'ひたち', 30],
       ['上野', 'ときわ', 35],
+      ['八王子', 'あずさ', 45],
+      ['八王子', 'かいじ', 20],
     ].forEach(([stationName, routeName, minimumTrainCount]) => {
       const choice = knownStationChoices[stationName]?.find((item) => item.route === routeName);
       if (!choice || choice.trainCount < minimumTrainCount) {
         anomalies.push({
-          kind: 'joban_limited_express_choice_underfilled',
+          kind: 'named_limited_express_choice_underfilled',
           station: stationName,
           route: routeName,
           minimumTrainCount,
           actualTrainCount: choice?.trainCount || 0,
-          reason: 'Tokyo/Ueno Joban limited express choices should include both northbound and southbound JR East official trains.',
+          reason: 'Reviewed named limited express choices should include both directions from the official direct-service source.',
           choices: knownStationChoices[stationName],
         });
       }
