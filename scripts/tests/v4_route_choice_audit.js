@@ -159,7 +159,7 @@ async function auditRouteChoices(page) {
         '東京', '神田', '御茶ノ水', '四ツ谷', '新宿', '中野', '高円寺', '阿佐ケ谷',
         '荻窪', '西荻窪', '吉祥寺', '三鷹', '武蔵境', '東小金井', '武蔵小金井',
         '国分寺', '西国分寺', '国立', '立川', '日野', '豊田', '八王子',
-        '西八王子', '高尾',
+        '西八王子', '高尾', '大月',
       ]),
       VIRTUAL_JR_EAST_CHUO_SOBU_LOCAL: new Set([
         '三鷹', '吉祥寺', '西荻窪', '荻窪', '阿佐ケ谷', '高円寺', '中野',
@@ -341,7 +341,7 @@ async function auditRouteChoices(page) {
       });
     }
     const knownStationChoices = Object.fromEntries(
-      ['東京', '上野', '品川', '新橋', '大宮', '青梅'].map((stationName) => [stationName, choicesAt(stationName)])
+      ['東京', '上野', '品川', '新橋', '大宮', '青梅', '八王子'].map((stationName) => [stationName, choicesAt(stationName)])
     );
     const routeChoiceTitles = Object.fromEntries(
       Object.entries(knownStationChoices).map(([stationName, choices]) => [
@@ -491,6 +491,17 @@ async function auditRouteChoices(page) {
         anomalies.push({
           kind: 'ome_branch_central_choice',
           reason: 'Ome branch departures should remain on the Ome Line choice even when the service runs through to Chuo.',
+          ...summary,
+        });
+      }
+    }
+
+    for (const entry of entriesAt('八王子')) {
+      const summary = summarizeEntry('八王子', entry);
+      if (summary.terminal === '河口湖' && summary.choices.includes('横浜線')) {
+        anomalies.push({
+          kind: 'hachioji_yokohama_line_kawaguchiko_pollution',
+          reason: 'Fuji/Kawaguchiko through trains at Hachioji use the Chuo-side boarding segment toward Otsuki/Tachikawa and must not appear under Yokohama Line.',
           ...summary,
         });
       }

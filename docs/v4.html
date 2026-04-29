@@ -1846,7 +1846,7 @@
       '東京', '神田', '御茶ノ水', '四ツ谷', '新宿', '中野', '高円寺', '阿佐ケ谷',
       '荻窪', '西荻窪', '吉祥寺', '三鷹', '武蔵境', '東小金井', '武蔵小金井',
       '国分寺', '西国分寺', '国立', '立川', '日野', '豊田', '八王子',
-      '西八王子', '高尾',
+      '西八王子', '高尾', '大月',
     ]);
     const CHUO_RAPID_CORRIDOR_ROUTE_NAMES = new Set([
       '中央線', '青梅線', 'JR_EAST_CHUO_RAPID', 'JR_CHUO', 'JR_OME',
@@ -3078,8 +3078,17 @@
       const stationNames = new Set(tripStationNames(trip));
       const hasChuoDirectionStop = [...CHUO_TOKYO_DIRECTION_STATIONS].some((name) => stationNames.has(name));
       const traceNames = tripLineTraceNames(trip);
+      const isFujiKyukoThroughTrip =
+        route?.shortName === '大月線' ||
+        (trip?.serviceName || '') === '大月線';
+      const currentSegmentLooksLikeChuo =
+        isFujiKyukoThroughTrip &&
+        CHUO_RAPID_STATIONS.has(boardName) &&
+        CHUO_RAPID_STATIONS.has(nextName) &&
+        hasChuoDirectionStop;
       const looksLikeChuoDirection =
         CHUO_RAPID_CORRIDOR_ROUTE_NAMES.has(route?.shortName) ||
+        currentSegmentLooksLikeChuo ||
         (['5号線東西線', '東西線'].includes(route?.shortName) && hasChuoDirectionStop);
       if (!looksLikeChuoDirection) return null;
       const boardTraceNames = tracedRouteIdsForTripStop(trip, boardStop)
