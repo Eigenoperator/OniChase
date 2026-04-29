@@ -882,6 +882,8 @@ def build_bundle(map_input: Path, trains_input: Path) -> tuple[dict[str, Any], d
 
     service_patterns = []
     for route_id, route in sorted(routes_by_id.items()):
+        if route_id not in route_station_groups:
+            continue
         key = (route.get("operatorId") or "unknown_operator", route.get("shortName") or "未設定路線")
         station_group_ids = sorted(line_station_groups.get(key, set()) | route_station_groups.get(route_id, set()))
         if not station_group_ids:
@@ -933,6 +935,12 @@ def build_bundle(map_input: Path, trains_input: Path) -> tuple[dict[str, Any], d
             for group in station_groups
         ],
     }
+    service_route_ids = {pattern["routeId"] for pattern in service_patterns}
+    map_bundle["serviceRoutes"] = [
+        route
+        for route in map_bundle["serviceRoutes"]
+        if route["id"] in service_route_ids
+    ]
     full_timetable = {
         "version": "v4.gameplay.1",
         "generatedAt": generated_at,

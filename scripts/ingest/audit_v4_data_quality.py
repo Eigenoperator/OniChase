@@ -229,7 +229,19 @@ def audit_collection_coverage(
     reviewed_counts: Counter[str] = Counter()
     current_counts_by_line: Counter[tuple[str, str]] = Counter(current_train_line_key(train) for train in current_payload.get("train_instances", []))
     current_counts_by_operator: Counter[str] = Counter(operator for operator, _line in current_counts_by_line)
-    trip_counts_by_route: Counter[str] = Counter(trip.get("routeId") or "" for trip in trips)
+    trip_counts_by_route: Counter[str] = Counter()
+    for trip in trips:
+        for route_id in {
+            trip.get("routeId") or "",
+            *(trace.get("routeId") or "" for trace in trip.get("lineTrace", [])),
+            *(stop.get("displayRouteId") or "" for stop in trip.get("stopTimes", [])),
+            *(stop.get("outgoingRouteId") or "" for stop in trip.get("stopTimes", [])),
+            *(stop.get("incomingRouteId") or "" for stop in trip.get("stopTimes", [])),
+            *(stop.get("boardRouteId") or "" for stop in trip.get("stopTimes", [])),
+            *(stop.get("alightRouteId") or "" for stop in trip.get("stopTimes", [])),
+        }:
+            if route_id:
+                trip_counts_by_route[route_id] += 1
 
     no_trip_routes = []
     for route_id, route in routes.items():
