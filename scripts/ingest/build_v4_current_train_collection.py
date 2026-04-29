@@ -192,6 +192,8 @@ def invalid_train_reason(train: dict[str, Any]) -> str | None:
     stops = train.get("stop_times") or []
     if len(stops) < 2:
         return "short_train"
+    if is_known_v3_synthetic_tail_duplicate(train):
+        return "v3_synthetic_tail_duplicate"
     if has_reviewed_closed_operator_foreign_stops(train):
         return "closed_operator_foreign_physical_stop"
     if is_probable_navitime_source_pollution(train):
@@ -203,6 +205,31 @@ def invalid_train_reason(train: dict[str, Any]) -> str | None:
     if not any(stop_has_time(stop) for stop in stops):
         return "all_stop_times_missing"
     return None
+
+
+def stop_display_name(stop: dict[str, Any]) -> str:
+    return str(stop.get("station_name_raw") or stop.get("station_name") or stop.get("stationName") or stop.get("name") or "")
+
+
+def is_known_v3_synthetic_tail_duplicate(train: dict[str, Any]) -> bool:
+    if train.get("source_collection") != "v3_rematched_to_v4":
+        return False
+    if train.get("operator_id") != "jr_east":
+        return False
+    if train.get("line_name") not in {"JR_NARITA", "JR_SOTOBO"}:
+        return False
+    station_names = {stop_display_name(stop) for stop in train.get("stop_times") or []}
+    return bool(station_names) and station_names <= {"津田沼", "稲毛", "千葉"}
+
+
+def normalize_reviewed_current_line_fields(train: dict[str, Any]) -> None:
+    if train.get("source_collection") != "v3_rematched_to_v4":
+        return
+    if train.get("operator_name") == "JR Shinkansen" and train.get("line_name") == "SHINKANSEN_AKITA":
+        service_name = str(train.get("service_name") or train.get("display_name") or "")
+        if service_name.lower() == "hayabusa":
+            train["line_name"] = "SHINKANSEN_TOHOKU_HOKKAIDO"
+            train["line_id"] = "SHINKANSEN_TOHOKU_HOKKAIDO"
 
 
 def train_target_line_touch_count(train: dict[str, Any]) -> int:
@@ -259,6 +286,10 @@ def is_probable_navitime_source_pollution(train: dict[str, Any]) -> bool:
         return False
     if not train_has_foreign_physical_operator(train):
         return False
+    if train_target_line_touch_count(train) <= 2:
+        service_text = str(train.get("service_name_detail") or train.get("display_name") or "")
+        if service_text and not any(token in service_text for token in (str(train.get("line_name") or ""), str(train.get("operator_name") or ""))):
+            return True
     if train_target_line_touch_count(train) >= 2 and train_target_line_touch_ratio(train) >= 0.18:
         return False
     return True
@@ -451,6 +482,7 @@ def main() -> int:
     for train in v3_data["train_instances"]:
         item = dict(train)
         item["source_collection"] = "v3_rematched_to_v4"
+        normalize_reviewed_current_line_fields(item)
         reason = invalid_train_reason(item)
         if reason:
             record_invalid_train(item, "v3_rematched_to_v4", reason)
@@ -467,6 +499,7 @@ def main() -> int:
         for train in payload["train_instances"]:
             item = dict(train)
             item["source_collection"] = label
+            normalize_reviewed_current_line_fields(item)
             reason = invalid_train_reason(item)
             if reason:
                 record_invalid_train(item, label, reason)
@@ -481,6 +514,7 @@ def main() -> int:
             continue
         item = dict(train)
         item["source_collection"] = "v4_public_gtfs"
+        normalize_reviewed_current_line_fields(item)
         reason = invalid_train_reason(item)
         if reason:
             record_invalid_train(item, "v4_public_gtfs", reason)

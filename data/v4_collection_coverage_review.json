@@ -1,69 +1,58 @@
 {
   "schema": "onichase.v4.collection_coverage_review.v1",
-  "generatedAt": "2026-04-29T23:43:14+00:00",
-  "policy": "Reviewed coverage warnings are tracked backlog or physical-only route surfaces. Playable route coverage counts any primary, lineTrace, or stop-level route usage.",
+  "generatedAt": "2026-04-29T23:52:56+00:00",
+  "policy": "Reviewed coverage warnings are tracked backlog or physical-only route surfaces. Playable route coverage counts any primary, lineTrace, or stop-level route usage; low-current lines require an explicit classification.",
   "reviewedRouteIdsWithoutTrips": [],
   "reviewedOperatorIdsWithoutKnownTrains": [],
   "reviewedLowCurrentLineKeys": [
+    "JR Shinkansen|SHINKANSEN_AKITA",
     "万葉線|米島口～中新湊",
     "万葉線|高岡駅～米島口",
-    "東日本旅客鉄道|JR_NARITA",
-    "東日本旅客鉄道|JR_SOTOBO",
     "東日本旅客鉄道|篠ノ井線",
-    "JR Shinkansen|SHINKANSEN_AKITA",
-    "万葉線|高岡駅～中新湊",
-    "名古屋ガイドウェイバス|ガイドウェイバス志段味線"
+    "万葉線|高岡駅～中新湊"
   ],
   "reviewedRouteWithoutTripItems": [],
   "reviewedOperatorBacklogItems": [],
   "reviewedLowCurrentLineItems": [
     {
       "kind": "line_has_very_few_current_trains",
+      "operatorName": "JR Shinkansen",
+      "lineName": "SHINKANSEN_AKITA",
+      "currentTrainCount": 1,
+      "classification": "collector_gap_legacy_shinkansen_sample",
+      "reviewNote": "Only the legacy Komachi Akita sample remains after correcting a Hayabusa misclassified as Akita Shinkansen."
+    },
+    {
+      "kind": "line_has_very_few_current_trains",
       "operatorName": "万葉線",
       "lineName": "米島口～中新湊",
-      "currentTrainCount": 1
+      "currentTrainCount": 1,
+      "classification": "gtfs_short_turn_route_variant",
+      "reviewNote": "GTFS route name is an origin-destination short-turn variant; main 万葉線 service is covered by higher-count routes."
     },
     {
       "kind": "line_has_very_few_current_trains",
       "operatorName": "万葉線",
       "lineName": "高岡駅～米島口",
-      "currentTrainCount": 1
-    },
-    {
-      "kind": "line_has_very_few_current_trains",
-      "operatorName": "東日本旅客鉄道",
-      "lineName": "JR_NARITA",
-      "currentTrainCount": 1
-    },
-    {
-      "kind": "line_has_very_few_current_trains",
-      "operatorName": "東日本旅客鉄道",
-      "lineName": "JR_SOTOBO",
-      "currentTrainCount": 1
+      "currentTrainCount": 1,
+      "classification": "gtfs_short_turn_route_variant",
+      "reviewNote": "GTFS route name is an origin-destination short-turn variant; main 万葉線 service is covered by higher-count routes."
     },
     {
       "kind": "line_has_very_few_current_trains",
       "operatorName": "東日本旅客鉄道",
       "lineName": "篠ノ井線",
-      "currentTrainCount": 1
-    },
-    {
-      "kind": "line_has_very_few_current_trains",
-      "operatorName": "JR Shinkansen",
-      "lineName": "SHINKANSEN_AKITA",
-      "currentTrainCount": 2
+      "currentTrainCount": 1,
+      "classification": "collector_gap_boundary_segment",
+      "reviewNote": "JR East official source currently contributes one boundary/local segment; broader Shinonoi-area service is covered under adjacent JR Central/East routes but needs collector follow-up."
     },
     {
       "kind": "line_has_very_few_current_trains",
       "operatorName": "万葉線",
       "lineName": "高岡駅～中新湊",
-      "currentTrainCount": 2
-    },
-    {
-      "kind": "line_has_very_few_current_trains",
-      "operatorName": "名古屋ガイドウェイバス",
-      "lineName": "ガイドウェイバス志段味線",
-      "currentTrainCount": 2
+      "currentTrainCount": 2,
+      "classification": "gtfs_short_turn_route_variant",
+      "reviewNote": "GTFS route name is an origin-destination short-turn variant; main 万葉線 service is covered by higher-count routes."
     }
   ]
 }
