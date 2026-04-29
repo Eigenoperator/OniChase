@@ -116,6 +116,7 @@
 - Selected-train row labels must not expose raw subway registry names like `2号線日比谷線`; use the public line name such as `日比谷線`.
 - Selected-train row labels for limited express and Shinkansen services must include the public train number when one exists.
 - Selected-train row labels for ordinary through-running services should show the line the train is currently heading toward in the direct-service chain: for `A-B-C`, an `A-B` segment train heading toward `C` displays the `C` line, while the reverse direction displays the `A` line even when the vehicle belongs to company `C`; for `A-B(-D)-C`, the branch line appears only when the train is actually heading toward branch `D`.
+- 名古屋鉄道 trains are an explicit exception to the ordinary through-direction label rule: selected-train row labels must show the train's own Meitetsu route for the whole trip, formatted as `名鉄（...線）`.
 - Shared operators, shared station groups, transfer permission, nearby geometry, or parallel corridors do not by themselves make two lines through-running equivalents.
 - Ordinary lines such as Tokaido Line, Yokosuka Line, Yamanote Line, and Keihin-Tohoku Line must remain separate categories unless the specific train movement truly uses the same track and platform as another service.
 

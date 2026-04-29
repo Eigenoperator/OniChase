@@ -2593,6 +2593,14 @@
       return String(route?.operatorId || '').startsWith('jr_') || route?.operatorId === 'shinkansen';
     }
 
+    function isMeitetsuRoute(route) {
+      return route?.operatorId === '名古屋鉄道' || route?.operatorName === '名古屋鉄道';
+    }
+
+    function isMeitetsuTrip(trip) {
+      return isMeitetsuRoute(state.routeById.get(trip?.routeId || ''));
+    }
+
     function isSubwayRoute(route) {
       const operatorId = route?.operatorId || '';
       const operatorName = route?.operatorName || '';
@@ -2634,6 +2642,7 @@
     function routeDisplayName(route, name) {
       const label = normalizeRouteLineLabel(route, name);
       if (!route || !label) return label;
+      if (isMeitetsuRoute(route)) return `名鉄（${label.replace(/^名古屋鉄道/u, '')}）`;
       if (route.shortName === 'みなとみらい21線' && label === 'みなとみらい線') return label;
       const operator = PHYSICAL_ALIAS_OPERATOR_LABELS[route.shortName]
         || (!isJrRoute(route) ? routeOperatorLabel(route) : '');
@@ -5172,6 +5181,10 @@
     }
 
     function ordinaryBoardingSegmentLineLabel(entry, selectedRouteId = null) {
+      if (isMeitetsuTrip(entry?.trip)) {
+        const label = routeTitle(entry.trip.routeId);
+        return label && !/^\d+号線/u.test(label) ? label : '';
+      }
       const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
       const selectedRoute = selectedRouteId ? state.routeById.get(selectedRouteId) : null;
       if (selectedRouteId && adjacentDirectionRouteId === selectedRouteId && selectedRoute && !isJrRoute(selectedRoute)) {
