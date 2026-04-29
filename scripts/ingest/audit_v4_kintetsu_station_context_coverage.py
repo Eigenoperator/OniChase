@@ -36,6 +36,29 @@ from collect_v4_kintetsu_official_train_instances import (  # noqa: E402
 
 
 DEFAULT_AUDIT = ROOT / "data" / "v4_kintetsu_station_context_coverage_audit.json"
+KNOWN_EXTERNAL_THROUGH_DIRECTIONS = (
+    {
+        "line": "けいはんな線",
+        "station": "長田",
+        "directionContains": "大阪地下鉄",
+        "coveredBy": "v4_osaka_metro_official",
+        "reason": "Kintetsu T5 exposes Osaka Metro Chuo Line through-service departures at Nagata, but the T7 train detail is owned by the Osaka Metro side.",
+    },
+    {
+        "line": "京都線",
+        "station": "竹田",
+        "directionContains": "京都市地下鉄",
+        "coveredBy": "v4_navitime_non_jr",
+        "reason": "Kintetsu T5 exposes Kyoto Municipal Subway Karasuma Line through-service departures at Takeda, but the downstream detail belongs to the subway-side timetable source.",
+    },
+    {
+        "line": "難波線",
+        "station": "大阪難波",
+        "directionContains": "阪神",
+        "coveredBy": "v4_navitime_non_jr",
+        "reason": "Kintetsu T5 exposes Hanshin Namba Line through-service departures at Osaka-Namba, but the downstream detail belongs to the Hanshin-side timetable source.",
+    },
+)
 
 
 def load_json(path: Path) -> Any:
@@ -67,6 +90,15 @@ def train_key_from_link(href: str, page_url: str) -> str | None:
     return canonical[0] if canonical else None
 
 
+def external_through_rule(station: str, line: str, direction: str) -> dict[str, str] | None:
+    for rule in KNOWN_EXTERNAL_THROUGH_DIRECTIONS:
+        if rule["line"] != line or rule["station"] != station:
+            continue
+        if str(rule["directionContains"]) in direction:
+            return rule
+    return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
@@ -85,9 +117,12 @@ def main() -> int:
     missing_context_samples: list[dict[str, Any]] = []
     missing_train_samples: list[dict[str, Any]] = []
     missing_by_station_direction: Counter[str] = Counter()
+    external_through_missing_by_station_direction: Counter[str] = Counter()
     checked_departures = 0
     missing_context_count = 0
     missing_train_count = 0
+    external_through_missing_train_count = 0
+    external_through_missing_context_count = 0
     page_count = 0
     uncached_page_count = 0
     page_link_counts: Counter[str] = Counter()
@@ -105,17 +140,24 @@ def main() -> int:
         page_count += 1
         links = extract_t7_links(page_html, page_url)
         page_link_counts[page_key] += len(links)
+        external_rule = external_through_rule(station_name, line_name, direction_name)
         for key, _url in links:
             checked_departures += 1
             train = train_by_key.get(key)
             if not train:
-                missing_train_count += 1
+                if external_rule:
+                    external_through_missing_train_count += 1
+                    external_through_missing_by_station_direction[page_key] += 1
+                else:
+                    missing_train_count += 1
                 if len(missing_train_samples) < args.sample_limit:
                     missing_train_samples.append({
                         "station": station_name,
                         "line": line_name,
                         "direction": direction_name,
                         "trainKey": key,
+                        "externalThrough": bool(external_rule),
+                        "coveredBy": external_rule.get("coveredBy") if external_rule else None,
                         "pageUrl": page_url,
                     })
                 continue
@@ -124,8 +166,12 @@ def main() -> int:
                 for stop in train.get("stop_times") or []
             ]
             if station_name not in stop_names:
-                missing_context_count += 1
-                missing_by_station_direction[page_key] += 1
+                if external_rule:
+                    external_through_missing_context_count += 1
+                    external_through_missing_by_station_direction[page_key] += 1
+                else:
+                    missing_context_count += 1
+                    missing_by_station_direction[page_key] += 1
                 if len(missing_context_samples) < args.sample_limit:
                     missing_context_samples.append({
                         "station": station_name,
@@ -138,6 +184,8 @@ def main() -> int:
                         "collectedFirstStop": stop_names[0] if stop_names else "",
                         "collectedLastStop": stop_names[-1] if stop_names else "",
                         "collectedStopSample": stop_names[:12],
+                        "externalThrough": bool(external_rule),
+                        "coveredBy": external_rule.get("coveredBy") if external_rule else None,
                         "pageUrl": page_url,
                         "sourceUrl": train.get("source_url"),
                     })
@@ -155,6 +203,22 @@ def main() -> int:
             "missingContextRate": round(missing_count / total, 4) if total else None,
         })
 
+    external_through_missing_station_directions = []
+    for key, missing_count in external_through_missing_by_station_direction.most_common():
+        total = page_link_counts.get(key, 0)
+        station, line, direction = key.split("|", 2)
+        rule = external_through_rule(station, line, direction) or {}
+        external_through_missing_station_directions.append({
+            "station": station,
+            "line": line,
+            "direction": direction,
+            "missingCount": missing_count,
+            "pageDepartureLinkCount": total,
+            "missingRate": round(missing_count / total, 4) if total else None,
+            "coveredBy": rule.get("coveredBy"),
+            "reason": rule.get("reason"),
+        })
+
     output = {
         "schema": "onichase.v4.kintetsu_station_context_coverage_audit.v1",
         "inputs": {
@@ -168,15 +232,21 @@ def main() -> int:
             "missingTrainCount": missing_train_count,
             "missingStationContextCount": missing_context_count,
             "stationDirectionWithMissingContextCount": len(missing_by_station_direction),
+            "externalThroughMissingTrainCount": external_through_missing_train_count,
+            "externalThroughMissingStationContextCount": external_through_missing_context_count,
+            "externalThroughStationDirectionCount": len(external_through_missing_by_station_direction),
         },
         "missingStationDirections": missing_station_directions,
+        "externalThroughMissingStationDirections": external_through_missing_station_directions,
         "missingStationContextSamples": missing_context_samples,
         "missingTrainSamples": missing_train_samples,
     }
     write_json(args.output, output)
     print(
         f"Wrote {args.output}: checked={checked_departures} "
-        f"missing_context={missing_context_count} missing_trains={missing_train_count}"
+        f"missing_context={missing_context_count} missing_trains={missing_train_count} "
+        f"external_through_missing="
+        f"{external_through_missing_train_count + external_through_missing_context_count}"
     )
     return 1 if missing_context_count or missing_train_count else 0
 

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import hashlib
 import json
 from collections import Counter
 from pathlib import Path
@@ -108,7 +109,7 @@ def stop_station_key(stop: dict[str, Any]) -> str:
     )
 
 
-def train_signature(train: dict[str, Any]) -> tuple[Any, ...]:
+def train_signature(train: dict[str, Any]) -> str:
     """A source-independent signature for one real train movement.
 
     Service ids intentionally differ between collectors, so current collection
@@ -116,20 +117,22 @@ def train_signature(train: dict[str, Any]) -> tuple[Any, ...]:
     stop times instead.
     """
 
-    stops = train.get("stop_times") or []
-    stop_signature = tuple(
-        (
-            stop_station_key(stop),
-            stop.get("arrival_time") or stop.get("arrivalTime") or "",
-            stop.get("departure_time") or stop.get("departureTime") or "",
-        )
-        for stop in stops
-    )
-    return (
+    hasher = hashlib.sha1()
+    parts = (
         train.get("operator_id") or train.get("operator_name") or "",
         train.get("train_number") or train.get("service_name") or train.get("display_name") or "",
-        stop_signature,
     )
+    for part in parts:
+        hasher.update(str(part).encode("utf-8"))
+        hasher.update(b"\0")
+    for stop in train.get("stop_times") or []:
+        hasher.update(stop_station_key(stop).encode("utf-8"))
+        hasher.update(b"\0")
+        hasher.update(str(stop.get("arrival_time") or stop.get("arrivalTime") or "").encode("utf-8"))
+        hasher.update(b"\0")
+        hasher.update(str(stop.get("departure_time") or stop.get("departureTime") or "").encode("utf-8"))
+        hasher.update(b"\0")
+    return hasher.hexdigest()
 
 
 def source_priority(source_collection: str) -> int:
@@ -202,22 +205,27 @@ def choose_best_train(current: dict[str, Any] | None, candidate: dict[str, Any])
 
 
 def dedupe_trains(trains: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    by_signature: dict[tuple[Any, ...], dict[str, Any]] = {}
-    signature_source_ids: dict[tuple[Any, ...], list[str]] = {}
+    by_signature: dict[str, dict[str, Any]] = {}
+    signature_counts: Counter[str] = Counter()
+    duplicate_groups_by_signature: dict[str, list[str]] = {}
     for train in trains:
         signature = train_signature(train)
-        signature_source_ids.setdefault(signature, []).append(str(train.get("service_instance_id") or ""))
+        signature_counts[signature] += 1
+        if signature_counts[signature] == 2:
+            duplicate_groups_by_signature[signature] = [
+                str(by_signature[signature].get("service_instance_id") or "")
+            ]
+        if signature in duplicate_groups_by_signature and len(duplicate_groups_by_signature[signature]) < 20:
+            duplicate_groups_by_signature[signature].append(str(train.get("service_instance_id") or ""))
         by_signature[signature] = choose_best_train(by_signature.get(signature), train)
 
-    duplicate_groups = [
-        ids for ids in signature_source_ids.values()
-        if len(ids) > 1
-    ]
+    duplicate_group_count = sum(1 for count in signature_counts.values() if count > 1)
+    duplicate_row_count = sum(count - 1 for count in signature_counts.values() if count > 1)
     deduped = sorted(by_signature.values(), key=lambda item: item["service_instance_id"])
     return deduped, {
-        "duplicateSignatureGroupCount": len(duplicate_groups),
-        "duplicateSignatureRowCount": sum(len(ids) - 1 for ids in duplicate_groups),
-        "duplicateSignatureSample": duplicate_groups[:20],
+        "duplicateSignatureGroupCount": duplicate_group_count,
+        "duplicateSignatureRowCount": duplicate_row_count,
+        "duplicateSignatureSample": list(duplicate_groups_by_signature.values())[:20],
     }
 
 
