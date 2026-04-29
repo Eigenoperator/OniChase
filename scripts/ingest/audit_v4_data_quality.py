@@ -228,6 +228,7 @@ def audit_collection_coverage(
     reviewed = reviewed_collection_coverage_sets(coverage_review)
     reviewed_counts: Counter[str] = Counter()
     current_counts_by_line: Counter[tuple[str, str]] = Counter(current_train_line_key(train) for train in current_payload.get("train_instances", []))
+    current_counts_by_operator: Counter[str] = Counter(operator for operator, _line in current_counts_by_line)
     trip_counts_by_route: Counter[str] = Counter(trip.get("routeId") or "" for trip in trips)
 
     no_trip_routes = []
@@ -262,6 +263,10 @@ def audit_collection_coverage(
                 if lead.get("candidateStatus") == "high_confidence"
             ]
             operator_id = str(operator.get("operatorId") or "")
+            operator_name = str(operator.get("operatorName") or "")
+            current_train_count = current_counts_by_operator.get(operator_name, 0) or current_counts_by_operator.get(operator_id, 0)
+            if current_train_count > 0:
+                continue
             if known_count == 0 and high_conf_leads:
                 if operator_id in reviewed["operatorIdsWithoutKnownTrains"]:
                     reviewed_counts["registry_high_confidence_source_but_no_known_trains"] += 1
@@ -269,9 +274,10 @@ def audit_collection_coverage(
                 registry_zero_known.append(
                     {
                         "operatorId": operator_id,
-                        "operatorName": operator.get("operatorName"),
+                        "operatorName": operator_name,
                         "lineNames": operator.get("lineNames", [])[:12],
                         "sourceStatus": source_status,
+                        "currentTrainCount": current_train_count,
                         "leadCount": len(operator.get("sourceLeads", [])),
                         "sampleLead": {
                             "title": high_conf_leads[0].get("title"),
