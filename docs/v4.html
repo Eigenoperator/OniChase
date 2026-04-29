@@ -952,10 +952,10 @@
             <button id="lobby-runner-button" class="active runner" type="button">Runner</button>
             <button id="lobby-hunter-button" class="hunter" type="button">Hunter</button>
           </div>
-          <input id="room-id-input" class="room-input" placeholder="ROOM ID" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+          <input id="room-id-input" class="room-input" placeholder="ROOM ID" autocomplete="off" autocapitalize="characters" spellcheck="false" disabled />
           <div class="button-row">
-            <button id="create-room-button" class="primary" type="button">Create Room</button>
-            <button id="join-room-button" type="button">Join Room</button>
+            <button id="create-room-button" class="primary" type="button" disabled>Create Room</button>
+            <button id="join-room-button" type="button" disabled>Join Room</button>
             <button id="copy-room-button" type="button">Copy Code</button>
           </div>
           <div class="room-code" id="room-code-pill">NO ROOM</div>
@@ -1961,6 +1961,7 @@
       timetableLoadRequested: false,
       online: {
         serverUrl: '',
+        serverAvailable: false,
         roomId: '',
         seat: null,
         token: '',
@@ -2120,8 +2121,31 @@
       const storedValue = window.localStorage.getItem('onichase-v4-room-server-url');
       const candidate = queryValue || storedValue || state.online.serverUrl || '';
       const normalized = candidate.trim().replace(/\/+$/, '');
-      if (queryValue && normalized) window.localStorage.setItem('onichase-v4-room-server-url', normalized);
       return normalized;
+    }
+
+    async function verifyRoomServer(serverUrl) {
+      if (!serverUrl) return false;
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 3500);
+      try {
+        const response = await fetch(`${serverUrl}/health`, { cache: 'no-store', signal: controller.signal });
+        return response.ok;
+      } catch (_error) {
+        return false;
+      } finally {
+        window.clearTimeout(timeout);
+      }
+    }
+
+    function renderOnlineAvailability() {
+      const available = Boolean(state.online.serverAvailable && state.online.serverUrl);
+      const createButton = document.getElementById('create-room-button');
+      const joinButton = document.getElementById('join-room-button');
+      const roomInput = document.getElementById('room-id-input');
+      if (createButton) createButton.disabled = !available;
+      if (joinButton) joinButton.disabled = !available;
+      if (roomInput) roomInput.disabled = !available;
     }
 
     async function loadOnlineConfig() {
@@ -2135,10 +2159,27 @@
         state.online.serverUrl = '';
       }
       const serverUrl = configuredServerUrl();
-      state.online.serverUrl = serverUrl;
-      entryStatusEl.textContent = serverUrl
-        ? '在线服务已连接。可以创建或加入房间。'
-        : '在线服务暂时不可用。';
+      if (!serverUrl) {
+        state.online.serverUrl = '';
+        state.online.serverAvailable = false;
+        entryStatusEl.textContent = '联机服务已关闭，本地单人模式可正常使用。';
+        renderOnlineAvailability();
+        renderRoomPanel();
+        return;
+      }
+      const available = await verifyRoomServer(serverUrl);
+      state.online.serverUrl = available ? serverUrl : '';
+      state.online.serverAvailable = available;
+      if (available) {
+        const queryValue = new URLSearchParams(window.location.search).get('server');
+        if (queryValue) window.localStorage.setItem('onichase-v4-room-server-url', serverUrl);
+        entryStatusEl.textContent = '在线服务已连接。可以创建或加入房间。';
+      } else {
+        window.localStorage.removeItem('onichase-v4-room-server-url');
+        entryStatusEl.textContent = '联机服务当前不可用，已自动切换到本地单人模式。';
+      }
+      renderOnlineAvailability();
+      renderRoomPanel();
     }
 
     function roomTokenStorageKey(roomId, seat) {
@@ -6610,7 +6651,9 @@
     function renderRoomPanel() {
       const room = state.online.lastRoom;
       if (!onlineActive()) {
-        roomCardEl.textContent = 'Single-player local mode.\nUse Lobby when you want to connect this same v4 gameplay shell to a v4 nationwide room server.';
+        roomCardEl.textContent = state.online.serverAvailable
+          ? 'Single-player local mode.\nUse Lobby when you want to connect this same v4 gameplay shell to a v4 nationwide room server.'
+          : 'Single-player local mode.\nOnline rooms are currently disabled for this static build.';
       } else if (room) {
         roomCardEl.textContent = roomStatusSummary(room);
       } else {
@@ -6624,6 +6667,7 @@
       if (buttons.submit) buttons.submit.disabled = !onlineActive() || state.phase !== 'PLANNING';
       if (buttons.ready) buttons.ready.disabled = !onlineActive() || state.phase !== 'PLANNING' || Boolean(room?.self?.ready);
       if (buttons.unready) buttons.unready.disabled = !onlineActive() || state.phase !== 'PLANNING' || !room?.self?.ready;
+      renderOnlineAvailability();
     }
 
     function tutorialPlanStatus() {
