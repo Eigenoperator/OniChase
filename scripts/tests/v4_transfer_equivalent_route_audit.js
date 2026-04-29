@@ -1,0 +1,207 @@
+#!/usr/bin/env node
+
+const { chromium } = require('playwright');
+
+const MAPLIBRE_STUB = `
+class FakeMap {
+  constructor() {
+    this.sources = new Map();
+    this.layers = new Map();
+    this.filters = {};
+    this.canvas = { style: {} };
+  }
+  addControl() {}
+  on(event, layerOrHandler, maybeHandler) {
+    const handler = typeof layerOrHandler === 'function' ? layerOrHandler : maybeHandler;
+    if (handler && event === 'load') setTimeout(handler, 0);
+    return this;
+  }
+  addSource(id, source) {
+    this.sources.set(id, {
+      ...source,
+      data: source.data,
+      setData(data) { this.data = data; },
+    });
+  }
+  getSource(id) { return this.sources.get(id) || null; }
+  addLayer(layer) { this.layers.set(layer.id, layer); }
+  getLayer(id) { return this.layers.get(id) || null; }
+  setFilter(id, filter) { this.filters[id] = filter; }
+  setLayoutProperty(id, key, value) {
+    const layer = this.layers.get(id) || {};
+    layer.layout = { ...(layer.layout || {}), [key]: value };
+    this.layers.set(id, layer);
+  }
+  setPaintProperty(id, key, value) {
+    const layer = this.layers.get(id) || {};
+    layer.paint = { ...(layer.paint || {}), [key]: value };
+    this.layers.set(id, layer);
+  }
+  getCanvas() { return this.canvas; }
+  getZoom() { return 9; }
+  fitBounds() {}
+  queryRenderedFeatures() { return []; }
+}
+window.maplibregl = {
+  Map: FakeMap,
+  NavigationControl: class {},
+  AttributionControl: class {},
+};
+`;
+
+function parseArgs(argv) {
+  const args = {};
+  for (let index = 2; index < argv.length; index += 1) {
+    const key = argv[index];
+    if (!key.startsWith('--')) continue;
+    args[key.slice(2)] = argv[index + 1];
+    index += 1;
+  }
+  if (!args['page-url']) throw new Error('Missing --page-url');
+  return args;
+}
+
+async function loadPage(pageUrl) {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  await page.route('https://unpkg.com/**', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: MAPLIBRE_STUB,
+  }));
+  await page.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForFunction(() => typeof state !== 'undefined' && Boolean(state.bundle), null, { timeout: 90000 });
+  await page.evaluate(() => ensureTimetableLoaded());
+  await page.waitForFunction(() => state.timetableStatus === 'ready', null, { timeout: 90000 });
+  return { browser, page };
+}
+
+async function auditTransferEquivalentRoutes(page) {
+  return page.evaluate(() => {
+    const START_MINUTE = hhmmToMinutes('06:00');
+    const MAX_SAMPLES = 80;
+
+    function groupName(stationGroupId) {
+      return displayNameForGroup(stationGroupId);
+    }
+
+    function routeChoicesForGroup(stationGroupId, includeTransferEquivalents) {
+      return routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, START_MINUTE, { includeTransferEquivalents }))
+        .map((choice) => choice.routeId)
+        .filter((routeId, index, routeIds) => routeId && routeIds.indexOf(routeId) === index);
+    }
+
+    function routeTitles(routeIds) {
+      return routeIds.map(routeTitle).sort((a, b) => a.localeCompare(b, 'ja'));
+    }
+
+    function canonicalClusterKey(stationGroupId) {
+      return equivalentStationGroupIds(stationGroupId).slice().sort().join('|');
+    }
+
+    const clusters = new Map();
+    for (const stationGroupId of state.stationGroupById.keys()) {
+      const equivalentIds = equivalentStationGroupIds(stationGroupId);
+      if (equivalentIds.length < 2) continue;
+      const key = canonicalClusterKey(stationGroupId);
+      if (!clusters.has(key)) clusters.set(key, equivalentIds.slice().sort());
+    }
+
+    const samples = [];
+    const stationGroupSummaries = [];
+    let checkedClusters = 0;
+    let checkedStationGroups = 0;
+    let checkedExactRoutes = 0;
+    let missingRouteCount = 0;
+    let clustersWithMissingRoutes = 0;
+
+    for (const equivalentIds of clusters.values()) {
+      checkedClusters += 1;
+      const exactRouteSet = new Set();
+      const exactByGroup = equivalentIds.map((stationGroupId) => {
+        const routeIds = routeChoicesForGroup(stationGroupId, false);
+        routeIds.forEach((routeId) => exactRouteSet.add(routeId));
+        checkedExactRoutes += routeIds.length;
+        return {
+          stationGroupId,
+          station: groupName(stationGroupId),
+          exactRoutes: routeTitles(routeIds),
+        };
+      });
+      const expectedRouteIds = [...exactRouteSet];
+      if (!expectedRouteIds.length) continue;
+      let clusterMissing = false;
+      for (const stationGroupId of equivalentIds) {
+        checkedStationGroups += 1;
+        const mergedRouteIds = routeChoicesForGroup(stationGroupId, true);
+        const mergedRouteSet = new Set(mergedRouteIds);
+        const missingRouteIds = expectedRouteIds.filter((routeId) => !mergedRouteSet.has(routeId));
+        if (!missingRouteIds.length) continue;
+        clusterMissing = true;
+        missingRouteCount += missingRouteIds.length;
+        if (samples.length < MAX_SAMPLES) {
+          samples.push({
+            station: groupName(stationGroupId),
+            stationGroupId,
+            equivalentStationGroupIds: equivalentIds,
+            expectedRoutes: routeTitles(expectedRouteIds),
+            mergedRoutes: routeTitles(mergedRouteIds),
+            missingRoutes: routeTitles(missingRouteIds),
+            exactByGroup,
+          });
+        }
+      }
+      if (clusterMissing) clustersWithMissingRoutes += 1;
+      if (stationGroupSummaries.length < MAX_SAMPLES) {
+        const routeTitleSet = new Set(expectedRouteIds.map(routeTitle));
+        if ([...routeTitleSet].some((title) => title.includes('新幹線'))) {
+          stationGroupSummaries.push({
+            station: groupName(equivalentIds[0]),
+            equivalentStationGroupIds: equivalentIds,
+            expectedRoutes: [...routeTitleSet].sort((a, b) => a.localeCompare(b, 'ja')),
+            exactByGroup,
+          });
+        }
+      }
+    }
+
+    const anomalies = [];
+    if (missingRouteCount) {
+      anomalies.push({
+        kind: 'transfer_equivalent_route_choice_missing',
+        reason: 'Every player-facing route list for a transfer-equivalent station group must include the union of exact route choices from all equivalent groups, so lines do not disappear when the player selects one physical group.',
+        missingRouteCount,
+        clustersWithMissingRoutes,
+        samples,
+      });
+    }
+
+    return {
+      anomalyCount: anomalies.length,
+      checkedClusters,
+      checkedStationGroups,
+      checkedExactRoutes,
+      missingRouteCount,
+      clustersWithMissingRoutes,
+      shinkansenEquivalentStationSamples: stationGroupSummaries,
+      anomalies,
+    };
+  });
+}
+
+async function main() {
+  const args = parseArgs(process.argv);
+  const { browser, page } = await loadPage(args['page-url']);
+  try {
+    const result = await auditTransferEquivalentRoutes(page);
+    console.log(JSON.stringify(result, null, 2));
+    if (result.anomalyCount) process.exitCode = 1;
+  } finally {
+    await browser.close();
+  }
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

@@ -2807,8 +2807,14 @@
     }
 
     function queryStationAllowedForCorridor(entry, allowedStations) {
-      const queryStationName = entry?.queryStationGroupId ? displayNameForGroup(entry.queryStationGroupId) : '';
-      return !queryStationName || allowedStations.has(queryStationName);
+      if (!entry?.queryStationGroupId) return true;
+      const candidateGroupIds = new Set([
+        entry.queryStationGroupId,
+        entry?.boardStop?.stationGroupId,
+        entry?.stop?.stationGroupId,
+        ...equivalentStationGroupIds(entry.queryStationGroupId),
+      ].filter(Boolean));
+      return [...candidateGroupIds].some((stationGroupId) => allowedStations.has(displayNameForGroup(stationGroupId)));
     }
 
     function isYokosukaSobuRapidTrip(trip) {
@@ -3614,15 +3620,24 @@
 
     function equivalentStationGroupIds(stationGroupId) {
       if (!stationGroupId) return [];
-      const ids = [...(state.transferEquivalentGroupIdsByGroupId.get(stationGroupId) || new Set([stationGroupId]))];
-      if (!ids.includes(stationGroupId)) ids.unshift(stationGroupId);
-      return ids;
+      const seen = new Set([stationGroupId]);
+      const queue = [stationGroupId];
+      for (let index = 0; index < queue.length; index += 1) {
+        const currentGroupId = queue[index];
+        for (const nextGroupId of state.transferEquivalentGroupIdsByGroupId.get(currentGroupId) || []) {
+          if (seen.has(nextGroupId)) continue;
+          seen.add(nextGroupId);
+          queue.push(nextGroupId);
+        }
+      }
+      const ids = [...seen];
+      return [stationGroupId, ...ids.filter((id) => id !== stationGroupId).sort()];
     }
 
     function stationGroupsTransferEquivalent(leftGroupId, rightGroupId) {
       if (!leftGroupId || !rightGroupId) return false;
       if (leftGroupId === rightGroupId) return true;
-      return Boolean(state.transferEquivalentGroupIdsByGroupId.get(leftGroupId)?.has(rightGroupId));
+      return equivalentStationGroupIds(leftGroupId).includes(rightGroupId);
     }
 
     const PHYSICAL_ROUTE_STATION_DISTANCE_SQ = 0.000018;
@@ -6149,7 +6164,7 @@
       const canUseSegmentCandidateRoutes =
         !entry?.queryStationGroupId ||
         !boardStop?.stationGroupId ||
-        entry.queryStationGroupId === boardStop.stationGroupId;
+        stationGroupsTransferEquivalent(entry.queryStationGroupId, boardStop.stationGroupId);
       const segmentCandidateRouteIds = canUseSegmentCandidateRoutes ? [
         tracedRouteIdForTripSegment(entry?.trip, boardStop, nextStop),
         boardStop?.outgoingRouteId,
