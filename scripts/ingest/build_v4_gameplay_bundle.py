@@ -54,6 +54,12 @@ SYNTHETIC_LINE_NAME_OVERRIDES = {
     "RINKAI": "りんかい線",
 }
 
+PUBLIC_LINE_NAME_OVERRIDES = {
+    ("横浜市", "1号線"): "横浜市営地下鉄ブルーライン",
+    ("横浜市", "3号線"): "横浜市営地下鉄ブルーライン",
+    ("横浜市", "4号線"): "横浜市営地下鉄グリーンライン",
+}
+
 
 def load_json(path: Path) -> dict[str, Any]:
     opener = gzip.open if path.suffix == ".gz" else open
@@ -179,14 +185,16 @@ def public_service_name_for_train(train: dict[str, Any], line_name: str) -> str:
     train_type = str(train.get("train_type") or "").strip()
     service_name = str(train.get("service_name") or "").strip()
     operator_id = str(train.get("operator_id") or "").strip()
+    operator_name = str(train.get("operator_name") or "").strip()
     original_line_name = str(train.get("line_name") or "").strip()
+    public_line_name = PUBLIC_LINE_NAME_OVERRIDES.get((operator_name or operator_id, original_line_name), line_name)
     if operator_id == "shinkansen" or original_line_name.startswith("SHINKANSEN_"):
-        return service_name or train_type or line_name
+        return service_name or train_type or public_line_name
     if service_detail and train_type == "特急":
         return service_detail
     if train_type == "特急":
-        return service_name or train_type or line_name
-    return line_name
+        return service_name or train_type or public_line_name
+    return public_line_name
 
 
 def operator_maps(physical_map: dict[str, Any]) -> tuple[dict[str, str], dict[str, str]]:

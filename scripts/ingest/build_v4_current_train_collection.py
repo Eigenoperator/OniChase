@@ -191,6 +191,8 @@ def invalid_train_reason(train: dict[str, Any]) -> str | None:
     stops = train.get("stop_times") or []
     if len(stops) < 2:
         return "short_train"
+    if has_reviewed_closed_operator_foreign_stops(train):
+        return "closed_operator_foreign_physical_stop"
     if any(unresolved_station_ref(stop) for stop in stops):
         return "unmatched_station_ref"
     if any(excessive_match_distance_ref(stop) is not None for stop in stops) and not is_known_direct_service_context_match(train):
@@ -198,6 +200,25 @@ def invalid_train_reason(train: dict[str, Any]) -> str | None:
     if not any(stop_has_time(stop) for stop in stops):
         return "all_stop_times_missing"
     return None
+
+
+def has_reviewed_closed_operator_foreign_stops(train: dict[str, Any]) -> bool:
+    """Reject reviewed closed-network trains that matched stops on foreign rails."""
+
+    operator_name = str(train.get("operator_name") or train.get("operator_id") or "")
+    line_name = str(train.get("line_name") or train.get("service_name") or "")
+    reviewed_closed_lines = {
+        ("横浜市", "1号線"),
+        ("横浜市", "3号線"),
+        ("横浜市", "4号線"),
+    }
+    if (operator_name, line_name) not in reviewed_closed_lines:
+        return False
+    return any(
+        stop.get("physical_operator_name")
+        and stop.get("physical_operator_name") != operator_name
+        for stop in train.get("stop_times") or []
+    )
 
 
 def is_known_direct_service_context_match(train: dict[str, Any]) -> bool:
