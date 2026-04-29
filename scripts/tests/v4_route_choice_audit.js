@@ -270,10 +270,12 @@ async function auditRouteChoices(page) {
             globalTrainLabelScan.limitedOrShinkansenMissingNumberCount += 1;
             addGlobalTrainLabelSample('limited_or_shinkansen_missing_number', stationName, entry, routeId, label);
           }
+          const selectedJrRouteId = selectedJrNorthernTrunkLabelRouteId(entry, routeId);
           const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
-          const directionRouteId = adjacentDirectionRouteId === routeId && !isJrRoute(state.routeById.get(routeId))
+          const directionRouteId = selectedJrRouteId ||
+            (adjacentDirectionRouteId === routeId && !isJrRoute(state.routeById.get(routeId))
             ? adjacentDirectionRouteId
-            : directionTerminalRouteIdForTrainLabel(entry, routeId);
+            : directionTerminalRouteIdForTrainLabel(entry, routeId));
           const directionLabel = directionRouteId ? routeTitle(directionRouteId) : '';
           const directionTraceRouteCount = new Set((entry.trip?.lineTrace || [])
             .map((trace) => trace?.routeId)
@@ -373,7 +375,7 @@ async function auditRouteChoices(page) {
       anomalies.push({
         kind: 'tokyo_station_raw_north_trunk_choice',
         station: '東京',
-        reason: 'At Tokyo, Ueno-Tokyo through-running must show southbound as 東海道線 and northbound as 上野東京ライン; raw northern trunk choices must not appear.',
+        reason: 'At Tokyo, 東北本線 through-running uses the 上野東京ライン nickname only on the 東京-上野 segment; raw northern trunk choices must not appear.',
         choices: knownStationChoices['東京'],
         forbiddenChoices: [...new Set(forbiddenTokyoNorthChoices)].sort((a, b) => a.localeCompare(b, 'ja')),
       });
@@ -386,7 +388,7 @@ async function auditRouteChoices(page) {
       anomalies.push({
         kind: 'ueno_station_raw_south_trunk_choice',
         station: '上野',
-        reason: 'At Ueno, Tokyo-bound through-running must show 上野東京ライン; raw southern trunk choices such as 東海道線 must not appear.',
+        reason: 'At Ueno, Tokyo-bound 東北本線 through-running must show the 上野東京ライン nickname; raw southern trunk choices such as 東海道線 must not appear.',
         choices: knownStationChoices['上野'],
         forbiddenChoices: [...new Set(forbiddenUenoSouthChoices)].sort((a, b) => a.localeCompare(b, 'ja')),
       });
@@ -406,7 +408,7 @@ async function auditRouteChoices(page) {
           if (nextStation !== '上野' && !choices.some((choice) => forbiddenTokyoNorthTrunkChoices.has(choice))) continue;
           anomalies.push({
             kind: 'central_ueno_tokyo_physical_choice',
-            reason: 'Tokyo station through-running should expose northbound movements as 上野東京ライン and southbound movements as 東海道線.',
+          reason: 'Tokyo station through-running should expose the 東京-上野 東北本線 nickname as 上野東京ライン and southbound movements as 東海道線.',
             ...summarizeEntry(stationName, entry),
           });
         }
@@ -419,18 +421,17 @@ async function auditRouteChoices(page) {
       if (summary.choices.includes('東海道線')) {
         anomalies.push({
           kind: 'ueno_tokaido_through_choice',
-          reason: 'Ueno is the northern boundary of the Ueno-Tokyo chain; southbound through movements should use 上野東京ライン, not 東海道線.',
+          reason: 'Ueno is the northern boundary of the 上野東京ライン nickname segment; southbound through movements should use 上野東京ライン, not 東海道線.',
           ...summary,
         });
       }
       const downstreamNames = (entry.trip?.stopTimes || [])
         .filter((stop) => stop.sequence > entry.stop.sequence)
         .map((stop) => displayNameForGroup(stop.stationGroupId));
-      const entersTakasakiBranch = downstreamNames.some((name) => uenoTakasakiBranchStations.has(name));
-      if (entersTakasakiBranch && summary.choices.includes('東北線')) {
+      if (summary.choices.includes('高崎線')) {
         anomalies.push({
-          kind: 'ueno_takasaki_branch_hidden_by_tohoku_choice',
-          reason: 'At Ueno, northbound through movements that enter the Takasaki branch must show 高崎線 rather than 東北線.',
+          kind: 'ueno_takasaki_branch_starts_too_early',
+          reason: '高崎線 starts as the branch at 大宮; at 上野, Takasaki-bound through movements are still on 東北本線.',
           ...summary,
           downstreamSample: downstreamNames.slice(0, 16),
         });
@@ -449,7 +450,7 @@ async function auditRouteChoices(page) {
       if (summary.choices.includes('上野東京ライン') && OMIYA_BRANCH_NEXT_STATIONS.has(summary.nextStation)) {
         anomalies.push({
           kind: 'omiya_branch_hidden_by_ueno_tokyo',
-          reason: 'At Omiya, northbound branch movements must show the branch boarding face, not the through-service corridor.',
+          reason: 'At Omiya, northbound branch movements must show the branch boarding face, not the through-service nickname.',
           ...summary,
         });
       }

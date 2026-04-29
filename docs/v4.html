@@ -2620,6 +2620,7 @@
         return `千葉都市モノレール${label.replace(/線$/u, '')}`;
       }
       if (ROUTE_JA_LABELS[label]) label = ROUTE_JA_LABELS[label];
+      if (route?.operatorId === 'jr_east' && label === '東北線') return '東北本線';
       label = label
         .replace(/^(\d+)号線[（(]([^）)]+)[）)]$/u, '$2')
         .replace(/^\d+号線/u, '');
@@ -2861,10 +2862,6 @@
         return routeIdByShortNameAndOperator('高崎線', 'jr_east');
       }
       if (['さいたま新都心', '浦和', '赤羽'].includes(nextName)) {
-        const route = tripRoute(trip);
-        if (['高崎線', '上越線', '両毛線'].includes(route?.shortName)) {
-          return routeIdByShortNameAndOperator('高崎線', 'jr_east');
-        }
         return routeIdByShortNameAndOperator('東北線', 'jr_east') ||
           routeIdByShortNameAndOperator('宇都宮線', 'jr_east');
       }
@@ -2926,12 +2923,16 @@
         boardName === '上野' &&
         UENO_TOKYO_TRIP_ROUTE_NAMES.has(route?.shortName) &&
         (
+          nextName === '尾久' ||
+          nextName === '赤羽' ||
           UENO_TOKYO_OMIYA_TAKASAKI_NEXT_STATIONS.has(nextName) ||
+          UENO_TOKYO_OMIYA_UTSUNOMIYA_NEXT_STATIONS.has(nextName) ||
           [...UENO_TOKYO_TAKASAKI_BRANCH_STATIONS].some((name) => downstreamNames.has(name)) ||
-          ['高崎線', '上越線', '両毛線'].includes(route?.shortName)
+          [...UENO_TOKYO_UTSUNOMIYA_BRANCH_STATIONS].some((name) => downstreamNames.has(name))
         )
       ) {
-        return routeIdByShortNameAndOperator('高崎線', 'jr_east');
+        return routeIdByShortNameAndOperator('東北線', 'jr_east') ||
+          routeIdByShortNameAndOperator('宇都宮線', 'jr_east');
       }
       if (
         boardName === '上野' &&
@@ -2970,8 +2971,7 @@
       }
       if (
         UENO_TOKYO_OMIYA_TAKASAKI_NEXT_STATIONS.has(boardName) ||
-        UENO_TOKYO_OMIYA_TAKASAKI_NEXT_STATIONS.has(nextName) ||
-        ['高崎線', '上越線', '両毛線'].includes(route?.shortName)
+        UENO_TOKYO_OMIYA_TAKASAKI_NEXT_STATIONS.has(nextName)
       ) {
         return routeIdByShortNameAndOperator('高崎線', 'jr_east');
       }
@@ -5095,12 +5095,38 @@
       return futureTraceRouteIds[futureTraceRouteIds.length - 1] || null;
     }
 
+    function selectedJrNorthernTrunkLabelRouteId(entry, selectedRouteId = null) {
+      const selectedRoute = selectedRouteId ? state.routeById.get(selectedRouteId) : null;
+      if (!selectedRoute || !isJrRoute(selectedRoute)) return null;
+      const selectedTitle = routeTitle(selectedRouteId);
+      if (!['東海道線', '上野東京ライン', '東北本線', '東北線', '宇都宮線', '高崎線', '常磐線'].includes(selectedTitle)) return null;
+      const trip = entry?.trip;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
+      const inNorthernTrunkScope = [
+        UENO_TOKYO_TOKAIDO_SIDE_STATIONS,
+        UENO_TOKYO_CORE_STATIONS,
+        UENO_TOKYO_JOBAN_SIDE_STATIONS,
+        UENO_TOKYO_TAKASAKI_BRANCH_STATIONS,
+        UENO_TOKYO_UTSUNOMIYA_BRANCH_STATIONS,
+      ].some((stationSet) => stationSet.has(boardName) || stationSet.has(nextName)) ||
+        ['尾久', '赤羽', '浦和', 'さいたま新都心', '大宮'].includes(boardName) ||
+        ['尾久', '赤羽', '浦和', 'さいたま新都心', '大宮'].includes(nextName);
+      return inNorthernTrunkScope ? selectedRouteId : null;
+    }
+
     function ordinaryBoardingSegmentLineLabel(entry, selectedRouteId = null) {
       const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
       const selectedRoute = selectedRouteId ? state.routeById.get(selectedRouteId) : null;
       if (selectedRouteId && adjacentDirectionRouteId === selectedRouteId && selectedRoute && !isJrRoute(selectedRoute)) {
         const adjacentLabel = routeTitle(selectedRouteId);
         if (adjacentLabel && !/^\d+号線/u.test(adjacentLabel)) return adjacentLabel;
+      }
+      const selectedJrRouteId = selectedJrNorthernTrunkLabelRouteId(entry, selectedRouteId);
+      if (selectedJrRouteId) {
+        const selectedJrLabel = routeTitle(selectedJrRouteId);
+        if (selectedJrLabel && !/^\d+号線/u.test(selectedJrLabel)) return selectedJrLabel;
       }
       const routeId = directionTerminalRouteIdForTrainLabel(entry, selectedRouteId) || boardingSegmentRouteIdForTrainLabel(entry);
       const label = routeId ? routeTitle(routeId) : '';
