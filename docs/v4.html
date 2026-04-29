@@ -1952,6 +1952,7 @@
       physicalStationsByGroupId: new Map(),
       stationGroupIdsByTransferKey: new Map(),
       transferEquivalentGroupIdsByGroupId: new Map(),
+      transferEquivalentLinksByGroupId: new Map(),
       physicalRouteIdsByGroupId: new Map(),
       tripById: new Map(),
       stationTripsByGroupId: new Map(),
@@ -3546,7 +3547,7 @@
       return String(name || '')
         .normalize('NFKC')
         .replace(/\s+/gu, '')
-        .replace(/^(?:JR|ＪＲ|東京メトロ|都営|東京モノレール|モノレール|京急|京成|京王|小田急|東急|東武|西武|相鉄|りんかい|ゆりかもめ)/u, '')
+        .replace(/^(?:JR|ＪＲ|東京メトロ|都営|東京モノレール|モノレール|京急|京成|京王|小田急|東急|東武|西武|相鉄|近鉄|名鉄|阪急|阪神|京阪|南海|西鉄|京福|叡山|りんかい|ゆりかもめ)/u, '')
         .replace(/駅$/u, '');
     }
 
@@ -3559,6 +3560,7 @@
     }
 
     const TRANSFER_EQUIVALENCE_RADIUS_M = 700;
+    const DEFAULT_INTERCHANGE_TRANSFER_MINUTES = 0;
 
     function stationGroupCoordinate(stationGroupId) {
       const group = state.stationGroupById.get(stationGroupId);
@@ -3583,21 +3585,30 @@
       return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    function canTransferBetweenSameNameGroups(leftGroupId, rightGroupId) {
-      if (leftGroupId === rightGroupId) return true;
+    function transferEquivalenceLink(leftGroupId, rightGroupId) {
+      if (leftGroupId === rightGroupId) {
+        return { transferMinutes: 0, distanceMeters: 0, reason: 'same_station_group' };
+      }
       const leftKey = transferKeyForGroup(leftGroupId);
       const rightKey = transferKeyForGroup(rightGroupId);
-      if (!leftKey || leftKey !== rightKey) return false;
+      if (!leftKey || leftKey !== rightKey) return null;
       const distance = coordinateDistanceMeters(stationGroupCoordinate(leftGroupId), stationGroupCoordinate(rightGroupId));
-      return distance <= TRANSFER_EQUIVALENCE_RADIUS_M;
+      if (distance > TRANSFER_EQUIVALENCE_RADIUS_M) return null;
+      return {
+        transferMinutes: DEFAULT_INTERCHANGE_TRANSFER_MINUTES,
+        distanceMeters: Math.round(distance),
+        reason: 'normalized_nearby_station_name',
+      };
     }
 
     function buildStationTransferIndex() {
       state.stationGroupIdsByTransferKey = new Map();
       state.transferEquivalentGroupIdsByGroupId = new Map();
+      state.transferEquivalentLinksByGroupId = new Map();
       state.stationGroupById.forEach((group, stationGroupId) => {
         const key = transferKeyForGroup(stationGroupId);
         state.transferEquivalentGroupIdsByGroupId.set(stationGroupId, new Set([stationGroupId]));
+        state.transferEquivalentLinksByGroupId.set(stationGroupId, new Map());
         if (!key) return;
         if (!state.stationGroupIdsByTransferKey.has(key)) {
           state.stationGroupIdsByTransferKey.set(key, new Set());
@@ -3610,12 +3621,24 @@
           for (let rightIndex = leftIndex + 1; rightIndex < ids.length; rightIndex += 1) {
             const leftGroupId = ids[leftIndex];
             const rightGroupId = ids[rightIndex];
-            if (!canTransferBetweenSameNameGroups(leftGroupId, rightGroupId)) continue;
+            const link = transferEquivalenceLink(leftGroupId, rightGroupId);
+            if (!link) continue;
             state.transferEquivalentGroupIdsByGroupId.get(leftGroupId).add(rightGroupId);
             state.transferEquivalentGroupIdsByGroupId.get(rightGroupId).add(leftGroupId);
+            state.transferEquivalentLinksByGroupId.get(leftGroupId).set(rightGroupId, link);
+            state.transferEquivalentLinksByGroupId.get(rightGroupId).set(leftGroupId, link);
           }
         }
       });
+    }
+
+    function transferMinutesBetweenStationGroups(leftGroupId, rightGroupId) {
+      if (!leftGroupId || !rightGroupId) return null;
+      if (leftGroupId === rightGroupId) return 0;
+      const directLink = state.transferEquivalentLinksByGroupId.get(leftGroupId)?.get(rightGroupId);
+      if (directLink) return directLink.transferMinutes;
+      if (!stationGroupsTransferEquivalent(leftGroupId, rightGroupId)) return null;
+      return DEFAULT_INTERCHANGE_TRANSFER_MINUTES;
     }
 
     function equivalentStationGroupIds(stationGroupId) {

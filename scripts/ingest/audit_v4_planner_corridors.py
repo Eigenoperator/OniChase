@@ -51,7 +51,10 @@ VIRTUAL_CORRIDOR_ROUTES = {
 }
 
 TRANSFER_EQUIVALENCE_RADIUS_M = 700
-TRANSFER_PREFIX_RE = re.compile(r"^(?:JR|ＪＲ|東京メトロ|都営|東京モノレール|モノレール|京急|京成|京王|小田急|東急|東武|西武|相鉄|りんかい|ゆりかもめ)")
+TRANSFER_PREFIX_RE = re.compile(
+    r"^(?:JR|ＪＲ|東京メトロ|都営|東京モノレール|モノレール|京急|京成|京王|小田急|東急|東武|西武|相鉄|近鉄|名鉄|阪急|阪神|京阪|南海|西鉄|京福|叡山|りんかい|ゆりかもめ)"
+)
+DEFAULT_INTERCHANGE_TRANSFER_MINUTES = 0
 
 SANYO_SHINKANSEN_STATIONS = {
     "新大阪",

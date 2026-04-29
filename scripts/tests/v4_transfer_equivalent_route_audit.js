@@ -95,6 +95,10 @@ async function auditTransferEquivalentRoutes(page) {
       return routeIds.map(routeTitle).sort((a, b) => a.localeCompare(b, 'ja'));
     }
 
+    function groupIdsByDisplayName(name) {
+      return [...state.stationGroupById.keys()].filter((stationGroupId) => groupName(stationGroupId) === name);
+    }
+
     function canonicalClusterKey(stationGroupId) {
       return equivalentStationGroupIds(stationGroupId).slice().sort().join('|');
     }
@@ -227,6 +231,34 @@ async function auditTransferEquivalentRoutes(page) {
         reason: 'A train chosen from a merged transfer-equivalent route list must still resolve to a pending trip with downstream alighting stops.',
         missingPendingDestinationCount,
         samples: pendingDestinationSamples,
+      });
+    }
+    const requiredNagoyaNames = ['名古屋', '名鉄名古屋', '近鉄名古屋'];
+    const requiredNagoyaGroupIds = requiredNagoyaNames
+      .map((name) => groupIdsByDisplayName(name)[0])
+      .filter(Boolean);
+    const nagoyaEquivalentIds = requiredNagoyaGroupIds.length
+      ? new Set(equivalentStationGroupIds(requiredNagoyaGroupIds[0]))
+      : new Set();
+    const missingNagoyaNames = requiredNagoyaNames.filter((name) => {
+      const groupId = groupIdsByDisplayName(name)[0];
+      return !groupId || !nagoyaEquivalentIds.has(groupId);
+    });
+    const nagoyaTransferMinutes = requiredNagoyaGroupIds.slice(1).map((groupId) => ({
+      from: groupName(requiredNagoyaGroupIds[0]),
+      to: groupName(groupId),
+      minutes: typeof transferMinutesBetweenStationGroups === 'function'
+        ? transferMinutesBetweenStationGroups(requiredNagoyaGroupIds[0], groupId)
+        : null,
+    }));
+    if (missingNagoyaNames.length || nagoyaTransferMinutes.some((item) => item.minutes !== 0)) {
+      anomalies.push({
+        kind: 'required_nagoya_private_jr_interchange_missing',
+        reason: 'For this v4 playtest, Nagoya, Meitetsu Nagoya, and Kintetsu Nagoya must be treated as direct transfer-equivalent station groups, with walking time left as a future refinement.',
+        requiredNames: requiredNagoyaNames,
+        missingNames: missingNagoyaNames,
+        transferMinutes: nagoyaTransferMinutes,
+        equivalentNames: [...nagoyaEquivalentIds].map(groupName).sort((a, b) => a.localeCompare(b, 'ja')),
       });
     }
 

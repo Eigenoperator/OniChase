@@ -103,6 +103,7 @@
 - Do not collapse distinct physical interchange stations into one fake shared latitude/longitude point just because gameplay allows transfers there.
 - This is especially important when the interchange spans different operators or companies.
 - Gameplay may still group nearby physical stations into one transfer-capable station group, but the map and physical-network layers must preserve the distinct real station locations and distinct real line geometry.
+- In the current v4 playtest, nearby JR/private-rail terminal station groups with normalized matching names, such as `名古屋` / `名鉄名古屋` / `近鉄名古屋`, are treated as direct transfer-equivalent for planning. The transfer edge must carry an explicit transfer-time field, currently `0`, so a future walking system can replace it with nonzero time without changing the station identity model.
 
 ## 15. Through-Running Classification Must Be Physical
 
