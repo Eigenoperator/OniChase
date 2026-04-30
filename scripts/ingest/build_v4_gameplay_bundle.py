@@ -7,7 +7,7 @@ import hashlib
 import json
 import re
 import shutil
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -180,6 +180,67 @@ def collapse_consecutive_duplicate_stops(stop_times: list[dict[str, Any]]) -> li
     for sequence, stop in enumerate(collapsed, start=1):
         stop["sequence"] = sequence
     return collapsed
+
+
+def normalized_train_label(value: Any) -> str:
+    text = str(value or "").strip()
+    text = re.sub(r"\s+", "", text)
+    return text.replace("（", "(").replace("）", ")")
+
+
+def gameplay_trip_signature(trip: dict[str, Any]) -> str:
+    hasher = hashlib.sha1()
+    label = normalized_train_label(trip.get("displayName") or trip.get("serviceName") or "")
+    for part in (
+        label,
+        trip.get("origin") or "",
+        trip.get("destination") or "",
+    ):
+        hasher.update(str(part).encode("utf-8"))
+        hasher.update(b"\0")
+    for stop in trip.get("stopTimes") or []:
+        for part in (
+            stop.get("stationGroupId") or "",
+            stop.get("arrivalTimeSec") if isinstance(stop.get("arrivalTimeSec"), int) else "",
+            stop.get("departureTimeSec") if isinstance(stop.get("departureTimeSec"), int) else "",
+        ):
+            hasher.update(str(part).encode("utf-8"))
+            hasher.update(b"\0")
+    return hasher.hexdigest()
+
+
+def gameplay_trip_source_priority(trip_id: str) -> tuple[int, str]:
+    text = str(trip_id or "")
+    if "_official:" in text or text.startswith("jr_west_official:") or text.startswith("jr_east_official:"):
+        return (0, text)
+    if "_navitime:" in text or "navitime" in text:
+        return (1, text)
+    return (2, text)
+
+
+def choose_best_gameplay_trip(current: dict[str, Any] | None, candidate: dict[str, Any]) -> dict[str, Any]:
+    if current is None:
+        return candidate
+    current_priority = gameplay_trip_source_priority(str(current.get("id") or ""))
+    candidate_priority = gameplay_trip_source_priority(str(candidate.get("id") or ""))
+    if candidate_priority != current_priority:
+        return candidate if candidate_priority < current_priority else current
+    current_trace_count = len(current.get("lineTrace") or [])
+    candidate_trace_count = len(candidate.get("lineTrace") or [])
+    if candidate_trace_count != current_trace_count:
+        return candidate if candidate_trace_count > current_trace_count else current
+    return min([current, candidate], key=lambda item: str(item.get("id") or ""))
+
+
+def dedupe_gameplay_trip_instances(trip_instances: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
+    by_signature: dict[str, dict[str, Any]] = {}
+    signature_counts: Counter[str] = Counter()
+    for trip in trip_instances:
+        signature = gameplay_trip_signature(trip)
+        signature_counts[signature] += 1
+        by_signature[signature] = choose_best_gameplay_trip(by_signature.get(signature), trip)
+    duplicate_count = sum(count - 1 for count in signature_counts.values() if count > 1)
+    return sorted(by_signature.values(), key=lambda item: str(item.get("id") or "")), duplicate_count
 
 
 def public_service_name_for_train(train: dict[str, Any], line_name: str) -> str:
@@ -817,6 +878,8 @@ def build_timetable(
                 "stopTimes": stop_times,
             }
         )
+    trip_instances, deduped_duplicate_count = dedupe_gameplay_trip_instances(trip_instances)
+    stats["deduped_duplicate_trip"] = deduped_duplicate_count
     return trip_instances, route_station_groups, line_station_groups, stats
 
 

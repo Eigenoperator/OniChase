@@ -30,14 +30,16 @@ DEFAULT_MAX_SPAN_MINUTES = 360
 DEFAULT_MIN_TOUCH_TO_DEPARTURE_RATIO = 1.75
 SAMPLE_LIMIT = 12
 
-ROUTE_LIKE_RE = re.compile(r"(?:線|本線|ライン|Line|系統)$", re.I)
-ROUTE_SERVICE_TYPE_RE = re.compile(r"(?:線|本線|鉄道).*(?:各停|普通|特急|急行|快速|準急)$")
-LETTERED_RAPID_RE = re.compile(r"^[A-ZＡ-Ｚ]快速$")
+ROUTE_LIKE_RE = re.compile(r"(?:線|本線|ライン|Line|系統|鉄道|電鉄)$", re.I)
+ROUTE_SERVICE_TYPE_RE = re.compile(r"(?:線|本線|鉄道|電鉄).*(?:各停|普通|特急|急行|快速|快特|準急)$")
+LETTERED_RAPID_RE = re.compile(r"^[A-ZＡ-Ｚ](?:快速|区間快速|通勤快速|直通快速)$")
 SERVICE_NUMBER_RE = re.compile(r"\s*\d+\s*(?:号|M|A|B|D|F|K|S|H)?\b", re.I)
 TRAIN_NUMBER_RE = re.compile(r"\d+\s*号")
+ROUTE_SPAN_LABEL_RE = re.compile(r"(?:線|本線|鉄道|電鉄).*[（(].+[）)]$")
+ROUTE_SERVICE_LABEL_RE = re.compile(r"(?:線|本線|鉄道|電鉄).*(?:快速|特急|急行|快特|準急)")
 ORDINARY_SERVICE_NAMES = {
     "普通", "各停", "各駅停車", "快速", "急行", "準急", "区間急行", "区間快速",
-    "特急", "通勤急行", "通勤快速", "直通特急", "新快速", "快速急行",
+    "特急", "快特", "快速特急", "通勤特急", "通勤急行", "通勤快速", "直通特急", "新快速", "快速急行",
     "全車特別車", "全車一般車",
 }
 ORDINARY_DESTINATION_LABEL_RE = re.compile(
@@ -187,6 +189,13 @@ def service_blob(trip: dict[str, Any]) -> str:
     return " ".join(str(trip.get(key) or "") for key in ("displayName", "serviceName", "serviceNumber"))
 
 
+def normalize_train_label(value: Any) -> str:
+    text = str(value or "").strip()
+    text = re.sub(r"\s+", "", text)
+    text = text.replace("（", "(").replace("）", ")")
+    return text
+
+
 def service_family(trip: dict[str, Any], routes: dict[str, dict[str, Any]]) -> str:
     for key in ("displayName", "serviceName"):
         value = str(trip.get(key) or "").strip()
@@ -202,6 +211,12 @@ def is_named_train_family(family: str, trip: dict[str, Any], routes: dict[str, d
     if not family or family in ORDINARY_SERVICE_NAMES:
         return False
     if LETTERED_RAPID_RE.match(family):
+        return False
+    if ROUTE_SPAN_LABEL_RE.search(family):
+        return False
+    if ROUTE_SERVICE_LABEL_RE.search(family):
+        return False
+    if "QSEAT" in family or "代行バス" in family:
         return False
     if ORDINARY_DESTINATION_LABEL_RE.match(str(trip.get("displayName") or "").strip()):
         return False
@@ -266,8 +281,7 @@ def audit_time_distribution(
             minute = stop_time_minutes(stop)
             event_key = (
                 minute,
-                str(trip.get("displayName") or ""),
-                str(trip.get("serviceNumber") or ""),
+                normalize_train_label(trip.get("displayName") or trip.get("serviceName") or ""),
                 origin,
                 destination,
             )
@@ -366,7 +380,7 @@ def audit_time_distribution(
             "minDepartures": min_departures,
             "maxSpanMinutes": max_span_minutes,
             "minTouchToDepartureRatio": min_touch_to_departure_ratio,
-            "dedupeKey": "minute + displayName + serviceNumber + origin + destination + nextStation",
+            "dedupeKey": "minute + normalized displayName/serviceName + origin + destination + nextStation",
             "stationGrouping": "same-name station groups within 700m are merged to match direct-transfer gameplay assumptions",
         },
         "candidates": findings[:300],

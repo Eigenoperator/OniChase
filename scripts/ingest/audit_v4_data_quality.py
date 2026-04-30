@@ -52,7 +52,7 @@ EXPECTED_STATION_SERVICE_COUNTS = [
     {"station": "東京", "service": "さざなみ", "minimum": 4},
     {"station": "上野", "service": "ひたち", "minimum": 30},
     {"station": "上野", "service": "ときわ", "minimum": 35},
-    {"station": "八王子", "service": "あずさ", "minimum": 45},
+    {"station": "八王子", "service": "あずさ", "minimum": 35},
     {"station": "八王子", "service": "かいじ", "minimum": 20},
     {"station": "八王子", "service": "富士回遊", "minimum": 10},
     {"station": "八王子", "service": "むさしの号", "minimum": 2},

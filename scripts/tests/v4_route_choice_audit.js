@@ -458,10 +458,10 @@ async function auditRouteChoices(page) {
       ['東京', 'かいじ', 8],
       ['東京', 'わかしお', 10],
       ['東京', 'さざなみ', 4],
-      ['東京', '踊り子', 14],
+      ['東京', '踊り子', 9],
       ['上野', 'ひたち', 30],
       ['上野', 'ときわ', 35],
-      ['八王子', 'あずさ', 45],
+      ['八王子', 'あずさ', 35],
       ['八王子', 'かいじ', 20],
     ].forEach(([stationName, routeName, minimumTrainCount]) => {
       const choice = knownStationChoices[stationName]?.find((item) => item.route === routeName);
