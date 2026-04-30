@@ -4785,12 +4785,52 @@
         type: 'symbol',
         source: 'station-labels',
         minzoom: 11.0,
+        maxzoom: 14.2,
         filter: ['<', ['get', 'label_rank'], 90],
         layout: {
           ...baseLayout,
           'text-size': ['interpolate', ['linear'], ['zoom'], 11, 10, 14, 12.2, 16, 13.4],
         },
         paint: basePaint,
+      });
+      map.addLayer({
+        id: 'label-local-dense',
+        type: 'symbol',
+        source: 'station-labels',
+        minzoom: 14.2,
+        filter: ['<', ['get', 'label_rank'], 90],
+        layout: {
+          ...baseLayout,
+          'text-variable-anchor': ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'],
+          'text-radial-offset': 0.48,
+          'text-padding': 1,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 14.2, 11.8, 16, 13.2],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          ...basePaint,
+          'text-halo-width': ['interpolate', ['linear'], ['zoom'], 14.2, 1.25, 16, 1.55],
+        },
+      });
+      map.addLayer({
+        id: 'selected-station-label',
+        type: 'symbol',
+        source: 'station-labels',
+        filter: NONE_STATION_FILTER,
+        layout: {
+          ...baseLayout,
+          'text-variable-anchor': ['top'],
+          'text-radial-offset': 0.85,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 6, 12.5, 14, 15.5],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': '#b45309',
+          'text-halo-color': 'rgba(255,255,255,0.98)',
+          'text-halo-width': 1.8,
+        },
       });
     }
 
@@ -6296,6 +6336,7 @@
           ? routeStationMatchFilter(state.selectedRouteId, [stationGroupId])
           : stationMatchFilter(stationGroupId ? [stationGroupId] : []);
       state.map.setFilter('selected-station', stationFilter);
+      state.map.setFilter('selected-station-label', stationGroupId ? stationMatchFilter([stationGroupId]) : NONE_STATION_FILTER);
       renderStationCard();
       renderGame();
       if (stationGroupId) ensureTimetableLoaded().then(renderGame);
