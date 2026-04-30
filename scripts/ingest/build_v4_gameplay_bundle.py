@@ -654,7 +654,6 @@ def build_track_exports(
         polyline = polyline_from_points(track.get("points", []))
         if len(polyline) < 2:
             continue
-        station_group_ids = sorted(line_station_groups.get((operator_id, line_name), set()))
         track_export = {
             "id": track["id"],
             "operatorId": operator_id,
@@ -662,7 +661,6 @@ def build_track_exports(
             "mode": "shinkansen" if "新幹線" in line_name else "rail",
             "color": color,
             "polyline": polyline,
-            "stationGroupIds": station_group_ids,
             "tags": {
                 "operatorName": operator_name,
                 "railwayClass": track.get("railwayClass"),
@@ -948,10 +946,7 @@ def build_bundle(
         "tripInstances": [],
         "serviceGeometry": service_geometry,
         "labelRepresentations": label_representations,
-        "gameNodes": [
-            {"id": group["id"], "stationGroupId": group["id"], "kind": "station_group", "tags": group.get("tags", {})}
-            for group in station_groups
-        ],
+        "gameNodes": [],
     }
     service_route_ids = {pattern["routeId"] for pattern in service_patterns}
     map_bundle["serviceRoutes"] = [
