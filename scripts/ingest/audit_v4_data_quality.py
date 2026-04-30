@@ -96,6 +96,19 @@ def write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def stop_time_minutes(stop: dict[str, Any]) -> int | None:
+    value = stop.get("departureTimeSec")
+    if not isinstance(value, int):
+        value = stop.get("arrivalTimeSec")
+    return value // 60 if isinstance(value, int) else None
+
+
+def hhmm(minutes: int | None) -> str:
+    if not isinstance(minutes, int):
+        return ""
+    return f"{minutes // 60:02d}:{minutes % 60:02d}"
+
+
 def reviewed_collection_coverage_sets(review: dict[str, Any] | None) -> dict[str, set[str]]:
     review = review or {}
     return {
@@ -517,13 +530,17 @@ def audit_known_station_coverage(map_bundle: dict[str, Any], routes: dict[str, d
         group_ids_by_name[station_group_name(group)].append(group_id)
     equivalents = transfer_equivalent_group_ids(map_bundle)
     trips_by_station_group: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    departures_by_station_group: dict[str, list[tuple[dict[str, Any], dict[str, Any]]]] = defaultdict(list)
     for trip in trips:
         seen = set()
-        for stop in trip.get("stopTimes") or []:
+        stops = trip.get("stopTimes") or []
+        for index, stop in enumerate(stops):
             station_group_id = stop.get("stationGroupId")
             if station_group_id and station_group_id not in seen:
                 trips_by_station_group[station_group_id].append(trip)
                 seen.add(station_group_id)
+            if station_group_id and index + 1 < len(stops):
+                departures_by_station_group[station_group_id].append((trip, stop))
 
     issues = []
     rows = []
@@ -535,7 +552,9 @@ def audit_known_station_coverage(map_bundle: dict[str, Any], routes: dict[str, d
             for group_id in list(base_group_ids):
                 search_group_ids.update(equivalents.get(group_id, {group_id}))
         matching_trip_ids: set[str] = set()
+        matching_departure_trip_ids: set[str] = set()
         sample_trips = []
+        sample_departures = []
         for group_id in search_group_ids:
             for trip in trips_by_station_group.get(group_id, []):
                 route = routes.get(trip.get("routeId") or "", {})
@@ -556,15 +575,38 @@ def audit_known_station_coverage(map_bundle: dict[str, Any], routes: dict[str, d
                             "headsign": trip.get("headsign") or "",
                         }
                     )
+            for trip, stop in departures_by_station_group.get(group_id, []):
+                route = routes.get(trip.get("routeId") or "", {})
+                if expected["service"] not in trip_service_text(trip, route):
+                    continue
+                trip_id = str(trip.get("id") or "")
+                if trip_id in matching_departure_trip_ids:
+                    continue
+                matching_departure_trip_ids.add(trip_id)
+                if len(sample_departures) < 8:
+                    minute = stop_time_minutes(stop)
+                    sample_departures.append(
+                        {
+                            "tripId": trip_id,
+                            "time": hhmm(minute),
+                            "route": route_title(route, trip.get("routeId") or ""),
+                            "serviceName": trip.get("serviceName") or "",
+                            "displayName": trip.get("displayName") or "",
+                            "serviceNumber": trip.get("serviceNumber") or "",
+                            "headsign": trip.get("headsign") or "",
+                        }
+                    )
         row = {
             "station": station_name,
             "service": expected["service"],
             "minimum": expected["minimum"],
             "actual": len(matching_trip_ids),
+            "departureActual": len(matching_departure_trip_ids),
             "transferEquivalent": bool(expected.get("transferEquivalent")),
             "stationGroupIds": sorted(base_group_ids),
             "searchedStationGroupIds": sorted(search_group_ids),
             "samples": sample_trips,
+            "departureSamples": sample_departures,
         }
         rows.append(row)
         if row["actual"] < row["minimum"]:
