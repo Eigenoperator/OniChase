@@ -1,0 +1,253 @@
+{
+  "schema": "onichase.v4.coupled_service_registry.v1",
+  "policy": {
+    "definition": "Coupled services are passenger-visible split/join train operations: two named portions with different names, destinations, or service systems run physically coupled on a shared segment and split or join at a station.",
+    "excluded": [
+      "ordinary car-count changes without separate passenger-facing train portions",
+      "temporary seasonal split/join operations not in regular passenger timetable",
+      "deadhead/freight movements",
+      "historical discontinued combinations"
+    ],
+    "displayRule": {
+      "coupledToUncoupledDirection": "Show one umbrella train row named with the Japanese middle dot, for example A・B. After the user selects it, show the individual portions as a second selection step before showing alighting stations.",
+      "uncoupledToCoupledDirection": "Show the portions as normal separate trains.",
+      "sameTrainRule": "During the shared coupled segment, all portions in the same coupled physical group count as same_train for capture."
+    }
+  },
+  "entries": [
+    {
+      "id": "hayabusa_komachi_morioka",
+      "system": "東北・秋田新幹線",
+      "label": "はやぶさ・こまち",
+      "splitJoinStations": ["盛岡"],
+      "sharedSegment": "東京/仙台-盛岡",
+      "portions": [
+        {"label": "はやぶさ", "aliases": ["Hayabusa"], "branchAfterSplit": "東北・北海道新幹線"},
+        {"label": "こまち", "aliases": ["Komachi"], "branchAfterSplit": "秋田新幹線"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "yamabiko_tsubasa_fukushima",
+      "system": "東北・山形新幹線",
+      "label": "やまびこ・つばさ",
+      "splitJoinStations": ["福島"],
+      "sharedSegment": "東京-福島",
+      "portions": [
+        {"label": "やまびこ", "aliases": ["Yamabiko"], "branchAfterSplit": "東北新幹線"},
+        {"label": "つばさ", "aliases": ["Tsubasa"], "branchAfterSplit": "山形新幹線"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "narita_express_tokyo",
+      "system": "JR特急",
+      "label": "成田エクスプレス",
+      "splitJoinStations": ["東京"],
+      "sharedSegment": "成田空港-東京",
+      "portions": [
+        {"label": "成田エクスプレス 新宿系", "aliases": ["Narita Express", "成田エクスプレス"], "branchAfterSplit": "新宿/池袋/大宮方面"},
+        {"label": "成田エクスプレス 横浜・大船系", "aliases": ["Narita Express", "成田エクスプレス"], "branchAfterSplit": "横浜/大船方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "odoriko_izu_shuzenji_atami",
+      "system": "JR特急",
+      "label": "踊り子",
+      "splitJoinStations": ["熱海"],
+      "sharedSegment": "東京側-熱海",
+      "portions": [
+        {"label": "踊り子 伊豆急下田系", "aliases": ["踊り子", "Odoriko"], "branchAfterSplit": "伊東/伊豆急下田方面"},
+        {"label": "踊り子 修善寺系", "aliases": ["踊り子", "Odoriko"], "branchAfterSplit": "修善寺方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "azusa_fuji_excursion_otsuki",
+      "system": "JR特急",
+      "label": "あずさ・富士回遊",
+      "splitJoinStations": ["大月"],
+      "sharedSegment": "千葉/新宿-大月",
+      "portions": [
+        {"label": "あずさ", "aliases": ["Azusa"], "branchAfterSplit": "中央線方面"},
+        {"label": "富士回遊", "aliases": ["Fuji Excursion"], "branchAfterSplit": "富士急行線/河口湖方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "kaiji_fuji_excursion_otsuki",
+      "system": "JR特急",
+      "label": "かいじ・富士回遊",
+      "splitJoinStations": ["大月"],
+      "sharedSegment": "新宿-大月",
+      "portions": [
+        {"label": "かいじ", "aliases": ["Kaiji"], "branchAfterSplit": "中央線方面"},
+        {"label": "富士回遊", "aliases": ["Fuji Excursion"], "branchAfterSplit": "富士急行線/河口湖方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "sunrise_seto_izumo_okayama",
+      "system": "寝台特急",
+      "label": "サンライズ瀬戸・サンライズ出雲",
+      "splitJoinStations": ["岡山"],
+      "sharedSegment": "東京-岡山",
+      "portions": [
+        {"label": "サンライズ瀬戸", "aliases": ["Sunrise Seto"], "branchAfterSplit": "高松/琴平方面"},
+        {"label": "サンライズ出雲", "aliases": ["Sunrise Izumo"], "branchAfterSplit": "出雲市方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "hida_gifu",
+      "system": "JR特急",
+      "label": "ひだ",
+      "splitJoinStations": ["岐阜"],
+      "sharedSegment": "岐阜-高山方向",
+      "portions": [
+        {"label": "ひだ 名古屋系", "aliases": ["ひだ", "Hida"], "branchAfterSplit": "名古屋方面"},
+        {"label": "ひだ 大阪系", "aliases": ["ひだ", "Hida"], "branchAfterSplit": "大阪方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "kinosaki_maizuru_ayabe",
+      "system": "JR特急",
+      "label": "きのさき・まいづる",
+      "splitJoinStations": ["綾部"],
+      "sharedSegment": "京都-綾部",
+      "portions": [
+        {"label": "きのさき", "aliases": ["Kinosaki"], "branchAfterSplit": "福知山/城崎温泉方面"},
+        {"label": "まいづる", "aliases": ["Maizuru"], "branchAfterSplit": "東舞鶴方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "hashidate_maizuru_ayabe",
+      "system": "JR特急",
+      "label": "はしだて・まいづる",
+      "splitJoinStations": ["綾部"],
+      "sharedSegment": "京都-綾部",
+      "portions": [
+        {"label": "はしだて", "aliases": ["Hashidate"], "branchAfterSplit": "天橋立/京都丹後鉄道方面"},
+        {"label": "まいづる", "aliases": ["Maizuru"], "branchAfterSplit": "東舞鶴方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "shiokaze_ishizuchi_utazu_tadotsu",
+      "system": "JR四国特急",
+      "label": "しおかぜ・いしづち",
+      "splitJoinStations": ["宇多津", "多度津"],
+      "sharedSegment": "宇多津/多度津-松山方向",
+      "portions": [
+        {"label": "しおかぜ", "aliases": ["Shiokaze"], "branchAfterSplit": "岡山方面"},
+        {"label": "いしづち", "aliases": ["Ishizuchi"], "branchAfterSplit": "高松方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "midori_huis_ten_bosch_haiki",
+      "system": "JR九州特急",
+      "label": "みどり・ハウステンボス",
+      "splitJoinStations": ["早岐"],
+      "sharedSegment": "博多-早岐",
+      "portions": [
+        {"label": "みどり", "aliases": ["Midori"], "branchAfterSplit": "佐世保方面"},
+        {"label": "ハウステンボス", "aliases": ["Huis Ten Bosch"], "branchAfterSplit": "ハウステンボス方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "kanku_kishuji_hineno",
+      "system": "JR快速",
+      "label": "関空快速・紀州路快速",
+      "splitJoinStations": ["日根野"],
+      "sharedSegment": "大阪環状線/京橋/天王寺-日根野",
+      "portions": [
+        {"label": "関空快速", "aliases": ["Kanku Rapid"], "branchAfterSplit": "関西空港方面"},
+        {"label": "紀州路快速", "aliases": ["Kishuji Rapid"], "branchAfterSplit": "和歌山方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "yamatoji_wakayama_gojo_oji",
+      "system": "JR快速",
+      "label": "大和路快速/快速・五条行快速",
+      "splitJoinStations": ["王寺"],
+      "sharedSegment": "天王寺-王寺",
+      "portions": [
+        {"label": "大和路快速/快速 奈良系", "aliases": ["大和路快速", "快速"], "branchAfterSplit": "奈良方面"},
+        {"label": "和歌山線 五条行快速", "aliases": ["五条", "和歌山線"], "branchAfterSplit": "和歌山線/五条方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "odakyu_hakone_enoshima_sagamiono",
+      "system": "小田急特急",
+      "label": "はこね・えのしま",
+      "splitJoinStations": ["相模大野"],
+      "sharedSegment": "新宿-相模大野",
+      "portions": [
+        {"label": "はこね", "aliases": ["Hakone"], "branchAfterSplit": "箱根湯本方面"},
+        {"label": "えのしま", "aliases": ["Enoshima"], "branchAfterSplit": "片瀬江ノ島方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "odakyu_metro_hakone_enoshima_sagamiono",
+      "system": "小田急直通特急",
+      "label": "メトロはこね・メトロえのしま",
+      "splitJoinStations": ["相模大野"],
+      "sharedSegment": "北千住-相模大野",
+      "portions": [
+        {"label": "メトロはこね", "aliases": ["Metro Hakone"], "branchAfterSplit": "箱根湯本方面"},
+        {"label": "メトロえのしま", "aliases": ["Metro Enoshima"], "branchAfterSplit": "片瀬江ノ島方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "tobu_revaty_kegon_kinu_shimoimaichi",
+      "system": "東武特急",
+      "label": "リバティけごん・リバティきぬ",
+      "splitJoinStations": ["下今市"],
+      "sharedSegment": "浅草-下今市",
+      "portions": [
+        {"label": "リバティけごん", "aliases": ["Revaty Kegon", "Liberty Kegon"], "branchAfterSplit": "東武日光方面"},
+        {"label": "リバティきぬ", "aliases": ["Revaty Kinu", "Liberty Kinu"], "branchAfterSplit": "鬼怒川温泉方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    },
+    {
+      "id": "tobu_revaty_kegon_aizu_shimoimaichi",
+      "system": "東武特急",
+      "label": "リバティけごん・リバティ会津",
+      "splitJoinStations": ["下今市"],
+      "sharedSegment": "浅草-下今市",
+      "portions": [
+        {"label": "リバティけごん", "aliases": ["Revaty Kegon", "Liberty Kegon"], "branchAfterSplit": "東武日光方面"},
+        {"label": "リバティ会津", "aliases": ["Revaty Aizu", "Liberty Aizu"], "branchAfterSplit": "会津田島方面"}
+      ],
+      "regularPassengerTimetable": true,
+      "confidence": "confirmed"
+    }
+  ]
+}

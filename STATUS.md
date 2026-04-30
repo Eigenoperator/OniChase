@@ -33,6 +33,7 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 
 ## In Progress
 - Promote the v4 nationwide gameplay bundle into a public playtest pass.
+- Implement v4 coupled split/join train gameplay from the 18-family registry: umbrella `A・B` selection in coupled-to-uncoupled direction, second-step portion choice, and coupled same-train capture.
 - Review whether the meter-scale 肥薩線 N02 fragment should remain visible or be hidden in rendered geometry.
 
 ## Blockers
@@ -47,4 +48,4 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 - [2026-04-25] v4 timetable stop matching should reuse the v3 station alias/station-group method, not invent a separate identity system.
 
 ## Next
-1. Run visual/manual v4 playtest QA from major hubs plus branch/corridor stations: Tokyo, Osaka, Nagoya, Fukuoka, Sapporo, Hiroshima, 青梅, 立川, and 御茶ノ水.
+1. Build the coupled-train frontend/data model starting with `はやぶさ・こまち`, `やまびこ・つばさ`, `しおかぜ・いしづち`, and `みどり・ハウステンボス`.

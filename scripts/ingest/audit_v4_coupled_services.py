@@ -23,6 +23,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MAP_BUNDLE = ROOT / "data" / "v4_gameplay_map_bundle.json.gz"
 DEFAULT_TIMETABLE = ROOT / "data" / "v4_gameplay_timetable_compact.json.gz"
+DEFAULT_REGISTRY = ROOT / "data" / "v4_coupled_service_registry.json"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_coupled_service_audit.json"
 DEFAULT_MAX_GAP_SEC = 420
 SAMPLE_LIMIT = 30
@@ -118,15 +119,52 @@ SEED_DIAGNOSES = {
         "diagnosis": "N'EX exists as one named family, but the current data does not model Tokyo split/join portions as separate coupled portions.",
         "nextAction": "Infer portions from Tokyo-side branch signatures, such as Shinjuku/Ikebukuro/Omiya versus Yokohama/Ofuna.",
     },
-    "kyoto_north_limited_express": {
-        "diagnosis": "Kinosaki and Hashidate exist at Ayabe, but Maizuru is absent from the current gameplay timetable.",
+    "kinosaki_maizuru_ayabe": {
+        "diagnosis": "Kinosaki exists at Ayabe, but Maizuru is absent from the current gameplay timetable.",
+        "nextAction": "Check JR West Kyoto/northern limited-express collection coverage for Maizuru and add missing source rows if available.",
+    },
+    "hashidate_maizuru_ayabe": {
+        "diagnosis": "Hashidate exists at Ayabe, but Maizuru is absent from the current gameplay timetable.",
         "nextAction": "Check JR West Kyoto/northern limited-express collection coverage for Maizuru and add missing source rows if available.",
     },
     "hida_gifu": {
         "diagnosis": "Hida exists as one named family around Gifu, but the current data does not model Osaka/Nagoya/Takayama/Toyama portions.",
         "nextAction": "Review Hida branch signatures around Gifu and add a portion model only for trains with real split/join behavior.",
     },
+    "odoriko_izu_shuzenji_atami": {
+        "diagnosis": "Odoriko exists as one named family, but the current data does not distinguish the Izukyu-Shimoda and Shuzenji portions.",
+        "nextAction": "Infer portions from branch signatures around Atami and preserve them as coupled portions.",
+    },
+    "yamatoji_wakayama_gojo_oji": {
+        "diagnosis": "The current data has Oji/Wakayama Line evidence, but the source labels are broad ordinary rapid labels rather than explicit coupled portion names.",
+        "nextAction": "Review Oji split signatures and avoid accepting broad 快速 labels as final portion names without timetable-detail confirmation.",
+    },
 }
+
+
+def registry_entries_to_seeds(registry: dict[str, Any]) -> list[dict[str, Any]]:
+    seeds: list[dict[str, Any]] = []
+    for entry in registry.get("entries", []):
+        split_join_stations = list(entry.get("splitJoinStations") or [])
+        portions = []
+        for portion in entry.get("portions") or []:
+            terms = [portion.get("label"), *(portion.get("aliases") or [])]
+            portions.append([str(term) for term in terms if term])
+        if not split_join_stations or not portions:
+            continue
+        seeds.append(
+            {
+                "id": entry.get("id"),
+                "label": entry.get("label"),
+                "splitJoinStation": split_join_stations[0],
+                "alternateSplitJoinStations": split_join_stations[1:],
+                "servicePortions": portions,
+                "expectedSharedSegment": entry.get("sharedSegment"),
+                "confidence": entry.get("confidence", "needs_review"),
+                "system": entry.get("system"),
+            }
+        )
+    return seeds
 
 
 def load_json(path: Path) -> Any:
@@ -363,11 +401,12 @@ def audit_known_seeds(
     station_groups: dict[str, dict[str, Any]],
     routes: dict[str, dict[str, Any]],
     trips: list[dict[str, Any]],
+    seeds: list[dict[str, Any]],
     *,
     max_gap_sec: int,
 ) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
-    for seed in KNOWN_COUPLED_SERVICE_SEEDS:
+    for seed in seeds:
         portions = [list(portion) for portion in seed["servicePortions"]]
         terms = flatten_portions(portions)
         station_names = [seed["splitJoinStation"], *seed.get("alternateSplitJoinStations", [])]
@@ -434,6 +473,10 @@ def audit_known_seeds(
             status = "missing_service_portions"
         elif pair_count:
             status = "pair_evidence_found"
+        elif len(portions) >= 2 and len({tuple(portion) for portion in portions}) == 1:
+            status = "single_named_family_found_needs_portion_model"
+        elif len(portions) >= 2 and all(set(portion) & set(portions[0]) for portion in portions[1:]):
+            status = "single_named_family_found_needs_portion_model"
         elif len(portions) == 1 and matching_trips:
             status = "single_named_family_found_needs_portion_model"
         elif any(station_touch_counts.values()):
@@ -444,6 +487,7 @@ def audit_known_seeds(
             {
                 "id": seed["id"],
                 "label": seed["label"],
+                "system": seed.get("system"),
                 "confidence": seed["confidence"],
                 "splitJoinStations": station_names,
                 "expectedSharedSegment": seed["expectedSharedSegment"],
@@ -618,6 +662,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Audit v4 coupled split/join train service candidates.")
     parser.add_argument("--map-bundle", type=Path, default=DEFAULT_MAP_BUNDLE)
     parser.add_argument("--timetable", type=Path, default=DEFAULT_TIMETABLE)
+    parser.add_argument("--registry", type=Path, default=DEFAULT_REGISTRY)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--max-gap-sec", type=int, default=DEFAULT_MAX_GAP_SEC)
     return parser.parse_args()
@@ -627,11 +672,13 @@ def main() -> None:
     args = parse_args()
     map_bundle = load_json(args.map_bundle)
     timetable = load_json(args.timetable)
+    registry = load_json(args.registry)
     routes = {route["id"]: route for route in map_bundle.get("serviceRoutes", [])}
     station_groups = {group["id"]: group for group in map_bundle.get("stationGroups", [])}
     trips = decode_compact_timetable(timetable)
+    seeds = registry_entries_to_seeds(registry) or KNOWN_COUPLED_SERVICE_SEEDS
 
-    known_seed_findings = audit_known_seeds(station_groups, routes, trips, max_gap_sec=args.max_gap_sec)
+    known_seed_findings = audit_known_seeds(station_groups, routes, trips, seeds, max_gap_sec=args.max_gap_sec)
     generic_candidates = audit_generic_candidates(station_groups, routes, trips, max_gap_sec=args.max_gap_sec)
     audit = {
         "schema": "onichase.v4.coupled_service_audit.v1",
@@ -639,8 +686,10 @@ def main() -> None:
         "inputs": {
             "mapBundle": rel(args.map_bundle),
             "timetable": rel(args.timetable),
+            "registry": rel(args.registry),
             "maxGapSec": args.max_gap_sec,
         },
+        "policy": registry.get("policy", {}),
         "methodology": {
             "knownSeeds": "Check known Japanese split/join coupled-service families from reviewed research notes.",
             "genericScan": [
@@ -654,7 +703,7 @@ def main() -> None:
             "tripCount": len(trips),
             "knownSeedCount": len(known_seed_findings),
             "knownSeedsWithPairEvidence": sum(1 for item in known_seed_findings if item["status"] == "pair_evidence_found"),
-            "knownSeedsMissingServiceTerms": sum(1 for item in known_seed_findings if item["status"] == "missing_service_terms"),
+            "knownSeedsMissingServicePortions": sum(1 for item in known_seed_findings if item["status"] == "missing_service_portions"),
             "genericCandidateCount": len(generic_candidates),
             "genericHighConfidenceCandidateCount": sum(1 for item in generic_candidates if item["confidence"] == "high"),
         },
@@ -666,7 +715,7 @@ def main() -> None:
         f"Wrote {rel(args.output)}: "
         f"known={audit['counts']['knownSeedCount']} "
         f"known_pair={audit['counts']['knownSeedsWithPairEvidence']} "
-        f"known_missing={audit['counts']['knownSeedsMissingServiceTerms']} "
+        f"known_missing={audit['counts']['knownSeedsMissingServicePortions']} "
         f"generic={audit['counts']['genericCandidateCount']} "
         f"high={audit['counts']['genericHighConfidenceCandidateCount']}"
     )
