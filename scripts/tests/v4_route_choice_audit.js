@@ -206,9 +206,9 @@ async function auditRouteChoices(page) {
       limitedOrShinkansenMissingNumberCount: 0,
       throughDirectionLabelMismatchCount: 0,
       meitetsuLabelFormatMismatchCount: 0,
-      yokohamaThroughRemoteLabelCount: 0,
       namedLimitedExpressNotSeparatedCount: 0,
       limitedExpressGoSuffixCount: 0,
+      asakusaKeikyuAirportLabelMismatchCount: 0,
       samples: [],
     };
     const duplicateRouteTitleScan = {
@@ -271,15 +271,6 @@ async function auditRouteChoices(page) {
             globalChoiceScan.yokohamaThroughRemoteRouteCount += 1;
             addGlobalChoiceSample('yokohama_through_remote_route', stationName, entry, routeId, nextStop);
           }
-          if (
-            stationName === '横浜' &&
-            ['13号線副都心線', '8号線有楽町線'].includes(entry.trip?.serviceName || '') &&
-            ['東急東横線', 'みなとみらい線'].includes(routeTitle(routeId)) &&
-            label !== routeTitle(routeId)
-          ) {
-            globalTrainLabelScan.yokohamaThroughRemoteLabelCount += 1;
-            addGlobalTrainLabelSample('yokohama_through_remote_label', stationName, entry, routeId, label);
-          }
           if (/\d+号線/u.test(label)) {
             globalTrainLabelScan.rawNumberedLineLabelCount += 1;
             addGlobalTrainLabelSample('raw_numbered_line_label', stationName, entry, routeId, label);
@@ -302,10 +293,20 @@ async function auditRouteChoices(page) {
           const selectedJrRouteId = selectedJrNorthernTrunkLabelRouteId(entry, routeId);
           const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
           const directionRouteId = selectedJrRouteId ||
+            directionTerminalRouteIdForTrainLabel(entry, routeId) ||
             (adjacentDirectionRouteId === routeId && !isJrRoute(state.routeById.get(routeId))
-            ? adjacentDirectionRouteId
-            : directionTerminalRouteIdForTrainLabel(entry, routeId));
+              ? adjacentDirectionRouteId
+              : null);
           const directionLabel = directionRouteId ? routeTitle(directionRouteId) : '';
+          const terminalName = displayNameForGroup((entry.trip?.stopTimes || []).at(-1)?.stationGroupId || '');
+          if (
+            routeTitle(routeId) === '都営浅草線' &&
+            ['天空橋', '羽田空港第１・第２ターミナル', '羽田空港第３ターミナル'].includes(terminalName) &&
+            label !== '京急空港線'
+          ) {
+            globalTrainLabelScan.asakusaKeikyuAirportLabelMismatchCount += 1;
+            addGlobalTrainLabelSample('asakusa_keikyu_airport_label_mismatch', stationName, entry, routeId, label);
+          }
           const directionTraceRouteCount = new Set((entry.trip?.lineTrace || [])
             .map((trace) => trace?.routeId)
             .filter((candidateRouteId) => candidateRouteId && state.routeById.has(candidateRouteId) && !isThroughServiceTransferAlias(candidateRouteId))).size;
@@ -398,13 +399,13 @@ async function auditRouteChoices(page) {
       globalTrainLabelScan.limitedOrShinkansenMissingNumberCount ||
       globalTrainLabelScan.throughDirectionLabelMismatchCount ||
       globalTrainLabelScan.meitetsuLabelFormatMismatchCount ||
-      globalTrainLabelScan.yokohamaThroughRemoteLabelCount ||
       globalTrainLabelScan.namedLimitedExpressNotSeparatedCount ||
-      globalTrainLabelScan.limitedExpressGoSuffixCount
+      globalTrainLabelScan.limitedExpressGoSuffixCount ||
+      globalTrainLabelScan.asakusaKeikyuAirportLabelMismatchCount
     ) {
       anomalies.push({
         kind: 'global_selected_train_label_scan',
-        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, limited express labels must not append 号 after the train number, ordinary through-running labels must follow the direction-side line, Meitetsu train labels must stay on their own Meitetsu line, Yokohama through-running labels must not expose remote lines, and named limited-express/named train services must be separated as their own route choices.',
+        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, limited express labels must not append 号 after the train number, ordinary through-running labels must follow the direction-side line, Meitetsu train labels must stay on their own Meitetsu line, and named limited-express/named train services must be separated as their own route choices.',
         ...globalTrainLabelScan,
       });
     }

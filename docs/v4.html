@@ -5415,18 +5415,23 @@
       if (selectedRouteId === MAIBARA_TOKAIDO_BOUNDARY_ROUTE_ID && maibaraBoundaryChoiceRouteId(entry) === selectedRouteId) {
         return routeTitle(selectedRouteId);
       }
+      const selectedJrRouteId = selectedJrNorthernTrunkLabelRouteId(entry, selectedRouteId);
+      if (selectedJrRouteId) {
+        const selectedJrLabel = routeTitle(selectedJrRouteId);
+        if (selectedJrLabel && !/^\d+号線/u.test(selectedJrLabel)) return selectedJrLabel;
+      }
+      const terminalDirectionRouteId = directionTerminalRouteIdForTrainLabel(entry, selectedRouteId);
+      if (terminalDirectionRouteId) {
+        const terminalDirectionLabel = routeTitle(terminalDirectionRouteId);
+        if (terminalDirectionLabel && !/^\d+号線/u.test(terminalDirectionLabel)) return terminalDirectionLabel;
+      }
       const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
       const selectedRoute = selectedRouteId ? state.routeById.get(selectedRouteId) : null;
       if (selectedRouteId && adjacentDirectionRouteId === selectedRouteId && selectedRoute && !isJrRoute(selectedRoute)) {
         const adjacentLabel = routeTitle(selectedRouteId);
         if (adjacentLabel && !/^\d+号線/u.test(adjacentLabel)) return adjacentLabel;
       }
-      const selectedJrRouteId = selectedJrNorthernTrunkLabelRouteId(entry, selectedRouteId);
-      if (selectedJrRouteId) {
-        const selectedJrLabel = routeTitle(selectedJrRouteId);
-        if (selectedJrLabel && !/^\d+号線/u.test(selectedJrLabel)) return selectedJrLabel;
-      }
-      const routeId = directionTerminalRouteIdForTrainLabel(entry, selectedRouteId) || boardingSegmentRouteIdForTrainLabel(entry);
+      const routeId = boardingSegmentRouteIdForTrainLabel(entry);
       const label = routeId ? routeTitle(routeId) : '';
       return label && !/^\d+号線/u.test(label) ? label : '';
     }
