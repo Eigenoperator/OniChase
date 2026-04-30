@@ -4221,6 +4221,22 @@
         if (!track.lineName || !track.polyline?.length) return;
         if (!state.trackGeometriesByLineName.has(track.lineName)) state.trackGeometriesByLineName.set(track.lineName, []);
         state.trackGeometriesByLineName.get(track.lineName).push(track);
+        const routeId = track.tags?.routeId;
+        if (routeId) {
+          if (!state.serviceGeometryByRouteId.has(routeId)) state.serviceGeometryByRouteId.set(routeId, []);
+          state.serviceGeometryByRouteId.get(routeId).push({
+            id: `SGEOM_${track.id || routeId}`,
+            routeId,
+            representation: 'derived_track_path',
+            minZoom: 3,
+            maxZoom: 24,
+            offsetRank: 0,
+            color: track.color,
+            lineName: track.lineName,
+            operatorId: track.operatorId,
+            polyline: track.polyline,
+          });
+        }
       });
 
       state.routeStationSetById = new Map();
@@ -4352,7 +4368,10 @@
     }
 
     function serviceFeatureCollection(bundle) {
-      const serviceFeatures = (bundle.serviceGeometry || [])
+      const geometries = (bundle.serviceGeometry?.length
+        ? bundle.serviceGeometry
+        : [...state.serviceGeometryByRouteId.values()].flat());
+      const serviceFeatures = geometries
         .map((geometry, index) => {
           const route = state.routeById.get(geometry.routeId) || {};
           return lineFeature(geometry.id || `service-${index}`, geometry.polyline, {
@@ -5361,6 +5380,9 @@
         .trim();
     }
 
+    const coupledTripSearchCache = new WeakMap();
+    const coupledPortionSearchCache = new WeakMap();
+
     function coupledTripLabelCandidates(trip) {
       const labels = [
         formatTripLabel(trip),
@@ -5378,6 +5400,17 @@
       return [...new Set(labels)];
     }
 
+    function coupledTripSearchRecord(trip) {
+      if (!trip || typeof trip !== 'object') return { normalizedTripLabels: [], stationNames: new Set() };
+      if (coupledTripSearchCache.has(trip)) return coupledTripSearchCache.get(trip);
+      const record = {
+        normalizedTripLabels: coupledTripLabelCandidates(trip).map(normalizeCoupledText).filter(Boolean),
+        stationNames: new Set(tripStationNames(trip)),
+      };
+      coupledTripSearchCache.set(trip, record);
+      return record;
+    }
+
     function coupledBranchStationTokens(portion) {
       const branch = String(portion?.branchAfterSplit || '');
       return branch
@@ -5387,21 +5420,31 @@
         .filter((token) => token && token.length >= 2);
     }
 
-    function coupledPortionMatchesTrip(portion, trip) {
-      const tripLabels = coupledTripLabelCandidates(trip);
-      const normalizedTripLabels = tripLabels.map(normalizeCoupledText).filter(Boolean);
+    function coupledPortionSearchRecord(portion) {
+      if (!portion || typeof portion !== 'object') {
+        return { normalizedPortionLabels: [], branchTokens: [] };
+      }
+      if (coupledPortionSearchCache.has(portion)) return coupledPortionSearchCache.get(portion);
       const portionLabels = [
         portion?.label,
         ...(portion?.aliases || []),
       ].map((value) => String(value || '').trim()).filter(Boolean);
-      const normalizedPortionLabels = portionLabels.map(normalizeCoupledText).filter(Boolean);
+      const record = {
+        normalizedPortionLabels: portionLabels.map(normalizeCoupledText).filter(Boolean),
+        branchTokens: coupledBranchStationTokens(portion),
+      };
+      coupledPortionSearchCache.set(portion, record);
+      return record;
+    }
+
+    function coupledPortionMatchesTrip(portion, trip) {
+      const { normalizedTripLabels, stationNames } = coupledTripSearchRecord(trip);
+      const { normalizedPortionLabels, branchTokens } = coupledPortionSearchRecord(portion);
       const hasLabelMatch = normalizedPortionLabels.some((portionLabel) =>
         normalizedTripLabels.some((tripLabel) => tripLabel && (tripLabel === portionLabel || tripLabel.includes(portionLabel) || portionLabel.includes(tripLabel)))
       );
       if (!hasLabelMatch) return false;
-      const branchTokens = coupledBranchStationTokens(portion);
       if (!branchTokens.length) return true;
-      const stationNames = new Set(tripStationNames(trip));
       const branchHit = branchTokens.some((token) => stationNames.has(token));
       const distinctiveNameHit = normalizedPortionLabels.some((label) =>
         label.length >= 4 &&
@@ -5644,26 +5687,33 @@
         equivalents.get(rightTrip.id).push(rightItem);
       };
       for (const entry of state.coupledServiceEntries || []) {
-        const candidates = [];
+        const candidatesByStation = new Map();
         for (const trip of trips || []) {
           const portionIndexes = coupledPortionIndexesForTrip(entry, trip);
           if (portionIndexes.length !== 1) continue;
           const splitEvidence = splitStopEvidenceForTrip(entry, trip);
           if (!splitEvidence) continue;
-          candidates.push({ trip, portionIndex: portionIndexes[0], splitEvidence });
+          if (!candidatesByStation.has(splitEvidence.stationName)) candidatesByStation.set(splitEvidence.stationName, []);
+          candidatesByStation.get(splitEvidence.stationName).push({ trip, portionIndex: portionIndexes[0], splitEvidence });
         }
-        for (let leftIndex = 0; leftIndex < candidates.length; leftIndex += 1) {
-          const left = candidates[leftIndex];
-          for (let rightIndex = leftIndex + 1; rightIndex < candidates.length; rightIndex += 1) {
-            const right = candidates[rightIndex];
-            if (left.portionIndex === right.portionIndex) continue;
-            if (left.splitEvidence.stationName !== right.splitEvidence.stationName) continue;
-            if (Math.abs(left.splitEvidence.minute - right.splitEvidence.minute) > 8) continue;
-            const window = sharedMinuteWindow(left.trip, right.trip) || {
-              fromMinute: Math.min(left.splitEvidence.minute, right.splitEvidence.minute) - 2,
-              toMinute: Math.max(left.splitEvidence.minute, right.splitEvidence.minute) + 2,
-            };
-            addEquivalent(left.trip, right.trip, entry, window);
+        for (const candidates of candidatesByStation.values()) {
+          candidates.sort((a, b) =>
+            a.splitEvidence.minute - b.splitEvidence.minute ||
+            a.portionIndex - b.portionIndex ||
+            String(a.trip.id || '').localeCompare(String(b.trip.id || ''))
+          );
+          for (let leftIndex = 0; leftIndex < candidates.length; leftIndex += 1) {
+            const left = candidates[leftIndex];
+            for (let rightIndex = leftIndex + 1; rightIndex < candidates.length; rightIndex += 1) {
+              const right = candidates[rightIndex];
+              if (right.splitEvidence.minute - left.splitEvidence.minute > 8) break;
+              if (left.portionIndex === right.portionIndex) continue;
+              const window = sharedMinuteWindow(left.trip, right.trip) || {
+                fromMinute: Math.min(left.splitEvidence.minute, right.splitEvidence.minute) - 2,
+                toMinute: Math.max(left.splitEvidence.minute, right.splitEvidence.minute) + 2,
+              };
+              addEquivalent(left.trip, right.trip, entry, window);
+            }
           }
         }
       }

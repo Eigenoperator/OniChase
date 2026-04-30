@@ -671,20 +671,9 @@ def build_track_exports(
             },
         }
         tracks.append(track_export)
-        service_geometry.append(
-            {
-                "id": f"SGEOM_{track['id']}",
-                "routeId": route_id,
-                "representation": "service_path",
-                "minZoom": 3,
-                "maxZoom": 24,
-                "offsetRank": 0,
-                "color": color,
-                "lineName": line_name,
-                "operatorId": operator_id,
-                "polyline": polyline,
-            }
-        )
+        # The website can derive service geometry from trackCenterlines via
+        # tags.routeId. Keeping a second copy here made the initial map bundle
+        # much larger without adding independent geometry.
     return tracks, service_geometry, routes_by_id
 
 
