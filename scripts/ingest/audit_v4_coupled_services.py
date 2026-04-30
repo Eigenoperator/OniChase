@@ -105,6 +105,29 @@ KNOWN_COUPLED_SERVICE_SEEDS = [
     },
 ]
 
+SEED_DIAGNOSES = {
+    "kanku_kishuji_hineno": {
+        "diagnosis": "JR West official timetable rows exist for Kansai Airport/Hanwa/Osaka Loop rapid trains, but current data does not preserve Kanku Rapid/Kishuji Rapid portion labels. The JR West parser currently flattens multi-column train detail metadata.",
+        "nextAction": "Teach the JR West collector/parser to preserve multi-column route/train-type portions around Hineno, then create Kanku/Kishuji coupled portions.",
+    },
+    "sunrise_seto_izumo_okayama": {
+        "diagnosis": "Both Sunrise Seto and Sunrise Izumo are present, but they are split across JR Central/JR East/JR West source slices and do not form an Okayama same-time pair in the gameplay timetable.",
+        "nextAction": "Add a cross-source Sunrise stitch/coupled rule keyed by 5031M/5032M and Okayama.",
+    },
+    "narita_express_tokyo": {
+        "diagnosis": "N'EX exists as one named family, but the current data does not model Tokyo split/join portions as separate coupled portions.",
+        "nextAction": "Infer portions from Tokyo-side branch signatures, such as Shinjuku/Ikebukuro/Omiya versus Yokohama/Ofuna.",
+    },
+    "kyoto_north_limited_express": {
+        "diagnosis": "Kinosaki and Hashidate exist at Ayabe, but Maizuru is absent from the current gameplay timetable.",
+        "nextAction": "Check JR West Kyoto/northern limited-express collection coverage for Maizuru and add missing source rows if available.",
+    },
+    "hida_gifu": {
+        "diagnosis": "Hida exists as one named family around Gifu, but the current data does not model Osaka/Nagoya/Takayama/Toyama portions.",
+        "nextAction": "Review Hida branch signatures around Gifu and add a portion model only for trains with real split/join behavior.",
+    },
+}
+
 
 def load_json(path: Path) -> Any:
     opener = gzip.open if path.suffix == ".gz" else open
@@ -255,6 +278,54 @@ def neighbor_names_at_index(
     return previous_name, next_name
 
 
+def branch_signatures_at_seed_station(
+    station_groups: dict[str, dict[str, Any]],
+    routes: dict[str, dict[str, Any]],
+    trips: list[dict[str, Any]],
+    station_names: list[str],
+) -> list[dict[str, Any]]:
+    counts: Counter[tuple[str, str, str, str, str]] = Counter()
+    samples: dict[tuple[str, str, str, str, str], dict[str, Any]] = {}
+    for trip in trips:
+        for station_name in station_names:
+            index = stop_index_at_station(station_groups, trip, station_name)
+            if index is None:
+                continue
+            stop = trip["stopTimes"][index]
+            previous_name, next_name = neighbor_names_at_index(station_groups, trip, index)
+            origin, destination = trip_terminal_names(station_groups, trip)
+            key = (
+                station_name,
+                previous_name,
+                next_name,
+                origin,
+                destination,
+            )
+            counts[key] += 1
+            samples.setdefault(
+                key,
+                {
+                    "tripId": trip.get("id"),
+                    "service": service_label(trip),
+                    "number": trip.get("serviceNumber"),
+                    "route": route_name_at_stop(routes, trip, stop),
+                },
+            )
+    return [
+        {
+            "station": station,
+            "previous": previous,
+            "next": next_name,
+            "origin": origin,
+            "destination": destination,
+            "count": count,
+            "sample": samples[key],
+        }
+        for key, count in counts.most_common(20)
+        for station, previous, next_name, origin, destination in [key]
+    ]
+
+
 def route_name_at_stop(routes: dict[str, dict[str, Any]], trip: dict[str, Any], stop: dict[str, Any]) -> str:
     route_id = str(stop.get("displayRouteId") or stop.get("incomingRouteId") or trip.get("routeId") or "")
     return route_title(routes.get(route_id), route_id)
@@ -381,8 +452,15 @@ def audit_known_seeds(
                 "portionCounts": by_portion,
                 "matchingTripCount": len(matching_trips),
                 "stationTouchCounts": station_touch_counts,
+                "branchSignatures": branch_signatures_at_seed_station(
+                    station_groups,
+                    routes,
+                    matching_trips,
+                    station_names,
+                ),
                 "pairedNearTimeEventCount": pair_count,
                 "samples": pair_samples,
+                **SEED_DIAGNOSES.get(seed["id"], {}),
             }
         )
     return findings
