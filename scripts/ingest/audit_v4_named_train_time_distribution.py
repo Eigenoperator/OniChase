@@ -212,6 +212,8 @@ def is_named_train_family(family: str, trip: dict[str, Any], routes: dict[str, d
         return False
     if LETTERED_RAPID_RE.match(family):
         return False
+    if "線" in family:
+        return False
     if ROUTE_SPAN_LABEL_RE.search(family):
         return False
     if ROUTE_SERVICE_LABEL_RE.search(family):
@@ -357,7 +359,8 @@ def audit_time_distribution(
             reasons.append("departures_concentrated_in_short_span")
         if departure_count >= min_departures and departure_count <= 12 and touch_to_departure_ratio >= min_touch_to_departure_ratio:
             reasons.append("many_touches_but_few_boardable_departures")
-        if reasons:
+        candidate_reasons = [reason for reason in reasons if reason == "departures_concentrated_in_short_span"]
+        if candidate_reasons:
             findings.append({"kind": "named_train_time_distribution_candidate", "reasons": reasons, **summary})
         elif item["station"] in {"東京", "新宿", "八王子", "上野", "品川"} and departure_count >= min_departures:
             reviewed_examples.append(summary)
@@ -382,6 +385,7 @@ def audit_time_distribution(
             "minTouchToDepartureRatio": min_touch_to_departure_ratio,
             "dedupeKey": "minute + normalized displayName/serviceName + origin + destination + nextStation",
             "stationGrouping": "same-name station groups within 700m are merged to match direct-transfer gameplay assumptions",
+            "candidatePolicy": "Reports short-span departure concentration as candidates; touch/departure-only skew is retained in per-row reasons when a short-span candidate also exists.",
         },
         "candidates": findings[:300],
         "reviewedExamples": reviewed_examples[:80],

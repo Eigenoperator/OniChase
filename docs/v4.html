@@ -5609,6 +5609,7 @@
       if (!state.coupledServiceEntries.length || trainRows.length < 2) {
         return trainRows.map((entry) => ({ kind: 'trip', entry }));
       }
+      const boardingStopForRow = (row) => row?.boardStop || row?.stop || null;
       const consumedTripIds = new Set();
       const rows = [];
       for (const entry of state.coupledServiceEntries) {
@@ -5617,14 +5618,15 @@
         const candidates = [];
         trainRows.forEach((row) => {
           if (consumedTripIds.has(row.trip.id)) return;
-          const splitStop = downstreamSplitStop(entry, row.trip, row.boardStop);
+          const boardStop = boardingStopForRow(row);
+          const splitStop = downstreamSplitStop(entry, row.trip, boardStop);
           if (!splitStop) return;
           const portionIndexes = coupledPortionIndexesForTrip(entry, row.trip);
           if (portionIndexes.length >= 2) {
             const departureMinute = row.departureMinute;
             const key = [
               entry.id,
-              row.boardStop.stationGroupId,
+              boardStop.stationGroupId,
               departureMinute,
               row.trip.id,
             ].join('|');
@@ -5635,7 +5637,7 @@
               selectedRouteId,
               departureMinute,
               departureHhmm: minutesToHhmm(departureMinute),
-              boardStop: row.boardStop,
+              boardStop,
               portions: portionIndexes.map((portionIndex) => ({
                 portionIndex,
                 portion: portions[portionIndex],
@@ -5649,7 +5651,7 @@
             return;
           }
           if (portionIndexes.length !== 1) return;
-          candidates.push({ row, portionIndex: portionIndexes[0], splitStop });
+          candidates.push({ row, boardStop, portionIndex: portionIndexes[0], splitStop });
         });
         for (let leftIndex = 0; leftIndex < candidates.length; leftIndex += 1) {
           const left = candidates[leftIndex];
@@ -5659,7 +5661,7 @@
             const right = candidates[rightIndex];
             if (consumedTripIds.has(right.row.trip.id)) continue;
             if (right.portionIndex === left.portionIndex) continue;
-            if (right.row.boardStop.stationGroupId !== left.row.boardStop.stationGroupId) continue;
+            if (right.boardStop.stationGroupId !== left.boardStop.stationGroupId) continue;
             if (Math.abs(right.row.departureMinute - left.row.departureMinute) > 8) continue;
             if (Math.abs(stopArrivalMinutes(right.splitStop) - stopArrivalMinutes(left.splitStop)) > 8) continue;
             matched.push(right);
@@ -5673,7 +5675,7 @@
           const departureMinute = Math.min(...usedMatched.map((item) => item.row.departureMinute));
           const key = [
             entry.id,
-            left.row.boardStop.stationGroupId,
+            left.boardStop.stationGroupId,
             departureMinute,
             usedMatched.map((item) => item.row.trip.id).sort().join('+'),
           ].join('|');
@@ -5684,7 +5686,7 @@
             selectedRouteId,
             departureMinute,
             departureHhmm: minutesToHhmm(departureMinute),
-            boardStop: left.row.boardStop,
+            boardStop: left.boardStop,
             portions: usedMatched.map((item) => ({
               portionIndex: item.portionIndex,
               portion: portions[item.portionIndex],

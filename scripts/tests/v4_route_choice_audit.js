@@ -672,6 +672,43 @@ async function auditRouteChoices(page) {
       }
     }
 
+    const coupledUmbrellaSamples = [];
+    for (const stationName of ['東京', '上野', '大宮', '仙台', '新大阪', '大阪', '京都', '博多', '宇多津', '岡山', '綾部']) {
+      const rows = buildCoupledTrainRows(entriesAt(stationName), null)
+        .filter((row) => row.kind === 'coupled');
+      rows.slice(0, 4).forEach((row) => coupledUmbrellaSamples.push({
+        station: stationName,
+        label: row.label,
+        departure: row.departureHhmm,
+        portionCount: row.portions.length,
+        portions: row.portions.map((item) => item.portion?.label || formatTripLabel(item.row.trip)),
+      }));
+    }
+    const coupledEquivalentTripCount = state.coupledEquivalentsByTripId?.size || 0;
+    const coupledEquivalentEdgeCount = [...(state.coupledEquivalentsByTripId?.values() || [])]
+      .reduce((sum, items) => sum + items.length, 0);
+    if ((state.coupledServiceEntries || []).length < 16) {
+      anomalies.push({
+        kind: 'coupled_registry_underfilled',
+        reason: 'The reviewed coupled-service registry should load regular passenger split/join services for gameplay.',
+        entryCount: (state.coupledServiceEntries || []).length,
+      });
+    }
+    if (!coupledEquivalentTripCount || !coupledEquivalentEdgeCount) {
+      anomalies.push({
+        kind: 'coupled_same_train_equivalence_missing',
+        reason: 'Coupled portions must be considered same_train during their shared physical segment.',
+        equivalentTripCount: coupledEquivalentTripCount,
+        equivalentEdgeCount: coupledEquivalentEdgeCount,
+      });
+    }
+    if (!coupledUmbrellaSamples.length) {
+      anomalies.push({
+        kind: 'coupled_umbrella_choice_missing',
+        reason: 'From coupled toward uncoupled direction, train choices should expose an umbrella A・B row before portion selection.',
+      });
+    }
+
     return {
       checkedAt: new Date().toISOString(),
       timings: {
@@ -684,6 +721,12 @@ async function auditRouteChoices(page) {
       knownStationChoices,
       globalChoiceScan,
       globalTrainLabelScan,
+      coupledScan: {
+        registryEntryCount: (state.coupledServiceEntries || []).length,
+        equivalentTripCount: coupledEquivalentTripCount,
+        equivalentEdgeCount: coupledEquivalentEdgeCount,
+        umbrellaSamples: coupledUmbrellaSamples.slice(0, 20),
+      },
       anomalyCount: anomalies.length,
       anomalies: anomalies.slice(0, 80),
     };

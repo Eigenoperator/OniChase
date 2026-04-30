@@ -18,6 +18,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import re
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -110,6 +111,57 @@ def stop_station_key(stop: dict[str, Any]) -> str:
     )
 
 
+ROUTE_LIKE_TRAIN_IDENTITY_RE = re.compile(
+    r"^(?:普通|各停|各駅停車|快速|新快速|区間快速|通勤快速|直通快速|急行|準急|特急|快特|快速特急|通勤特急)?"
+    r".*(?:線|本線|鉄道|電鉄|系統|行き|方面)(?:[（(].+[）)])?$"
+)
+ORDINARY_TRAIN_IDENTITY_LABELS = {
+    "普通", "各停", "各駅停車", "快速", "新快速", "区間快速", "通勤快速", "直通快速",
+    "急行", "準急", "特急", "快特", "快速特急", "通勤特急",
+}
+
+
+def normalize_train_identity_text(value: Any) -> str:
+    text = str(value or "").strip()
+    text = re.sub(r"\s+", "", text)
+    return text.replace("（", "(").replace("）", ")")
+
+
+def public_train_identity(train: dict[str, Any]) -> str:
+    """Return the source-independent identity passengers would use for this train.
+
+    NAVITIME and official sources often assign different internal train numbers
+    to the same cross-line physical train.  The public display name is more
+    stable for those rows, while ordinary route-like labels still fall back to
+    the source train number to avoid collapsing unrelated local services.
+    """
+
+    for key in ("display_name", "service_name_detail", "displayName"):
+        value = normalize_train_identity_text(train.get(key))
+        if not value:
+            continue
+        route_like_values = {
+            normalize_train_identity_text(train.get("operator_name")),
+            normalize_train_identity_text(train.get("operator_id")),
+            normalize_train_identity_text(train.get("line_name")),
+            normalize_train_identity_text(train.get("service_name")),
+        }
+        if (
+            value in ORDINARY_TRAIN_IDENTITY_LABELS
+            or
+            value in route_like_values
+            or ROUTE_LIKE_TRAIN_IDENTITY_RE.match(value)
+        ) and not re.search(r"\d{1,4}号", value):
+            continue
+        return value
+    return normalize_train_identity_text(
+        train.get("train_number")
+        or train.get("service_number")
+        or train.get("service_name")
+        or train.get("line_name")
+    )
+
+
 def train_signature(train: dict[str, Any]) -> str:
     """A source-independent signature for one real train movement.
 
@@ -123,15 +175,14 @@ def train_signature(train: dict[str, Any]) -> str:
     if reviewed_direct_service_allowed_context_stops(train) is not None:
         for part in (
             train.get("operator_id") or train.get("operator_name") or "",
-            train.get("train_number") or "",
-            display_name,
+            public_train_identity(train),
         ):
             hasher.update(str(part).encode("utf-8"))
             hasher.update(b"\0")
         return hasher.hexdigest()
     parts = (
         train.get("operator_id") or train.get("operator_name") or "",
-        train.get("train_number") or train.get("service_name") or train.get("display_name") or "",
+        public_train_identity(train),
     )
     for part in parts:
         hasher.update(str(part).encode("utf-8"))
@@ -139,9 +190,9 @@ def train_signature(train: dict[str, Any]) -> str:
     for stop in train.get("stop_times") or []:
         hasher.update(stop_station_key(stop).encode("utf-8"))
         hasher.update(b"\0")
-        hasher.update(str(stop.get("arrival_time") or stop.get("arrivalTime") or "").encode("utf-8"))
+        hasher.update(str(stop.get("arrival_hhmm") or stop.get("arrival_time") or stop.get("arrivalTime") or "").encode("utf-8"))
         hasher.update(b"\0")
-        hasher.update(str(stop.get("departure_time") or stop.get("departureTime") or "").encode("utf-8"))
+        hasher.update(str(stop.get("departure_hhmm") or stop.get("departure_time") or stop.get("departureTime") or "").encode("utf-8"))
         hasher.update(b"\0")
     return hasher.hexdigest()
 
