@@ -211,6 +211,11 @@ async function auditRouteChoices(page) {
       limitedExpressGoSuffixCount: 0,
       samples: [],
     };
+    const duplicateRouteTitleScan = {
+      checkedStations: 0,
+      duplicateStationTitleCount: 0,
+      samples: [],
+    };
     function addGlobalChoiceSample(kind, stationName, entry, routeId, nextStop) {
       if (globalChoiceScan.samples.length >= 80) return;
       globalChoiceScan.samples.push({
@@ -357,6 +362,35 @@ async function auditRouteChoices(page) {
         kind: 'global_route_choice_segment_scan',
         reason: 'Every player-facing route choice must either be an allowed virtual corridor at that station or serve the current boarding stop -> next stop segment, must not expose a generic route label, must not expose route/system names as named-train choices, and must not expose remote through-service routes at Yokohama.',
         ...globalChoiceScan,
+      });
+    }
+    for (const [stationGroupId, group] of state.stationGroupById.entries()) {
+      const stationName = group.names?.ja || group.primaryName || stationGroupId;
+      duplicateRouteTitleScan.checkedStations += 1;
+      const choices = routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, START_MINUTE, { includeTransferEquivalents: true }));
+      const titleCounts = new Map();
+      choices.forEach((choice) => titleCounts.set(routeTitle(choice.routeId), (titleCounts.get(routeTitle(choice.routeId)) || 0) + 1));
+      const duplicateTitles = [...titleCounts.entries()].filter(([, count]) => count > 1);
+      if (!duplicateTitles.length) continue;
+      duplicateRouteTitleScan.duplicateStationTitleCount += duplicateTitles.length;
+      if (duplicateRouteTitleScan.samples.length < 80) {
+        duplicateRouteTitleScan.samples.push({
+          station: stationName,
+          duplicates: duplicateTitles.map(([title, count]) => ({ title, count })),
+          choices: choices.map((choice) => ({
+            route: routeTitle(choice.routeId),
+            subtitle: routeChoiceSubtitle(choice),
+            firstDeparture: choice.firstDepartureHhmm,
+            trainCount: choice.trainCount,
+          })),
+        });
+      }
+    }
+    if (duplicateRouteTitleScan.duplicateStationTitleCount) {
+      anomalies.push({
+        kind: 'duplicate_route_choice_title_scan',
+        reason: 'Each station route-choice list should show only one row for a player-facing route name; duplicate source route IDs must be merged behind that choice.',
+        ...duplicateRouteTitleScan,
       });
     }
     if (

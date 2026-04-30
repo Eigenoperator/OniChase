@@ -4249,7 +4249,10 @@
       if (!routeId) return true;
       const choiceRouteIds = routeChoiceIdsForDeparture(row);
       if (choiceRouteIds.length) return choiceRouteIds.includes(routeId);
-      return (row.routeIds || boardableRouteIdsForStop(row.trip, row.stop)).includes(routeId);
+      const rowRouteIds = row.routeIds || boardableRouteIdsForStop(row.trip, row.stop);
+      if (rowRouteIds.includes(routeId)) return true;
+      const selectedTitle = routeTitle(routeId);
+      return Boolean(selectedTitle && selectedTitle !== '路線' && rowRouteIds.some((candidateRouteId) => routeTitle(candidateRouteId) === selectedTitle));
     }
 
     function buildIndexes(bundle) {
@@ -6749,6 +6752,11 @@
       return state.routeById.get(routeId)?.color || '#667487';
     }
 
+    function routeChoiceSubtitle(choice) {
+      if (!choice?.subtitleLabels?.length) return routeSubtitle(choice?.routeId);
+      return choice.subtitleLabels.join('/');
+    }
+
     async function startTutorialMode() {
       entryStatusEl.textContent = 'Loading Tutorial...';
       prepareLocalSession('runner', { startTime: '06:00', endTime: '08:00', tutorialMode: true });
@@ -6759,22 +6767,32 @@
 
     function routeChoicesFromDepartures(departures) {
       const byRoute = new Map();
+      const byDisplay = new Map();
       departures.forEach((entry) => {
         const boardStop = entry?.boardStop || entry?.stop || null;
         if (!hasDownstreamStop(entry?.trip, boardStop)) return;
         const entryRouteIds = routeChoiceIdsForDeparture(entry);
         entryRouteIds.forEach((routeId) => {
           if (isThroughServiceTransferAlias(routeId) && !isShinkansenCorridorRoute(routeId)) return;
-          const current = byRoute.get(routeId) || {
+          const displayKey = routeTitle(routeId);
+          if (!displayKey || displayKey === '路線') return;
+          const current = byDisplay.get(displayKey) || byRoute.get(routeId) || {
             routeId,
             firstDepartureMinute: entry.departureMinute,
             firstDepartureHhmm: entry.departureHhmm,
             trainCount: 0,
+            displayKey,
+            subtitleLabels: [],
           };
+          const subtitle = routeSubtitle(routeId);
+          if (subtitle && !current.subtitleLabels.includes(subtitle)) current.subtitleLabels.push(subtitle);
           current.firstDepartureMinute = Math.min(current.firstDepartureMinute, entry.departureMinute);
           current.firstDepartureHhmm = minutesToHhmm(current.firstDepartureMinute);
           current.trainCount += 1;
-          byRoute.set(routeId, current);
+          if (!byDisplay.has(displayKey)) {
+            byDisplay.set(displayKey, current);
+            byRoute.set(routeId, current);
+          }
         });
       });
       return [...byRoute.values()].sort((a, b) =>
@@ -6940,7 +6958,7 @@
                   <span class="route-swatch" style="background:${routeColor(choice.routeId)}"></span>
                   <span>
                     <span class="row-title">${routeTitle(choice.routeId)}</span>
-                    <span class="row-sub">${routeSubtitle(choice.routeId)} · ${choice.trainCount} trains</span>
+                    <span class="row-sub">${routeChoiceSubtitle(choice)} · ${choice.trainCount} trains</span>
                   </span>
                   <span class="row-meta">${choice.firstDepartureHhmm}</span>
                 </button>
@@ -7037,7 +7055,7 @@
                   <span class="route-swatch" style="background:${routeColor(choice.routeId)}"></span>
                   <span>
                     <span class="row-title">${routeTitle(choice.routeId)}</span>
-                    <span class="row-sub">${routeSubtitle(choice.routeId)} · ${choice.trainCount} trains</span>
+                    <span class="row-sub">${routeChoiceSubtitle(choice)} · ${choice.trainCount} trains</span>
                   </span>
                   <span class="row-meta">${choice.firstDepartureHhmm}</span>
                 </button>
