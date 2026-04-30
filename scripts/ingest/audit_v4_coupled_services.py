@@ -26,6 +26,7 @@ DEFAULT_TIMETABLE = ROOT / "data" / "v4_gameplay_timetable_compact.json.gz"
 DEFAULT_REGISTRY = ROOT / "data" / "v4_coupled_service_registry.json"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_coupled_service_audit.json"
 DEFAULT_MAX_GAP_SEC = 420
+DEFAULT_GENERIC_MIN_EVENT_COUNT = 2
 SAMPLE_LIMIT = 30
 
 
@@ -598,7 +599,8 @@ def audit_generic_candidates(
     trips: list[dict[str, Any]],
     *,
     max_gap_sec: int,
-) -> list[dict[str, Any]]:
+    min_event_count: int,
+) -> tuple[list[dict[str, Any]], int]:
     events_by_station: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for trip in trips:
         stops = trip.get("stopTimes") or []
@@ -709,13 +711,17 @@ def audit_generic_candidates(
                 )
 
     candidates = []
+    suppressed_low_event_count = 0
     for entry in grouped.values():
         entry["evidenceCounts"] = dict(entry["evidenceCounts"])
         if entry["eventCount"] >= 3 and entry["evidenceCounts"].get("same_number", 0) >= 3:
             entry["confidence"] = "high"
+        if entry["eventCount"] < min_event_count:
+            suppressed_low_event_count += 1
+            continue
         candidates.append(entry)
     candidates.sort(key=lambda item: (item["confidence"] != "high", -item["eventCount"], item["station"], item["services"]))
-    return candidates[:200]
+    return candidates[:200], suppressed_low_event_count
 
 
 def parse_args() -> argparse.Namespace:
@@ -725,6 +731,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--registry", type=Path, default=DEFAULT_REGISTRY)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--max-gap-sec", type=int, default=DEFAULT_MAX_GAP_SEC)
+    parser.add_argument(
+        "--generic-min-event-count",
+        type=int,
+        default=DEFAULT_GENERIC_MIN_EVENT_COUNT,
+        help="Minimum repeated event count required before a generic same-number split/join candidate is reported.",
+    )
     parser.add_argument(
         "--service-day",
         choices=["weekday", "holiday"],
@@ -752,7 +764,13 @@ def main() -> None:
         max_gap_sec=args.max_gap_sec,
         service_day=args.service_day,
     )
-    generic_candidates = audit_generic_candidates(station_groups, routes, trips, max_gap_sec=args.max_gap_sec)
+    generic_candidates, suppressed_generic_low_event_count = audit_generic_candidates(
+        station_groups,
+        routes,
+        trips,
+        max_gap_sec=args.max_gap_sec,
+        min_event_count=args.generic_min_event_count,
+    )
     audit = {
         "schema": "onichase.v4.coupled_service_audit.v1",
         "generatedAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
@@ -761,6 +779,7 @@ def main() -> None:
             "timetable": rel(args.timetable),
             "registry": rel(args.registry),
             "maxGapSec": args.max_gap_sec,
+            "genericMinEventCount": args.generic_min_event_count,
             "serviceDay": args.service_day,
         },
         "policy": registry.get("policy", {}),
@@ -770,6 +789,7 @@ def main() -> None:
                 "Index all timetable stops by station group and stop time.",
                 "Pair different service labels at the same station within maxGapSec.",
                 "Keep candidates when they share the previous station and diverge after, converge to the same next station from different previous stations, or have matching train-number evidence.",
+                "Suppress generic candidates below genericMinEventCount so one-off same-number coincidences do not pollute the review queue.",
             ],
             "limitation": "This audit finds candidates and gaps; it does not yet create coupledServiceGroups for gameplay.",
         },
@@ -783,6 +803,7 @@ def main() -> None:
             "knownSeedsNotApplicableForServiceDay": sum(1 for item in known_seed_findings if item["status"] == "not_applicable_for_service_day"),
             "genericCandidateCount": len(generic_candidates),
             "genericHighConfidenceCandidateCount": sum(1 for item in generic_candidates if item["confidence"] == "high"),
+            "suppressedGenericLowEventCandidateCount": suppressed_generic_low_event_count,
         },
         "knownSeedFindings": known_seed_findings,
         "genericCandidates": generic_candidates,
@@ -796,6 +817,7 @@ def main() -> None:
         f"known_missing={audit['counts']['knownSeedsMissingServicePortions']} "
         f"known_not_applicable={audit['counts']['knownSeedsNotApplicableForServiceDay']} "
         f"generic={audit['counts']['genericCandidateCount']} "
+        f"generic_suppressed_low_event={audit['counts']['suppressedGenericLowEventCandidateCount']} "
         f"high={audit['counts']['genericHighConfidenceCandidateCount']}"
     )
 
