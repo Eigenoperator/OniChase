@@ -1,0 +1,3309 @@
+{
+  "schema": "onichase.v4.coupled_service_audit.v1",
+  "generatedAt": "2026-04-30T00:27:10+00:00",
+  "inputs": {
+    "mapBundle": "data/v4_gameplay_map_bundle.json.gz",
+    "timetable": "data/v4_gameplay_timetable_compact.json.gz",
+    "maxGapSec": 420
+  },
+  "methodology": {
+    "knownSeeds": "Check known Japanese split/join coupled-service families from reviewed research notes.",
+    "genericScan": [
+      "Index all timetable stops by station group and stop time.",
+      "Pair different service labels at the same station within maxGapSec.",
+      "Keep candidates when they share the previous station and diverge after, converge to the same next station from different previous stations, or have matching train-number evidence."
+    ],
+    "limitation": "This audit finds candidates and gaps; it does not yet create coupledServiceGroups for gameplay."
+  },
+  "counts": {
+    "tripCount": 123019,
+    "knownSeedCount": 9,
+    "knownSeedsWithPairEvidence": 4,
+    "knownSeedsMissingServiceTerms": 0,
+    "genericCandidateCount": 17,
+    "genericHighConfidenceCandidateCount": 0
+  },
+  "knownSeedFindings": [
+    {
+      "id": "hayabusa_komachi_morioka",
+      "label": "はやぶさ+こまち",
+      "confidence": "confirmed",
+      "splitJoinStations": [
+        "盛岡"
+      ],
+      "expectedSharedSegment": "東京-盛岡",
+      "status": "pair_evidence_found",
+      "termCounts": {
+        "はやぶさ": 2,
+        "Hayabusa": 88,
+        "Komachi": 41
+      },
+      "portionCounts": {
+        "Hayabusa+はやぶさ": 90,
+        "Komachi+こまち": 41
+      },
+      "matchingTripCount": 131,
+      "stationTouchCounts": {
+        "盛岡": 127
+      },
+      "pairedNearTimeEventCount": 70,
+      "samples": [
+        {
+          "station": "盛岡",
+          "timeLeft": "21:45",
+          "timeRight": "21:49",
+          "left": {
+            "id": "navitime_non_jr:26153aa8db:00000185:00a40040:2026-04-27",
+            "service": "はやぶさ96号",
+            "number": "00a40040",
+            "route": "いわて銀河鉄道線",
+            "origin": "新函館北斗",
+            "destination": "仙台"
+          },
+          "right": {
+            "id": "shinkansen:3096M:dd567f4597",
+            "service": "Komachi",
+            "number": "96",
+            "route": "SHINKANSEN_AKITA",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "11:46",
+          "timeRight": "11:47",
+          "left": {
+            "id": "shinkansen:11B:a664b8808b",
+            "service": "Hayabusa",
+            "number": "11",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新函館北斗"
+          },
+          "right": {
+            "id": "shinkansen:3016M:938aea8055",
+            "service": "Komachi",
+            "number": "16",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "10:11",
+          "timeRight": "10:15",
+          "left": {
+            "id": "shinkansen:2052B:0dfa09c83c",
+            "service": "Hayabusa",
+            "number": "52",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新青森",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:8052M:35aac298a1",
+            "service": "Komachi",
+            "number": "52",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "12:11",
+          "timeRight": "12:15",
+          "left": {
+            "id": "shinkansen:2056B:2d8ef57687",
+            "service": "Hayabusa",
+            "number": "56",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新青森",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:5056M:da04a61128",
+            "service": "Komachi",
+            "number": "56",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "14:58",
+          "timeRight": "15:01",
+          "left": {
+            "id": "shinkansen:2059B:b6d12e44f1",
+            "service": "Hayabusa",
+            "number": "59",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新青森"
+          },
+          "right": {
+            "id": "shinkansen:5059M:dada5401d3",
+            "service": "Komachi",
+            "number": "59",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "15:58",
+          "timeRight": "16:00",
+          "left": {
+            "id": "shinkansen:2061B:60cd2521c8",
+            "service": "Hayabusa",
+            "number": "61",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新青森"
+          },
+          "right": {
+            "id": "shinkansen:5061M:f5f7505373",
+            "service": "Komachi",
+            "number": "61",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "17:10",
+          "timeRight": "17:14",
+          "left": {
+            "id": "shinkansen:2062B:dc22808d71",
+            "service": "Hayabusa",
+            "number": "62",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新青森",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:8062M:7f595fde21",
+            "service": "Komachi",
+            "number": "62",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "19:28",
+          "timeRight": "19:35",
+          "left": {
+            "id": "shinkansen:2064B:dcf9e0dba8",
+            "service": "Hayabusa",
+            "number": "64",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新青森",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:3035M:7b54484f35",
+            "service": "Komachi",
+            "number": "35",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "19:28",
+          "timeRight": "19:32",
+          "left": {
+            "id": "shinkansen:2064B:dcf9e0dba8",
+            "service": "Hayabusa",
+            "number": "64",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新青森",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:5064M:5fce3b02fb",
+            "service": "Komachi",
+            "number": "64",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "19:57",
+          "timeRight": "20:00",
+          "left": {
+            "id": "shinkansen:2065B:878f0bddad",
+            "service": "Hayabusa",
+            "number": "65",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新青森"
+          },
+          "right": {
+            "id": "shinkansen:8065M:e063f4f976",
+            "service": "Komachi",
+            "number": "65",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "12:46",
+          "timeRight": "12:49",
+          "left": {
+            "id": "shinkansen:2073B:d3c46c1680",
+            "service": "Hayabusa",
+            "number": "73",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新青森"
+          },
+          "right": {
+            "id": "shinkansen:3018M:f4a35a0cc8",
+            "service": "Komachi",
+            "number": "18",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "16:46",
+          "timeRight": "16:48",
+          "left": {
+            "id": "shinkansen:2081B:ce1f7ea163",
+            "service": "Hayabusa",
+            "number": "81",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新青森"
+          },
+          "right": {
+            "id": "shinkansen:3032M:e788ce2509",
+            "service": "Komachi",
+            "number": "32",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "14:28",
+          "timeRight": "14:35",
+          "left": {
+            "id": "shinkansen:2082B:b5c04f3a85",
+            "service": "Hayabusa",
+            "number": "82",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新青森",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:3023M:3a532a10bb",
+            "service": "Komachi",
+            "number": "23",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "17:46",
+          "timeRight": "17:48",
+          "left": {
+            "id": "shinkansen:2085B:0c2759d665",
+            "service": "Hayabusa",
+            "number": "85",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新青森"
+          },
+          "right": {
+            "id": "shinkansen:3034M:70fa5c9bf5",
+            "service": "Komachi",
+            "number": "34",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "15:33",
+          "timeRight": "15:35",
+          "left": {
+            "id": "shinkansen:2086B:cfa82b9ee1",
+            "service": "Hayabusa",
+            "number": "86",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新青森",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:3025M:0cb40c7883",
+            "service": "Komachi",
+            "number": "25",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "18:11",
+          "timeRight": "18:14",
+          "left": {
+            "id": "shinkansen:2087B:7580b6239f",
+            "service": "Hayabusa",
+            "number": "87",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新青森"
+          },
+          "right": {
+            "id": "shinkansen:3036M:cab76ec147",
+            "service": "Komachi",
+            "number": "36",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "11:02",
+          "timeRight": "10:57",
+          "left": {
+            "id": "shinkansen:2354B:b8eb18c5c9",
+            "service": "Hayabusa",
+            "number": "354",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新青森",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:3007M:6553d7d746",
+            "service": "Komachi",
+            "number": "7",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "16:03",
+          "timeRight": "16:00",
+          "left": {
+            "id": "shinkansen:2360B:7cc59dbc93",
+            "service": "Hayabusa",
+            "number": "360",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新青森",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:5061M:f5f7505373",
+            "service": "Komachi",
+            "number": "61",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "18:35",
+          "timeRight": "18:35",
+          "left": {
+            "id": "shinkansen:2394B:7537524a97",
+            "service": "Hayabusa",
+            "number": "394",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新青森",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:3033M:6d63c35179",
+            "service": "Komachi",
+            "number": "33",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "08:44",
+          "timeRight": "08:48",
+          "left": {
+            "id": "shinkansen:3001B:592db442cf",
+            "service": "Hayabusa",
+            "number": "1",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新函館北斗"
+          },
+          "right": {
+            "id": "shinkansen:3001M:b5e88c8deb",
+            "service": "Komachi",
+            "number": "1",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "08:44",
+          "timeRight": "08:48",
+          "left": {
+            "id": "shinkansen:3001B:592db442cf",
+            "service": "Hayabusa",
+            "number": "1",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新函館北斗"
+          },
+          "right": {
+            "id": "shinkansen:3010M:23430cfc73",
+            "service": "Komachi",
+            "number": "10",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "08:48",
+          "timeRight": "08:43",
+          "left": {
+            "id": "shinkansen:3001M:b5e88c8deb",
+            "service": "Komachi",
+            "number": "1",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          },
+          "right": {
+            "id": "shinkansen:3010B:e6ee8e0c06",
+            "service": "Hayabusa",
+            "number": "10",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新函館北斗",
+            "destination": "東京"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "09:44",
+          "timeRight": "09:46",
+          "left": {
+            "id": "shinkansen:3003B:52369208ad",
+            "service": "Hayabusa",
+            "number": "3",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新青森"
+          },
+          "right": {
+            "id": "shinkansen:3003M:7e6cad0c75",
+            "service": "Komachi",
+            "number": "3",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "09:44",
+          "timeRight": "09:46",
+          "left": {
+            "id": "shinkansen:3003B:52369208ad",
+            "service": "Hayabusa",
+            "number": "3",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新青森"
+          },
+          "right": {
+            "id": "shinkansen:3012M:ccb0ee0ec7",
+            "service": "Komachi",
+            "number": "12",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "09:46",
+          "timeRight": "09:41",
+          "left": {
+            "id": "shinkansen:3003M:7e6cad0c75",
+            "service": "Komachi",
+            "number": "3",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          },
+          "right": {
+            "id": "shinkansen:3012B:57b258e7ac",
+            "service": "Hayabusa",
+            "number": "12",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新函館北斗",
+            "destination": "東京"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "07:37",
+          "timeRight": "07:35",
+          "left": {
+            "id": "shinkansen:3006B:0dfd38c6b7",
+            "service": "Hayabusa",
+            "number": "6",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:3006M:1dda434127",
+            "service": "Komachi",
+            "number": "6",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "07:35",
+          "timeRight": "07:28",
+          "left": {
+            "id": "shinkansen:3006M:1dda434127",
+            "service": "Komachi",
+            "number": "6",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          },
+          "right": {
+            "id": "shinkansen:4104B:5407d3ca18",
+            "service": "Hayabusa",
+            "number": "104",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "東京"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "10:55",
+          "timeRight": "10:57",
+          "left": {
+            "id": "shinkansen:3007B:8493f97040",
+            "service": "Hayabusa",
+            "number": "7",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新青森"
+          },
+          "right": {
+            "id": "shinkansen:3007M:6553d7d746",
+            "service": "Komachi",
+            "number": "7",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "10:55",
+          "timeRight": "10:49",
+          "left": {
+            "id": "shinkansen:3007B:8493f97040",
+            "service": "Hayabusa",
+            "number": "7",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "新青森"
+          },
+          "right": {
+            "id": "shinkansen:3014M:48198fde86",
+            "service": "Komachi",
+            "number": "14",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "秋田",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "盛岡",
+          "timeLeft": "10:57",
+          "timeRight": "10:50",
+          "left": {
+            "id": "shinkansen:3007M:6553d7d746",
+            "service": "Komachi",
+            "number": "7",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "秋田"
+          },
+          "right": {
+            "id": "shinkansen:4103B:e4c890fa00",
+            "service": "Hayabusa",
+            "number": "103",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "盛岡"
+          }
+        }
+      ]
+    },
+    {
+      "id": "yamabiko_tsubasa_fukushima",
+      "label": "やまびこ+つばさ",
+      "confidence": "confirmed",
+      "splitJoinStations": [
+        "福島"
+      ],
+      "expectedSharedSegment": "東京-福島",
+      "status": "pair_evidence_found",
+      "termCounts": {
+        "Yamabiko": 91,
+        "Tsubasa": 41
+      },
+      "portionCounts": {
+        "Yamabiko+やまびこ": 91,
+        "Tsubasa+つばさ": 41
+      },
+      "matchingTripCount": 132,
+      "stationTouchCounts": {
+        "福島": 132
+      },
+      "pairedNearTimeEventCount": 69,
+      "samples": [
+        {
+          "station": "福島",
+          "timeLeft": "09:10",
+          "timeRight": "09:14",
+          "left": {
+            "id": "shinkansen:1125B:c114cfe6b2",
+            "service": "Yamabiko",
+            "number": "125",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          },
+          "right": {
+            "id": "shinkansen:128M:87283a444a",
+            "service": "Tsubasa",
+            "number": "128",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新庄",
+            "destination": "福島"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "09:46",
+          "timeRight": "09:49",
+          "left": {
+            "id": "shinkansen:1130B:c064bede9b",
+            "service": "Yamabiko",
+            "number": "130",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "仙台",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:127M:03c33af949",
+            "service": "Tsubasa",
+            "number": "127",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "福島",
+            "destination": "山形"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "10:39",
+          "timeRight": "10:45",
+          "left": {
+            "id": "shinkansen:1134B:6d766f331e",
+            "service": "Yamabiko",
+            "number": "134",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "仙台",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:131M:6a2d30047f",
+            "service": "Tsubasa",
+            "number": "131",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "福島",
+            "destination": "新庄"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "18:16",
+          "timeRight": "18:15",
+          "left": {
+            "id": "shinkansen:1147B:e330bf6c4c",
+            "service": "Yamabiko",
+            "number": "147",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          },
+          "right": {
+            "id": "shinkansen:154M:05aa137d3a",
+            "service": "Tsubasa",
+            "number": "154",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "山形",
+            "destination": "福島"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "19:08",
+          "timeRight": "19:14",
+          "left": {
+            "id": "shinkansen:1151B:761cac1131",
+            "service": "Yamabiko",
+            "number": "151",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          },
+          "right": {
+            "id": "shinkansen:156M:fbfb433625",
+            "service": "Tsubasa",
+            "number": "156",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新庄",
+            "destination": "福島"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "19:08",
+          "timeRight": "19:01",
+          "left": {
+            "id": "shinkansen:1151B:761cac1131",
+            "service": "Yamabiko",
+            "number": "151",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          },
+          "right": {
+            "id": "shinkansen:8192M:a816bdf074",
+            "service": "Tsubasa",
+            "number": "192",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "山形",
+            "destination": "福島"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "07:48",
+          "timeRight": "07:44",
+          "left": {
+            "id": "shinkansen:121M:1100df359f",
+            "service": "Tsubasa",
+            "number": "121",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "福島",
+            "destination": "新庄"
+          },
+          "right": {
+            "id": "shinkansen:9121B:025d59282d",
+            "service": "Yamabiko",
+            "number": "121",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "07:33",
+          "timeRight": "07:37",
+          "left": {
+            "id": "shinkansen:122B:30718a82b5",
+            "service": "Yamabiko",
+            "number": "122",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "仙台",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:122M:ddfc9da788",
+            "service": "Tsubasa",
+            "number": "122",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新庄",
+            "destination": "福島"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "07:37",
+          "timeRight": "07:37",
+          "left": {
+            "id": "shinkansen:122M:ddfc9da788",
+            "service": "Tsubasa",
+            "number": "122",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新庄",
+            "destination": "福島"
+          },
+          "right": {
+            "id": "shinkansen:51B:b1a8386bc7",
+            "service": "Yamabiko",
+            "number": "51",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "07:37",
+          "timeRight": "07:44",
+          "left": {
+            "id": "shinkansen:122M:ddfc9da788",
+            "service": "Tsubasa",
+            "number": "122",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新庄",
+            "destination": "福島"
+          },
+          "right": {
+            "id": "shinkansen:9121B:025d59282d",
+            "service": "Yamabiko",
+            "number": "121",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "08:44",
+          "timeRight": "08:48",
+          "left": {
+            "id": "shinkansen:123B:07c7ab08f1",
+            "service": "Yamabiko",
+            "number": "123",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          },
+          "right": {
+            "id": "shinkansen:123M:386e86cf3f",
+            "service": "Tsubasa",
+            "number": "123",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "福島",
+            "destination": "新庄"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "08:48",
+          "timeRight": "08:41",
+          "left": {
+            "id": "shinkansen:123M:386e86cf3f",
+            "service": "Tsubasa",
+            "number": "123",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "福島",
+            "destination": "新庄"
+          },
+          "right": {
+            "id": "shinkansen:50B:e177164923",
+            "service": "Yamabiko",
+            "number": "50",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "盛岡",
+            "destination": "東京"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "09:45",
+          "timeRight": "09:49",
+          "left": {
+            "id": "shinkansen:127B:8ac4ba3202",
+            "service": "Yamabiko",
+            "number": "127",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          },
+          "right": {
+            "id": "shinkansen:127M:03c33af949",
+            "service": "Tsubasa",
+            "number": "127",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "福島",
+            "destination": "山形"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "09:10",
+          "timeRight": "09:14",
+          "left": {
+            "id": "shinkansen:128B:eb287e33b3",
+            "service": "Yamabiko",
+            "number": "128",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "仙台",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:128M:87283a444a",
+            "service": "Tsubasa",
+            "number": "128",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新庄",
+            "destination": "福島"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "10:30",
+          "timeRight": "10:30",
+          "left": {
+            "id": "shinkansen:129B:a836868ce1",
+            "service": "Tsubasa",
+            "number": "129",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "福島"
+          },
+          "right": {
+            "id": "shinkansen:6129B:7652af0435",
+            "service": "Yamabiko",
+            "number": "129",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "10:42",
+          "timeRight": "10:45",
+          "left": {
+            "id": "shinkansen:131B:86fbe46991",
+            "service": "Yamabiko",
+            "number": "131",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          },
+          "right": {
+            "id": "shinkansen:131M:6a2d30047f",
+            "service": "Tsubasa",
+            "number": "131",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "福島",
+            "destination": "新庄"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "10:08",
+          "timeRight": "10:12",
+          "left": {
+            "id": "shinkansen:132B:9366ed66b3",
+            "service": "Yamabiko",
+            "number": "132",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "仙台",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:132M:4e58c6cc8c",
+            "service": "Tsubasa",
+            "number": "132",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "山形",
+            "destination": "福島"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "10:12",
+          "timeRight": "10:19",
+          "left": {
+            "id": "shinkansen:132M:4e58c6cc8c",
+            "service": "Tsubasa",
+            "number": "132",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "山形",
+            "destination": "福島"
+          },
+          "right": {
+            "id": "shinkansen:53B:7cf028d13e",
+            "service": "Yamabiko",
+            "number": "53",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "11:32",
+          "timeRight": "11:35",
+          "left": {
+            "id": "shinkansen:133B:28f1d33554",
+            "service": "Yamabiko",
+            "number": "133",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          },
+          "right": {
+            "id": "shinkansen:133M:f6e0aab62d",
+            "service": "Tsubasa",
+            "number": "133",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "福島",
+            "destination": "新庄"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "12:31",
+          "timeRight": "12:35",
+          "left": {
+            "id": "shinkansen:135B:86648d61c4",
+            "service": "Yamabiko",
+            "number": "135",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          },
+          "right": {
+            "id": "shinkansen:135M:4c0d9499aa",
+            "service": "Tsubasa",
+            "number": "135",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "福島",
+            "destination": "山形"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "11:12",
+          "timeRight": "11:12",
+          "left": {
+            "id": "shinkansen:136M:5db26e9d7d",
+            "service": "Tsubasa",
+            "number": "136",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新庄",
+            "destination": "福島"
+          },
+          "right": {
+            "id": "shinkansen:55B:c105c19897",
+            "service": "Yamabiko",
+            "number": "55",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "11:12",
+          "timeRight": "11:06",
+          "left": {
+            "id": "shinkansen:136M:5db26e9d7d",
+            "service": "Tsubasa",
+            "number": "136",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新庄",
+            "destination": "福島"
+          },
+          "right": {
+            "id": "shinkansen:6136B:3108188383",
+            "service": "Yamabiko",
+            "number": "136",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "仙台",
+            "destination": "東京"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "11:12",
+          "timeRight": "11:19",
+          "left": {
+            "id": "shinkansen:136M:5db26e9d7d",
+            "service": "Tsubasa",
+            "number": "136",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新庄",
+            "destination": "福島"
+          },
+          "right": {
+            "id": "shinkansen:8177B:c322ccc4ed",
+            "service": "Yamabiko",
+            "number": "177",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "13:31",
+          "timeRight": "13:35",
+          "left": {
+            "id": "shinkansen:137B:9a1e09eec1",
+            "service": "Yamabiko",
+            "number": "137",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          },
+          "right": {
+            "id": "shinkansen:137M:f48e67a1fb",
+            "service": "Tsubasa",
+            "number": "137",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "福島",
+            "destination": "新庄"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "12:10",
+          "timeRight": "12:14",
+          "left": {
+            "id": "shinkansen:138B:3c57772518",
+            "service": "Yamabiko",
+            "number": "138",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "仙台",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:138M:3739cccef9",
+            "service": "Tsubasa",
+            "number": "138",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "山形",
+            "destination": "福島"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "12:14",
+          "timeRight": "12:12",
+          "left": {
+            "id": "shinkansen:138M:3739cccef9",
+            "service": "Tsubasa",
+            "number": "138",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "山形",
+            "destination": "福島"
+          },
+          "right": {
+            "id": "shinkansen:57B:3d866f1bf1",
+            "service": "Yamabiko",
+            "number": "57",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "14:31",
+          "timeRight": "14:31",
+          "left": {
+            "id": "shinkansen:139B:87756a5a69",
+            "service": "Tsubasa",
+            "number": "139",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "福島"
+          },
+          "right": {
+            "id": "shinkansen:6139B:d338426852",
+            "service": "Yamabiko",
+            "number": "139",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "13:10",
+          "timeRight": "13:14",
+          "left": {
+            "id": "shinkansen:140B:bc124b1a86",
+            "service": "Yamabiko",
+            "number": "140",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "仙台",
+            "destination": "東京"
+          },
+          "right": {
+            "id": "shinkansen:140M:647887fd15",
+            "service": "Tsubasa",
+            "number": "140",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新庄",
+            "destination": "福島"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "13:14",
+          "timeRight": "13:11",
+          "left": {
+            "id": "shinkansen:140M:647887fd15",
+            "service": "Tsubasa",
+            "number": "140",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "新庄",
+            "destination": "福島"
+          },
+          "right": {
+            "id": "shinkansen:59B:237c0a7de2",
+            "service": "Yamabiko",
+            "number": "59",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "盛岡"
+          }
+        },
+        {
+          "station": "福島",
+          "timeLeft": "15:31",
+          "timeRight": "15:35",
+          "left": {
+            "id": "shinkansen:141B:c41d4c21f9",
+            "service": "Yamabiko",
+            "number": "141",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "東京",
+            "destination": "仙台"
+          },
+          "right": {
+            "id": "shinkansen:141M:20b587149e",
+            "service": "Tsubasa",
+            "number": "141",
+            "route": "SHINKANSEN_TOHOKU_HOKKAIDO",
+            "origin": "福島",
+            "destination": "新庄"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kanku_kishuji_hineno",
+      "label": "関空快速+紀州路快速",
+      "confidence": "confirmed",
+      "splitJoinStations": [
+        "日根野"
+      ],
+      "expectedSharedSegment": "大阪環状線/阪和線-日根野",
+      "status": "missing_service_portions",
+      "termCounts": {},
+      "portionCounts": {
+        "関空快速+Kanku Rapid": 0,
+        "紀州路快速+Kishuji Rapid": 0
+      },
+      "matchingTripCount": 0,
+      "stationTouchCounts": {
+        "日根野": 0
+      },
+      "pairedNearTimeEventCount": 0,
+      "samples": []
+    },
+    {
+      "id": "shiokaze_ishizuchi_utazu_tadotsu",
+      "label": "しおかぜ+いしづち",
+      "confidence": "confirmed",
+      "splitJoinStations": [
+        "宇多津",
+        "多度津"
+      ],
+      "expectedSharedSegment": "岡山/高松-宇多津/多度津",
+      "status": "pair_evidence_found",
+      "termCounts": {
+        "いしづち": 63,
+        "しおかぜ": 94
+      },
+      "portionCounts": {
+        "しおかぜ+Shiokaze": 94,
+        "いしづち+Ishizuchi": 63
+      },
+      "matchingTripCount": 157,
+      "stationTouchCounts": {
+        "宇多津": 153,
+        "多度津": 156
+      },
+      "pairedNearTimeEventCount": 480,
+      "samples": [
+        {
+          "station": "宇多津",
+          "timeLeft": "09:23",
+          "timeRight": "09:23",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0000:2026-04-27",
+            "service": "いしづち8号",
+            "number": "001f0000",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0030:2026-04-27",
+            "service": "しおかぜ8号",
+            "number": "001f0030",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "09:23",
+          "timeRight": "09:23",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0000:2026-04-27",
+            "service": "いしづち8号",
+            "number": "001f0000",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000078:0046005c:2026-04-27",
+            "service": "しおかぜ8号",
+            "number": "0046005c",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "09:23",
+          "timeRight": "09:23",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0000:2026-04-27",
+            "service": "いしづち8号",
+            "number": "001f0000",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000079:0046005b:2026-04-27",
+            "service": "しおかぜ8号",
+            "number": "0046005b",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "09:23",
+          "timeRight": "09:23",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0000:2026-04-27",
+            "service": "いしづち8号",
+            "number": "001f0000",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_west_official:本四備讃線:421:20260427",
+            "service": "しおかぜ8号",
+            "number": "8",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "11:30",
+          "timeRight": "11:30",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0001:2026-04-27",
+            "service": "いしづち12号",
+            "number": "001f0001",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0007:2026-04-27",
+            "service": "しおかぜ12号",
+            "number": "001f0007",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "11:30",
+          "timeRight": "11:30",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0001:2026-04-27",
+            "service": "いしづち12号",
+            "number": "001f0001",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000078:00460001:2026-04-27",
+            "service": "しおかぜ12号",
+            "number": "00460001",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "11:30",
+          "timeRight": "11:30",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0001:2026-04-27",
+            "service": "いしづち12号",
+            "number": "001f0001",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000079:00460000:2026-04-27",
+            "service": "しおかぜ12号",
+            "number": "00460000",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "11:30",
+          "timeRight": "11:30",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0001:2026-04-27",
+            "service": "いしづち12号",
+            "number": "001f0001",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_west_official:本四備讃線:601:20260427",
+            "service": "しおかぜ12号",
+            "number": "12",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "12:30",
+          "timeRight": "12:30",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0002:2026-04-27",
+            "service": "いしづち14号",
+            "number": "001f0002",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0008:2026-04-27",
+            "service": "しおかぜ14号",
+            "number": "001f0008",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "12:30",
+          "timeRight": "12:30",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0002:2026-04-27",
+            "service": "いしづち14号",
+            "number": "001f0002",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000078:00460003:2026-04-27",
+            "service": "しおかぜ14号",
+            "number": "00460003",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "12:30",
+          "timeRight": "12:30",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0002:2026-04-27",
+            "service": "いしづち14号",
+            "number": "001f0002",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000079:00460002:2026-04-27",
+            "service": "しおかぜ14号",
+            "number": "00460002",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "13:31",
+          "timeRight": "13:31",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0003:2026-04-27",
+            "service": "いしづち16号",
+            "number": "001f0003",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0009:2026-04-27",
+            "service": "しおかぜ16号",
+            "number": "001f0009",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "13:31",
+          "timeRight": "13:31",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0003:2026-04-27",
+            "service": "いしづち16号",
+            "number": "001f0003",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000078:00460005:2026-04-27",
+            "service": "しおかぜ16号",
+            "number": "00460005",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "13:31",
+          "timeRight": "13:31",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0003:2026-04-27",
+            "service": "いしづち16号",
+            "number": "001f0003",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000079:00460004:2026-04-27",
+            "service": "しおかぜ16号",
+            "number": "00460004",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "15:32",
+          "timeRight": "15:32",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0004:2026-04-27",
+            "service": "いしづち20号",
+            "number": "001f0004",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f000b:2026-04-27",
+            "service": "しおかぜ20号",
+            "number": "001f000b",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "15:32",
+          "timeRight": "15:32",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0004:2026-04-27",
+            "service": "いしづち20号",
+            "number": "001f0004",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000078:00460009:2026-04-27",
+            "service": "しおかぜ20号",
+            "number": "00460009",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "15:32",
+          "timeRight": "15:32",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0004:2026-04-27",
+            "service": "いしづち20号",
+            "number": "001f0004",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000079:00460008:2026-04-27",
+            "service": "しおかぜ20号",
+            "number": "00460008",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "17:33",
+          "timeRight": "17:33",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0005:2026-04-27",
+            "service": "いしづち24号",
+            "number": "001f0005",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f000c:2026-04-27",
+            "service": "しおかぜ24号",
+            "number": "001f000c",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "17:33",
+          "timeRight": "17:33",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0005:2026-04-27",
+            "service": "いしづち24号",
+            "number": "001f0005",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000078:0046000b:2026-04-27",
+            "service": "しおかぜ24号",
+            "number": "0046000b",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "17:33",
+          "timeRight": "17:33",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0005:2026-04-27",
+            "service": "いしづち24号",
+            "number": "001f0005",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000079:0046000a:2026-04-27",
+            "service": "しおかぜ24号",
+            "number": "0046000a",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "18:34",
+          "timeRight": "18:34",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0006:2026-04-27",
+            "service": "いしづち26号",
+            "number": "001f0006",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f000d:2026-04-27",
+            "service": "しおかぜ26号",
+            "number": "001f000d",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "18:34",
+          "timeRight": "18:34",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0006:2026-04-27",
+            "service": "いしづち26号",
+            "number": "001f0006",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000078:0046000d:2026-04-27",
+            "service": "しおかぜ26号",
+            "number": "0046000d",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "18:34",
+          "timeRight": "18:34",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0006:2026-04-27",
+            "service": "いしづち26号",
+            "number": "001f0006",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000079:0046000c:2026-04-27",
+            "service": "しおかぜ26号",
+            "number": "0046000c",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "18:34",
+          "timeRight": "18:34",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0006:2026-04-27",
+            "service": "いしづち26号",
+            "number": "001f0006",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_west_official:本四備讃線:1031:20260427",
+            "service": "しおかぜ26号",
+            "number": "26",
+            "route": "本四備讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "11:30",
+          "timeRight": "11:30",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0007:2026-04-27",
+            "service": "しおかぜ12号",
+            "number": "001f0007",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f00c2:2026-04-27",
+            "service": "いしづち12号",
+            "number": "001f00c2",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "12:30",
+          "timeRight": "12:30",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0008:2026-04-27",
+            "service": "しおかぜ14号",
+            "number": "001f0008",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f00c3:2026-04-27",
+            "service": "いしづち14号",
+            "number": "001f00c3",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "13:31",
+          "timeRight": "13:31",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0009:2026-04-27",
+            "service": "しおかぜ16号",
+            "number": "001f0009",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f00c4:2026-04-27",
+            "service": "いしづち16号",
+            "number": "001f00c4",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "14:32",
+          "timeRight": "14:32",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f000a:2026-04-27",
+            "service": "しおかぜ18号",
+            "number": "001f000a",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0037:2026-04-27",
+            "service": "いしづち18号",
+            "number": "001f0037",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "14:32",
+          "timeRight": "14:32",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f000a:2026-04-27",
+            "service": "しおかぜ18号",
+            "number": "001f000a",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f00c9:2026-04-27",
+            "service": "いしづち18号",
+            "number": "001f00c9",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          }
+        },
+        {
+          "station": "宇多津",
+          "timeLeft": "15:32",
+          "timeRight": "15:32",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f000b:2026-04-27",
+            "service": "しおかぜ20号",
+            "number": "001f000b",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "岡山"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f00c5:2026-04-27",
+            "service": "いしづち20号",
+            "number": "001f00c5",
+            "route": "予讃線",
+            "origin": "松山",
+            "destination": "高松"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sunrise_seto_izumo_okayama",
+      "label": "サンライズ瀬戸+サンライズ出雲",
+      "confidence": "confirmed",
+      "splitJoinStations": [
+        "岡山"
+      ],
+      "expectedSharedSegment": "東京-岡山",
+      "status": "service_terms_found_no_pair",
+      "termCounts": {
+        "サンライズ出雲": 4,
+        "サンライズ瀬戸": 2
+      },
+      "portionCounts": {
+        "サンライズ瀬戸+Sunrise Seto": 2,
+        "サンライズ出雲+Sunrise Izumo": 4
+      },
+      "matchingTripCount": 6,
+      "stationTouchCounts": {
+        "岡山": 6
+      },
+      "pairedNearTimeEventCount": 0,
+      "samples": []
+    },
+    {
+      "id": "narita_express_tokyo",
+      "label": "成田エクスプレス",
+      "confidence": "confirmed",
+      "splitJoinStations": [
+        "東京"
+      ],
+      "expectedSharedSegment": "東京-成田空港",
+      "status": "single_named_family_found_needs_portion_model",
+      "termCounts": {
+        "成田エクスプレス": 59
+      },
+      "portionCounts": {
+        "成田エクスプレス+Narita Express": 59
+      },
+      "matchingTripCount": 59,
+      "stationTouchCounts": {
+        "東京": 59
+      },
+      "pairedNearTimeEventCount": 0,
+      "samples": []
+    },
+    {
+      "id": "nanpu_shimanto_shikoku",
+      "label": "南風+しまんと",
+      "confidence": "needs_official_current_review",
+      "splitJoinStations": [
+        "宇多津",
+        "多度津",
+        "高松"
+      ],
+      "expectedSharedSegment": "岡山/高松-宇多津/多度津",
+      "status": "pair_evidence_found",
+      "termCounts": {
+        "南風": 157,
+        "しまんと": 8
+      },
+      "portionCounts": {
+        "南風+Nanpu": 157,
+        "しまんと+Shimanto": 8
+      },
+      "matchingTripCount": 165,
+      "stationTouchCounts": {
+        "宇多津": 157,
+        "多度津": 165,
+        "高松": 39
+      },
+      "pairedNearTimeEventCount": 20,
+      "samples": [
+        {
+          "station": "多度津",
+          "timeLeft": "08:50",
+          "timeRight": "08:50",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0035:2026-04-27",
+            "service": "南風4号",
+            "number": "001f0035",
+            "route": "予讃線",
+            "origin": "高知",
+            "destination": "岡山"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:801f008f:2026-04-27",
+            "service": "しまんと3号",
+            "number": "801f008f",
+            "route": "予讃線",
+            "origin": "高松",
+            "destination": "高知"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "08:50",
+          "timeRight": "08:50",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0035:2026-04-27",
+            "service": "南風4号",
+            "number": "001f0035",
+            "route": "予讃線",
+            "origin": "高知",
+            "destination": "岡山"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:801a0063:2026-04-27",
+            "service": "しまんと3号",
+            "number": "801a0063",
+            "route": "土讃線",
+            "origin": "高松",
+            "destination": "高知"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "22:21",
+          "timeRight": "22:22",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0083:2026-04-27",
+            "service": "しまんと4号",
+            "number": "001f0083",
+            "route": "予讃線",
+            "origin": "宿毛",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:801f0030:2026-04-27",
+            "service": "南風27号",
+            "number": "801f0030",
+            "route": "予讃線",
+            "origin": "岡山",
+            "destination": "高知"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "22:21",
+          "timeRight": "22:17",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0083:2026-04-27",
+            "service": "しまんと4号",
+            "number": "001f0083",
+            "route": "予讃線",
+            "origin": "宿毛",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:801f008a:2026-04-27",
+            "service": "サンポート南風リレー号",
+            "number": "801f008a",
+            "route": "予讃線",
+            "origin": "高松",
+            "destination": "観音寺"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "22:21",
+          "timeRight": "22:22",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0083:2026-04-27",
+            "service": "しまんと4号",
+            "number": "001f0083",
+            "route": "予讃線",
+            "origin": "宿毛",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:801a0004:2026-04-27",
+            "service": "南風27号",
+            "number": "801a0004",
+            "route": "土讃線",
+            "origin": "岡山",
+            "destination": "高知"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "22:21",
+          "timeRight": "22:22",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0083:2026-04-27",
+            "service": "しまんと4号",
+            "number": "001f0083",
+            "route": "予讃線",
+            "origin": "宿毛",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000079:8046006b:2026-04-27",
+            "service": "南風27号",
+            "number": "8046006b",
+            "route": "土讃線",
+            "origin": "岡山",
+            "destination": "高知"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "22:21",
+          "timeRight": "22:22",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:001f0083:2026-04-27",
+            "service": "しまんと4号",
+            "number": "001f0083",
+            "route": "予讃線",
+            "origin": "宿毛",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_west_official:宇野線:59461:20260427",
+            "service": "南風27号",
+            "number": "27",
+            "route": "土讃線",
+            "origin": "岡山",
+            "destination": "高知"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "22:22",
+          "timeRight": "22:21",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:801f0030:2026-04-27",
+            "service": "南風27号",
+            "number": "801f0030",
+            "route": "予讃線",
+            "origin": "岡山",
+            "destination": "高知"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:001a0063:2026-04-27",
+            "service": "しまんと4号",
+            "number": "001a0063",
+            "route": "土讃線",
+            "origin": "宿毛",
+            "destination": "高松"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "22:17",
+          "timeRight": "22:21",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:801f008a:2026-04-27",
+            "service": "サンポート南風リレー号",
+            "number": "801f008a",
+            "route": "予讃線",
+            "origin": "高松",
+            "destination": "観音寺"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:001a0063:2026-04-27",
+            "service": "しまんと4号",
+            "number": "001a0063",
+            "route": "土讃線",
+            "origin": "宿毛",
+            "destination": "高松"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "08:50",
+          "timeRight": "08:50",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:801f008f:2026-04-27",
+            "service": "しまんと3号",
+            "number": "801f008f",
+            "route": "予讃線",
+            "origin": "高松",
+            "destination": "高知"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:001a0005:2026-04-27",
+            "service": "南風4号",
+            "number": "001a0005",
+            "route": "土讃線",
+            "origin": "高知",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "08:50",
+          "timeRight": "08:50",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:801f008f:2026-04-27",
+            "service": "しまんと3号",
+            "number": "801f008f",
+            "route": "予讃線",
+            "origin": "高松",
+            "destination": "高知"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000078:00460066:2026-04-27",
+            "service": "南風4号",
+            "number": "00460066",
+            "route": "土讃線",
+            "origin": "高知",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "08:50",
+          "timeRight": "08:50",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:801f008f:2026-04-27",
+            "service": "しまんと3号",
+            "number": "801f008f",
+            "route": "予讃線",
+            "origin": "高松",
+            "destination": "高知"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000079:00460065:2026-04-27",
+            "service": "南風4号",
+            "number": "00460065",
+            "route": "土讃線",
+            "origin": "高知",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "08:50",
+          "timeRight": "08:50",
+          "left": {
+            "id": "jr_shikoku_navitime:予讃線:00000035:801f008f:2026-04-27",
+            "service": "しまんと3号",
+            "number": "801f008f",
+            "route": "予讃線",
+            "origin": "高松",
+            "destination": "高知"
+          },
+          "right": {
+            "id": "jr_west_official:本四備讃線:59531:20260427",
+            "service": "南風4号",
+            "number": "4",
+            "route": "土讃線",
+            "origin": "高知",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "08:50",
+          "timeRight": "08:50",
+          "left": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:001a0005:2026-04-27",
+            "service": "南風4号",
+            "number": "001a0005",
+            "route": "土讃線",
+            "origin": "高知",
+            "destination": "岡山"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:801a0063:2026-04-27",
+            "service": "しまんと3号",
+            "number": "801a0063",
+            "route": "土讃線",
+            "origin": "高松",
+            "destination": "高知"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "22:21",
+          "timeRight": "22:22",
+          "left": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:001a0063:2026-04-27",
+            "service": "しまんと4号",
+            "number": "001a0063",
+            "route": "土讃線",
+            "origin": "宿毛",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:801a0004:2026-04-27",
+            "service": "南風27号",
+            "number": "801a0004",
+            "route": "土讃線",
+            "origin": "岡山",
+            "destination": "高知"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "22:21",
+          "timeRight": "22:22",
+          "left": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:001a0063:2026-04-27",
+            "service": "しまんと4号",
+            "number": "001a0063",
+            "route": "土讃線",
+            "origin": "宿毛",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000079:8046006b:2026-04-27",
+            "service": "南風27号",
+            "number": "8046006b",
+            "route": "土讃線",
+            "origin": "岡山",
+            "destination": "高知"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "22:21",
+          "timeRight": "22:22",
+          "left": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:001a0063:2026-04-27",
+            "service": "しまんと4号",
+            "number": "001a0063",
+            "route": "土讃線",
+            "origin": "宿毛",
+            "destination": "高松"
+          },
+          "right": {
+            "id": "jr_west_official:宇野線:59461:20260427",
+            "service": "南風27号",
+            "number": "27",
+            "route": "土讃線",
+            "origin": "岡山",
+            "destination": "高知"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "08:50",
+          "timeRight": "08:50",
+          "left": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:801a0063:2026-04-27",
+            "service": "しまんと3号",
+            "number": "801a0063",
+            "route": "土讃線",
+            "origin": "高松",
+            "destination": "高知"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000078:00460066:2026-04-27",
+            "service": "南風4号",
+            "number": "00460066",
+            "route": "土讃線",
+            "origin": "高知",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "08:50",
+          "timeRight": "08:50",
+          "left": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:801a0063:2026-04-27",
+            "service": "しまんと3号",
+            "number": "801a0063",
+            "route": "土讃線",
+            "origin": "高松",
+            "destination": "高知"
+          },
+          "right": {
+            "id": "jr_shikoku_navitime:本四備讃線:00000079:00460065:2026-04-27",
+            "service": "南風4号",
+            "number": "00460065",
+            "route": "土讃線",
+            "origin": "高知",
+            "destination": "岡山"
+          }
+        },
+        {
+          "station": "多度津",
+          "timeLeft": "08:50",
+          "timeRight": "08:50",
+          "left": {
+            "id": "jr_shikoku_navitime:土讃線:00000029:801a0063:2026-04-27",
+            "service": "しまんと3号",
+            "number": "801a0063",
+            "route": "土讃線",
+            "origin": "高松",
+            "destination": "高知"
+          },
+          "right": {
+            "id": "jr_west_official:本四備讃線:59531:20260427",
+            "service": "南風4号",
+            "number": "4",
+            "route": "土讃線",
+            "origin": "高知",
+            "destination": "岡山"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kyoto_north_limited_express",
+      "label": "きのさき/まいづる/はしだて",
+      "confidence": "needs_official_current_review",
+      "splitJoinStations": [
+        "綾部"
+      ],
+      "expectedSharedSegment": "京都-綾部",
+      "status": "missing_service_portions",
+      "termCounts": {
+        "きのさき": 20,
+        "はしだて": 23
+      },
+      "portionCounts": {
+        "きのさき+Kinosaki": 20,
+        "まいづる+Maizuru": 0,
+        "はしだて+Hashidate": 23
+      },
+      "matchingTripCount": 43,
+      "stationTouchCounts": {
+        "綾部": 42
+      },
+      "pairedNearTimeEventCount": 0,
+      "samples": []
+    },
+    {
+      "id": "hida_gifu",
+      "label": "ひだ",
+      "confidence": "needs_official_current_review",
+      "splitJoinStations": [
+        "岐阜"
+      ],
+      "expectedSharedSegment": "名古屋/大阪-岐阜",
+      "status": "single_named_family_found_needs_portion_model",
+      "termCounts": {
+        "ひだ": 30
+      },
+      "portionCounts": {
+        "ひだ+Hida": 30
+      },
+      "matchingTripCount": 30,
+      "stationTouchCounts": {
+        "岐阜": 30
+      },
+      "pairedNearTimeEventCount": 0,
+      "samples": []
+    }
+  ],
+  "genericCandidates": [
+    {
+      "station": "大阪",
+      "services": [
+        "くろしお1号",
+        "スーパーはくと1号"
+      ],
+      "routes": [
+        "東海道線",
+        "東海道線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "same_previous_diverges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "07:35",
+          "timeRight": "07:38",
+          "gapSec": 180,
+          "left": {
+            "id": "jr_west_official:因美線:67661:20260427",
+            "service": "スーパーはくと1号",
+            "number": "1",
+            "route": "東海道線",
+            "origin": "京都",
+            "destination": "倉吉",
+            "previous": "新大阪",
+            "next": "三ノ宮"
+          },
+          "right": {
+            "id": "jr_west_official:紀勢線:38921:20260427",
+            "service": "くろしお1号",
+            "number": "1",
+            "route": "東海道線",
+            "origin": "新大阪",
+            "destination": "新宮",
+            "previous": "新大阪",
+            "next": "天王寺"
+          }
+        }
+      ]
+    },
+    {
+      "station": "大阪",
+      "services": [
+        "くろしお3号",
+        "こうのとり3号"
+      ],
+      "routes": [
+        "東海道線",
+        "東海道線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "same_previous_diverges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "09:03",
+          "timeRight": "09:08",
+          "gapSec": 300,
+          "left": {
+            "id": "jr_west_official:紀勢線:144631:20260427",
+            "service": "くろしお3号",
+            "number": "3",
+            "route": "東海道線",
+            "origin": "新大阪",
+            "destination": "白浜",
+            "previous": "新大阪",
+            "next": "天王寺"
+          },
+          "right": {
+            "id": "jr_west_official:山陰線:91121:20260427",
+            "service": "こうのとり3号",
+            "number": "3",
+            "route": "東海道線",
+            "origin": "新大阪",
+            "destination": "城崎温泉",
+            "previous": "新大阪",
+            "next": "尼崎"
+          }
+        }
+      ]
+    },
+    {
+      "station": "大阪",
+      "services": [
+        "こうのとり2号",
+        "はるか2号"
+      ],
+      "routes": [
+        "東海道線",
+        "東海道線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "07:35",
+          "timeRight": "07:37",
+          "gapSec": 120,
+          "left": {
+            "id": "jr_west_official:東海道線:91201:20260427",
+            "service": "こうのとり2号",
+            "number": "2",
+            "route": "東海道線",
+            "origin": "福知山",
+            "destination": "新大阪",
+            "previous": "尼崎",
+            "next": "新大阪"
+          },
+          "right": {
+            "id": "jr_west_official:関西空港線:151:20260427",
+            "service": "はるか2号",
+            "number": "2",
+            "route": "東海道線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "天王寺",
+            "next": "新大阪"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか12号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "10:36",
+          "timeRight": "10:43",
+          "gapSec": 420,
+          "left": {
+            "id": "jr_west_official:関西空港線:581:20260427",
+            "service": "はるか12号",
+            "number": "12",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          },
+          "right": {
+            "id": "shinkansen:12A:1ca192301a",
+            "service": "Nozomi",
+            "number": "12",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか14号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "11:04",
+          "timeRight": "11:06",
+          "gapSec": 120,
+          "left": {
+            "id": "shinkansen:14A:d64184f540",
+            "service": "Nozomi",
+            "number": "14",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          },
+          "right": {
+            "id": "jr_west_official:関西空港線:258001:20260427",
+            "service": "はるか14号",
+            "number": "14",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか16号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "11:36",
+          "timeRight": "11:43",
+          "gapSec": 420,
+          "left": {
+            "id": "jr_west_official:関西空港線:258011:20260427",
+            "service": "はるか16号",
+            "number": "16",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          },
+          "right": {
+            "id": "shinkansen:16A:a534ca87af",
+            "service": "Nozomi",
+            "number": "16",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか18号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "12:04",
+          "timeRight": "12:06",
+          "gapSec": 120,
+          "left": {
+            "id": "shinkansen:18A:fd8711c5c2",
+            "service": "Nozomi",
+            "number": "18",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          },
+          "right": {
+            "id": "jr_west_official:関西空港線:258021:20260427",
+            "service": "はるか18号",
+            "number": "18",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか20号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "12:36",
+          "timeRight": "12:43",
+          "gapSec": 420,
+          "left": {
+            "id": "jr_west_official:関西空港線:258031:20260427",
+            "service": "はるか20号",
+            "number": "20",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          },
+          "right": {
+            "id": "shinkansen:20A:b30218e2c2",
+            "service": "Nozomi",
+            "number": "20",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか22号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "13:04",
+          "timeRight": "13:06",
+          "gapSec": 120,
+          "left": {
+            "id": "shinkansen:22A:3046a4d2d3",
+            "service": "Nozomi",
+            "number": "22",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          },
+          "right": {
+            "id": "jr_west_official:関西空港線:258041:20260427",
+            "service": "はるか22号",
+            "number": "22",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか24号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "13:36",
+          "timeRight": "13:43",
+          "gapSec": 420,
+          "left": {
+            "id": "jr_west_official:関西空港線:258051:20260427",
+            "service": "はるか24号",
+            "number": "24",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          },
+          "right": {
+            "id": "shinkansen:24A:5145b5a7fb",
+            "service": "Nozomi",
+            "number": "24",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか26号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "14:04",
+          "timeRight": "14:06",
+          "gapSec": 120,
+          "left": {
+            "id": "shinkansen:26A:000b52095d",
+            "service": "Nozomi",
+            "number": "26",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          },
+          "right": {
+            "id": "jr_west_official:関西空港線:258061:20260427",
+            "service": "はるか26号",
+            "number": "26",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか28号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "14:36",
+          "timeRight": "14:43",
+          "gapSec": 420,
+          "left": {
+            "id": "jr_west_official:関西空港線:258071:20260427",
+            "service": "はるか28号",
+            "number": "28",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          },
+          "right": {
+            "id": "shinkansen:28A:9ce34d142d",
+            "service": "Nozomi",
+            "number": "28",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか30号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "15:04",
+          "timeRight": "15:06",
+          "gapSec": 120,
+          "left": {
+            "id": "shinkansen:30A:f747cd4c4b",
+            "service": "Nozomi",
+            "number": "30",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          },
+          "right": {
+            "id": "jr_west_official:関西空港線:258081:20260427",
+            "service": "はるか30号",
+            "number": "30",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか32号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "15:36",
+          "timeRight": "15:43",
+          "gapSec": 420,
+          "left": {
+            "id": "jr_west_official:関西空港線:258091:20260427",
+            "service": "はるか32号",
+            "number": "32",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          },
+          "right": {
+            "id": "shinkansen:32A:1459517d1e",
+            "service": "Nozomi",
+            "number": "32",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか34号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "16:04",
+          "timeRight": "16:06",
+          "gapSec": 120,
+          "left": {
+            "id": "shinkansen:34A:5759673ee0",
+            "service": "Nozomi",
+            "number": "34",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          },
+          "right": {
+            "id": "jr_west_official:関西空港線:258101:20260427",
+            "service": "はるか34号",
+            "number": "34",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか36号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "different_previous_converges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "16:36",
+          "timeRight": "16:43",
+          "gapSec": 420,
+          "left": {
+            "id": "jr_west_official:関西空港線:258111:20260427",
+            "service": "はるか36号",
+            "number": "36",
+            "route": "おおさか東線",
+            "origin": "関西空港",
+            "destination": "京都",
+            "previous": "大阪",
+            "next": "京都"
+          },
+          "right": {
+            "id": "shinkansen:36A:8ecfacb77f",
+            "service": "Nozomi",
+            "number": "36",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "博多",
+            "destination": "東京",
+            "previous": "新神戸",
+            "next": "京都"
+          }
+        }
+      ]
+    },
+    {
+      "station": "新大阪",
+      "services": [
+        "Nozomi",
+        "はるか55号"
+      ],
+      "routes": [
+        "SHINKANSEN_TOKAIDO_SANYO",
+        "おおさか東線"
+      ],
+      "confidence": "needs_review",
+      "eventCount": 1,
+      "evidenceCounts": {
+        "same_previous_diverges_after": 1,
+        "same_number": 1
+      },
+      "samples": [
+        {
+          "timeLeft": "19:57",
+          "timeRight": "20:00",
+          "gapSec": 180,
+          "left": {
+            "id": "jr_west_official:関西空港線:129791:20260427",
+            "service": "はるか55号",
+            "number": "55",
+            "route": "おおさか東線",
+            "origin": "京都",
+            "destination": "関西空港",
+            "previous": "京都",
+            "next": "大阪"
+          },
+          "right": {
+            "id": "shinkansen:55A:b87abcff86",
+            "service": "Nozomi",
+            "number": "55",
+            "route": "SHINKANSEN_TOKAIDO_SANYO",
+            "origin": "東京",
+            "destination": "博多",
+            "previous": "京都",
+            "next": "新神戸"
+          }
+        }
+      ]
+    }
+  ]
+}
