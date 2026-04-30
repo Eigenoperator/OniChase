@@ -162,6 +162,8 @@ def registry_entries_to_seeds(registry: dict[str, Any]) -> list[dict[str, Any]]:
                 "expectedSharedSegment": entry.get("sharedSegment"),
                 "confidence": entry.get("confidence", "needs_review"),
                 "system": entry.get("system"),
+                "operatingDays": entry.get("operatingDays"),
+                "weekdayAuditNote": entry.get("weekdayAuditNote"),
             }
         )
     return seeds
@@ -404,12 +406,39 @@ def audit_known_seeds(
     seeds: list[dict[str, Any]],
     *,
     max_gap_sec: int,
+    service_day: str,
 ) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     for seed in seeds:
         portions = [list(portion) for portion in seed["servicePortions"]]
         terms = flatten_portions(portions)
         station_names = [seed["splitJoinStation"], *seed.get("alternateSplitJoinStations", [])]
+        operating_days = seed.get("operatingDays") or []
+        if operating_days and service_day not in operating_days:
+            findings.append(
+                {
+                    "id": seed["id"],
+                    "label": seed["label"],
+                    "system": seed.get("system"),
+                    "confidence": seed["confidence"],
+                    "splitJoinStations": station_names,
+                    "expectedSharedSegment": seed["expectedSharedSegment"],
+                    "status": "not_applicable_for_service_day",
+                    "serviceDay": service_day,
+                    "operatingDays": operating_days,
+                    "termCounts": {},
+                    "portionCounts": {},
+                    "matchingTripCount": 0,
+                    "stationTouchCounts": {station_name: 0 for station_name in station_names},
+                    "branchSignatures": [],
+                    "pairedNearTimeEventCount": 0,
+                    "officialCombinedTitleCount": 0,
+                    "samples": [],
+                    "combinedTitleSamples": [],
+                    "note": seed.get("weekdayAuditNote") or "This coupled entry is outside the selected service day.",
+                }
+            )
+            continue
         matching_trips = [trip for trip in trips if matching_portion_indexes(trip, portions)]
         by_term = seed_term_counts(trips, terms)
         by_portion = {
@@ -519,6 +548,8 @@ def audit_known_seeds(
                 "splitJoinStations": station_names,
                 "expectedSharedSegment": seed["expectedSharedSegment"],
                 "status": status,
+                "serviceDay": service_day,
+                "operatingDays": operating_days,
                 "termCounts": by_term,
                 "portionCounts": by_portion,
                 "matchingTripCount": len(matching_trips),
@@ -694,6 +725,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--registry", type=Path, default=DEFAULT_REGISTRY)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--max-gap-sec", type=int, default=DEFAULT_MAX_GAP_SEC)
+    parser.add_argument(
+        "--service-day",
+        choices=["weekday", "holiday"],
+        default="weekday",
+        help="Service-day flavor represented by the input timetable. Current gameplay bundles are weekday by default.",
+    )
     return parser.parse_args()
 
 
@@ -707,7 +744,14 @@ def main() -> None:
     trips = decode_compact_timetable(timetable)
     seeds = registry_entries_to_seeds(registry) or KNOWN_COUPLED_SERVICE_SEEDS
 
-    known_seed_findings = audit_known_seeds(station_groups, routes, trips, seeds, max_gap_sec=args.max_gap_sec)
+    known_seed_findings = audit_known_seeds(
+        station_groups,
+        routes,
+        trips,
+        seeds,
+        max_gap_sec=args.max_gap_sec,
+        service_day=args.service_day,
+    )
     generic_candidates = audit_generic_candidates(station_groups, routes, trips, max_gap_sec=args.max_gap_sec)
     audit = {
         "schema": "onichase.v4.coupled_service_audit.v1",
@@ -717,6 +761,7 @@ def main() -> None:
             "timetable": rel(args.timetable),
             "registry": rel(args.registry),
             "maxGapSec": args.max_gap_sec,
+            "serviceDay": args.service_day,
         },
         "policy": registry.get("policy", {}),
         "methodology": {
@@ -735,6 +780,7 @@ def main() -> None:
             "knownSeedsWithOfficialCombinedTitle": sum(1 for item in known_seed_findings if item["status"] == "official_combined_title_found"),
             "knownSeedsWithGameplayEvidence": sum(1 for item in known_seed_findings if item["status"] in {"pair_evidence_found", "official_combined_title_found"}),
             "knownSeedsMissingServicePortions": sum(1 for item in known_seed_findings if item["status"] == "missing_service_portions"),
+            "knownSeedsNotApplicableForServiceDay": sum(1 for item in known_seed_findings if item["status"] == "not_applicable_for_service_day"),
             "genericCandidateCount": len(generic_candidates),
             "genericHighConfidenceCandidateCount": sum(1 for item in generic_candidates if item["confidence"] == "high"),
         },
@@ -748,6 +794,7 @@ def main() -> None:
         f"known_pair={audit['counts']['knownSeedsWithPairEvidence']} "
         f"known_combined={audit['counts']['knownSeedsWithOfficialCombinedTitle']} "
         f"known_missing={audit['counts']['knownSeedsMissingServicePortions']} "
+        f"known_not_applicable={audit['counts']['knownSeedsNotApplicableForServiceDay']} "
         f"generic={audit['counts']['genericCandidateCount']} "
         f"high={audit['counts']['genericHighConfidenceCandidateCount']}"
     )
