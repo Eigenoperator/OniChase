@@ -5,6 +5,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import re
 import shutil
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -185,16 +186,38 @@ def public_service_name_for_train(train: dict[str, Any], line_name: str) -> str:
     service_detail = str(train.get("service_name_detail") or "").strip()
     train_type = str(train.get("train_type") or "").strip()
     service_name = str(train.get("service_name") or "").strip()
+    display_name = str(train.get("display_name") or "").strip()
+    route_name = str(train.get("route_name") or "").strip()
     operator_id = str(train.get("operator_id") or "").strip()
     operator_name = str(train.get("operator_name") or "").strip()
     original_line_name = str(train.get("line_name") or "").strip()
     public_line_name = PUBLIC_LINE_NAME_OVERRIDES.get((operator_name or operator_id, original_line_name), line_name)
+    stop_names = [
+        str(stop.get("station_name_raw") or stop.get("station_name") or "")
+        for stop in train.get("stop_times") or []
+    ]
     if operator_id == "shinkansen" or original_line_name.startswith("SHINKANSEN_"):
         return service_name or train_type or public_line_name
+    if route_name and "・" in route_name and ("号" in route_name or "寝台特急" in route_name):
+        return route_name.replace("寝台特急 ", "")
     if service_detail and train_type == "特急":
         return service_detail
+    if display_name and train_type == "特急":
+        return display_name
     if train_type == "特急":
         return service_name or train_type or public_line_name
+    if train_type in {"関空快速", "紀州路快速"}:
+        return train_type
+    if (
+        operator_name == "西日本旅客鉄道"
+        and train_type == "快速"
+        and original_line_name in {"阪和線", "紀勢線"}
+        and "日根野" in stop_names
+        and "和歌山" in stop_names
+    ):
+        return "紀州路快速"
+    if service_name and service_name != original_line_name and re.search(r"(?:はこね|えのしま|リバティ|けごん|きぬ|会津|りょうもう|スペーシア|サンライズ|踊り子|ひだ)\d*号?", service_name):
+        return service_name
     return public_line_name
 
 

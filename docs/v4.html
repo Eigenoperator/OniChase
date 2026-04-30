@@ -5454,6 +5454,34 @@
           const splitStop = downstreamSplitStop(entry, row.trip, row.boardStop);
           if (!splitStop) return;
           const portionIndexes = coupledPortionIndexesForTrip(entry, row.trip);
+          if (portionIndexes.length >= 2) {
+            const departureMinute = row.departureMinute;
+            const key = [
+              entry.id,
+              row.boardStop.stationGroupId,
+              departureMinute,
+              row.trip.id,
+            ].join('|');
+            const umbrella = {
+              kind: 'coupled',
+              key,
+              entry,
+              selectedRouteId,
+              departureMinute,
+              departureHhmm: minutesToHhmm(departureMinute),
+              boardStop: row.boardStop,
+              portions: portionIndexes.map((portionIndex) => ({
+                portionIndex,
+                portion: portions[portionIndex],
+                row,
+              })),
+            };
+            umbrella.label = coupledUmbrellaLabel(entry, umbrella.portions);
+            state.coupledChoiceRowsByKey.set(key, umbrella);
+            rows.push(umbrella);
+            consumedTripIds.add(row.trip.id);
+            return;
+          }
           if (portionIndexes.length !== 1) return;
           candidates.push({ row, portionIndex: portionIndexes[0], splitStop });
         });

@@ -422,12 +422,37 @@ def audit_known_seeds(
         }
         pair_samples: list[dict[str, Any]] = []
         pair_count = 0
+        combined_title_samples: list[dict[str, Any]] = []
+        combined_title_count = 0
         for station_name in station_names:
             station_trips = [
                 (trip, stop_index_at_station(station_groups, trip, station_name))
                 for trip in matching_trips
             ]
             station_trips = [(trip, index) for trip, index in station_trips if index is not None]
+            for trip, stop_index in station_trips:
+                matched_indexes = matching_portion_indexes(trip, portions)
+                if len(matched_indexes) < 2:
+                    continue
+                combined_title_count += 1
+                origin, destination = trip_terminal_names(station_groups, trip)
+                stop = trip["stopTimes"][stop_index]
+                add_sample(
+                    combined_title_samples,
+                    {
+                        "station": station_name,
+                        "time": seconds_to_hhmm(stop_time_sec(stop, "arrival") or stop_time_sec(stop, "departure")),
+                        "trip": {
+                            "id": trip.get("id"),
+                            "service": service_label(trip),
+                            "number": trip.get("serviceNumber"),
+                            "route": route_name_at_stop(routes, trip, stop),
+                            "origin": origin,
+                            "destination": destination,
+                            "matchedPortionIndexes": sorted(matched_indexes),
+                        },
+                    },
+                )
             for left_index, (left, left_stop_index) in enumerate(station_trips):
                 left_label = service_label(left)
                 left_stop = left["stopTimes"][left_stop_index]
@@ -473,6 +498,8 @@ def audit_known_seeds(
             status = "missing_service_portions"
         elif pair_count:
             status = "pair_evidence_found"
+        elif combined_title_count:
+            status = "official_combined_title_found"
         elif len(portions) >= 2 and len({tuple(portion) for portion in portions}) == 1:
             status = "single_named_family_found_needs_portion_model"
         elif len(portions) >= 2 and all(set(portion) & set(portions[0]) for portion in portions[1:]):
@@ -503,7 +530,9 @@ def audit_known_seeds(
                     station_names,
                 ),
                 "pairedNearTimeEventCount": pair_count,
+                "officialCombinedTitleCount": combined_title_count,
                 "samples": pair_samples,
+                "combinedTitleSamples": combined_title_samples,
                 **SEED_DIAGNOSES.get(seed["id"], {}),
             }
         )
@@ -703,6 +732,8 @@ def main() -> None:
             "tripCount": len(trips),
             "knownSeedCount": len(known_seed_findings),
             "knownSeedsWithPairEvidence": sum(1 for item in known_seed_findings if item["status"] == "pair_evidence_found"),
+            "knownSeedsWithOfficialCombinedTitle": sum(1 for item in known_seed_findings if item["status"] == "official_combined_title_found"),
+            "knownSeedsWithGameplayEvidence": sum(1 for item in known_seed_findings if item["status"] in {"pair_evidence_found", "official_combined_title_found"}),
             "knownSeedsMissingServicePortions": sum(1 for item in known_seed_findings if item["status"] == "missing_service_portions"),
             "genericCandidateCount": len(generic_candidates),
             "genericHighConfidenceCandidateCount": sum(1 for item in generic_candidates if item["confidence"] == "high"),
@@ -715,6 +746,7 @@ def main() -> None:
         f"Wrote {rel(args.output)}: "
         f"known={audit['counts']['knownSeedCount']} "
         f"known_pair={audit['counts']['knownSeedsWithPairEvidence']} "
+        f"known_combined={audit['counts']['knownSeedsWithOfficialCombinedTitle']} "
         f"known_missing={audit['counts']['knownSeedsMissingServicePortions']} "
         f"generic={audit['counts']['genericCandidateCount']} "
         f"high={audit['counts']['genericHighConfidenceCandidateCount']}"

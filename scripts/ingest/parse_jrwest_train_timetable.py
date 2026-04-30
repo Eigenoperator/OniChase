@@ -26,9 +26,27 @@ def strip_tags(value: str) -> str:
     return re.sub(r"\s+", " ", unescape(TAG_RE.sub(" ", value))).strip()
 
 
+def extract_route_names(html: str) -> list[str]:
+    match = re.search(r'<div class="route-name">(.*?)</div>', html, re.DOTALL)
+    if not match:
+        return []
+    return [
+        strip_tags(item)
+        for item in re.findall(r"<p>(.*?)</p>", match.group(1), re.DOTALL)
+        if strip_tags(item)
+    ]
+
+
+def clean_route_service_name(value: str) -> str:
+    text = re.sub(r"^特急\s*", "", value.strip())
+    text = re.sub(r"\s*（[^）]*）", "", text)
+    text = re.sub(r"\s+[^ ]+行$", "", text)
+    return text.strip()
+
+
 def extract_route_name(html: str) -> str | None:
-    match = re.search(r'<div class="route-name"><p>(.*?)</p>', html, re.DOTALL)
-    return strip_tags(match.group(1)) if match else None
+    route_names = [clean_route_service_name(name) for name in extract_route_names(html)]
+    return "・".join(route_names) if route_names else None
 
 
 def extract_metadata_value(html: str, label: str) -> str | None:
@@ -76,7 +94,8 @@ def parse_html(html: str, source_url: str | None, line_id: str) -> dict[str, obj
     raw_train_name = extract_metadata_value(html, "列車名")
     train_number = extract_metadata_value(html, "列車番号")
     operating_days = extract_metadata_value(html, "運転日")
-    route_name = extract_route_name(html)
+    route_names = [clean_route_service_name(name) for name in extract_route_names(html)]
+    route_name = "・".join(route_names) if route_names else None
 
     if not train_number:
         raise ValueError("Could not parse JR West train number.")
@@ -100,6 +119,8 @@ def parse_html(html: str, source_url: str | None, line_id: str) -> dict[str, obj
         train["service_number"] = service_number
     if route_name:
         train["route_name"] = route_name
+    if len(route_names) > 1:
+        train["coupled_route_names"] = route_names
     if operating_days:
         train["operating_days"] = operating_days
 
