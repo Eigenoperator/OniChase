@@ -28,12 +28,13 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 - v4 selected-train labels now keep 名古屋鉄道 trains on their own `名鉄（...線）` route for the whole trip (`0` Meitetsu label mismatches), and Kintetsu recollection now preserves station-context T7 pages: `52969` station-page departures audit with `0` internal missing trains/context rows; `304` cross-operator through rows are classified as covered by Osaka Metro/Kyoto subway/Hanshin-side sources.
 - v4 branded-prefix transfer audit now scans `65` JR/private candidate interchanges: `4` reviewed direct including `蒲田`/`京急蒲田`, `48` active unreviewed direct, and `13` nearby walking candidates needing review.
 - v4 v3-release-candidate quality audit now scans all old-source lines still retained in v4: `39605` retained trains across `108` lines, with `291` hard anomalies all from Tokyo Metro Chiyoda old Shinjuku-group rows rematched onto Marunouchi Shinjuku.
+- v4 coupled split/join registry is now wired into the website: paired same-station departures on a shared segment collapse into an umbrella `A・B` row, then require a second portion choice before downstream stops; coupled trip pairs also count as `same_train` during their detected shared time window.
 - Pages web bundle was slimmed by pruning unreferenced `docs/data` artifacts; local `docs/` now builds to about `44M` while v4 still loads and passes the 青梅 probe.
 - Render v4 room-server deployment is forbidden unless Scorp explicitly reverses the axiom; push-triggered server deploy is disabled after repeated failures.
 
 ## In Progress
 - Promote the v4 nationwide gameplay bundle into a public playtest pass.
-- Implement v4 coupled split/join train gameplay from the 18-family registry: umbrella `A・B` selection in coupled-to-uncoupled direction, second-step portion choice, and coupled same-train capture.
+- Continue hardening coupled split/join trains where the source data exposes only one named family or omits one regular portion.
 - Review whether the meter-scale 肥薩線 N02 fragment should remain visible or be hidden in rendered geometry.
 
 ## Blockers
@@ -48,4 +49,4 @@ Turn the expanded `v4` nationwide rail data into a stable gameplay/playtest chec
 - [2026-04-25] v4 timetable stop matching should reuse the v3 station alias/station-group method, not invent a separate identity system.
 
 ## Next
-1. Build the coupled-train frontend/data model starting with `はやぶさ・こまち`, `やまびこ・つばさ`, `しおかぜ・いしづち`, and `みどり・ハウステンボス`.
+1. Add source-specific data recovery/modeling for registry entries where the current timetable lacks visible paired portions, especially `関空快速・紀州路快速`, JR West northern Kinki limited expresses, Odakyu Romancecar, and Tobu Revaty.

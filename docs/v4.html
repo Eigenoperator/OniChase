@@ -1110,6 +1110,7 @@
     const MAP_DATA_URL = './data/v4_gameplay_map_bundle.json.gz';
     const TIMETABLE_URL = './data/v4_gameplay_timetable_compact.json.gz';
     const TRANSFER_REVIEW_URL = './data/v4_transfer_equivalence_review.json';
+    const COUPLED_SERVICE_REGISTRY_URL = './data/v4_coupled_service_registry.json';
     const V3_REPLAY_SCHEMA_VERSION = 'v4.replay.1';
     const V3_REPLAY_COLLECTION_SCHEMA_VERSION = 'v4.replay.collection.1';
     const V3_DATASET_NAME = 'v4-nationwide';
@@ -1919,6 +1920,7 @@
       activeMode: 'runner',
       players: {},
       pendingTripIds: { runner: null, hunter: null },
+      pendingCoupledChoices: { runner: null, hunter: null },
       phase: 'PLANNING',
       planningSecondsRemaining: 60,
       currentGameMinute: 360,
@@ -1959,6 +1961,10 @@
       physicalRouteIdsByGroupId: new Map(),
       tripById: new Map(),
       stationTripsByGroupId: new Map(),
+      coupledServiceRegistry: null,
+      coupledServiceEntries: [],
+      coupledChoiceRowsByKey: new Map(),
+      coupledEquivalentsByTripId: new Map(),
       departureQueryCache: new Map(),
       timetableStatus: 'idle',
       timetableLoadRequested: false,
@@ -3730,6 +3736,24 @@
       state.reviewedNotDirectTransferNameSets = new Set(notDirectSets.map((items) => [...items].sort().join('|')));
     }
 
+    async function loadCoupledServiceRegistry() {
+      let payload = null;
+      try {
+        const response = await fetch(COUPLED_SERVICE_REGISTRY_URL, { cache: 'no-store' });
+        if (response.ok) payload = await response.json();
+      } catch (_error) {
+        payload = null;
+      }
+      state.coupledServiceRegistry = payload;
+      state.coupledServiceEntries = (payload?.entries || [])
+        .filter((entry) => entry?.regularPassengerTimetable && entry?.portions?.length >= 2)
+        .map((entry) => ({
+          ...entry,
+          splitJoinStations: entry.splitJoinStations || [],
+          portions: entry.portions || [],
+        }));
+    }
+
     function buildStationTransferIndex() {
       state.stationGroupIdsByTransferKey = new Map();
       state.transferEquivalentGroupIdsByGroupId = new Map();
@@ -5016,6 +5040,7 @@
 
     function clearPendingTrip(playerId = state.activeMode) {
       state.pendingTripIds[playerId] = null;
+      state.pendingCoupledChoices[playerId] = null;
       if (playerId === state.activeMode) {
         state.selectedTripId = null;
         state.selectedTripStopIds = [];
@@ -5327,6 +5352,303 @@
         .filter((name, index, list) => name && list.indexOf(name) === index);
       if (routeNames.length < 2) return segmentLabel || base;
       return `${routeNames.join('+')}`;
+    }
+
+    function normalizeCoupledText(value) {
+      return String(value || '')
+        .toLocaleLowerCase()
+        .replace(/[・･／/()\[\]（）【】\s号線線]/gu, '')
+        .trim();
+    }
+
+    function coupledTripLabelCandidates(trip) {
+      const labels = [
+        formatTripLabel(trip),
+        serviceNameJaLabel(trip),
+        publicLimitedExpressBaseName(trip).name,
+        trip?.serviceNameJa,
+        trip?.service_name_ja,
+        trip?.trainNameJa,
+        trip?.train_name_ja,
+        trip?.displayName,
+        trip?.display_name,
+        trip?.serviceName,
+        trip?.service_name,
+      ].map((value) => String(value || '').trim()).filter(Boolean);
+      return [...new Set(labels)];
+    }
+
+    function coupledBranchStationTokens(portion) {
+      const branch = String(portion?.branchAfterSplit || '');
+      return branch
+        .replace(/方面/u, '')
+        .split(/[\/・･、\s]+/u)
+        .map((token) => token.trim())
+        .filter((token) => token && token.length >= 2);
+    }
+
+    function coupledPortionMatchesTrip(portion, trip) {
+      const tripLabels = coupledTripLabelCandidates(trip);
+      const normalizedTripLabels = tripLabels.map(normalizeCoupledText).filter(Boolean);
+      const portionLabels = [
+        portion?.label,
+        ...(portion?.aliases || []),
+      ].map((value) => String(value || '').trim()).filter(Boolean);
+      const normalizedPortionLabels = portionLabels.map(normalizeCoupledText).filter(Boolean);
+      const hasLabelMatch = normalizedPortionLabels.some((portionLabel) =>
+        normalizedTripLabels.some((tripLabel) => tripLabel && (tripLabel === portionLabel || tripLabel.includes(portionLabel) || portionLabel.includes(tripLabel)))
+      );
+      if (!hasLabelMatch) return false;
+      const branchTokens = coupledBranchStationTokens(portion);
+      if (!branchTokens.length) return true;
+      const stationNames = new Set(tripStationNames(trip));
+      const branchHit = branchTokens.some((token) => stationNames.has(token));
+      const distinctiveNameHit = normalizedPortionLabels.some((label) =>
+        label.length >= 4 &&
+        !['快速', '特急', '普通', '急行'].includes(label) &&
+        normalizedTripLabels.some((tripLabel) => tripLabel.includes(label))
+      );
+      return branchHit || distinctiveNameHit;
+    }
+
+    function coupledPortionIndexesForTrip(entry, trip) {
+      return (entry?.portions || [])
+        .map((portion, index) => coupledPortionMatchesTrip(portion, trip) ? index : -1)
+        .filter((index) => index >= 0);
+    }
+
+    function stopAtStationName(trip, stationName) {
+      return (trip?.stopTimes || []).find((stop) => displayNameForGroup(stop.stationGroupId) === stationName) || null;
+    }
+
+    function downstreamSplitStop(entry, trip, boardStop) {
+      if (!entry || !trip || !boardStop) return null;
+      for (const stationName of entry.splitJoinStations || []) {
+        const splitStop = stopAtStationName(trip, stationName);
+        if (splitStop && splitStop.sequence > boardStop.sequence) return splitStop;
+      }
+      return null;
+    }
+
+    function coupledUmbrellaLabel(entry, portions) {
+      const labels = (portions || [])
+        .map((item) => item?.portion?.label || formatTripLabel(item?.row?.trip))
+        .map((label) => String(label || '').replace(/\s.+系$/u, '').trim())
+        .filter(Boolean);
+      return labels.length >= 2 ? [...new Set(labels)].join('・') : (entry?.label || '直挂列車');
+    }
+
+    function buildCoupledTrainRows(trainRows, selectedRouteId) {
+      state.coupledChoiceRowsByKey = new Map();
+      if (!state.coupledServiceEntries.length || trainRows.length < 2) {
+        return trainRows.map((entry) => ({ kind: 'trip', entry }));
+      }
+      const consumedTripIds = new Set();
+      const rows = [];
+      for (const entry of state.coupledServiceEntries) {
+        const portions = entry.portions || [];
+        if (portions.length < 2) continue;
+        const candidates = [];
+        trainRows.forEach((row) => {
+          if (consumedTripIds.has(row.trip.id)) return;
+          const splitStop = downstreamSplitStop(entry, row.trip, row.boardStop);
+          if (!splitStop) return;
+          const portionIndexes = coupledPortionIndexesForTrip(entry, row.trip);
+          if (portionIndexes.length !== 1) return;
+          candidates.push({ row, portionIndex: portionIndexes[0], splitStop });
+        });
+        for (let leftIndex = 0; leftIndex < candidates.length; leftIndex += 1) {
+          const left = candidates[leftIndex];
+          if (consumedTripIds.has(left.row.trip.id)) continue;
+          const matched = [left];
+          for (let rightIndex = leftIndex + 1; rightIndex < candidates.length; rightIndex += 1) {
+            const right = candidates[rightIndex];
+            if (consumedTripIds.has(right.row.trip.id)) continue;
+            if (right.portionIndex === left.portionIndex) continue;
+            if (right.row.boardStop.stationGroupId !== left.row.boardStop.stationGroupId) continue;
+            if (Math.abs(right.row.departureMinute - left.row.departureMinute) > 8) continue;
+            if (Math.abs(stopArrivalMinutes(right.splitStop) - stopArrivalMinutes(left.splitStop)) > 8) continue;
+            matched.push(right);
+          }
+          const uniquePortions = new Set(matched.map((item) => item.portionIndex));
+          if (uniquePortions.size < 2) continue;
+          matched.sort((a, b) => a.portionIndex - b.portionIndex);
+          const usedMatched = matched.filter((item) => !consumedTripIds.has(item.row.trip.id)).slice(0, portions.length);
+          if (new Set(usedMatched.map((item) => item.portionIndex)).size < 2) continue;
+          usedMatched.forEach((item) => consumedTripIds.add(item.row.trip.id));
+          const departureMinute = Math.min(...usedMatched.map((item) => item.row.departureMinute));
+          const key = [
+            entry.id,
+            left.row.boardStop.stationGroupId,
+            departureMinute,
+            usedMatched.map((item) => item.row.trip.id).sort().join('+'),
+          ].join('|');
+          const umbrella = {
+            kind: 'coupled',
+            key,
+            entry,
+            selectedRouteId,
+            departureMinute,
+            departureHhmm: minutesToHhmm(departureMinute),
+            boardStop: left.row.boardStop,
+            portions: usedMatched.map((item) => ({
+              portionIndex: item.portionIndex,
+              portion: portions[item.portionIndex],
+              row: item.row,
+            })),
+          };
+          umbrella.label = coupledUmbrellaLabel(entry, umbrella.portions);
+          state.coupledChoiceRowsByKey.set(key, umbrella);
+          rows.push(umbrella);
+        }
+      }
+      trainRows.forEach((entry) => {
+        if (!consumedTripIds.has(entry.trip.id)) rows.push({ kind: 'trip', entry });
+      });
+      rows.sort((a, b) => {
+        const leftMinute = a.kind === 'coupled' ? a.departureMinute : a.entry.departureMinute;
+        const rightMinute = b.kind === 'coupled' ? b.departureMinute : b.entry.departureMinute;
+        if (leftMinute !== rightMinute) return leftMinute - rightMinute;
+        const leftLabel = a.kind === 'coupled' ? a.label : formatTripLabel(a.entry.trip);
+        const rightLabel = b.kind === 'coupled' ? b.label : formatTripLabel(b.entry.trip);
+        return leftLabel.localeCompare(rightLabel);
+      });
+      return rows;
+    }
+
+    function pendingCoupledChoice(playerId = state.activeMode) {
+      return state.pendingCoupledChoices[playerId] || null;
+    }
+
+    function chooseCoupledTrain(key) {
+      const choice = state.coupledChoiceRowsByKey.get(key);
+      if (!choice) return;
+      state.pendingCoupledChoices[state.activeMode] = choice;
+      state.selectedTripId = null;
+      state.pendingTripIds[state.activeMode] = null;
+      state.map?.setFilter('selected-trip-stops', NONE_STATION_FILTER);
+      updateSelectedTripPath();
+      renderGame();
+    }
+
+    function renderCoupledTrainRow(row, active = false) {
+      const destinations = row.portions
+        .map((item) => `${item.portion?.label || formatTripLabel(item.row.trip)}: ${displayNameForGroup(item.row.trip.stopTimes.at(-1)?.stationGroupId || '')}`)
+        .join(' / ');
+      return `
+        <button class="outlook-row ${active ? 'active' : ''}" type="button" data-action="choose-coupled" data-coupled-key="${escapeHtml(row.key)}">
+          <span class="row-meta">${row.departureHhmm}</span>
+          <span>
+            <span class="row-title">${escapeHtml(row.label)}</span>
+            <span class="row-sub">直挂 · ${escapeHtml(destinations)}</span>
+          </span>
+        </button>
+      `;
+    }
+
+    function renderTripChoiceRow(entry, selectedRouteId, active = false) {
+      return `
+        <button class="outlook-row ${active ? 'active' : ''}" type="button" data-action="choose-trip" data-trip-id="${entry.trip.id}">
+          <span class="row-meta">${entry.departureHhmm}</span>
+          <span>
+            <span class="row-title">${formatTripLabelForBoarding(entry, selectedRouteId)}</span>
+            ${trainPreviewHtml(entry.trip, entry.boardStop)}
+          </span>
+        </button>
+      `;
+    }
+
+    function renderCoupledPortionRows(choice, selectedRouteId) {
+      return choice.portions.map((item) => {
+        const title = item.portion?.label || formatTripLabelForBoarding(item.row, selectedRouteId);
+        const terminal = displayNameForGroup(item.row.trip.stopTimes.at(-1)?.stationGroupId || '');
+        return `
+          <button class="outlook-row" type="button" data-action="choose-trip" data-trip-id="${item.row.trip.id}">
+            <span class="row-meta">${item.row.departureHhmm}</span>
+            <span>
+              <span class="row-title">${escapeHtml(title)}</span>
+              <span class="row-sub">到 ${escapeHtml(terminal)}</span>
+            </span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function splitStopEvidenceForTrip(entry, trip) {
+      for (const stationName of entry.splitJoinStations || []) {
+        const stop = stopAtStationName(trip, stationName);
+        if (stop) return { stationName, stop, minute: stopArrivalMinutes(stop) };
+      }
+      return null;
+    }
+
+    function sharedMinuteWindow(leftTrip, rightTrip) {
+      const rightStopsByStation = new Map();
+      (rightTrip?.stopTimes || []).forEach((stop) => {
+        const key = stop.stationGroupId;
+        if (!rightStopsByStation.has(key)) rightStopsByStation.set(key, []);
+        rightStopsByStation.get(key).push(stop);
+      });
+      const sharedMinutes = [];
+      (leftTrip?.stopTimes || []).forEach((leftStop) => {
+        for (const rightStop of rightStopsByStation.get(leftStop.stationGroupId) || []) {
+          const minute = Math.min(stopArrivalMinutes(leftStop), stopArrivalMinutes(rightStop));
+          if (Math.abs(stopArrivalMinutes(leftStop) - stopArrivalMinutes(rightStop)) <= 8) sharedMinutes.push(minute);
+        }
+      });
+      if (!sharedMinutes.length) return null;
+      return {
+        fromMinute: Math.min(...sharedMinutes) - 2,
+        toMinute: Math.max(...sharedMinutes) + 2,
+      };
+    }
+
+    function buildCoupledTripEquivalences(trips) {
+      const equivalents = new Map();
+      const addEquivalent = (leftTrip, rightTrip, entry, window) => {
+        if (!leftTrip?.id || !rightTrip?.id || leftTrip.id === rightTrip.id || !window) return;
+        const groupId = `${entry.id}|${leftTrip.id}|${rightTrip.id}`;
+        const leftItem = { peerTripId: rightTrip.id, groupId, entryId: entry.id, label: entry.label, ...window };
+        const rightItem = { peerTripId: leftTrip.id, groupId, entryId: entry.id, label: entry.label, ...window };
+        if (!equivalents.has(leftTrip.id)) equivalents.set(leftTrip.id, []);
+        if (!equivalents.has(rightTrip.id)) equivalents.set(rightTrip.id, []);
+        equivalents.get(leftTrip.id).push(leftItem);
+        equivalents.get(rightTrip.id).push(rightItem);
+      };
+      for (const entry of state.coupledServiceEntries || []) {
+        const candidates = [];
+        for (const trip of trips || []) {
+          const portionIndexes = coupledPortionIndexesForTrip(entry, trip);
+          if (portionIndexes.length !== 1) continue;
+          const splitEvidence = splitStopEvidenceForTrip(entry, trip);
+          if (!splitEvidence) continue;
+          candidates.push({ trip, portionIndex: portionIndexes[0], splitEvidence });
+        }
+        for (let leftIndex = 0; leftIndex < candidates.length; leftIndex += 1) {
+          const left = candidates[leftIndex];
+          for (let rightIndex = leftIndex + 1; rightIndex < candidates.length; rightIndex += 1) {
+            const right = candidates[rightIndex];
+            if (left.portionIndex === right.portionIndex) continue;
+            if (left.splitEvidence.stationName !== right.splitEvidence.stationName) continue;
+            if (Math.abs(left.splitEvidence.minute - right.splitEvidence.minute) > 8) continue;
+            const window = sharedMinuteWindow(left.trip, right.trip) || {
+              fromMinute: Math.min(left.splitEvidence.minute, right.splitEvidence.minute) - 2,
+              toMinute: Math.max(left.splitEvidence.minute, right.splitEvidence.minute) + 2,
+            };
+            addEquivalent(left.trip, right.trip, entry, window);
+          }
+        }
+      }
+      return equivalents;
+    }
+
+    function sameCoupledPhysicalTrain(leftTripId, rightTripId, minute) {
+      if (!leftTripId || !rightTripId || leftTripId === rightTripId) return false;
+      return (state.coupledEquivalentsByTripId.get(leftTripId) || []).some((item) =>
+        item.peerTripId === rightTripId &&
+        minute >= item.fromMinute &&
+        minute <= item.toMinute
+      );
     }
 
     function stationLonLat(stationGroupId) {
@@ -5835,6 +6157,7 @@
 
     function setSelectedRoute(routeId) {
       state.selectedRouteId = routeId || null;
+      state.pendingCoupledChoices[state.activeMode] = null;
       updateSelectedRouteHighlights();
       renderRouteCard();
       renderRouteList();
@@ -5844,6 +6167,7 @@
     function setSelectedTrip(tripId, routeId = state.selectedRouteId) {
       state.selectedTripId = tripId || null;
       state.pendingTripIds[state.activeMode] = tripId || null;
+      state.pendingCoupledChoices[state.activeMode] = null;
       const trip = state.tripById.get(state.selectedTripId);
       state.selectedTripStopIds = trip ? selectedTripStopIds(trip) : [];
       state.selectedTripStopFeatureIds = trip ? tripStopFeatureIds(trip, state.selectedTripStopIds) : [];
@@ -6117,7 +6441,11 @@
       const hunterPreview = previewPlayer('hunter', state.currentGameMinute);
       const runnerState = runnerPreview?.currentState;
       const hunterState = hunterPreview?.currentState;
-      if (runnerState?.kind === 'TRAIN' && hunterState?.kind === 'TRAIN' && runnerState.tripId === hunterState.tripId) {
+      if (
+        runnerState?.kind === 'TRAIN' &&
+        hunterState?.kind === 'TRAIN' &&
+        (runnerState.tripId === hunterState.tripId || sameCoupledPhysicalTrain(runnerState.tripId, hunterState.tripId, state.currentGameMinute))
+      ) {
         return { type: 'same_train', time_hhmm: minutesToHhmm(state.currentGameMinute), trip_id: runnerState.tripId };
       }
       if (runnerState?.kind === 'NODE' && hunterState?.kind === 'NODE' && runnerState.stationGroupId === hunterState.stationGroupId) {
@@ -6216,6 +6544,7 @@
       state.nextPlanningMinute = Math.min(hhmmToMinutes(state.startTime) + 60, hhmmToMinutes(state.endTime));
       state.clockRunning = false;
       state.pendingTripIds = { runner: null, hunter: null };
+      state.pendingCoupledChoices = { runner: null, hunter: null };
       state.selectedTripId = null;
       state.selectedTripStopIds = [];
       invalidateSimulation();
@@ -6413,6 +6742,7 @@
     function renderTrainOutlook() {
       const preview = planCursorPreview(state.activeMode);
       const pending = pendingDepartureContext(preview);
+      const coupledChoice = pendingCoupledChoice();
       trainSummaryEl.hidden = true;
       trainSummaryEl.innerHTML = '';
       if (state.timetableStatus === 'loading' || state.timetableStatus === 'idle') {
@@ -6433,7 +6763,7 @@
         const selectedRouteId = pendingChoiceRouteIds.includes(state.selectedRouteId)
           ? state.selectedRouteId
           : (pendingChoiceRouteIds[0] || pending.trip.routeId);
-        const trainRows = availableRouteDepartures(preview, selectedRouteId);
+        const trainRows = buildCoupledTrainRows(availableRouteDepartures(preview, selectedRouteId), selectedRouteId);
         html += plannerStep(
           1,
           `Lines at ${currentLabel}`,
@@ -6456,15 +6786,10 @@
           `Trains on ${routeTitle(selectedRouteId)}`,
           'Choose one train.',
           trainRows.length
-            ? trainRows.map((entry) => `
-                <button class="outlook-row ${entry.trip.id === pending.trip.id ? 'active' : ''}" type="button" data-action="choose-trip" data-trip-id="${entry.trip.id}">
-                  <span class="row-meta">${entry.departureHhmm}</span>
-                  <span>
-                    <span class="row-title">${formatTripLabelForBoarding(entry, selectedRouteId)}</span>
-                    ${trainPreviewHtml(entry.trip, entry.boardStop)}
-                  </span>
-                </button>
-              `).join('')
+            ? trainRows.map((row) => row.kind === 'coupled'
+                ? renderCoupledTrainRow(row, coupledChoice?.key === row.key)
+                : renderTripChoiceRow(row.entry, selectedRouteId, row.entry.trip.id === pending.trip.id)
+              ).join('')
             : `<div class="empty">No available trains on this line.</div>`,
         );
         html += plannerStep(
@@ -6535,7 +6860,7 @@
         const departures = availableDepartures(preview);
         const routeChoices = routeChoicesFromDepartures(departures);
         const selectedRouteId = routeChoices.some((choice) => choice.routeId === state.selectedRouteId) ? state.selectedRouteId : null;
-        const trainRows = selectedRouteId ? availableRouteDepartures(preview, selectedRouteId) : [];
+        const trainRows = selectedRouteId ? buildCoupledTrainRows(availableRouteDepartures(preview, selectedRouteId), selectedRouteId) : [];
         html += plannerStep(
           1,
           `Lines at ${currentLabel}`,
@@ -6559,17 +6884,20 @@
             `Trains on ${routeTitle(selectedRouteId)}`,
             'Choose one train.',
             trainRows.length
-              ? trainRows.map((entry) => `
-                  <button class="outlook-row" type="button" data-action="choose-trip" data-trip-id="${entry.trip.id}">
-                  <span class="row-meta">${entry.departureHhmm}</span>
-                  <span>
-                      <span class="row-title">${formatTripLabelForBoarding(entry, selectedRouteId)}</span>
-                    ${trainPreviewHtml(entry.trip, entry.boardStop)}
-                  </span>
-                </button>
-              `).join('')
+              ? trainRows.map((row) => row.kind === 'coupled'
+                  ? renderCoupledTrainRow(row, coupledChoice?.key === row.key)
+                  : renderTripChoiceRow(row.entry, selectedRouteId)
+                ).join('')
               : `<div class="empty">No available trains on this line.</div>`,
           );
+          if (coupledChoice && coupledChoice.selectedRouteId === selectedRouteId) {
+            html += plannerStep(
+              3,
+              `Portions of ${coupledChoice.label}`,
+              'Choose the portion you will ride.',
+              renderCoupledPortionRows(coupledChoice, selectedRouteId),
+            );
+          }
         }
       }
       trainOutlookEl.innerHTML = `<div class="planner-stack">${html || '<div class="empty">No planning options available.</div>'}</div>`;
@@ -6587,6 +6915,7 @@
         button.addEventListener('click', () => {
           const action = button.dataset.action;
           if (action === 'choose-route') choosePlanningRoute(button.dataset.routeId);
+          else if (action === 'choose-coupled') chooseCoupledTrain(button.dataset.coupledKey);
           else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
           else if (action === 'ride-here') addBoardAndRide(button.dataset.tripId, button.dataset.stationGroupId);
           else if (action === 'ride-direct') addRideToStation(button.dataset.stationGroupId);
@@ -6933,7 +7262,11 @@
       if (!['SCENARIO_START', 'START_AT_STATION', 'BOARD_TRAIN', 'ALIGHT_TRAIN'].includes(event.type)) return null;
       const runnerState = carrierState.runner;
       const hunterState = carrierState.hunter;
-      if (runnerState.kind === 'TRAIN' && hunterState.kind === 'TRAIN' && runnerState.tripId === hunterState.tripId) {
+      if (
+        runnerState.kind === 'TRAIN' &&
+        hunterState.kind === 'TRAIN' &&
+        (runnerState.tripId === hunterState.tripId || sameCoupledPhysicalTrain(runnerState.tripId, hunterState.tripId, event.time_minute))
+      ) {
         return { type: 'same_train', trip_id: runnerState.tripId };
       }
       if (runnerState.kind === 'NODE' && hunterState.kind === 'NODE' && runnerState.stationGroupId === hunterState.stationGroupId) {
@@ -7886,8 +8219,8 @@
         state.tripById = new Map();
         state.stationTripsByGroupId = new Map();
         state.departureQueryCache = new Map();
-        const gameplayTrips = stitchThroughRunningTrips(trips);
-        gameplayTrips.map(normalizeTripForGameplay).forEach((trip) => {
+        const gameplayTrips = stitchThroughRunningTrips(trips).map(normalizeTripForGameplay);
+        gameplayTrips.forEach((trip) => {
           state.tripById.set(trip.id, trip);
           const seen = new Set();
           (trip.stopTimes || []).forEach((stop) => {
@@ -7897,6 +8230,7 @@
             state.stationTripsByGroupId.get(stop.stationGroupId).push(trip);
           });
         });
+        state.coupledEquivalentsByTripId = buildCoupledTripEquivalences(gameplayTrips);
         state.timetableStatus = 'ready';
         loadPill.textContent = `Map ready - timetable ${gameplayTrips.length || 0} trips`;
         renderGame();
@@ -7927,6 +8261,7 @@
       loadOnlineConfig();
       const t0 = performance.now();
       await loadTransferReview();
+      await loadCoupledServiceRegistry();
       const bundle = await fetchJsonMaybeGz(MAP_DATA_URL);
       state.bundle = bundle;
       buildIndexes(bundle);
