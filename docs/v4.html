@@ -1766,6 +1766,24 @@
           physicalLines: ['山陽新幹線', '九州新幹線'],
         },
       },
+      VIRTUAL_MAIBARA_TOKAIDO_BOUNDARY: {
+        id: 'VIRTUAL_MAIBARA_TOKAIDO_BOUNDARY',
+        operatorId: 'jr_central',
+        operatorName: '東海旅客鉄道 / 西日本旅客鉄道',
+        shortName: '東海道線',
+        longName: '東海旅客鉄道 / 西日本旅客鉄道 東海道線',
+        color: '#F28E1C',
+        textColor: '#102033',
+        mode: 'rail',
+        tags: {
+          source: 'v4_virtual_corridor',
+          sourceOperatorId: 'jr_central_jr_west',
+          lineName: '東海道線',
+          displayRule: 'operator_boundary_same_platform',
+          physicalLines: ['東海道線'],
+          stationNames: ['米原'],
+        },
+      },
     });
     const JR_UENO_TOKYO_CORRIDOR_ROUTE_ID = 'VIRTUAL_JR_EAST_UENO_TOKYO';
     const JR_YOKOSUKA_SOBU_RAPID_CORRIDOR_ROUTE_ID = 'VIRTUAL_JR_EAST_YOKOSUKA_SOBU_RAPID';
@@ -1773,6 +1791,19 @@
     const JR_CHUO_RAPID_ROUTE_ID = 'VIRTUAL_JR_EAST_CHUO_RAPID';
     const JR_CHUO_SOBU_LOCAL_ROUTE_ID = 'VIRTUAL_JR_EAST_CHUO_SOBU_LOCAL';
     const SANYO_KYUSHU_CORRIDOR_ROUTE_ID = 'VIRTUAL_SHINKANSEN_SANYO_KYUSHU';
+    const MAIBARA_TOKAIDO_BOUNDARY_ROUTE_ID = 'VIRTUAL_MAIBARA_TOKAIDO_BOUNDARY';
+    const MAIBARA_TOKAIDO_NEXT_STATIONS = new Set([
+      '醒ヶ井', '醒ケ井', '近江長岡', '柏原', '関ケ原', '垂井', '大垣', '穂積',
+      '西岐阜', '岐阜', '尾張一宮', '名古屋', '彦根', '南彦根', '河瀬', '稲枝',
+      '能登川', '安土', '近江八幡', '篠原', '野洲', '守山', '栗東', '草津',
+      '南草津', '瀬田', '石山', '膳所', '大津', '山科', '京都', '高槻', '新大阪',
+      '大阪', '尼崎', '西宮', '芦屋', '三ノ宮', '神戸', '明石', '西明石', '加古川',
+      '姫路', '網干',
+    ]);
+    const MAIBARA_HOKURIKU_NEXT_STATIONS = new Set([
+      '坂田', '田村', '長浜', '虎姫', '河毛', '高月', '木ノ本', '余呉', '近江塩津',
+      '新疋田', '敦賀',
+    ]);
     const UENO_TOKYO_CORE_STATIONS = new Set(['東京', '上野']);
     const UENO_TOKYO_LINE_RANGE_STATIONS = new Set([
       // 東海道線 side, matching the Ueno-Tokyo Line diagram range.
@@ -5345,6 +5376,9 @@
         const label = routeTitle(entry.trip.routeId);
         return label && !/^\d+号線/u.test(label) ? label : '';
       }
+      if (selectedRouteId === MAIBARA_TOKAIDO_BOUNDARY_ROUTE_ID && maibaraBoundaryChoiceRouteId(entry) === selectedRouteId) {
+        return routeTitle(selectedRouteId);
+      }
       const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
       const selectedRoute = selectedRouteId ? state.routeById.get(selectedRouteId) : null;
       if (selectedRouteId && adjacentDirectionRouteId === selectedRouteId && selectedRoute && !isJrRoute(selectedRoute)) {
@@ -6672,6 +6706,7 @@
 
     function routeSubtitle(routeId) {
       if (isNamedTrainChoiceRouteId(routeId)) return '列車名';
+      if (routeId === MAIBARA_TOKAIDO_BOUNDARY_ROUTE_ID) return 'JR東海/JR西日本';
       const route = state.routeById.get(routeId);
       return PHYSICAL_ALIAS_OPERATOR_LABELS[route?.shortName] || operatorJaLabel(route?.operatorId) || routeId || '';
     }
@@ -6714,11 +6749,27 @@
       );
     }
 
+    function maibaraBoundaryChoiceRouteId(entry) {
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      if (boardName !== '米原') return null;
+      const nextName = stationDisplayNameForStop(nextStopAfter(entry?.trip, boardStop));
+      if (MAIBARA_HOKURIKU_NEXT_STATIONS.has(nextName)) return null;
+      if (!MAIBARA_TOKAIDO_NEXT_STATIONS.has(nextName)) return null;
+      const tripRouteTitle = routeTitle(entry?.trip?.routeId || '');
+      const stopRouteTitles = (entry?.routeIds || []).map(routeTitle);
+      const visibleRouteTitles = [tripRouteTitle, ...stopRouteTitles];
+      if (!visibleRouteTitles.some((title) => title === '東海道線' || title === '北陸線')) return null;
+      return MAIBARA_TOKAIDO_BOUNDARY_ROUTE_ID;
+    }
+
     function routeChoiceIdsForDeparture(entry) {
       const namedTrainRouteId = namedTrainChoiceRouteId(entry?.trip);
       if (namedTrainRouteId) return [namedTrainRouteId];
       const shinkansenChoiceRouteId = shinkansenCorridorChoiceRouteId(entry?.trip);
       if (shinkansenChoiceRouteId) return [shinkansenChoiceRouteId];
+      const maibaraBoundaryRouteId = maibaraBoundaryChoiceRouteId(entry);
+      if (maibaraBoundaryRouteId) return [maibaraBoundaryRouteId];
       const chuoChoiceRouteId = chuoCorridorChoiceRouteId(entry);
       if (chuoChoiceRouteId) return [chuoChoiceRouteId];
       const yokosukaSobuChoiceRouteId = yokosukaSobuRapidChoiceRouteId(entry);

@@ -188,6 +188,7 @@ async function auditRouteChoices(page) {
         '東神奈川', '横浜', '桜木町', '関内', '石川町', '山手', '根岸',
         '磯子', '新杉田', '洋光台', '港南台', '本郷台', '大船',
       ]),
+      VIRTUAL_MAIBARA_TOKAIDO_BOUNDARY: new Set(['米原']),
     };
     const globalChoiceScan = {
       checkedRows: 0,
@@ -303,6 +304,7 @@ async function auditRouteChoices(page) {
             !isShinkansenTrip(entry.trip) &&
             !isLimitedExpressTrip(entry.trip) &&
             !isMeitetsuTrip(entry.trip) &&
+            !(stationName === '米原' && routeTitle(routeId) === '東海道線' && label === '東海道線') &&
             label !== directionLabel
           ) {
             globalTrainLabelScan.throughDirectionLabelMismatchCount += 1;
@@ -359,7 +361,7 @@ async function auditRouteChoices(page) {
       });
     }
     const knownStationChoices = Object.fromEntries(
-      ['東京', '上野', '品川', '新橋', '大宮', '青梅', '八王子'].map((stationName) => [stationName, choicesAt(stationName)])
+      ['東京', '上野', '品川', '新橋', '大宮', '青梅', '八王子', '米原'].map((stationName) => [stationName, choicesAt(stationName)])
     );
     const routeChoiceTitles = Object.fromEntries(
       Object.entries(knownStationChoices).map(([stationName, choices]) => [
@@ -410,6 +412,28 @@ async function auditRouteChoices(page) {
         station: '東京',
         reason: 'Saphir Odoriko should be grouped under the Odoriko named-train family choice.',
         choices: knownStationChoices['東京'],
+      });
+    }
+    const maibaraTokaidoChoices = knownStationChoices['米原']?.filter((choice) => choice.route === '東海道線') || [];
+    if (maibaraTokaidoChoices.length !== 1) {
+      anomalies.push({
+        kind: 'maibara_duplicate_tokaido_choice',
+        station: '米原',
+        reason: 'Maibara is the JR Central/JR West Tokaido boundary, but the player should see one platform-line choice, not separate operator route IDs.',
+        choices: knownStationChoices['米原'],
+      });
+    }
+    const maibaraSouthboundProblems = entriesAt('米原')
+      .map((entry) => summarizeEntry('米原', entry))
+      .filter((summary) => summary.nextStation === '彦根' && summary.choices.includes('北陸線'))
+      .slice(0, 20);
+    if (maibaraSouthboundProblems.length) {
+      anomalies.push({
+        kind: 'maibara_southbound_tokaido_missing',
+        station: '米原',
+        reason: 'Maibara departures toward Hikone/Kyoto/Osaka must be shown under Tokaido Line, not Hokuriku Line.',
+        samples: maibaraSouthboundProblems,
+        choices: knownStationChoices['米原'],
       });
     }
 
