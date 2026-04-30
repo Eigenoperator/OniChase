@@ -441,10 +441,21 @@ def build_line_trace(
     if len(normalized_stops) < 2:
         return line_trace, []
 
-    current_key: tuple[str, str] | None = None
-    current_start_index = 0
+    segment_keys: list[tuple[str, str]] = []
     for index in range(len(normalized_stops) - 1):
         segment_key = stop_keys[index] if index < len(stop_keys) else fallback_key
+        previous_key = stop_keys[index - 1] if index > 0 and index - 1 < len(stop_keys) else None
+        next_key = stop_keys[index + 1] if index + 1 < len(stop_keys) else None
+        if previous_key and next_key and previous_key == next_key and segment_key != previous_key:
+            segment_key = next_key
+        segment_keys.append(segment_key)
+    for index in range(1, len(segment_keys) - 1):
+        if segment_keys[index - 1] == segment_keys[index + 1] and segment_keys[index] != segment_keys[index - 1]:
+            segment_keys[index] = segment_keys[index - 1]
+
+    current_key: tuple[str, str] | None = None
+    current_start_index = 0
+    for index, segment_key in enumerate(segment_keys):
         if not segment_key[0] or not segment_key[1]:
             segment_key = fallback_key
         if current_key is None:
@@ -508,6 +519,22 @@ def attach_stop_route_identity(stop_times: list[dict[str, Any]], line_trace: lis
         stop["incomingRouteId"] = incoming_route_id
         stop["outgoingRouteId"] = outgoing_route_id
         stop["displayRouteId"] = outgoing_route_id or incoming_route_id or trip_route_id
+
+
+def should_skip_mislabeled_foreign_train(train: dict[str, Any]) -> bool:
+    operator_id = str(train.get("operator_id") or "").strip()
+    operator_name = str(train.get("operator_name") or "").strip()
+    line_name = str(train.get("line_name") or "").strip()
+    service_name = str(train.get("service_name") or train.get("display_name") or "").strip()
+    stop_names = {
+        str(stop.get("station_name_raw") or stop.get("station_name") or "").strip()
+        for stop in train.get("stop_times") or []
+    }
+    return (
+        (operator_id == "tobu" or operator_name == "東武")
+        and line_name == "東上本線"
+        and (service_name.startswith("ＪＲ") or "大宮" in stop_names)
+    )
 
 
 def line_trace_entry(
@@ -713,9 +740,12 @@ def build_timetable(
     trip_instances = []
     route_station_groups: dict[str, set[str]] = defaultdict(set)
     line_station_groups: dict[tuple[str, str], set[str]] = defaultdict(set)
-    stats = {"skipped_short": 0, "skipped_no_route": 0}
+    stats = {"skipped_short": 0, "skipped_no_route": 0, "skipped_mislabeled_foreign_train": 0}
     seen_ids: set[str] = set()
     for index, train in enumerate(trains):
+        if should_skip_mislabeled_foreign_train(train):
+            stats["skipped_mislabeled_foreign_train"] += 1
+            continue
         operator_id, line_name = route_key_for_train(train, name_to_id, id_to_name, physical_station_by_id)
         if not operator_id or not line_name:
             stats["skipped_no_route"] += 1

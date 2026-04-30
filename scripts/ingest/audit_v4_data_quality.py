@@ -443,6 +443,25 @@ def audit_trip_integrity(station_groups: dict[str, dict[str, Any]], routes: dict
             counts["trip_references_missing_route"] += 1
             if counts["trip_references_missing_route"] <= 80:
                 issues.append({"kind": "trip_references_missing_route", "missingRouteIds": sorted(missing_route_refs), **sample})
+        trace = trip.get("lineTrace") or []
+        for index in range(1, len(trace) - 1):
+            previous_route_id = str(trace[index - 1].get("routeId") or "")
+            current_route_id = str(trace[index].get("routeId") or "")
+            next_route_id = str(trace[index + 1].get("routeId") or "")
+            current_span = int(trace[index].get("toSequence") or 0) - int(trace[index].get("fromSequence") or 0)
+            if previous_route_id and previous_route_id == next_route_id and current_route_id and current_route_id != previous_route_id and current_span <= 1:
+                counts["line_trace_single_segment_spike"] += 1
+                if counts["line_trace_single_segment_spike"] <= 80:
+                    issues.append({
+                        "kind": "line_trace_single_segment_spike",
+                        "previousRoute": route_title(routes.get(previous_route_id, {}), previous_route_id),
+                        "spikeRoute": route_title(routes.get(current_route_id, {}), current_route_id),
+                        "nextRoute": route_title(routes.get(next_route_id, {}), next_route_id),
+                        "fromSequence": trace[index].get("fromSequence"),
+                        "toSequence": trace[index].get("toSequence"),
+                        **sample,
+                    })
+                break
 
     return {
         "summary": {

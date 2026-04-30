@@ -558,6 +558,18 @@ async function auditRouteChoices(page) {
         forbiddenChoices: [...new Set(forbiddenUenoSouthChoices)].sort((a, b) => a.localeCompare(b, 'ja')),
       });
     }
+    const forbiddenOmiyaTobuTojoChoices = knownStationChoices['大宮']
+      .filter((choice) => choice.route === '東武東上本線')
+      .map((choice) => choice.route);
+    if (forbiddenOmiyaTobuTojoChoices.length) {
+      anomalies.push({
+        kind: 'omiya_station_forbidden_tobu_tojo_choice',
+        station: '大宮',
+        reason: 'Saitama Omiya is served by Tobu Noda/Urban Park Line, not Tobu Tojo Line; JR Saikyo/Kawagoe rows must not be imported as Tobu Tojo choices.',
+        choices: knownStationChoices['大宮'],
+        forbiddenChoices: [...new Set(forbiddenOmiyaTobuTojoChoices)].sort((a, b) => a.localeCompare(b, 'ja')),
+      });
+    }
     const uenoTakasakiBranchStations = new Set([
       '宮原', '上尾', '北上尾', '桶川', '北本', '鴻巣', '北鴻巣', '吹上',
       '行田', '熊谷', '籠原', '深谷', '岡部', '本庄', '神保原',
