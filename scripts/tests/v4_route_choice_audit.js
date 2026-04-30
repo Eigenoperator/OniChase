@@ -69,6 +69,16 @@ async function loadPage(pageUrl) {
     contentType: 'application/javascript',
     body: MAPLIBRE_STUB,
   }));
+  await page.route('**/assets/vendor/maplibre-gl-*/maplibre-gl.js', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: MAPLIBRE_STUB,
+  }));
+  await page.route('**/assets/vendor/maplibre-gl-*/maplibre-gl.css', (route) => route.fulfill({
+    status: 200,
+    contentType: 'text/css',
+    body: '',
+  }));
   await page.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForFunction(() => typeof state !== 'undefined' && Boolean(state.bundle), null, { timeout: 90000 });
   await page.evaluate(() => ensureTimetableLoaded());
@@ -375,6 +385,7 @@ async function auditRouteChoices(page) {
       ['東京', 'かいじ', 8],
       ['東京', 'わかしお', 10],
       ['東京', 'さざなみ', 4],
+      ['東京', '踊り子', 14],
       ['上野', 'ひたち', 30],
       ['上野', 'ときわ', 35],
       ['八王子', 'あずさ', 45],
@@ -393,6 +404,14 @@ async function auditRouteChoices(page) {
         });
       }
     });
+    if (routeChoiceTitles['東京']?.has('サフィール踊り子')) {
+      anomalies.push({
+        kind: 'saphir_odoriko_named_train_family_split',
+        station: '東京',
+        reason: 'Saphir Odoriko should be grouped under the Odoriko named-train family choice.',
+        choices: knownStationChoices['東京'],
+      });
+    }
 
     const allUenoTokyoChoiceStations = [];
     for (const [stationGroupId, group] of state.stationGroupById.entries()) {

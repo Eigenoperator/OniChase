@@ -1400,6 +1400,10 @@
       'Tama Monorail': '多摩モノレール',
       Yurikamome: 'ゆりかもめ',
     });
+    const NAMED_TRAIN_CHOICE_FAMILY_LABELS = Object.freeze({
+      'Saphir Odoriko': '踊り子',
+      'サフィール踊り子': '踊り子',
+    });
     const ROUTE_SYMBOL_CODES = Object.freeze({
       JR_EAST_CHUO_RAPID: 'JC',
       JR_EAST_CHUO_SOBU_LOCAL: 'JB',
@@ -3214,7 +3218,7 @@
       const limitedExpress = publicLimitedExpressBaseName(trip);
       const label = limitedExpress.name || serviceNameJaLabel(trip);
       if (!label || label === '列車' || isRouteLikeServiceName(label, trip)) return '';
-      return label;
+      return NAMED_TRAIN_CHOICE_FAMILY_LABELS[label] || label;
     }
 
     function namedTrainChoiceRouteId(trip) {
