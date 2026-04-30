@@ -1404,6 +1404,13 @@
       'Saphir Odoriko': '踊り子',
       'サフィール踊り子': '踊り子',
     });
+    const ORDINARY_RAPID_SERVICE_NAMES = new Set([
+      'A快速',
+      'Ａ快速',
+      'アーバン',
+      'ラビット',
+    ]);
+    const NAMED_TRAIN_ROUTE_LIKE_RE = /(?:線|本線|支線|鉄道|鐵道|電鉄|電鐵|電車|市電|地下鉄|地下鐵|モノレール|新交通|軌道|系統|ルート|ライン|交通|ケーブル|ケーブルカー|鋼索)/u;
     const ROUTE_SYMBOL_CODES = Object.freeze({
       JR_EAST_CHUO_RAPID: 'JC',
       JR_EAST_CHUO_SOBU_LOCAL: 'JB',
@@ -2755,6 +2762,22 @@
       return String(value || '').replace(/(\d{1,4})号/gu, '$1');
     }
 
+    function isRouteLikeNamedTrainLabel(label) {
+      const text = String(label || '').trim();
+      if (!text) return false;
+      if (ORDINARY_RAPID_SERVICE_NAMES.has(text)) return true;
+      if (NAMED_TRAIN_ROUTE_LIKE_RE.test(text)) return true;
+      if (/^\d+$/u.test(text)) return true;
+      if (/行き$/u.test(text) && !/^(?:アーバンライナー|ビスタカー|しまかぜ|伊勢志摩ライナー|ひのとり)/u.test(text)) return true;
+      if (/急行$/u.test(text) && !/(?:エクスプレス|ライナー|リバティ)/u.test(text)) return true;
+      if (/^[A-ZＡ-Ｚ]?(?:快速|新快速|区間快速|通勤快速|直通快速)$/u.test(text)) return true;
+      if (/^[A-ZＡ-Ｚ]?(?:快速|新快速|区間快速|通勤快速|直通快速)\d*$/u.test(text)) return true;
+      if (/^[A-ZＡ-Ｚ]?(?:みやこ路|丹波路|大和路|関空|紀州路|区間|直通)?(?:快速|新快速)$/u.test(text)) return true;
+      if (/^（?(?:快速|新快速|区間快速|通勤快速|直通快速)）?$/u.test(text)) return true;
+      if (/^(?:普通|快速|新快速|区間快速|通勤快速|直通快速|快速急行|急行|準急|各停|各駅停車|特急|快特|快速特急|通勤特急)/u.test(text) && /(?:線|本線|鉄道|電鉄|方面|行き|直通特急)$/u.test(text)) return true;
+      return false;
+    }
+
     function publicLimitedExpressBaseName(trip) {
       const rawNames = [
         trip?.serviceNameJa,
@@ -2776,10 +2799,16 @@
         if (/^(?:普通|快速|急行|特急|快特|準急|各停|各駅停車|区間急行|区間準急|準特急)\s*.+(?:行き|方面)$/u.test(cleaned)) continue;
         if (/線(?:普通|快速|急行|特急|快特|準急|各停|各駅停車|区間急行|区間準急|準特急)$/u.test(cleaned)) continue;
         const namedMatch = cleaned.match(/^(.+?)\s*(\d{1,3})号$/u);
-        if (namedMatch) return { name: stripTrainNumberGoSuffixes(namedMatch[1]), embeddedNumber: namedMatch[2] };
+        if (namedMatch) {
+          const name = stripTrainNumberGoSuffixes(namedMatch[1]);
+          if (isRouteLikeNamedTrainLabel(name)) continue;
+          return { name, embeddedNumber: namedMatch[2] };
+        }
         if (/^(?:特急|準特急|通勤特急|快速特急|快特|急行|快速|普通|各停|各駅停車|区間急行|区間準急|準急)$/u.test(cleaned)) continue;
         if (!cleaned || cleaned === mapped && GENERIC_ENGLISH_SERVICE_NAMES.has(cleaned)) continue;
-        return { name: stripTrainNumberGoSuffixes(cleaned), embeddedNumber: '' };
+        const name = stripTrainNumberGoSuffixes(cleaned);
+        if (isRouteLikeNamedTrainLabel(name)) continue;
+        return { name, embeddedNumber: '' };
       }
       return { name: '', embeddedNumber: '' };
     }

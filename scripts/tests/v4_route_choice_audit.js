@@ -197,6 +197,7 @@ async function auditRouteChoices(page) {
       virtualOutsideAllowedStationCount: 0,
       genericRouteLabelCount: 0,
       yokohamaThroughRemoteRouteCount: 0,
+      routeLikeNamedChoiceCount: 0,
       samples: [],
     };
     const globalTrainLabelScan = {
@@ -323,7 +324,13 @@ async function auditRouteChoices(page) {
             }
           }
           if (isShinkansenCorridorRoute(routeId)) return;
-          if (isNamedTrainChoiceRouteId(routeId)) return;
+          if (isNamedTrainChoiceRouteId(routeId)) {
+            if (isRouteLikeNamedTrainLabel(routeTitle(routeId))) {
+              globalChoiceScan.routeLikeNamedChoiceCount += 1;
+              addGlobalChoiceSample('route_like_named_choice', stationName, entry, routeId, nextStop);
+            }
+            return;
+          }
           const allowedStations = allowedVirtualRouteStations[routeId];
           if (allowedStations) {
             if (!allowedStations.has(stationName)) {
@@ -343,11 +350,12 @@ async function auditRouteChoices(page) {
       globalChoiceScan.segmentMismatchCount ||
       globalChoiceScan.virtualOutsideAllowedStationCount ||
       globalChoiceScan.genericRouteLabelCount ||
-      globalChoiceScan.yokohamaThroughRemoteRouteCount
+      globalChoiceScan.yokohamaThroughRemoteRouteCount ||
+      globalChoiceScan.routeLikeNamedChoiceCount
     ) {
       anomalies.push({
         kind: 'global_route_choice_segment_scan',
-        reason: 'Every player-facing route choice must either be an allowed virtual corridor at that station or serve the current boarding stop -> next stop segment, must not expose a generic route label, and must not expose remote through-service routes at Yokohama.',
+        reason: 'Every player-facing route choice must either be an allowed virtual corridor at that station or serve the current boarding stop -> next stop segment, must not expose a generic route label, must not expose route/system names as named-train choices, and must not expose remote through-service routes at Yokohama.',
         ...globalChoiceScan,
       });
     }
