@@ -207,6 +207,7 @@ async function auditRouteChoices(page) {
       meitetsuLabelFormatMismatchCount: 0,
       yokohamaThroughRemoteLabelCount: 0,
       namedLimitedExpressNotSeparatedCount: 0,
+      limitedExpressGoSuffixCount: 0,
       samples: [],
     };
     function addGlobalChoiceSample(kind, stationName, entry, routeId, nextStop) {
@@ -288,6 +289,10 @@ async function auditRouteChoices(page) {
             globalTrainLabelScan.limitedOrShinkansenMissingNumberCount += 1;
             addGlobalTrainLabelSample('limited_or_shinkansen_missing_number', stationName, entry, routeId, label);
           }
+          if (isLimitedExpressTrip(entry.trip) && !isShinkansenTrip(entry.trip) && /\d{1,4}号/u.test(label)) {
+            globalTrainLabelScan.limitedExpressGoSuffixCount += 1;
+            addGlobalTrainLabelSample('limited_express_go_suffix', stationName, entry, routeId, label);
+          }
           const selectedJrRouteId = selectedJrNorthernTrunkLabelRouteId(entry, routeId);
           const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
           const directionRouteId = selectedJrRouteId ||
@@ -352,11 +357,12 @@ async function auditRouteChoices(page) {
       globalTrainLabelScan.throughDirectionLabelMismatchCount ||
       globalTrainLabelScan.meitetsuLabelFormatMismatchCount ||
       globalTrainLabelScan.yokohamaThroughRemoteLabelCount ||
-      globalTrainLabelScan.namedLimitedExpressNotSeparatedCount
+      globalTrainLabelScan.namedLimitedExpressNotSeparatedCount ||
+      globalTrainLabelScan.limitedExpressGoSuffixCount
     ) {
       anomalies.push({
         kind: 'global_selected_train_label_scan',
-        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, ordinary through-running labels must follow the direction-side line, Meitetsu train labels must stay on their own Meitetsu line, Yokohama through-running labels must not expose remote lines, and named limited-express/named train services must be separated as their own route choices.',
+        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, limited express labels must not append 号 after the train number, ordinary through-running labels must follow the direction-side line, Meitetsu train labels must stay on their own Meitetsu line, Yokohama through-running labels must not expose remote lines, and named limited-express/named train services must be separated as their own route choices.',
         ...globalTrainLabelScan,
       });
     }

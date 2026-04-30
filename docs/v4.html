@@ -2751,6 +2751,10 @@
       return route?.shortName || route?.longName || routeId || '路線';
     }
 
+    function stripTrainNumberGoSuffixes(value) {
+      return String(value || '').replace(/(\d{1,4})号/gu, '$1');
+    }
+
     function publicLimitedExpressBaseName(trip) {
       const rawNames = [
         trip?.serviceNameJa,
@@ -2772,10 +2776,10 @@
         if (/^(?:普通|快速|急行|特急|快特|準急|各停|各駅停車|区間急行|区間準急|準特急)\s*.+(?:行き|方面)$/u.test(cleaned)) continue;
         if (/線(?:普通|快速|急行|特急|快特|準急|各停|各駅停車|区間急行|区間準急|準特急)$/u.test(cleaned)) continue;
         const namedMatch = cleaned.match(/^(.+?)\s*(\d{1,3})号$/u);
-        if (namedMatch) return { name: namedMatch[1], embeddedNumber: namedMatch[2] };
+        if (namedMatch) return { name: stripTrainNumberGoSuffixes(namedMatch[1]), embeddedNumber: namedMatch[2] };
         if (/^(?:特急|準特急|通勤特急|快速特急|快特|急行|快速|普通|各停|各駅停車|区間急行|区間準急|準急)$/u.test(cleaned)) continue;
         if (!cleaned || cleaned === mapped && GENERIC_ENGLISH_SERVICE_NAMES.has(cleaned)) continue;
-        return { name: cleaned, embeddedNumber: '' };
+        return { name: stripTrainNumberGoSuffixes(cleaned), embeddedNumber: '' };
       }
       return { name: '', embeddedNumber: '' };
     }
@@ -2800,12 +2804,12 @@
         return routeName !== '路線' ? routeName : '列車';
       }
       const limitedExpress = publicLimitedExpressBaseName(trip);
-      if (limitedExpress.name) return limitedExpress.embeddedNumber ? `${limitedExpress.name}${limitedExpress.embeddedNumber}号` : limitedExpress.name;
+      if (limitedExpress.name) return limitedExpress.embeddedNumber ? `${limitedExpress.name}${limitedExpress.embeddedNumber}` : limitedExpress.name;
       const explicit = trip?.serviceNameJa || trip?.service_name_ja || trip?.trainNameJa || trip?.train_name_ja;
-      if (explicit) return explicit;
+      if (explicit) return stripTrainNumberGoSuffixes(explicit);
       const serviceName = trip?.serviceName || trip?.service_name || '';
       if (SERVICE_NAME_JA_LABELS[serviceName]) return SERVICE_NAME_JA_LABELS[serviceName];
-      if (serviceName && hasJapaneseText(serviceName)) return serviceName;
+      if (serviceName && hasJapaneseText(serviceName)) return stripTrainNumberGoSuffixes(serviceName);
       if (serviceName && !GENERIC_ENGLISH_SERVICE_NAMES.has(serviceName)) {
         return routeName !== '路線' ? routeName : '列車';
       }
