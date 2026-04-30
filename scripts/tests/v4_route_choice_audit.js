@@ -64,6 +64,7 @@ function parseArgs(argv) {
 async function loadPage(pageUrl) {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  const startedAt = Date.now();
   await page.route('https://unpkg.com/**', (route) => route.fulfill({
     status: 200,
     contentType: 'application/javascript',
@@ -80,10 +81,22 @@ async function loadPage(pageUrl) {
     body: '',
   }));
   await page.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  const domContentLoadedAt = Date.now();
   await page.waitForFunction(() => typeof state !== 'undefined' && Boolean(state.bundle), null, { timeout: 90000 });
+  const mapBundleReadyAt = Date.now();
   await page.evaluate(() => ensureTimetableLoaded());
   await page.waitForFunction(() => state.timetableStatus === 'ready', null, { timeout: 90000 });
-  return { browser, page };
+  const timetableReadyAt = Date.now();
+  return {
+    browser,
+    page,
+    loadTimings: {
+      domContentLoadedMs: domContentLoadedAt - startedAt,
+      mapBundleReadyMs: mapBundleReadyAt - startedAt,
+      timetableReadyMs: timetableReadyAt - startedAt,
+      timetableLoadMs: timetableReadyAt - mapBundleReadyAt,
+    },
+  };
 }
 
 async function auditRouteChoices(page) {
@@ -157,6 +170,7 @@ async function auditRouteChoices(page) {
     }
 
     const anomalies = [];
+    const timings = { startedAtMs: performance.now() };
     const allowedVirtualRouteStations = {
       VIRTUAL_JR_EAST_UENO_TOKYO: new Set(['東京', '上野']),
       VIRTUAL_JR_EAST_YOKOSUKA_SOBU_RAPID: new Set([
@@ -216,6 +230,7 @@ async function auditRouteChoices(page) {
       duplicateStationTitleCount: 0,
       samples: [],
     };
+    const allUenoTokyoChoiceStationSet = new Set();
     function addGlobalChoiceSample(kind, stationName, entry, routeId, nextStop) {
       if (globalChoiceScan.samples.length >= 80) return;
       globalChoiceScan.samples.push({
@@ -254,6 +269,9 @@ async function auditRouteChoices(page) {
         routeIds.forEach((routeId) => {
           const label = formatTripLabelForBoarding(entry, routeId);
           globalTrainLabelScan.checkedLabels += 1;
+          if (routeTitle(routeId) === '上野東京ライン') {
+            allUenoTokyoChoiceStationSet.add(stationName);
+          }
           const namedTrainRouteId = namedTrainChoiceRouteId(entry.trip);
           if (namedTrainRouteId && routeId !== namedTrainRouteId) {
             globalTrainLabelScan.namedLimitedExpressNotSeparatedCount += 1;
@@ -365,6 +383,8 @@ async function auditRouteChoices(page) {
         ...globalChoiceScan,
       });
     }
+    timings.globalChoiceAndLabelScanMs = performance.now() - timings.startedAtMs;
+    const duplicateScanStartedAtMs = performance.now();
     for (const [stationGroupId, group] of state.stationGroupById.entries()) {
       const stationName = group.names?.ja || group.primaryName || stationGroupId;
       duplicateRouteTitleScan.checkedStations += 1;
@@ -394,6 +414,7 @@ async function auditRouteChoices(page) {
         ...duplicateRouteTitleScan,
       });
     }
+    timings.duplicateRouteTitleScanMs = performance.now() - duplicateScanStartedAtMs;
     if (
       globalTrainLabelScan.rawNumberedLineLabelCount ||
       globalTrainLabelScan.limitedOrShinkansenMissingNumberCount ||
@@ -409,6 +430,7 @@ async function auditRouteChoices(page) {
         ...globalTrainLabelScan,
       });
     }
+    const knownStationScanStartedAtMs = performance.now();
     const knownStationChoices = Object.fromEntries(
       ['東京', '上野', '品川', '新橋', '大宮', '青梅', '八王子', '米原'].map((stationName) => [stationName, choicesAt(stationName)])
     );
@@ -486,14 +508,7 @@ async function auditRouteChoices(page) {
       });
     }
 
-    const allUenoTokyoChoiceStations = [];
-    for (const [stationGroupId, group] of state.stationGroupById.entries()) {
-      const choices = routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, START_MINUTE));
-      if (choices.some((choice) => routeTitle(choice.routeId) === '上野東京ライン')) {
-        allUenoTokyoChoiceStations.push(group.names?.ja || group.primaryName || stationGroupId);
-      }
-    }
-    const unexpectedUenoTokyoStations = [...new Set(allUenoTokyoChoiceStations)]
+    const unexpectedUenoTokyoStations = [...allUenoTokyoChoiceStationSet]
       .filter((stationName) => !['東京', '上野'].includes(stationName))
       .sort((a, b) => a.localeCompare(b, 'ja'));
     if (unexpectedUenoTokyoStations.length) {
@@ -570,6 +585,8 @@ async function auditRouteChoices(page) {
         forbiddenChoices: [...new Set(forbiddenOmiyaTobuTojoChoices)].sort((a, b) => a.localeCompare(b, 'ja')),
       });
     }
+    timings.knownStationScanMs = performance.now() - knownStationScanStartedAtMs;
+    const focusedRuleScanStartedAtMs = performance.now();
     const uenoTakasakiBranchStations = new Set([
       '宮原', '上尾', '北上尾', '桶川', '北本', '鴻巣', '北鴻巣', '吹上',
       '行田', '熊谷', '籠原', '深谷', '岡部', '本庄', '神保原',
@@ -657,6 +674,11 @@ async function auditRouteChoices(page) {
 
     return {
       checkedAt: new Date().toISOString(),
+      timings: {
+        ...timings,
+        focusedRuleScanMs: performance.now() - focusedRuleScanStartedAtMs,
+        totalAuditMs: performance.now() - timings.startedAtMs,
+      },
       stationCount: state.stationGroupById.size,
       tripCount: state.tripById?.size || 0,
       knownStationChoices,
@@ -670,9 +692,10 @@ async function auditRouteChoices(page) {
 
 (async () => {
   const args = parseArgs(process.argv);
-  const { browser, page } = await loadPage(args['page-url']);
+  const { browser, page, loadTimings } = await loadPage(args['page-url']);
   try {
     const result = await auditRouteChoices(page);
+    result.loadTimings = loadTimings;
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
     if (result.anomalyCount) process.exitCode = 1;
   } finally {

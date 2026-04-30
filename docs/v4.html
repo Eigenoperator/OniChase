@@ -2008,6 +2008,7 @@
       coupledChoiceRowsByKey: new Map(),
       coupledEquivalentsByTripId: new Map(),
       departureQueryCache: new Map(),
+      routeChoicesByDeparturesCache: new WeakMap(),
       timetableStatus: 'idle',
       timetableLoadRequested: false,
       online: {
@@ -5187,7 +5188,10 @@
         }
       }
       rows.sort((a, b) => a.departureMinute - b.departureMinute || formatTripLabel(a.trip).localeCompare(formatTripLabel(b.trip)));
-      if (state.departureQueryCache.size > 800) state.departureQueryCache.clear();
+      if (state.departureQueryCache.size > 12000) {
+        state.departureQueryCache.clear();
+        state.routeChoicesByDeparturesCache = new WeakMap();
+      }
       state.departureQueryCache.set(cacheKey, rows);
       return Number.isFinite(options.limit) ? rows.slice(0, options.limit) : rows;
     }
@@ -6771,6 +6775,9 @@
     }
 
     function routeChoicesFromDepartures(departures) {
+      if (state.routeChoicesByDeparturesCache.has(departures)) {
+        return state.routeChoicesByDeparturesCache.get(departures);
+      }
       const byRoute = new Map();
       const byDisplay = new Map();
       departures.forEach((entry) => {
@@ -6800,9 +6807,11 @@
           }
         });
       });
-      return [...byRoute.values()].sort((a, b) =>
+      const choices = [...byRoute.values()].sort((a, b) =>
         a.firstDepartureMinute - b.firstDepartureMinute || routeTitle(a.routeId).localeCompare(routeTitle(b.routeId))
       );
+      state.routeChoicesByDeparturesCache.set(departures, choices);
+      return choices;
     }
 
     function maibaraBoundaryChoiceRouteId(entry) {
@@ -8408,6 +8417,7 @@
         state.tripById = new Map();
         state.stationTripsByGroupId = new Map();
         state.departureQueryCache = new Map();
+        state.routeChoicesByDeparturesCache = new WeakMap();
         const gameplayTrips = stitchThroughRunningTrips(trips).map(normalizeTripForGameplay);
         gameplayTrips.forEach((trip) => {
           state.tripById.set(trip.id, trip);
