@@ -5,6 +5,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import shutil
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -843,7 +844,12 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
     }
 
 
-def build_bundle(map_input: Path, trains_input: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+def build_bundle(
+    map_input: Path,
+    trains_input: Path,
+    *,
+    include_full_timetable: bool = False,
+) -> tuple[dict[str, Any], dict[str, Any] | None, dict[str, Any], dict[str, Any]]:
     physical_map = load_json(map_input)
     trains_payload = load_json(trains_input)
     trains = trains_payload.get("train_instances", [])
@@ -941,13 +947,18 @@ def build_bundle(map_input: Path, trains_input: Path) -> tuple[dict[str, Any], d
         for route in map_bundle["serviceRoutes"]
         if route["id"] in service_route_ids
     ]
-    full_timetable = {
-        "version": "v4.gameplay.1",
-        "generatedAt": generated_at,
-        "sourceBundle": "v4_gameplay_map_bundle.json.gz",
-        "tripInstances": trip_instances,
-    }
     compact = compact_timetable(trip_instances, generated_at)
+    trip_count = len(trip_instances)
+    full_timetable = None
+    if include_full_timetable:
+        full_timetable = {
+            "version": "v4.gameplay.1",
+            "generatedAt": generated_at,
+            "sourceBundle": "v4_gameplay_map_bundle.json.gz",
+            "tripInstances": trip_instances,
+        }
+    else:
+        trip_instances.clear()
     manifest = {
         "dataset": "v4_nationwide_gameplay",
         "generatedAt": generated_at,
@@ -965,7 +976,7 @@ def build_bundle(map_input: Path, trains_input: Path) -> tuple[dict[str, Any], d
             "serviceRoutes": len(map_bundle["serviceRoutes"]),
             "servicePatterns": len(map_bundle["servicePatterns"]),
             "serviceGeometry": len(map_bundle["serviceGeometry"]),
-            "tripInstances": len(trip_instances),
+            "tripInstances": trip_count,
             "compactTrips": len(compact["trips"]),
             "skippedTrainCount": sum(train_stats.values()),
         },
@@ -979,7 +990,7 @@ def build_bundle(map_input: Path, trains_input: Path) -> tuple[dict[str, Any], d
 
 
 def write_outputs(
-    payloads: tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]],
+    payloads: tuple[dict[str, Any], dict[str, Any] | None, dict[str, Any], dict[str, Any]],
     output_dirs: list[Path],
     *,
     write_full_timetable: bool = False,
@@ -991,10 +1002,20 @@ def write_outputs(
         "v4_gameplay_manifest.json": manifest,
     }
     if write_full_timetable:
+        if full_timetable is None:
+            raise ValueError("full timetable was not built")
         names["v4_gameplay_timetable_bundle.json.gz"] = full_timetable
-    for output_dir in output_dirs:
-        for filename, payload in names.items():
-            write_json(output_dir / filename, payload)
+    if not output_dirs:
+        return
+
+    primary_dir = output_dirs[0]
+    for filename, payload in names.items():
+        write_json(primary_dir / filename, payload)
+
+    for output_dir in output_dirs[1:]:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        for filename in names:
+            shutil.copyfile(primary_dir / filename, output_dir / filename)
 
 
 def parse_args() -> argparse.Namespace:
@@ -1013,7 +1034,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    payloads = build_bundle(args.map_input, args.trains_input)
+    payloads = build_bundle(args.map_input, args.trains_input, include_full_timetable=args.write_full_timetable)
     write_outputs(payloads, [args.data_dir, args.docs_data_dir], write_full_timetable=args.write_full_timetable)
     manifest = payloads[3]
     print(json.dumps(manifest["counts"], ensure_ascii=False, indent=2))

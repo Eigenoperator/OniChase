@@ -304,13 +304,7 @@ def is_valid_direct_service_context_match(train: dict[str, Any]) -> bool:
 def is_probable_through_service_context_match(train: dict[str, Any]) -> bool:
     """Allow nationwide direct services whose boundary stops are context-matched."""
 
-    if train_target_line_touch_count(train) < 2:
-        return False
-    if train_target_line_touch_ratio(train) < 0.18:
-        return False
     source_collection = str(train.get("source_collection") or "")
-    if not train_has_foreign_physical_operator(train) and not source_collection.startswith("v4_jr"):
-        return False
     excessive_stops = [
         stop for stop in train.get("stop_times") or []
         if excessive_match_distance_ref(stop) is not None
@@ -319,11 +313,22 @@ def is_probable_through_service_context_match(train: dict[str, Any]) -> bool:
         return False
     if max(float(excessive_match_distance_ref(stop) or 0) for stop in excessive_stops) > MAX_DIRECT_CONTEXT_MATCH_DISTANCE_M:
         return False
-    return all(
+    context_matches = all(
         stop.get("match_method") == "context_nearest_group"
         and stop.get("station_group_id")
         for stop in excessive_stops
     )
+    if not context_matches:
+        return False
+    if source_collection.startswith("v4_jr") and not train_has_foreign_physical_operator(train):
+        return True
+    if train_target_line_touch_count(train) < 2:
+        return False
+    if train_target_line_touch_ratio(train) < 0.18:
+        return False
+    if not train_has_foreign_physical_operator(train) and not source_collection.startswith("v4_jr"):
+        return False
+    return True
 
 
 def has_reviewed_closed_operator_foreign_stops(train: dict[str, Any]) -> bool:
