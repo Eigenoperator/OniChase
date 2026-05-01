@@ -32,6 +32,7 @@ PREFIX_RE = re.compile(
 
 REVIEWED_DIRECT_NAME_SETS: set[frozenset[str]] = set()
 REVIEWED_NOT_DIRECT_NAME_SETS: set[frozenset[str]] = set()
+REVIEWED_DIRECT_TRANSFER_MAX_DISTANCE_M = 5000
 
 
 def load_json(path: Path) -> Any:
@@ -91,7 +92,7 @@ def pair_key(left_name: str, right_name: str) -> frozenset[str]:
 
 def classify_pair(left_name: str, right_name: str, distance_m: float, direct_radius_m: float) -> str:
     key = pair_key(left_name, right_name)
-    if key in REVIEWED_DIRECT_NAME_SETS:
+    if key in REVIEWED_DIRECT_NAME_SETS and distance_m <= REVIEWED_DIRECT_TRANSFER_MAX_DISTANCE_M:
         return "reviewed_direct"
     if key in REVIEWED_NOT_DIRECT_NAME_SETS:
         return "reviewed_not_direct"

@@ -3732,6 +3732,7 @@
     }
 
     const TRANSFER_EQUIVALENCE_RADIUS_M = 700;
+    const REVIEWED_DIRECT_TRANSFER_MAX_DISTANCE_M = 5000;
     const DEFAULT_INTERCHANGE_TRANSFER_MINUTES = 0;
     const FALLBACK_REVIEWED_DIRECT_TRANSFER_NAME_SETS = [
       ['名古屋', '名鉄名古屋'],
@@ -3781,6 +3782,7 @@
       const reviewedDirect = state.reviewedDirectTransferNameSets.has(pairKey);
       const reviewedNotDirect = state.reviewedNotDirectTransferNameSets.has(pairKey);
       if (reviewedNotDirect) return null;
+      if (reviewedDirect && distance > REVIEWED_DIRECT_TRANSFER_MAX_DISTANCE_M) return null;
       if (!reviewedDirect && distance > TRANSFER_EQUIVALENCE_RADIUS_M) return null;
       return {
         transferMinutes: DEFAULT_INTERCHANGE_TRANSFER_MINUTES,

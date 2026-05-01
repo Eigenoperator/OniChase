@@ -41,6 +41,7 @@ DEFAULT_OUTPUT = ROOT / "data" / "v4_data_quality_audit.json"
 
 REQUIRED_DIRECT_TRANSFER_NAME_SETS: set[frozenset[str]] = set()
 REVIEWED_NOT_DIRECT_TRANSFER_NAME_SETS: set[frozenset[str]] = set()
+REVIEWED_DIRECT_TRANSFER_MAX_DISTANCE_M = 5000
 
 EXPECTED_STATION_SERVICE_COUNTS = [
     {"station": "東京", "service": "ひたち", "minimum": 30},
@@ -517,7 +518,10 @@ def transfer_equivalent_group_ids(map_bundle: dict[str, Any]) -> dict[str, set[s
                 reviewed_direct = frozenset((left_name, right_name)) in REQUIRED_DIRECT_TRANSFER_NAME_SETS
                 reviewed_not_direct = frozenset((left_name, right_name)) in REVIEWED_NOT_DIRECT_TRANSFER_NAME_SETS
                 distance = coordinate_distance_meters(group_coordinate(left), group_coordinate(right))
-                if reviewed_direct or (distance <= 700 and not reviewed_not_direct):
+                if (
+                    (reviewed_direct and distance <= REVIEWED_DIRECT_TRANSFER_MAX_DISTANCE_M)
+                    or (distance <= 700 and not reviewed_not_direct)
+                ):
                     equivalents[left["id"]].add(right["id"])
                     equivalents[right["id"]].add(left["id"])
     return equivalents
