@@ -5,7 +5,8 @@ The audit is heuristic: real timetables can skip numbers, split service families
 by operating day, or use special numbering blocks.  It is meant to surface
 review candidates like the Tsuruga-origin Thunderbird gap, where one origin and
 terminal should expose a dense even/odd number sequence but many train numbers
-are absent.
+are absent.  It also checks the boarding-station view so pass-through trains do
+not look missing just because their true origin is farther upstream.
 """
 
 from __future__ import annotations
@@ -118,6 +119,11 @@ def stop_name(stop: dict[str, Any] | None) -> str:
     return str(stop.get("station_name_raw") or stop.get("station_name") or stop.get("station_group_id") or "")
 
 
+def stop_group_id(stop: dict[str, Any] | None) -> str:
+    stop = stop or {}
+    return str(stop.get("station_group_id") or stop.get("station_id") or "")
+
+
 def stop_time(stop: dict[str, Any] | None) -> str:
     stop = stop or {}
     return str(stop.get("departure_hhmm") or stop.get("arrival_hhmm") or "")
@@ -144,6 +150,7 @@ def summarize_group(
     *,
     family_numbers: dict[str, set[int]],
     family_origin_numbers: dict[tuple[str, str], set[int]],
+    family_station_numbers: dict[tuple[str, str], set[int]],
 ) -> dict[str, Any] | None:
     family, origin, terminal = key
     numbers = sorted({int(item["number"]) for item in items})
@@ -157,6 +164,10 @@ def summarize_group(
     missing_unseen_from_origin = [
         number for number in missing
         if number not in family_origin_numbers.get((family, origin), set())
+    ]
+    missing_unseen_at_boarding_station = [
+        number for number in missing
+        if number not in family_station_numbers.get((family, origin), set())
     ]
     missing_unseen_globally = [
         number for number in missing
@@ -176,6 +187,8 @@ def summarize_group(
         "missingNumbers": missing,
         "missingUnseenFromOriginCount": len(missing_unseen_from_origin),
         "missingUnseenFromOriginNumbers": missing_unseen_from_origin,
+        "missingUnseenAtBoardingStationCount": len(missing_unseen_at_boarding_station),
+        "missingUnseenAtBoardingStationNumbers": missing_unseen_at_boarding_station,
         "missingUnseenGloballyCount": len(missing_unseen_globally),
         "missingUnseenGloballyNumbers": missing_unseen_globally,
         "coverageDensity": round(density, 3),
@@ -202,6 +215,7 @@ def main() -> int:
     family_counts: Counter[str] = Counter()
     family_numbers: dict[str, set[int]] = defaultdict(set)
     family_origin_numbers: dict[tuple[str, str], set[int]] = defaultdict(set)
+    family_station_numbers: dict[tuple[str, str], set[int]] = defaultdict(set)
     skipped_counts: Counter[str] = Counter()
 
     for train in trains:
@@ -225,6 +239,13 @@ def main() -> int:
         family_counts[family] += 1
         family_numbers[family].add(number)
         family_origin_numbers[(family, origin)].add(number)
+        seen_station_keys: set[tuple[str, str]] = set()
+        for stop in stops:
+            station_key = stop_name(stop) or stop_group_id(stop)
+            if station_key:
+                seen_station_keys.add((family, station_key))
+        for station_key in seen_station_keys:
+            family_station_numbers[station_key].add(number)
         groups[(family, origin, terminal)].append(
             {
                 "number": number,
@@ -249,6 +270,7 @@ def main() -> int:
             items,
             family_numbers=family_numbers,
             family_origin_numbers=family_origin_numbers,
+            family_station_numbers=family_station_numbers,
         )
         if not summary:
             reviewed_dense_sequences.append(
@@ -263,11 +285,12 @@ def main() -> int:
             continue
         if summary["gapRatio"] <= args.max_gap_ratio:
             candidates.append(summary)
-            if summary["missingUnseenFromOriginCount"]:
+            if summary["missingUnseenAtBoardingStationCount"]:
                 high_priority_candidates.append(summary)
 
     candidates.sort(
         key=lambda item: (
+            -item["missingUnseenAtBoardingStationCount"],
             -item["missingUnseenFromOriginCount"],
             -item["missingCount"],
             item["serviceFamily"],
@@ -277,6 +300,7 @@ def main() -> int:
     )
     high_priority_candidates.sort(
         key=lambda item: (
+            -item["missingUnseenAtBoardingStationCount"],
             -item["missingUnseenFromOriginCount"],
             -item["missingCount"],
             item["serviceFamily"],
@@ -293,7 +317,8 @@ def main() -> int:
             "Groups numbered named limited-express-like trains by service family, origin, and terminal. "
             "For groups with at least minObserved unique train numbers, it infers step=2 when all numbers share parity, "
             "otherwise step=1, and reports missing numbers within the observed min/max range. "
-            "Findings are review candidates, not automatic errors."
+            "High-priority findings require missing numbers to be absent from that boarding station entirely, "
+            "so pass-through trains from a farther origin do not look missing. Findings are review candidates, not automatic errors."
         ),
         "parameters": {
             "minObserved": args.min_observed,
@@ -323,6 +348,7 @@ def main() -> int:
     for item in high_priority_candidates[:20]:
         print(
             f"- {item['serviceFamily']} {item['origin']}->{item['terminal']}: "
+            f"missing_at_station={item['missingUnseenAtBoardingStationNumbers']} "
             f"missing_from_origin={item['missingUnseenFromOriginNumbers']} "
             f"missing={item['missingNumbers']} observed={item['observedNumbers']}"
         )
