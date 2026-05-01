@@ -37,6 +37,34 @@ SERVICE_NUMBER_RE = re.compile(r"\s*\d+\s*(?:号|M|A|B|D|F|K|S|H)?\b", re.I)
 TRAIN_NUMBER_RE = re.compile(r"\d+\s*号")
 ROUTE_SPAN_LABEL_RE = re.compile(r"(?:線|本線|鉄道|電鉄).*[（(].+[）)]$")
 ROUTE_SERVICE_LABEL_RE = re.compile(r"(?:線|本線|鉄道|電鉄).*(?:快速|特急|急行|快特|準急)")
+SHINKANSEN_FAMILY_JA = {
+    "Hikari": "ひかり",
+    "Hakutaka": "はくたか",
+    "Kodama": "こだま",
+    "Nozomi": "のぞみ",
+    "Mizuho": "みずほ",
+    "Sakura": "さくら",
+    "Tsubame": "つばめ",
+    "Hayabusa": "はやぶさ",
+    "Yamabiko": "やまびこ",
+    "Nasuno": "なすの",
+    "Komachi": "こまち",
+    "Tsubasa": "つばさ",
+    "Toki": "とき",
+    "Tanigawa": "たにがわ",
+    "Kagayaki": "かがやき",
+    "Asama": "あさま",
+    "Tsurugi": "つるぎ",
+}
+REVIEWED_NORMAL_PATTERN_REFS = {
+    "jreast_2026_limited_express": "https://www.jreast.co.jp/press/2025/20251212_ho02.pdf",
+    "jr_shikoku_station_timetable": "https://www.jr-shikoku.co.jp/01_trainbus/jikoku/index.html",
+    "jr_shikoku_hashioka_pdf": "https://www.jr-shikoku.co.jp/01_trainbus/jikoku/pdf/hashioka.pdf",
+    "jreast_tokyo_timetable": "https://timetables.jreast.co.jp/2604/timetable/tt1039/1039090.html",
+    "noseden_nissei_timetable": "https://noseden.hankyu.co.jp/railway/schedule/ns21_01day.html",
+    "aikan_asashuttle": "https://www.aikanrailway.co.jp/timetable/shuttleA250901.html",
+    "jrkyushu_timetable": "https://www.jrkyushu-timetable.jp/",
+}
 ORDINARY_SERVICE_NAMES = {
     "普通", "各停", "各駅停車", "快速", "急行", "準急", "区間急行", "区間快速",
     "特急", "快特", "快速特急", "通勤特急", "通勤急行", "通勤快速", "直通特急", "新快速", "快速急行",
@@ -203,8 +231,98 @@ def service_family(trip: dict[str, Any], routes: dict[str, dict[str, Any]]) -> s
             value = SERVICE_NUMBER_RE.sub("", value).strip()
             value = re.sub(r"\s+", "", value)
             if value:
-                return value
+                return SHINKANSEN_FAMILY_JA.get(value, value)
     return route_title(routes.get(trip.get("routeId") or ""), trip.get("routeId") or "")
+
+
+def reviewed_normal_pattern(summary: dict[str, Any]) -> dict[str, Any] | None:
+    """Return a reviewed-normal classification for known real service patterns.
+
+    This keeps the audit reusable: the red queue remains heuristic-driven, while
+    documented timetable patterns are classified separately instead of hidden.
+    """
+    station = str(summary.get("station") or "")
+    family = str(summary.get("serviceFamily") or "")
+
+    def classification(
+        pattern: str,
+        reason: str,
+        *,
+        refs: list[str] | None = None,
+        confidence: str = "high",
+    ) -> dict[str, Any]:
+        return {
+            "kind": "reviewed_normal_pattern",
+            "reviewedPattern": pattern,
+            "reviewConfidence": confidence,
+            "reviewReason": reason,
+            "sourceRefs": [REVIEWED_NORMAL_PATTERN_REFS[key] for key in refs or []],
+        }
+
+    if family in {"ひかり", "はくたか"}:
+        return classification(
+            "shinkansen_service_family_normalized",
+            "英字由来の新幹線 serviceName を日本語列車名へ正規化したもの。短時間集中は停車駅別の列車種別配分で、named-train 欠損候補からは分離する。",
+            refs=["jreast_tokyo_timetable"],
+        )
+    if family == "踊り子" and station in {"東京", "三島"}:
+        return classification(
+            "odoriko_izu_split_and_source_overlap",
+            "伊豆急下田系と修善寺系の分割・併合および JR East / 外部時刻表ソースの重なりで touch/departure が高く見える既知パターン。",
+            refs=["jreast_2026_limited_express"],
+        )
+    if family == "サンポート南風リレー号":
+        return classification(
+            "jr_shikoku_sunport_nanpu_relay_named_rapid",
+            "JR四国駅時刻表に快速サンポート南風リレー号として掲載される実在の名前付き快速。短時間集中はサービス性質として扱う。",
+            refs=["jr_shikoku_station_timetable", "jr_shikoku_hashioka_pdf"],
+        )
+
+    peak_limited_express = {
+        "湘南": "commuter_limited_express_peak_pattern",
+        "あかぎ": "commuter_limited_express_peak_pattern",
+        "日生エクスプレス": "private_railway_commuter_peak_pattern",
+    }
+    if family in peak_limited_express:
+        refs = ["noseden_nissei_timetable"] if family == "日生エクスプレス" else ["jreast_2026_limited_express"]
+        return classification(
+            peak_limited_express[family],
+            "朝夕ピークへ寄る通勤系の名前付き列車。短時間集中そのものは正常な運行パターン。",
+            refs=refs,
+        )
+
+    if family in {"富士回遊", "はしだて", "ハウステンボス", "みどり（リレーかもめ）"}:
+        refs = ["jrkyushu_timetable"] if family in {"ハウステンボス", "みどり（リレーかもめ）"} else ["jreast_2026_limited_express"]
+        return classification(
+            "coupled_or_branch_limited_express_pattern",
+            "分割・併合または支線直通を伴う名前付き特急。touch/departure 比の高さは同一列車・別行先表現に由来しうる。",
+            refs=refs,
+        )
+
+    if family in {"愛知環状鉄道〔あさシャトル〕", "区間快速シーサイドライナー"}:
+        refs = ["aikan_asashuttle"] if family == "愛知環状鉄道〔あさシャトル〕" else ["jrkyushu_timetable"]
+        return classification(
+            "named_rapid_or_shuttle_pattern",
+            "名前付き快速・シャトル列車として案内される通常サービス。列車名の存在だけで欠損候補にしない。",
+            refs=refs,
+        )
+
+    if family in {"八ケ岳高原列車", "弘前さくらまつり"}:
+        return classification(
+            "seasonal_or_tourism_named_service",
+            "観光・季節性の強い名前付き列車。短時間集中はデータ欠損ではなく運行設定の可能性が高い。",
+            refs=["jreast_2026_limited_express"],
+            confidence="medium",
+        )
+
+    if family == "あずさ" and station == "東京":
+        return classification(
+            "limited_express_partial_tokyo_origin_pattern",
+            "東京発着に限定される一部の特急設定。中央線全体の本数欠損ではなく、東京駅に現れる部分集合として扱う。",
+            refs=["jreast_tokyo_timetable"],
+        )
+
+    return None
 
 
 def is_named_train_family(family: str, trip: dict[str, Any], routes: dict[str, dict[str, Any]]) -> bool:
@@ -325,6 +443,7 @@ def audit_time_distribution(
             )
 
     findings = []
+    reviewed_normal_patterns = []
     reviewed_examples = []
     for item in groups.values():
         times = sorted(minute for minute in item["departureTimes"] if isinstance(minute, int))
@@ -360,7 +479,10 @@ def audit_time_distribution(
         if departure_count >= min_departures and departure_count <= 12 and touch_to_departure_ratio >= min_touch_to_departure_ratio:
             reasons.append("many_touches_but_few_boardable_departures")
         candidate_reasons = [reason for reason in reasons if reason == "departures_concentrated_in_short_span"]
-        if candidate_reasons:
+        reviewed_pattern = reviewed_normal_pattern(summary)
+        if reviewed_pattern and reasons:
+            reviewed_normal_patterns.append({**reviewed_pattern, "reasons": reasons, **summary})
+        elif candidate_reasons:
             findings.append({"kind": "named_train_time_distribution_candidate", "reasons": reasons, **summary})
         elif item["station"] in {"東京", "新宿", "八王子", "上野", "品川"} and departure_count >= min_departures:
             reviewed_examples.append(summary)
@@ -375,19 +497,29 @@ def audit_time_distribution(
             item["serviceFamily"],
         )
     )
+    reviewed_normal_patterns.sort(
+        key=lambda item: (
+            item["reviewedPattern"],
+            item["station"],
+            item["serviceFamily"],
+            item["firstDeparture"],
+        )
+    )
     return {
         "summary": {
             "namedStationServiceGroupCount": len(groups),
             "candidateCount": len(findings),
+            "reviewedNormalPatternCount": len(reviewed_normal_patterns),
             "reviewedExampleCount": len(reviewed_examples),
             "minDepartures": min_departures,
             "maxSpanMinutes": max_span_minutes,
             "minTouchToDepartureRatio": min_touch_to_departure_ratio,
             "dedupeKey": "minute + normalized displayName/serviceName + origin + destination + nextStation",
             "stationGrouping": "same-name station groups within 700m are merged to match direct-transfer gameplay assumptions",
-            "candidatePolicy": "Reports short-span departure concentration as candidates; touch/departure-only skew is retained in per-row reasons when a short-span candidate also exists.",
+            "candidatePolicy": "Reports short-span departure concentration only when the station/service pair is not covered by a reviewed normal timetable pattern; touch/departure-only skew is retained in per-row reasons when a short-span candidate also exists.",
         },
         "candidates": findings[:300],
+        "reviewedNormalPatterns": reviewed_normal_patterns[:300],
         "reviewedExamples": reviewed_examples[:80],
     }
 
