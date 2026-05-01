@@ -446,7 +446,7 @@ async function auditRouteChoices(page) {
     }
     const knownStationScanStartedAtMs = performance.now();
     const knownStationChoices = Object.fromEntries(
-      ['東京', '上野', '品川', '新橋', '大宮', '青梅', '八王子', '米原', '蘇我', '五井', '木更津', '上総一ノ宮', '成田', '佐倉'].map((stationName) => [stationName, choicesAt(stationName)])
+      ['東京', '上野', '品川', '新橋', '大宮', '青梅', '八王子', '米原', '敦賀', '蘇我', '五井', '木更津', '上総一ノ宮', '成田', '佐倉'].map((stationName) => [stationName, choicesAt(stationName)])
     );
     const routeChoiceTitles = Object.fromEntries(
       Object.entries(knownStationChoices).map(([stationName, choices]) => [
@@ -477,6 +477,7 @@ async function auditRouteChoices(page) {
       ['上野', 'ときわ', 35],
       ['八王子', 'あずさ', 34],
       ['八王子', 'かいじ', 20],
+      ['敦賀', 'サンダーバード', 25],
     ].forEach(([stationName, routeName, minimumTrainCount]) => {
       const choice = knownStationChoices[stationName]?.find((item) => item.route === routeName);
       if (!choice || choice.trainCount < minimumTrainCount) {

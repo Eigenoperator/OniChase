@@ -67,6 +67,12 @@ LINE_ALIASES = {
     "越美北線": ["越美北線", "九頭竜線"],
 }
 
+EXTRA_LINE_STATION_NAMES = {
+    # Tsuruga is physically mapped as Hokuriku/Obama/Hokuriku Shinkansen, but JR
+    # Odekake exposes Tsuruga-origin Thunderbird services on the Kosei Line tab.
+    "湖西線": ["敦賀"],
+}
+
 TAG_RE = re.compile(r"<[^>]+>")
 
 
@@ -183,6 +189,8 @@ def physical_station_names_by_line(physical_map: dict[str, Any]) -> dict[str, li
     for station in physical_map["physicalStations"]:
         if station.get("operatorName") == OPERATOR_NAME:
             names[station["lineName"]].add(station["nameJa"])
+    for line_name, station_names in EXTRA_LINE_STATION_NAMES.items():
+        names[line_name].update(station_names)
     return {line_name: sorted(station_names) for line_name, station_names in names.items()}
 
 
