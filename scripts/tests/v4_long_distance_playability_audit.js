@@ -227,9 +227,18 @@ async function auditLongDistancePlayability(page) {
     const END_MINUTE = hhmmToMinutes('30:00');
     const MIN_TRANSFER_MINUTES = 2;
 
-    function routeChoicesForGroup(stationGroupId, includeTransferEquivalents = false) {
-      return routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, START_MINUTE, { includeTransferEquivalents }))
+    function routeChoicesForGroup(stationGroupId, includeTransferEquivalents = false, minute = START_MINUTE) {
+      return routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, minute, { includeTransferEquivalents }))
         .map((choice) => routeTitle(choice.routeId));
+    }
+
+    function routeChoiceSummariesForGroup(stationGroupId, includeTransferEquivalents = false, minute = START_MINUTE) {
+      return routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, minute, { includeTransferEquivalents }))
+        .map((choice) => ({
+          route: routeTitle(choice.routeId),
+          firstDeparture: choice.firstDepartureHhmm,
+          trainCount: choice.trainCount,
+        }));
     }
 
     function groupIdsByDisplayName(name) {
@@ -294,6 +303,73 @@ async function auditLongDistancePlayability(page) {
       return null;
     }
 
+    function auditWaypointSurface(testCase, stopIndex, stationGroupId, selector, currentMinute, nextTargetGroupId) {
+      const choices = routeChoiceSummariesForGroup(stationGroupId, true, currentMinute);
+      const choiceTitles = new Set(choices.map((choice) => choice.route));
+      const missingExpectedRoutes = (selector.routes || []).filter((routeName) => !choiceTitles.has(routeName));
+      if (missingExpectedRoutes.length) {
+        anomalies.push({
+          kind: 'long_distance_waypoint_expected_route_missing',
+          name: testCase.name,
+          stopIndex,
+          station: selector.name,
+          stationGroupId,
+          after: minutesToHhmm(currentMinute),
+          missingExpectedRoutes,
+          choices,
+        });
+      }
+
+      const departures = departuresForStationGroup(stationGroupId, currentMinute, { includeTransferEquivalents: true });
+      let boardableDepartureCount = 0;
+      let candidateToNextCount = 0;
+      let skippedNonBoardableDepartureCount = 0;
+      for (const departure of departures) {
+        const routeNames = routeNamesForEntry(departure);
+        const downstreamStops = (departure.trip?.stopTimes || []).filter((stop) => stop.sequence > departure.stop.sequence);
+        if (routeNames.length && downstreamStops.length) boardableDepartureCount += 1;
+        else skippedNonBoardableDepartureCount += 1;
+        if (nextTargetGroupId && downstreamStops.some((stop) => stationMatchesSelector(stop.stationGroupId, nextTargetGroupId))) {
+          candidateToNextCount += 1;
+        }
+      }
+      if (!boardableDepartureCount) {
+        anomalies.push({
+          kind: 'long_distance_waypoint_no_boardable_departures',
+          name: testCase.name,
+          stopIndex,
+          station: selector.name,
+          stationGroupId,
+          after: minutesToHhmm(currentMinute),
+          choices,
+        });
+      }
+      if (nextTargetGroupId && !candidateToNextCount) {
+        anomalies.push({
+          kind: 'long_distance_waypoint_no_candidate_to_next_stop',
+          name: testCase.name,
+          stopIndex,
+          station: selector.name,
+          stationGroupId,
+          nextStation: testCase.stops[stopIndex + 1]?.name,
+          after: minutesToHhmm(currentMinute),
+          choices,
+        });
+      }
+      return {
+        station: selector.name,
+        stationGroupId,
+        after: minutesToHhmm(currentMinute),
+        choiceCount: choices.length,
+        expectedRoutes: selector.routes || [],
+        missingExpectedRoutes,
+        boardableDepartureCount,
+        skippedNonBoardableDepartureCount,
+        candidateToNextCount,
+        topChoices: choices.slice(0, 12),
+      };
+    }
+
     const anomalies = [];
     const results = [];
     const startedAtMs = performance.now();
@@ -314,9 +390,11 @@ async function auditLongDistancePlayability(page) {
 
       let currentMinute = START_MINUTE;
       const legs = [];
+      const waypointAudits = [];
       for (let index = 0; index < selectedStops.length - 1; index += 1) {
         const origin = selectedStops[index].selected.stationGroupId;
         const target = selectedStops[index + 1].selected.stationGroupId;
+        waypointAudits.push(auditWaypointSurface(testCase, index, origin, selectedStops[index].selector, currentMinute, target));
         const leg = findLeg(origin, target, currentMinute);
         if (!leg) {
           anomalies.push({
@@ -336,6 +414,17 @@ async function auditLongDistancePlayability(page) {
       }
 
       const found = legs.length === selectedStops.length - 1;
+      if (found) {
+        const finalIndex = selectedStops.length - 1;
+        waypointAudits.push(auditWaypointSurface(
+          testCase,
+          finalIndex,
+          selectedStops[finalIndex].selected.stationGroupId,
+          selectedStops[finalIndex].selector,
+          legs.at(-1).arrivalMinute,
+          null,
+        ));
+      }
       results.push({
         name: testCase.name,
         from: testCase.stops[0].name,
@@ -346,12 +435,15 @@ async function auditLongDistancePlayability(page) {
         legCount: legs.length,
         transferCount: Math.max(0, legs.length - 1),
         legs,
+        waypointAudits,
       });
     }
+    const waypointAuditCount = results.reduce((sum, item) => sum + (item.waypointAudits?.length || 0), 0);
     return {
       checkedAt: new Date().toISOString(),
       caseCount: cases.length,
       passedCaseCount: results.filter((item) => item.found).length,
+      waypointAuditCount,
       anomalyCount: anomalies.length,
       elapsedMs: Math.round(performance.now() - startedAtMs),
       results,
