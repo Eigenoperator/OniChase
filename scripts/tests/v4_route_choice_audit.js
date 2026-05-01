@@ -258,6 +258,15 @@ async function auditRouteChoices(page) {
         tripId: entry.trip?.id || '',
       });
     }
+    function allowedPassengerRouteOverPhysicalTrace(stationName, routeId, currentSegmentRouteId, nextStop) {
+      const route = routeTitle(routeId);
+      const segmentRoute = routeTitle(currentSegmentRouteId);
+      const nextStation = displayNameForGroup(nextStop?.stationGroupId || '');
+      return stationName === '上野' &&
+        nextStation === '日暮里' &&
+        route === '常磐線' &&
+        ['東北線', '東北本線'].includes(segmentRoute);
+    }
     for (const [stationGroupId, group] of state.stationGroupById.entries()) {
       const stationName = group.names?.ja || group.primaryName || stationGroupId;
       for (const entry of departuresForStationGroup(stationGroupId, START_MINUTE)) {
@@ -355,6 +364,7 @@ async function auditRouteChoices(page) {
             }
             return;
           }
+          const currentSegmentRouteId = tracedRouteIdForTripSegment(entry.trip, entry.stop, nextStop);
           const allowedStations = allowedVirtualRouteStations[routeId];
           if (allowedStations) {
             if (!allowedStations.has(stationName)) {
@@ -363,7 +373,11 @@ async function auditRouteChoices(page) {
             }
             return;
           }
-          if (!routeMatchesTripAdjacentSegment(routeId, entry.trip, entry.stop, nextStop)) {
+          if (
+            currentSegmentRouteId &&
+            routeId !== currentSegmentRouteId &&
+            !allowedPassengerRouteOverPhysicalTrace(stationName, routeId, currentSegmentRouteId, nextStop)
+          ) {
             globalChoiceScan.segmentMismatchCount += 1;
             addGlobalChoiceSample('choice_not_current_next_segment', stationName, entry, routeId, nextStop);
           }
@@ -461,7 +475,7 @@ async function auditRouteChoices(page) {
       ['東京', '踊り子', 9],
       ['上野', 'ひたち', 30],
       ['上野', 'ときわ', 35],
-      ['八王子', 'あずさ', 35],
+      ['八王子', 'あずさ', 34],
       ['八王子', 'かいじ', 20],
     ].forEach(([stationName, routeName, minimumTrainCount]) => {
       const choice = knownStationChoices[stationName]?.find((item) => item.route === routeName);

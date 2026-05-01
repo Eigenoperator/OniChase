@@ -84,6 +84,10 @@ REMOTE_THROUGH_SOURCE_LINE_NAMES = {
     "京葉線",
 }
 
+PASSENGER_TRACE_WINS_LINE_NAMES = {
+    "山手線",
+}
+
 
 def load_json(path: Path) -> dict[str, Any]:
     opener = gzip.open if path.suffix == ".gz" else open
@@ -347,6 +351,31 @@ def canonical_line_name(line_name: str | None) -> str:
     return SYNTHETIC_LINE_NAME_OVERRIDES.get(value, value)
 
 
+def normalize_station_name(value: str | None) -> str:
+    text = str(value or "").strip()
+    replacements = {
+        "　": "",
+        " ": "",
+        "-": "",
+        "‐": "",
+        "ー": "",
+        "・": "",
+        "（": "",
+        "）": "",
+        "(": "",
+        ")": "",
+        "駅": "",
+        "停留場": "",
+        "電停": "",
+        "塚": "塚",
+        "ヶ": "ケ",
+        "が": "ガ",
+    }
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    return text
+
+
 def line_names_match(left: str | None, right: str | None) -> bool:
     left_value = canonical_line_name(left).replace(" ", "")
     right_value = canonical_line_name(right).replace(" ", "")
@@ -402,6 +431,8 @@ def trace_route_key_for_stop(
         id_to_name,
     )
     physical_key = physical_route_key_for_stop(stop, train, physical_station_by_id, name_to_id, id_to_name)
+    if raw_line_name in PASSENGER_TRACE_WINS_LINE_NAMES:
+        return (raw_operator_id, raw_line_name)
     if raw_line_name and (is_synthetic_line_name(stop.get("line_name")) or is_synthetic_line_name(train.get("line_name"))):
         if (
             physical_key
@@ -554,9 +585,24 @@ def build_line_trace(
                 line_key for line_key in shared_lines
                 if line_key[0] == segment_key[0]
             }
+            unique_shared_line = next(iter(shared_lines)) if len(shared_lines) == 1 else None
+            shared_line_override = unique_shared_line or (next(iter(same_operator_shared_lines)) if len(same_operator_shared_lines) == 1 else None)
             if (
-                len(same_operator_shared_lines) == 1
-                and segment_key not in same_operator_shared_lines
+                segment_key[1] not in PASSENGER_TRACE_WINS_LINE_NAMES
+                and
+                unique_shared_line
+                and segment_key != unique_shared_line
+            ):
+                # A single common physical line between adjacent station groups is
+                # the most reliable identity for that track segment, especially at
+                # cross-operator boundary stations.
+                segment_key = unique_shared_line
+                segment_key_from_adjacent_physical = True
+            elif (
+                segment_key[1] not in PASSENGER_TRACE_WINS_LINE_NAMES
+                and
+                shared_line_override
+                and segment_key != shared_line_override
                 and (
                     is_synthetic_line_name(raw_by_source_sequence.get(int(normalized_stops[index].get("sourceSequence") or 0), {}).get("line_name"))
                     or segment_key[1] in REMOTE_THROUGH_SOURCE_LINE_NAMES
@@ -564,7 +610,7 @@ def build_line_trace(
             ):
                 # Route choices are physical boarding lines. Source labels for a through service
                 # can still appear later as train labels, but they must not overwrite the segment.
-                segment_key = next(iter(same_operator_shared_lines))
+                segment_key = shared_line_override
                 segment_key_from_adjacent_physical = True
         next_stop_key = stop_keys[index + 1] if index + 1 < len(stop_keys) else None
         if (
@@ -699,6 +745,78 @@ def line_trace_entry(
         "lineName": line_name,
         "routeId": route_id_for(operator_id, line_name),
     }
+
+
+def rematch_ambiguous_stop_groups(
+    raw_stops: list[dict[str, Any]],
+    groups_by_station_name: dict[str, set[str]],
+    physical_station_by_group: dict[str, list[dict[str, Any]]],
+    reviewed_physical_lines_by_group: dict[str, set[tuple[str, str]]],
+) -> tuple[list[dict[str, Any]], int]:
+    stops = [dict(stop) for stop in sorted(raw_stops or [], key=lambda item: item.get("sequence", 0))]
+    rematched_count = 0
+
+    def stop_group_id(stop: dict[str, Any] | None) -> str:
+        return str((stop or {}).get("station_group_id") or (stop or {}).get("station_id") or "")
+
+    def best_physical_station_id(group_id: str, preferred_lines: set[tuple[str, str]]) -> str:
+        stations = physical_station_by_group.get(group_id) or []
+        if not stations:
+            return ""
+        for operator_id, line_name in preferred_lines:
+            for station in stations:
+                if (str(station.get("operatorId") or ""), str(station.get("lineName") or "")) == (operator_id, line_name):
+                    return str(station.get("id") or "")
+        return str(stations[0].get("id") or "")
+
+    for index, stop in enumerate(stops):
+        station_name = stop.get("station_name_raw") or stop.get("station_name")
+        candidate_group_ids = groups_by_station_name.get(normalize_station_name(station_name), set())
+        if len(candidate_group_ids) < 2:
+            continue
+        current_group_id = stop_group_id(stop)
+        if current_group_id not in candidate_group_ids:
+            continue
+        adjacent_group_ids = [
+            stop_group_id(stops[index - 1] if index > 0 else None),
+            stop_group_id(stops[index + 1] if index + 1 < len(stops) else None),
+        ]
+        adjacent_line_sets = [
+            reviewed_physical_lines_by_group.get(group_id, set())
+            for group_id in adjacent_group_ids
+            if group_id
+        ]
+        if not adjacent_line_sets:
+            continue
+
+        scored: list[tuple[int, str, set[tuple[str, str]]]] = []
+        for candidate_group_id in candidate_group_ids:
+            candidate_lines = reviewed_physical_lines_by_group.get(candidate_group_id, set())
+            shared_lines: set[tuple[str, str]] = set()
+            score = 0
+            for adjacent_lines in adjacent_line_sets:
+                overlap = candidate_lines & adjacent_lines
+                if overlap:
+                    score += 100
+                    shared_lines.update(overlap)
+            if candidate_group_id == current_group_id:
+                score += 1
+            scored.append((score, candidate_group_id, shared_lines))
+        scored.sort(key=lambda item: (-item[0], item[1]))
+        best_score, best_group_id, best_shared_lines = scored[0]
+        current_score = next((score for score, group_id, _shared in scored if group_id == current_group_id), 0)
+        if best_group_id == current_group_id or best_score <= current_score or best_score < 100:
+            continue
+
+        stop["station_group_id"] = best_group_id
+        stop["station_id"] = best_group_id
+        physical_station_id = best_physical_station_id(best_group_id, best_shared_lines)
+        if physical_station_id:
+            stop["physical_station_id"] = physical_station_id
+        stop["match_method"] = f"{stop.get('match_method') or 'matched'}+context_line"
+        rematched_count += 1
+
+    return stops, rematched_count
 
 
 def choose_default_group(station_groups: list[dict[str, Any]], names: list[str], fallback_index: int = 0) -> str:
@@ -882,14 +1000,19 @@ def build_timetable(
     trip_instances = []
     route_station_groups: dict[str, set[str]] = defaultdict(set)
     line_station_groups: dict[tuple[str, str], set[str]] = defaultdict(set)
-    stats = {"skipped_short": 0, "skipped_no_route": 0, "skipped_mislabeled_foreign_train": 0}
+    stats = {"skipped_short": 0, "skipped_no_route": 0, "skipped_mislabeled_foreign_train": 0, "rematched_ambiguous_stop_group": 0}
     seen_ids: set[str] = set()
     reviewed_physical_lines_by_group: dict[str, set[tuple[str, str]]] = defaultdict(set)
+    physical_station_by_group: dict[str, list[dict[str, Any]]] = defaultdict(list)
     physical_name_by_group: dict[str, str] = {}
+    groups_by_station_name: dict[str, set[str]] = defaultdict(set)
     for station in physical_station_by_id.values():
         group_id = station.get("stationGroupId")
+        if group_id:
+            physical_station_by_group[str(group_id)].append(station)
         if group_id and station.get("nameJa"):
             physical_name_by_group.setdefault(group_id, station.get("nameJa"))
+            groups_by_station_name[normalize_station_name(station.get("nameJa"))].add(str(group_id))
         line_name = station.get("lineName")
         if not group_id or not line_name:
             continue
@@ -900,18 +1023,26 @@ def build_timetable(
         if should_skip_mislabeled_foreign_train(train):
             stats["skipped_mislabeled_foreign_train"] += 1
             continue
-        operator_id, line_name = route_key_for_train(train, name_to_id, id_to_name, physical_station_by_id)
+        raw_stop_times, rematched_count = rematch_ambiguous_stop_groups(
+            train.get("stop_times") or [],
+            groups_by_station_name,
+            physical_station_by_group,
+            reviewed_physical_lines_by_group,
+        )
+        stats["rematched_ambiguous_stop_group"] += rematched_count
+        train_for_build = {**train, "stop_times": raw_stop_times}
+        operator_id, line_name = route_key_for_train(train_for_build, name_to_id, id_to_name, physical_station_by_id)
         if not operator_id or not line_name:
             stats["skipped_no_route"] += 1
             continue
         route_id = route_id_for(operator_id, line_name)
         stop_times = collapse_consecutive_duplicate_stops(
-            normalize_trip_stop_times(train.get("stop_times") or [], valid_station_group_ids, physical_station_by_id)
+            normalize_trip_stop_times(raw_stop_times, valid_station_group_ids, physical_station_by_id)
         )
         if len(stop_times) < 2:
             stats["skipped_short"] += 1
             continue
-        service_name = public_service_name_for_train(train, line_name)
+        service_name = public_service_name_for_train(train_for_build, line_name)
         base_id = train.get("service_instance_id") or train.get("source_trip_id") or f"v4-trip-{index}"
         trip_id = str(base_id)
         if trip_id in seen_ids:
@@ -920,9 +1051,9 @@ def build_timetable(
         station_group_ids = [stop["stationGroupId"] for stop in stop_times]
         route_station_groups[route_id].update(station_group_ids)
         line_trace, line_sequence = build_line_trace(
-            train.get("stop_times") or [],
+            raw_stop_times,
             stop_times,
-            train,
+            train_for_build,
             physical_station_by_id,
             name_to_id,
             id_to_name,
@@ -941,11 +1072,11 @@ def build_timetable(
             ]
             route_station_groups[trace_route_id].update(traced_station_ids)
             line_station_groups[(trace["operatorId"], trace["lineName"])].update(traced_station_ids)
-        for stop in train.get("stop_times", []):
+        for stop in raw_stop_times:
             station_group_id = stop.get("station_group_id") or stop.get("station_id")
             stop_operator_id, stop_line_name = physical_route_key_for_stop(
                 stop,
-                train,
+                train_for_build,
                 physical_station_by_id,
                 name_to_id,
                 id_to_name,
@@ -1154,6 +1285,11 @@ def build_bundle(
         }
     else:
         trip_instances.clear()
+    skipped_train_count = sum(
+        count
+        for key, count in train_stats.items()
+        if key.startswith("skipped_")
+    )
     manifest = {
         "dataset": "v4_nationwide_gameplay",
         "generatedAt": generated_at,
@@ -1173,7 +1309,7 @@ def build_bundle(
             "serviceGeometry": len(map_bundle["serviceGeometry"]),
             "tripInstances": trip_count,
             "compactTrips": len(compact["trips"]),
-            "skippedTrainCount": sum(train_stats.values()),
+            "skippedTrainCount": skipped_train_count,
         },
         "defaults": {
             "runnerStartStationId": runner_start,

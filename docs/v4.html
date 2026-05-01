@@ -4171,6 +4171,12 @@
       for (const routeId of candidateRouteIds) {
         if (routeServesAdjacentStops(routeId, boardStop, nextStop)) return [routeId];
       }
+      for (const routeId of candidateRouteIds) {
+        if (
+          !isThroughServiceTransferAlias(routeId) &&
+          routePatternServesPlannerBoardingStation(routeId, boardStop.stationGroupId)
+        ) return [routeId];
+      }
       if (nextStop) return [];
       const fallbackRouteId = candidateRouteIds.find((routeId) => state.routeById.has(routeId));
       return fallbackRouteId ? [fallbackRouteId] : [];
@@ -6891,6 +6897,22 @@
       const boardStop = entry?.boardStop || entry?.stop || null;
       const nextStop = nextStopAfter(entry?.trip, boardStop);
       const isUenoTokyoCoreSegment = Boolean(uenoTokyoCoreSegmentChoiceRouteId(entry, entry?.trip, boardStop));
+      const currentSegmentRouteId = tracedRouteIdForTripSegment(entry?.trip, boardStop, nextStop);
+      if (
+        currentSegmentRouteId &&
+        !isThroughServiceTransferAlias(currentSegmentRouteId) &&
+        routeServesAdjacentStops(currentSegmentRouteId, boardStop, nextStop)
+      ) {
+        return [currentSegmentRouteId];
+      }
+      if (
+        currentSegmentRouteId &&
+        !isThroughServiceTransferAlias(currentSegmentRouteId) &&
+        boardStop?.stationGroupId &&
+        routePatternServesPlannerBoardingStation(currentSegmentRouteId, boardStop.stationGroupId)
+      ) {
+        return [currentSegmentRouteId];
+      }
       const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
       if (adjacentDirectionRouteId && !isJrRoute(tripRoute)) return [adjacentDirectionRouteId];
       if (

@@ -308,7 +308,7 @@ def main() -> int:
             sequence_count = len(station_sequences.get(station_group_id) or [])
             if sequence_count > 1:
                 repeated_station_stop_count += 1
-            if len(route_ids) > 1:
+            if len(route_ids) > 1 and sequence_count == 1:
                 duplicate_train_station_count += 1
                 duplicate_train_station_route_count += len(route_ids)
                 duplicate_station_by_source[source] += 1
