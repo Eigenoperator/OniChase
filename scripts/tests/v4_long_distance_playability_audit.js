@@ -193,7 +193,11 @@ function parseArgs(argv) {
     index += 1;
   }
   if (!args['page-url']) throw new Error('Missing --page-url');
-  args['random-count'] = Number.parseInt(args['random-count'] || '20', 10);
+  args['fixed-count'] = Number.parseInt(args['fixed-count'] || '100', 10);
+  if (!Number.isFinite(args['fixed-count']) || args['fixed-count'] < LONG_DISTANCE_CASES.length) {
+    throw new Error(`Invalid --fixed-count; must be at least ${LONG_DISTANCE_CASES.length}`);
+  }
+  args['random-count'] = Number.parseInt(args['random-count'] || '100', 10);
   if (!Number.isFinite(args['random-count']) || args['random-count'] < 0) {
     throw new Error('Invalid --random-count');
   }
@@ -228,14 +232,16 @@ async function loadPage(pageUrl) {
 }
 
 async function auditLongDistancePlayability(page, options) {
-  return page.evaluate(({ fixedCases, randomCount, seed }) => {
+  return page.evaluate(({ fixedCases: handFixedCases, fixedCount, randomCount, seed }) => {
     const START_MINUTE = hhmmToMinutes('06:00');
     const END_MINUTE = hhmmToMinutes('30:00');
     const MIN_TRANSFER_MINUTES = 2;
     const MIN_RANDOM_DISTANCE_METERS = 80_000;
-    const MAX_RANDOM_ATTEMPTS = Math.max(80, randomCount * 50);
+    const fixedGeneratedCount = Math.max(0, fixedCount - handFixedCases.length);
+    const MAX_RANDOM_ATTEMPTS = Math.max(100, (fixedGeneratedCount + randomCount) * 70);
     const MAX_CHAIN_LEGS = 4;
     const MAX_RANDOM_DEPARTURES = 140;
+    const NOVELTY_CANDIDATES_PER_CASE = 8;
 
     function seededRandom(initialSeed) {
       let value = initialSeed >>> 0;
@@ -388,7 +394,7 @@ async function auditLongDistancePlayability(page, options) {
       return stops.slice(Math.floor(stops.length * 0.35));
     }
 
-    function planRandomChain(origin) {
+    function planRandomChain(origin, usedStationGroupIds, usedRouteNames) {
       const targetLegCount = 1 + Math.floor(random() * MAX_CHAIN_LEGS);
       let currentStationGroupId = origin.stationGroupId;
       let currentMinute = START_MINUTE;
@@ -428,11 +434,50 @@ async function auditLongDistancePlayability(page, options) {
         reachedGroupId: currentStationGroupId,
         arrivalMinute: legs.at(-1)?.arrivalMinute || null,
         expansionCount: legs.length,
+        noveltyScore: scorePlanNovelty(origin, currentStationGroupId, legs, usedStationGroupIds, usedRouteNames),
         legs,
       };
     }
 
-    function caseFromPlan(index, origin, target, plan) {
+    function scorePlanNovelty(origin, targetStationGroupId, legs, usedStationGroupIds, usedRouteNames) {
+      const stationIds = new Set([origin.stationGroupId, targetStationGroupId]);
+      const routeNames = new Set();
+      for (const leg of legs) {
+        stationIds.add(leg.fromStationGroupId);
+        stationIds.add(leg.boardStationGroupId);
+        stationIds.add(leg.toStationGroupId);
+        if (leg.route) routeNames.add(leg.route);
+      }
+      const newStationCount = [...stationIds].filter((stationGroupId) => !usedStationGroupIds.has(stationGroupId)).length;
+      const newRouteCount = [...routeNames].filter((routeName) => !usedRouteNames.has(routeName)).length;
+      return (newRouteCount * 100) + (newStationCount * 12) + (legs.length * 2);
+    }
+
+    function addCaseUsage(testCase, usedStationGroupIds, usedRouteNames) {
+      for (const stop of testCase.stops || []) {
+        if (stop.stationGroupId) usedStationGroupIds.add(stop.stationGroupId);
+        for (const routeName of stop.routes || []) usedRouteNames.add(routeName);
+      }
+      for (const leg of testCase.plannedLegs || []) {
+        if (leg.fromStationGroupId) usedStationGroupIds.add(leg.fromStationGroupId);
+        if (leg.boardStationGroupId) usedStationGroupIds.add(leg.boardStationGroupId);
+        if (leg.toStationGroupId) usedStationGroupIds.add(leg.toStationGroupId);
+        if (leg.route) usedRouteNames.add(leg.route);
+      }
+    }
+
+    function seedUsageFromHandFixedCases(usedStationGroupIds, usedRouteNames) {
+      for (const testCase of handFixedCases) {
+        for (const stop of testCase.stops || []) {
+          for (const stationGroupId of groupIdsByDisplayName(stop.name)) {
+            usedStationGroupIds.add(stationGroupId);
+          }
+          for (const routeName of stop.routes || []) usedRouteNames.add(routeName);
+        }
+      }
+    }
+
+    function caseFromPlan(index, origin, target, plan, prefix, generatedKind) {
       const stops = [];
       for (let legIndex = 0; legIndex < plan.legs.length; legIndex += 1) {
         const leg = plan.legs[legIndex];
@@ -451,18 +496,20 @@ async function auditLongDistancePlayability(page, options) {
         });
       }
       return {
-        name: `random_${index}_${origin.name}_to_${target.name}`,
+        name: `${prefix}_${index}_${origin.name}_to_${target.name}`,
         generated: true,
+        generatedKind,
         plannedArrival: minutesToHhmm(plan.arrivalMinute),
         plannedLegCount: plan.legs.length,
         planExpansionCount: plan.expansionCount,
+        noveltyScore: plan.noveltyScore,
         distanceKm: Math.round(coordinateDistanceMeters(origin.coordinate, target.coordinate) / 1000),
         stops,
         plannedLegs: plan.legs,
       };
     }
 
-    function generateRandomCases(count) {
+    function generateNoveltyCases(count, usedStationGroupIds, usedRouteNames, prefix, generatedKind) {
       if (!count) return [];
       const pool = randomStationPool();
       const cases = [];
@@ -470,23 +517,41 @@ async function auditLongDistancePlayability(page, options) {
       let attemptCount = 0;
       while (cases.length < count && attemptCount < MAX_RANDOM_ATTEMPTS) {
         attemptCount += 1;
-        const origin = randomItem(pool);
-        if (!origin) continue;
-        const plan = planRandomChain(origin);
-        if (!plan.found || !plan.legs.length || plan.legs.length > MAX_CHAIN_LEGS) continue;
-        const targetCoordinate = groupCoordinate(plan.reachedGroupId);
-        const target = {
-          stationGroupId: plan.reachedGroupId,
-          name: displayNameForGroup(plan.reachedGroupId),
-          coordinate: targetCoordinate,
-        };
-        if (!target.coordinate || origin.stationGroupId === target.stationGroupId) continue;
-        const pairKey = `${origin.stationGroupId}->${target.stationGroupId}`;
-        if (seenPairs.has(pairKey)) continue;
-        const distanceMeters = coordinateDistanceMeters(origin.coordinate, target.coordinate);
-        if (!Number.isFinite(distanceMeters) || distanceMeters < MIN_RANDOM_DISTANCE_METERS) continue;
-        seenPairs.add(pairKey);
-        cases.push(caseFromPlan(cases.length + 1, origin, target, plan));
+        let bestCandidate = null;
+        for (let candidateIndex = 0; candidateIndex < NOVELTY_CANDIDATES_PER_CASE; candidateIndex += 1) {
+          const origin = randomItem(pool);
+          if (!origin) continue;
+          const plan = planRandomChain(origin, usedStationGroupIds, usedRouteNames);
+          if (!plan.found || !plan.legs.length || plan.legs.length > MAX_CHAIN_LEGS) continue;
+          const targetCoordinate = groupCoordinate(plan.reachedGroupId);
+          const target = {
+            stationGroupId: plan.reachedGroupId,
+            name: displayNameForGroup(plan.reachedGroupId),
+            coordinate: targetCoordinate,
+          };
+          if (!target.coordinate || origin.stationGroupId === target.stationGroupId) continue;
+          const pairKey = `${origin.stationGroupId}->${target.stationGroupId}`;
+          if (seenPairs.has(pairKey)) continue;
+          const distanceMeters = coordinateDistanceMeters(origin.coordinate, target.coordinate);
+          if (!Number.isFinite(distanceMeters) || distanceMeters < MIN_RANDOM_DISTANCE_METERS) continue;
+          const distanceScore = Math.min(300, Math.round(distanceMeters / 10_000));
+          const score = plan.noveltyScore + distanceScore + plan.legs.length;
+          if (!bestCandidate || score > bestCandidate.score) {
+            bestCandidate = { origin, target, plan, pairKey, score };
+          }
+        }
+        if (!bestCandidate) continue;
+        seenPairs.add(bestCandidate.pairKey);
+        const testCase = caseFromPlan(
+          cases.length + 1,
+          bestCandidate.origin,
+          bestCandidate.target,
+          bestCandidate.plan,
+          prefix,
+          generatedKind,
+        );
+        cases.push(testCase);
+        addCaseUsage(testCase, usedStationGroupIds, usedRouteNames);
       }
       return cases;
     }
@@ -521,7 +586,7 @@ async function auditLongDistancePlayability(page, options) {
           candidateToNextCount += 1;
         }
       }
-      if (!boardableDepartureCount) {
+      if (nextTargetGroupId && !boardableDepartureCount) {
         anomalies.push({
           kind: 'long_distance_waypoint_no_boardable_departures',
           name: testCase.name,
@@ -561,8 +626,34 @@ async function auditLongDistancePlayability(page, options) {
     const anomalies = [];
     const results = [];
     const startedAtMs = performance.now();
-    const randomCases = generateRandomCases(randomCount);
+    const usedStationGroupIds = new Set();
+    const usedRouteNames = new Set();
+    seedUsageFromHandFixedCases(usedStationGroupIds, usedRouteNames);
+    const coverageCases = generateNoveltyCases(
+      fixedGeneratedCount,
+      usedStationGroupIds,
+      usedRouteNames,
+      'coverage',
+      'fixed_coverage',
+    );
+    const fixedCases = [...handFixedCases, ...coverageCases];
+    const randomCases = generateNoveltyCases(
+      randomCount,
+      usedStationGroupIds,
+      usedRouteNames,
+      'random',
+      'random',
+    );
     const cases = [...fixedCases, ...randomCases];
+    if (fixedCases.length !== fixedCount || randomCases.length !== randomCount) {
+      anomalies.push({
+        kind: 'long_distance_generated_case_shortfall',
+        requestedFixedCaseCount: fixedCount,
+        fixedCaseCount: fixedCases.length,
+        requestedRandomCaseCount: randomCount,
+        randomCaseCount: randomCases.length,
+      });
+    }
     for (const testCase of cases) {
       const selectedStops = testCase.stops.map(selectStationGroup);
       const ambiguous = selectedStops
@@ -618,11 +709,13 @@ async function auditLongDistancePlayability(page, options) {
       results.push({
         name: testCase.name,
         generated: Boolean(testCase.generated),
+        generatedKind: testCase.generatedKind || null,
         from: testCase.stops[0].name,
         to: testCase.stops.at(-1).name,
         via: testCase.stops.slice(1, -1).map((item) => item.name),
         plannedArrival: testCase.plannedArrival || null,
         plannedLegCount: testCase.plannedLegCount || null,
+        noveltyScore: testCase.noveltyScore || null,
         distanceKm: testCase.distanceKm || null,
         found,
         arrival: found ? legs.at(-1).arrive : null,
@@ -636,7 +729,10 @@ async function auditLongDistancePlayability(page, options) {
     return {
       checkedAt: new Date().toISOString(),
       caseCount: cases.length,
+      handFixedCaseCount: handFixedCases.length,
+      coverageCaseCount: coverageCases.length,
       fixedCaseCount: fixedCases.length,
+      requestedFixedCaseCount: fixedCount,
       randomCaseCount: randomCases.length,
       requestedRandomCaseCount: randomCount,
       seed,
@@ -649,6 +745,7 @@ async function auditLongDistancePlayability(page, options) {
     };
   }, {
     fixedCases: LONG_DISTANCE_CASES,
+    fixedCount: options.fixedCount,
     randomCount: options.randomCount,
     seed: options.seed,
   });
@@ -659,6 +756,7 @@ async function auditLongDistancePlayability(page, options) {
   const { browser, page } = await loadPage(args['page-url']);
   try {
     const result = await auditLongDistancePlayability(page, {
+      fixedCount: args['fixed-count'],
       randomCount: args['random-count'],
       seed: args.seed,
     });
