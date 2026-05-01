@@ -126,6 +126,151 @@ REVIEWED_GAP_PATTERNS = {
     },
 }
 
+REVIEWED_GAP_PATTERNS.update(
+    {
+        ("くろしお", "白浜", "新大阪"): {
+            "category": "alternate_origin_pattern",
+            "note": "Missing-looking even numbers are present as Shingu-origin Kuroshio services passing Shirahama.",
+            "source": "JR West official weekday timetable",
+        },
+        ("こうのとり", "福知山", "新大阪"): {
+            "category": "alternate_origin_pattern",
+            "note": "Missing-looking numbers 12, 14, 18, and 22 are present as Kinosaki-onsen-origin Kounotori services passing Fukuchiyama.",
+            "source": "JR West official weekday timetable",
+        },
+        ("こうのとり", "新大阪", "福知山"): {
+            "category": "alternate_terminal_pattern",
+            "note": "Missing-looking numbers 9, 13, and 17 are present from Shin-Osaka but continue beyond Fukuchiyama.",
+            "source": "JR West official weekday timetable",
+        },
+        ("こうのとり", "新大阪", "城崎温泉"): {
+            "category": "short_turn_pattern",
+            "note": "Missing-looking numbers 7 and 11 are present from Shin-Osaka but terminate at Fukuchiyama.",
+            "source": "JR West official weekday timetable",
+        },
+        ("ときわ", "勝田", "品川"): {
+            "category": "alternate_origin_pattern",
+            "note": "Missing-looking numbers 56, 58, 60, and 64 are present as Takahagi-origin Tokiwa services passing Katsuta.",
+            "source": "JR East official 2026-05 timetable",
+        },
+        ("はるか", "京都", "関西空港"): {
+            "category": "alternate_origin_pattern",
+            "note": "Missing-looking numbers 3, 9, and 11 are present as Kusatsu/Yasu-origin Haruka services passing Kyoto.",
+            "source": "JR West official weekday timetable",
+        },
+        ("はるか", "関西空港", "京都"): {
+            "category": "alternate_terminal_pattern",
+            "note": "Missing-looking numbers 50 and 54 are present from Kansai-airport but continue beyond Kyoto to Yasu.",
+            "source": "JR West official weekday timetable",
+        },
+        ("きのさき", "福知山", "京都"): {
+            "category": "alternate_origin_pattern",
+            "note": "Missing-looking numbers 8 and 12 are present as Toyooka- or Kinosaki-onsen-origin Kinosaki services passing Fukuchiyama.",
+            "source": "JR West official weekday timetable",
+        },
+        ("きのさき", "京都", "福知山"): {
+            "category": "alternate_terminal_pattern",
+            "note": "Missing-looking numbers 5, 7, 9, and 15 are present from Kyoto but continue beyond Fukuchiyama.",
+            "source": "JR West official weekday timetable",
+        },
+        ("きのさき", "京都", "城崎温泉"): {
+            "category": "short_turn_pattern",
+            "note": "Missing-looking 3号 is present from Kyoto but terminates at Fukuchiyama.",
+            "source": "JR West official weekday timetable",
+        },
+        ("ひたち", "いわき", "品川"): {
+            "category": "alternate_origin_pattern",
+            "note": "Missing-looking numbers 12 and 22 are present as Sendai-origin Hitachi services passing Iwaki.",
+            "source": "JR East official 2026-05 timetable",
+        },
+        ("ひたち", "品川", "いわき"): {
+            "category": "alternate_terminal_pattern",
+            "note": "Missing-looking numbers 3, 13, and 21 are present from Shinagawa but continue beyond Iwaki to Sendai.",
+            "source": "JR East official 2026-05 timetable",
+        },
+        ("成田エクスプレス", "成田空港", "大船"): {
+            "category": "alternate_terminal_pattern",
+            "note": "Missing-looking even numbers are present as Narita-airport-origin NEX services terminating at Shinjuku instead of Ofuna.",
+            "source": "JR East official 2026-05 timetable",
+        },
+        ("いなほ", "酒田", "新潟"): {
+            "category": "alternate_origin_pattern",
+            "note": "Missing-looking 8号 is present as an Akita-origin Inaho service passing Sakata.",
+            "source": "JR East official 2026-05 timetable",
+        },
+        ("いなほ", "新潟", "酒田"): {
+            "category": "alternate_terminal_pattern",
+            "note": "Missing-looking 7号 is present from Niigata but continues beyond Sakata to Akita.",
+            "source": "JR East official 2026-05 timetable",
+        },
+        ("湘南", "東京", "小田原"): {
+            "category": "branch_destination_pattern",
+            "note": "Missing-looking numbers 5 and 17 are present from Tokyo but terminate at Hiratsuka rather than Odawara.",
+            "source": "JR East official 2026-05 timetable",
+        },
+        ("スペーシアＸ", "浅草", "東武日光"): {
+            "category": "branch_destination_pattern",
+            "note": "Missing-looking 7号 and 9号 are current Spacia X services from Asakusa to Kinugawa-onsen, not Tobu-nikko-bound services.",
+            "source": "Tobu Railway official Spacia X timetable",
+        },
+        ("ソニック", "大分", "博多"): {
+            "category": "alternate_origin_pattern",
+            "note": "Missing-looking 12号 is present as a Saiki-origin Sonic service passing Oita.",
+            "source": "NAVITIME/JR Kyushu weekday timetable",
+        },
+        ("ソニック", "博多", "大分"): {
+            "category": "alternate_terminal_pattern",
+            "note": "Missing-looking 41号 is present from Hakata but continues beyond Oita to Saiki.",
+            "source": "NAVITIME/JR Kyushu weekday timetable",
+        },
+        ("ひゅうが", "延岡", "宮崎空港"): {
+            "category": "short_turn_pattern",
+            "note": "Missing-looking 3号 is present from Nobeoka but terminates at Miyazaki instead of Miyazaki-airport.",
+            "source": "NAVITIME/JR Kyushu weekday timetable",
+        },
+        ("あしずり", "中村", "高知"): {
+            "category": "alternate_origin_pattern",
+            "note": "Missing-looking 6号 is present as a Sukumo-origin Ashizuri service passing Nakamura.",
+            "source": "NAVITIME/JR Shikoku weekday timetable",
+        },
+        ("あしずり", "高知", "中村"): {
+            "category": "alternate_terminal_pattern",
+            "note": "Missing-looking 7号 is present from Kochi but continues beyond Nakamura to Sukumo.",
+            "source": "NAVITIME/JR Shikoku weekday timetable",
+        },
+        ("スーパーまつかぜ", "鳥取", "益田"): {
+            "category": "short_turn_pattern",
+            "note": "Missing-looking 3号 is present from Tottori but terminates at Yonago.",
+            "source": "JR West official weekday timetable",
+        },
+        ("ひだ", "高山", "名古屋"): {
+            "category": "alternate_origin_pattern",
+            "note": "Missing-looking 12号 is present as a Hida-Furukawa-origin Hida service passing Takayama.",
+            "source": "NAVITIME/JR Central weekday timetable",
+        },
+        ("ひだ", "名古屋", "富山"): {
+            "category": "branch_destination_pattern",
+            "note": "Missing-looking 5号 and 9号 are present from Nagoya but terminate at Hida-Furukawa/Takayama rather than Toyama.",
+            "source": "JR West/NAVITIME weekday timetable",
+        },
+        ("ひだ", "名古屋", "高山"): {
+            "category": "alternate_terminal_pattern",
+            "note": "Missing-looking 5号 is present from Nagoya but continues beyond Takayama to Hida-Furukawa.",
+            "source": "JR West/NAVITIME weekday timetable",
+        },
+        ("メトロホームウェイ", "大手町", "本厚木"): {
+            "category": "alternate_origin_pattern",
+            "note": "Missing-looking 43号 is present as a Metro Homeway through service whose full origin is Kita-senju.",
+            "source": "v3 Odakyu/Tokyo Metro source snapshot",
+        },
+        ("ホームウェイ", "新宿", "秦野"): {
+            "category": "branch_destination_pattern",
+            "note": "Missing-looking 5号 is present from Shinjuku but continues beyond Hadano to Odawara.",
+            "source": "v3 Odakyu source snapshot",
+        },
+    }
+)
+
 
 def load_json(path: Path) -> Any:
     opener = gzip.open if path.suffix == ".gz" else open
