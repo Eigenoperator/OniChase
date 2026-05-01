@@ -432,7 +432,7 @@ async function auditRouteChoices(page) {
     }
     const knownStationScanStartedAtMs = performance.now();
     const knownStationChoices = Object.fromEntries(
-      ['東京', '上野', '品川', '新橋', '大宮', '青梅', '八王子', '米原'].map((stationName) => [stationName, choicesAt(stationName)])
+      ['東京', '上野', '品川', '新橋', '大宮', '青梅', '八王子', '米原', '蘇我', '五井', '木更津', '上総一ノ宮', '成田', '佐倉'].map((stationName) => [stationName, choicesAt(stationName)])
     );
     const routeChoiceTitles = Object.fromEntries(
       Object.entries(knownStationChoices).map(([stationName, choices]) => [
@@ -506,6 +506,29 @@ async function auditRouteChoices(page) {
         samples: maibaraSouthboundProblems,
         choices: knownStationChoices['米原'],
       });
+    }
+
+    const forbiddenRemoteThroughChoicesByStation = {
+      蘇我: new Set(['横須賀線', '総武快速線', '横須賀線・総武快速線', '総武線']),
+      五井: new Set(['横須賀線', '総武快速線', '横須賀線・総武快速線', '総武線', '京葉線']),
+      木更津: new Set(['横須賀線', '総武快速線', '横須賀線・総武快速線', '総武線', '京葉線']),
+      上総一ノ宮: new Set(['横須賀線', '総武快速線', '横須賀線・総武快速線', '総武線', '京葉線']),
+      成田: new Set(['横須賀線', '総武快速線', '横須賀線・総武快速線', '総武線']),
+      佐倉: new Set(['横須賀線', '総武快速線', '横須賀線・総武快速線']),
+    };
+    for (const [stationName, forbiddenTitles] of Object.entries(forbiddenRemoteThroughChoicesByStation)) {
+      const forbiddenChoices = knownStationChoices[stationName]
+        .filter((choice) => forbiddenTitles.has(choice.route))
+        .map((choice) => choice.route);
+      if (forbiddenChoices.length) {
+        anomalies.push({
+          kind: 'remote_through_line_choice_on_physical_branch',
+          station: stationName,
+          reason: 'Route choices must show the current physical boarding line; remote through-running identities such as Yokosuka/Sobu Rapid/Keiyo may only appear after selecting a train.',
+          forbiddenChoices: [...new Set(forbiddenChoices)].sort((a, b) => a.localeCompare(b, 'ja')),
+          choices: knownStationChoices[stationName],
+        });
+      }
     }
 
     const unexpectedUenoTokyoStations = [...allUenoTokyoChoiceStationSet]

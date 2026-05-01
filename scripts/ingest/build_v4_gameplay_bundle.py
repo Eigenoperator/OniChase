@@ -74,6 +74,16 @@ REVIEWED_PHYSICAL_SEGMENT_LINE_OVERRIDES = {
     frozenset(("大網", "蘇我")): ("jr_east", "外房線"),
 }
 
+REMOTE_THROUGH_SOURCE_LINE_NAMES = {
+    "横須賀線",
+    "総武線",
+    "総武快速線",
+    "湘南新宿ライン",
+    "上野東京ライン",
+    "中央線",
+    "京葉線",
+}
+
 
 def load_json(path: Path) -> dict[str, Any]:
     opener = gzip.open if path.suffix == ".gz" else open
@@ -526,12 +536,36 @@ def build_line_trace(
     segment_keys: list[tuple[str, str]] = []
     for index in range(len(normalized_stops) - 1):
         segment_key = stop_keys[index] if index < len(stop_keys) else fallback_key
+        segment_key_from_adjacent_physical = False
+        left_group_id = normalized_stops[index]["stationGroupId"]
+        right_group_id = normalized_stops[index + 1]["stationGroupId"]
         station_pair = frozenset((
-            physical_name_by_group.get(normalized_stops[index]["stationGroupId"], ""),
-            physical_name_by_group.get(normalized_stops[index + 1]["stationGroupId"], ""),
+            physical_name_by_group.get(left_group_id, ""),
+            physical_name_by_group.get(right_group_id, ""),
         ))
         if station_pair in REVIEWED_PHYSICAL_SEGMENT_LINE_OVERRIDES:
             segment_key = REVIEWED_PHYSICAL_SEGMENT_LINE_OVERRIDES[station_pair]
+            segment_key_from_adjacent_physical = True
+        else:
+            left_lines = reviewed_physical_lines_by_group.get(left_group_id, set())
+            right_lines = reviewed_physical_lines_by_group.get(right_group_id, set())
+            shared_lines = left_lines & right_lines
+            same_operator_shared_lines = {
+                line_key for line_key in shared_lines
+                if line_key[0] == segment_key[0]
+            }
+            if (
+                len(same_operator_shared_lines) == 1
+                and segment_key not in same_operator_shared_lines
+                and (
+                    is_synthetic_line_name(raw_by_source_sequence.get(int(normalized_stops[index].get("sourceSequence") or 0), {}).get("line_name"))
+                    or segment_key[1] in REMOTE_THROUGH_SOURCE_LINE_NAMES
+                )
+            ):
+                # Route choices are physical boarding lines. Source labels for a through service
+                # can still appear later as train labels, but they must not overwrite the segment.
+                segment_key = next(iter(same_operator_shared_lines))
+                segment_key_from_adjacent_physical = True
         next_stop_key = stop_keys[index + 1] if index + 1 < len(stop_keys) else None
         if (
             next_stop_key
@@ -540,8 +574,6 @@ def build_line_trace(
             and segment_key[1] in PHYSICAL_TRACE_WINS_LINE_NAMES
             and next_stop_key[1] in PHYSICAL_TRACE_WINS_LINE_NAMES
         ):
-            left_group_id = normalized_stops[index]["stationGroupId"]
-            right_group_id = normalized_stops[index + 1]["stationGroupId"]
             left_lines = reviewed_physical_lines_by_group.get(left_group_id, set())
             right_lines = reviewed_physical_lines_by_group.get(right_group_id, set())
             left_unique = len(left_lines) == 1 and segment_key in left_lines
@@ -550,7 +582,13 @@ def build_line_trace(
                 segment_key = next_stop_key
         previous_key = stop_keys[index - 1] if index > 0 and index - 1 < len(stop_keys) else None
         next_key = stop_keys[index + 1] if index + 1 < len(stop_keys) else None
-        if previous_key and next_key and previous_key == next_key and segment_key != previous_key:
+        if (
+            not segment_key_from_adjacent_physical
+            and previous_key
+            and next_key
+            and previous_key == next_key
+            and segment_key != previous_key
+        ):
             segment_key = next_key
         segment_keys.append(segment_key)
     for index in range(1, len(segment_keys) - 1):
@@ -853,7 +891,7 @@ def build_timetable(
         if group_id and station.get("nameJa"):
             physical_name_by_group.setdefault(group_id, station.get("nameJa"))
         line_name = station.get("lineName")
-        if not group_id or line_name not in PHYSICAL_TRACE_WINS_LINE_NAMES:
+        if not group_id or not line_name:
             continue
         physical_operator_id = str(station.get("operatorId") or name_to_id.get(station.get("operatorName") or "") or "")
         if physical_operator_id:

@@ -10,6 +10,7 @@ from typing import Any
 
 from build_v4_gameplay_bundle import (
     PHYSICAL_TRACE_WINS_LINE_NAMES,
+    REMOTE_THROUGH_SOURCE_LINE_NAMES,
     canonical_line_name,
     is_synthetic_line_name,
     operator_maps,
@@ -20,6 +21,7 @@ from build_v4_gameplay_bundle import (
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MAP = ROOT / "data" / "v4_japan_physical_map.json.gz"
+DEFAULT_GAMEPLAY_MAP = ROOT / "docs" / "data" / "v4_gameplay_map_bundle.json.gz"
 DEFAULT_CURRENT = ROOT / "data" / "v4_current_weekday_train_instances.json.gz"
 DEFAULT_TIMETABLE = ROOT / "docs" / "data" / "v4_gameplay_timetable_compact.json.gz"
 DEFAULT_OUTPUT = ROOT / "data" / "v4_physical_trace_line_mismatch_audit.json"
@@ -128,9 +130,10 @@ def decode_compact_timetable(payload: dict[str, Any]) -> list[dict[str, Any]]:
 def audit_gameplay_trace_mismatches(
     timetable: dict[str, Any],
     physical_map: dict[str, Any],
+    gameplay_map: dict[str, Any],
     reviewed_line_names: set[str],
 ) -> tuple[Counter[tuple[str, str]], list[dict[str, Any]]]:
-    routes = {route["id"]: route for route in physical_map.get("serviceRoutes", []) if route.get("id")}
+    routes = {route["id"]: route for route in gameplay_map.get("serviceRoutes", []) if route.get("id")}
     if not routes:
         routes = {
             route_id_for(route["operatorId"], route["shortName"]): route
@@ -153,8 +156,6 @@ def audit_gameplay_trace_mismatches(
         stops_by_sequence = {stop["sequence"]: stop for stop in stops}
         for trace in trip.get("lineTrace") or []:
             trace_line = route_title(routes, trace.get("routeId") or "")
-            if trace_line not in reviewed_line_names:
-                continue
             for sequence in range(int(trace.get("fromSequence") or 0), int(trace.get("toSequence") or 0)):
                 left = stops_by_sequence.get(sequence)
                 right = stops_by_sequence.get(sequence + 1)
@@ -167,9 +168,23 @@ def audit_gameplay_trace_mismatches(
                     for operator_id, line in left_lines & right_lines
                     if line in reviewed_line_names and operator_id == "jr_east"
                 }
-                if not shared_reviewed_lines or trace_line in shared_reviewed_lines:
+                shared_same_operator_lines = {
+                    line
+                    for operator_id, line in left_lines & right_lines
+                    if operator_id == "jr_east"
+                }
+                if trace_line in shared_same_operator_lines:
                     continue
-                expected = sorted(shared_reviewed_lines)[0]
+                if shared_reviewed_lines:
+                    expected = sorted(shared_reviewed_lines)[0]
+                elif len(shared_same_operator_lines) == 1 and trace_line in REMOTE_THROUGH_SOURCE_LINE_NAMES:
+                    expected = next(iter(shared_same_operator_lines))
+                else:
+                    continue
+                if trace_line == expected:
+                    continue
+                if trace_line not in REMOTE_THROUGH_SOURCE_LINE_NAMES or expected not in reviewed_line_names:
+                    continue
                 counts[(trace_line, expected)] += 1
                 if len(samples) < 80:
                     samples.append(
@@ -189,21 +204,25 @@ def audit_gameplay_trace_mismatches(
 def main() -> int:
     parser = argparse.ArgumentParser(description="Audit reviewed physical-line corridors where source service labels can disagree with the actual adjacent track line.")
     parser.add_argument("--physical-map", type=Path, default=DEFAULT_MAP)
+    parser.add_argument("--gameplay-map", type=Path, default=DEFAULT_GAMEPLAY_MAP)
     parser.add_argument("--current-trains", type=Path, default=DEFAULT_CURRENT)
     parser.add_argument("--timetable", type=Path, default=DEFAULT_TIMETABLE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
 
     physical_map = load_json(args.physical_map)
+    gameplay_map = load_json(args.gameplay_map)
     current = load_json(args.current_trains)
     timetable = load_json(args.timetable)
     reviewed_line_names = set(PHYSICAL_TRACE_WINS_LINE_NAMES)
+    reviewed_line_names.update({"総武線", "横須賀線"})
     raw_counts, raw_samples = audit_raw_source_mismatches(current, physical_map, reviewed_line_names)
-    gameplay_counts, gameplay_samples = audit_gameplay_trace_mismatches(timetable, physical_map, reviewed_line_names)
+    gameplay_counts, gameplay_samples = audit_gameplay_trace_mismatches(timetable, physical_map, gameplay_map, reviewed_line_names)
     payload = {
         "schema": "onichase.v4.physical_trace_line_mismatch_audit.v1",
         "inputs": {
             "physicalMap": str(args.physical_map.relative_to(ROOT)),
+            "gameplayMap": str(args.gameplay_map.relative_to(ROOT)),
             "currentTrains": str(args.current_trains.relative_to(ROOT)),
             "timetable": str(args.timetable.relative_to(ROOT)),
         },
