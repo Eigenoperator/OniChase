@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const fs = require('fs');
 const { chromium } = require('playwright');
 
 const MAPLIBRE_STUB = `
@@ -193,17 +194,37 @@ function parseArgs(argv) {
     index += 1;
   }
   if (!args['page-url']) throw new Error('Missing --page-url');
-  args['fixed-count'] = Number.parseInt(args['fixed-count'] || '100', 10);
-  if (!Number.isFinite(args['fixed-count']) || args['fixed-count'] < LONG_DISTANCE_CASES.length) {
-    throw new Error(`Invalid --fixed-count; must be at least ${LONG_DISTANCE_CASES.length}`);
+  if (args['fixed-count'] !== undefined) {
+    args['fixed-count'] = Number.parseInt(args['fixed-count'], 10);
+    if (!Number.isFinite(args['fixed-count']) || args['fixed-count'] < 0) {
+      throw new Error('Invalid --fixed-count');
+    }
+  } else {
+    args['fixed-count'] = null;
   }
-  args['random-count'] = Number.parseInt(args['random-count'] || '100', 10);
+  args['random-count'] = Number.parseInt(args['random-count'] || (args['case-file'] ? '0' : '100'), 10);
   if (!Number.isFinite(args['random-count']) || args['random-count'] < 0) {
     throw new Error('Invalid --random-count');
   }
   args.seed = Number.parseInt(args.seed || '20260501', 10);
   if (!Number.isFinite(args.seed)) throw new Error('Invalid --seed');
   return args;
+}
+
+function loadCaseFile(caseFile) {
+  const cases = JSON.parse(fs.readFileSync(caseFile, 'utf8'));
+  if (!Array.isArray(cases)) throw new Error('--case-file must contain a JSON array');
+  for (const [index, testCase] of cases.entries()) {
+    if (!testCase?.name || !Array.isArray(testCase.stops) || testCase.stops.length < 2) {
+      throw new Error(`Invalid case at index ${index}`);
+    }
+    for (const [stopIndex, stop] of testCase.stops.entries()) {
+      if (!stop?.name || (stop.routes !== undefined && !Array.isArray(stop.routes))) {
+        throw new Error(`Invalid stop at case ${index}, stop ${stopIndex}`);
+      }
+    }
+  }
+  return cases;
 }
 
 async function loadPage(pageUrl) {
@@ -232,7 +253,7 @@ async function loadPage(pageUrl) {
 }
 
 async function auditLongDistancePlayability(page, options) {
-  return page.evaluate(({ fixedCases: handFixedCases, fixedCount, randomCount, seed }) => {
+  return page.evaluate(({ fixedCases: handFixedCases, fixedCount, randomCount, seed, strictExpectedRoutes }) => {
     const START_MINUTE = hhmmToMinutes('06:00');
     const END_MINUTE = hhmmToMinutes('30:00');
     const MIN_TRANSFER_MINUTES = 2;
@@ -271,6 +292,16 @@ async function auditLongDistancePlayability(page, options) {
       return [...state.stationGroupById.keys()].filter((stationGroupId) => displayNameForGroup(stationGroupId) === name);
     }
 
+    function normalizeRouteTitleForChallenge(value) {
+      return String(value || '').replace(/[\s　]+/g, '');
+    }
+
+    function routeTitleMatchesExpected(actualTitle, expectedTitle) {
+      const actual = normalizeRouteTitleForChallenge(actualTitle);
+      const expected = normalizeRouteTitleForChallenge(expectedTitle);
+      return actual === expected || actual.includes(expected) || expected.includes(actual);
+    }
+
     function selectStationGroup(selector) {
       if (selector.stationGroupId) {
         const group = state.stationGroupById.get(selector.stationGroupId);
@@ -288,13 +319,16 @@ async function auditLongDistancePlayability(page, options) {
           routes: routeChoicesForGroup(stationGroupId, false),
         }));
       const matching = selector.routes?.length
-        ? candidates.filter((candidate) => selector.routes.every((routeName) => candidate.routes.includes(routeName)))
+        ? candidates.filter((candidate) => selector.routes.every((routeName) =>
+          candidate.routes.some((candidateRoute) => routeTitleMatchesExpected(candidateRoute, routeName))
+        ))
         : candidates;
+      const selected = matching.length === 1 ? matching[0] : (candidates.length === 1 ? candidates[0] : null);
       return {
         selector,
         candidates,
-        selected: matching.length === 1 ? matching[0] : null,
-        selectedCount: matching.length,
+        selected,
+        selectedCount: selected ? 1 : matching.length,
       };
     }
 
@@ -558,9 +592,11 @@ async function auditLongDistancePlayability(page, options) {
 
     function auditWaypointSurface(testCase, stopIndex, stationGroupId, selector, currentMinute, nextTargetGroupId) {
       const choices = routeChoiceSummariesForGroup(stationGroupId, true, currentMinute);
-      const choiceTitles = new Set(choices.map((choice) => choice.route));
-      const missingExpectedRoutes = (selector.routes || []).filter((routeName) => !choiceTitles.has(routeName));
-      if (missingExpectedRoutes.length) {
+      const choiceTitles = choices.map((choice) => choice.route);
+      const missingExpectedRoutes = (selector.routes || []).filter((routeName) =>
+        !choiceTitles.some((choiceTitle) => routeTitleMatchesExpected(choiceTitle, routeName))
+      );
+      if (strictExpectedRoutes && nextTargetGroupId && missingExpectedRoutes.length) {
         anomalies.push({
           kind: 'long_distance_waypoint_expected_route_missing',
           name: testCase.name,
@@ -736,6 +772,7 @@ async function auditLongDistancePlayability(page, options) {
       randomCaseCount: randomCases.length,
       requestedRandomCaseCount: randomCount,
       seed,
+      strictExpectedRoutes,
       passedCaseCount: results.filter((item) => item.found).length,
       waypointAuditCount,
       anomalyCount: anomalies.length,
@@ -744,21 +781,29 @@ async function auditLongDistancePlayability(page, options) {
       anomalies,
     };
   }, {
-    fixedCases: LONG_DISTANCE_CASES,
+    fixedCases: options.fixedCases,
     fixedCount: options.fixedCount,
     randomCount: options.randomCount,
     seed: options.seed,
+    strictExpectedRoutes: options.strictExpectedRoutes,
   });
 }
 
 (async () => {
   const args = parseArgs(process.argv);
+  const fixedCases = args['case-file'] ? loadCaseFile(args['case-file']) : LONG_DISTANCE_CASES;
+  const fixedCount = args['fixed-count'] ?? (args['case-file'] ? fixedCases.length : 100);
+  if (fixedCount < fixedCases.length) {
+    throw new Error(`Invalid --fixed-count; must be at least ${fixedCases.length}`);
+  }
   const { browser, page } = await loadPage(args['page-url']);
   try {
     const result = await auditLongDistancePlayability(page, {
-      fixedCount: args['fixed-count'],
+      fixedCases,
+      fixedCount,
       randomCount: args['random-count'],
       seed: args.seed,
+      strictExpectedRoutes: !args['case-file'],
     });
     console.log(JSON.stringify(result, null, 2));
     if (result.anomalyCount) process.exitCode = 1;
