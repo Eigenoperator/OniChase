@@ -193,6 +193,12 @@ function parseArgs(argv) {
     index += 1;
   }
   if (!args['page-url']) throw new Error('Missing --page-url');
+  args['random-count'] = Number.parseInt(args['random-count'] || '20', 10);
+  if (!Number.isFinite(args['random-count']) || args['random-count'] < 0) {
+    throw new Error('Invalid --random-count');
+  }
+  args.seed = Number.parseInt(args.seed || '20260501', 10);
+  if (!Number.isFinite(args.seed)) throw new Error('Invalid --seed');
   return args;
 }
 
@@ -221,11 +227,25 @@ async function loadPage(pageUrl) {
   return { browser, page };
 }
 
-async function auditLongDistancePlayability(page) {
-  return page.evaluate((cases) => {
+async function auditLongDistancePlayability(page, options) {
+  return page.evaluate(({ fixedCases, randomCount, seed }) => {
     const START_MINUTE = hhmmToMinutes('06:00');
     const END_MINUTE = hhmmToMinutes('30:00');
     const MIN_TRANSFER_MINUTES = 2;
+    const MIN_RANDOM_DISTANCE_METERS = 80_000;
+    const MAX_RANDOM_ATTEMPTS = Math.max(80, randomCount * 50);
+    const MAX_CHAIN_LEGS = 4;
+    const MAX_RANDOM_DEPARTURES = 140;
+
+    function seededRandom(initialSeed) {
+      let value = initialSeed >>> 0;
+      return () => {
+        value = (value * 1664525 + 1013904223) >>> 0;
+        return value / 0x100000000;
+      };
+    }
+
+    const random = seededRandom(seed);
 
     function routeChoicesForGroup(stationGroupId, includeTransferEquivalents = false, minute = START_MINUTE) {
       return routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, minute, { includeTransferEquivalents }))
@@ -246,6 +266,16 @@ async function auditLongDistancePlayability(page) {
     }
 
     function selectStationGroup(selector) {
+      if (selector.stationGroupId) {
+        const group = state.stationGroupById.get(selector.stationGroupId);
+        const routes = group ? routeChoicesForGroup(selector.stationGroupId, false) : [];
+        return {
+          selector,
+          candidates: group ? [{ stationGroupId: selector.stationGroupId, routes }] : [],
+          selected: group ? { stationGroupId: selector.stationGroupId, routes } : null,
+          selectedCount: group ? 1 : 0,
+        };
+      }
       const candidates = groupIdsByDisplayName(selector.name)
         .map((stationGroupId) => ({
           stationGroupId,
@@ -301,6 +331,164 @@ async function auditLongDistancePlayability(page) {
         }
       }
       return null;
+    }
+
+    function groupCoordinate(stationGroupId) {
+      return stationGroupCoordinate(stationGroupId);
+    }
+
+    function stationHasRawBoardableService(stationGroupId) {
+      for (const trip of state.stationTripsByGroupId.get(stationGroupId) || []) {
+        for (const stop of trip.stopTimes || []) {
+          if (stop.stationGroupId !== stationGroupId) continue;
+          const departureMinute = stopDepartureMinutes(stop);
+          if (departureMinute >= START_MINUTE && departureMinute <= END_MINUTE && hasDownstreamStop(trip, stop)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function randomStationPool() {
+      return [...state.stationGroupById.keys()]
+        .map((stationGroupId) => {
+          const coordinate = groupCoordinate(stationGroupId);
+          return {
+            stationGroupId,
+            name: displayNameForGroup(stationGroupId),
+            coordinate,
+          };
+        })
+        .filter((item) => item.name && item.coordinate && stationHasRawBoardableService(item.stationGroupId));
+    }
+
+    function randomItem(items) {
+      return items[Math.floor(random() * items.length)];
+    }
+
+    function randomDepartureCandidates(stationGroupId, currentMinute) {
+      return departuresForStationGroup(stationGroupId, currentMinute, {
+        includeTransferEquivalents: true,
+      })
+        .slice(0, MAX_RANDOM_DEPARTURES)
+        .filter((departure) => routeNamesForEntry(departure).length && hasDownstreamStop(departure.trip, departure.stop));
+    }
+
+    function downstreamCandidates(departure) {
+      const stops = (departure.trip.stopTimes || [])
+        .filter((stop) => stop.sequence > departure.stop.sequence)
+        .map((stop) => ({
+          stop,
+          arrivalMinute: Math.ceil((stop.arrivalTimeSec ?? stop.departureTimeSec ?? 0) / 60),
+          coordinate: groupCoordinate(stop.stationGroupId),
+        }))
+        .filter((item) => Number.isFinite(item.arrivalMinute) && item.arrivalMinute <= END_MINUTE && item.coordinate);
+      if (stops.length <= 2) return stops;
+      return stops.slice(Math.floor(stops.length * 0.35));
+    }
+
+    function planRandomChain(origin) {
+      const targetLegCount = 1 + Math.floor(random() * MAX_CHAIN_LEGS);
+      let currentStationGroupId = origin.stationGroupId;
+      let currentMinute = START_MINUTE;
+      const legs = [];
+      const visited = new Set([currentStationGroupId]);
+      for (let legIndex = 0; legIndex < targetLegCount; legIndex += 1) {
+        const departures = randomDepartureCandidates(currentStationGroupId, currentMinute);
+        if (!departures.length) break;
+        const departure = randomItem(departures);
+        const downstream = downstreamCandidates(departure)
+          .filter((item) => !visited.has(item.stop.stationGroupId));
+        if (!downstream.length) break;
+        const chosen = randomItem(downstream);
+        const routeNames = routeNamesForEntry(departure);
+        legs.push({
+          route: routeNames[0],
+          train: formatTripLabel(departure.trip),
+          tripId: departure.trip.id,
+          from: displayNameForGroup(departure.stop.stationGroupId),
+          to: displayNameForGroup(chosen.stop.stationGroupId),
+          fromStationGroupId: currentStationGroupId,
+          boardStationGroupId: departure.stop.stationGroupId,
+          toStationGroupId: chosen.stop.stationGroupId,
+          depart: minutesToHhmm(departure.departureMinute),
+          arrive: minutesToHhmm(chosen.arrivalMinute),
+          departureMinute: departure.departureMinute,
+          arrivalMinute: chosen.arrivalMinute,
+        });
+        currentStationGroupId = chosen.stop.stationGroupId;
+        currentMinute = chosen.arrivalMinute + MIN_TRANSFER_MINUTES;
+        visited.add(currentStationGroupId);
+        const distanceMeters = coordinateDistanceMeters(origin.coordinate, chosen.coordinate);
+        if (distanceMeters >= MIN_RANDOM_DISTANCE_METERS && legs.length >= 2 && random() < 0.45) break;
+      }
+      return {
+        found: Boolean(legs.length),
+        reachedGroupId: currentStationGroupId,
+        arrivalMinute: legs.at(-1)?.arrivalMinute || null,
+        expansionCount: legs.length,
+        legs,
+      };
+    }
+
+    function caseFromPlan(index, origin, target, plan) {
+      const stops = [];
+      for (let legIndex = 0; legIndex < plan.legs.length; legIndex += 1) {
+        const leg = plan.legs[legIndex];
+        if (legIndex === 0) {
+          stops.push({
+            name: displayNameForGroup(leg.fromStationGroupId),
+            stationGroupId: leg.fromStationGroupId,
+            routes: [leg.route],
+          });
+        }
+        const nextLeg = plan.legs[legIndex + 1];
+        stops.push({
+          name: displayNameForGroup(leg.toStationGroupId),
+          stationGroupId: leg.toStationGroupId,
+          routes: nextLeg ? [nextLeg.route] : [],
+        });
+      }
+      return {
+        name: `random_${index}_${origin.name}_to_${target.name}`,
+        generated: true,
+        plannedArrival: minutesToHhmm(plan.arrivalMinute),
+        plannedLegCount: plan.legs.length,
+        planExpansionCount: plan.expansionCount,
+        distanceKm: Math.round(coordinateDistanceMeters(origin.coordinate, target.coordinate) / 1000),
+        stops,
+        plannedLegs: plan.legs,
+      };
+    }
+
+    function generateRandomCases(count) {
+      if (!count) return [];
+      const pool = randomStationPool();
+      const cases = [];
+      const seenPairs = new Set();
+      let attemptCount = 0;
+      while (cases.length < count && attemptCount < MAX_RANDOM_ATTEMPTS) {
+        attemptCount += 1;
+        const origin = randomItem(pool);
+        if (!origin) continue;
+        const plan = planRandomChain(origin);
+        if (!plan.found || !plan.legs.length || plan.legs.length > MAX_CHAIN_LEGS) continue;
+        const targetCoordinate = groupCoordinate(plan.reachedGroupId);
+        const target = {
+          stationGroupId: plan.reachedGroupId,
+          name: displayNameForGroup(plan.reachedGroupId),
+          coordinate: targetCoordinate,
+        };
+        if (!target.coordinate || origin.stationGroupId === target.stationGroupId) continue;
+        const pairKey = `${origin.stationGroupId}->${target.stationGroupId}`;
+        if (seenPairs.has(pairKey)) continue;
+        const distanceMeters = coordinateDistanceMeters(origin.coordinate, target.coordinate);
+        if (!Number.isFinite(distanceMeters) || distanceMeters < MIN_RANDOM_DISTANCE_METERS) continue;
+        seenPairs.add(pairKey);
+        cases.push(caseFromPlan(cases.length + 1, origin, target, plan));
+      }
+      return cases;
     }
 
     function auditWaypointSurface(testCase, stopIndex, stationGroupId, selector, currentMinute, nextTargetGroupId) {
@@ -373,6 +561,8 @@ async function auditLongDistancePlayability(page) {
     const anomalies = [];
     const results = [];
     const startedAtMs = performance.now();
+    const randomCases = generateRandomCases(randomCount);
+    const cases = [...fixedCases, ...randomCases];
     for (const testCase of cases) {
       const selectedStops = testCase.stops.map(selectStationGroup);
       const ambiguous = selectedStops
@@ -427,9 +617,13 @@ async function auditLongDistancePlayability(page) {
       }
       results.push({
         name: testCase.name,
+        generated: Boolean(testCase.generated),
         from: testCase.stops[0].name,
         to: testCase.stops.at(-1).name,
         via: testCase.stops.slice(1, -1).map((item) => item.name),
+        plannedArrival: testCase.plannedArrival || null,
+        plannedLegCount: testCase.plannedLegCount || null,
+        distanceKm: testCase.distanceKm || null,
         found,
         arrival: found ? legs.at(-1).arrive : null,
         legCount: legs.length,
@@ -442,6 +636,10 @@ async function auditLongDistancePlayability(page) {
     return {
       checkedAt: new Date().toISOString(),
       caseCount: cases.length,
+      fixedCaseCount: fixedCases.length,
+      randomCaseCount: randomCases.length,
+      requestedRandomCaseCount: randomCount,
+      seed,
       passedCaseCount: results.filter((item) => item.found).length,
       waypointAuditCount,
       anomalyCount: anomalies.length,
@@ -449,14 +647,21 @@ async function auditLongDistancePlayability(page) {
       results,
       anomalies,
     };
-  }, LONG_DISTANCE_CASES);
+  }, {
+    fixedCases: LONG_DISTANCE_CASES,
+    randomCount: options.randomCount,
+    seed: options.seed,
+  });
 }
 
 (async () => {
   const args = parseArgs(process.argv);
   const { browser, page } = await loadPage(args['page-url']);
   try {
-    const result = await auditLongDistancePlayability(page);
+    const result = await auditLongDistancePlayability(page, {
+      randomCount: args['random-count'],
+      seed: args.seed,
+    });
     console.log(JSON.stringify(result, null, 2));
     if (result.anomalyCount) process.exitCode = 1;
   } finally {
