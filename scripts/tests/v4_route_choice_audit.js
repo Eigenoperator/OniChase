@@ -446,7 +446,11 @@ async function auditRouteChoices(page) {
     }
     const knownStationScanStartedAtMs = performance.now();
     const knownStationChoices = Object.fromEntries(
-      ['東京', '上野', '品川', '新橋', '大宮', '青梅', '八王子', '米原', '敦賀', '蘇我', '五井', '木更津', '上総一ノ宮', '成田', '佐倉'].map((stationName) => [stationName, choicesAt(stationName)])
+      [
+        '東京', '上野', '品川', '新橋', '大宮', '青梅', '八王子', '米原',
+        '敦賀', '京都', '新大阪', '白浜', '新宿', '大船', '成田空港',
+        '松本', '大月', '蘇我', '五井', '木更津', '上総一ノ宮', '成田', '佐倉',
+      ].map((stationName) => [stationName, choicesAt(stationName)])
     );
     const routeChoiceTitles = Object.fromEntries(
       Object.entries(knownStationChoices).map(([stationName, choices]) => [
@@ -475,9 +479,28 @@ async function auditRouteChoices(page) {
       ['東京', '踊り子', 9],
       ['上野', 'ひたち', 30],
       ['上野', 'ときわ', 35],
+      ['品川', '成田エクスプレス', 50],
+      ['品川', 'ひたち', 15],
+      ['品川', 'ときわ', 18],
       ['八王子', 'あずさ', 34],
       ['八王子', 'かいじ', 20],
+      ['新宿', '成田エクスプレス', 10],
+      ['新宿', 'あずさ', 20],
+      ['新宿', 'かいじ', 18],
+      ['新宿', '富士回遊', 4],
+      ['大船', '成田エクスプレス', 14],
+      ['成田空港', '成田エクスプレス', 25],
+      ['松本', 'あずさ', 15],
+      ['大月', 'あずさ', 8],
+      ['大月', 'かいじ', 28],
+      ['大月', '富士回遊', 10],
       ['敦賀', 'サンダーバード', 25],
+      ['京都', 'サンダーバード', 30],
+      ['京都', 'はるか', 30],
+      ['新大阪', 'サンダーバード', 30],
+      ['新大阪', 'はるか', 55],
+      ['新大阪', 'くろしお', 18],
+      ['白浜', 'くろしお', 20],
     ].forEach(([stationName, routeName, minimumTrainCount]) => {
       const choice = knownStationChoices[stationName]?.find((item) => item.route === routeName);
       if (!choice || choice.trainCount < minimumTrainCount) {
@@ -488,6 +511,43 @@ async function auditRouteChoices(page) {
           minimumTrainCount,
           actualTrainCount: choice?.trainCount || 0,
           reason: 'Reviewed named limited express choices should include both directions from the official direct-service source.',
+          choices: knownStationChoices[stationName],
+        });
+      }
+    });
+    function trainNumbersForChoiceAt(stationName, routeName) {
+      return new Set(entriesAt(stationName)
+        .filter((entry) => routeTitlesForEntry(entry).includes(routeName))
+        .map((entry) => publicTripNumber(entry.trip))
+        .filter(Boolean));
+    }
+    [
+      ['敦賀', 'サンダーバード', ['2', '4', '6', '8', '10']],
+      ['京都', 'サンダーバード', ['1', '2', '3', '4', '43']],
+      ['新大阪', 'サンダーバード', ['1', '2', '3', '4', '43']],
+      ['京都', 'はるか', ['3', '5', '7', '9', '11']],
+      ['新大阪', 'はるか', ['1', '3', '5', '7', '9']],
+      ['新大阪', 'くろしお', ['1', '2', '4', '12', '16']],
+      ['白浜', 'くろしお', ['8', '10', '12', '16', '22']],
+      ['新宿', '成田エクスプレス', ['9', '13', '17', '21', '25']],
+      ['大船', '成田エクスプレス', ['3', '5', '7', '11', '15']],
+      ['成田空港', '成田エクスプレス', ['1', '2', '3', '4', '5']],
+      ['新宿', 'あずさ', ['1', '3', '5', '9', '83']],
+      ['松本', 'あずさ', ['1', '4', '8', '12', '83']],
+      ['大月', '富士回遊', ['3', '7', '11', '15', '93']],
+      ['大月', 'かいじ', ['70', '2', '6', '10', '99']],
+    ].forEach(([stationName, routeName, requiredNumbers]) => {
+      const actualNumbers = trainNumbersForChoiceAt(stationName, routeName);
+      const missingNumbers = requiredNumbers.filter((number) => !actualNumbers.has(number));
+      if (missingNumbers.length) {
+        anomalies.push({
+          kind: 'reviewed_limited_express_train_numbers_missing',
+          station: stationName,
+          route: routeName,
+          requiredNumbers,
+          missingNumbers,
+          actualNumbers: [...actualNumbers].slice(0, 80),
+          reason: 'Reviewed limited express train numbers must remain present in route choices, including boundary-station starts, branch-origin trains, and through-service pass-through trains.',
           choices: knownStationChoices[stationName],
         });
       }
