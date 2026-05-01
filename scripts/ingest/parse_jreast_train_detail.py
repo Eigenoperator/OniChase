@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import re
 import sys
@@ -23,28 +24,28 @@ def extract_table(html: str) -> str:
     return match.group(1)
 
 
-def extract_train_numbers(table_html: str) -> list[str]:
-    match = re.search(r"<th>Train number</th>(.*?)</tr>", table_html, re.DOTALL)
+def extract_labeled_cells(table_html: str, labels: tuple[str, ...]) -> list[str]:
+    label_pattern = "|".join(re.escape(label) for label in labels)
+    match = re.search(rf"<th>(?:{label_pattern})</th>(.*?)</tr>", table_html, re.DOTALL)
     if not match:
-        raise ValueError("Could not find train number row.")
+        return []
     cells = re.findall(r"<td[^>]*colspan=\"2\"[^>]*>(.*?)</td>", match.group(1), re.DOTALL)
     return [strip_tags(cell) for cell in cells]
+
+
+def extract_train_numbers(table_html: str) -> list[str]:
+    values = extract_labeled_cells(table_html, ("Train number", "列車番号"))
+    if not values:
+        raise ValueError("Could not find train number row.")
+    return values
 
 
 def extract_train_names(table_html: str) -> list[str]:
-    match = re.search(r"<th>Train name</th>(.*?)</tr>", table_html, re.DOTALL)
-    if not match:
-        return []
-    cells = re.findall(r"<td[^>]*colspan=\"2\"[^>]*>(.*?)</td>", match.group(1), re.DOTALL)
-    return [strip_tags(cell) for cell in cells]
+    return extract_labeled_cells(table_html, ("Train name", "列車名"))
 
 
 def extract_train_types(table_html: str) -> list[str]:
-    match = re.search(r"<th>Train type</th>(.*?)</tr>", table_html, re.DOTALL)
-    if not match:
-        return []
-    cells = re.findall(r"<td[^>]*colspan=\"2\"[^>]*>(.*?)</td>", match.group(1), re.DOTALL)
-    return [strip_tags(cell) for cell in cells]
+    return extract_labeled_cells(table_html, ("Train type", "列車種別"))
 
 
 def extract_rows(table_html: str) -> list[str]:
@@ -75,6 +76,12 @@ def parse_time_cell(cell_html: str) -> dict[str, str]:
             result["arrival_hhmm"] = hhmm
         elif kind == "Dep.":
             result["departure_hhmm"] = hhmm
+    jp_entries = re.findall(r"(\d{2}:\d{2})\s*(着|発)", strip_tags(cell_html))
+    for hhmm, kind in jp_entries:
+        if kind == "着":
+            result["arrival_hhmm"] = hhmm
+        elif kind == "発":
+            result["departure_hhmm"] = hhmm
     return result
 
 
@@ -101,10 +108,60 @@ def split_service_name(raw_name: str) -> tuple[str | None, str | None]:
     value = raw_name.strip()
     if not value:
         return None, None
-    match = re.match(r"^(.*?)(\d+)$", value)
+    match = re.match(r"^(.*?)\s*(\d+号)$", value)
+    if not match:
+        match = re.match(r"^(.*?)(\d+)$", value)
     if not match:
         return value, None
     return match.group(1).strip(), match.group(2).strip()
+
+
+def merge_stop_times(left: dict[str, str], right: dict[str, str]) -> dict[str, str]:
+    merged = copy.deepcopy(left)
+    for key, value in right.items():
+        if key == "sequence":
+            continue
+        if value and not merged.get(key):
+            merged[key] = value
+    return merged
+
+
+def connected_at_same_station(left: dict[str, object], right: dict[str, object]) -> bool:
+    left_stops = left.get("stop_times") or []
+    right_stops = right.get("stop_times") or []
+    if not left_stops or not right_stops:
+        return False
+    if left.get("display_name") != right.get("display_name"):
+        return False
+    return (
+        left_stops[-1].get("station_name_raw")
+        and left_stops[-1].get("station_name_raw") == right_stops[0].get("station_name_raw")
+    )
+
+
+def merge_connected_train_instances(trains: list[dict[str, object]]) -> list[dict[str, object]]:
+    merged: list[dict[str, object]] = []
+    for train in trains:
+        if merged and connected_at_same_station(merged[-1], train):
+            previous = merged[-1]
+            previous_numbers = [
+                value
+                for value in (
+                    str(previous.get("train_number") or ""),
+                    str(train.get("train_number") or ""),
+                )
+                if value
+            ]
+            previous["train_number"] = "+".join(dict.fromkeys(previous_numbers))
+            previous_stops = previous["stop_times"]
+            current_stops = train["stop_times"]
+            previous_stops[-1] = merge_stop_times(previous_stops[-1], current_stops[0])
+            previous_stops.extend(copy.deepcopy(current_stops[1:]))
+            for sequence, stop in enumerate(previous_stops, start=1):
+                stop["sequence"] = sequence
+            continue
+        merged.append(copy.deepcopy(train))
+    return merged
 
 
 def parse_html(html: str, source_url: str | None, line_id: str = "JR_YAMANOTE") -> dict[str, object]:
@@ -158,7 +215,7 @@ def parse_html(html: str, source_url: str | None, line_id: str = "JR_YAMANOTE") 
         "source_url": source_url,
         "direction_label": parse_direction(html),
         "source_issue": parse_source_month(html),
-        "train_instances": trains,
+        "train_instances": merge_connected_train_instances(trains),
     }
 
 

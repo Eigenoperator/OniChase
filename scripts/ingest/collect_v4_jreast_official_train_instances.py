@@ -50,6 +50,21 @@ LINE_ALIASES = {
     "気仙沼線": ["気仙沼線", "気仙沼線ＢＲＴ", "気仙沼線BRT"],
 }
 
+EXTRA_LINE_STATION_NAMES = {
+    # JR East lists airport limited-express pages under the station's
+    # "成田エクスプレス" tab, while many origin stations are not physically on
+    # the Narita Line.  Include the common NEX boarding stations so one train is
+    # collected as the full passenger movement instead of only the Tokyo-Narita
+    # core.
+    "成田線": ["大船", "戸塚", "横浜", "武蔵小杉", "品川", "東京", "渋谷", "新宿", "池袋", "大宮"],
+    # Hitachi/Tokiwa services use the Ueno-Tokyo Line south of Ueno, so Shinagawa
+    # and Tokyo need to be scanned when collecting Joban Line named trains.
+    "常磐線": ["品川", "東京", "上野"],
+    # Chuo Line limited expresses can be listed from city-center termini and
+    # through-destination stations outside the physical Chuo Line inventory.
+    "中央線": ["東京", "新宿", "立川", "八王子", "大月", "甲府", "松本", "河口湖"],
+}
+
 
 TAG_RE = re.compile(r"<[^>]+>")
 
@@ -135,6 +150,8 @@ def physical_station_names_by_line(physical_map: dict[str, Any]) -> dict[str, li
         if station.get("operatorName") != "東日本旅客鉄道":
             continue
         names[station["lineName"]].add(station["nameJa"])
+    for line_name, station_names in EXTRA_LINE_STATION_NAMES.items():
+        names[line_name].update(station_names)
     return {line_name: sorted(station_names) for line_name, station_names in names.items()}
 
 
@@ -391,7 +408,8 @@ def normalize_train(
         if not stop.get("station_group_id")
     ]
     url_tail = "/".join(urllib.parse.urlparse(train_url).path.split("/")[-3:]).replace("/", "_").replace(".html", "")
-    service_instance_id = f"jr_east_official:{normalize_key(line_name)}:{url_tail}"
+    train_number_key = normalize_key(str(raw_train.get("train_number") or "train"))
+    service_instance_id = f"jr_east_official:{normalize_key(line_name)}:{url_tail}:{train_number_key}"
     train = {
         "train_number": raw_train.get("train_number") or service_instance_id,
         "service_instance_id": service_instance_id,

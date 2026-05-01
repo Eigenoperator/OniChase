@@ -35,6 +35,8 @@ DEFAULT_EXTRA_COLLECTIONS = [
     ROOT / "data" / "v4_jreast_official_weekday_train_instances.json.gz",
     ROOT / "data" / "v4_jreast_tohoku_official_weekday_train_instances.json.gz",
     ROOT / "data" / "v4_jreast_joban_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_jreast_nex_official_weekday_train_instances.json.gz",
+    ROOT / "data" / "v4_jreast_chuo_official_weekday_train_instances.json.gz",
     ROOT / "data" / "v4_jreast_core_gap_official_weekday_train_instances.json.gz",
     ROOT / "data" / "v4_jreast_residual_gap_official_weekday_train_instances.json.gz",
     ROOT / "data" / "v4_jrcentral_navitime_weekday_train_instances.json.gz",

@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v4.limited_express_number_gap_audit.v1",
-  "generatedAt": "2026-05-01T20:55:17.556362+00:00",
+  "generatedAt": "2026-05-01T21:26:01.509433+00:00",
   "input": "data/v4_current_weekday_train_instances.json.gz",
   "policy": "Groups numbered named limited-express-like trains by service family, origin, and terminal. For groups with at least minObserved unique train numbers, it infers step=2 when all numbers share parity, otherwise step=1, and reports missing numbers within the observed min/max range. High-priority findings require missing numbers to be absent from that boarding station entirely, so pass-through trains from a farther origin do not look missing. Findings are review candidates, not automatic errors.",
   "parameters": {
@@ -9,11 +9,11 @@
     "includeShinkansen": false
   },
   "summary": {
-    "trainInstanceCount": 125020,
+    "trainInstanceCount": 125331,
     "limitedExpressFamilyCount": 86,
-    "numberedLimitedExpressGroupCount": 361,
-    "gapCandidateCount": 43,
-    "highPriorityGapCandidateCount": 15,
+    "numberedLimitedExpressGroupCount": 360,
+    "gapCandidateCount": 42,
+    "highPriorityGapCandidateCount": 14,
     "reviewedDenseSequenceCount": 43,
     "topFamilies": [
       {
@@ -58,7 +58,7 @@
       },
       {
         "serviceFamily": "あずさ",
-        "count": 48
+        "count": 50
       },
       {
         "serviceFamily": "スーパーはくと",
@@ -109,6 +109,10 @@
         "count": 32
       },
       {
+        "serviceFamily": "かいじ",
+        "count": 30
+      },
+      {
         "serviceFamily": "ひたち",
         "count": 30
       },
@@ -149,10 +153,6 @@
         "count": 25
       },
       {
-        "serviceFamily": "かいじ",
-        "count": 24
-      },
-      {
         "serviceFamily": "リバティりょうもう",
         "count": 24
       },
@@ -178,21 +178,22 @@
       }
     ],
     "skippedCounts": {
-      "not_numbered_named_train": 122161,
+      "not_numbered_named_train": 122464,
       "not_limited_express_like": 660
     }
   },
   "highPriorityGapCandidates": [
     {
       "serviceFamily": "成田エクスプレス",
-      "origin": "新宿",
-      "terminal": "東京",
-      "observedCount": 15,
+      "origin": "大船",
+      "terminal": "成田空港",
+      "observedCount": 16,
       "observedNumbers": [
         1,
         3,
         5,
         7,
+        11,
         15,
         19,
         23,
@@ -210,10 +211,9 @@
         1,
         53
       ],
-      "missingCount": 12,
+      "missingCount": 11,
       "missingNumbers": [
         9,
-        11,
         13,
         17,
         21,
@@ -225,10 +225,9 @@
         45,
         49
       ],
-      "missingUnseenFromOriginCount": 12,
+      "missingUnseenFromOriginCount": 11,
       "missingUnseenFromOriginNumbers": [
         9,
-        11,
         13,
         17,
         21,
@@ -240,10 +239,9 @@
         45,
         49
       ],
-      "missingUnseenAtBoardingStationCount": 12,
+      "missingUnseenAtBoardingStationCount": 11,
       "missingUnseenAtBoardingStationNumbers": [
         9,
-        11,
         13,
         17,
         21,
@@ -257,9 +255,9 @@
       ],
       "missingUnseenGloballyCount": 0,
       "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.556,
-      "gapRatio": 0.444,
-      "firstDeparture": "05:55",
+      "coverageDensity": 0.593,
+      "gapRatio": 0.407,
+      "firstDeparture": "05:28",
       "operators": [
         "jr_east"
       ],
@@ -270,8 +268,8 @@
         {
           "number": 1,
           "displayName": "成田エクスプレス 1号",
-          "departure": "05:55",
-          "trainId": "jr_east_official:横須賀:train_030_031081",
+          "departure": "05:28",
+          "trainId": "jr_east_official:成田:train_030_031081:2001m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031081.html"
@@ -279,8 +277,8 @@
         {
           "number": 3,
           "displayName": "成田エクスプレス 3号",
-          "departure": "06:34",
-          "trainId": "jr_east_official:横須賀:train_035_037891",
+          "departure": "06:06",
+          "trainId": "jr_east_official:成田:train_035_037891:2003m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/035/037891.html"
@@ -288,8 +286,8 @@
         {
           "number": 5,
           "displayName": "成田エクスプレス 5号",
-          "departure": "07:07",
-          "trainId": "jr_east_official:横須賀:train_030_031091",
+          "departure": "06:38",
+          "trainId": "jr_east_official:成田:train_030_031091:2005m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031091.html"
@@ -297,17 +295,26 @@
         {
           "number": 7,
           "displayName": "成田エクスプレス 7号",
-          "departure": "07:27",
-          "trainId": "jr_east_official:横須賀:train_030_031101",
+          "departure": "07:00",
+          "trainId": "jr_east_official:成田:train_030_031101:2007m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031101.html"
         },
         {
+          "number": 11,
+          "displayName": "成田エクスプレス 11号",
+          "departure": "08:08",
+          "trainId": "jr_east_official:成田:train_095_098881:2011m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/095/098881.html"
+        },
+        {
           "number": 15,
           "displayName": "成田エクスプレス 15号",
-          "departure": "09:40",
-          "trainId": "jr_east_official:横須賀:train_025_029041",
+          "departure": "09:10",
+          "trainId": "jr_east_official:成田:train_025_029041:2015m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/025/029041.html"
@@ -315,8 +322,8 @@
         {
           "number": 19,
           "displayName": "成田エクスプレス 19号",
-          "departure": "10:38",
-          "trainId": "jr_east_official:横須賀:train_035_037911",
+          "departure": "10:10",
+          "trainId": "jr_east_official:成田:train_035_037911:2019m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/035/037911.html"
@@ -324,8 +331,8 @@
         {
           "number": 23,
           "displayName": "成田エクスプレス 23号",
-          "departure": "11:38",
-          "trainId": "jr_east_official:横須賀:train_030_031111",
+          "departure": "11:10",
+          "trainId": "jr_east_official:成田:train_030_031111:2023m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031111.html"
@@ -333,8 +340,8 @@
         {
           "number": 27,
           "displayName": "成田エクスプレス 27号",
-          "departure": "12:38",
-          "trainId": "jr_east_official:横須賀:train_030_031121",
+          "departure": "12:10",
+          "trainId": "jr_east_official:成田:train_030_031121:2027m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031121.html"
@@ -342,8 +349,8 @@
         {
           "number": 31,
           "displayName": "成田エクスプレス 31号",
-          "departure": "13:38",
-          "trainId": "jr_east_official:横須賀:train_030_031131",
+          "departure": "13:10",
+          "trainId": "jr_east_official:成田:train_030_031131:2031m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031131.html"
@@ -351,8 +358,8 @@
         {
           "number": 35,
           "displayName": "成田エクスプレス 35号",
-          "departure": "14:38",
-          "trainId": "jr_east_official:横須賀:train_030_031141",
+          "departure": "14:10",
+          "trainId": "jr_east_official:成田:train_030_031141:2035m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031141.html"
@@ -360,20 +367,11 @@
         {
           "number": 39,
           "displayName": "成田エクスプレス 39号",
-          "departure": "15:38",
-          "trainId": "jr_east_official:横須賀:train_030_031151",
+          "departure": "15:10",
+          "trainId": "jr_east_official:成田:train_030_031151:2039m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031151.html"
-        },
-        {
-          "number": 43,
-          "displayName": "成田エクスプレス 43号",
-          "departure": "16:38",
-          "trainId": "jr_east_official:横須賀:train_030_031161",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031161.html"
         }
       ]
     },
@@ -452,7 +450,7 @@
           "number": 53,
           "displayName": "ときわ 53号",
           "departure": "08:13",
-          "trainId": "jr_east_official:常磐:train_075_076141",
+          "trainId": "jr_east_official:常磐:train_075_076141:53m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076141.html"
@@ -461,7 +459,7 @@
           "number": 55,
           "displayName": "ときわ 55号",
           "departure": "09:15",
-          "trainId": "jr_east_official:常磐:train_075_076161",
+          "trainId": "jr_east_official:常磐:train_075_076161:55m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076161.html"
@@ -470,7 +468,7 @@
           "number": 57,
           "displayName": "ときわ 57号",
           "departure": "10:14",
-          "trainId": "jr_east_official:常磐:train_045_048221",
+          "trainId": "jr_east_official:常磐:train_045_048221:57m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048221.html"
@@ -479,7 +477,7 @@
           "number": 59,
           "displayName": "ときわ 59号",
           "departure": "11:15",
-          "trainId": "jr_east_official:常磐:train_045_048241",
+          "trainId": "jr_east_official:常磐:train_045_048241:59m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048241.html"
@@ -488,7 +486,7 @@
           "number": 61,
           "displayName": "ときわ 61号",
           "departure": "12:15",
-          "trainId": "jr_east_official:常磐:train_045_048261",
+          "trainId": "jr_east_official:常磐:train_045_048261:61m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048261.html"
@@ -497,7 +495,7 @@
           "number": 63,
           "displayName": "ときわ 63号",
           "departure": "13:15",
-          "trainId": "jr_east_official:常磐:train_075_076181",
+          "trainId": "jr_east_official:常磐:train_075_076181:63m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076181.html"
@@ -506,7 +504,7 @@
           "number": 65,
           "displayName": "ときわ 65号",
           "departure": "14:15",
-          "trainId": "jr_east_official:常磐:train_045_048281",
+          "trainId": "jr_east_official:常磐:train_045_048281:65m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048281.html"
@@ -515,7 +513,7 @@
           "number": 67,
           "displayName": "ときわ 67号",
           "departure": "15:15",
-          "trainId": "jr_east_official:常磐:train_045_048301",
+          "trainId": "jr_east_official:常磐:train_045_048301:67m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048301.html"
@@ -524,7 +522,7 @@
           "number": 69,
           "displayName": "ときわ 69号",
           "departure": "16:15",
-          "trainId": "jr_east_official:常磐:train_045_048311",
+          "trainId": "jr_east_official:常磐:train_045_048311:69m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048311.html"
@@ -533,7 +531,7 @@
           "number": 71,
           "displayName": "ときわ 71号",
           "departure": "17:15",
-          "trainId": "jr_east_official:常磐:train_050_050181",
+          "trainId": "jr_east_official:常磐:train_050_050181:71m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050181.html"
@@ -542,7 +540,7 @@
           "number": 75,
           "displayName": "ときわ 75号",
           "departure": "19:15",
-          "trainId": "jr_east_official:常磐:train_075_076211",
+          "trainId": "jr_east_official:常磐:train_075_076211:75m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076211.html"
@@ -551,7 +549,7 @@
           "number": 79,
           "displayName": "ときわ 79号",
           "departure": "21:15",
-          "trainId": "jr_east_official:常磐:train_050_050191",
+          "trainId": "jr_east_official:常磐:train_050_050191:79m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050191.html"
@@ -779,94 +777,6 @@
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/085/087521.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "かいじ",
-      "origin": "新宿",
-      "terminal": "甲府",
-      "observedCount": 4,
-      "observedNumbers": [
-        19,
-        23,
-        27,
-        31
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        19,
-        31
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        21,
-        25,
-        29
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        21,
-        25,
-        29
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        21,
-        25,
-        29
-      ],
-      "missingUnseenGloballyCount": 3,
-      "missingUnseenGloballyNumbers": [
-        21,
-        25,
-        29
-      ],
-      "coverageDensity": 0.571,
-      "gapRatio": 0.429,
-      "firstDeparture": "11:30",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 19,
-          "displayName": "かいじ 19号",
-          "departure": "11:30",
-          "trainId": "jr_east_official:中央:train_075_075981",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/075981.html"
-        },
-        {
-          "number": 23,
-          "displayName": "かいじ 23号",
-          "departure": "12:30",
-          "trainId": "jr_east_official:中央:train_060_063381",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063381.html"
-        },
-        {
-          "number": 27,
-          "displayName": "かいじ 27号",
-          "departure": "13:30",
-          "trainId": "jr_east_official:中央:train_060_063401",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063401.html"
-        },
-        {
-          "number": 31,
-          "displayName": "かいじ 31号",
-          "departure": "14:30",
-          "trainId": "jr_east_official:中央:train_060_063421",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063421.html"
         }
       ]
     },
@@ -1591,7 +1501,7 @@
           "number": 56,
           "displayName": "ときわ 56号",
           "departure": "05:48",
-          "trainId": "jr_east_official:常磐:train_075_076291",
+          "trainId": "jr_east_official:常磐:train_075_076291:56m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076291.html"
@@ -1600,7 +1510,7 @@
           "number": 58,
           "displayName": "ときわ 58号",
           "departure": "06:56",
-          "trainId": "jr_east_official:常磐:train_050_050211",
+          "trainId": "jr_east_official:常磐:train_050_050211:58m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050211.html"
@@ -1609,7 +1519,7 @@
           "number": 60,
           "displayName": "ときわ 60号",
           "departure": "08:10",
-          "trainId": "jr_east_official:常磐:train_075_076311",
+          "trainId": "jr_east_official:常磐:train_075_076311:60m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076311.html"
@@ -1618,7 +1528,7 @@
           "number": 64,
           "displayName": "ときわ 64号",
           "departure": "10:16",
-          "trainId": "jr_east_official:常磐:train_060_064151",
+          "trainId": "jr_east_official:常磐:train_060_064151:64m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/064151.html"
@@ -1948,14 +1858,15 @@
   "gapCandidates": [
     {
       "serviceFamily": "成田エクスプレス",
-      "origin": "新宿",
-      "terminal": "東京",
-      "observedCount": 15,
+      "origin": "大船",
+      "terminal": "成田空港",
+      "observedCount": 16,
       "observedNumbers": [
         1,
         3,
         5,
         7,
+        11,
         15,
         19,
         23,
@@ -1973,10 +1884,9 @@
         1,
         53
       ],
-      "missingCount": 12,
+      "missingCount": 11,
       "missingNumbers": [
         9,
-        11,
         13,
         17,
         21,
@@ -1988,10 +1898,9 @@
         45,
         49
       ],
-      "missingUnseenFromOriginCount": 12,
+      "missingUnseenFromOriginCount": 11,
       "missingUnseenFromOriginNumbers": [
         9,
-        11,
         13,
         17,
         21,
@@ -2003,10 +1912,9 @@
         45,
         49
       ],
-      "missingUnseenAtBoardingStationCount": 12,
+      "missingUnseenAtBoardingStationCount": 11,
       "missingUnseenAtBoardingStationNumbers": [
         9,
-        11,
         13,
         17,
         21,
@@ -2020,9 +1928,9 @@
       ],
       "missingUnseenGloballyCount": 0,
       "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.556,
-      "gapRatio": 0.444,
-      "firstDeparture": "05:55",
+      "coverageDensity": 0.593,
+      "gapRatio": 0.407,
+      "firstDeparture": "05:28",
       "operators": [
         "jr_east"
       ],
@@ -2033,8 +1941,8 @@
         {
           "number": 1,
           "displayName": "成田エクスプレス 1号",
-          "departure": "05:55",
-          "trainId": "jr_east_official:横須賀:train_030_031081",
+          "departure": "05:28",
+          "trainId": "jr_east_official:成田:train_030_031081:2001m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031081.html"
@@ -2042,8 +1950,8 @@
         {
           "number": 3,
           "displayName": "成田エクスプレス 3号",
-          "departure": "06:34",
-          "trainId": "jr_east_official:横須賀:train_035_037891",
+          "departure": "06:06",
+          "trainId": "jr_east_official:成田:train_035_037891:2003m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/035/037891.html"
@@ -2051,8 +1959,8 @@
         {
           "number": 5,
           "displayName": "成田エクスプレス 5号",
-          "departure": "07:07",
-          "trainId": "jr_east_official:横須賀:train_030_031091",
+          "departure": "06:38",
+          "trainId": "jr_east_official:成田:train_030_031091:2005m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031091.html"
@@ -2060,17 +1968,26 @@
         {
           "number": 7,
           "displayName": "成田エクスプレス 7号",
-          "departure": "07:27",
-          "trainId": "jr_east_official:横須賀:train_030_031101",
+          "departure": "07:00",
+          "trainId": "jr_east_official:成田:train_030_031101:2007m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031101.html"
         },
         {
+          "number": 11,
+          "displayName": "成田エクスプレス 11号",
+          "departure": "08:08",
+          "trainId": "jr_east_official:成田:train_095_098881:2011m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/095/098881.html"
+        },
+        {
           "number": 15,
           "displayName": "成田エクスプレス 15号",
-          "departure": "09:40",
-          "trainId": "jr_east_official:横須賀:train_025_029041",
+          "departure": "09:10",
+          "trainId": "jr_east_official:成田:train_025_029041:2015m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/025/029041.html"
@@ -2078,8 +1995,8 @@
         {
           "number": 19,
           "displayName": "成田エクスプレス 19号",
-          "departure": "10:38",
-          "trainId": "jr_east_official:横須賀:train_035_037911",
+          "departure": "10:10",
+          "trainId": "jr_east_official:成田:train_035_037911:2019m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/035/037911.html"
@@ -2087,8 +2004,8 @@
         {
           "number": 23,
           "displayName": "成田エクスプレス 23号",
-          "departure": "11:38",
-          "trainId": "jr_east_official:横須賀:train_030_031111",
+          "departure": "11:10",
+          "trainId": "jr_east_official:成田:train_030_031111:2023m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031111.html"
@@ -2096,8 +2013,8 @@
         {
           "number": 27,
           "displayName": "成田エクスプレス 27号",
-          "departure": "12:38",
-          "trainId": "jr_east_official:横須賀:train_030_031121",
+          "departure": "12:10",
+          "trainId": "jr_east_official:成田:train_030_031121:2027m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031121.html"
@@ -2105,8 +2022,8 @@
         {
           "number": 31,
           "displayName": "成田エクスプレス 31号",
-          "departure": "13:38",
-          "trainId": "jr_east_official:横須賀:train_030_031131",
+          "departure": "13:10",
+          "trainId": "jr_east_official:成田:train_030_031131:2031m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031131.html"
@@ -2114,8 +2031,8 @@
         {
           "number": 35,
           "displayName": "成田エクスプレス 35号",
-          "departure": "14:38",
-          "trainId": "jr_east_official:横須賀:train_030_031141",
+          "departure": "14:10",
+          "trainId": "jr_east_official:成田:train_030_031141:2035m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031141.html"
@@ -2123,20 +2040,11 @@
         {
           "number": 39,
           "displayName": "成田エクスプレス 39号",
-          "departure": "15:38",
-          "trainId": "jr_east_official:横須賀:train_030_031151",
+          "departure": "15:10",
+          "trainId": "jr_east_official:成田:train_030_031151:2039m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031151.html"
-        },
-        {
-          "number": 43,
-          "displayName": "成田エクスプレス 43号",
-          "departure": "16:38",
-          "trainId": "jr_east_official:横須賀:train_030_031161",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031161.html"
         }
       ]
     },
@@ -2215,7 +2123,7 @@
           "number": 53,
           "displayName": "ときわ 53号",
           "departure": "08:13",
-          "trainId": "jr_east_official:常磐:train_075_076141",
+          "trainId": "jr_east_official:常磐:train_075_076141:53m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076141.html"
@@ -2224,7 +2132,7 @@
           "number": 55,
           "displayName": "ときわ 55号",
           "departure": "09:15",
-          "trainId": "jr_east_official:常磐:train_075_076161",
+          "trainId": "jr_east_official:常磐:train_075_076161:55m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076161.html"
@@ -2233,7 +2141,7 @@
           "number": 57,
           "displayName": "ときわ 57号",
           "departure": "10:14",
-          "trainId": "jr_east_official:常磐:train_045_048221",
+          "trainId": "jr_east_official:常磐:train_045_048221:57m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048221.html"
@@ -2242,7 +2150,7 @@
           "number": 59,
           "displayName": "ときわ 59号",
           "departure": "11:15",
-          "trainId": "jr_east_official:常磐:train_045_048241",
+          "trainId": "jr_east_official:常磐:train_045_048241:59m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048241.html"
@@ -2251,7 +2159,7 @@
           "number": 61,
           "displayName": "ときわ 61号",
           "departure": "12:15",
-          "trainId": "jr_east_official:常磐:train_045_048261",
+          "trainId": "jr_east_official:常磐:train_045_048261:61m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048261.html"
@@ -2260,7 +2168,7 @@
           "number": 63,
           "displayName": "ときわ 63号",
           "departure": "13:15",
-          "trainId": "jr_east_official:常磐:train_075_076181",
+          "trainId": "jr_east_official:常磐:train_075_076181:63m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076181.html"
@@ -2269,7 +2177,7 @@
           "number": 65,
           "displayName": "ときわ 65号",
           "departure": "14:15",
-          "trainId": "jr_east_official:常磐:train_045_048281",
+          "trainId": "jr_east_official:常磐:train_045_048281:65m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048281.html"
@@ -2278,7 +2186,7 @@
           "number": 67,
           "displayName": "ときわ 67号",
           "departure": "15:15",
-          "trainId": "jr_east_official:常磐:train_045_048301",
+          "trainId": "jr_east_official:常磐:train_045_048301:67m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048301.html"
@@ -2287,7 +2195,7 @@
           "number": 69,
           "displayName": "ときわ 69号",
           "departure": "16:15",
-          "trainId": "jr_east_official:常磐:train_045_048311",
+          "trainId": "jr_east_official:常磐:train_045_048311:69m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048311.html"
@@ -2296,7 +2204,7 @@
           "number": 71,
           "displayName": "ときわ 71号",
           "departure": "17:15",
-          "trainId": "jr_east_official:常磐:train_050_050181",
+          "trainId": "jr_east_official:常磐:train_050_050181:71m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050181.html"
@@ -2305,7 +2213,7 @@
           "number": 75,
           "displayName": "ときわ 75号",
           "departure": "19:15",
-          "trainId": "jr_east_official:常磐:train_075_076211",
+          "trainId": "jr_east_official:常磐:train_075_076211:75m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076211.html"
@@ -2314,7 +2222,7 @@
           "number": 79,
           "displayName": "ときわ 79号",
           "departure": "21:15",
-          "trainId": "jr_east_official:常磐:train_050_050191",
+          "trainId": "jr_east_official:常磐:train_050_050191:79m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050191.html"
@@ -2542,94 +2450,6 @@
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/085/087521.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "かいじ",
-      "origin": "新宿",
-      "terminal": "甲府",
-      "observedCount": 4,
-      "observedNumbers": [
-        19,
-        23,
-        27,
-        31
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        19,
-        31
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        21,
-        25,
-        29
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        21,
-        25,
-        29
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        21,
-        25,
-        29
-      ],
-      "missingUnseenGloballyCount": 3,
-      "missingUnseenGloballyNumbers": [
-        21,
-        25,
-        29
-      ],
-      "coverageDensity": 0.571,
-      "gapRatio": 0.429,
-      "firstDeparture": "11:30",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 19,
-          "displayName": "かいじ 19号",
-          "departure": "11:30",
-          "trainId": "jr_east_official:中央:train_075_075981",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/075981.html"
-        },
-        {
-          "number": 23,
-          "displayName": "かいじ 23号",
-          "departure": "12:30",
-          "trainId": "jr_east_official:中央:train_060_063381",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063381.html"
-        },
-        {
-          "number": 27,
-          "displayName": "かいじ 27号",
-          "departure": "13:30",
-          "trainId": "jr_east_official:中央:train_060_063401",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063401.html"
-        },
-        {
-          "number": 31,
-          "displayName": "かいじ 31号",
-          "departure": "14:30",
-          "trainId": "jr_east_official:中央:train_060_063421",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063421.html"
         }
       ]
     },
@@ -3354,7 +3174,7 @@
           "number": 56,
           "displayName": "ときわ 56号",
           "departure": "05:48",
-          "trainId": "jr_east_official:常磐:train_075_076291",
+          "trainId": "jr_east_official:常磐:train_075_076291:56m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076291.html"
@@ -3363,7 +3183,7 @@
           "number": 58,
           "displayName": "ときわ 58号",
           "departure": "06:56",
-          "trainId": "jr_east_official:常磐:train_050_050211",
+          "trainId": "jr_east_official:常磐:train_050_050211:58m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050211.html"
@@ -3372,7 +3192,7 @@
           "number": 60,
           "displayName": "ときわ 60号",
           "departure": "08:10",
-          "trainId": "jr_east_official:常磐:train_075_076311",
+          "trainId": "jr_east_official:常磐:train_075_076311:60m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076311.html"
@@ -3381,7 +3201,7 @@
           "number": 64,
           "displayName": "ときわ 64号",
           "departure": "10:16",
-          "trainId": "jr_east_official:常磐:train_060_064151",
+          "trainId": "jr_east_official:常磐:train_060_064151:64m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/064151.html"
@@ -4020,7 +3840,7 @@
           "number": 54,
           "displayName": "ときわ 54号",
           "departure": "05:44",
-          "trainId": "jr_east_official:常磐:train_075_076271",
+          "trainId": "jr_east_official:常磐:train_075_076271:54m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076271.html"
@@ -4029,7 +3849,7 @@
           "number": 62,
           "displayName": "ときわ 62号",
           "departure": "09:47",
-          "trainId": "jr_east_official:常磐:train_075_076331",
+          "trainId": "jr_east_official:常磐:train_075_076331:62m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076331.html"
@@ -4038,7 +3858,7 @@
           "number": 66,
           "displayName": "ときわ 66号",
           "departure": "11:47",
-          "trainId": "jr_east_official:常磐:train_050_050231",
+          "trainId": "jr_east_official:常磐:train_050_050231:66m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050231.html"
@@ -4047,7 +3867,7 @@
           "number": 68,
           "displayName": "ときわ 68号",
           "departure": "12:47",
-          "trainId": "jr_east_official:常磐:train_050_050241",
+          "trainId": "jr_east_official:常磐:train_050_050241:68m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050241.html"
@@ -4056,7 +3876,7 @@
           "number": 70,
           "displayName": "ときわ 70号",
           "departure": "13:47",
-          "trainId": "jr_east_official:常磐:train_075_076341",
+          "trainId": "jr_east_official:常磐:train_075_076341:70m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076341.html"
@@ -4065,7 +3885,7 @@
           "number": 72,
           "displayName": "ときわ 72号",
           "departure": "14:47",
-          "trainId": "jr_east_official:常磐:train_050_050251",
+          "trainId": "jr_east_official:常磐:train_050_050251:72m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050251.html"
@@ -4074,7 +3894,7 @@
           "number": 74,
           "displayName": "ときわ 74号",
           "departure": "15:47",
-          "trainId": "jr_east_official:常磐:train_045_048431",
+          "trainId": "jr_east_official:常磐:train_045_048431:74m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048431.html"
@@ -4083,7 +3903,7 @@
           "number": 76,
           "displayName": "ときわ 76号",
           "departure": "16:47",
-          "trainId": "jr_east_official:常磐:train_045_048441",
+          "trainId": "jr_east_official:常磐:train_045_048441:76m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048441.html"
@@ -4092,7 +3912,7 @@
           "number": 78,
           "displayName": "ときわ 78号",
           "departure": "17:47",
-          "trainId": "jr_east_official:常磐:train_045_048451",
+          "trainId": "jr_east_official:常磐:train_045_048451:78m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048451.html"
@@ -4101,7 +3921,7 @@
           "number": 80,
           "displayName": "ときわ 80号",
           "departure": "18:47",
-          "trainId": "jr_east_official:常磐:train_045_048481",
+          "trainId": "jr_east_official:常磐:train_045_048481:80m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048481.html"
@@ -4110,7 +3930,7 @@
           "number": 82,
           "displayName": "ときわ 82号",
           "departure": "19:47",
-          "trainId": "jr_east_official:常磐:train_075_076351",
+          "trainId": "jr_east_official:常磐:train_075_076351:82m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076351.html"
@@ -4119,183 +3939,10 @@
           "number": 84,
           "displayName": "ときわ 84号",
           "departure": "20:47",
-          "trainId": "jr_east_official:常磐:train_050_050261",
+          "trainId": "jr_east_official:常磐:train_050_050261:84m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050261.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "成田エクスプレス",
-      "origin": "東京",
-      "terminal": "新宿",
-      "observedCount": 23,
-      "observedNumbers": [
-        2,
-        4,
-        6,
-        8,
-        10,
-        12,
-        14,
-        16,
-        18,
-        20,
-        22,
-        24,
-        26,
-        28,
-        30,
-        32,
-        34,
-        36,
-        38,
-        40,
-        44,
-        48,
-        54
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        2,
-        54
-      ],
-      "missingCount": 4,
-      "missingNumbers": [
-        42,
-        46,
-        50,
-        52
-      ],
-      "missingUnseenFromOriginCount": 4,
-      "missingUnseenFromOriginNumbers": [
-        42,
-        46,
-        50,
-        52
-      ],
-      "missingUnseenAtBoardingStationCount": 0,
-      "missingUnseenAtBoardingStationNumbers": [],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.852,
-      "gapRatio": 0.148,
-      "firstDeparture": "08:56",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 2,
-          "displayName": "成田エクスプレス 2号",
-          "departure": "08:56",
-          "trainId": "jr_east_official:成田:train_025_029011",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/025/029011.html"
-        },
-        {
-          "number": 4,
-          "displayName": "成田エクスプレス 4号",
-          "departure": "09:22",
-          "trainId": "jr_east_official:成田:train_060_063221",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063221.html"
-        },
-        {
-          "number": 6,
-          "displayName": "成田エクスプレス 6号",
-          "departure": "09:58",
-          "trainId": "jr_east_official:成田:train_060_063301",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063301.html"
-        },
-        {
-          "number": 8,
-          "displayName": "成田エクスプレス 8号",
-          "departure": "10:19",
-          "trainId": "jr_east_official:成田:train_060_063231",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063231.html"
-        },
-        {
-          "number": 10,
-          "displayName": "成田エクスプレス 10号",
-          "departure": "10:49",
-          "trainId": "jr_east_official:成田:train_030_031431",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031431.html"
-        },
-        {
-          "number": 12,
-          "displayName": "成田エクスプレス 12号",
-          "departure": "11:17",
-          "trainId": "jr_east_official:成田:train_045_049851",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049851.html"
-        },
-        {
-          "number": 14,
-          "displayName": "成田エクスプレス 14号",
-          "departure": "11:49",
-          "trainId": "jr_east_official:成田:train_045_047881",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/047881.html"
-        },
-        {
-          "number": 16,
-          "displayName": "成田エクスプレス 16号",
-          "departure": "12:17",
-          "trainId": "jr_east_official:成田:train_060_063241",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063241.html"
-        },
-        {
-          "number": 18,
-          "displayName": "成田エクスプレス 18号",
-          "departure": "12:49",
-          "trainId": "jr_east_official:成田:train_045_047891",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/047891.html"
-        },
-        {
-          "number": 20,
-          "displayName": "成田エクスプレス 20号",
-          "departure": "13:17",
-          "trainId": "jr_east_official:成田:train_060_063251",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063251.html"
-        },
-        {
-          "number": 22,
-          "displayName": "成田エクスプレス 22号",
-          "departure": "13:49",
-          "trainId": "jr_east_official:成田:train_060_063311",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063311.html"
-        },
-        {
-          "number": 24,
-          "displayName": "成田エクスプレス 24号",
-          "departure": "14:17",
-          "trainId": "jr_east_official:成田:train_060_063261",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063261.html"
         }
       ]
     },
@@ -4614,7 +4261,7 @@
           "number": 2,
           "displayName": "ひたち 2号",
           "departure": "05:53",
-          "trainId": "jr_east_official:常磐:train_045_048361",
+          "trainId": "jr_east_official:常磐:train_045_048361:2m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048361.html"
@@ -4623,7 +4270,7 @@
           "number": 4,
           "displayName": "ひたち 4号",
           "departure": "07:03",
-          "trainId": "jr_east_official:常磐:train_045_048381",
+          "trainId": "jr_east_official:常磐:train_045_048381:4m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048381.html"
@@ -4632,7 +4279,7 @@
           "number": 6,
           "displayName": "ひたち 6号",
           "departure": "08:18",
-          "trainId": "jr_east_official:常磐:train_045_048401",
+          "trainId": "jr_east_official:常磐:train_045_048401:6m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048401.html"
@@ -4641,7 +4288,7 @@
           "number": 8,
           "displayName": "ひたち 8号",
           "departure": "09:21",
-          "trainId": "jr_east_official:常磐:train_045_048411",
+          "trainId": "jr_east_official:常磐:train_045_048411:8m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048411.html"
@@ -4650,7 +4297,7 @@
           "number": 10,
           "displayName": "ひたち 10号",
           "departure": "10:17",
-          "trainId": "jr_east_official:常磐:train_045_048421",
+          "trainId": "jr_east_official:常磐:train_045_048421:10m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048421.html"
@@ -4659,7 +4306,7 @@
           "number": 14,
           "displayName": "ひたち 14号",
           "departure": "12:18",
-          "trainId": "jr_east_official:常磐:train_095_098751",
+          "trainId": "jr_east_official:常磐:train_095_098751:14m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/095/098751.html"
@@ -4668,7 +4315,7 @@
           "number": 16,
           "displayName": "ひたち 16号",
           "departure": "13:23",
-          "trainId": "jr_east_official:常磐:train_045_048471",
+          "trainId": "jr_east_official:常磐:train_045_048471:16m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048471.html"
@@ -4677,7 +4324,7 @@
           "number": 18,
           "displayName": "ひたち 18号",
           "departure": "14:18",
-          "trainId": "jr_east_official:常磐:train_045_048501",
+          "trainId": "jr_east_official:常磐:train_045_048501:18m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048501.html"
@@ -4686,7 +4333,7 @@
           "number": 20,
           "displayName": "ひたち 20号",
           "departure": "15:18",
-          "trainId": "jr_east_official:常磐:train_045_048511",
+          "trainId": "jr_east_official:常磐:train_045_048511:20m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048511.html"
@@ -4695,7 +4342,7 @@
           "number": 24,
           "displayName": "ひたち 24号",
           "departure": "17:21",
-          "trainId": "jr_east_official:常磐:train_045_048521",
+          "trainId": "jr_east_official:常磐:train_045_048521:24m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048521.html"
@@ -4704,7 +4351,7 @@
           "number": 26,
           "displayName": "ひたち 26号",
           "departure": "18:17",
-          "trainId": "jr_east_official:常磐:train_095_098771",
+          "trainId": "jr_east_official:常磐:train_095_098771:26m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/095/098771.html"
@@ -4713,7 +4360,7 @@
           "number": 28,
           "displayName": "ひたち 28号",
           "departure": "19:18",
-          "trainId": "jr_east_official:常磐:train_045_048541",
+          "trainId": "jr_east_official:常磐:train_045_048541:28m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048541.html"
@@ -5289,6 +4936,174 @@
       ]
     },
     {
+      "serviceFamily": "成田エクスプレス",
+      "origin": "成田空港",
+      "terminal": "大船",
+      "observedCount": 16,
+      "observedNumbers": [
+        2,
+        6,
+        10,
+        14,
+        18,
+        22,
+        26,
+        30,
+        34,
+        38,
+        40,
+        42,
+        46,
+        50,
+        52,
+        54
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        2,
+        54
+      ],
+      "missingCount": 11,
+      "missingNumbers": [
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        28,
+        32,
+        36,
+        44,
+        48
+      ],
+      "missingUnseenFromOriginCount": 0,
+      "missingUnseenFromOriginNumbers": [],
+      "missingUnseenAtBoardingStationCount": 0,
+      "missingUnseenAtBoardingStationNumbers": [],
+      "missingUnseenGloballyCount": 0,
+      "missingUnseenGloballyNumbers": [],
+      "coverageDensity": 0.593,
+      "gapRatio": 0.407,
+      "firstDeparture": "07:37",
+      "operators": [
+        "jr_east"
+      ],
+      "sources": [
+        "v4_jreast_official_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 2,
+          "displayName": "成田エクスプレス 2号",
+          "departure": "07:37",
+          "trainId": "jr_east_official:成田:train_025_029011:2002m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/025/029011.html"
+        },
+        {
+          "number": 6,
+          "displayName": "成田エクスプレス 6号",
+          "departure": "08:49",
+          "trainId": "jr_east_official:成田:train_060_063301:2006m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063301.html"
+        },
+        {
+          "number": 10,
+          "displayName": "成田エクスプレス 10号",
+          "departure": "09:46",
+          "trainId": "jr_east_official:成田:train_030_031431:2010m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031431.html"
+        },
+        {
+          "number": 14,
+          "displayName": "成田エクスプレス 14号",
+          "departure": "10:45",
+          "trainId": "jr_east_official:成田:train_045_047881:2014m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/047881.html"
+        },
+        {
+          "number": 18,
+          "displayName": "成田エクスプレス 18号",
+          "departure": "11:44",
+          "trainId": "jr_east_official:成田:train_045_047891:2018m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/047891.html"
+        },
+        {
+          "number": 22,
+          "displayName": "成田エクスプレス 22号",
+          "departure": "12:45",
+          "trainId": "jr_east_official:成田:train_060_063311:2022m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063311.html"
+        },
+        {
+          "number": 26,
+          "displayName": "成田エクスプレス 26号",
+          "departure": "13:44",
+          "trainId": "jr_east_official:成田:train_060_063321:2026m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063321.html"
+        },
+        {
+          "number": 30,
+          "displayName": "成田エクスプレス 30号",
+          "departure": "14:45",
+          "trainId": "jr_east_official:成田:train_030_031441:2030m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031441.html"
+        },
+        {
+          "number": 34,
+          "displayName": "成田エクスプレス 34号",
+          "departure": "15:44",
+          "trainId": "jr_east_official:成田:train_030_031451:2034m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031451.html"
+        },
+        {
+          "number": 38,
+          "displayName": "成田エクスプレス 38号",
+          "departure": "16:44",
+          "trainId": "jr_east_official:成田:train_030_031201:2038m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031201.html"
+        },
+        {
+          "number": 40,
+          "displayName": "成田エクスプレス 40号",
+          "departure": "17:16",
+          "trainId": "jr_east_official:成田:train_030_031211:2040m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031211.html"
+        },
+        {
+          "number": 42,
+          "displayName": "成田エクスプレス 42号",
+          "departure": "17:45",
+          "trainId": "jr_east_official:成田:train_025_029051",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/025/029051.html"
+        }
+      ]
+    },
+    {
       "serviceFamily": "きのさき",
       "origin": "京都",
       "terminal": "福知山",
@@ -5541,7 +5356,7 @@
           "number": 1,
           "displayName": "ひたち 1号",
           "departure": "06:45",
-          "trainId": "jr_east_official:常磐:train_045_047751",
+          "trainId": "jr_east_official:常磐:train_045_047751:1m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/047751.html"
@@ -5550,7 +5365,7 @@
           "number": 5,
           "displayName": "ひたち 5号",
           "departure": "08:43",
-          "trainId": "jr_east_official:常磐:train_050_050161",
+          "trainId": "jr_east_official:常磐:train_050_050161:5m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050161.html"
@@ -5559,7 +5374,7 @@
           "number": 7,
           "displayName": "ひたち 7号",
           "departure": "09:45",
-          "trainId": "jr_east_official:常磐:train_045_047761",
+          "trainId": "jr_east_official:常磐:train_045_047761:7m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/047761.html"
@@ -5568,7 +5383,7 @@
           "number": 9,
           "displayName": "ひたち 9号",
           "departure": "10:45",
-          "trainId": "jr_east_official:常磐:train_045_048231",
+          "trainId": "jr_east_official:常磐:train_045_048231:9m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048231.html"
@@ -5577,7 +5392,7 @@
           "number": 11,
           "displayName": "ひたち 11号",
           "departure": "11:45",
-          "trainId": "jr_east_official:常磐:train_045_048251",
+          "trainId": "jr_east_official:常磐:train_045_048251:11m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048251.html"
@@ -5586,7 +5401,7 @@
           "number": 15,
           "displayName": "ひたち 15号",
           "departure": "13:45",
-          "trainId": "jr_east_official:常磐:train_045_048271",
+          "trainId": "jr_east_official:常磐:train_045_048271:15m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048271.html"
@@ -5595,7 +5410,7 @@
           "number": 17,
           "displayName": "ひたち 17号",
           "departure": "14:45",
-          "trainId": "jr_east_official:常磐:train_045_048291",
+          "trainId": "jr_east_official:常磐:train_045_048291:17m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048291.html"
@@ -5604,7 +5419,7 @@
           "number": 19,
           "displayName": "ひたち 19号",
           "departure": "15:45",
-          "trainId": "jr_east_official:常磐:train_095_098721",
+          "trainId": "jr_east_official:常磐:train_095_098721:19m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/095/098721.html"
@@ -5613,7 +5428,7 @@
           "number": 23,
           "displayName": "ひたち 23号",
           "departure": "17:45",
-          "trainId": "jr_east_official:常磐:train_045_048321",
+          "trainId": "jr_east_official:常磐:train_045_048321:23m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048321.html"
@@ -5622,7 +5437,7 @@
           "number": 25,
           "displayName": "ひたち 25号",
           "departure": "18:45",
-          "trainId": "jr_east_official:常磐:train_045_048331",
+          "trainId": "jr_east_official:常磐:train_045_048331:25m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048331.html"
@@ -5631,7 +5446,7 @@
           "number": 27,
           "displayName": "ひたち 27号",
           "departure": "19:45",
-          "trainId": "jr_east_official:常磐:train_045_048341",
+          "trainId": "jr_east_official:常磐:train_045_048341:27m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048341.html"
@@ -5640,7 +5455,7 @@
           "number": 29,
           "displayName": "ひたち 29号",
           "departure": "20:45",
-          "trainId": "jr_east_official:常磐:train_045_048351",
+          "trainId": "jr_east_official:常磐:train_045_048351:29m",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048351.html"
