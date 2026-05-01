@@ -53,6 +53,69 @@ KNOWN_LIMITED_EXPRESS_FAMILIES = {
     "ホームウェイ", "メトロはこね", "メトロホームウェイ",
 }
 
+REVIEWED_GAP_PATTERNS = {
+    ("成田エクスプレス", "大船", "成田空港"): {
+        "category": "alternate_origin_pattern",
+        "note": "Numbers in the missing-looking block are present as Shinjuku-origin NEX services; Ofuna-origin NEX uses a separate numbering cadence.",
+        "source": "JR East official 2026-05 timetable",
+    },
+    ("ときわ", "品川", "勝田"): {
+        "category": "official_numbering_gap",
+        "note": "Current JR East Shinagawa Joban Line timetable skips this late-evening block; 95 is Ueno-origin and 97 resumes Shinagawa-origin service.",
+        "source": "JR East official 2026-05 timetable",
+    },
+    ("あずさ", "東京", "松本"): {
+        "category": "official_numbering_gap",
+        "note": "Tokyo-origin evening Azusa services run as 41, 45, 49, 53, and 55 in the official JR East timetable.",
+        "source": "JR East official 2026-05 timetable",
+    },
+    ("あずさ", "松本", "東京"): {
+        "category": "official_numbering_gap",
+        "note": "Matsumoto-to-Tokyo morning Azusa services use a sparse even-number cadence in the official JR East timetable.",
+        "source": "JR East official 2026-05 timetable",
+    },
+    ("こうのとり", "城崎温泉", "新大阪"): {
+        "category": "alternate_origin_pattern",
+        "note": "Missing-looking numbers 16, 20, and 24 are present as Fukuchiyama-origin Kounotori services.",
+        "source": "JR West official weekday timetable",
+    },
+    ("富士回遊", "大月", "河口湖"): {
+        "category": "official_numbering_gap",
+        "note": "Fuji Kaiyu through services at Otsuki use 3, 7, 11, and 15 in the official JR East weekday timetable.",
+        "source": "JR East official 2026-05 timetable",
+    },
+    ("にちりん", "大分", "宮崎空港"): {
+        "category": "parallel_family_numbering",
+        "note": "The apparent 5号 gap is occupied by にちりんシーガイア5号 in the current timetable rather than plain にちりん5号.",
+        "source": "JR Kyushu current timetable",
+    },
+    ("きのさき", "城崎温泉", "京都"): {
+        "category": "alternate_origin_pattern",
+        "note": "Missing-looking 14号 is present as a Fukuchiyama-origin Kinosaki service.",
+        "source": "JR West official weekday timetable",
+    },
+    ("ときわ", "高萩", "品川"): {
+        "category": "alternate_origin_pattern",
+        "note": "Missing-looking 62号 is present as a Katsuta-origin Tokiwa service.",
+        "source": "JR East official 2026-05 timetable",
+    },
+    ("わかしお", "安房鴨川", "東京"): {
+        "category": "alternate_origin_pattern",
+        "note": "Missing-looking 10号 is present as a Katsuura-origin Wakashio service.",
+        "source": "JR East official 2026-05 timetable",
+    },
+    ("スーパーはくと", "倉吉", "大阪"): {
+        "category": "alternate_origin_pattern",
+        "note": "Missing-looking 6号 is present as a Tottori-origin Super Hakuto service.",
+        "source": "JR West official weekday timetable",
+    },
+    ("スーパーまつかぜ", "益田", "鳥取"): {
+        "category": "alternate_origin_pattern",
+        "note": "Missing-looking 8号 is present as a Yonago-origin Super Matsukaze service.",
+        "source": "JR West official weekday timetable",
+    },
+}
+
 
 def load_json(path: Path) -> Any:
     opener = gzip.open if path.suffix == ".gz" else open
@@ -200,6 +263,23 @@ def summarize_group(
     }
 
 
+def reviewed_gap_pattern(summary: dict[str, Any]) -> dict[str, str] | None:
+    review = REVIEWED_GAP_PATTERNS.get(
+        (
+            str(summary.get("serviceFamily") or ""),
+            str(summary.get("origin") or ""),
+            str(summary.get("terminal") or ""),
+        )
+    )
+    if not review:
+        return None
+    return {
+        "reviewCategory": review["category"],
+        "reviewNote": review["note"],
+        "reviewSource": review["source"],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
@@ -260,6 +340,7 @@ def main() -> int:
 
     candidates = []
     high_priority_candidates = []
+    reviewed_gap_patterns = []
     reviewed_dense_sequences = []
     for key, items in groups.items():
         numbers = {int(item["number"]) for item in items}
@@ -284,6 +365,10 @@ def main() -> int:
             )
             continue
         if summary["gapRatio"] <= args.max_gap_ratio:
+            review = reviewed_gap_pattern(summary)
+            if review:
+                reviewed_gap_patterns.append({**summary, **review})
+                continue
             candidates.append(summary)
             if summary["missingUnseenAtBoardingStationCount"]:
                 high_priority_candidates.append(summary)
@@ -309,6 +394,14 @@ def main() -> int:
         )
     )
     reviewed_dense_sequences.sort(key=lambda item: (-item["observedCount"], item["serviceFamily"], item["origin"], item["terminal"]))
+    reviewed_gap_patterns.sort(
+        key=lambda item: (
+            item["reviewCategory"],
+            item["serviceFamily"],
+            item["origin"],
+            item["terminal"],
+        )
+    )
     result = {
         "schema": "onichase.v4.limited_express_number_gap_audit.v1",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
@@ -331,12 +424,14 @@ def main() -> int:
             "numberedLimitedExpressGroupCount": len(groups),
             "gapCandidateCount": len(candidates),
             "highPriorityGapCandidateCount": len(high_priority_candidates),
+            "reviewedGapPatternCount": len(reviewed_gap_patterns),
             "reviewedDenseSequenceCount": len(reviewed_dense_sequences),
             "topFamilies": [{"serviceFamily": family, "count": count} for family, count in family_counts.most_common(40)],
             "skippedCounts": dict(skipped_counts),
         },
         "highPriorityGapCandidates": high_priority_candidates,
         "gapCandidates": candidates,
+        "reviewedGapPatterns": reviewed_gap_patterns,
         "reviewedDenseSequences": reviewed_dense_sequences[:500],
     }
     write_json(args.output, result)

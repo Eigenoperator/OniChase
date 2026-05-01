@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v4.limited_express_number_gap_audit.v1",
-  "generatedAt": "2026-05-01T21:26:01.509433+00:00",
+  "generatedAt": "2026-05-01T21:33:34.547214+00:00",
   "input": "data/v4_current_weekday_train_instances.json.gz",
   "policy": "Groups numbered named limited-express-like trains by service family, origin, and terminal. For groups with at least minObserved unique train numbers, it infers step=2 when all numbers share parity, otherwise step=1, and reports missing numbers within the observed min/max range. High-priority findings require missing numbers to be absent from that boarding station entirely, so pass-through trains from a farther origin do not look missing. Findings are review candidates, not automatic errors.",
   "parameters": {
@@ -12,8 +12,9 @@
     "trainInstanceCount": 125331,
     "limitedExpressFamilyCount": 86,
     "numberedLimitedExpressGroupCount": 360,
-    "gapCandidateCount": 42,
-    "highPriorityGapCandidateCount": 14,
+    "gapCandidateCount": 30,
+    "highPriorityGapCandidateCount": 2,
+    "reviewedGapPatternCount": 12,
     "reviewedDenseSequenceCount": 43,
     "topFamilies": [
       {
@@ -184,707 +185,6 @@
   },
   "highPriorityGapCandidates": [
     {
-      "serviceFamily": "成田エクスプレス",
-      "origin": "大船",
-      "terminal": "成田空港",
-      "observedCount": 16,
-      "observedNumbers": [
-        1,
-        3,
-        5,
-        7,
-        11,
-        15,
-        19,
-        23,
-        27,
-        31,
-        35,
-        39,
-        43,
-        47,
-        51,
-        53
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        1,
-        53
-      ],
-      "missingCount": 11,
-      "missingNumbers": [
-        9,
-        13,
-        17,
-        21,
-        25,
-        29,
-        33,
-        37,
-        41,
-        45,
-        49
-      ],
-      "missingUnseenFromOriginCount": 11,
-      "missingUnseenFromOriginNumbers": [
-        9,
-        13,
-        17,
-        21,
-        25,
-        29,
-        33,
-        37,
-        41,
-        45,
-        49
-      ],
-      "missingUnseenAtBoardingStationCount": 11,
-      "missingUnseenAtBoardingStationNumbers": [
-        9,
-        13,
-        17,
-        21,
-        25,
-        29,
-        33,
-        37,
-        41,
-        45,
-        49
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.593,
-      "gapRatio": 0.407,
-      "firstDeparture": "05:28",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 1,
-          "displayName": "成田エクスプレス 1号",
-          "departure": "05:28",
-          "trainId": "jr_east_official:成田:train_030_031081:2001m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031081.html"
-        },
-        {
-          "number": 3,
-          "displayName": "成田エクスプレス 3号",
-          "departure": "06:06",
-          "trainId": "jr_east_official:成田:train_035_037891:2003m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/035/037891.html"
-        },
-        {
-          "number": 5,
-          "displayName": "成田エクスプレス 5号",
-          "departure": "06:38",
-          "trainId": "jr_east_official:成田:train_030_031091:2005m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031091.html"
-        },
-        {
-          "number": 7,
-          "displayName": "成田エクスプレス 7号",
-          "departure": "07:00",
-          "trainId": "jr_east_official:成田:train_030_031101:2007m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031101.html"
-        },
-        {
-          "number": 11,
-          "displayName": "成田エクスプレス 11号",
-          "departure": "08:08",
-          "trainId": "jr_east_official:成田:train_095_098881:2011m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/095/098881.html"
-        },
-        {
-          "number": 15,
-          "displayName": "成田エクスプレス 15号",
-          "departure": "09:10",
-          "trainId": "jr_east_official:成田:train_025_029041:2015m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/025/029041.html"
-        },
-        {
-          "number": 19,
-          "displayName": "成田エクスプレス 19号",
-          "departure": "10:10",
-          "trainId": "jr_east_official:成田:train_035_037911:2019m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/035/037911.html"
-        },
-        {
-          "number": 23,
-          "displayName": "成田エクスプレス 23号",
-          "departure": "11:10",
-          "trainId": "jr_east_official:成田:train_030_031111:2023m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031111.html"
-        },
-        {
-          "number": 27,
-          "displayName": "成田エクスプレス 27号",
-          "departure": "12:10",
-          "trainId": "jr_east_official:成田:train_030_031121:2027m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031121.html"
-        },
-        {
-          "number": 31,
-          "displayName": "成田エクスプレス 31号",
-          "departure": "13:10",
-          "trainId": "jr_east_official:成田:train_030_031131:2031m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031131.html"
-        },
-        {
-          "number": 35,
-          "displayName": "成田エクスプレス 35号",
-          "departure": "14:10",
-          "trainId": "jr_east_official:成田:train_030_031141:2035m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031141.html"
-        },
-        {
-          "number": 39,
-          "displayName": "成田エクスプレス 39号",
-          "departure": "15:10",
-          "trainId": "jr_east_official:成田:train_030_031151:2039m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031151.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "ときわ",
-      "origin": "品川",
-      "terminal": "勝田",
-      "observedCount": 14,
-      "observedNumbers": [
-        53,
-        55,
-        57,
-        59,
-        61,
-        63,
-        65,
-        67,
-        69,
-        71,
-        75,
-        79,
-        85,
-        97
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        53,
-        97
-      ],
-      "missingCount": 9,
-      "missingNumbers": [
-        73,
-        77,
-        81,
-        83,
-        87,
-        89,
-        91,
-        93,
-        95
-      ],
-      "missingUnseenFromOriginCount": 5,
-      "missingUnseenFromOriginNumbers": [
-        87,
-        89,
-        91,
-        93,
-        95
-      ],
-      "missingUnseenAtBoardingStationCount": 5,
-      "missingUnseenAtBoardingStationNumbers": [
-        87,
-        89,
-        91,
-        93,
-        95
-      ],
-      "missingUnseenGloballyCount": 4,
-      "missingUnseenGloballyNumbers": [
-        87,
-        89,
-        91,
-        93
-      ],
-      "coverageDensity": 0.609,
-      "gapRatio": 0.391,
-      "firstDeparture": "08:13",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 53,
-          "displayName": "ときわ 53号",
-          "departure": "08:13",
-          "trainId": "jr_east_official:常磐:train_075_076141:53m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076141.html"
-        },
-        {
-          "number": 55,
-          "displayName": "ときわ 55号",
-          "departure": "09:15",
-          "trainId": "jr_east_official:常磐:train_075_076161:55m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076161.html"
-        },
-        {
-          "number": 57,
-          "displayName": "ときわ 57号",
-          "departure": "10:14",
-          "trainId": "jr_east_official:常磐:train_045_048221:57m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048221.html"
-        },
-        {
-          "number": 59,
-          "displayName": "ときわ 59号",
-          "departure": "11:15",
-          "trainId": "jr_east_official:常磐:train_045_048241:59m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048241.html"
-        },
-        {
-          "number": 61,
-          "displayName": "ときわ 61号",
-          "departure": "12:15",
-          "trainId": "jr_east_official:常磐:train_045_048261:61m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048261.html"
-        },
-        {
-          "number": 63,
-          "displayName": "ときわ 63号",
-          "departure": "13:15",
-          "trainId": "jr_east_official:常磐:train_075_076181:63m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076181.html"
-        },
-        {
-          "number": 65,
-          "displayName": "ときわ 65号",
-          "departure": "14:15",
-          "trainId": "jr_east_official:常磐:train_045_048281:65m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048281.html"
-        },
-        {
-          "number": 67,
-          "displayName": "ときわ 67号",
-          "departure": "15:15",
-          "trainId": "jr_east_official:常磐:train_045_048301:67m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048301.html"
-        },
-        {
-          "number": 69,
-          "displayName": "ときわ 69号",
-          "departure": "16:15",
-          "trainId": "jr_east_official:常磐:train_045_048311:69m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048311.html"
-        },
-        {
-          "number": 71,
-          "displayName": "ときわ 71号",
-          "departure": "17:15",
-          "trainId": "jr_east_official:常磐:train_050_050181:71m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050181.html"
-        },
-        {
-          "number": 75,
-          "displayName": "ときわ 75号",
-          "departure": "19:15",
-          "trainId": "jr_east_official:常磐:train_075_076211:75m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076211.html"
-        },
-        {
-          "number": 79,
-          "displayName": "ときわ 79号",
-          "departure": "21:15",
-          "trainId": "jr_east_official:常磐:train_050_050191:79m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050191.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "あずさ",
-      "origin": "東京",
-      "terminal": "松本",
-      "observedCount": 5,
-      "observedNumbers": [
-        41,
-        45,
-        49,
-        53,
-        55
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        41,
-        55
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        43,
-        47,
-        51
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        43,
-        47,
-        51
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        43,
-        47,
-        51
-      ],
-      "missingUnseenGloballyCount": 3,
-      "missingUnseenGloballyNumbers": [
-        43,
-        47,
-        51
-      ],
-      "coverageDensity": 0.625,
-      "gapRatio": 0.375,
-      "firstDeparture": "16:45",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 41,
-          "displayName": "あずさ 41号",
-          "departure": "16:45",
-          "trainId": "jr_east_official:中央:train_060_063771",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063771.html"
-        },
-        {
-          "number": 45,
-          "displayName": "あずさ 45号",
-          "departure": "17:45",
-          "trainId": "jr_east_official:中央:train_110_112681",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/110/112681.html"
-        },
-        {
-          "number": 49,
-          "displayName": "あずさ 49号",
-          "departure": "18:45",
-          "trainId": "jr_east_official:中央:train_110_112701",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/110/112701.html"
-        },
-        {
-          "number": 53,
-          "displayName": "あずさ 53号",
-          "departure": "19:45",
-          "trainId": "jr_east_official:中央:train_110_112721",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/110/112721.html"
-        },
-        {
-          "number": 55,
-          "displayName": "あずさ 55号",
-          "departure": "20:45",
-          "trainId": "jr_east_official:中央:train_110_111471",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/110/111471.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "あずさ",
-      "origin": "松本",
-      "terminal": "東京",
-      "observedCount": 4,
-      "observedNumbers": [
-        4,
-        8,
-        12,
-        16
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        4,
-        16
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        6,
-        10,
-        14
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        6,
-        10,
-        14
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        6,
-        10,
-        14
-      ],
-      "missingUnseenGloballyCount": 3,
-      "missingUnseenGloballyNumbers": [
-        6,
-        10,
-        14
-      ],
-      "coverageDensity": 0.571,
-      "gapRatio": 0.429,
-      "firstDeparture": "06:30",
-      "operators": [
-        "jr_central",
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 4,
-          "displayName": "あずさ4号",
-          "departure": "06:30",
-          "trainId": "jr_central_navitime:中央線:00000176:009c0060:2026-04-27",
-          "operatorId": "jr_central",
-          "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000176/009c0060/?node=00000784&year=2026&month=04&day=27"
-        },
-        {
-          "number": 4,
-          "displayName": "あずさ 4号",
-          "departure": "06:30",
-          "trainId": "jr_east_official:中央:train_060_063631",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063631.html"
-        },
-        {
-          "number": 8,
-          "displayName": "あずさ8号",
-          "departure": "07:10",
-          "trainId": "jr_central_navitime:中央線:00000176:009c007d:2026-04-27",
-          "operatorId": "jr_central",
-          "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000176/009c007d/?node=00000784&year=2026&month=04&day=27"
-        },
-        {
-          "number": 8,
-          "displayName": "あずさ 8号",
-          "departure": "07:10",
-          "trainId": "jr_east_official:中央:train_075_076101",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076101.html"
-        },
-        {
-          "number": 12,
-          "displayName": "あずさ12号",
-          "departure": "08:10",
-          "trainId": "jr_central_navitime:中央線:00000176:009c007f:2026-04-27",
-          "operatorId": "jr_central",
-          "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000176/009c007f/?node=00000784&year=2026&month=04&day=27"
-        },
-        {
-          "number": 12,
-          "displayName": "あずさ 12号",
-          "departure": "08:10",
-          "trainId": "jr_east_official:中央:train_075_076121",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076121.html"
-        },
-        {
-          "number": 16,
-          "displayName": "あずさ16号",
-          "departure": "09:10",
-          "trainId": "jr_central_navitime:中央線:00000176:009c008a:2026-04-27",
-          "operatorId": "jr_central",
-          "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000176/009c008a/?node=00000784&year=2026&month=04&day=27"
-        },
-        {
-          "number": 16,
-          "displayName": "あずさ 16号",
-          "departure": "09:10",
-          "trainId": "jr_east_official:中央:train_085_087521",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/085/087521.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "こうのとり",
-      "origin": "城崎温泉",
-      "terminal": "新大阪",
-      "observedCount": 6,
-      "observedNumbers": [
-        12,
-        14,
-        18,
-        22,
-        26,
-        28
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        12,
-        28
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        16,
-        20,
-        24
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        16,
-        20,
-        24
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        16,
-        20,
-        24
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.667,
-      "gapRatio": 0.333,
-      "firstDeparture": "09:33",
-      "operators": [
-        "jr_west"
-      ],
-      "sources": [
-        "v4_jrwest_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 12,
-          "displayName": "こうのとり12号",
-          "departure": "09:33",
-          "trainId": "jr_west_official:山陰線:91231:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91231?date=20260427"
-        },
-        {
-          "number": 14,
-          "displayName": "こうのとり14号",
-          "departure": "11:33",
-          "trainId": "jr_west_official:山陰線:91241:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91241?date=20260427"
-        },
-        {
-          "number": 18,
-          "displayName": "こうのとり18号",
-          "departure": "13:29",
-          "trainId": "jr_west_official:山陰線:91251:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91251?date=20260427"
-        },
-        {
-          "number": 22,
-          "displayName": "こうのとり22号",
-          "departure": "15:30",
-          "trainId": "jr_west_official:山陰線:145471:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/145471?date=20260427"
-        },
-        {
-          "number": 26,
-          "displayName": "こうのとり26号",
-          "departure": "17:42",
-          "trainId": "jr_west_official:山陰線:200781:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/200781?date=20260427"
-        },
-        {
-          "number": 28,
-          "displayName": "こうのとり28号",
-          "departure": "18:53",
-          "trainId": "jr_west_official:山陰線:145491:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/145491?date=20260427"
-        }
-      ]
-    },
-    {
       "serviceFamily": "はこね",
       "origin": "小田原",
       "terminal": "町田",
@@ -1056,94 +356,6 @@
       ]
     },
     {
-      "serviceFamily": "富士回遊",
-      "origin": "大月",
-      "terminal": "河口湖",
-      "observedCount": 4,
-      "observedNumbers": [
-        3,
-        7,
-        11,
-        15
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        3,
-        15
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        5,
-        9,
-        13
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        5,
-        9,
-        13
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        5,
-        9,
-        13
-      ],
-      "missingUnseenGloballyCount": 3,
-      "missingUnseenGloballyNumbers": [
-        5,
-        9,
-        13
-      ],
-      "coverageDensity": 0.571,
-      "gapRatio": 0.429,
-      "firstDeparture": "08:40",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 3,
-          "displayName": "富士回遊 3号",
-          "departure": "08:40",
-          "trainId": "jr_east_official:中央:train_050_054681",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/054681.html"
-        },
-        {
-          "number": 7,
-          "displayName": "富士回遊 7号",
-          "departure": "09:42",
-          "trainId": "jr_east_official:中央:train_050_054711",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/054711.html"
-        },
-        {
-          "number": 11,
-          "displayName": "富士回遊 11号",
-          "departure": "10:42",
-          "trainId": "jr_east_official:中央:train_050_054721",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/054721.html"
-        },
-        {
-          "number": 15,
-          "displayName": "富士回遊 15号",
-          "departure": "11:36",
-          "trainId": "jr_east_official:中央:train_060_063371",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063371.html"
-        }
-      ]
-    },
-    {
       "serviceFamily": "スペーシアＸ",
       "origin": "東武日光",
       "terminal": "浅草",
@@ -1221,1343 +433,12 @@
           "operatorId": "tobu",
           "sourceCollection": "v3_rematched_to_v4",
           "sourceUrl": ""
-        }
-      ]
-    },
-    {
-      "serviceFamily": "にちりん",
-      "origin": "大分",
-      "terminal": "宮崎空港",
-      "observedCount": 5,
-      "observedNumbers": [
-        1,
-        7,
-        9,
-        11,
-        13
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        1,
-        13
-      ],
-      "missingCount": 2,
-      "missingNumbers": [
-        3,
-        5
-      ],
-      "missingUnseenFromOriginCount": 2,
-      "missingUnseenFromOriginNumbers": [
-        3,
-        5
-      ],
-      "missingUnseenAtBoardingStationCount": 1,
-      "missingUnseenAtBoardingStationNumbers": [
-        5
-      ],
-      "missingUnseenGloballyCount": 1,
-      "missingUnseenGloballyNumbers": [
-        5
-      ],
-      "coverageDensity": 0.714,
-      "gapRatio": 0.286,
-      "firstDeparture": "07:01",
-      "operators": [
-        "jr_kyushu"
-      ],
-      "sources": [
-        "v4_jrkyushu_navitime_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 1,
-          "displayName": "にちりん1号",
-          "departure": "07:01",
-          "trainId": "jr_kyushu_navitime:日南線:00000023:80020000:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000023/80020000/?node=00007063&year=2026&month=04&day=27"
-        },
-        {
-          "number": 1,
-          "displayName": "にちりん1号",
-          "departure": "07:01",
-          "trainId": "jr_kyushu_navitime:日豊線:00000024:80150016:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000024/80150016/?node=00000750&year=2026&month=04&day=27"
-        },
-        {
-          "number": 1,
-          "displayName": "にちりん1号",
-          "departure": "07:01",
-          "trainId": "jr_kyushu_navitime:日豊線:00000025:8016001a:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000025/8016001a/?node=00000611&year=2026&month=04&day=27"
-        },
-        {
-          "number": 7,
-          "displayName": "にちりん7号",
-          "departure": "12:09",
-          "trainId": "jr_kyushu_navitime:日南線:00000023:8002001a:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000023/8002001a/?node=00007063&year=2026&month=04&day=27"
-        },
-        {
-          "number": 7,
-          "displayName": "にちりん7号",
-          "departure": "12:09",
-          "trainId": "jr_kyushu_navitime:日豊線:00000024:80150038:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000024/80150038/?node=00000750&year=2026&month=04&day=27"
-        },
-        {
-          "number": 7,
-          "displayName": "にちりん7号",
-          "departure": "12:09",
-          "trainId": "jr_kyushu_navitime:日豊線:00000025:8016004b:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000025/8016004b/?node=00000611&year=2026&month=04&day=27"
-        },
-        {
-          "number": 9,
-          "displayName": "にちりん9号",
-          "departure": "14:11",
-          "trainId": "jr_kyushu_navitime:日南線:00000023:80020063:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000023/80020063/?node=00007063&year=2026&month=04&day=27"
-        },
-        {
-          "number": 9,
-          "displayName": "にちりん9号",
-          "departure": "14:11",
-          "trainId": "jr_kyushu_navitime:日豊線:00000024:8015007b:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000024/8015007b/?node=00000750&year=2026&month=04&day=27"
-        },
-        {
-          "number": 9,
-          "displayName": "にちりん9号",
-          "departure": "14:11",
-          "trainId": "jr_kyushu_navitime:日豊線:00000025:801600ca:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000025/801600ca/?node=00000611&year=2026&month=04&day=27"
-        },
-        {
-          "number": 11,
-          "displayName": "にちりん11号",
-          "departure": "16:14",
-          "trainId": "jr_kyushu_navitime:日南線:00000023:80020010:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000023/80020010/?node=00007063&year=2026&month=04&day=27"
-        },
-        {
-          "number": 11,
-          "displayName": "にちりん11号",
-          "departure": "16:14",
-          "trainId": "jr_kyushu_navitime:日豊線:00000024:80150023:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000024/80150023/?node=00000750&year=2026&month=04&day=27"
-        },
-        {
-          "number": 11,
-          "displayName": "にちりん11号",
-          "departure": "16:14",
-          "trainId": "jr_kyushu_navitime:日豊線:00000025:8016002d:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000025/8016002d/?node=00000611&year=2026&month=04&day=27"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "きのさき",
-      "origin": "城崎温泉",
-      "terminal": "京都",
-      "observedCount": 4,
-      "observedNumbers": [
-        12,
-        16,
-        18,
-        20
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        12,
-        20
-      ],
-      "missingCount": 1,
-      "missingNumbers": [
-        14
-      ],
-      "missingUnseenFromOriginCount": 1,
-      "missingUnseenFromOriginNumbers": [
-        14
-      ],
-      "missingUnseenAtBoardingStationCount": 1,
-      "missingUnseenAtBoardingStationNumbers": [
-        14
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.8,
-      "gapRatio": 0.2,
-      "firstDeparture": "10:34",
-      "operators": [
-        "jr_west"
-      ],
-      "sources": [
-        "v4_jrwest_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 12,
-          "displayName": "きのさき12号",
-          "departure": "10:34",
-          "trainId": "jr_west_official:山陰線:91051:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91051?date=20260427"
-        },
-        {
-          "number": 16,
-          "displayName": "きのさき16号",
-          "departure": "12:31",
-          "trainId": "jr_west_official:山陰線:91061:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91061?date=20260427"
-        },
-        {
-          "number": 18,
-          "displayName": "きのさき18号",
-          "departure": "14:35",
-          "trainId": "jr_west_official:山陰線:184081:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/184081?date=20260427"
-        },
-        {
-          "number": 20,
-          "displayName": "きのさき20号",
-          "departure": "16:31",
-          "trainId": "jr_west_official:山陰線:91081:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91081?date=20260427"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "ときわ",
-      "origin": "高萩",
-      "terminal": "品川",
-      "observedCount": 4,
-      "observedNumbers": [
-        56,
-        58,
-        60,
-        64
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        56,
-        64
-      ],
-      "missingCount": 1,
-      "missingNumbers": [
-        62
-      ],
-      "missingUnseenFromOriginCount": 1,
-      "missingUnseenFromOriginNumbers": [
-        62
-      ],
-      "missingUnseenAtBoardingStationCount": 1,
-      "missingUnseenAtBoardingStationNumbers": [
-        62
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.8,
-      "gapRatio": 0.2,
-      "firstDeparture": "05:48",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 56,
-          "displayName": "ときわ 56号",
-          "departure": "05:48",
-          "trainId": "jr_east_official:常磐:train_075_076291:56m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076291.html"
-        },
-        {
-          "number": 58,
-          "displayName": "ときわ 58号",
-          "departure": "06:56",
-          "trainId": "jr_east_official:常磐:train_050_050211:58m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050211.html"
-        },
-        {
-          "number": 60,
-          "displayName": "ときわ 60号",
-          "departure": "08:10",
-          "trainId": "jr_east_official:常磐:train_075_076311:60m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076311.html"
-        },
-        {
-          "number": 64,
-          "displayName": "ときわ 64号",
-          "departure": "10:16",
-          "trainId": "jr_east_official:常磐:train_060_064151:64m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/064151.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "わかしお",
-      "origin": "安房鴨川",
-      "terminal": "東京",
-      "observedCount": 5,
-      "observedNumbers": [
-        8,
-        12,
-        14,
-        16,
-        18
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        8,
-        18
-      ],
-      "missingCount": 1,
-      "missingNumbers": [
-        10
-      ],
-      "missingUnseenFromOriginCount": 1,
-      "missingUnseenFromOriginNumbers": [
-        10
-      ],
-      "missingUnseenAtBoardingStationCount": 1,
-      "missingUnseenAtBoardingStationNumbers": [
-        10
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.833,
-      "gapRatio": 0.167,
-      "firstDeparture": "07:39",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 8,
-          "displayName": "わかしお 8号",
-          "departure": "07:39",
-          "trainId": "jr_east_official:京葉:train_045_049461",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049461.html"
-        },
-        {
-          "number": 12,
-          "displayName": "わかしお 12号",
-          "departure": "11:41",
-          "trainId": "jr_east_official:京葉:train_045_049501",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049501.html"
-        },
-        {
-          "number": 14,
-          "displayName": "わかしお 14号",
-          "departure": "14:13",
-          "trainId": "jr_east_official:外房:train_045_049522",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049522.html"
-        },
-        {
-          "number": 16,
-          "displayName": "わかしお 16号",
-          "departure": "15:38",
-          "trainId": "jr_east_official:外房:train_045_049542",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049542.html"
-        },
-        {
-          "number": 18,
-          "displayName": "わかしお 18号",
-          "departure": "16:45",
-          "trainId": "jr_east_official:京葉:train_045_049561",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049561.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "スーパーはくと",
-      "origin": "倉吉",
-      "terminal": "大阪",
-      "observedCount": 5,
-      "observedNumbers": [
-        2,
-        4,
-        8,
-        10,
-        12
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        2,
-        12
-      ],
-      "missingCount": 1,
-      "missingNumbers": [
-        6
-      ],
-      "missingUnseenFromOriginCount": 1,
-      "missingUnseenFromOriginNumbers": [
-        6
-      ],
-      "missingUnseenAtBoardingStationCount": 1,
-      "missingUnseenAtBoardingStationNumbers": [
-        6
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.833,
-      "gapRatio": 0.167,
-      "firstDeparture": "06:04",
-      "operators": [
-        "e9dec28d8a",
-        "jr_west"
-      ],
-      "sources": [
-        "v4_jrwest_official_weekday_train_instances_v0_1",
-        "v4_navitime_non_jr_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 2,
-          "displayName": "スーパーはくと2号",
-          "departure": "06:04",
-          "trainId": "jr_west_official:因美線:250211:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/250211?date=20260427"
-        },
-        {
-          "number": 2,
-          "displayName": "スーパーはくと2号",
-          "departure": "06:04",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000071:003f054c:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000071/003f054c/?node=00003939&year=2026&month=04&day=27"
-        },
-        {
-          "number": 2,
-          "displayName": "スーパーはくと2号",
-          "departure": "06:04",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000753:023a0014:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000753/023a0014/?node=00005935&year=2026&month=04&day=27"
-        },
-        {
-          "number": 4,
-          "displayName": "スーパーはくと4号",
-          "departure": "08:11",
-          "trainId": "jr_west_official:因美線:250231:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/250231?date=20260427"
-        },
-        {
-          "number": 4,
-          "displayName": "スーパーはくと4号",
-          "departure": "08:11",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000071:003f0550:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000071/003f0550/?node=00003939&year=2026&month=04&day=27"
-        },
-        {
-          "number": 4,
-          "displayName": "スーパーはくと4号",
-          "departure": "08:11",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000753:023a0016:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000753/023a0016/?node=00005935&year=2026&month=04&day=27"
-        },
-        {
-          "number": 8,
-          "displayName": "スーパーはくと8号",
-          "departure": "11:40",
-          "trainId": "jr_west_official:因美線:250251:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/250251?date=20260427"
-        },
-        {
-          "number": 8,
-          "displayName": "スーパーはくと8号",
-          "departure": "11:40",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000071:003f0554:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000071/003f0554/?node=00003939&year=2026&month=04&day=27"
-        },
-        {
-          "number": 8,
-          "displayName": "スーパーはくと8号",
-          "departure": "11:40",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000753:023a0018:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000753/023a0018/?node=00005935&year=2026&month=04&day=27"
-        },
-        {
-          "number": 10,
-          "displayName": "スーパーはくと10号",
-          "departure": "13:39",
-          "trainId": "jr_west_official:因美線:283451:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/283451?date=20260427"
-        },
-        {
-          "number": 10,
-          "displayName": "スーパーはくと10号",
-          "departure": "13:39",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000071:003f05a4:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000071/003f05a4/?node=00003939&year=2026&month=04&day=27"
-        },
-        {
-          "number": 10,
-          "displayName": "スーパーはくと10号",
-          "departure": "13:39",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000753:023a0020:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000753/023a0020/?node=00005935&year=2026&month=04&day=27"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "スーパーまつかぜ",
-      "origin": "益田",
-      "terminal": "鳥取",
-      "observedCount": 4,
-      "observedNumbers": [
-        4,
-        6,
-        10,
-        12
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        4,
-        12
-      ],
-      "missingCount": 1,
-      "missingNumbers": [
-        8
-      ],
-      "missingUnseenFromOriginCount": 1,
-      "missingUnseenFromOriginNumbers": [
-        8
-      ],
-      "missingUnseenAtBoardingStationCount": 1,
-      "missingUnseenAtBoardingStationNumbers": [
-        8
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.8,
-      "gapRatio": 0.2,
-      "firstDeparture": "05:34",
-      "operators": [
-        "jr_west"
-      ],
-      "sources": [
-        "v4_jrwest_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 4,
-          "displayName": "スーパーまつかぜ4号",
-          "departure": "05:34",
-          "trainId": "jr_west_official:山陰線:76321:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/76321?date=20260427"
-        },
-        {
-          "number": 6,
-          "displayName": "スーパーまつかぜ6号",
-          "departure": "06:53",
-          "trainId": "jr_west_official:山陰線:76331:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/76331?date=20260427"
-        },
-        {
-          "number": 10,
-          "displayName": "スーパーまつかぜ10号",
-          "departure": "12:14",
-          "trainId": "jr_west_official:山陰線:76361:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/76361?date=20260427"
-        },
-        {
-          "number": 12,
-          "displayName": "スーパーまつかぜ12号",
-          "departure": "15:48",
-          "trainId": "jr_west_official:山陰線:76381:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/76381?date=20260427"
         }
       ]
     }
   ],
   "gapCandidates": [
     {
-      "serviceFamily": "成田エクスプレス",
-      "origin": "大船",
-      "terminal": "成田空港",
-      "observedCount": 16,
-      "observedNumbers": [
-        1,
-        3,
-        5,
-        7,
-        11,
-        15,
-        19,
-        23,
-        27,
-        31,
-        35,
-        39,
-        43,
-        47,
-        51,
-        53
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        1,
-        53
-      ],
-      "missingCount": 11,
-      "missingNumbers": [
-        9,
-        13,
-        17,
-        21,
-        25,
-        29,
-        33,
-        37,
-        41,
-        45,
-        49
-      ],
-      "missingUnseenFromOriginCount": 11,
-      "missingUnseenFromOriginNumbers": [
-        9,
-        13,
-        17,
-        21,
-        25,
-        29,
-        33,
-        37,
-        41,
-        45,
-        49
-      ],
-      "missingUnseenAtBoardingStationCount": 11,
-      "missingUnseenAtBoardingStationNumbers": [
-        9,
-        13,
-        17,
-        21,
-        25,
-        29,
-        33,
-        37,
-        41,
-        45,
-        49
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.593,
-      "gapRatio": 0.407,
-      "firstDeparture": "05:28",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 1,
-          "displayName": "成田エクスプレス 1号",
-          "departure": "05:28",
-          "trainId": "jr_east_official:成田:train_030_031081:2001m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031081.html"
-        },
-        {
-          "number": 3,
-          "displayName": "成田エクスプレス 3号",
-          "departure": "06:06",
-          "trainId": "jr_east_official:成田:train_035_037891:2003m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/035/037891.html"
-        },
-        {
-          "number": 5,
-          "displayName": "成田エクスプレス 5号",
-          "departure": "06:38",
-          "trainId": "jr_east_official:成田:train_030_031091:2005m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031091.html"
-        },
-        {
-          "number": 7,
-          "displayName": "成田エクスプレス 7号",
-          "departure": "07:00",
-          "trainId": "jr_east_official:成田:train_030_031101:2007m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031101.html"
-        },
-        {
-          "number": 11,
-          "displayName": "成田エクスプレス 11号",
-          "departure": "08:08",
-          "trainId": "jr_east_official:成田:train_095_098881:2011m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/095/098881.html"
-        },
-        {
-          "number": 15,
-          "displayName": "成田エクスプレス 15号",
-          "departure": "09:10",
-          "trainId": "jr_east_official:成田:train_025_029041:2015m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/025/029041.html"
-        },
-        {
-          "number": 19,
-          "displayName": "成田エクスプレス 19号",
-          "departure": "10:10",
-          "trainId": "jr_east_official:成田:train_035_037911:2019m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/035/037911.html"
-        },
-        {
-          "number": 23,
-          "displayName": "成田エクスプレス 23号",
-          "departure": "11:10",
-          "trainId": "jr_east_official:成田:train_030_031111:2023m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031111.html"
-        },
-        {
-          "number": 27,
-          "displayName": "成田エクスプレス 27号",
-          "departure": "12:10",
-          "trainId": "jr_east_official:成田:train_030_031121:2027m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031121.html"
-        },
-        {
-          "number": 31,
-          "displayName": "成田エクスプレス 31号",
-          "departure": "13:10",
-          "trainId": "jr_east_official:成田:train_030_031131:2031m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031131.html"
-        },
-        {
-          "number": 35,
-          "displayName": "成田エクスプレス 35号",
-          "departure": "14:10",
-          "trainId": "jr_east_official:成田:train_030_031141:2035m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031141.html"
-        },
-        {
-          "number": 39,
-          "displayName": "成田エクスプレス 39号",
-          "departure": "15:10",
-          "trainId": "jr_east_official:成田:train_030_031151:2039m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031151.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "ときわ",
-      "origin": "品川",
-      "terminal": "勝田",
-      "observedCount": 14,
-      "observedNumbers": [
-        53,
-        55,
-        57,
-        59,
-        61,
-        63,
-        65,
-        67,
-        69,
-        71,
-        75,
-        79,
-        85,
-        97
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        53,
-        97
-      ],
-      "missingCount": 9,
-      "missingNumbers": [
-        73,
-        77,
-        81,
-        83,
-        87,
-        89,
-        91,
-        93,
-        95
-      ],
-      "missingUnseenFromOriginCount": 5,
-      "missingUnseenFromOriginNumbers": [
-        87,
-        89,
-        91,
-        93,
-        95
-      ],
-      "missingUnseenAtBoardingStationCount": 5,
-      "missingUnseenAtBoardingStationNumbers": [
-        87,
-        89,
-        91,
-        93,
-        95
-      ],
-      "missingUnseenGloballyCount": 4,
-      "missingUnseenGloballyNumbers": [
-        87,
-        89,
-        91,
-        93
-      ],
-      "coverageDensity": 0.609,
-      "gapRatio": 0.391,
-      "firstDeparture": "08:13",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 53,
-          "displayName": "ときわ 53号",
-          "departure": "08:13",
-          "trainId": "jr_east_official:常磐:train_075_076141:53m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076141.html"
-        },
-        {
-          "number": 55,
-          "displayName": "ときわ 55号",
-          "departure": "09:15",
-          "trainId": "jr_east_official:常磐:train_075_076161:55m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076161.html"
-        },
-        {
-          "number": 57,
-          "displayName": "ときわ 57号",
-          "departure": "10:14",
-          "trainId": "jr_east_official:常磐:train_045_048221:57m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048221.html"
-        },
-        {
-          "number": 59,
-          "displayName": "ときわ 59号",
-          "departure": "11:15",
-          "trainId": "jr_east_official:常磐:train_045_048241:59m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048241.html"
-        },
-        {
-          "number": 61,
-          "displayName": "ときわ 61号",
-          "departure": "12:15",
-          "trainId": "jr_east_official:常磐:train_045_048261:61m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048261.html"
-        },
-        {
-          "number": 63,
-          "displayName": "ときわ 63号",
-          "departure": "13:15",
-          "trainId": "jr_east_official:常磐:train_075_076181:63m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076181.html"
-        },
-        {
-          "number": 65,
-          "displayName": "ときわ 65号",
-          "departure": "14:15",
-          "trainId": "jr_east_official:常磐:train_045_048281:65m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048281.html"
-        },
-        {
-          "number": 67,
-          "displayName": "ときわ 67号",
-          "departure": "15:15",
-          "trainId": "jr_east_official:常磐:train_045_048301:67m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048301.html"
-        },
-        {
-          "number": 69,
-          "displayName": "ときわ 69号",
-          "departure": "16:15",
-          "trainId": "jr_east_official:常磐:train_045_048311:69m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048311.html"
-        },
-        {
-          "number": 71,
-          "displayName": "ときわ 71号",
-          "departure": "17:15",
-          "trainId": "jr_east_official:常磐:train_050_050181:71m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050181.html"
-        },
-        {
-          "number": 75,
-          "displayName": "ときわ 75号",
-          "departure": "19:15",
-          "trainId": "jr_east_official:常磐:train_075_076211:75m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076211.html"
-        },
-        {
-          "number": 79,
-          "displayName": "ときわ 79号",
-          "departure": "21:15",
-          "trainId": "jr_east_official:常磐:train_050_050191:79m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050191.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "あずさ",
-      "origin": "東京",
-      "terminal": "松本",
-      "observedCount": 5,
-      "observedNumbers": [
-        41,
-        45,
-        49,
-        53,
-        55
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        41,
-        55
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        43,
-        47,
-        51
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        43,
-        47,
-        51
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        43,
-        47,
-        51
-      ],
-      "missingUnseenGloballyCount": 3,
-      "missingUnseenGloballyNumbers": [
-        43,
-        47,
-        51
-      ],
-      "coverageDensity": 0.625,
-      "gapRatio": 0.375,
-      "firstDeparture": "16:45",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 41,
-          "displayName": "あずさ 41号",
-          "departure": "16:45",
-          "trainId": "jr_east_official:中央:train_060_063771",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063771.html"
-        },
-        {
-          "number": 45,
-          "displayName": "あずさ 45号",
-          "departure": "17:45",
-          "trainId": "jr_east_official:中央:train_110_112681",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/110/112681.html"
-        },
-        {
-          "number": 49,
-          "displayName": "あずさ 49号",
-          "departure": "18:45",
-          "trainId": "jr_east_official:中央:train_110_112701",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/110/112701.html"
-        },
-        {
-          "number": 53,
-          "displayName": "あずさ 53号",
-          "departure": "19:45",
-          "trainId": "jr_east_official:中央:train_110_112721",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/110/112721.html"
-        },
-        {
-          "number": 55,
-          "displayName": "あずさ 55号",
-          "departure": "20:45",
-          "trainId": "jr_east_official:中央:train_110_111471",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/110/111471.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "あずさ",
-      "origin": "松本",
-      "terminal": "東京",
-      "observedCount": 4,
-      "observedNumbers": [
-        4,
-        8,
-        12,
-        16
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        4,
-        16
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        6,
-        10,
-        14
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        6,
-        10,
-        14
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        6,
-        10,
-        14
-      ],
-      "missingUnseenGloballyCount": 3,
-      "missingUnseenGloballyNumbers": [
-        6,
-        10,
-        14
-      ],
-      "coverageDensity": 0.571,
-      "gapRatio": 0.429,
-      "firstDeparture": "06:30",
-      "operators": [
-        "jr_central",
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 4,
-          "displayName": "あずさ4号",
-          "departure": "06:30",
-          "trainId": "jr_central_navitime:中央線:00000176:009c0060:2026-04-27",
-          "operatorId": "jr_central",
-          "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000176/009c0060/?node=00000784&year=2026&month=04&day=27"
-        },
-        {
-          "number": 4,
-          "displayName": "あずさ 4号",
-          "departure": "06:30",
-          "trainId": "jr_east_official:中央:train_060_063631",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063631.html"
-        },
-        {
-          "number": 8,
-          "displayName": "あずさ8号",
-          "departure": "07:10",
-          "trainId": "jr_central_navitime:中央線:00000176:009c007d:2026-04-27",
-          "operatorId": "jr_central",
-          "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000176/009c007d/?node=00000784&year=2026&month=04&day=27"
-        },
-        {
-          "number": 8,
-          "displayName": "あずさ 8号",
-          "departure": "07:10",
-          "trainId": "jr_east_official:中央:train_075_076101",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076101.html"
-        },
-        {
-          "number": 12,
-          "displayName": "あずさ12号",
-          "departure": "08:10",
-          "trainId": "jr_central_navitime:中央線:00000176:009c007f:2026-04-27",
-          "operatorId": "jr_central",
-          "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000176/009c007f/?node=00000784&year=2026&month=04&day=27"
-        },
-        {
-          "number": 12,
-          "displayName": "あずさ 12号",
-          "departure": "08:10",
-          "trainId": "jr_east_official:中央:train_075_076121",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076121.html"
-        },
-        {
-          "number": 16,
-          "displayName": "あずさ16号",
-          "departure": "09:10",
-          "trainId": "jr_central_navitime:中央線:00000176:009c008a:2026-04-27",
-          "operatorId": "jr_central",
-          "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000176/009c008a/?node=00000784&year=2026&month=04&day=27"
-        },
-        {
-          "number": 16,
-          "displayName": "あずさ 16号",
-          "departure": "09:10",
-          "trainId": "jr_east_official:中央:train_085_087521",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/085/087521.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "こうのとり",
-      "origin": "城崎温泉",
-      "terminal": "新大阪",
-      "observedCount": 6,
-      "observedNumbers": [
-        12,
-        14,
-        18,
-        22,
-        26,
-        28
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        12,
-        28
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        16,
-        20,
-        24
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        16,
-        20,
-        24
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        16,
-        20,
-        24
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.667,
-      "gapRatio": 0.333,
-      "firstDeparture": "09:33",
-      "operators": [
-        "jr_west"
-      ],
-      "sources": [
-        "v4_jrwest_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 12,
-          "displayName": "こうのとり12号",
-          "departure": "09:33",
-          "trainId": "jr_west_official:山陰線:91231:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91231?date=20260427"
-        },
-        {
-          "number": 14,
-          "displayName": "こうのとり14号",
-          "departure": "11:33",
-          "trainId": "jr_west_official:山陰線:91241:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91241?date=20260427"
-        },
-        {
-          "number": 18,
-          "displayName": "こうのとり18号",
-          "departure": "13:29",
-          "trainId": "jr_west_official:山陰線:91251:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91251?date=20260427"
-        },
-        {
-          "number": 22,
-          "displayName": "こうのとり22号",
-          "departure": "15:30",
-          "trainId": "jr_west_official:山陰線:145471:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/145471?date=20260427"
-        },
-        {
-          "number": 26,
-          "displayName": "こうのとり26号",
-          "departure": "17:42",
-          "trainId": "jr_west_official:山陰線:200781:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/200781?date=20260427"
-        },
-        {
-          "number": 28,
-          "displayName": "こうのとり28号",
-          "departure": "18:53",
-          "trainId": "jr_west_official:山陰線:145491:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/145491?date=20260427"
-        }
-      ]
-    },
-    {
       "serviceFamily": "はこね",
       "origin": "小田原",
       "terminal": "町田",
@@ -2729,94 +610,6 @@
       ]
     },
     {
-      "serviceFamily": "富士回遊",
-      "origin": "大月",
-      "terminal": "河口湖",
-      "observedCount": 4,
-      "observedNumbers": [
-        3,
-        7,
-        11,
-        15
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        3,
-        15
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        5,
-        9,
-        13
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        5,
-        9,
-        13
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        5,
-        9,
-        13
-      ],
-      "missingUnseenGloballyCount": 3,
-      "missingUnseenGloballyNumbers": [
-        5,
-        9,
-        13
-      ],
-      "coverageDensity": 0.571,
-      "gapRatio": 0.429,
-      "firstDeparture": "08:40",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 3,
-          "displayName": "富士回遊 3号",
-          "departure": "08:40",
-          "trainId": "jr_east_official:中央:train_050_054681",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/054681.html"
-        },
-        {
-          "number": 7,
-          "displayName": "富士回遊 7号",
-          "departure": "09:42",
-          "trainId": "jr_east_official:中央:train_050_054711",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/054711.html"
-        },
-        {
-          "number": 11,
-          "displayName": "富士回遊 11号",
-          "departure": "10:42",
-          "trainId": "jr_east_official:中央:train_050_054721",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/054721.html"
-        },
-        {
-          "number": 15,
-          "displayName": "富士回遊 15号",
-          "departure": "11:36",
-          "trainId": "jr_east_official:中央:train_060_063371",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063371.html"
-        }
-      ]
-    },
-    {
       "serviceFamily": "スペーシアＸ",
       "origin": "東武日光",
       "terminal": "浅草",
@@ -2894,636 +687,6 @@
           "operatorId": "tobu",
           "sourceCollection": "v3_rematched_to_v4",
           "sourceUrl": ""
-        }
-      ]
-    },
-    {
-      "serviceFamily": "にちりん",
-      "origin": "大分",
-      "terminal": "宮崎空港",
-      "observedCount": 5,
-      "observedNumbers": [
-        1,
-        7,
-        9,
-        11,
-        13
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        1,
-        13
-      ],
-      "missingCount": 2,
-      "missingNumbers": [
-        3,
-        5
-      ],
-      "missingUnseenFromOriginCount": 2,
-      "missingUnseenFromOriginNumbers": [
-        3,
-        5
-      ],
-      "missingUnseenAtBoardingStationCount": 1,
-      "missingUnseenAtBoardingStationNumbers": [
-        5
-      ],
-      "missingUnseenGloballyCount": 1,
-      "missingUnseenGloballyNumbers": [
-        5
-      ],
-      "coverageDensity": 0.714,
-      "gapRatio": 0.286,
-      "firstDeparture": "07:01",
-      "operators": [
-        "jr_kyushu"
-      ],
-      "sources": [
-        "v4_jrkyushu_navitime_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 1,
-          "displayName": "にちりん1号",
-          "departure": "07:01",
-          "trainId": "jr_kyushu_navitime:日南線:00000023:80020000:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000023/80020000/?node=00007063&year=2026&month=04&day=27"
-        },
-        {
-          "number": 1,
-          "displayName": "にちりん1号",
-          "departure": "07:01",
-          "trainId": "jr_kyushu_navitime:日豊線:00000024:80150016:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000024/80150016/?node=00000750&year=2026&month=04&day=27"
-        },
-        {
-          "number": 1,
-          "displayName": "にちりん1号",
-          "departure": "07:01",
-          "trainId": "jr_kyushu_navitime:日豊線:00000025:8016001a:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000025/8016001a/?node=00000611&year=2026&month=04&day=27"
-        },
-        {
-          "number": 7,
-          "displayName": "にちりん7号",
-          "departure": "12:09",
-          "trainId": "jr_kyushu_navitime:日南線:00000023:8002001a:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000023/8002001a/?node=00007063&year=2026&month=04&day=27"
-        },
-        {
-          "number": 7,
-          "displayName": "にちりん7号",
-          "departure": "12:09",
-          "trainId": "jr_kyushu_navitime:日豊線:00000024:80150038:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000024/80150038/?node=00000750&year=2026&month=04&day=27"
-        },
-        {
-          "number": 7,
-          "displayName": "にちりん7号",
-          "departure": "12:09",
-          "trainId": "jr_kyushu_navitime:日豊線:00000025:8016004b:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000025/8016004b/?node=00000611&year=2026&month=04&day=27"
-        },
-        {
-          "number": 9,
-          "displayName": "にちりん9号",
-          "departure": "14:11",
-          "trainId": "jr_kyushu_navitime:日南線:00000023:80020063:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000023/80020063/?node=00007063&year=2026&month=04&day=27"
-        },
-        {
-          "number": 9,
-          "displayName": "にちりん9号",
-          "departure": "14:11",
-          "trainId": "jr_kyushu_navitime:日豊線:00000024:8015007b:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000024/8015007b/?node=00000750&year=2026&month=04&day=27"
-        },
-        {
-          "number": 9,
-          "displayName": "にちりん9号",
-          "departure": "14:11",
-          "trainId": "jr_kyushu_navitime:日豊線:00000025:801600ca:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000025/801600ca/?node=00000611&year=2026&month=04&day=27"
-        },
-        {
-          "number": 11,
-          "displayName": "にちりん11号",
-          "departure": "16:14",
-          "trainId": "jr_kyushu_navitime:日南線:00000023:80020010:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000023/80020010/?node=00007063&year=2026&month=04&day=27"
-        },
-        {
-          "number": 11,
-          "displayName": "にちりん11号",
-          "departure": "16:14",
-          "trainId": "jr_kyushu_navitime:日豊線:00000024:80150023:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000024/80150023/?node=00000750&year=2026&month=04&day=27"
-        },
-        {
-          "number": 11,
-          "displayName": "にちりん11号",
-          "departure": "16:14",
-          "trainId": "jr_kyushu_navitime:日豊線:00000025:8016002d:2026-04-27",
-          "operatorId": "jr_kyushu",
-          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000025/8016002d/?node=00000611&year=2026&month=04&day=27"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "きのさき",
-      "origin": "城崎温泉",
-      "terminal": "京都",
-      "observedCount": 4,
-      "observedNumbers": [
-        12,
-        16,
-        18,
-        20
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        12,
-        20
-      ],
-      "missingCount": 1,
-      "missingNumbers": [
-        14
-      ],
-      "missingUnseenFromOriginCount": 1,
-      "missingUnseenFromOriginNumbers": [
-        14
-      ],
-      "missingUnseenAtBoardingStationCount": 1,
-      "missingUnseenAtBoardingStationNumbers": [
-        14
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.8,
-      "gapRatio": 0.2,
-      "firstDeparture": "10:34",
-      "operators": [
-        "jr_west"
-      ],
-      "sources": [
-        "v4_jrwest_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 12,
-          "displayName": "きのさき12号",
-          "departure": "10:34",
-          "trainId": "jr_west_official:山陰線:91051:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91051?date=20260427"
-        },
-        {
-          "number": 16,
-          "displayName": "きのさき16号",
-          "departure": "12:31",
-          "trainId": "jr_west_official:山陰線:91061:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91061?date=20260427"
-        },
-        {
-          "number": 18,
-          "displayName": "きのさき18号",
-          "departure": "14:35",
-          "trainId": "jr_west_official:山陰線:184081:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/184081?date=20260427"
-        },
-        {
-          "number": 20,
-          "displayName": "きのさき20号",
-          "departure": "16:31",
-          "trainId": "jr_west_official:山陰線:91081:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91081?date=20260427"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "ときわ",
-      "origin": "高萩",
-      "terminal": "品川",
-      "observedCount": 4,
-      "observedNumbers": [
-        56,
-        58,
-        60,
-        64
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        56,
-        64
-      ],
-      "missingCount": 1,
-      "missingNumbers": [
-        62
-      ],
-      "missingUnseenFromOriginCount": 1,
-      "missingUnseenFromOriginNumbers": [
-        62
-      ],
-      "missingUnseenAtBoardingStationCount": 1,
-      "missingUnseenAtBoardingStationNumbers": [
-        62
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.8,
-      "gapRatio": 0.2,
-      "firstDeparture": "05:48",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 56,
-          "displayName": "ときわ 56号",
-          "departure": "05:48",
-          "trainId": "jr_east_official:常磐:train_075_076291:56m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076291.html"
-        },
-        {
-          "number": 58,
-          "displayName": "ときわ 58号",
-          "departure": "06:56",
-          "trainId": "jr_east_official:常磐:train_050_050211:58m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050211.html"
-        },
-        {
-          "number": 60,
-          "displayName": "ときわ 60号",
-          "departure": "08:10",
-          "trainId": "jr_east_official:常磐:train_075_076311:60m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076311.html"
-        },
-        {
-          "number": 64,
-          "displayName": "ときわ 64号",
-          "departure": "10:16",
-          "trainId": "jr_east_official:常磐:train_060_064151:64m",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/064151.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "わかしお",
-      "origin": "安房鴨川",
-      "terminal": "東京",
-      "observedCount": 5,
-      "observedNumbers": [
-        8,
-        12,
-        14,
-        16,
-        18
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        8,
-        18
-      ],
-      "missingCount": 1,
-      "missingNumbers": [
-        10
-      ],
-      "missingUnseenFromOriginCount": 1,
-      "missingUnseenFromOriginNumbers": [
-        10
-      ],
-      "missingUnseenAtBoardingStationCount": 1,
-      "missingUnseenAtBoardingStationNumbers": [
-        10
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.833,
-      "gapRatio": 0.167,
-      "firstDeparture": "07:39",
-      "operators": [
-        "jr_east"
-      ],
-      "sources": [
-        "v4_jreast_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 8,
-          "displayName": "わかしお 8号",
-          "departure": "07:39",
-          "trainId": "jr_east_official:京葉:train_045_049461",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049461.html"
-        },
-        {
-          "number": 12,
-          "displayName": "わかしお 12号",
-          "departure": "11:41",
-          "trainId": "jr_east_official:京葉:train_045_049501",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049501.html"
-        },
-        {
-          "number": 14,
-          "displayName": "わかしお 14号",
-          "departure": "14:13",
-          "trainId": "jr_east_official:外房:train_045_049522",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049522.html"
-        },
-        {
-          "number": 16,
-          "displayName": "わかしお 16号",
-          "departure": "15:38",
-          "trainId": "jr_east_official:外房:train_045_049542",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049542.html"
-        },
-        {
-          "number": 18,
-          "displayName": "わかしお 18号",
-          "departure": "16:45",
-          "trainId": "jr_east_official:京葉:train_045_049561",
-          "operatorId": "jr_east",
-          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049561.html"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "スーパーはくと",
-      "origin": "倉吉",
-      "terminal": "大阪",
-      "observedCount": 5,
-      "observedNumbers": [
-        2,
-        4,
-        8,
-        10,
-        12
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        2,
-        12
-      ],
-      "missingCount": 1,
-      "missingNumbers": [
-        6
-      ],
-      "missingUnseenFromOriginCount": 1,
-      "missingUnseenFromOriginNumbers": [
-        6
-      ],
-      "missingUnseenAtBoardingStationCount": 1,
-      "missingUnseenAtBoardingStationNumbers": [
-        6
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.833,
-      "gapRatio": 0.167,
-      "firstDeparture": "06:04",
-      "operators": [
-        "e9dec28d8a",
-        "jr_west"
-      ],
-      "sources": [
-        "v4_jrwest_official_weekday_train_instances_v0_1",
-        "v4_navitime_non_jr_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 2,
-          "displayName": "スーパーはくと2号",
-          "departure": "06:04",
-          "trainId": "jr_west_official:因美線:250211:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/250211?date=20260427"
-        },
-        {
-          "number": 2,
-          "displayName": "スーパーはくと2号",
-          "departure": "06:04",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000071:003f054c:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000071/003f054c/?node=00003939&year=2026&month=04&day=27"
-        },
-        {
-          "number": 2,
-          "displayName": "スーパーはくと2号",
-          "departure": "06:04",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000753:023a0014:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000753/023a0014/?node=00005935&year=2026&month=04&day=27"
-        },
-        {
-          "number": 4,
-          "displayName": "スーパーはくと4号",
-          "departure": "08:11",
-          "trainId": "jr_west_official:因美線:250231:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/250231?date=20260427"
-        },
-        {
-          "number": 4,
-          "displayName": "スーパーはくと4号",
-          "departure": "08:11",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000071:003f0550:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000071/003f0550/?node=00003939&year=2026&month=04&day=27"
-        },
-        {
-          "number": 4,
-          "displayName": "スーパーはくと4号",
-          "departure": "08:11",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000753:023a0016:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000753/023a0016/?node=00005935&year=2026&month=04&day=27"
-        },
-        {
-          "number": 8,
-          "displayName": "スーパーはくと8号",
-          "departure": "11:40",
-          "trainId": "jr_west_official:因美線:250251:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/250251?date=20260427"
-        },
-        {
-          "number": 8,
-          "displayName": "スーパーはくと8号",
-          "departure": "11:40",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000071:003f0554:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000071/003f0554/?node=00003939&year=2026&month=04&day=27"
-        },
-        {
-          "number": 8,
-          "displayName": "スーパーはくと8号",
-          "departure": "11:40",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000753:023a0018:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000753/023a0018/?node=00005935&year=2026&month=04&day=27"
-        },
-        {
-          "number": 10,
-          "displayName": "スーパーはくと10号",
-          "departure": "13:39",
-          "trainId": "jr_west_official:因美線:283451:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/283451?date=20260427"
-        },
-        {
-          "number": 10,
-          "displayName": "スーパーはくと10号",
-          "departure": "13:39",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000071:003f05a4:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000071/003f05a4/?node=00003939&year=2026&month=04&day=27"
-        },
-        {
-          "number": 10,
-          "displayName": "スーパーはくと10号",
-          "departure": "13:39",
-          "trainId": "navitime_non_jr:e9dec28d8a:00000753:023a0020:2026-04-27",
-          "operatorId": "e9dec28d8a",
-          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
-          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000753/023a0020/?node=00005935&year=2026&month=04&day=27"
-        }
-      ]
-    },
-    {
-      "serviceFamily": "スーパーまつかぜ",
-      "origin": "益田",
-      "terminal": "鳥取",
-      "observedCount": 4,
-      "observedNumbers": [
-        4,
-        6,
-        10,
-        12
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        4,
-        12
-      ],
-      "missingCount": 1,
-      "missingNumbers": [
-        8
-      ],
-      "missingUnseenFromOriginCount": 1,
-      "missingUnseenFromOriginNumbers": [
-        8
-      ],
-      "missingUnseenAtBoardingStationCount": 1,
-      "missingUnseenAtBoardingStationNumbers": [
-        8
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.8,
-      "gapRatio": 0.2,
-      "firstDeparture": "05:34",
-      "operators": [
-        "jr_west"
-      ],
-      "sources": [
-        "v4_jrwest_official_weekday_train_instances_v0_1"
-      ],
-      "samples": [
-        {
-          "number": 4,
-          "displayName": "スーパーまつかぜ4号",
-          "departure": "05:34",
-          "trainId": "jr_west_official:山陰線:76321:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/76321?date=20260427"
-        },
-        {
-          "number": 6,
-          "displayName": "スーパーまつかぜ6号",
-          "departure": "06:53",
-          "trainId": "jr_west_official:山陰線:76331:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/76331?date=20260427"
-        },
-        {
-          "number": 10,
-          "displayName": "スーパーまつかぜ10号",
-          "departure": "12:14",
-          "trainId": "jr_west_official:山陰線:76361:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/76361?date=20260427"
-        },
-        {
-          "number": 12,
-          "displayName": "スーパーまつかぜ12号",
-          "departure": "15:48",
-          "trainId": "jr_west_official:山陰線:76381:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/76381?date=20260427"
         }
       ]
     },
@@ -6865,6 +4028,1463 @@
           "sourceUrl": ""
         }
       ]
+    }
+  ],
+  "reviewedGapPatterns": [
+    {
+      "serviceFamily": "きのさき",
+      "origin": "城崎温泉",
+      "terminal": "京都",
+      "observedCount": 4,
+      "observedNumbers": [
+        12,
+        16,
+        18,
+        20
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        12,
+        20
+      ],
+      "missingCount": 1,
+      "missingNumbers": [
+        14
+      ],
+      "missingUnseenFromOriginCount": 1,
+      "missingUnseenFromOriginNumbers": [
+        14
+      ],
+      "missingUnseenAtBoardingStationCount": 1,
+      "missingUnseenAtBoardingStationNumbers": [
+        14
+      ],
+      "missingUnseenGloballyCount": 0,
+      "missingUnseenGloballyNumbers": [],
+      "coverageDensity": 0.8,
+      "gapRatio": 0.2,
+      "firstDeparture": "10:34",
+      "operators": [
+        "jr_west"
+      ],
+      "sources": [
+        "v4_jrwest_official_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 12,
+          "displayName": "きのさき12号",
+          "departure": "10:34",
+          "trainId": "jr_west_official:山陰線:91051:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91051?date=20260427"
+        },
+        {
+          "number": 16,
+          "displayName": "きのさき16号",
+          "departure": "12:31",
+          "trainId": "jr_west_official:山陰線:91061:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91061?date=20260427"
+        },
+        {
+          "number": 18,
+          "displayName": "きのさき18号",
+          "departure": "14:35",
+          "trainId": "jr_west_official:山陰線:184081:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/184081?date=20260427"
+        },
+        {
+          "number": 20,
+          "displayName": "きのさき20号",
+          "departure": "16:31",
+          "trainId": "jr_west_official:山陰線:91081:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91081?date=20260427"
+        }
+      ],
+      "reviewCategory": "alternate_origin_pattern",
+      "reviewNote": "Missing-looking 14号 is present as a Fukuchiyama-origin Kinosaki service.",
+      "reviewSource": "JR West official weekday timetable"
+    },
+    {
+      "serviceFamily": "こうのとり",
+      "origin": "城崎温泉",
+      "terminal": "新大阪",
+      "observedCount": 6,
+      "observedNumbers": [
+        12,
+        14,
+        18,
+        22,
+        26,
+        28
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        12,
+        28
+      ],
+      "missingCount": 3,
+      "missingNumbers": [
+        16,
+        20,
+        24
+      ],
+      "missingUnseenFromOriginCount": 3,
+      "missingUnseenFromOriginNumbers": [
+        16,
+        20,
+        24
+      ],
+      "missingUnseenAtBoardingStationCount": 3,
+      "missingUnseenAtBoardingStationNumbers": [
+        16,
+        20,
+        24
+      ],
+      "missingUnseenGloballyCount": 0,
+      "missingUnseenGloballyNumbers": [],
+      "coverageDensity": 0.667,
+      "gapRatio": 0.333,
+      "firstDeparture": "09:33",
+      "operators": [
+        "jr_west"
+      ],
+      "sources": [
+        "v4_jrwest_official_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 12,
+          "displayName": "こうのとり12号",
+          "departure": "09:33",
+          "trainId": "jr_west_official:山陰線:91231:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91231?date=20260427"
+        },
+        {
+          "number": 14,
+          "displayName": "こうのとり14号",
+          "departure": "11:33",
+          "trainId": "jr_west_official:山陰線:91241:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91241?date=20260427"
+        },
+        {
+          "number": 18,
+          "displayName": "こうのとり18号",
+          "departure": "13:29",
+          "trainId": "jr_west_official:山陰線:91251:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91251?date=20260427"
+        },
+        {
+          "number": 22,
+          "displayName": "こうのとり22号",
+          "departure": "15:30",
+          "trainId": "jr_west_official:山陰線:145471:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/145471?date=20260427"
+        },
+        {
+          "number": 26,
+          "displayName": "こうのとり26号",
+          "departure": "17:42",
+          "trainId": "jr_west_official:山陰線:200781:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/200781?date=20260427"
+        },
+        {
+          "number": 28,
+          "displayName": "こうのとり28号",
+          "departure": "18:53",
+          "trainId": "jr_west_official:山陰線:145491:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/145491?date=20260427"
+        }
+      ],
+      "reviewCategory": "alternate_origin_pattern",
+      "reviewNote": "Missing-looking numbers 16, 20, and 24 are present as Fukuchiyama-origin Kounotori services.",
+      "reviewSource": "JR West official weekday timetable"
+    },
+    {
+      "serviceFamily": "ときわ",
+      "origin": "高萩",
+      "terminal": "品川",
+      "observedCount": 4,
+      "observedNumbers": [
+        56,
+        58,
+        60,
+        64
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        56,
+        64
+      ],
+      "missingCount": 1,
+      "missingNumbers": [
+        62
+      ],
+      "missingUnseenFromOriginCount": 1,
+      "missingUnseenFromOriginNumbers": [
+        62
+      ],
+      "missingUnseenAtBoardingStationCount": 1,
+      "missingUnseenAtBoardingStationNumbers": [
+        62
+      ],
+      "missingUnseenGloballyCount": 0,
+      "missingUnseenGloballyNumbers": [],
+      "coverageDensity": 0.8,
+      "gapRatio": 0.2,
+      "firstDeparture": "05:48",
+      "operators": [
+        "jr_east"
+      ],
+      "sources": [
+        "v4_jreast_official_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 56,
+          "displayName": "ときわ 56号",
+          "departure": "05:48",
+          "trainId": "jr_east_official:常磐:train_075_076291:56m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076291.html"
+        },
+        {
+          "number": 58,
+          "displayName": "ときわ 58号",
+          "departure": "06:56",
+          "trainId": "jr_east_official:常磐:train_050_050211:58m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050211.html"
+        },
+        {
+          "number": 60,
+          "displayName": "ときわ 60号",
+          "departure": "08:10",
+          "trainId": "jr_east_official:常磐:train_075_076311:60m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076311.html"
+        },
+        {
+          "number": 64,
+          "displayName": "ときわ 64号",
+          "departure": "10:16",
+          "trainId": "jr_east_official:常磐:train_060_064151:64m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/064151.html"
+        }
+      ],
+      "reviewCategory": "alternate_origin_pattern",
+      "reviewNote": "Missing-looking 62号 is present as a Katsuta-origin Tokiwa service.",
+      "reviewSource": "JR East official 2026-05 timetable"
+    },
+    {
+      "serviceFamily": "わかしお",
+      "origin": "安房鴨川",
+      "terminal": "東京",
+      "observedCount": 5,
+      "observedNumbers": [
+        8,
+        12,
+        14,
+        16,
+        18
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        8,
+        18
+      ],
+      "missingCount": 1,
+      "missingNumbers": [
+        10
+      ],
+      "missingUnseenFromOriginCount": 1,
+      "missingUnseenFromOriginNumbers": [
+        10
+      ],
+      "missingUnseenAtBoardingStationCount": 1,
+      "missingUnseenAtBoardingStationNumbers": [
+        10
+      ],
+      "missingUnseenGloballyCount": 0,
+      "missingUnseenGloballyNumbers": [],
+      "coverageDensity": 0.833,
+      "gapRatio": 0.167,
+      "firstDeparture": "07:39",
+      "operators": [
+        "jr_east"
+      ],
+      "sources": [
+        "v4_jreast_official_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 8,
+          "displayName": "わかしお 8号",
+          "departure": "07:39",
+          "trainId": "jr_east_official:京葉:train_045_049461",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049461.html"
+        },
+        {
+          "number": 12,
+          "displayName": "わかしお 12号",
+          "departure": "11:41",
+          "trainId": "jr_east_official:京葉:train_045_049501",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049501.html"
+        },
+        {
+          "number": 14,
+          "displayName": "わかしお 14号",
+          "departure": "14:13",
+          "trainId": "jr_east_official:外房:train_045_049522",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049522.html"
+        },
+        {
+          "number": 16,
+          "displayName": "わかしお 16号",
+          "departure": "15:38",
+          "trainId": "jr_east_official:外房:train_045_049542",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049542.html"
+        },
+        {
+          "number": 18,
+          "displayName": "わかしお 18号",
+          "departure": "16:45",
+          "trainId": "jr_east_official:京葉:train_045_049561",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049561.html"
+        }
+      ],
+      "reviewCategory": "alternate_origin_pattern",
+      "reviewNote": "Missing-looking 10号 is present as a Katsuura-origin Wakashio service.",
+      "reviewSource": "JR East official 2026-05 timetable"
+    },
+    {
+      "serviceFamily": "スーパーはくと",
+      "origin": "倉吉",
+      "terminal": "大阪",
+      "observedCount": 5,
+      "observedNumbers": [
+        2,
+        4,
+        8,
+        10,
+        12
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        2,
+        12
+      ],
+      "missingCount": 1,
+      "missingNumbers": [
+        6
+      ],
+      "missingUnseenFromOriginCount": 1,
+      "missingUnseenFromOriginNumbers": [
+        6
+      ],
+      "missingUnseenAtBoardingStationCount": 1,
+      "missingUnseenAtBoardingStationNumbers": [
+        6
+      ],
+      "missingUnseenGloballyCount": 0,
+      "missingUnseenGloballyNumbers": [],
+      "coverageDensity": 0.833,
+      "gapRatio": 0.167,
+      "firstDeparture": "06:04",
+      "operators": [
+        "e9dec28d8a",
+        "jr_west"
+      ],
+      "sources": [
+        "v4_jrwest_official_weekday_train_instances_v0_1",
+        "v4_navitime_non_jr_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 2,
+          "displayName": "スーパーはくと2号",
+          "departure": "06:04",
+          "trainId": "jr_west_official:因美線:250211:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/250211?date=20260427"
+        },
+        {
+          "number": 2,
+          "displayName": "スーパーはくと2号",
+          "departure": "06:04",
+          "trainId": "navitime_non_jr:e9dec28d8a:00000071:003f054c:2026-04-27",
+          "operatorId": "e9dec28d8a",
+          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000071/003f054c/?node=00003939&year=2026&month=04&day=27"
+        },
+        {
+          "number": 2,
+          "displayName": "スーパーはくと2号",
+          "departure": "06:04",
+          "trainId": "navitime_non_jr:e9dec28d8a:00000753:023a0014:2026-04-27",
+          "operatorId": "e9dec28d8a",
+          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000753/023a0014/?node=00005935&year=2026&month=04&day=27"
+        },
+        {
+          "number": 4,
+          "displayName": "スーパーはくと4号",
+          "departure": "08:11",
+          "trainId": "jr_west_official:因美線:250231:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/250231?date=20260427"
+        },
+        {
+          "number": 4,
+          "displayName": "スーパーはくと4号",
+          "departure": "08:11",
+          "trainId": "navitime_non_jr:e9dec28d8a:00000071:003f0550:2026-04-27",
+          "operatorId": "e9dec28d8a",
+          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000071/003f0550/?node=00003939&year=2026&month=04&day=27"
+        },
+        {
+          "number": 4,
+          "displayName": "スーパーはくと4号",
+          "departure": "08:11",
+          "trainId": "navitime_non_jr:e9dec28d8a:00000753:023a0016:2026-04-27",
+          "operatorId": "e9dec28d8a",
+          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000753/023a0016/?node=00005935&year=2026&month=04&day=27"
+        },
+        {
+          "number": 8,
+          "displayName": "スーパーはくと8号",
+          "departure": "11:40",
+          "trainId": "jr_west_official:因美線:250251:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/250251?date=20260427"
+        },
+        {
+          "number": 8,
+          "displayName": "スーパーはくと8号",
+          "departure": "11:40",
+          "trainId": "navitime_non_jr:e9dec28d8a:00000071:003f0554:2026-04-27",
+          "operatorId": "e9dec28d8a",
+          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000071/003f0554/?node=00003939&year=2026&month=04&day=27"
+        },
+        {
+          "number": 8,
+          "displayName": "スーパーはくと8号",
+          "departure": "11:40",
+          "trainId": "navitime_non_jr:e9dec28d8a:00000753:023a0018:2026-04-27",
+          "operatorId": "e9dec28d8a",
+          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000753/023a0018/?node=00005935&year=2026&month=04&day=27"
+        },
+        {
+          "number": 10,
+          "displayName": "スーパーはくと10号",
+          "departure": "13:39",
+          "trainId": "jr_west_official:因美線:283451:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/283451?date=20260427"
+        },
+        {
+          "number": 10,
+          "displayName": "スーパーはくと10号",
+          "departure": "13:39",
+          "trainId": "navitime_non_jr:e9dec28d8a:00000071:003f05a4:2026-04-27",
+          "operatorId": "e9dec28d8a",
+          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000071/003f05a4/?node=00003939&year=2026&month=04&day=27"
+        },
+        {
+          "number": 10,
+          "displayName": "スーパーはくと10号",
+          "departure": "13:39",
+          "trainId": "navitime_non_jr:e9dec28d8a:00000753:023a0020:2026-04-27",
+          "operatorId": "e9dec28d8a",
+          "sourceCollection": "v4_navitime_non_jr_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000753/023a0020/?node=00005935&year=2026&month=04&day=27"
+        }
+      ],
+      "reviewCategory": "alternate_origin_pattern",
+      "reviewNote": "Missing-looking 6号 is present as a Tottori-origin Super Hakuto service.",
+      "reviewSource": "JR West official weekday timetable"
+    },
+    {
+      "serviceFamily": "スーパーまつかぜ",
+      "origin": "益田",
+      "terminal": "鳥取",
+      "observedCount": 4,
+      "observedNumbers": [
+        4,
+        6,
+        10,
+        12
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        4,
+        12
+      ],
+      "missingCount": 1,
+      "missingNumbers": [
+        8
+      ],
+      "missingUnseenFromOriginCount": 1,
+      "missingUnseenFromOriginNumbers": [
+        8
+      ],
+      "missingUnseenAtBoardingStationCount": 1,
+      "missingUnseenAtBoardingStationNumbers": [
+        8
+      ],
+      "missingUnseenGloballyCount": 0,
+      "missingUnseenGloballyNumbers": [],
+      "coverageDensity": 0.8,
+      "gapRatio": 0.2,
+      "firstDeparture": "05:34",
+      "operators": [
+        "jr_west"
+      ],
+      "sources": [
+        "v4_jrwest_official_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 4,
+          "displayName": "スーパーまつかぜ4号",
+          "departure": "05:34",
+          "trainId": "jr_west_official:山陰線:76321:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/76321?date=20260427"
+        },
+        {
+          "number": 6,
+          "displayName": "スーパーまつかぜ6号",
+          "departure": "06:53",
+          "trainId": "jr_west_official:山陰線:76331:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/76331?date=20260427"
+        },
+        {
+          "number": 10,
+          "displayName": "スーパーまつかぜ10号",
+          "departure": "12:14",
+          "trainId": "jr_west_official:山陰線:76361:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/76361?date=20260427"
+        },
+        {
+          "number": 12,
+          "displayName": "スーパーまつかぜ12号",
+          "departure": "15:48",
+          "trainId": "jr_west_official:山陰線:76381:20260427",
+          "operatorId": "jr_west",
+          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/76381?date=20260427"
+        }
+      ],
+      "reviewCategory": "alternate_origin_pattern",
+      "reviewNote": "Missing-looking 8号 is present as a Yonago-origin Super Matsukaze service.",
+      "reviewSource": "JR West official weekday timetable"
+    },
+    {
+      "serviceFamily": "成田エクスプレス",
+      "origin": "大船",
+      "terminal": "成田空港",
+      "observedCount": 16,
+      "observedNumbers": [
+        1,
+        3,
+        5,
+        7,
+        11,
+        15,
+        19,
+        23,
+        27,
+        31,
+        35,
+        39,
+        43,
+        47,
+        51,
+        53
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        1,
+        53
+      ],
+      "missingCount": 11,
+      "missingNumbers": [
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49
+      ],
+      "missingUnseenFromOriginCount": 11,
+      "missingUnseenFromOriginNumbers": [
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49
+      ],
+      "missingUnseenAtBoardingStationCount": 11,
+      "missingUnseenAtBoardingStationNumbers": [
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49
+      ],
+      "missingUnseenGloballyCount": 0,
+      "missingUnseenGloballyNumbers": [],
+      "coverageDensity": 0.593,
+      "gapRatio": 0.407,
+      "firstDeparture": "05:28",
+      "operators": [
+        "jr_east"
+      ],
+      "sources": [
+        "v4_jreast_official_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 1,
+          "displayName": "成田エクスプレス 1号",
+          "departure": "05:28",
+          "trainId": "jr_east_official:成田:train_030_031081:2001m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031081.html"
+        },
+        {
+          "number": 3,
+          "displayName": "成田エクスプレス 3号",
+          "departure": "06:06",
+          "trainId": "jr_east_official:成田:train_035_037891:2003m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/035/037891.html"
+        },
+        {
+          "number": 5,
+          "displayName": "成田エクスプレス 5号",
+          "departure": "06:38",
+          "trainId": "jr_east_official:成田:train_030_031091:2005m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031091.html"
+        },
+        {
+          "number": 7,
+          "displayName": "成田エクスプレス 7号",
+          "departure": "07:00",
+          "trainId": "jr_east_official:成田:train_030_031101:2007m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031101.html"
+        },
+        {
+          "number": 11,
+          "displayName": "成田エクスプレス 11号",
+          "departure": "08:08",
+          "trainId": "jr_east_official:成田:train_095_098881:2011m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/095/098881.html"
+        },
+        {
+          "number": 15,
+          "displayName": "成田エクスプレス 15号",
+          "departure": "09:10",
+          "trainId": "jr_east_official:成田:train_025_029041:2015m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/025/029041.html"
+        },
+        {
+          "number": 19,
+          "displayName": "成田エクスプレス 19号",
+          "departure": "10:10",
+          "trainId": "jr_east_official:成田:train_035_037911:2019m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/035/037911.html"
+        },
+        {
+          "number": 23,
+          "displayName": "成田エクスプレス 23号",
+          "departure": "11:10",
+          "trainId": "jr_east_official:成田:train_030_031111:2023m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031111.html"
+        },
+        {
+          "number": 27,
+          "displayName": "成田エクスプレス 27号",
+          "departure": "12:10",
+          "trainId": "jr_east_official:成田:train_030_031121:2027m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031121.html"
+        },
+        {
+          "number": 31,
+          "displayName": "成田エクスプレス 31号",
+          "departure": "13:10",
+          "trainId": "jr_east_official:成田:train_030_031131:2031m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031131.html"
+        },
+        {
+          "number": 35,
+          "displayName": "成田エクスプレス 35号",
+          "departure": "14:10",
+          "trainId": "jr_east_official:成田:train_030_031141:2035m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031141.html"
+        },
+        {
+          "number": 39,
+          "displayName": "成田エクスプレス 39号",
+          "departure": "15:10",
+          "trainId": "jr_east_official:成田:train_030_031151:2039m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/030/031151.html"
+        }
+      ],
+      "reviewCategory": "alternate_origin_pattern",
+      "reviewNote": "Numbers in the missing-looking block are present as Shinjuku-origin NEX services; Ofuna-origin NEX uses a separate numbering cadence.",
+      "reviewSource": "JR East official 2026-05 timetable"
+    },
+    {
+      "serviceFamily": "あずさ",
+      "origin": "東京",
+      "terminal": "松本",
+      "observedCount": 5,
+      "observedNumbers": [
+        41,
+        45,
+        49,
+        53,
+        55
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        41,
+        55
+      ],
+      "missingCount": 3,
+      "missingNumbers": [
+        43,
+        47,
+        51
+      ],
+      "missingUnseenFromOriginCount": 3,
+      "missingUnseenFromOriginNumbers": [
+        43,
+        47,
+        51
+      ],
+      "missingUnseenAtBoardingStationCount": 3,
+      "missingUnseenAtBoardingStationNumbers": [
+        43,
+        47,
+        51
+      ],
+      "missingUnseenGloballyCount": 3,
+      "missingUnseenGloballyNumbers": [
+        43,
+        47,
+        51
+      ],
+      "coverageDensity": 0.625,
+      "gapRatio": 0.375,
+      "firstDeparture": "16:45",
+      "operators": [
+        "jr_east"
+      ],
+      "sources": [
+        "v4_jreast_official_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 41,
+          "displayName": "あずさ 41号",
+          "departure": "16:45",
+          "trainId": "jr_east_official:中央:train_060_063771",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063771.html"
+        },
+        {
+          "number": 45,
+          "displayName": "あずさ 45号",
+          "departure": "17:45",
+          "trainId": "jr_east_official:中央:train_110_112681",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/110/112681.html"
+        },
+        {
+          "number": 49,
+          "displayName": "あずさ 49号",
+          "departure": "18:45",
+          "trainId": "jr_east_official:中央:train_110_112701",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/110/112701.html"
+        },
+        {
+          "number": 53,
+          "displayName": "あずさ 53号",
+          "departure": "19:45",
+          "trainId": "jr_east_official:中央:train_110_112721",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/110/112721.html"
+        },
+        {
+          "number": 55,
+          "displayName": "あずさ 55号",
+          "departure": "20:45",
+          "trainId": "jr_east_official:中央:train_110_111471",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/110/111471.html"
+        }
+      ],
+      "reviewCategory": "official_numbering_gap",
+      "reviewNote": "Tokyo-origin evening Azusa services run as 41, 45, 49, 53, and 55 in the official JR East timetable.",
+      "reviewSource": "JR East official 2026-05 timetable"
+    },
+    {
+      "serviceFamily": "あずさ",
+      "origin": "松本",
+      "terminal": "東京",
+      "observedCount": 4,
+      "observedNumbers": [
+        4,
+        8,
+        12,
+        16
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        4,
+        16
+      ],
+      "missingCount": 3,
+      "missingNumbers": [
+        6,
+        10,
+        14
+      ],
+      "missingUnseenFromOriginCount": 3,
+      "missingUnseenFromOriginNumbers": [
+        6,
+        10,
+        14
+      ],
+      "missingUnseenAtBoardingStationCount": 3,
+      "missingUnseenAtBoardingStationNumbers": [
+        6,
+        10,
+        14
+      ],
+      "missingUnseenGloballyCount": 3,
+      "missingUnseenGloballyNumbers": [
+        6,
+        10,
+        14
+      ],
+      "coverageDensity": 0.571,
+      "gapRatio": 0.429,
+      "firstDeparture": "06:30",
+      "operators": [
+        "jr_central",
+        "jr_east"
+      ],
+      "sources": [
+        "v4_jrcentral_navitime_weekday_train_instances_v0_1",
+        "v4_jreast_official_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 4,
+          "displayName": "あずさ4号",
+          "departure": "06:30",
+          "trainId": "jr_central_navitime:中央線:00000176:009c0060:2026-04-27",
+          "operatorId": "jr_central",
+          "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000176/009c0060/?node=00000784&year=2026&month=04&day=27"
+        },
+        {
+          "number": 4,
+          "displayName": "あずさ 4号",
+          "departure": "06:30",
+          "trainId": "jr_east_official:中央:train_060_063631",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063631.html"
+        },
+        {
+          "number": 8,
+          "displayName": "あずさ8号",
+          "departure": "07:10",
+          "trainId": "jr_central_navitime:中央線:00000176:009c007d:2026-04-27",
+          "operatorId": "jr_central",
+          "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000176/009c007d/?node=00000784&year=2026&month=04&day=27"
+        },
+        {
+          "number": 8,
+          "displayName": "あずさ 8号",
+          "departure": "07:10",
+          "trainId": "jr_east_official:中央:train_075_076101",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076101.html"
+        },
+        {
+          "number": 12,
+          "displayName": "あずさ12号",
+          "departure": "08:10",
+          "trainId": "jr_central_navitime:中央線:00000176:009c007f:2026-04-27",
+          "operatorId": "jr_central",
+          "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000176/009c007f/?node=00000784&year=2026&month=04&day=27"
+        },
+        {
+          "number": 12,
+          "displayName": "あずさ 12号",
+          "departure": "08:10",
+          "trainId": "jr_east_official:中央:train_075_076121",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076121.html"
+        },
+        {
+          "number": 16,
+          "displayName": "あずさ16号",
+          "departure": "09:10",
+          "trainId": "jr_central_navitime:中央線:00000176:009c008a:2026-04-27",
+          "operatorId": "jr_central",
+          "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000176/009c008a/?node=00000784&year=2026&month=04&day=27"
+        },
+        {
+          "number": 16,
+          "displayName": "あずさ 16号",
+          "departure": "09:10",
+          "trainId": "jr_east_official:中央:train_085_087521",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/085/087521.html"
+        }
+      ],
+      "reviewCategory": "official_numbering_gap",
+      "reviewNote": "Matsumoto-to-Tokyo morning Azusa services use a sparse even-number cadence in the official JR East timetable.",
+      "reviewSource": "JR East official 2026-05 timetable"
+    },
+    {
+      "serviceFamily": "ときわ",
+      "origin": "品川",
+      "terminal": "勝田",
+      "observedCount": 14,
+      "observedNumbers": [
+        53,
+        55,
+        57,
+        59,
+        61,
+        63,
+        65,
+        67,
+        69,
+        71,
+        75,
+        79,
+        85,
+        97
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        53,
+        97
+      ],
+      "missingCount": 9,
+      "missingNumbers": [
+        73,
+        77,
+        81,
+        83,
+        87,
+        89,
+        91,
+        93,
+        95
+      ],
+      "missingUnseenFromOriginCount": 5,
+      "missingUnseenFromOriginNumbers": [
+        87,
+        89,
+        91,
+        93,
+        95
+      ],
+      "missingUnseenAtBoardingStationCount": 5,
+      "missingUnseenAtBoardingStationNumbers": [
+        87,
+        89,
+        91,
+        93,
+        95
+      ],
+      "missingUnseenGloballyCount": 4,
+      "missingUnseenGloballyNumbers": [
+        87,
+        89,
+        91,
+        93
+      ],
+      "coverageDensity": 0.609,
+      "gapRatio": 0.391,
+      "firstDeparture": "08:13",
+      "operators": [
+        "jr_east"
+      ],
+      "sources": [
+        "v4_jreast_official_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 53,
+          "displayName": "ときわ 53号",
+          "departure": "08:13",
+          "trainId": "jr_east_official:常磐:train_075_076141:53m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076141.html"
+        },
+        {
+          "number": 55,
+          "displayName": "ときわ 55号",
+          "departure": "09:15",
+          "trainId": "jr_east_official:常磐:train_075_076161:55m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076161.html"
+        },
+        {
+          "number": 57,
+          "displayName": "ときわ 57号",
+          "departure": "10:14",
+          "trainId": "jr_east_official:常磐:train_045_048221:57m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048221.html"
+        },
+        {
+          "number": 59,
+          "displayName": "ときわ 59号",
+          "departure": "11:15",
+          "trainId": "jr_east_official:常磐:train_045_048241:59m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048241.html"
+        },
+        {
+          "number": 61,
+          "displayName": "ときわ 61号",
+          "departure": "12:15",
+          "trainId": "jr_east_official:常磐:train_045_048261:61m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048261.html"
+        },
+        {
+          "number": 63,
+          "displayName": "ときわ 63号",
+          "departure": "13:15",
+          "trainId": "jr_east_official:常磐:train_075_076181:63m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076181.html"
+        },
+        {
+          "number": 65,
+          "displayName": "ときわ 65号",
+          "departure": "14:15",
+          "trainId": "jr_east_official:常磐:train_045_048281:65m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048281.html"
+        },
+        {
+          "number": 67,
+          "displayName": "ときわ 67号",
+          "departure": "15:15",
+          "trainId": "jr_east_official:常磐:train_045_048301:67m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048301.html"
+        },
+        {
+          "number": 69,
+          "displayName": "ときわ 69号",
+          "departure": "16:15",
+          "trainId": "jr_east_official:常磐:train_045_048311:69m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/048311.html"
+        },
+        {
+          "number": 71,
+          "displayName": "ときわ 71号",
+          "departure": "17:15",
+          "trainId": "jr_east_official:常磐:train_050_050181:71m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050181.html"
+        },
+        {
+          "number": 75,
+          "displayName": "ときわ 75号",
+          "departure": "19:15",
+          "trainId": "jr_east_official:常磐:train_075_076211:75m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/076211.html"
+        },
+        {
+          "number": 79,
+          "displayName": "ときわ 79号",
+          "departure": "21:15",
+          "trainId": "jr_east_official:常磐:train_050_050191:79m",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/050191.html"
+        }
+      ],
+      "reviewCategory": "official_numbering_gap",
+      "reviewNote": "Current JR East Shinagawa Joban Line timetable skips this late-evening block; 95 is Ueno-origin and 97 resumes Shinagawa-origin service.",
+      "reviewSource": "JR East official 2026-05 timetable"
+    },
+    {
+      "serviceFamily": "富士回遊",
+      "origin": "大月",
+      "terminal": "河口湖",
+      "observedCount": 4,
+      "observedNumbers": [
+        3,
+        7,
+        11,
+        15
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        3,
+        15
+      ],
+      "missingCount": 3,
+      "missingNumbers": [
+        5,
+        9,
+        13
+      ],
+      "missingUnseenFromOriginCount": 3,
+      "missingUnseenFromOriginNumbers": [
+        5,
+        9,
+        13
+      ],
+      "missingUnseenAtBoardingStationCount": 3,
+      "missingUnseenAtBoardingStationNumbers": [
+        5,
+        9,
+        13
+      ],
+      "missingUnseenGloballyCount": 3,
+      "missingUnseenGloballyNumbers": [
+        5,
+        9,
+        13
+      ],
+      "coverageDensity": 0.571,
+      "gapRatio": 0.429,
+      "firstDeparture": "08:40",
+      "operators": [
+        "jr_east"
+      ],
+      "sources": [
+        "v4_jreast_official_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 3,
+          "displayName": "富士回遊 3号",
+          "departure": "08:40",
+          "trainId": "jr_east_official:中央:train_050_054681",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/054681.html"
+        },
+        {
+          "number": 7,
+          "displayName": "富士回遊 7号",
+          "departure": "09:42",
+          "trainId": "jr_east_official:中央:train_050_054711",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/054711.html"
+        },
+        {
+          "number": 11,
+          "displayName": "富士回遊 11号",
+          "departure": "10:42",
+          "trainId": "jr_east_official:中央:train_050_054721",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/050/054721.html"
+        },
+        {
+          "number": 15,
+          "displayName": "富士回遊 15号",
+          "departure": "11:36",
+          "trainId": "jr_east_official:中央:train_060_063371",
+          "operatorId": "jr_east",
+          "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
+          "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063371.html"
+        }
+      ],
+      "reviewCategory": "official_numbering_gap",
+      "reviewNote": "Fuji Kaiyu through services at Otsuki use 3, 7, 11, and 15 in the official JR East weekday timetable.",
+      "reviewSource": "JR East official 2026-05 timetable"
+    },
+    {
+      "serviceFamily": "にちりん",
+      "origin": "大分",
+      "terminal": "宮崎空港",
+      "observedCount": 5,
+      "observedNumbers": [
+        1,
+        7,
+        9,
+        11,
+        13
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        1,
+        13
+      ],
+      "missingCount": 2,
+      "missingNumbers": [
+        3,
+        5
+      ],
+      "missingUnseenFromOriginCount": 2,
+      "missingUnseenFromOriginNumbers": [
+        3,
+        5
+      ],
+      "missingUnseenAtBoardingStationCount": 1,
+      "missingUnseenAtBoardingStationNumbers": [
+        5
+      ],
+      "missingUnseenGloballyCount": 1,
+      "missingUnseenGloballyNumbers": [
+        5
+      ],
+      "coverageDensity": 0.714,
+      "gapRatio": 0.286,
+      "firstDeparture": "07:01",
+      "operators": [
+        "jr_kyushu"
+      ],
+      "sources": [
+        "v4_jrkyushu_navitime_weekday_train_instances_v0_1"
+      ],
+      "samples": [
+        {
+          "number": 1,
+          "displayName": "にちりん1号",
+          "departure": "07:01",
+          "trainId": "jr_kyushu_navitime:日南線:00000023:80020000:2026-04-27",
+          "operatorId": "jr_kyushu",
+          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000023/80020000/?node=00007063&year=2026&month=04&day=27"
+        },
+        {
+          "number": 1,
+          "displayName": "にちりん1号",
+          "departure": "07:01",
+          "trainId": "jr_kyushu_navitime:日豊線:00000024:80150016:2026-04-27",
+          "operatorId": "jr_kyushu",
+          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000024/80150016/?node=00000750&year=2026&month=04&day=27"
+        },
+        {
+          "number": 1,
+          "displayName": "にちりん1号",
+          "departure": "07:01",
+          "trainId": "jr_kyushu_navitime:日豊線:00000025:8016001a:2026-04-27",
+          "operatorId": "jr_kyushu",
+          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000025/8016001a/?node=00000611&year=2026&month=04&day=27"
+        },
+        {
+          "number": 7,
+          "displayName": "にちりん7号",
+          "departure": "12:09",
+          "trainId": "jr_kyushu_navitime:日南線:00000023:8002001a:2026-04-27",
+          "operatorId": "jr_kyushu",
+          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000023/8002001a/?node=00007063&year=2026&month=04&day=27"
+        },
+        {
+          "number": 7,
+          "displayName": "にちりん7号",
+          "departure": "12:09",
+          "trainId": "jr_kyushu_navitime:日豊線:00000024:80150038:2026-04-27",
+          "operatorId": "jr_kyushu",
+          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000024/80150038/?node=00000750&year=2026&month=04&day=27"
+        },
+        {
+          "number": 7,
+          "displayName": "にちりん7号",
+          "departure": "12:09",
+          "trainId": "jr_kyushu_navitime:日豊線:00000025:8016004b:2026-04-27",
+          "operatorId": "jr_kyushu",
+          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000025/8016004b/?node=00000611&year=2026&month=04&day=27"
+        },
+        {
+          "number": 9,
+          "displayName": "にちりん9号",
+          "departure": "14:11",
+          "trainId": "jr_kyushu_navitime:日南線:00000023:80020063:2026-04-27",
+          "operatorId": "jr_kyushu",
+          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000023/80020063/?node=00007063&year=2026&month=04&day=27"
+        },
+        {
+          "number": 9,
+          "displayName": "にちりん9号",
+          "departure": "14:11",
+          "trainId": "jr_kyushu_navitime:日豊線:00000024:8015007b:2026-04-27",
+          "operatorId": "jr_kyushu",
+          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000024/8015007b/?node=00000750&year=2026&month=04&day=27"
+        },
+        {
+          "number": 9,
+          "displayName": "にちりん9号",
+          "departure": "14:11",
+          "trainId": "jr_kyushu_navitime:日豊線:00000025:801600ca:2026-04-27",
+          "operatorId": "jr_kyushu",
+          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000025/801600ca/?node=00000611&year=2026&month=04&day=27"
+        },
+        {
+          "number": 11,
+          "displayName": "にちりん11号",
+          "departure": "16:14",
+          "trainId": "jr_kyushu_navitime:日南線:00000023:80020010:2026-04-27",
+          "operatorId": "jr_kyushu",
+          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000023/80020010/?node=00007063&year=2026&month=04&day=27"
+        },
+        {
+          "number": 11,
+          "displayName": "にちりん11号",
+          "departure": "16:14",
+          "trainId": "jr_kyushu_navitime:日豊線:00000024:80150023:2026-04-27",
+          "operatorId": "jr_kyushu",
+          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000024/80150023/?node=00000750&year=2026&month=04&day=27"
+        },
+        {
+          "number": 11,
+          "displayName": "にちりん11号",
+          "departure": "16:14",
+          "trainId": "jr_kyushu_navitime:日豊線:00000025:8016002d:2026-04-27",
+          "operatorId": "jr_kyushu",
+          "sourceCollection": "v4_jrkyushu_navitime_weekday_train_instances_v0_1",
+          "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000025/8016002d/?node=00000611&year=2026&month=04&day=27"
+        }
+      ],
+      "reviewCategory": "parallel_family_numbering",
+      "reviewNote": "The apparent 5号 gap is occupied by にちりんシーガイア5号 in the current timetable rather than plain にちりん5号.",
+      "reviewSource": "JR Kyushu current timetable"
     }
   ],
   "reviewedDenseSequences": [
