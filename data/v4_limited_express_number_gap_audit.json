@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v4.limited_express_number_gap_audit.v1",
-  "generatedAt": "2026-05-01T21:33:34.547214+00:00",
+  "generatedAt": "2026-05-01T21:45:14.955717+00:00",
   "input": "data/v4_current_weekday_train_instances.json.gz",
   "policy": "Groups numbered named limited-express-like trains by service family, origin, and terminal. For groups with at least minObserved unique train numbers, it infers step=2 when all numbers share parity, otherwise step=1, and reports missing numbers within the observed min/max range. High-priority findings require missing numbers to be absent from that boarding station entirely, so pass-through trains from a farther origin do not look missing. Findings are review candidates, not automatic errors.",
   "parameters": {
@@ -12,9 +12,9 @@
     "trainInstanceCount": 125331,
     "limitedExpressFamilyCount": 86,
     "numberedLimitedExpressGroupCount": 360,
-    "gapCandidateCount": 30,
-    "highPriorityGapCandidateCount": 2,
-    "reviewedGapPatternCount": 12,
+    "gapCandidateCount": 28,
+    "highPriorityGapCandidateCount": 0,
+    "reviewedGapPatternCount": 14,
     "reviewedDenseSequenceCount": 43,
     "topFamilies": [
       {
@@ -183,513 +183,8 @@
       "not_limited_express_like": 660
     }
   },
-  "highPriorityGapCandidates": [
-    {
-      "serviceFamily": "はこね",
-      "origin": "小田原",
-      "terminal": "町田",
-      "observedCount": 15,
-      "observedNumbers": [
-        2,
-        4,
-        6,
-        8,
-        10,
-        12,
-        14,
-        16,
-        18,
-        20,
-        22,
-        30,
-        32,
-        34,
-        36
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        2,
-        36
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        24,
-        26,
-        28
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        24,
-        26,
-        28
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        24,
-        26,
-        28
-      ],
-      "missingUnseenGloballyCount": 3,
-      "missingUnseenGloballyNumbers": [
-        24,
-        26,
-        28
-      ],
-      "coverageDensity": 0.833,
-      "gapRatio": 0.167,
-      "firstDeparture": "09:46",
-      "operators": [
-        "odakyu"
-      ],
-      "sources": [
-        "v3_rematched_to_v4"
-      ],
-      "samples": [
-        {
-          "number": 2,
-          "displayName": "",
-          "departure": "09:46",
-          "trainId": "odakyu:01fe00cc_2026-04-15:b74e78f617",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 4,
-          "displayName": "",
-          "departure": "10:49",
-          "trainId": "odakyu:01fe00e6_2026-04-15:a81cf98c7a",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 6,
-          "displayName": "",
-          "departure": "11:49",
-          "trainId": "odakyu:01fe0100_2026-04-15:26dd295af9",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 8,
-          "displayName": "",
-          "departure": "12:52",
-          "trainId": "odakyu:01fe011a_2026-04-15:146e5a4ef0",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 10,
-          "displayName": "",
-          "departure": "13:47",
-          "trainId": "odakyu:01fe0134_2026-04-15:327fc08dcf",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 12,
-          "displayName": "",
-          "departure": "15:04",
-          "trainId": "odakyu:01fe0159_2026-04-15:4fd2e8f7fa",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 14,
-          "displayName": "",
-          "departure": "16:05",
-          "trainId": "odakyu:01fe0178_2026-04-15:4fcfd851c7",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 16,
-          "displayName": "",
-          "departure": "17:04",
-          "trainId": "odakyu:01fe019a_2026-04-15:3a6c9ab728",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 18,
-          "displayName": "",
-          "departure": "17:59",
-          "trainId": "odakyu:01fe01b4_2026-04-15:71ab930a3f",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 20,
-          "displayName": "",
-          "departure": "18:48",
-          "trainId": "odakyu:01fe01c9_2026-04-15:17d9046abd",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 22,
-          "displayName": "",
-          "departure": "20:02",
-          "trainId": "odakyu:01fe01ef_2026-04-15:6c754845ae",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 30,
-          "displayName": "",
-          "departure": "10:26",
-          "trainId": "odakyu:01fe00dd_2026-04-15:7e354285b1",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        }
-      ]
-    },
-    {
-      "serviceFamily": "スペーシアＸ",
-      "origin": "東武日光",
-      "terminal": "浅草",
-      "observedCount": 4,
-      "observedNumbers": [
-        2,
-        4,
-        6,
-        12
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        2,
-        12
-      ],
-      "missingCount": 2,
-      "missingNumbers": [
-        8,
-        10
-      ],
-      "missingUnseenFromOriginCount": 2,
-      "missingUnseenFromOriginNumbers": [
-        8,
-        10
-      ],
-      "missingUnseenAtBoardingStationCount": 2,
-      "missingUnseenAtBoardingStationNumbers": [
-        8,
-        10
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.667,
-      "gapRatio": 0.333,
-      "firstDeparture": "10:20",
-      "operators": [
-        "tobu"
-      ],
-      "sources": [
-        "v3_rematched_to_v4"
-      ],
-      "samples": [
-        {
-          "number": 2,
-          "displayName": "",
-          "departure": "10:20",
-          "trainId": "tobu:TOBU_025e00db_2026-04-15:f634de130d",
-          "operatorId": "tobu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 4,
-          "displayName": "",
-          "departure": "11:55",
-          "trainId": "tobu:TOBU_025e00ff_2026-04-15:2087b99c46",
-          "operatorId": "tobu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 6,
-          "displayName": "",
-          "departure": "12:55",
-          "trainId": "tobu:TOBU_025e0118_2026-04-15:47edcd864a",
-          "operatorId": "tobu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 12,
-          "displayName": "",
-          "departure": "17:44",
-          "trainId": "tobu:TOBU_025e01a7_2026-04-15:1a69ac9031",
-          "operatorId": "tobu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        }
-      ]
-    }
-  ],
+  "highPriorityGapCandidates": [],
   "gapCandidates": [
-    {
-      "serviceFamily": "はこね",
-      "origin": "小田原",
-      "terminal": "町田",
-      "observedCount": 15,
-      "observedNumbers": [
-        2,
-        4,
-        6,
-        8,
-        10,
-        12,
-        14,
-        16,
-        18,
-        20,
-        22,
-        30,
-        32,
-        34,
-        36
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        2,
-        36
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        24,
-        26,
-        28
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        24,
-        26,
-        28
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        24,
-        26,
-        28
-      ],
-      "missingUnseenGloballyCount": 3,
-      "missingUnseenGloballyNumbers": [
-        24,
-        26,
-        28
-      ],
-      "coverageDensity": 0.833,
-      "gapRatio": 0.167,
-      "firstDeparture": "09:46",
-      "operators": [
-        "odakyu"
-      ],
-      "sources": [
-        "v3_rematched_to_v4"
-      ],
-      "samples": [
-        {
-          "number": 2,
-          "displayName": "",
-          "departure": "09:46",
-          "trainId": "odakyu:01fe00cc_2026-04-15:b74e78f617",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 4,
-          "displayName": "",
-          "departure": "10:49",
-          "trainId": "odakyu:01fe00e6_2026-04-15:a81cf98c7a",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 6,
-          "displayName": "",
-          "departure": "11:49",
-          "trainId": "odakyu:01fe0100_2026-04-15:26dd295af9",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 8,
-          "displayName": "",
-          "departure": "12:52",
-          "trainId": "odakyu:01fe011a_2026-04-15:146e5a4ef0",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 10,
-          "displayName": "",
-          "departure": "13:47",
-          "trainId": "odakyu:01fe0134_2026-04-15:327fc08dcf",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 12,
-          "displayName": "",
-          "departure": "15:04",
-          "trainId": "odakyu:01fe0159_2026-04-15:4fd2e8f7fa",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 14,
-          "displayName": "",
-          "departure": "16:05",
-          "trainId": "odakyu:01fe0178_2026-04-15:4fcfd851c7",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 16,
-          "displayName": "",
-          "departure": "17:04",
-          "trainId": "odakyu:01fe019a_2026-04-15:3a6c9ab728",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 18,
-          "displayName": "",
-          "departure": "17:59",
-          "trainId": "odakyu:01fe01b4_2026-04-15:71ab930a3f",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 20,
-          "displayName": "",
-          "departure": "18:48",
-          "trainId": "odakyu:01fe01c9_2026-04-15:17d9046abd",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 22,
-          "displayName": "",
-          "departure": "20:02",
-          "trainId": "odakyu:01fe01ef_2026-04-15:6c754845ae",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 30,
-          "displayName": "",
-          "departure": "10:26",
-          "trainId": "odakyu:01fe00dd_2026-04-15:7e354285b1",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        }
-      ]
-    },
-    {
-      "serviceFamily": "スペーシアＸ",
-      "origin": "東武日光",
-      "terminal": "浅草",
-      "observedCount": 4,
-      "observedNumbers": [
-        2,
-        4,
-        6,
-        12
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        2,
-        12
-      ],
-      "missingCount": 2,
-      "missingNumbers": [
-        8,
-        10
-      ],
-      "missingUnseenFromOriginCount": 2,
-      "missingUnseenFromOriginNumbers": [
-        8,
-        10
-      ],
-      "missingUnseenAtBoardingStationCount": 2,
-      "missingUnseenAtBoardingStationNumbers": [
-        8,
-        10
-      ],
-      "missingUnseenGloballyCount": 0,
-      "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.667,
-      "gapRatio": 0.333,
-      "firstDeparture": "10:20",
-      "operators": [
-        "tobu"
-      ],
-      "sources": [
-        "v3_rematched_to_v4"
-      ],
-      "samples": [
-        {
-          "number": 2,
-          "displayName": "",
-          "departure": "10:20",
-          "trainId": "tobu:TOBU_025e00db_2026-04-15:f634de130d",
-          "operatorId": "tobu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 4,
-          "displayName": "",
-          "departure": "11:55",
-          "trainId": "tobu:TOBU_025e00ff_2026-04-15:2087b99c46",
-          "operatorId": "tobu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 6,
-          "displayName": "",
-          "departure": "12:55",
-          "trainId": "tobu:TOBU_025e0118_2026-04-15:47edcd864a",
-          "operatorId": "tobu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 12,
-          "displayName": "",
-          "departure": "17:44",
-          "trainId": "tobu:TOBU_025e01a7_2026-04-15:1a69ac9031",
-          "operatorId": "tobu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        }
-      ]
-    },
     {
       "serviceFamily": "くろしお",
       "origin": "白浜",
@@ -4392,6 +3887,90 @@
       "reviewSource": "JR East official 2026-05 timetable"
     },
     {
+      "serviceFamily": "スペーシアＸ",
+      "origin": "東武日光",
+      "terminal": "浅草",
+      "observedCount": 4,
+      "observedNumbers": [
+        2,
+        4,
+        6,
+        12
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        2,
+        12
+      ],
+      "missingCount": 2,
+      "missingNumbers": [
+        8,
+        10
+      ],
+      "missingUnseenFromOriginCount": 2,
+      "missingUnseenFromOriginNumbers": [
+        8,
+        10
+      ],
+      "missingUnseenAtBoardingStationCount": 2,
+      "missingUnseenAtBoardingStationNumbers": [
+        8,
+        10
+      ],
+      "missingUnseenGloballyCount": 0,
+      "missingUnseenGloballyNumbers": [],
+      "coverageDensity": 0.667,
+      "gapRatio": 0.333,
+      "firstDeparture": "10:20",
+      "operators": [
+        "tobu"
+      ],
+      "sources": [
+        "v3_rematched_to_v4"
+      ],
+      "samples": [
+        {
+          "number": 2,
+          "displayName": "",
+          "departure": "10:20",
+          "trainId": "tobu:TOBU_025e00db_2026-04-15:f634de130d",
+          "operatorId": "tobu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 4,
+          "displayName": "",
+          "departure": "11:55",
+          "trainId": "tobu:TOBU_025e00ff_2026-04-15:2087b99c46",
+          "operatorId": "tobu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 6,
+          "displayName": "",
+          "departure": "12:55",
+          "trainId": "tobu:TOBU_025e0118_2026-04-15:47edcd864a",
+          "operatorId": "tobu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 12,
+          "displayName": "",
+          "departure": "17:44",
+          "trainId": "tobu:TOBU_025e01a7_2026-04-15:1a69ac9031",
+          "operatorId": "tobu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        }
+      ],
+      "reviewCategory": "alternate_origin_pattern",
+      "reviewNote": "Missing-looking 8号 and 10号 are current Spacia X services from Kinugawa-onsen, not Tobu-nikko-origin services.",
+      "reviewSource": "Tobu Railway official Spacia X timetable"
+    },
+    {
       "serviceFamily": "スーパーはくと",
       "origin": "倉吉",
       "terminal": "大阪",
@@ -4822,6 +4401,180 @@
       "reviewCategory": "alternate_origin_pattern",
       "reviewNote": "Numbers in the missing-looking block are present as Shinjuku-origin NEX services; Ofuna-origin NEX uses a separate numbering cadence.",
       "reviewSource": "JR East official 2026-05 timetable"
+    },
+    {
+      "serviceFamily": "はこね",
+      "origin": "小田原",
+      "terminal": "町田",
+      "observedCount": 15,
+      "observedNumbers": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        30,
+        32,
+        34,
+        36
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        2,
+        36
+      ],
+      "missingCount": 3,
+      "missingNumbers": [
+        24,
+        26,
+        28
+      ],
+      "missingUnseenFromOriginCount": 3,
+      "missingUnseenFromOriginNumbers": [
+        24,
+        26,
+        28
+      ],
+      "missingUnseenAtBoardingStationCount": 3,
+      "missingUnseenAtBoardingStationNumbers": [
+        24,
+        26,
+        28
+      ],
+      "missingUnseenGloballyCount": 3,
+      "missingUnseenGloballyNumbers": [
+        24,
+        26,
+        28
+      ],
+      "coverageDensity": 0.833,
+      "gapRatio": 0.167,
+      "firstDeparture": "09:46",
+      "operators": [
+        "odakyu"
+      ],
+      "sources": [
+        "v3_rematched_to_v4"
+      ],
+      "samples": [
+        {
+          "number": 2,
+          "displayName": "",
+          "departure": "09:46",
+          "trainId": "odakyu:01fe00cc_2026-04-15:b74e78f617",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 4,
+          "displayName": "",
+          "departure": "10:49",
+          "trainId": "odakyu:01fe00e6_2026-04-15:a81cf98c7a",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 6,
+          "displayName": "",
+          "departure": "11:49",
+          "trainId": "odakyu:01fe0100_2026-04-15:26dd295af9",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 8,
+          "displayName": "",
+          "departure": "12:52",
+          "trainId": "odakyu:01fe011a_2026-04-15:146e5a4ef0",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 10,
+          "displayName": "",
+          "departure": "13:47",
+          "trainId": "odakyu:01fe0134_2026-04-15:327fc08dcf",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 12,
+          "displayName": "",
+          "departure": "15:04",
+          "trainId": "odakyu:01fe0159_2026-04-15:4fd2e8f7fa",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 14,
+          "displayName": "",
+          "departure": "16:05",
+          "trainId": "odakyu:01fe0178_2026-04-15:4fcfd851c7",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 16,
+          "displayName": "",
+          "departure": "17:04",
+          "trainId": "odakyu:01fe019a_2026-04-15:3a6c9ab728",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 18,
+          "displayName": "",
+          "departure": "17:59",
+          "trainId": "odakyu:01fe01b4_2026-04-15:71ab930a3f",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 20,
+          "displayName": "",
+          "departure": "18:48",
+          "trainId": "odakyu:01fe01c9_2026-04-15:17d9046abd",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 22,
+          "displayName": "",
+          "departure": "20:02",
+          "trainId": "odakyu:01fe01ef_2026-04-15:6c754845ae",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 30,
+          "displayName": "",
+          "departure": "10:26",
+          "trainId": "odakyu:01fe00dd_2026-04-15:7e354285b1",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        }
+      ],
+      "reviewCategory": "holiday_only_pattern",
+      "reviewNote": "Public stop tables for the missing-looking 24号, 26号, and 28号 mark them as Saturday/holiday Hakone services; the current v4 collection is weekday.",
+      "reviewSource": "Public Odakyu Romancecar stop tables, 2026-03-14 revision"
     },
     {
       "serviceFamily": "あずさ",

@@ -84,10 +84,20 @@ REVIEWED_GAP_PATTERNS = {
         "note": "Fuji Kaiyu through services at Otsuki use 3, 7, 11, and 15 in the official JR East weekday timetable.",
         "source": "JR East official 2026-05 timetable",
     },
+    ("スペーシアＸ", "東武日光", "浅草"): {
+        "category": "alternate_origin_pattern",
+        "note": "Missing-looking 8号 and 10号 are current Spacia X services from Kinugawa-onsen, not Tobu-nikko-origin services.",
+        "source": "Tobu Railway official Spacia X timetable",
+    },
     ("にちりん", "大分", "宮崎空港"): {
         "category": "parallel_family_numbering",
         "note": "The apparent 5号 gap is occupied by にちりんシーガイア5号 in the current timetable rather than plain にちりん5号.",
         "source": "JR Kyushu current timetable",
+    },
+    ("はこね", "小田原", "町田"): {
+        "category": "holiday_only_pattern",
+        "note": "Public stop tables for the missing-looking 24号, 26号, and 28号 mark them as Saturday/holiday Hakone services; the current v4 collection is weekday.",
+        "source": "Public Odakyu Romancecar stop tables, 2026-03-14 revision",
     },
     ("きのさき", "城崎温泉", "京都"): {
         "category": "alternate_origin_pattern",
