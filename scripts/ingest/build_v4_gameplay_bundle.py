@@ -62,6 +62,18 @@ PUBLIC_LINE_NAME_OVERRIDES = {
     ("横浜市", "4号線"): "横浜市営地下鉄グリーンライン",
 }
 
+PHYSICAL_TRACE_WINS_LINE_NAMES = {
+    "内房線",
+    "外房線",
+    "東金線",
+    "成田線",
+    "鹿島線",
+}
+
+REVIEWED_PHYSICAL_SEGMENT_LINE_OVERRIDES = {
+    frozenset(("大網", "蘇我")): ("jr_east", "外房線"),
+}
+
 
 def load_json(path: Path) -> dict[str, Any]:
     opener = gzip.open if path.suffix == ".gz" else open
@@ -381,6 +393,13 @@ def trace_route_key_for_stop(
     )
     physical_key = physical_route_key_for_stop(stop, train, physical_station_by_id, name_to_id, id_to_name)
     if raw_line_name and (is_synthetic_line_name(stop.get("line_name")) or is_synthetic_line_name(train.get("line_name"))):
+        if (
+            physical_key
+            and raw_operator_id == physical_key[0]
+            and raw_line_name in PHYSICAL_TRACE_WINS_LINE_NAMES
+            and physical_key[1] in PHYSICAL_TRACE_WINS_LINE_NAMES
+        ):
+            return physical_key
         return (
             raw_operator_id,
             raw_line_name,
@@ -471,6 +490,8 @@ def build_line_trace(
     id_to_name: dict[str, str],
     fallback_operator_id: str,
     fallback_line_name: str,
+    reviewed_physical_lines_by_group: dict[str, set[tuple[str, str]]],
+    physical_name_by_group: dict[str, str],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     raw_by_group_sequence: dict[tuple[str, int], dict[str, Any]] = {}
     raw_by_source_sequence: dict[int, dict[str, Any]] = {}
@@ -505,6 +526,28 @@ def build_line_trace(
     segment_keys: list[tuple[str, str]] = []
     for index in range(len(normalized_stops) - 1):
         segment_key = stop_keys[index] if index < len(stop_keys) else fallback_key
+        station_pair = frozenset((
+            physical_name_by_group.get(normalized_stops[index]["stationGroupId"], ""),
+            physical_name_by_group.get(normalized_stops[index + 1]["stationGroupId"], ""),
+        ))
+        if station_pair in REVIEWED_PHYSICAL_SEGMENT_LINE_OVERRIDES:
+            segment_key = REVIEWED_PHYSICAL_SEGMENT_LINE_OVERRIDES[station_pair]
+        next_stop_key = stop_keys[index + 1] if index + 1 < len(stop_keys) else None
+        if (
+            next_stop_key
+            and segment_key != next_stop_key
+            and segment_key[0] == next_stop_key[0]
+            and segment_key[1] in PHYSICAL_TRACE_WINS_LINE_NAMES
+            and next_stop_key[1] in PHYSICAL_TRACE_WINS_LINE_NAMES
+        ):
+            left_group_id = normalized_stops[index]["stationGroupId"]
+            right_group_id = normalized_stops[index + 1]["stationGroupId"]
+            left_lines = reviewed_physical_lines_by_group.get(left_group_id, set())
+            right_lines = reviewed_physical_lines_by_group.get(right_group_id, set())
+            left_unique = len(left_lines) == 1 and segment_key in left_lines
+            right_unique = len(right_lines) == 1 and next_stop_key in right_lines
+            if right_unique and not left_unique:
+                segment_key = next_stop_key
         previous_key = stop_keys[index - 1] if index > 0 and index - 1 < len(stop_keys) else None
         next_key = stop_keys[index + 1] if index + 1 < len(stop_keys) else None
         if previous_key and next_key and previous_key == next_key and segment_key != previous_key:
@@ -803,6 +846,18 @@ def build_timetable(
     line_station_groups: dict[tuple[str, str], set[str]] = defaultdict(set)
     stats = {"skipped_short": 0, "skipped_no_route": 0, "skipped_mislabeled_foreign_train": 0}
     seen_ids: set[str] = set()
+    reviewed_physical_lines_by_group: dict[str, set[tuple[str, str]]] = defaultdict(set)
+    physical_name_by_group: dict[str, str] = {}
+    for station in physical_station_by_id.values():
+        group_id = station.get("stationGroupId")
+        if group_id and station.get("nameJa"):
+            physical_name_by_group.setdefault(group_id, station.get("nameJa"))
+        line_name = station.get("lineName")
+        if not group_id or line_name not in PHYSICAL_TRACE_WINS_LINE_NAMES:
+            continue
+        physical_operator_id = str(station.get("operatorId") or name_to_id.get(station.get("operatorName") or "") or "")
+        if physical_operator_id:
+            reviewed_physical_lines_by_group[group_id].add((physical_operator_id, line_name))
     for index, train in enumerate(trains):
         if should_skip_mislabeled_foreign_train(train):
             stats["skipped_mislabeled_foreign_train"] += 1
@@ -835,6 +890,8 @@ def build_timetable(
             id_to_name,
             operator_id,
             line_name,
+            reviewed_physical_lines_by_group,
+            physical_name_by_group,
         )
         attach_stop_route_identity(stop_times, line_trace, route_id)
         for trace in line_trace:

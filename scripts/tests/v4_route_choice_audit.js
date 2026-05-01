@@ -661,6 +661,26 @@ async function auditRouteChoices(page) {
       }
     }
 
+    const kazusaIchinomiyaAwaKamogawaLabels = [];
+    for (const entry of entriesAt('上総一ノ宮')) {
+      const summary = summarizeEntry('上総一ノ宮', entry);
+      if (summary.terminal !== '安房鴨川') continue;
+      for (const routeId of routeChoiceIdsForDeparture(entry)) {
+        if (routeTitle(routeId) !== '外房線') continue;
+        kazusaIchinomiyaAwaKamogawaLabels.push(formatTripLabelForBoarding(entry, routeId));
+      }
+    }
+    if (
+      !kazusaIchinomiyaAwaKamogawaLabels.length ||
+      kazusaIchinomiyaAwaKamogawaLabels.some((label) => label !== '外房線')
+    ) {
+      anomalies.push({
+        kind: 'sotobo_awa_kamogawa_train_label_mismatch',
+        reason: 'Trains from 上総一ノ宮 toward 安房鴨川 run on the Sotobo side and must not be labeled as Uchibo.',
+        labels: kazusaIchinomiyaAwaKamogawaLabels.slice(0, 20),
+      });
+    }
+
     for (const entry of entriesAt('八王子')) {
       const summary = summarizeEntry('八王子', entry);
       if (summary.terminal === '河口湖' && summary.choices.includes('横浜線')) {
