@@ -3776,10 +3776,10 @@
       const rightKey = transferKeyForGroup(rightGroupId);
       const leftName = displayNameForGroup(leftGroupId);
       const rightName = displayNameForGroup(rightGroupId);
+      if (!leftKey || leftKey !== rightKey) return null;
       const pairKey = transferNamePairKey(leftName, rightName);
       const reviewedDirect = state.reviewedDirectTransferNameSets.has(pairKey);
       const reviewedNotDirect = state.reviewedNotDirectTransferNameSets.has(pairKey);
-      if (!reviewedDirect && (!leftKey || leftKey !== rightKey)) return null;
       if (reviewedNotDirect) return null;
       const distance = coordinateDistanceMeters(stationGroupCoordinate(leftGroupId), stationGroupCoordinate(rightGroupId));
       if (reviewedDirect && distance > REVIEWED_DIRECT_TRANSFER_MAX_DISTANCE_M) return null;
@@ -3851,26 +3851,6 @@
             state.transferEquivalentGroupIdsByGroupId.get(rightGroupId).add(leftGroupId);
             state.transferEquivalentLinksByGroupId.get(leftGroupId).set(rightGroupId, link);
             state.transferEquivalentLinksByGroupId.get(rightGroupId).set(leftGroupId, link);
-          }
-        }
-      });
-      const groupIdsByDisplayName = new Map();
-      state.stationGroupById.forEach((_group, stationGroupId) => {
-        const displayName = displayNameForGroup(stationGroupId);
-        if (!groupIdsByDisplayName.has(displayName)) groupIdsByDisplayName.set(displayName, []);
-        groupIdsByDisplayName.get(displayName).push(stationGroupId);
-      });
-      state.reviewedDirectTransferNameSets.forEach((pairKey) => {
-        const [leftName, rightName] = pairKey.split('|');
-        if (!leftName || !rightName || leftName === rightName) return;
-        for (const leftGroupId of groupIdsByDisplayName.get(leftName) || []) {
-          for (const rightGroupId of groupIdsByDisplayName.get(rightName) || []) {
-            const link = transferEquivalenceLink(leftGroupId, rightGroupId);
-            if (!link) continue;
-            state.transferEquivalentGroupIdsByGroupId.get(leftGroupId)?.add(rightGroupId);
-            state.transferEquivalentGroupIdsByGroupId.get(rightGroupId)?.add(leftGroupId);
-            state.transferEquivalentLinksByGroupId.get(leftGroupId)?.set(rightGroupId, link);
-            state.transferEquivalentLinksByGroupId.get(rightGroupId)?.set(leftGroupId, link);
           }
         }
       });
