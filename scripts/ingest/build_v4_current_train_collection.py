@@ -223,7 +223,7 @@ def line_context_match_count(train: dict[str, Any]) -> int:
 
 
 def duplicate_variant_line_priority(train: dict[str, Any]) -> int:
-    if train.get("operator_id") == "jr_west" and train.get("line_name") in {"湖西線", "関西空港線"}:
+    if train.get("operator_id") == "jr_west" and train.get("line_name") in {"湖西線"}:
         return 1
     return 0
 
@@ -383,7 +383,13 @@ def is_probable_through_service_context_match(train: dict[str, Any]) -> bool:
     ]
     if not excessive_stops:
         return False
-    if max(float(excessive_match_distance_ref(stop) or 0) for stop in excessive_stops) > MAX_DIRECT_CONTEXT_MATCH_DISTANCE_M:
+    excessive_distances = [
+        distance
+        for stop in excessive_stops
+        for distance in [excessive_match_distance_ref(stop)]
+        if distance is not None
+    ]
+    if max(excessive_distances or [0.0]) > MAX_DIRECT_CONTEXT_MATCH_DISTANCE_M:
         return False
     context_matches = all(
         stop.get("match_method") == "context_nearest_group"

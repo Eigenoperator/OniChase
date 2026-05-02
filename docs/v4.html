@@ -2807,6 +2807,10 @@
         trip?.train_name_ja,
         trip?.displayName,
         trip?.display_name,
+        trip?.routeName,
+        trip?.route_name,
+        ...(trip?.coupledRouteNames || []),
+        ...(trip?.coupled_route_names || []),
         trip?.serviceName,
         trip?.service_name,
       ].map((value) => String(value || '').trim()).filter(Boolean);
@@ -8434,6 +8438,8 @@
       const serviceNames = payload.serviceNames || [];
       const displayNames = payload.displayNames || [];
       const headsigns = payload.headsigns || [];
+      const routeNames = payload.routeNames || [];
+      const coupledRouteNames = payload.coupledRouteNames || [];
       const compactRouteId = (index) => Number.isInteger(index) ? routeIds[index] || '' : '';
       return (payload.trips || []).map((row) => ({
         id: row[0],
@@ -8442,6 +8448,8 @@
         serviceNumber: row[3] || '',
         displayName: displayNames[row[6]] || '',
         headsign: headsigns[row[7]] || '',
+        routeName: routeNames[row[8]] || '',
+        coupledRouteNames: (row[9] || []).map((index) => coupledRouteNames[index] || '').filter(Boolean),
         lineTrace: (row[5] || []).map((trace) => ({
           fromSequence: trace[0],
           toSequence: trace[1],

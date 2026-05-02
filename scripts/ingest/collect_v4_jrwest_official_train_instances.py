@@ -407,7 +407,10 @@ def normalize_train(
     resolve_contextual_unmatched_stop_times(stop_times, matcher)
     train_id = train_id_from_url(train_url)
     train_number = raw_train.get("train_number") or train_id
-    service_instance_id = f"jr_west_official:{normalize_line(line_name)}:{train_id}:{SERVICE_DAY}"
+    train_id_suffix = train_id
+    if int(raw_train.get("source_column_count") or 1) > 1:
+        train_id_suffix = f"{train_id}:{normalize_line(str(train_number))}"
+    service_instance_id = f"jr_west_official:{normalize_line(line_name)}:{train_id_suffix}:{SERVICE_DAY}"
     unmatched = [
         {
             "lineName": line_name,
@@ -435,7 +438,7 @@ def normalize_train(
         "source_url": train_url,
         "stop_times": stop_times,
     }
-    for key in ("display_name", "route_name", "coupled_route_names", "operating_days", "service_name", "service_number"):
+    for key in ("display_name", "route_name", "coupled_route_names", "operating_days", "service_name", "service_number", "source_column_index", "source_column_count"):
         if raw_train.get(key):
             if key == "service_name":
                 train["service_name_detail"] = raw_train[key]
@@ -582,9 +585,6 @@ def main() -> int:
         parsed_train_pages = 0
         for train_index, item in enumerate(train_items, start=1):
             train_url = item["trainUrl"]
-            service_instance_id = f"jr_west_official:{normalize_line(line_name)}:{train_id_from_url(train_url)}:{SERVICE_DAY}"
-            if service_instance_id in instance_index:
-                continue
             try:
                 train_html = fetch_text(train_url, args.cache_dir, refresh=args.refresh)
                 parsed = parse_train_html(train_html, train_url, line_id=line_name)

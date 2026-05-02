@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import builtins
 import gzip
 import hashlib
 import json
@@ -347,12 +348,12 @@ def is_synthetic_line_name(line_name: str | None) -> bool:
 
 
 def canonical_line_name(line_name: str | None) -> str:
-    value = str(line_name or "").strip()
+    value = builtins.str(line_name or "").strip()
     return SYNTHETIC_LINE_NAME_OVERRIDES.get(value, value)
 
 
 def normalize_station_name(value: str | None) -> str:
-    text = str(value or "").strip()
+    text = builtins.str(value or "").strip()
     replacements = {
         "　": "",
         " ": "",
@@ -1120,6 +1121,8 @@ def build_timetable(
                 "serviceName": service_name,
                 "serviceNameJa": service_name,
                 "displayName": train.get("display_name") or train.get("displayName") or "",
+                "routeName": train.get("route_name") or train.get("routeName") or "",
+                "coupledRouteNames": train.get("coupled_route_names") or train.get("coupledRouteNames") or [],
                 "serviceNumber": train.get("service_number") or train.get("train_number") or "",
                 "publicServiceNumber": train.get("service_number") or train.get("train_number") or "",
                 "operatingNumber": train.get("train_number") or train.get("service_number") or "",
@@ -1150,11 +1153,22 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
     service_names = sorted({trip.get("serviceName") or "" for trip in trip_instances})
     display_names = sorted({trip.get("displayName") or "" for trip in trip_instances})
     headsigns = sorted({trip.get("headsign") or "" for trip in trip_instances})
+    route_names = sorted({trip.get("routeName") or "" for trip in trip_instances})
+    coupled_route_names = sorted(
+        {
+            name
+            for trip in trip_instances
+            for name in (trip.get("coupledRouteNames") or [])
+            if name
+        }
+    )
     station_index = {value: index for index, value in enumerate(station_group_ids)}
     route_index = {value: index for index, value in enumerate(route_ids)}
     service_index = {value: index for index, value in enumerate(service_names)}
     display_index = {value: index for index, value in enumerate(display_names)}
     headsign_index = {value: index for index, value in enumerate(headsigns)}
+    route_name_index = {value: index for index, value in enumerate(route_names)}
+    coupled_route_name_index = {value: index for index, value in enumerate(coupled_route_names)}
     rows = []
     for trip in trip_instances:
         rows.append(
@@ -1185,6 +1199,8 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
                 ],
                 display_index[trip.get("displayName") or ""],
                 headsign_index[trip.get("headsign") or ""],
+                route_name_index[trip.get("routeName") or ""],
+                [coupled_route_name_index[name] for name in (trip.get("coupledRouteNames") or []) if name in coupled_route_name_index],
             ]
         )
     return {
@@ -1198,6 +1214,8 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
         "serviceNames": service_names,
         "displayNames": display_names,
         "headsigns": headsigns,
+        "routeNames": route_names,
+        "coupledRouteNames": coupled_route_names,
         "trips": rows,
     }
 
