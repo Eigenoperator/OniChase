@@ -1981,6 +1981,7 @@
       activeMode: 'runner',
       players: {},
       pendingTripIds: { runner: null, hunter: null },
+      planningRouteIds: { runner: null, hunter: null },
       pendingCoupledChoices: { runner: null, hunter: null },
       phase: 'PLANNING',
       planningSecondsRemaining: 60,
@@ -6565,6 +6566,7 @@
     function resetPlan() {
       const floor = protectedPlanLength();
       activePlayer().steps = activePlayer().steps.slice(0, floor);
+      state.planningRouteIds[state.activeMode] = null;
       clearPendingTrip();
       invalidateSimulation();
       updateSelectedTripPath();
@@ -6597,6 +6599,7 @@
       if (!state.selectedStationGroupId || state.phase !== 'PLANNING') return;
       activePlayer().start_station_id = state.selectedStationGroupId;
       activePlayer().steps = [];
+      state.planningRouteIds[state.activeMode] = null;
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
@@ -6608,6 +6611,7 @@
       if (preview.currentState.kind !== 'NODE') return;
       const targetMinute = Math.min(preview.currentMinute + 5, hhmmToMinutes(state.endTime));
       activePlayer().steps.push({ type: 'WAIT_UNTIL', until_hhmm: minutesToHhmm(targetMinute) });
+      state.planningRouteIds[state.activeMode] = null;
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
@@ -6635,6 +6639,7 @@
         removeFrom -= 1;
       }
       steps.splice(removeFrom);
+      state.planningRouteIds[state.activeMode] = null;
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
@@ -6646,6 +6651,7 @@
       if (preview.currentState.kind !== 'NODE') return;
       activePlayer().steps.push({ type: 'BOARD_TRAIN', trip_id: tripId });
       activePlayer().steps.push({ type: 'RIDE_TO_STATION', station_id: stationGroupId });
+      state.planningRouteIds[state.activeMode] = null;
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
@@ -6660,6 +6666,7 @@
         ? activePlayer().steps.slice(0, editableRideIndex)
         : activePlayer().steps.slice(0, preview.resolvedSteps.length);
       activePlayer().steps.push({ type: 'RIDE_TO_STATION', station_id: stationGroupId });
+      state.planningRouteIds[state.activeMode] = null;
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
@@ -6775,6 +6782,7 @@
       state.nextPlanningMinute = Math.min(hhmmToMinutes(state.startTime) + 60, hhmmToMinutes(state.endTime));
       state.clockRunning = false;
       state.pendingTripIds = { runner: null, hunter: null };
+      state.planningRouteIds = { runner: null, hunter: null };
       state.pendingCoupledChoices = { runner: null, hunter: null };
       state.selectedTripId = null;
       state.selectedTripStopIds = [];
@@ -7025,6 +7033,7 @@
     }
 
     function backToPlanningRoutes() {
+      state.planningRouteIds[state.activeMode] = null;
       clearPendingTrip();
       setSelectedRoute(null);
     }
@@ -7037,6 +7046,7 @@
     function choosePlanningRoute(routeId) {
       const preview = planCursorPreview(state.activeMode);
       const pending = preview ? pendingDepartureContext(preview) : null;
+      state.planningRouteIds[state.activeMode] = routeId || null;
       if (pending && !routeChoiceIdsForDeparture(pending).includes(routeId)) clearPendingTrip();
       setSelectedRoute(routeId);
     }
@@ -7098,7 +7108,8 @@
       } else {
         const departures = availableDepartures(preview);
         const routeChoices = routeChoicesFromDepartures(departures);
-        const selectedRouteId = routeChoices.some((choice) => choice.routeId === state.selectedRouteId) ? state.selectedRouteId : null;
+        const planningRouteId = state.planningRouteIds[state.activeMode] || null;
+        const selectedRouteId = routeChoices.some((choice) => choice.routeId === planningRouteId) ? planningRouteId : null;
         const trainRows = selectedRouteId ? buildCoupledTrainRows(availableRouteDepartures(preview, selectedRouteId), selectedRouteId) : [];
         if (!selectedRouteId) {
           html += plannerStep(
