@@ -678,6 +678,25 @@
       font-weight: 700;
     }
 
+    .planner-page-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(213, 221, 232, 0.72);
+    }
+
+    .planner-page-back {
+      border: 1px solid rgba(136, 151, 170, 0.42);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.84);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+
     .route-row, .departure-row, .outlook-row, .plan-row, .replay-row {
       width: 100%;
       border: 0;
@@ -6997,6 +7016,24 @@
       `;
     }
 
+    function plannerBackNav(action, label) {
+      return `
+        <div class="planner-page-nav">
+          <button class="planner-page-back" type="button" data-action="${action}">${label}</button>
+        </div>
+      `;
+    }
+
+    function backToPlanningRoutes() {
+      clearPendingTrip();
+      setSelectedRoute(null);
+    }
+
+    function backToPlanningTrains() {
+      clearPendingTrip();
+      renderGame();
+    }
+
     function choosePlanningRoute(routeId) {
       const preview = planCursorPreview(state.activeMode);
       const pending = preview ? pendingDepartureContext(preview) : null;
@@ -7022,46 +7059,12 @@
 
       let html = '';
       if (pending) {
-        const departures = availableDepartures(preview);
-        const routeChoices = routeChoicesFromDepartures(departures);
-        const pendingChoiceRouteIds = routeChoiceIdsForDeparture(pending);
-        const selectedRouteId = pendingChoiceRouteIds.includes(state.selectedRouteId)
-          ? state.selectedRouteId
-          : (pendingChoiceRouteIds[0] || pending.trip.routeId);
-        const trainRows = buildCoupledTrainRows(availableRouteDepartures(preview, selectedRouteId), selectedRouteId);
         html += plannerStep(
-          1,
-          `Lines at ${currentLabel}`,
-          'Choose one line first.',
-          routeChoices.length
-            ? routeChoices.map((choice) => `
-                <button class="route-row ${choice.routeId === selectedRouteId ? 'active' : ''}" type="button" data-action="choose-route" data-route-id="${choice.routeId}">
-                  <span class="route-swatch" style="background:${routeColor(choice.routeId)}"></span>
-                  <span>
-                    <span class="row-title">${routeTitle(choice.routeId)}</span>
-                    <span class="row-sub">${routeChoiceSubtitle(choice)} · ${choice.trainCount} trains</span>
-                  </span>
-                  <span class="row-meta">${choice.firstDepartureHhmm}</span>
-                </button>
-              `).join('')
-            : `<div class="empty">No available lines from this station.</div>`,
-        );
-        html += plannerStep(
-          2,
-          `Trains on ${routeTitle(selectedRouteId)}`,
-          'Choose one train.',
-          trainRows.length
-            ? trainRows.map((row) => row.kind === 'coupled'
-                ? renderCoupledTrainRow(row, coupledChoice?.key === row.key)
-                : renderTripChoiceRow(row.entry, selectedRouteId, row.entry.trip.id === pending.trip.id)
-              ).join('')
-            : `<div class="empty">No available trains on this line.</div>`,
-        );
-        html += plannerStep(
-          3,
+          '3/3',
           `Stops after ${formatTripLabel(pending.trip)}`,
           'Choose where to get off.',
-          pending.destinations.length
+          plannerBackNav('back-trains', 'Back to trains') +
+          (pending.destinations.length
             ? pending.destinations.slice(0, 52).map((item) => `
                 <button class="outlook-row destination-row" type="button" data-action="ride-here" data-trip-id="${pending.trip.id}" data-station-group-id="${item.stationGroupId}">
                   <span class="row-meta">${item.arrivalHhmm}</span>
@@ -7071,44 +7074,15 @@
                   </span>
                 </button>
               `).join('')
-            : `<div class="empty">No downstream stops available.</div>`,
+            : `<div class="empty">No downstream stops available.</div>`),
         );
       } else if (preview.currentState.kind === 'TRAIN') {
         const routeId = preview.currentTrip?.routeId || state.selectedRouteId;
         const destinations = availableDestinations(preview);
         html += plannerStep(
-          1,
-          'Current line',
-          'You are already onboard.',
-          `
-            <button class="route-row active" type="button" data-action="choose-route" data-route-id="${routeId || ''}">
-              <span class="route-swatch" style="background:${routeColor(routeId)}"></span>
-              <span>
-                <span class="row-title">${routeTitle(routeId)}</span>
-                <span class="row-sub">${routeSubtitle(routeId)}</span>
-              </span>
-              <span class="row-meta">ON</span>
-            </button>
-          `,
-        );
-        html += plannerStep(
-          2,
-          'Current train',
-          'Choose a downstream stop.',
-          `
-            <button class="outlook-row active" type="button">
-              <span class="row-meta">NOW</span>
-              <span>
-                <span class="row-title">${formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })}</span>
-                <span class="row-sub">Currently onboard</span>
-              </span>
-            </button>
-          `,
-        );
-        html += plannerStep(
-          3,
+          '3/3',
           'Available stops',
-          'Click one stop to set or modify your alighting station.',
+          `${formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })} · ${routeTitle(routeId)}`,
           destinations.length
             ? destinations.slice(0, 52).map((item) => `
                 <button class="outlook-row destination-row" type="button" data-action="ride-direct" data-station-group-id="${item.stationGroupId}">
@@ -7126,43 +7100,44 @@
         const routeChoices = routeChoicesFromDepartures(departures);
         const selectedRouteId = routeChoices.some((choice) => choice.routeId === state.selectedRouteId) ? state.selectedRouteId : null;
         const trainRows = selectedRouteId ? buildCoupledTrainRows(availableRouteDepartures(preview, selectedRouteId), selectedRouteId) : [];
-        html += plannerStep(
-          1,
-          `Lines at ${currentLabel}`,
-          `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))}`,
-          routeChoices.length
-            ? routeChoices.map((choice) => `
-                <button class="route-row ${choice.routeId === selectedRouteId ? 'active' : ''}" type="button" data-action="choose-route" data-route-id="${choice.routeId}">
-                  <span class="route-swatch" style="background:${routeColor(choice.routeId)}"></span>
-                  <span>
-                    <span class="row-title">${routeTitle(choice.routeId)}</span>
-                    <span class="row-sub">${routeChoiceSubtitle(choice)} · ${choice.trainCount} trains</span>
-                  </span>
-                  <span class="row-meta">${choice.firstDepartureHhmm}</span>
-                </button>
-              `).join('')
-            : `<div class="empty">No available lines from this station.</div>`,
-        );
-        if (selectedRouteId) {
+        if (!selectedRouteId) {
           html += plannerStep(
-            2,
+            '1/3',
+            `Lines at ${currentLabel}`,
+            `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))}`,
+            routeChoices.length
+              ? routeChoices.map((choice) => `
+                  <button class="route-row" type="button" data-action="choose-route" data-route-id="${choice.routeId}">
+                    <span class="route-swatch" style="background:${routeColor(choice.routeId)}"></span>
+                    <span>
+                      <span class="row-title">${routeTitle(choice.routeId)}</span>
+                      <span class="row-sub">${routeChoiceSubtitle(choice)} · ${choice.trainCount} trains</span>
+                    </span>
+                    <span class="row-meta">${choice.firstDepartureHhmm}</span>
+                  </button>
+                `).join('')
+              : `<div class="empty">No available lines from this station.</div>`,
+          );
+        } else if (coupledChoice && coupledChoice.selectedRouteId === selectedRouteId) {
+          html += plannerStep(
+            '3/3',
+            `Portions of ${coupledChoice.label}`,
+            'Choose the portion you will ride.',
+            plannerBackNav('back-trains', 'Back to trains') + renderCoupledPortionRows(coupledChoice, selectedRouteId),
+          );
+        } else {
+          html += plannerStep(
+            '2/3',
             `Trains on ${routeTitle(selectedRouteId)}`,
             'Choose one train.',
-            trainRows.length
+            plannerBackNav('back-routes', 'Back to lines') +
+            (trainRows.length
               ? trainRows.map((row) => row.kind === 'coupled'
                   ? renderCoupledTrainRow(row, coupledChoice?.key === row.key)
                   : renderTripChoiceRow(row.entry, selectedRouteId)
                 ).join('')
-              : `<div class="empty">No available trains on this line.</div>`,
+              : `<div class="empty">No available trains on this line.</div>`),
           );
-          if (coupledChoice && coupledChoice.selectedRouteId === selectedRouteId) {
-            html += plannerStep(
-              3,
-              `Portions of ${coupledChoice.label}`,
-              'Choose the portion you will ride.',
-              renderCoupledPortionRows(coupledChoice, selectedRouteId),
-            );
-          }
         }
       }
       trainOutlookEl.innerHTML = `<div class="planner-stack">${html || '<div class="empty">No planning options available.</div>'}</div>`;
@@ -7182,6 +7157,8 @@
           if (action === 'choose-route') choosePlanningRoute(button.dataset.routeId);
           else if (action === 'choose-coupled') chooseCoupledTrain(button.dataset.coupledKey);
           else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
+          else if (action === 'back-routes') backToPlanningRoutes();
+          else if (action === 'back-trains') backToPlanningTrains();
           else if (action === 'ride-here') addBoardAndRide(button.dataset.tripId, button.dataset.stationGroupId);
           else if (action === 'ride-direct') addRideToStation(button.dataset.stationGroupId);
         });
