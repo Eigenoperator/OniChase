@@ -19,6 +19,7 @@ import gzip
 import hashlib
 import json
 import re
+import tempfile
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -89,11 +90,15 @@ def load_json(path: Path) -> Any:
 
 def write_json(path: Path, data: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    if path.suffix == ".gz":
-        with gzip.open(path, "wt", encoding="utf-8") as handle:
-            json.dump(data, handle, ensure_ascii=False, separators=(",", ":"))
-    else:
-        path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    with tempfile.NamedTemporaryFile("wb", delete=False, dir=path.parent, prefix=f".{path.name}.") as tmp:
+        tmp_path = Path(tmp.name)
+        if path.suffix == ".gz":
+            payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+            tmp.write(gzip.compress(payload, compresslevel=6))
+        else:
+            tmp.write((json.dumps(data, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
+    tmp_path.replace(path)
+    path.chmod(0o644)
 
 
 def collection_label(path: Path, payload: dict[str, Any]) -> str:
@@ -207,6 +212,20 @@ def source_priority(source_collection: str) -> int:
     if source_collection == "v4_public_gtfs":
         return 2
     return 3
+
+
+def line_context_match_count(train: dict[str, Any]) -> int:
+    return sum(
+        1
+        for stop in train.get("stop_times") or []
+        if str(stop.get("match_method") or "").startswith("operator_line_")
+    )
+
+
+def duplicate_variant_line_priority(train: dict[str, Any]) -> int:
+    if train.get("operator_id") == "jr_west" and train.get("line_name") == "湖西線":
+        return 1
+    return 0
 
 
 def stop_has_time(stop: dict[str, Any]) -> bool:
@@ -460,6 +479,14 @@ def choose_best_train(current: dict[str, Any] | None, candidate: dict[str, Any])
     candidate_stop_count = len(candidate.get("stop_times") or [])
     if candidate_stop_count != current_stop_count:
         return candidate if candidate_stop_count > current_stop_count else current
+    current_line_context_count = line_context_match_count(current)
+    candidate_line_context_count = line_context_match_count(candidate)
+    current_line_priority = duplicate_variant_line_priority(current)
+    candidate_line_priority = duplicate_variant_line_priority(candidate)
+    if candidate_line_priority != current_line_priority and max(current_line_context_count, candidate_line_context_count) >= 2:
+        return candidate if candidate_line_priority > current_line_priority else current
+    if candidate_line_context_count != current_line_context_count:
+        return candidate if candidate_line_context_count > current_line_context_count else current
     return min([current, candidate], key=lambda item: str(item.get("service_instance_id") or ""))
 
 
