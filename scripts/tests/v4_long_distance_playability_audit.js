@@ -349,6 +349,22 @@ async function auditLongDistancePlayability(page, options) {
     }
 
     function findLeg(originGroupId, targetGroupId, currentMinute) {
+      const transferMinutes = transferMinutesBetweenStationGroups(originGroupId, targetGroupId);
+      if (Number.isFinite(transferMinutes)) {
+        const arrivalMinute = currentMinute + transferMinutes;
+        if (arrivalMinute <= END_MINUTE) {
+          return {
+            route: 'transfer',
+            train: 'transfer',
+            from: displayNameForGroup(originGroupId),
+            to: displayNameForGroup(targetGroupId),
+            depart: minutesToHhmm(currentMinute),
+            arrive: minutesToHhmm(arrivalMinute),
+            arrivalMinute,
+            tripId: `transfer:${originGroupId}:${targetGroupId}`,
+          };
+        }
+      }
       const departures = departuresForStationGroup(originGroupId, currentMinute, { includeTransferEquivalents: true });
       for (const departure of departures) {
         const routeNames = routeNamesForEntry(departure);
@@ -613,6 +629,9 @@ async function auditLongDistancePlayability(page, options) {
       let boardableDepartureCount = 0;
       let candidateToNextCount = 0;
       let skippedNonBoardableDepartureCount = 0;
+      const transferToNextMinutes = nextTargetGroupId
+        ? transferMinutesBetweenStationGroups(stationGroupId, nextTargetGroupId)
+        : null;
       for (const departure of departures) {
         const routeNames = routeNamesForEntry(departure);
         const downstreamStops = (departure.trip?.stopTimes || []).filter((stop) => stop.sequence > departure.stop.sequence);
@@ -622,6 +641,7 @@ async function auditLongDistancePlayability(page, options) {
           candidateToNextCount += 1;
         }
       }
+      if (Number.isFinite(transferToNextMinutes)) candidateToNextCount += 1;
       if (nextTargetGroupId && !boardableDepartureCount) {
         anomalies.push({
           kind: 'long_distance_waypoint_no_boardable_departures',
