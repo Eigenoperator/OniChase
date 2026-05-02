@@ -223,7 +223,7 @@ def line_context_match_count(train: dict[str, Any]) -> int:
 
 
 def duplicate_variant_line_priority(train: dict[str, Any]) -> int:
-    if train.get("operator_id") == "jr_west" and train.get("line_name") == "湖西線":
+    if train.get("operator_id") == "jr_west" and train.get("line_name") in {"湖西線", "関西空港線"}:
         return 1
     return 0
 
