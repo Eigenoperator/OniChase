@@ -6794,8 +6794,15 @@
         return;
       }
       if (state.phase !== 'PLANNING') return;
+      if (state.tickHandle) {
+        window.clearTimeout(state.tickHandle);
+        state.tickHandle = null;
+      }
+      state.phase = 'LIVE';
+      state.planningSecondsRemaining = 0;
       state.clockRunning = true;
       invalidateSimulation();
+      checkLiveCapture();
       renderGame();
       if (!state.liveCapture) scheduleTick();
     }
