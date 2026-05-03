@@ -304,7 +304,11 @@ def public_service_name_for_train(train: dict[str, Any], line_name: str) -> str:
         and "和歌山" in stop_names
     ):
         return "紀州路快速"
-    if service_name and service_name != original_line_name and re.search(r"(?:はこね|えのしま|リバティ|けごん|きぬ|会津|りょうもう|スペーシア|サンライズ|踊り子|ひだ)\d*号?", service_name):
+    if service_name and service_name != original_line_name and re.search(
+        r"(?:メトロ)?(?:はこね|えのしま|ホームウェイ|モーニングウェイ|ふじさん|さがみ)\d+号|"
+        r"(?:リバティ|けごん|きぬ|会津|りょうもう|スペーシア|サンライズ|踊り子|ひだ)\d*号?",
+        service_name,
+    ):
         return service_name
     return public_line_name
 

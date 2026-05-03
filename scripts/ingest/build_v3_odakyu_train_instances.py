@@ -43,10 +43,13 @@ TRAIN_TYPES = [
     "特急",
 ]
 
+ROMANCECAR_NAME_RE = re.compile(r"^(?:メトロ)?(?:はこね|ホームウェイ|モーニングウェイ|えのしま|さがみ|ふじさん)\d+号$")
+
 ROUTE_COLORS = {
     "00000686": "005BAC",  # 小田原線
     "00000687": "0085CA",  # 江ノ島線
     "00000688": "7FBA00",  # 多摩線
+    "00000828": "E67800",  # 箱根登山線（小田原-箱根湯本）
 }
 
 
@@ -123,7 +126,13 @@ def load_station_seed() -> list[dict]:
     entries: dict[str, dict] = {}
     for feature in geojson["features"]:
         props = feature["properties"]
-        if props.get("N02_004") != "小田急電鉄":
+        operator = props.get("N02_004")
+        line = props.get("N02_003", "")
+        if operator == "小田急電鉄":
+            station_id_prefix = "ODAKYU"
+        elif operator == "小田急箱根" and line == "鉄道線":
+            station_id_prefix = "ODAKYU_HAKONE"
+        else:
             continue
         name = props.get("N02_005", "")
         if not name:
@@ -132,10 +141,10 @@ def load_station_seed() -> list[dict]:
             continue
         lon, lat = centroid(feature["geometry"]["coordinates"])
         entries[name] = {
-            "station_id": f"ODAKYU_{name}",
+            "station_id": f"{station_id_prefix}_{name}",
             "name_ja": name,
-            "operator": "小田急電鉄",
-            "line_id": props.get("N02_003", ""),
+            "operator": operator,
+            "line_id": line,
             "lat": round(lat, 8),
             "lon": round(lon, 8),
             "n02_station_code": props.get("N02_005c"),
@@ -220,6 +229,8 @@ def parse_stop_list(stop_list_url: str, station_lookup: dict[str, dict]) -> tupl
     line_name = railroad_name
     if train_type and railroad_name.endswith(train_type):
         line_name = railroad_name[: -len(train_type)] or railroad_name
+    if ROMANCECAR_NAME_RE.match(line_name):
+        train_type = "特急"
 
     url_query = parse_qs(urlparse(stop_list_url).query)
     tcode = url_query.get("tCode", [""])[0]
@@ -232,19 +243,25 @@ def parse_stop_list(stop_list_url: str, station_lookup: dict[str, dict]) -> tupl
     stop_times = []
     seen_station_pages: set[str] = set()
 
-    pattern = re.compile(
-        r'<li class="(?:mark\s+)?[^"]*train arrow"[^>]*>\s*'
-        r'<a href="([^"]+/station/[^"]+/timetable/[^"]+)"[^>]*>.*?'
-        r'<div class="name">\s*(.*?)\s*</div>.*?'
-        r'<div class="time">\s*(\d{2}:\d{2})<span class="landing">\s*([着発])\s*</span>',
-        re.S,
-    )
+    li_pattern = re.compile(r'<li class="([^"]*\btrain\b[^"]*)"[^>]*>(.*?)</li>', re.S)
+    href_pattern = re.compile(r'href="([^"]+/station/[^"]+/timetable/[^"]+)"', re.S)
+    name_pattern = re.compile(r'<div class="name">\s*(.*?)\s*</div>', re.S)
+    time_pattern = re.compile(r'<div class="time">\s*(\d{2}:\d{2})<span class="landing">\s*([着発])\s*</span>', re.S)
 
-    for station_url, raw_name, hhmm, marker in pattern.findall(text):
-        station_page_url = html.unescape(station_url)
-        if station_page_url not in seen_station_pages:
-            seen_station_pages.add(station_page_url)
-            station_page_urls.append(station_page_url)
+    for _class_name, item_html in li_pattern.findall(text):
+        name_match = name_pattern.search(item_html)
+        time_match = time_pattern.search(item_html)
+        if not name_match or not time_match:
+            continue
+        href_match = href_pattern.search(item_html)
+        if href_match:
+            station_page_url = html.unescape(href_match.group(1))
+            if station_page_url not in seen_station_pages:
+                seen_station_pages.add(station_page_url)
+                station_page_urls.append(station_page_url)
+        raw_name = name_match.group(1)
+        hhmm = time_match.group(1)
+        marker = time_match.group(2)
         station_name = normalize_station_name(raw_name)
         station = station_lookup.get(station_name)
         if station is None:
