@@ -72,6 +72,7 @@
 
 - If a stable rule is violated, do not only apologize in chat; update the relevant control files so the same mistake is less likely next time.
 - Use `AXIOMS.md`, `STATUS.md`, `HISTORY.md`, and git history together as the memory system for tomorrow's session.
+- When Scorp points out one concrete data/display/gameplay defect at a station, line, train, or operator, treat it as evidence of a possible nationwide class of defects. Do not only patch the named example: extract the underlying pattern, run or add a nationwide audit/search for the same pattern, fix all confirmed same-class cases, and record any intentional exceptions or unresolved candidates.
 
 ## 11. Rule File Protection
 
