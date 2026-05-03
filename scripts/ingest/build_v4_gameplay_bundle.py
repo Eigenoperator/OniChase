@@ -61,7 +61,14 @@ PUBLIC_LINE_NAME_OVERRIDES = {
     ("横浜市", "1号線"): "横浜市営地下鉄ブルーライン",
     ("横浜市", "3号線"): "横浜市営地下鉄ブルーライン",
     ("横浜市", "4号線"): "横浜市営地下鉄グリーンライン",
+    ("名古屋市", "3号線鶴舞線"): "鶴舞線",
+    ("名古屋市", "3号線(鶴舞線)"): "鶴舞線",
 }
+
+JR_WEST_LETTERED_RAPID_LABEL_RE = re.compile(
+    r"^(?:普通|快速|新快速|区間快速|通勤快速|直通快速|みやこ路快速|大和路快速|丹波路快速|関空快速|紀州路快速)?"
+    r"[A-ZＡ-Ｚ](?:快速|新快速|区間快速|通勤快速|直通快速|みやこ路快速|大和路快速|丹波路快速|関空快速|紀州路快速)\d+号$"
+)
 
 PHYSICAL_TRACE_WINS_LINE_NAMES = {
     "内房線",
@@ -311,6 +318,62 @@ def public_service_name_for_train(train: dict[str, Any], line_name: str) -> str:
     ):
         return service_name
     return public_line_name
+
+
+def public_line_name_for_route(operator_id: str, line_name: str, id_to_name: dict[str, str]) -> str:
+    operator_name = id_to_name.get(operator_id, operator_id)
+    return PUBLIC_LINE_NAME_OVERRIDES.get((operator_name, line_name), line_name)
+
+
+def is_limited_train_type(train_type: str) -> bool:
+    text = str(train_type or "").strip()
+    return bool(text and ("特急" in text or "ライナー" in text))
+
+
+def is_jr_west_lettered_rapid_label(value: str) -> bool:
+    text = re.sub(r"\s+", "", str(value or "").strip())
+    if not text:
+        return False
+    return bool(JR_WEST_LETTERED_RAPID_LABEL_RE.match(text))
+
+
+def gameplay_display_name_for_train(train: dict[str, Any], operator_name: str) -> str:
+    display_name = str(train.get("display_name") or train.get("displayName") or "").strip()
+    train_type = str(train.get("train_type") or "").strip()
+    if not display_name:
+        return ""
+    if operator_name in {"近畿日本鉄道", "名古屋鉄道"} and not is_limited_train_type(train_type):
+        return ""
+    if operator_name == "西日本旅客鉄道" and is_jr_west_lettered_rapid_label(display_name):
+        return ""
+    return display_name
+
+
+def gameplay_route_name_for_train(train: dict[str, Any], operator_name: str) -> str:
+    route_name = str(train.get("route_name") or train.get("routeName") or "").strip()
+    if not route_name:
+        return ""
+    if operator_name == "西日本旅客鉄道" and is_jr_west_lettered_rapid_label(route_name):
+        return ""
+    return route_name
+
+
+def through_destination_service_name(
+    service_name: str,
+    operator_id: str,
+    line_name: str,
+    line_trace: list[dict[str, Any]],
+    id_to_name: dict[str, str],
+) -> str:
+    operator_name = id_to_name.get(operator_id, operator_id)
+    if operator_name != "名古屋鉄道" or not line_trace:
+        return service_name
+    destination_trace = line_trace[-1]
+    destination_line = str(destination_trace.get("lineName") or "").strip()
+    destination_operator_id = str(destination_trace.get("operatorId") or operator_id)
+    if not destination_line or destination_line == line_name:
+        return service_name
+    return public_line_name_for_route(destination_operator_id, destination_line, id_to_name)
 
 
 def operator_maps(physical_map: dict[str, Any]) -> tuple[dict[str, str], dict[str, str]]:
@@ -1076,7 +1139,6 @@ def build_timetable(
         if len(stop_times) < 2:
             stats["skipped_short"] += 1
             continue
-        service_name = public_service_name_for_train(train_for_build, line_name)
         base_id = train.get("service_instance_id") or train.get("source_trip_id") or f"v4-trip-{index}"
         trip_id = str(base_id)
         if trip_id in seen_ids:
@@ -1095,6 +1157,8 @@ def build_timetable(
             reviewed_physical_lines_by_group,
             physical_name_by_group,
         )
+        service_name = public_service_name_for_train(train_for_build, line_name)
+        service_name = through_destination_service_name(service_name, operator_id, line_name, line_trace, id_to_name)
         attach_stop_route_identity(stop_times, line_trace, route_id)
         if not line_trace:
             route_station_groups[route_id].update(station_group_ids)
@@ -1127,8 +1191,8 @@ def build_timetable(
                 "routeId": route_id,
                 "serviceName": service_name,
                 "serviceNameJa": service_name,
-                "displayName": train.get("display_name") or train.get("displayName") or "",
-                "routeName": train.get("route_name") or train.get("routeName") or "",
+                "displayName": gameplay_display_name_for_train(train, id_to_name.get(operator_id, operator_id)),
+                "routeName": gameplay_route_name_for_train(train, id_to_name.get(operator_id, operator_id)),
                 "coupledRouteNames": train.get("coupled_route_names") or train.get("coupledRouteNames") or [],
                 "serviceNumber": train.get("service_number") or train.get("train_number") or "",
                 "publicServiceNumber": train.get("service_number") or train.get("train_number") or "",

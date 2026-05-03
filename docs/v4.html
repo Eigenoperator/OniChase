@@ -2860,6 +2860,15 @@
     function serviceNameJaLabel(trip) {
       const routeName = routeJapaneseName(trip?.routeId);
       if (!isShinkansenTrip(trip) && !isLimitedExpressTrip(trip)) {
+        const serviceName = trip?.serviceName || trip?.service_name || '';
+        if (
+          serviceName &&
+          hasJapaneseText(serviceName) &&
+          !isRouteLikeServiceName(serviceName, trip) &&
+          /(?:線|ライン)$/u.test(String(serviceName).trim())
+        ) {
+          return stripTrainNumberGoSuffixes(serviceName);
+        }
         return routeName !== '路線' ? routeName : '列車';
       }
       const limitedExpress = publicLimitedExpressBaseName(trip);
