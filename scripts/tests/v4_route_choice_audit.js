@@ -342,7 +342,6 @@ async function auditRouteChoices(page) {
             directionLabel &&
             !isShinkansenTrip(entry.trip) &&
             !isLimitedExpressTrip(entry.trip) &&
-            !isMeitetsuTrip(entry.trip) &&
             !(stationName === '米原' && routeTitle(routeId) === '東海道線' && label === '東海道線') &&
             label !== directionLabel
           ) {
@@ -350,8 +349,7 @@ async function auditRouteChoices(page) {
             addGlobalTrainLabelSample('through_direction_label_mismatch', stationName, entry, routeId, label);
           }
           if (isMeitetsuTrip(entry.trip)) {
-            const tripLabel = routeTitle(entry.trip.routeId);
-            if (!/^名鉄（.+線）$/u.test(label) || label !== tripLabel) {
+            if (!/^[^（）()]+線$/u.test(label) || /^\d+号線/u.test(label)) {
               globalTrainLabelScan.meitetsuLabelFormatMismatchCount += 1;
               addGlobalTrainLabelSample('meitetsu_label_format_mismatch', stationName, entry, routeId, label);
             }
@@ -440,7 +438,7 @@ async function auditRouteChoices(page) {
     ) {
       anomalies.push({
         kind: 'global_selected_train_label_scan',
-        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, limited express labels must not append 号 after the train number, ordinary through-running labels must follow the direction-side line, Meitetsu train labels must stay on their own Meitetsu line, and named limited-express/named train services must be separated as their own route choices.',
+        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, limited express labels must not append 号 after the train number, ordinary through-running labels including Meitetsu must follow the direction-side line, Meitetsu labels must not use parentheses, and named limited-express/named train services must be separated as their own route choices.',
         ...globalTrainLabelScan,
       });
     }

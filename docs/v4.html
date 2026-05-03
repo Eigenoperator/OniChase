@@ -1232,6 +1232,7 @@
       JR_EAST_YOKOSUKA_SOBU_RAPID: '横須賀線・総武快速線',
       JR_EAST_YOKOSUKA: '横須賀線',
       JR_YAMANOTE: '山手線',
+      '国際文化公園都市モノレール線(彩都線)': '彩都線',
       RINKAI: 'りんかい線',
       SHINKANSEN_AKITA: '秋田新幹線',
       SHINKANSEN_HOKURIKU: '北陸新幹線',
@@ -2759,15 +2760,22 @@
       return label;
     }
 
+    function removeDisplayParentheses(label) {
+      return String(label || '')
+        .replace(/[（(]([^）)]+)[）)]/gu, ' $1')
+        .replace(/\s+/gu, ' ')
+        .trim();
+    }
+
     function routeDisplayName(route, name) {
-      const label = normalizeRouteLineLabel(route, name);
+      const label = removeDisplayParentheses(normalizeRouteLineLabel(route, name));
       if (!route || !label) return label;
-      if (isMeitetsuRoute(route)) return `名鉄（${label.replace(/^名古屋鉄道/u, '')}）`;
+      if (isMeitetsuRoute(route)) return `名鉄${label.replace(/^(?:名古屋鉄道|名鉄)/u, '')}`;
       if (route.shortName === 'みなとみらい21線' && label === 'みなとみらい線') return label;
       const operator = PHYSICAL_ALIAS_OPERATOR_LABELS[route.shortName]
         || (!isJrRoute(route) ? routeOperatorLabel(route) : '');
       if (!operator || label.startsWith(operator)) return label;
-      return `${operator}${label}`;
+      return removeDisplayParentheses(`${operator}${label}`);
     }
 
     function routeJapaneseName(routeOrId) {
@@ -2811,6 +2819,7 @@
         .replace(/^特急\s*/u, '')
         .replace(/^観光特急\s*/u, '')
         .replace(/（[^）]*(?:車いす|車イス|対応車両|車内販売|禁煙|喫煙)[^）]*）/gu, '')
+        .replace(/[（(]([^）)]+)[）)]/gu, ' $1')
         .replace(/\s+/gu, ' ')
         .trim();
       const kintetsuBrand = text.match(KINTETSU_LIMITED_EXPRESS_BRAND_RE);
@@ -5006,10 +5015,6 @@
 
     function formatTripLabel(trip) {
       if (!trip) return '列車';
-      if (isMeitetsuTrip(trip)) {
-        const label = routeTitle(trip.routeId);
-        return label && !/^\d+号線/u.test(label) ? label : '名鉄';
-      }
       if (trip.throughStitched && Array.isArray(trip.throughRouteIds)) {
         const throughRouteIds = isYokosukaSobuRapidTrip(trip)
           ? [JR_YOKOSUKA_SOBU_RAPID_CORRIDOR_ROUTE_ID]
@@ -5521,10 +5526,6 @@
     }
 
     function ordinaryBoardingSegmentLineLabel(entry, selectedRouteId = null) {
-      if (isMeitetsuTrip(entry?.trip)) {
-        const label = routeTitle(entry.trip.routeId);
-        return label && !/^\d+号線/u.test(label) ? label : '';
-      }
       if (selectedRouteId === MAIBARA_TOKAIDO_BOUNDARY_ROUTE_ID && maibaraBoundaryChoiceRouteId(entry) === selectedRouteId) {
         return routeTitle(selectedRouteId);
       }

@@ -391,7 +391,7 @@ def audit_train_display(routes: dict[str, dict[str, Any]], trips: list[dict[str,
                 issues.append({"kind": "limited_or_shinkansen_missing_number", **sample})
         if "名鉄" in str(route.get("operatorName") or route.get("operatorId") or ""):
             # Raw compact data should preserve enough information for the front-end
-            # to render the reviewed 名鉄（○○線） label.
+            # to render the reviewed plain operator-prefixed 名鉄○○線 label.
             if "名鉄" not in combined and "名鉄" not in title:
                 counts["meitetsu_label_missing_operator_context"] += 1
                 if counts["meitetsu_label_missing_operator_context"] <= 80:
