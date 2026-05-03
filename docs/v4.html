@@ -1032,8 +1032,8 @@
         <button id="start-button" class="primary" type="button">Start Game</button>
         <button id="pause-button" type="button">Pause</button>
         <button id="simulate-button" type="button">Replay</button>
-        <button id="corridor-button" class="active" type="button">Corridor</button>
-        <button id="service-button" type="button">Service</button>
+        <button id="corridor-button" class="debug-only" type="button" hidden>Corridor</button>
+        <button id="service-button" class="debug-only active" type="button" hidden>Service</button>
         <button id="fit-button" type="button">Fit</button>
       </nav>
     </header>
@@ -1978,7 +1978,7 @@
     const state = {
       bundle: null,
       map: null,
-      viewMode: 'corridor',
+      viewMode: 'service',
       serviceLayersReady: false,
       serviceInteractionsBound: false,
       selectedStationGroupId: null,
@@ -6457,8 +6457,8 @@
 
     function setViewMode(mode) {
       state.viewMode = mode;
-      document.getElementById('corridor-button').classList.toggle('active', mode === 'corridor');
-      document.getElementById('service-button').classList.toggle('active', mode === 'service');
+      document.getElementById('corridor-button')?.classList.toggle('active', mode === 'corridor');
+      document.getElementById('service-button')?.classList.toggle('active', mode === 'service');
       if (mode === 'service') ensureServiceLayers();
       const serviceVisibility = mode === 'service' ? 'visible' : 'none';
       if (state.map?.getLayer('service-lines')) {
@@ -8589,7 +8589,7 @@
         bindMapInteractions(map);
         renderStats(bundle);
         renderRouteList();
-        setViewMode('corridor');
+        setViewMode('service');
         zoomPill.textContent = `Zoom ${map.getZoom().toFixed(2)}`;
         const loadMs = Math.round(performance.now() - t0);
         loadPill.textContent = `Map bundle ready in ${loadMs}ms`;
