@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OniChase Global Replay</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f6fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #64748b;
+      --line: #d6dfeb;
+      --accent: #1565c0;
+      --shadow: 0 18px 45px rgba(41, 52, 72, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px clamp(18px, 4vw, 56px);
+      border-bottom: 1px solid var(--line);
+      background: rgba(243, 246, 251, 0.94);
+      backdrop-filter: blur(14px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(22px, 3vw, 34px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+      line-height: 1.45;
+    }
+
+    a.button {
+      flex: 0 0 auto;
+      border: 1px solid rgba(21, 101, 192, 0.18);
+      background: var(--panel);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 850;
+      font-size: 12px;
+      text-decoration: none;
+      box-shadow: 0 10px 25px rgba(41, 52, 72, 0.10);
+    }
+
+    main {
+      width: min(1320px, calc(100vw - 32px));
+      margin: 22px auto 52px;
+    }
+
+    .game {
+      margin: 0 0 34px;
+    }
+
+    .game h2 {
+      margin: 0 0 5px;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    .game img {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      box-shadow: var(--shadow);
+    }
+
+    code {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: white;
+      padding: 2px 6px;
+      color: #334155;
+      font-size: 0.92em;
+    }
+
+    @media (max-width: 720px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      a.button {
+        width: 100%;
+        text-align: center;
+      }
+
+      main {
+        width: min(100vw - 18px, 1320px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Global Replay</h1>
+      <p>Nationwide battle timelines generated from the previous public replay dataset. Time runs down the center; runner and hunter rides stay attached to their event times.</p>
+    </div>
+    <a class="button" href="./v4.html">Back to Game</a>
+  </header>
+
+  <main>
+    <section class="game">
+      <h2>Game 1 · Room A1WUIT</h2>
+      <p>Runner: 横須賀線 -&gt; 横須賀線 -&gt; 湘南新宿ライン -&gt; 湘南新宿ライン -&gt; 埼京線・川越線 -&gt; 東急田園都市線 -&gt; 東急田園都市線 -&gt; 東急田園都市線 -&gt; 東急田園都市線 -&gt; 東急田園都市線 · Hunter: 総武快速線 -&gt; 中央・総武線各駅停車 -&gt; 中央・総武線各駅停車 -&gt; 都営浅草線 -&gt; 都営浅草線 -&gt; 都営浅草線 -&gt; 都営浅草線 -&gt; 半蔵門線 -&gt; 京成押上線 -&gt; 京成押上線 · same_node at 東京 06:00 · phase <code>ENDED</code></p>
+      <img src="./assets/global_replay/v3_20260422_161132/game_01_a1wuit.svg" alt="Game 1 global replay timeline" loading="lazy">
+    </section>
+    <section class="game">
+      <h2>Game 2 · Room XPTWML</h2>
+      <p>Runner: 日比谷線 -&gt; 東武野田線 -&gt; 東武野田線 -&gt; 東武伊勢崎線 -&gt; 東武伊勢崎線 -&gt; 東武伊勢崎線 -&gt; 京成押上線 -&gt; 京成押上線 -&gt; 京成押上線 -&gt; 京成押上線 · Hunter: 日比谷線 -&gt; 東武野田線 -&gt; 東武野田線 -&gt; 東武野田線 -&gt; 東武野田線 -&gt; 東海道線 -&gt; 湘南新宿ライン -&gt; 相鉄いずみ野線 -&gt; 都営新宿線 -&gt; 都営新宿線 · same_train on 日比谷線 07:02 · phase <code>LIVE</code></p>
+      <img src="./assets/global_replay/v3_20260422_161132/game_02_xptwml.svg" alt="Game 2 global replay timeline" loading="lazy">
+    </section>
+    <section class="game">
+      <h2>Game 3 · Room 6343B0</h2>
+      <p>Runner: 宇都宮線 -&gt; 東海道線 -&gt; 東海道線 -&gt; 京浜東北線・根岸線 -&gt; 埼京線・川越線 -&gt; 有楽町線 -&gt; 有楽町線 -&gt; 有楽町線 -&gt; 有楽町線 -&gt; 有楽町線 · Hunter: 京王線 -&gt; 京王井の頭線 -&gt; 小田急小田原線 -&gt; 小田急小田原線 -&gt; 小田急小田原線 -&gt; 小田急小田原線 -&gt; 小田急小田原線 -&gt; 千代田線 -&gt; 小田急小田原線 -&gt; 小田急小田原線 · phase <code>LIVE</code></p>
+      <img src="./assets/global_replay/v3_20260422_161132/game_03_6343b0.svg" alt="Game 3 global replay timeline" loading="lazy">
+    </section>
+    <section class="game">
+      <h2>Game 4 · Room CN5Q35</h2>
+      <p>Runner: 東急田園都市線 -&gt; 東急田園都市線 -&gt; 東急田園都市線 -&gt; 東急田園都市線 -&gt; 東急田園都市線 -&gt; 東急田園都市線 -&gt; 東急田園都市線 -&gt; 東急田園都市線 -&gt; 小田急江ノ島線 -&gt; 小田急江ノ島線 · Hunter: 京浜東北線・根岸線 -&gt; 京浜東北線・根岸線 -&gt; 総武線 -&gt; 都営三田線 -&gt; 都営三田線 -&gt; 都営三田線 -&gt; 都営三田線 -&gt; 都営三田線 -&gt; 南北線 -&gt; 南北線 · phase <code>LIVE</code></p>
+      <img src="./assets/global_replay/v3_20260422_161132/game_04_cn5q35.svg" alt="Game 4 global replay timeline" loading="lazy">
+    </section>
+    <section class="game">
+      <h2>Game 5 · Room 15331T</h2>
+      <p>Runner: 京成本線 -&gt; 東海道線 -&gt; 山手線 -&gt; 中央線 -&gt; 中央線 -&gt; 丸ノ内線 -&gt; 丸ノ内線 -&gt; 丸ノ内線 -&gt; 丸ノ内線 -&gt; 千代田線 · Hunter: 東武東上本線 -&gt; 日比谷線 -&gt; 日比谷線 -&gt; 日比谷線 -&gt; 日比谷線 -&gt; 東急新横浜線 -&gt; 相鉄いずみ野線 -&gt; 相鉄いずみ野線 -&gt; 都営新宿線 -&gt; 西武新宿線 · phase <code>LIVE</code></p>
+      <img src="./assets/global_replay/v3_20260422_161132/game_05_15331t.svg" alt="Game 5 global replay timeline" loading="lazy">
+    </section>
+    <section class="game">
+      <h2>Game 6 · Room LQC25I</h2>
+      <p>Runner: 湘南新宿ライン -&gt; 都営大江戸線 -&gt; 都営大江戸線 -&gt; 都営大江戸線 -&gt; 都営大江戸線 -&gt; 都営大江戸線 -&gt; 都営大江戸線 -&gt; 西武池袋線 -&gt; 西武池袋線 -&gt; 西武池袋線 · Hunter: 東海道線 -&gt; 湘南新宿ライン -&gt; 横須賀線 -&gt; 湘南新宿ライン -&gt; 横須賀線 -&gt; 湘南新宿ライン -&gt; 湘南新宿ライン -&gt; 横須賀線 -&gt; 総武快速線 -&gt; 横須賀線 · phase <code>LIVE</code></p>
+      <img src="./assets/global_replay/v3_20260422_161132/game_06_lqc25i.svg" alt="Game 6 global replay timeline" loading="lazy">
+    </section>
+    <section class="game">
+      <h2>Game 7 · Room SRTWKN</h2>
+      <p>Runner: 東海道線 -&gt; 宇都宮線 -&gt; 湘南新宿ライン -&gt; 丸ノ内線 -&gt; 丸ノ内線 -&gt; 丸ノ内線 -&gt; 丸ノ内線 -&gt; 西武池袋線 -&gt; 有楽町線 -&gt; 有楽町線 · Hunter: 西武新宿線 -&gt; 西武新宿線 -&gt; 西武新宿線 -&gt; 西武新宿線 -&gt; 西武新宿線 -&gt; 西武国分寺線 -&gt; 西武国分寺線 -&gt; 西武国分寺線 -&gt; 西武国分寺線 -&gt; 中央線快速 · phase <code>LIVE</code></p>
+      <img src="./assets/global_replay/v3_20260422_161132/game_07_srtwkn.svg" alt="Game 7 global replay timeline" loading="lazy">
+    </section>
+    <section class="game">
+      <h2>Game 8 · Room U5CDC5</h2>
+      <p>Runner: 京成押上線 -&gt; 京成押上線 -&gt; 京成本線 -&gt; 半蔵門線 -&gt; 都営大江戸線 -&gt; 都営大江戸線 -&gt; 都営三田線 -&gt; 都営三田線 -&gt; 都営三田線 -&gt; 都営三田線 · Hunter: 東海道線 -&gt; 湘南新宿ライン -&gt; 山手線 -&gt; 横須賀線 -&gt; 総武快速線 -&gt; 東海道線 -&gt; 総武快速線 -&gt; 横須賀線 -&gt; 京急本線 -&gt; 京急本線 · phase <code>LIVE</code></p>
+      <img src="./assets/global_replay/v3_20260422_161132/game_08_u5cdc5.svg" alt="Game 8 global replay timeline" loading="lazy">
+    </section>
+    <section class="game">
+      <h2>Game 9 · Room TJAMB5</h2>
+      <p>Runner: 千代田線 -&gt; 京成金町線 -&gt; 京成金町線 -&gt; 京成金町線 -&gt; 京成成田空港線 -&gt; 都営浅草線 -&gt; 都営浅草線 -&gt; 都営浅草線 -&gt; 都営浅草線 -&gt; 銀座線 · Hunter: 半蔵門線 -&gt; 半蔵門線 -&gt; 東急田園都市線 -&gt; 小田急江ノ島線 -&gt; 小田急小田原線 -&gt; 丸ノ内線 -&gt; 小田急小田原線 -&gt; 小田急江ノ島線 -&gt; 湘南新宿ライン -&gt; 東海道線 · phase <code>LIVE</code></p>
+      <img src="./assets/global_replay/v3_20260422_161132/game_09_tjamb5.svg" alt="Game 9 global replay timeline" loading="lazy">
+    </section>
+    <section class="game">
+      <h2>Game 10 · Room 2HEYZZ</h2>
+      <p>Runner: 東急東横線 -&gt; 東急東横線 -&gt; 東急東横線 -&gt; 東急東横線 -&gt; 京急本線 -&gt; 京急本線 -&gt; 京急本線 -&gt; 京急本線 -&gt; 京浜東北線・根岸線 -&gt; 京浜東北線・根岸線 · Hunter: 中央・総武線各駅停車 -&gt; 中央・総武線各駅停車 -&gt; 中央・総武線各駅停車 -&gt; 中央・総武線各駅停車 -&gt; 中央・総武線各駅停車 -&gt; 中央線 -&gt; 中央線 -&gt; 中央線 -&gt; 西武多摩川線 -&gt; 西武多摩川線 · phase <code>LIVE</code></p>
+      <img src="./assets/global_replay/v3_20260422_161132/game_10_2heyzz.svg" alt="Game 10 global replay timeline" loading="lazy">
+    </section>
+  </main>
+</body>
+</html>

@@ -1032,6 +1032,7 @@
         <button id="start-button" class="primary" type="button">Start Game</button>
         <button id="pause-button" type="button">Pause</button>
         <button id="simulate-button" type="button">Replay</button>
+        <button id="global-replay-button" type="button">Global Replay</button>
         <button id="corridor-button" class="debug-only" type="button" hidden>Corridor</button>
         <button id="service-button" class="debug-only active" type="button" hidden>Service</button>
         <button id="fit-button" type="button">Fit</button>
@@ -8614,6 +8615,9 @@
       document.getElementById('start-button').addEventListener('click', startGameNow);
       document.getElementById('pause-button').addEventListener('click', toggleClock);
       document.getElementById('simulate-button').addEventListener('click', runSimulation);
+      document.getElementById('global-replay-button').addEventListener('click', () => {
+        window.open('./global-replay.html', '_blank', 'noopener');
+      });
       document.getElementById('replay-run-button').addEventListener('click', runSimulation);
       document.getElementById('replay-copy-link-button').addEventListener('click', copyReplayLink);
       document.getElementById('replay-copy-json-button').addEventListener('click', copyReplayJson);
