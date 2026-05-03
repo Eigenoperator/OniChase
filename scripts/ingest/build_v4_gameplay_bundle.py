@@ -1079,7 +1079,6 @@ def build_timetable(
             trip_id = f"{trip_id}#{stable_hash(str(index), 6)}"
         seen_ids.add(trip_id)
         station_group_ids = [stop["stationGroupId"] for stop in stop_times]
-        route_station_groups[route_id].update(station_group_ids)
         line_trace, line_sequence = build_line_trace(
             raw_stop_times,
             stop_times,
@@ -1093,6 +1092,9 @@ def build_timetable(
             physical_name_by_group,
         )
         attach_stop_route_identity(stop_times, line_trace, route_id)
+        if not line_trace:
+            route_station_groups[route_id].update(station_group_ids)
+            line_station_groups[(operator_id, line_name)].update(station_group_ids)
         for trace in line_trace:
             trace_route_id = trace["routeId"]
             traced_station_ids = [
@@ -1112,7 +1114,8 @@ def build_timetable(
                 id_to_name,
             ) or (operator_id, line_name)
             if station_group_id and station_group_id in valid_station_group_ids:
-                line_station_groups[(operator_id, line_name)].add(station_group_id)
+                if not line_trace or (stop_operator_id, stop_line_name) == (operator_id, line_name):
+                    line_station_groups[(operator_id, line_name)].add(station_group_id)
                 line_station_groups[(stop_operator_id, stop_line_name)].add(station_group_id)
         trip_instances.append(
             {

@@ -1870,6 +1870,11 @@
       '沼津', '三島', '熱海', '湯河原', '小田原', '国府津', '平塚', '茅ケ崎',
       '藤沢', '大船', '戸塚', '横浜', '川崎', '品川', '新橋', '東京',
     ]);
+    const JR_EAST_TOKAIDO_ROUTE_HIGHLIGHT_STATIONS = new Set([
+      '東京', '新橋', '品川', '川崎', '横浜', '戸塚', '大船', '藤沢', '辻堂',
+      '茅ケ崎', '平塚', '大磯', '二宮', '国府津', '鴨宮', '小田原', '早川',
+      '根府川', '真鶴', '湯河原', '熱海', '函南', '三島', '沼津',
+    ]);
     const UENO_TOKYO_JOBAN_SIDE_STATIONS = new Set([
       '日暮里', '三河島', '南千住', '北千住', '松戸', '柏', '我孫子', '天王台',
       '取手', '藤代', '龍ケ崎市', '牛久', 'ひたち野うしく', '荒川沖', '土浦',
@@ -4931,6 +4936,7 @@
     function routeStationPhysicalIds(routeId, stationGroupIds) {
       const ids = [];
       (stationGroupIds || []).forEach((stationGroupId) => {
+        if (!routeStationAllowedForHighlight(routeId, stationGroupId)) return;
         const routeSpecificIds = state.physicalStationIdsByRouteGroupKey.get(routeStationGroupKey(routeId, stationGroupId));
         if (routeSpecificIds?.size) {
           ids.push(...routeSpecificIds);
@@ -4941,6 +4947,14 @@
         });
       });
       return ids;
+    }
+
+    function routeStationAllowedForHighlight(routeId, stationGroupId) {
+      const route = state.routeById.get(routeId || '');
+      if (route?.operatorId === 'jr_east' && route?.shortName === '東海道線') {
+        return JR_EAST_TOKAIDO_ROUTE_HIGHLIGHT_STATIONS.has(displayNameForGroup(stationGroupId));
+      }
+      return true;
     }
 
     function routeStationMatchFilter(routeId, stationGroupIds) {
