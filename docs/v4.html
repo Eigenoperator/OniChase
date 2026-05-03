@@ -6838,19 +6838,27 @@
       state.selectedTripStopIds = [];
       invalidateSimulation();
       updateSelectedTripPath();
+      startLocalPlanningCountdownIfReady();
       renderGame();
+    }
+
+    function startLocalPlanningCountdownIfReady() {
+      if (onlineActive()) return;
+      if (state.phase !== 'PLANNING' || state.clockRunning || state.latestResult) return;
+      if (state.timetableStatus !== 'ready') return;
+      state.clockRunning = true;
+      scheduleTick();
     }
 
     function renderCurrentStatus() {
       const activePreview = planCursorPreview(state.activeMode);
       const runnerPreview = currentMapPreview('runner');
       const hunterPreview = currentMapPreview('hunter');
-      const nextPlanningDelta = Math.max(0, state.nextPlanningMinute - state.currentGameMinute);
       gameClockEl.textContent = minutesToHhmm(state.currentGameMinute);
       phaseLineEl.textContent = state.phase === 'PLANNING'
         ? `Planning ${String(state.planningSecondsRemaining).padStart(2, '0')}s`
         : state.phase === 'LIVE'
-          ? `Live · next planning ${minutesToHhmm(state.nextPlanningMinute)} · ${nextPlanningDelta}m`
+          ? `Live · next planning ${minutesToHhmm(state.nextPlanningMinute)}`
           : 'Ended';
       currentStatusEl.innerHTML = `
         <strong>${state.activeMode.toUpperCase()} · ${state.phase}</strong><br>
@@ -8541,6 +8549,7 @@
         state.coupledEquivalentsByTripId = buildCoupledTripEquivalences(gameplayTrips);
         state.timetableStatus = 'ready';
         loadPill.textContent = `Map ready - timetable ${gameplayTrips.length || 0} trips`;
+        startLocalPlanningCountdownIfReady();
         renderGame();
       } catch (error) {
         console.error(error);
