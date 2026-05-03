@@ -1423,6 +1423,7 @@
       'Saphir Odoriko': '踊り子',
       'サフィール踊り子': '踊り子',
     });
+    const KINTETSU_LIMITED_EXPRESS_BRAND_RE = /^(?:特急|観光特急)?\s*(しまかぜ|ひのとり|あをによし|青の交響曲|アーバンライナー|伊勢志摩ライナー|さくらライナー|ビスタカー)/u;
     const ORDINARY_RAPID_SERVICE_NAMES = new Set([
       'A快速',
       'Ａ快速',
@@ -2804,6 +2805,19 @@
       return false;
     }
 
+    function normalizeLimitedExpressCandidateName(label) {
+      const text = String(label || '')
+        .trim()
+        .replace(/^特急\s*/u, '')
+        .replace(/^観光特急\s*/u, '')
+        .replace(/（[^）]*(?:車いす|車イス|対応車両|車内販売|禁煙|喫煙)[^）]*）/gu, '')
+        .replace(/\s+/gu, ' ')
+        .trim();
+      const kintetsuBrand = text.match(KINTETSU_LIMITED_EXPRESS_BRAND_RE);
+      if (kintetsuBrand) return kintetsuBrand[1];
+      return text;
+    }
+
     function publicLimitedExpressBaseName(trip) {
       const rawNames = [
         trip?.serviceNameJa,
@@ -2824,7 +2838,7 @@
         const englishBaseName = rawName.replace(/^limited\s*express\s+/i, '').trim();
         const mapped = SERVICE_NAME_JA_LABELS[rawName] || SERVICE_NAME_JA_LABELS[englishBaseName] || rawName;
         if (isRouteLikeServiceName(mapped, trip) || isRouteLikeServiceName(rawName, trip)) continue;
-        const cleaned = mapped.replace(/^特急/u, '').trim();
+        const cleaned = normalizeLimitedExpressCandidateName(mapped);
         if (cleaned && routeName && cleaned === routeName) continue;
         if (/^(?:普通|快速|急行|特急|快特|準急|各停|各駅停車|区間急行|区間準急|準特急)\s*.+(?:行き|方面)$/u.test(cleaned)) continue;
         if (/線(?:普通|快速|急行|特急|快特|準急|各停|各駅停車|区間急行|区間準急|準特急)$/u.test(cleaned)) continue;

@@ -70,6 +70,11 @@ JR_WEST_LETTERED_RAPID_LABEL_RE = re.compile(
     r"[A-ZＡ-Ｚ](?:快速|新快速|区間快速|通勤快速|直通快速|みやこ路快速|大和路快速|丹波路快速|関空快速|紀州路快速)\d+号$"
 )
 
+KINTETSU_LIMITED_EXPRESS_BRAND_RE = re.compile(
+    r"^(?:特急|観光特急)?\s*"
+    r"(しまかぜ|ひのとり|あをによし|青の交響曲|アーバンライナー|伊勢志摩ライナー|さくらライナー|ビスタカー)"
+)
+
 PHYSICAL_TRACE_WINS_LINE_NAMES = {
     "内房線",
     "外房線",
@@ -327,7 +332,7 @@ def public_line_name_for_route(operator_id: str, line_name: str, id_to_name: dic
 
 def is_limited_train_type(train_type: str) -> bool:
     text = str(train_type or "").strip()
-    return bool(text and ("特急" in text or "ライナー" in text))
+    return bool(text and "特急" in text)
 
 
 def is_jr_west_lettered_rapid_label(value: str) -> bool:
@@ -337,13 +342,29 @@ def is_jr_west_lettered_rapid_label(value: str) -> bool:
     return bool(JR_WEST_LETTERED_RAPID_LABEL_RE.match(text))
 
 
+def normalize_kintetsu_limited_express_label(value: str) -> str:
+    text = re.sub(r"\s+", " ", str(value or "").strip())
+    if not text:
+        return ""
+    text = re.sub(r"^特急\s*", "", text)
+    text = re.sub(r"^観光特急\s*", "", text)
+    text = re.sub(r"（[^）]*(?:車いす|車イス|対応車両|車内販売|禁煙|喫煙)[^）]*）", "", text).strip()
+    text = re.sub(r"\s+", " ", text)
+    brand_match = KINTETSU_LIMITED_EXPRESS_BRAND_RE.match(text)
+    if brand_match:
+        return brand_match.group(1)
+    return text
+
+
 def gameplay_display_name_for_train(train: dict[str, Any], operator_name: str) -> str:
     display_name = str(train.get("display_name") or train.get("displayName") or "").strip()
     train_type = str(train.get("train_type") or "").strip()
     if not display_name:
         return ""
-    if operator_name in {"近畿日本鉄道", "名古屋鉄道"} and not is_limited_train_type(train_type):
+    if not is_limited_train_type(train_type):
         return ""
+    if operator_name == "近畿日本鉄道" and is_limited_train_type(train_type):
+        return normalize_kintetsu_limited_express_label(display_name)
     if operator_name == "西日本旅客鉄道" and is_jr_west_lettered_rapid_label(display_name):
         return ""
     return display_name
@@ -351,7 +372,10 @@ def gameplay_display_name_for_train(train: dict[str, Any], operator_name: str) -
 
 def gameplay_route_name_for_train(train: dict[str, Any], operator_name: str) -> str:
     route_name = str(train.get("route_name") or train.get("routeName") or "").strip()
+    train_type = str(train.get("train_type") or "").strip()
     if not route_name:
+        return ""
+    if not is_limited_train_type(train_type):
         return ""
     if operator_name == "西日本旅客鉄道" and is_jr_west_lettered_rapid_label(route_name):
         return ""
