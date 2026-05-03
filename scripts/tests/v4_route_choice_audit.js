@@ -212,6 +212,7 @@ async function auditRouteChoices(page) {
       genericRouteLabelCount: 0,
       yokohamaThroughRemoteRouteCount: 0,
       routeLikeNamedChoiceCount: 0,
+      nonKeikyuAirportLineKkSymbolCount: 0,
       samples: [],
     };
     const globalTrainLabelScan = {
@@ -289,6 +290,17 @@ async function auditRouteChoices(page) {
           if (routeTitle(routeId) === '路線') {
             globalChoiceScan.genericRouteLabelCount += 1;
             addGlobalChoiceSample('generic_route_label', stationName, entry, routeId, nextStop);
+          }
+          const choiceRoute = state.routeById.get(routeId);
+          const choiceRouteTitle = routeTitle(routeId);
+          const rawChoiceLineName = String(choiceRoute?.shortName || choiceRoute?.tags?.lineName || '');
+          if (
+            (choiceRouteTitle.includes('空港線') || rawChoiceLineName.includes('空港線')) &&
+            choiceRoute?.operatorId !== 'keikyu' &&
+            routeSymbolCode(routeId) === 'KK'
+          ) {
+            globalChoiceScan.nonKeikyuAirportLineKkSymbolCount += 1;
+            addGlobalChoiceSample('non_keikyu_airport_line_kk_symbol', stationName, entry, routeId, nextStop);
           }
           if (
             stationName === '横浜' &&
@@ -387,11 +399,12 @@ async function auditRouteChoices(page) {
       globalChoiceScan.virtualOutsideAllowedStationCount ||
       globalChoiceScan.genericRouteLabelCount ||
       globalChoiceScan.yokohamaThroughRemoteRouteCount ||
-      globalChoiceScan.routeLikeNamedChoiceCount
+      globalChoiceScan.routeLikeNamedChoiceCount ||
+      globalChoiceScan.nonKeikyuAirportLineKkSymbolCount
     ) {
       anomalies.push({
         kind: 'global_route_choice_segment_scan',
-        reason: 'Every player-facing route choice must either be an allowed virtual corridor at that station or serve the current boarding stop -> next stop segment, must not expose a generic route label, must not expose route/system names as named-train choices, and must not expose remote through-service routes at Yokohama.',
+        reason: 'Every player-facing route choice must either be an allowed virtual corridor at that station or serve the current boarding stop -> next stop segment, must not expose a generic route label, must not expose route/system names as named-train choices, must not expose remote through-service routes at Yokohama, and route symbols must not leak across same-named airport lines.',
         ...globalChoiceScan,
       });
     }
