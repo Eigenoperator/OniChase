@@ -2075,6 +2075,7 @@
       routeDistanceSqCache: new Map(),
       routePhysicalServeCache: new Map(),
       routeCanRepresentCache: new Map(),
+      physicalTraceSegmentRouteCache: new Map(),
       boardableRouteIdsCache: new Map(),
       trackGeometriesByLineName: new Map(),
       routeGraphByRouteId: new Map(),
@@ -6104,6 +6105,8 @@
       if (!trip || !currentStop || !nextStop) return [];
       const addCandidate = (routeId) => {
         if (!routeId) return;
+        const route = state.routeById.get(routeId);
+        if (isShinkansenTrip(trip) && route?.mode !== 'shinkansen' && route?.operatorId !== 'shinkansen') return;
         if (isThroughServiceTransferAlias(routeId) && routeId !== trip.routeId) return;
         candidates.add(routeId);
       };
@@ -6200,6 +6203,34 @@
       const from = stationLonLat(currentStop?.stationGroupId);
       const to = stationLonLat(nextStop?.stationGroupId);
       return from && to ? [from, to] : [];
+    }
+
+    function physicalRouteIdForTraceStopPair(trip, traceRouteId, currentStop, nextStop) {
+      const cacheKey = `${trip?.id || ''}|${traceRouteId || ''}|${currentStop?.sequence || ''}|${nextStop?.sequence || ''}|${state.selectedRouteId || ''}`;
+      if (state.physicalTraceSegmentRouteCache.has(cacheKey)) return state.physicalTraceSegmentRouteCache.get(cacheKey);
+      let resolved = traceRouteId;
+      const traceNeedsPhysicalRoute = isThroughServiceTransferAlias(traceRouteId);
+      if (
+        traceRouteId &&
+        state.routeById.has(traceRouteId) &&
+        !traceNeedsPhysicalRoute &&
+        coordinatesForTripSegment(traceRouteId, currentStop, nextStop).length >= 2
+      ) {
+        resolved = traceRouteId;
+      } else if (traceNeedsPhysicalRoute) {
+        const resolvedRouteId = routeIdForTripSegment(trip, currentStop, nextStop);
+        if (
+          resolvedRouteId &&
+          state.routeById.has(resolvedRouteId) &&
+          !isThroughServiceTransferAlias(resolvedRouteId) &&
+          coordinatesForTripSegment(resolvedRouteId, currentStop, nextStop).length >= 2
+        ) {
+          resolved = resolvedRouteId;
+        }
+      }
+      if (state.physicalTraceSegmentRouteCache.size > 40000) state.physicalTraceSegmentRouteCache.clear();
+      state.physicalTraceSegmentRouteCache.set(cacheKey, resolved);
+      return resolved;
     }
 
     function coordinatePathEndpointAnchorsStops(coordinates, currentStop, nextStop, maxDistance = 0.012) {
@@ -6358,11 +6389,12 @@
           });
           continue;
         }
-        const segmentCoordinates = coordinatesForTripSegment(traceRouteId, current, next);
+        const segmentRouteId = physicalRouteIdForTraceStopPair(trip, traceRouteId, current, next);
+        const segmentCoordinates = coordinatesForTripSegment(segmentRouteId, current, next);
         if (segmentCoordinates.length < 2) return [];
         const previous = segments[segments.length - 1];
-        if (previous?.routeId === traceRouteId) appendCoordinates(previous.coordinates, segmentCoordinates, stationLonLat(current.stationGroupId));
-        else segments.push({ routeId: traceRouteId, coordinates: [...segmentCoordinates] });
+        if (previous?.routeId === segmentRouteId) appendCoordinates(previous.coordinates, segmentCoordinates, stationLonLat(current.stationGroupId));
+        else segments.push({ routeId: segmentRouteId, coordinates: [...segmentCoordinates] });
       }
       return segments;
     }
@@ -6547,12 +6579,18 @@
           }
           if (stopIndex > 0) {
             const reviewedSegments = reviewedTripPathSegmentsForStopPair(trip, stops[stopIndex - 1], stops[stopIndex]);
-            (reviewedSegments?.length ? reviewedSegments.map((segment) => segment.routeId) : [trace.routeId])
+            (reviewedSegments?.length
+              ? reviewedSegments.map((segment) => segment.routeId)
+              : [physicalRouteIdForTraceStopPair(trip, trace.routeId, stops[stopIndex - 1], stops[stopIndex])]
+            )
               .forEach((routeId) => routeIds.push(routeId));
           }
           if (stopIndex < stops.length - 1) {
             const reviewedSegments = reviewedTripPathSegmentsForStopPair(trip, stops[stopIndex], stops[stopIndex + 1]);
-            (reviewedSegments?.length ? reviewedSegments.map((segment) => segment.routeId) : [trace.routeId])
+            (reviewedSegments?.length
+              ? reviewedSegments.map((segment) => segment.routeId)
+              : [physicalRouteIdForTraceStopPair(trip, trace.routeId, stops[stopIndex], stops[stopIndex + 1])]
+            )
               .forEach((routeId) => routeIds.push(routeId));
           }
           if (stopIndex === 0 && stops.length === 1) routeIds.push(trace.routeId);
@@ -6633,11 +6671,12 @@
         for (let index = 0; index < stops.length - 1; index += 1) {
           const current = stops[index];
           const next = stops[index + 1];
-          const segment = coordinatesForTripSegment(trace.routeId, current, next);
+          const segmentRouteId = physicalRouteIdForTraceStopPair(trip, trace.routeId, current, next);
+          const segment = coordinatesForTripSegment(segmentRouteId, current, next);
           if (segment.length >= 2) {
             const previous = segments[segments.length - 1];
-            if (previous?.routeId === trace.routeId) appendCoordinates(previous.coordinates, segment, stationLonLat(current.stationGroupId));
-            else segments.push({ routeId: trace.routeId, coordinates: [...segment] });
+            if (previous?.routeId === segmentRouteId) appendCoordinates(previous.coordinates, segment, stationLonLat(current.stationGroupId));
+            else segments.push({ routeId: segmentRouteId, coordinates: [...segment] });
           }
         }
       });

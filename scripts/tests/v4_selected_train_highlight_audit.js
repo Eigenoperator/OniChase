@@ -97,6 +97,7 @@ async function auditSelectedTrainHighlights(page) {
     let primaryCoverStartCases = 0;
     let checkedPrimaryGeometryCases = 0;
     let checkedSelectedPathCoverageCases = 0;
+    let checkedFutureStopCoverageCases = 0;
     let checkedOsakaAirportLoopCases = 0;
     let checkedContinuousPathCases = 0;
 
@@ -189,6 +190,18 @@ async function auditSelectedTrainHighlights(page) {
       })),
     });
 
+    function shouldCheckFutureStopCoverage(trip) {
+      const stationNames = new Set((trip?.stopTimes || []).map((stop) => displayNameForGroup(stop.stationGroupId)));
+      const traceNames = new Set((trip?.lineTrace || []).map((trace) => routeTitle(trace.routeId)));
+      return isShinkansenTrip(trip) &&
+        stationNames.has('高崎') &&
+        stationNames.has('熊谷') &&
+        stationNames.has('大宮') &&
+        stationNames.has('東京') &&
+        traceNames.has('北陸新幹線') &&
+        traceNames.has('上越新幹線');
+    }
+
     for (const trip of state.tripById.values()) {
       const stops = (trip.stopTimes || []).filter((stop) => Number.isFinite(stop.sequence));
       if (!trip.routeId || !state.routeById.has(trip.routeId) || stops.length < 2) continue;
@@ -201,13 +214,36 @@ async function auditSelectedTrainHighlights(page) {
         : [stops[0]];
       let tripPrimaryCovered = false;
       for (const startStop of startsToCheck) {
+        const ranges = futureLineTraceRanges(trip, startStop.sequence);
+        let pathSegments = null;
+        if (shouldCheckFutureStopCoverage(trip)) {
+          pathSegments = tripPathSegmentsFromSequence(trip, startStop.sequence);
+          checkedFutureStopCoverageCases += 1;
+          const futureStops = stops.filter((stop) => stop.sequence >= startStop.sequence);
+          const missingStops = futureStops
+            .filter((stop) => distanceSquaredToSegments(stop.stationGroupId, pathSegments) > 0.025 * 0.025)
+            .map((stop) => ({
+              sequence: stop.sequence,
+              station: displayNameForGroup(stop.stationGroupId),
+            }));
+          if (missingStops.length) {
+            failures.push({
+              ...sampleTrip(trip, startStop, ranges, 'selected train highlight must cover current and downstream stops'),
+              missingStops: missingStops.slice(0, 8),
+              selectedSegments: pathSegments.map((segment) => ({
+                route: routeTitle(segment.routeId),
+                pointCount: segment.coordinates.length,
+              })),
+            });
+            if (failures.length >= 25) break;
+          }
+        }
         const primaryCoordinates = routeSliceCoordinates(trip.routeId, startStop.stationGroupId, terminalStop.stationGroupId);
         if (primaryCoordinates.length < 2) continue;
         const primaryCoordinateEndpointScore = endpointScore(primaryCoordinates, startStop.stationGroupId, terminalStop.stationGroupId);
         if (primaryCoordinateEndpointScore > 0.0009) continue;
         tripPrimaryCovered = true;
         primaryCoverStartCases += 1;
-        const ranges = futureLineTraceRanges(trip, startStop.sequence);
         const mustUseRecordedTrace = Boolean(trip.throughStitched && uniqueTraceRouteIds.length > 1);
         if (mustUseRecordedTrace) {
           const expectedTraceRouteIds = new Set((trip.lineTrace || [])
@@ -233,7 +269,7 @@ async function auditSelectedTrainHighlights(page) {
             if (failures.length >= 25) break;
           }
         }
-        const pathSegments = tripPathSegmentsFromSequence(trip, startStop.sequence);
+        pathSegments = pathSegments || tripPathSegmentsFromSequence(trip, startStop.sequence);
         if (pathSegments.length) {
           checkedContinuousPathCases += 1;
           const continuityBreaks = continuityBreaksForSegments(pathSegments);
@@ -334,6 +370,7 @@ async function auditSelectedTrainHighlights(page) {
       primaryCoverStartCases,
       checkedPrimaryGeometryCases,
       checkedSelectedPathCoverageCases,
+      checkedFutureStopCoverageCases,
       checkedOsakaAirportLoopCases,
       checkedContinuousPathCases,
       failureCount: failures.length,
