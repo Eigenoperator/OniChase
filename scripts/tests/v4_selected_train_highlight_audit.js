@@ -95,6 +95,19 @@ async function auditSelectedTrainHighlights(page) {
     let multiTraceTrips = 0;
     let primaryCoverTrips = 0;
     let primaryCoverStartCases = 0;
+    let checkedPrimaryGeometryCases = 0;
+
+    function endpointScore(coordinates, fromStationGroupId, toStationGroupId) {
+      const fromLonLat = stationLonLat(fromStationGroupId);
+      const toLonLat = stationLonLat(toStationGroupId);
+      if (!coordinates?.length || !fromLonLat || !toLonLat) return Number.POSITIVE_INFINITY;
+      const squared = (left, right) => {
+        const dx = left[0] - right[0];
+        const dy = left[1] - right[1];
+        return dx * dx + dy * dy;
+      };
+      return squared(coordinates[0], fromLonLat) + squared(coordinates[coordinates.length - 1], toLonLat);
+    }
 
     const sampleTrip = (trip, startStop, ranges, reason) => ({
       reason,
@@ -124,8 +137,10 @@ async function auditSelectedTrainHighlights(page) {
         : [stops[0]];
       let tripPrimaryCovered = false;
       for (const startStop of startsToCheck) {
-        const primaryCoordinates = coordinatesForTripSegment(trip.routeId, startStop, terminalStop);
+        const primaryCoordinates = routeSliceCoordinates(trip.routeId, startStop.stationGroupId, terminalStop.stationGroupId);
         if (primaryCoordinates.length < 2) continue;
+        const primaryCoordinateEndpointScore = endpointScore(primaryCoordinates, startStop.stationGroupId, terminalStop.stationGroupId);
+        if (primaryCoordinateEndpointScore > 0.0009) continue;
         tripPrimaryCovered = true;
         primaryCoverStartCases += 1;
         const ranges = futureLineTraceRanges(trip, startStop.sequence);
@@ -135,6 +150,19 @@ async function auditSelectedTrainHighlights(page) {
           ranges[0].toSequence === terminalStop.sequence;
         if (!expectedOnePrimaryRange) {
           failures.push(sampleTrip(trip, startStop, ranges, 'primary route can cover future run but highlight is fragmented'));
+          if (failures.length >= 25) break;
+        }
+        const primarySegmentCoordinates = routeSliceCoordinates(trip.routeId, startStop.stationGroupId, terminalStop.stationGroupId);
+        const primaryEndpointScore = endpointScore(primarySegmentCoordinates, startStop.stationGroupId, terminalStop.stationGroupId);
+        checkedPrimaryGeometryCases += 1;
+        if (!primarySegmentCoordinates.length || primaryEndpointScore > 0.0009) {
+          failures.push({
+            ...sampleTrip(trip, startStop, ranges, 'primary route range exists but geometry endpoints do not match selected future run'),
+            primaryEndpointScore,
+            primarySegmentPointCount: primarySegmentCoordinates.length,
+            primarySegmentStart: primarySegmentCoordinates[0] || null,
+            primarySegmentEnd: primarySegmentCoordinates.at(-1) || null,
+          });
           if (failures.length >= 25) break;
         } else if (samples.length < 12 && uniqueTraceRouteIds.length > 1) {
           samples.push(sampleTrip(trip, startStop, ranges, 'multi-trace trip correctly collapsed to primary route'));
@@ -153,6 +181,7 @@ async function auditSelectedTrainHighlights(page) {
       multiTraceTrips,
       primaryCoverTrips,
       primaryCoverStartCases,
+      checkedPrimaryGeometryCases,
       failureCount: failures.length,
       failures,
       topPrimaryCoverRoutes: [...routeStats.entries()]

@@ -5958,6 +5958,13 @@
       return Math.hypot((left[0] ?? left.lon) - (right[0] ?? right.lon), (left[1] ?? left.lat) - (right[1] ?? right.lat));
     }
 
+    function coordinateDistanceSquared(left, right) {
+      if (!left || !right) return Number.POSITIVE_INFINITY;
+      const dx = (left[0] ?? left.lon) - (right[0] ?? right.lon);
+      const dy = (left[1] ?? left.lat) - (right[1] ?? right.lat);
+      return dx * dx + dy * dy;
+    }
+
     function coordinatePathLength(coordinates) {
       let length = 0;
       for (let index = 1; index < coordinates.length; index += 1) {
@@ -6107,7 +6114,18 @@
         const score = from.distance + to.distance + Math.abs(to.index - from.index) * 1e-10;
         if (!best || score < best.score) best = { geometry, fromIndex: from.index, toIndex: to.index, score };
       });
-      if (!best) return routeGraphSliceCoordinates(routeId, fromStationGroupId, toStationGroupId);
+      const graphSlice = routeGraphSliceCoordinates(routeId, fromStationGroupId, toStationGroupId);
+      if (!best) return graphSlice;
+      if (!isCircularRoute(routeId) && graphSlice.length >= 2) {
+        const fromLonLat = stationLonLat(fromStationGroupId);
+        const toLonLat = stationLonLat(toStationGroupId);
+        const graphEndpointScore =
+          coordinateDistanceSquared(graphSlice[0], fromLonLat) +
+          coordinateDistanceSquared(graphSlice[graphSlice.length - 1], toLonLat);
+        if (best.score > 0.0004 && graphEndpointScore < best.score) {
+          return graphSlice;
+        }
+      }
       const { geometry, fromIndex, toIndex } = best;
       if (isCircularRoute(routeId)) return circularPolylineSlice(geometry.polyline, fromIndex, toIndex);
       const start = Math.min(fromIndex, toIndex);
@@ -6177,12 +6195,17 @@
       const lastSequence = Math.max(...stopSequences);
       const firstStop = trip.stopTimes.find((stop) => stop.sequence === firstSequence) || null;
       const lastStop = trip.stopTimes.find((stop) => stop.sequence === lastSequence) || null;
+      const primarySlice = firstStop && lastStop && trip.routeId
+        ? routeSliceCoordinates(trip.routeId, firstStop.stationGroupId, lastStop.stationGroupId)
+        : [];
+      const primaryEndpointScore = primarySlice.length >= 2
+        ? coordinateDistanceSquared(primarySlice[0], stationLonLat(firstStop.stationGroupId)) +
+          coordinateDistanceSquared(primarySlice[primarySlice.length - 1], stationLonLat(lastStop.stationGroupId))
+        : Number.POSITIVE_INFINITY;
       if (
         trip.routeId &&
         state.routeById.has(trip.routeId) &&
-        firstStop &&
-        lastStop &&
-        coordinatesForTripSegment(trip.routeId, firstStop, lastStop).length >= 2
+        primaryEndpointScore <= 0.0009
       ) {
         return [{ routeId: trip.routeId, fromSequence: firstSequence, toSequence: lastSequence }];
       }
