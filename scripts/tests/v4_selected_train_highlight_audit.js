@@ -98,6 +98,7 @@ async function auditSelectedTrainHighlights(page) {
     let checkedPrimaryGeometryCases = 0;
     let checkedSelectedPathCoverageCases = 0;
     let checkedOsakaAirportLoopCases = 0;
+    let checkedContinuousPathCases = 0;
 
     function endpointScore(coordinates, fromStationGroupId, toStationGroupId) {
       const fromLonLat = stationLonLat(fromStationGroupId);
@@ -143,6 +144,35 @@ async function auditSelectedTrainHighlights(page) {
       return stationGroupIdByRouteStationName(routeId, stationName);
     }
 
+    function coordinateDistance(left, right) {
+      if (!left || !right) return Number.POSITIVE_INFINITY;
+      return Math.hypot(left[0] - right[0], left[1] - right[1]);
+    }
+
+    function segmentEndpointGap(leftSegment, rightSegment) {
+      const leftEnd = leftSegment?.coordinates?.at(-1);
+      const rightStart = rightSegment?.coordinates?.[0];
+      return coordinateDistance(leftEnd, rightStart);
+    }
+
+    function continuityBreaksForSegments(segments, maxGap = 0.012) {
+      const breaks = [];
+      for (let index = 1; index < segments.length; index += 1) {
+        const gap = segmentEndpointGap(segments[index - 1], segments[index]);
+        if (gap > maxGap) {
+          breaks.push({
+            index,
+            gap,
+            previousRoute: routeTitle(segments[index - 1].routeId),
+            nextRoute: routeTitle(segments[index].routeId),
+            previousEnd: segments[index - 1].coordinates.at(-1) || null,
+            nextStart: segments[index].coordinates[0] || null,
+          });
+        }
+      }
+      return breaks;
+    }
+
     const sampleTrip = (trip, startStop, ranges, reason) => ({
       reason,
       tripId: trip.id,
@@ -182,7 +212,7 @@ async function auditSelectedTrainHighlights(page) {
         if (mustUseRecordedTrace) {
           const expectedTraceRouteIds = new Set((trip.lineTrace || [])
             .filter((trace) => trace.toSequence >= startStop.sequence && trace.fromSequence <= terminalStop.sequence)
-            .map((trace) => trace.routeId)
+            .map((trace) => typeof reviewedTraceRouteIdForRange === 'function' ? reviewedTraceRouteIdForRange(trip, trace) : trace.routeId)
             .filter(Boolean));
           const actualRouteIds = new Set(ranges.map((trace) => trace.routeId));
           const missingTraceRoutes = [...expectedTraceRouteIds].filter((routeId) => !actualRouteIds.has(routeId));
@@ -193,13 +223,32 @@ async function auditSelectedTrainHighlights(page) {
             });
             if (failures.length >= 25) break;
           }
-        } else {
+        } else if (!trip.lineTrace?.length) {
           const expectedOnePrimaryRange = ranges.length === 1 &&
             ranges[0].routeId === trip.routeId &&
             ranges[0].fromSequence === startStop.sequence &&
             ranges[0].toSequence === terminalStop.sequence;
           if (!expectedOnePrimaryRange) {
             failures.push(sampleTrip(trip, startStop, ranges, 'primary route can cover future run but highlight is fragmented'));
+            if (failures.length >= 25) break;
+          }
+        }
+        const pathSegments = tripPathSegmentsFromSequence(trip, startStop.sequence);
+        if (pathSegments.length) {
+          checkedContinuousPathCases += 1;
+          const continuityBreaks = continuityBreaksForSegments(pathSegments);
+          if (continuityBreaks.length) {
+            failures.push({
+              ...sampleTrip(trip, startStop, ranges, 'selected train highlight path must be continuous'),
+              continuityBreaks: continuityBreaks.slice(0, 6).map((item) => ({
+                ...item,
+                gap: Number(item.gap.toFixed(6)),
+              })),
+              selectedSegments: pathSegments.map((segment) => ({
+                route: routeTitle(segment.routeId),
+                pointCount: segment.coordinates.length,
+              })),
+            });
             if (failures.length >= 25) break;
           }
         }
@@ -286,6 +335,7 @@ async function auditSelectedTrainHighlights(page) {
       checkedPrimaryGeometryCases,
       checkedSelectedPathCoverageCases,
       checkedOsakaAirportLoopCases,
+      checkedContinuousPathCases,
       failureCount: failures.length,
       failures,
       topPrimaryCoverRoutes: [...routeStats.entries()]

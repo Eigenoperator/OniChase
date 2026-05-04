@@ -6202,6 +6202,26 @@
       return from && to ? [from, to] : [];
     }
 
+    function coordinatePathEndpointAnchorsStops(coordinates, currentStop, nextStop, maxDistance = 0.012) {
+      if (!coordinates?.length || coordinates.length < 2) return false;
+      const from = stationLonLat(currentStop?.stationGroupId);
+      const to = stationLonLat(nextStop?.stationGroupId);
+      if (!from || !to) return false;
+      return coordinateDistanceSquared(coordinates[0], from) <= maxDistance * maxDistance &&
+        coordinateDistanceSquared(coordinates[coordinates.length - 1], to) <= maxDistance * maxDistance;
+    }
+
+    function anchoredTripSegmentCoordinates(coordinates, currentStop, nextStop, maxDistance = 0.003) {
+      if (!coordinates?.length || coordinates.length < 2) return [];
+      const from = stationLonLat(currentStop?.stationGroupId);
+      const to = stationLonLat(nextStop?.stationGroupId);
+      if (!from || !to) return [...coordinates];
+      const anchored = [...coordinates];
+      if (coordinateDistanceSquared(anchored[0], from) > maxDistance * maxDistance) anchored.unshift(from);
+      if (coordinateDistanceSquared(anchored[anchored.length - 1], to) > maxDistance * maxDistance) anchored.push(to);
+      return anchored;
+    }
+
     function distanceSquaredToCoordinateSegment(point, start, end) {
       if (!point || !start || !end) return Number.POSITIVE_INFINITY;
       const dx = end[0] - start[0];
@@ -6234,13 +6254,23 @@
 
     function coordinatesForTripSegment(routeId, currentStop, nextStop) {
       const direct = routeSliceCoordinates(routeId, currentStop.stationGroupId, nextStop.stationGroupId);
-      if (direct.length >= 2) return direct;
+      if (coordinatePathEndpointAnchorsStops(direct, currentStop, nextStop)) {
+        return anchoredTripSegmentCoordinates(direct, currentStop, nextStop);
+      }
       if (!routeCanAnchorTripSegment(routeId, currentStop, nextStop)) return [];
       return stationPairCoordinates(currentStop, nextStop);
     }
 
-    function appendCoordinates(target, coordinates) {
+    function appendCoordinates(target, coordinates, bridgeCoordinate = null) {
       if (!coordinates?.length) return;
+      if (
+        bridgeCoordinate &&
+        target.length &&
+        coordinateDistanceSquared(target[target.length - 1], coordinates[0]) >= 1e-12 &&
+        coordinateDistanceSquared(target[target.length - 1], bridgeCoordinate) >= 1e-12
+      ) {
+        target.push(bridgeCoordinate);
+      }
       coordinates.forEach((coordinate, index) => {
         if (!index && target.length && coordinateDistanceSquared(target[target.length - 1], coordinate) < 1e-12) return;
         target.push(coordinate);
@@ -6322,7 +6352,8 @@
         if (reviewedSegments) {
           reviewedSegments.forEach((segment) => {
             const previous = segments[segments.length - 1];
-            if (previous?.routeId === segment.routeId) appendCoordinates(previous.coordinates, segment.coordinates);
+            const boundary = stationLonLat(current.stationGroupId);
+            if (previous?.routeId === segment.routeId) appendCoordinates(previous.coordinates, segment.coordinates, boundary);
             else segments.push({ routeId: segment.routeId, coordinates: [...segment.coordinates] });
           });
           continue;
@@ -6330,7 +6361,7 @@
         const segmentCoordinates = coordinatesForTripSegment(traceRouteId, current, next);
         if (segmentCoordinates.length < 2) return [];
         const previous = segments[segments.length - 1];
-        if (previous?.routeId === traceRouteId) appendCoordinates(previous.coordinates, segmentCoordinates);
+        if (previous?.routeId === traceRouteId) appendCoordinates(previous.coordinates, segmentCoordinates, stationLonLat(current.stationGroupId));
         else segments.push({ routeId: traceRouteId, coordinates: [...segmentCoordinates] });
       }
       return segments;
@@ -6456,7 +6487,7 @@
           trace.fromSequence <= lastSequence
         )
         .map((trace) => ({
-          routeId: trace.routeId,
+          routeId: reviewedTraceRouteIdForRange(trip, trace),
           fromSequence: Math.max(trace.fromSequence, firstSequence),
           toSequence: Math.min(trace.toSequence, lastSequence),
         }))
@@ -6474,6 +6505,32 @@
       return (trip?.stopTimes || [])
         .filter((stop) => stop.sequence >= fromSequence && stop.sequence <= toSequence)
         .sort((a, b) => a.sequence - b.sequence);
+    }
+
+    function stopAtSequence(trip, sequence) {
+      return (trip?.stopTimes || []).find((stop) => stop.sequence === sequence) || null;
+    }
+
+    function tripLooksLikeKeiseiSkyAccess(trip) {
+      const routeNames = new Set([routeTitle(trip?.routeId), ...tripLineTraceNames(trip), trip?.serviceName || ''].filter(Boolean));
+      return [...routeNames].some((name) => /スカイアクセス|成田空港線/u.test(name));
+    }
+
+    function reviewedTraceRouteIdForRange(trip, trace) {
+      if (!trip || !trace?.routeId) return trace?.routeId || null;
+      const fromStop = stopAtSequence(trip, trace.fromSequence);
+      const toStop = stopAtSequence(trip, trace.toSequence);
+      const fromName = displayNameForGroup(fromStop?.stationGroupId);
+      const toName = displayNameForGroup(toStop?.stationGroupId);
+      if (
+        routeTitle(trace.routeId) === '京成金町線' &&
+        fromName === '京成高砂' &&
+        toName === '東松戸' &&
+        tripLooksLikeKeiseiSkyAccess(trip)
+      ) {
+        return routeIdByShortNameAndOperator('成田空港線', 'keisei') || trace.routeId;
+      }
+      return trace.routeId;
     }
 
     function routeIdsForTripSequence(trip, sequence, startSequence = selectedTripStartSequence(trip)) {
@@ -6559,11 +6616,17 @@
             !sequenceUsesDifferentRoute &&
             (!intermediateStops.length || coordinatePathCoversStops(fullTraceSegment, intermediateStops))
           ) {
-            segments.push({ routeId: trace.routeId, coordinates: fullTraceSegment });
+            const previous = segments[segments.length - 1];
+            if (previous?.routeId === trace.routeId) appendCoordinates(previous.coordinates, fullTraceSegment, stationLonLat(fromStop.stationGroupId));
+            else segments.push({ routeId: trace.routeId, coordinates: fullTraceSegment });
             return;
           }
           if (stopSequenceSegments.length) {
-            stopSequenceSegments.forEach((segment) => segments.push(segment));
+            stopSequenceSegments.forEach((segment) => {
+              const previous = segments[segments.length - 1];
+              if (previous?.routeId === segment.routeId) appendCoordinates(previous.coordinates, segment.coordinates);
+              else segments.push(segment);
+            });
             return;
           }
         }
@@ -6571,7 +6634,11 @@
           const current = stops[index];
           const next = stops[index + 1];
           const segment = coordinatesForTripSegment(trace.routeId, current, next);
-          if (segment.length >= 2) segments.push({ routeId: trace.routeId, coordinates: segment });
+          if (segment.length >= 2) {
+            const previous = segments[segments.length - 1];
+            if (previous?.routeId === trace.routeId) appendCoordinates(previous.coordinates, segment, stationLonLat(current.stationGroupId));
+            else segments.push({ routeId: trace.routeId, coordinates: [...segment] });
+          }
         }
       });
       return segments;

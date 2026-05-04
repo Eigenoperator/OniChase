@@ -137,3 +137,11 @@
 - For route-choice and train-label data, verify both the source route identity and the player-facing boarding segment. A new source must not make old correct physical-line choices disappear or leak remote through-service labels into the 1/3 route-choice page.
 - If a new source and an old source both describe the same train or same movement, define or reuse a deterministic priority/merge rule, then add an audit or regression sample covering the overlap.
 - Do not fix only the newly observed station after a conflict is found. Extract the overlap pattern, search for the same class nationwide, and record intentional exceptions in tests or memory.
+
+## 18. Highlights Must Be Continuous
+
+- Every player-facing map highlight must represent one continuous physical path or one continuous reviewed path chain from the selected/current point forward.
+- A highlight may contain multiple route ids when a real train runs through multiple lines, but adjacent highlighted segments must connect at the same boundary station or same physical path endpoint.
+- Do not display a train highlight as disconnected route fragments just because several future line identities are relevant.
+- For selected-train highlights, prefer the train's recorded trace and reviewed path hints over inferred route collections. If the actual route of a train is unclear, verify it from reliable timetable/route sources before adding a reviewed hint.
+- If a limited express or other long-distance service has an ambiguous physical route, such as `サンダーバード` or similar, search current sources and record the reviewed route assumption before using it for highlight continuity.
