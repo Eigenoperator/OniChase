@@ -6514,7 +6514,7 @@
         .filter((trace) =>
           trace?.routeId &&
           state.routeById.has(trace.routeId) &&
-          (!isThroughServiceTransferAlias(trace.routeId) || trace.routeId === trip.routeId) &&
+          (!isThroughServiceTransferAlias(trace.routeId) || trace.routeId === trip.routeId || trip.throughStitched) &&
           trace.toSequence >= firstSequence &&
           trace.fromSequence <= lastSequence
         )
@@ -8974,6 +8974,163 @@
       return stitchedTrace;
     }
 
+    function sourceTraceRouteIdForSegment(trip, fromSequence, toSequence) {
+      const traces = trip?.lineTrace || [];
+      const exact = traces.find((trace) =>
+        trace.routeId &&
+        trace.fromSequence <= fromSequence &&
+        toSequence <= trace.toSequence
+      );
+      return exact?.routeId || trip?.routeId || '';
+    }
+
+    function compactSyntheticLineTrace(stops) {
+      const traces = [];
+      for (let index = 0; index < stops.length - 1; index += 1) {
+        const routeId = stops[index]?._segmentRouteId || stops[index]?._sourceTrip?.routeId || '';
+        if (!routeId) continue;
+        const entry = {
+          routeId,
+          fromSequence: index + 1,
+          toSequence: index + 2,
+          fromStationGroupId: stops[index].stationGroupId,
+          toStationGroupId: stops[index + 1].stationGroupId,
+        };
+        const previous = traces[traces.length - 1];
+        if (previous?.routeId === entry.routeId && previous.toSequence === entry.fromSequence) {
+          previous.toSequence = entry.toSequence;
+          previous.toStationGroupId = entry.toStationGroupId;
+        } else {
+          traces.push(entry);
+        }
+      }
+      return traces;
+    }
+
+    function syntheticStopFromSource(stop, sourceTrip, nextSourceStop = null) {
+      return {
+        ...stop,
+        _sourceTrip: sourceTrip,
+        _sourceSequence: stop.sequence,
+        _segmentRouteId: nextSourceStop
+          ? sourceTraceRouteIdForSegment(sourceTrip, stop.sequence, nextSourceStop.sequence)
+          : '',
+      };
+    }
+
+    function resequenceSyntheticStops(stops) {
+      return stops.map((stop, index) => {
+        const { _sourceTrip, _sourceSequence, _segmentRouteId, ...publicStop } = stop;
+        return {
+          ...publicStop,
+          sequence: index + 1,
+        };
+      });
+    }
+
+    function makeSplitStop(leftStop, rightStop, sourceTrip, nextSourceStop = null) {
+      return syntheticStopFromSource({
+        ...leftStop,
+        arrivalTimeSec: leftStop.arrivalTimeSec ?? leftStop.departureTimeSec,
+        departureTimeSec: rightStop.departureTimeSec ?? rightStop.arrivalTimeSec,
+      }, sourceTrip, nextSourceStop);
+    }
+
+    function buildAkitaShinkansenSyntheticTrip(sharedTrip, branchTrip) {
+      const sharedStops = sharedTrip?.stopTimes || [];
+      const branchStops = branchTrip?.stopTimes || [];
+      const sharedSplitIndex = sharedStops.findIndex((stop) => displayNameForGroup(stop.stationGroupId) === '盛岡');
+      const branchSplitIndex = branchStops.findIndex((stop) => displayNameForGroup(stop.stationGroupId) === '盛岡');
+      if (sharedSplitIndex < 0 || branchSplitIndex < 0) return null;
+      const akitaRouteId = routeIdByShortName('SHINKANSEN_AKITA') || branchTrip.routeId || sharedTrip.routeId;
+      let syntheticStops = [];
+      if (sharedSplitIndex < sharedStops.length - 1 && branchSplitIndex === 0) {
+        const prefix = sharedStops.slice(0, sharedSplitIndex).map((stop, index) =>
+          syntheticStopFromSource(stop, sharedTrip, sharedStops[index + 1])
+        );
+        const split = makeSplitStop(
+          sharedStops[sharedSplitIndex],
+          branchStops[branchSplitIndex],
+          branchTrip,
+          branchStops[branchSplitIndex + 1]
+        );
+        const suffix = branchStops.slice(branchSplitIndex + 1).map((stop, index) =>
+          syntheticStopFromSource(stop, branchTrip, branchStops[branchSplitIndex + 2 + index])
+        );
+        syntheticStops = [...prefix, split, ...suffix];
+      } else if (branchSplitIndex === branchStops.length - 1 && sharedSplitIndex === 0) {
+        const prefix = branchStops.slice(0, branchSplitIndex).map((stop, index) =>
+          syntheticStopFromSource(stop, branchTrip, branchStops[index + 1])
+        );
+        const split = makeSplitStop(
+          branchStops[branchSplitIndex],
+          sharedStops[sharedSplitIndex],
+          sharedTrip,
+          sharedStops[sharedSplitIndex + 1]
+        );
+        const suffix = sharedStops.slice(sharedSplitIndex + 1).map((stop, index) =>
+          syntheticStopFromSource(stop, sharedTrip, sharedStops[sharedSplitIndex + 2 + index])
+        );
+        syntheticStops = [...prefix, split, ...suffix];
+      }
+      if (syntheticStops.length < 3) return null;
+      return {
+        ...branchTrip,
+        id: `coupled-through:${sharedTrip.id}__${branchTrip.id}`,
+        routeId: akitaRouteId,
+        serviceName: branchTrip.serviceName || 'Komachi',
+        serviceNumber: branchTrip.serviceNumber || sharedTrip.serviceNumber || '',
+        publicServiceNumber: branchTrip.publicServiceNumber || branchTrip.serviceNumber || sharedTrip.serviceNumber || '',
+        headsign: displayNameForGroup(syntheticStops.at(-1)?.stationGroupId || '') || branchTrip.headsign || '',
+        stopTimes: resequenceSyntheticStops(syntheticStops),
+        lineTrace: compactSyntheticLineTrace(syntheticStops),
+        lineSequence: compactSyntheticLineTrace(syntheticStops)
+          .map((trace) => trace.routeId)
+          .filter((routeId, index, list) => routeId && list.indexOf(routeId) === index)
+          .map((routeId) => ({ routeId })),
+        throughStitched: true,
+        throughReviewedDirect: true,
+        throughSourceTripIds: [sharedTrip.id, branchTrip.id],
+        throughRouteIds: [
+          sharedTrip.routeId,
+          ...(branchTrip.lineTrace || []).map((trace) => trace.routeId),
+        ].filter((routeId, index, list) => routeId && list.indexOf(routeId) === index),
+        throughBoundaryStationName: '盛岡',
+        coupledBranchSynthetic: true,
+      };
+    }
+
+    function addReviewedCoupledBranchTrips(trips) {
+      const byServiceAndNumber = new Map();
+      (trips || []).forEach((trip) => {
+        const key = `${trip.serviceName || ''}|${trip.serviceNumber || ''}`;
+        if (!byServiceAndNumber.has(key)) byServiceAndNumber.set(key, []);
+        byServiceAndNumber.get(key).push(trip);
+      });
+      const syntheticTrips = [];
+      const syntheticIds = new Set();
+      const hayabusaTrips = byServiceAndNumber;
+      for (const [key, branchTrips] of byServiceAndNumber.entries()) {
+        if (!key.startsWith('Komachi|')) continue;
+        const number = key.split('|')[1] || '';
+        const sharedTrips = hayabusaTrips.get(`Hayabusa|${number}`) || [];
+        branchTrips.forEach((branchTrip) => {
+          if (branchTrip.coupledBranchSynthetic) return;
+          const branchNames = new Set((branchTrip.stopTimes || []).map((stop) => displayNameForGroup(stop.stationGroupId)));
+          if (!branchNames.has('盛岡') || !branchNames.has('秋田')) return;
+          sharedTrips.forEach((sharedTrip) => {
+            const sharedNames = new Set((sharedTrip.stopTimes || []).map((stop) => displayNameForGroup(stop.stationGroupId)));
+            if (!sharedNames.has('盛岡') || !sharedNames.has('東京')) return;
+            const synthetic = buildAkitaShinkansenSyntheticTrip(sharedTrip, branchTrip);
+            if (!synthetic || syntheticIds.has(synthetic.id)) return;
+            syntheticIds.add(synthetic.id);
+            syntheticTrips.push(synthetic);
+          });
+        });
+      }
+      return syntheticTrips.length ? [...trips, ...syntheticTrips] : trips;
+    }
+
     function stitchThroughRunningTrips(trips) {
       const startsByStationAndKey = new Map();
       trips.forEach((trip) => {
@@ -9115,7 +9272,7 @@
         state.stationTripsByGroupId = new Map();
         state.departureQueryCache = new Map();
         state.routeChoicesByDeparturesCache = new WeakMap();
-        const gameplayTrips = stitchThroughRunningTrips(trips).map(normalizeTripForGameplay);
+        const gameplayTrips = addReviewedCoupledBranchTrips(stitchThroughRunningTrips(trips)).map(normalizeTripForGameplay);
         gameplayTrips.forEach((trip) => {
           state.tripById.set(trip.id, trip);
           const seen = new Set();

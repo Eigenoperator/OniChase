@@ -519,6 +519,14 @@ async function auditRouteChoices(page) {
         });
       }
     }
+    if (!routeChoiceTitles['東京']?.has('秋田新幹線')) {
+      anomalies.push({
+        kind: 'tokyo_akita_shinkansen_choice_missing',
+        station: '東京',
+        reason: 'Tokyo must expose the reviewed Hayabusa/Komachi coupled branch as an Akita Shinkansen choice, not only as the Tohoku/Hokkaido trunk.',
+        choices: knownStationChoices['東京'],
+      });
+    }
     [
       ['東京', 'ひたち', 30],
       ['東京', 'ときわ', 35],
@@ -528,6 +536,7 @@ async function auditRouteChoices(page) {
       ['東京', 'わかしお', 10],
       ['東京', 'さざなみ', 4],
       ['東京', '踊り子', 7],
+      ['東京', '秋田新幹線', 18],
       ['上野', 'ひたち', 30],
       ['上野', 'ときわ', 35],
       ['品川', '成田エクスプレス', 50],
@@ -587,6 +596,7 @@ async function auditRouteChoices(page) {
       ['松本', 'あずさ', ['1', '4', '8', '12', '83']],
       ['大月', '富士回遊', ['3', '7', '11', '15', '93']],
       ['大月', 'かいじ', ['70', '2', '6', '10', '99']],
+      ['東京', '秋田新幹線', ['1', '3', '7', '9', '23']],
     ].forEach(([stationName, routeName, requiredNumbers]) => {
       const actualNumbers = trainNumbersForChoiceAt(stationName, routeName);
       const missingNumbers = requiredNumbers.filter((number) => !actualNumbers.has(number));
