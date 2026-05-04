@@ -678,6 +678,10 @@
       font-weight: 700;
     }
 
+    .planner-step-body {
+      min-height: 42px;
+    }
+
     .planner-page-nav {
       display: flex;
       align-items: center;
@@ -710,6 +714,7 @@
       align-items: center;
       padding: 10px 12px;
       text-align: left;
+      transition: opacity 120ms ease, transform 120ms ease, background-color 120ms ease;
     }
 
     .route-row:last-child,
@@ -734,6 +739,21 @@
       align-items: start;
       min-height: 88px;
       padding: 18px 20px 18px 12px;
+    }
+
+    .planner-row-enter {
+      animation: planner-row-enter 120ms ease both;
+    }
+
+    .planner-row-exit {
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
+    }
+
+    @keyframes planner-row-enter {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .plan-row, .replay-row {
@@ -5805,8 +5825,9 @@
       const destinations = row.portions
         .map((item) => `${item.portion?.label || formatTripLabel(item.row.trip)}: ${displayNameForGroup(item.row.trip.stopTimes.at(-1)?.stationGroupId || '')}`)
         .join(' / ');
+      const rowKey = `coupled:${row.key}`;
       return `
-        <button class="outlook-row ${active ? 'active' : ''}" type="button" data-action="choose-coupled" data-coupled-key="${escapeHtml(row.key)}">
+        <button class="outlook-row ${active ? 'active' : ''}" type="button" data-row-key="${escapeHtml(rowKey)}" data-action="choose-coupled" data-coupled-key="${escapeHtml(row.key)}">
           <span class="row-meta">${row.departureHhmm}</span>
           <span>
             <span class="row-title">${escapeHtml(row.label)}</span>
@@ -5817,8 +5838,9 @@
     }
 
     function renderTripChoiceRow(entry, selectedRouteId, active = false) {
+      const rowKey = `trip:${entry.trip.id}:${entry.boardStop?.sequence || ''}`;
       return `
-        <button class="outlook-row ${active ? 'active' : ''}" type="button" data-action="choose-trip" data-trip-id="${entry.trip.id}">
+        <button class="outlook-row ${active ? 'active' : ''}" type="button" data-row-key="${escapeHtml(rowKey)}" data-action="choose-trip" data-trip-id="${entry.trip.id}">
           <span class="row-meta">${entry.departureHhmm}</span>
           <span>
             <span class="row-title">${formatTripLabelForBoarding(entry, selectedRouteId)}</span>
@@ -5832,8 +5854,9 @@
       return choice.portions.map((item) => {
         const title = item.portion?.label || formatTripLabelForBoarding(item.row, selectedRouteId);
         const terminal = displayNameForGroup(item.row.trip.stopTimes.at(-1)?.stationGroupId || '');
+        const rowKey = `portion:${choice.key}:${item.row.trip.id}:${item.row.boardStop?.sequence || ''}`;
         return `
-          <button class="outlook-row" type="button" data-action="choose-trip" data-trip-id="${item.row.trip.id}">
+          <button class="outlook-row" type="button" data-row-key="${escapeHtml(rowKey)}" data-action="choose-trip" data-trip-id="${item.row.trip.id}">
             <span class="row-meta">${item.row.departureHhmm}</span>
             <span>
               <span class="row-title">${escapeHtml(title)}</span>
@@ -7172,17 +7195,131 @@
               <span class="planner-step-sub">${sub}</span>
             </span>
           </div>
-          ${body}
+          <div class="planner-step-body">${body}</div>
         </div>
       `;
     }
 
     function plannerBackNav(action, label) {
       return `
-        <div class="planner-page-nav">
+        <div class="planner-page-nav" data-row-key="nav:${action}">
           <button class="planner-page-back" type="button" data-action="${action}">${label}</button>
         </div>
       `;
+    }
+
+    function syncElementAttributes(current, next) {
+      [...current.attributes].forEach((attribute) => {
+        if (!next.hasAttribute(attribute.name)) current.removeAttribute(attribute.name);
+      });
+      [...next.attributes].forEach((attribute) => {
+        if (current.getAttribute(attribute.name) !== attribute.value) current.setAttribute(attribute.name, attribute.value);
+      });
+    }
+
+    function patchKeyedPlannerBody(currentBody, nextBody) {
+      if (!currentBody || !nextBody) return false;
+      const nextChildren = [...nextBody.children];
+      const currentChildren = [...currentBody.children];
+      if (
+        nextChildren.some((child) => !child.dataset.rowKey) ||
+        currentChildren.some((child) => !child.dataset.rowKey)
+      ) {
+        if (currentBody.innerHTML !== nextBody.innerHTML) currentBody.innerHTML = nextBody.innerHTML;
+        return true;
+      }
+
+      const previousHeight = currentBody.offsetHeight;
+      currentBody.style.minHeight = `${Math.max(previousHeight, 42)}px`;
+      window.setTimeout(() => {
+        currentBody.style.minHeight = '';
+      }, 170);
+
+      const currentByKey = new Map(currentChildren.map((child) => [child.dataset.rowKey, child]));
+      const nextKeys = new Set();
+      nextChildren.forEach((nextChild) => {
+        const key = nextChild.dataset.rowKey;
+        nextKeys.add(key);
+        const currentChild = currentByKey.get(key);
+        if (currentChild) {
+          syncElementAttributes(currentChild, nextChild);
+          if (currentChild.innerHTML !== nextChild.innerHTML) currentChild.innerHTML = nextChild.innerHTML;
+          currentChild.classList.remove('planner-row-enter', 'planner-row-exit');
+          currentBody.appendChild(currentChild);
+        } else {
+          const clone = nextChild.cloneNode(true);
+          clone.classList.add('planner-row-enter');
+          currentBody.appendChild(clone);
+          window.setTimeout(() => clone.classList.remove('planner-row-enter'), 150);
+        }
+      });
+      currentChildren.forEach((child) => {
+        if (nextKeys.has(child.dataset.rowKey)) return;
+        child.classList.add('planner-row-exit');
+        window.setTimeout(() => child.remove(), 140);
+      });
+      return true;
+    }
+
+    function patchTrainOutlook(nextHtml) {
+      const template = document.createElement('template');
+      template.innerHTML = nextHtml.trim();
+      const nextStack = template.content.firstElementChild;
+      const currentStack = trainOutlookEl.querySelector('.planner-stack');
+      if (!nextStack || !currentStack) {
+        trainOutlookEl.innerHTML = nextHtml;
+        refreshConditionalMarquees(trainOutlookEl);
+        return;
+      }
+      syncElementAttributes(currentStack, nextStack);
+      const currentStep = currentStack.querySelector('.planner-step');
+      const nextStep = nextStack.querySelector('.planner-step');
+      if (!currentStep || !nextStep) {
+        trainOutlookEl.innerHTML = nextHtml;
+        refreshConditionalMarquees(trainOutlookEl);
+        return;
+      }
+      const currentIndex = currentStep.querySelector('.planner-step-index')?.textContent || '';
+      const nextIndex = nextStep.querySelector('.planner-step-index')?.textContent || '';
+      if (currentIndex !== nextIndex) {
+        currentStack.innerHTML = nextStack.innerHTML;
+        refreshConditionalMarquees(trainOutlookEl);
+        return;
+      }
+      syncElementAttributes(currentStep, nextStep);
+      ['.planner-step-index', '.planner-step-title', '.planner-step-sub'].forEach((selector) => {
+        const currentNode = currentStep.querySelector(selector);
+        const nextNode = nextStep.querySelector(selector);
+        if (currentNode && nextNode && currentNode.innerHTML !== nextNode.innerHTML) currentNode.innerHTML = nextNode.innerHTML;
+      });
+      if (!patchKeyedPlannerBody(currentStep.querySelector('.planner-step-body'), nextStep.querySelector('.planner-step-body'))) {
+        trainOutlookEl.innerHTML = nextHtml;
+      }
+      refreshConditionalMarquees(trainOutlookEl);
+    }
+
+    function bindTrainOutlookActions() {
+      trainSummaryEl.querySelectorAll('[data-action]').forEach((button) => {
+        button.onclick = () => {
+          const action = button.dataset.action;
+          if (action === 'wait') addWaitStep();
+          else if (action === 'undo') undoLastStep();
+          else if (action === 'clear') resetPlan();
+          else if (action === 'choose-another') chooseAnotherTrip();
+        };
+      });
+      trainOutlookEl.querySelectorAll('[data-action]').forEach((button) => {
+        button.onclick = () => {
+          const action = button.dataset.action;
+          if (action === 'choose-route') choosePlanningRoute(button.dataset.routeId);
+          else if (action === 'choose-coupled') chooseCoupledTrain(button.dataset.coupledKey);
+          else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
+          else if (action === 'back-routes') backToPlanningRoutes();
+          else if (action === 'back-trains') backToPlanningTrains();
+          else if (action === 'ride-here') addBoardAndRide(button.dataset.tripId, button.dataset.stationGroupId);
+          else if (action === 'ride-direct') addRideToStation(button.dataset.stationGroupId);
+        };
+      });
     }
 
     function backToPlanningRoutes() {
@@ -7229,7 +7366,7 @@
           plannerBackNav('back-trains', 'Back to trains') +
           (pending.destinations.length
             ? pending.destinations.slice(0, 52).map((item) => `
-                <button class="outlook-row destination-row" type="button" data-action="ride-here" data-trip-id="${pending.trip.id}" data-station-group-id="${item.stationGroupId}">
+                <button class="outlook-row destination-row" type="button" data-row-key="${escapeHtml(`dest:${pending.trip.id}:${item.stationGroupId}`)}" data-action="ride-here" data-trip-id="${pending.trip.id}" data-station-group-id="${item.stationGroupId}">
                   <span class="row-meta">${item.arrivalHhmm}</span>
                   <span class="destination-line">
                     <span class="row-title">${item.label}</span>
@@ -7237,18 +7374,19 @@
                   </span>
                 </button>
               `).join('')
-            : `<div class="empty">No downstream stops available.</div>`),
+            : `<div class="empty" data-row-key="empty:pending-destinations">No downstream stops available.</div>`),
         );
       } else if (preview.currentState.kind === 'TRAIN') {
         const routeId = preview.currentTrip?.routeId || state.selectedRouteId;
         const destinations = availableDestinations(preview);
+        const directTripKey = preview.currentTrip?.id || routeId || preview.currentState.tripId || 'direct';
         html += plannerStep(
           '3/3',
           'Available stops',
           `${formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })} · ${routeTitle(routeId)}`,
           destinations.length
             ? destinations.slice(0, 52).map((item) => `
-                <button class="outlook-row destination-row" type="button" data-action="ride-direct" data-station-group-id="${item.stationGroupId}">
+                <button class="outlook-row destination-row" type="button" data-row-key="${escapeHtml(`dest:${directTripKey}:${item.stationGroupId}`)}" data-action="ride-direct" data-station-group-id="${item.stationGroupId}">
                   <span class="row-meta">${item.arrivalHhmm}</span>
                   <span class="destination-line">
                     <span class="row-title">${item.label}</span>
@@ -7256,7 +7394,7 @@
                   </span>
                 </button>
               `).join('')
-            : `<div class="empty">No downstream stops available.</div>`,
+            : `<div class="empty" data-row-key="empty:onboard-destinations">No downstream stops available.</div>`,
         );
       } else {
         const departures = availableDepartures(preview);
@@ -7271,7 +7409,7 @@
             `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))}`,
             routeChoices.length
               ? routeChoices.map((choice) => `
-                  <button class="route-row" type="button" data-action="choose-route" data-route-id="${choice.routeId}">
+                  <button class="route-row" type="button" data-row-key="${escapeHtml(`route:${choice.routeId}`)}" data-action="choose-route" data-route-id="${choice.routeId}">
                     <span class="route-swatch" style="background:${routeColor(choice.routeId)}"></span>
                     <span>
                       <span class="row-title">${routeTitle(choice.routeId)}</span>
@@ -7280,7 +7418,7 @@
                     <span class="row-meta">${choice.firstDepartureHhmm}</span>
                   </button>
                 `).join('')
-              : `<div class="empty">No available lines from this station.</div>`,
+              : `<div class="empty" data-row-key="empty:routes">No available lines from this station.</div>`,
           );
         } else if (coupledChoice && coupledChoice.selectedRouteId === selectedRouteId) {
           html += plannerStep(
@@ -7300,36 +7438,15 @@
                   ? renderCoupledTrainRow(row, coupledChoice?.key === row.key)
                   : renderTripChoiceRow(row.entry, selectedRouteId)
                 ).join('')
-              : `<div class="empty">No available trains on this line.</div>`),
+              : `<div class="empty" data-row-key="empty:trains">No available trains on this line.</div>`),
           );
         }
       }
-      const nextHtml = `<div class="planner-stack">${html || '<div class="empty">No planning options available.</div>'}</div>`;
+      const nextHtml = `<div class="planner-stack">${html || '<div class="empty" data-row-key="empty:planning">No planning options available.</div>'}</div>`;
       if (state.trainOutlookHtml === nextHtml) return;
       state.trainOutlookHtml = nextHtml;
-      trainOutlookEl.innerHTML = nextHtml;
-      refreshConditionalMarquees(trainOutlookEl);
-      trainSummaryEl.querySelectorAll('[data-action]').forEach((button) => {
-        button.addEventListener('click', () => {
-          const action = button.dataset.action;
-          if (action === 'wait') addWaitStep();
-          else if (action === 'undo') undoLastStep();
-          else if (action === 'clear') resetPlan();
-          else if (action === 'choose-another') chooseAnotherTrip();
-        });
-      });
-      trainOutlookEl.querySelectorAll('[data-action]').forEach((button) => {
-        button.addEventListener('click', () => {
-          const action = button.dataset.action;
-          if (action === 'choose-route') choosePlanningRoute(button.dataset.routeId);
-          else if (action === 'choose-coupled') chooseCoupledTrain(button.dataset.coupledKey);
-          else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
-          else if (action === 'back-routes') backToPlanningRoutes();
-          else if (action === 'back-trains') backToPlanningTrains();
-          else if (action === 'ride-here') addBoardAndRide(button.dataset.tripId, button.dataset.stationGroupId);
-          else if (action === 'ride-direct') addRideToStation(button.dataset.stationGroupId);
-        });
-      });
+      patchTrainOutlook(nextHtml);
+      bindTrainOutlookActions();
     }
 
     function renderPlanBoard() {
