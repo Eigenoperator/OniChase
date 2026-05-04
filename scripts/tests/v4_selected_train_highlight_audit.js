@@ -96,6 +96,8 @@ async function auditSelectedTrainHighlights(page) {
     let primaryCoverTrips = 0;
     let primaryCoverStartCases = 0;
     let checkedPrimaryGeometryCases = 0;
+    let checkedSelectedPathCoverageCases = 0;
+    let checkedOsakaAirportLoopCases = 0;
 
     function endpointScore(coordinates, fromStationGroupId, toStationGroupId) {
       const fromLonLat = stationLonLat(fromStationGroupId);
@@ -107,6 +109,38 @@ async function auditSelectedTrainHighlights(page) {
         return dx * dx + dy * dy;
       };
       return squared(coordinates[0], fromLonLat) + squared(coordinates[coordinates.length - 1], toLonLat);
+    }
+
+    function distanceSquaredToSegments(stationGroupId, segments) {
+      const lonLat = stationLonLat(stationGroupId);
+      if (!lonLat) return Number.POSITIVE_INFINITY;
+      let best = Number.POSITIVE_INFINITY;
+      segments.forEach((segment) => {
+        const coordinates = segment.coordinates || [];
+        coordinates.forEach((coordinate, index) => {
+          best = Math.min(
+            best,
+            index
+              ? distanceSquaredToCoordinateSegment(lonLat, coordinates[index - 1], coordinate)
+              : coordinateDistanceSquared(lonLat, coordinate)
+          );
+        });
+      });
+      return best;
+    }
+
+    function routeIdByTitleAndOperator(title, operatorId = '') {
+      for (const [routeId, route] of state.routeById.entries()) {
+        if (routeTitle(routeId) !== title) continue;
+        if (operatorId && route.operatorId !== operatorId) continue;
+        return routeId;
+      }
+      return null;
+    }
+
+    function namedRouteStationGroupId(routeId, stationName) {
+      if (!routeId) return null;
+      return stationGroupIdByRouteStationName(routeId, stationName);
     }
 
     const sampleTrip = (trip, startStop, ranges, reason) => ({
@@ -167,6 +201,8 @@ async function auditSelectedTrainHighlights(page) {
         } else if (samples.length < 12 && uniqueTraceRouteIds.length > 1) {
           samples.push(sampleTrip(trip, startStop, ranges, 'multi-trace trip correctly collapsed to primary route'));
         }
+
+        checkedSelectedPathCoverageCases += 1;
       }
       if (tripPrimaryCovered) {
         primaryCoverTrips += 1;
@@ -176,12 +212,53 @@ async function auditSelectedTrainHighlights(page) {
       if (failures.length >= 25) break;
     }
 
+    const osakaStationGroupId = [...state.stationGroupById.entries()]
+      .find(([, group]) => (group.names?.ja || group.primaryName) === '大阪')?.[0] || null;
+    const kansaiAirportStationGroupId = [...state.stationGroupById.entries()]
+      .find(([, group]) => (group.names?.ja || group.primaryName) === '関西空港')?.[0] || null;
+    const osakaLoopRouteId = routeIdByTitleAndOperator('大阪環状線', 'jr_west');
+    const westStationIds = ['西九条', '弁天町', '大正']
+      .map((stationName) => namedRouteStationGroupId(osakaLoopRouteId, stationName))
+      .filter(Boolean);
+    const eastStationIds = ['京橋', '鶴橋']
+      .map((stationName) => namedRouteStationGroupId(osakaLoopRouteId, stationName))
+      .filter(Boolean);
+    if (osakaStationGroupId && kansaiAirportStationGroupId && osakaLoopRouteId && westStationIds.length && eastStationIds.length) {
+      for (const trip of state.tripById.values()) {
+        const stops = (trip.stopTimes || []).filter((stop) => Number.isFinite(stop.sequence));
+        const startStop = stops.find((stop) => stop.stationGroupId === osakaStationGroupId);
+        if (!startStop) continue;
+        if (!stops.some((stop) => stop.sequence > startStop.sequence && stop.stationGroupId === kansaiAirportStationGroupId)) continue;
+        const segments = tripPathSegmentsFromSequence(trip, startStop.sequence);
+        const loopSegments = segments.filter((segment) => segment.routeId === osakaLoopRouteId);
+        if (!loopSegments.length) continue;
+        checkedOsakaAirportLoopCases += 1;
+        const westCovered = westStationIds.some((stationGroupId) => distanceSquaredToSegments(stationGroupId, loopSegments) <= 0.006 * 0.006);
+        const eastHighlighted = eastStationIds.some((stationGroupId) => distanceSquaredToSegments(stationGroupId, loopSegments) <= 0.006 * 0.006);
+        if (!westCovered || eastHighlighted) {
+          failures.push({
+            ...sampleTrip(trip, startStop, futureLineTraceRanges(trip, startStop.sequence), 'Osaka airport-bound train should highlight the west side of Osaka Loop'),
+            westCovered,
+            eastHighlighted,
+            selectedSegments: loopSegments.map((segment) => ({
+              route: routeTitle(segment.routeId),
+              pointCount: segment.coordinates.length,
+            })),
+          });
+          if (failures.length >= 25) break;
+        }
+        if (checkedOsakaAirportLoopCases >= 40) break;
+      }
+    }
+
     return {
       checkedTrips,
       multiTraceTrips,
       primaryCoverTrips,
       primaryCoverStartCases,
       checkedPrimaryGeometryCases,
+      checkedSelectedPathCoverageCases,
+      checkedOsakaAirportLoopCases,
       failureCount: failures.length,
       failures,
       topPrimaryCoverRoutes: [...routeStats.entries()]

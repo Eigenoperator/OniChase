@@ -1842,6 +1842,22 @@
     const JR_CHUO_SOBU_LOCAL_ROUTE_ID = 'VIRTUAL_JR_EAST_CHUO_SOBU_LOCAL';
     const SANYO_KYUSHU_CORRIDOR_ROUTE_ID = 'VIRTUAL_SHINKANSEN_SANYO_KYUSHU';
     const MAIBARA_TOKAIDO_BOUNDARY_ROUTE_ID = 'VIRTUAL_MAIBARA_TOKAIDO_BOUNDARY';
+    const TRIP_SEGMENT_VIA_HINTS = Object.freeze([
+      {
+        routeName: '大阪環状線',
+        from: '大阪',
+        to: '天王寺',
+        via: ['西九条'],
+        tripStationNames: ['関西空港'],
+      },
+      {
+        routeName: '大阪環状線',
+        from: '天王寺',
+        to: '大阪',
+        via: ['西九条'],
+        tripStationNames: ['関西空港'],
+      },
+    ]);
     const MAIBARA_TOKAIDO_NEXT_STATIONS = new Set([
       '醒ヶ井', '醒ケ井', '近江長岡', '柏原', '関ケ原', '垂井', '大垣', '穂積',
       '西岐阜', '岐阜', '尾張一宮', '名古屋', '彦根', '南彦根', '河瀬', '稲枝',
@@ -6153,6 +6169,32 @@
       return best?.routeId || trip?.routeId;
     }
 
+    function bestScoredRouteIdForTripSegment(trip, currentStop, nextStop, preferredRouteId = null) {
+      const candidates = candidateSegmentRouteIds(trip, currentStop, nextStop);
+      if (preferredRouteId && !candidates.includes(preferredRouteId)) candidates.unshift(preferredRouteId);
+      const corridorAliases = tripCorridorAliasTokens(trip);
+      let best = null;
+      candidates.forEach((routeId, priority) => {
+        const coordinates = coordinatesForTripSegment(routeId, currentStop, nextStop);
+        const score = tripSegmentRouteScore(trip, currentStop, nextStop, routeId, coordinates, priority, corridorAliases);
+        if (!score) return;
+        if (
+          !best ||
+          score.group < best.group ||
+          (score.group === best.group && score.aliasOverlap > best.aliasOverlap) ||
+          (score.group === best.group && score.aliasOverlap === best.aliasOverlap && routeId === preferredRouteId && best.routeId !== preferredRouteId) ||
+          (score.group === best.group && score.aliasOverlap === best.aliasOverlap && (routeId === preferredRouteId) === (best.routeId === preferredRouteId) && score.isTripRoute && !best.isTripRoute) ||
+          (score.group === best.group && score.aliasOverlap === best.aliasOverlap && (routeId === preferredRouteId) === (best.routeId === preferredRouteId) && score.isTripRoute === best.isTripRoute && score.isSelectedRoute && !best.isSelectedRoute) ||
+          (score.group === best.group && score.aliasOverlap === best.aliasOverlap && (routeId === preferredRouteId) === (best.routeId === preferredRouteId) && score.isTripRoute === best.isTripRoute && score.isSelectedRoute === best.isSelectedRoute && score.isBoardable && !best.isBoardable) ||
+          (score.group === best.group && score.aliasOverlap === best.aliasOverlap && (routeId === preferredRouteId) === (best.routeId === preferredRouteId) && score.isTripRoute === best.isTripRoute && score.isSelectedRoute === best.isSelectedRoute && score.isBoardable === best.isBoardable && score.length < best.length) ||
+          (score.group === best.group && score.aliasOverlap === best.aliasOverlap && (routeId === preferredRouteId) === (best.routeId === preferredRouteId) && score.isTripRoute === best.isTripRoute && score.isSelectedRoute === best.isSelectedRoute && score.isBoardable === best.isBoardable && score.length === best.length && score.priority < best.priority)
+        ) {
+          best = score;
+        }
+      });
+      return best?.routeId || preferredRouteId || trip?.routeId || null;
+    }
+
     function routeCanAnchorTripSegment(routeId, currentStop, nextStop) {
       return Boolean(routeId && currentStop && nextStop && (
         (routePhysicallyServesStationGroup(routeId, currentStop.stationGroupId) && routePhysicallyServesStationGroup(routeId, nextStop.stationGroupId)) ||
@@ -6166,11 +6208,111 @@
       return from && to ? [from, to] : [];
     }
 
+    function distanceSquaredToCoordinateSegment(point, start, end) {
+      if (!point || !start || !end) return Number.POSITIVE_INFINITY;
+      const dx = end[0] - start[0];
+      const dy = end[1] - start[1];
+      const lengthSquared = dx * dx + dy * dy;
+      if (lengthSquared <= 0) return coordinateDistanceSquared(point, start);
+      const ratio = clamp(((point[0] - start[0]) * dx + (point[1] - start[1]) * dy) / lengthSquared, 0, 1);
+      const projected = [start[0] + dx * ratio, start[1] + dy * ratio];
+      return coordinateDistanceSquared(point, projected);
+    }
+
+    function distanceSquaredToCoordinatePath(point, coordinates) {
+      if (!point || !coordinates?.length) return Number.POSITIVE_INFINITY;
+      if (coordinates.length === 1) return coordinateDistanceSquared(point, coordinates[0]);
+      let best = Number.POSITIVE_INFINITY;
+      for (let index = 1; index < coordinates.length; index += 1) {
+        best = Math.min(best, distanceSquaredToCoordinateSegment(point, coordinates[index - 1], coordinates[index]));
+      }
+      return best;
+    }
+
+    function coordinatePathCoversStop(coordinates, stop, maxDistance = 0.006) {
+      const lonLat = stationLonLat(stop?.stationGroupId);
+      return Boolean(lonLat && distanceSquaredToCoordinatePath(lonLat, coordinates) <= maxDistance * maxDistance);
+    }
+
+    function coordinatePathCoversStops(coordinates, stops) {
+      return (stops || []).every((stop) => coordinatePathCoversStop(coordinates, stop));
+    }
+
     function coordinatesForTripSegment(routeId, currentStop, nextStop) {
       const direct = routeSliceCoordinates(routeId, currentStop.stationGroupId, nextStop.stationGroupId);
       if (direct.length >= 2) return direct;
       if (!routeCanAnchorTripSegment(routeId, currentStop, nextStop)) return [];
       return stationPairCoordinates(currentStop, nextStop);
+    }
+
+    function appendCoordinates(target, coordinates) {
+      if (!coordinates?.length) return;
+      coordinates.forEach((coordinate, index) => {
+        if (!index && target.length && coordinateDistanceSquared(target[target.length - 1], coordinate) < 1e-12) return;
+        target.push(coordinate);
+      });
+    }
+
+    function stationGroupIdByRouteStationName(routeId, stationName) {
+      for (const stationGroupId of state.stationGroupById.keys()) {
+        if (displayNameForGroup(stationGroupId) !== stationName) continue;
+        if (routePhysicallyServesStationGroup(routeId, stationGroupId) || routePatternServesBoardingStation(routeId, stationGroupId)) {
+          return stationGroupId;
+        }
+      }
+      return null;
+    }
+
+    function tripIncludesStationName(trip, stationName) {
+      return (trip?.stopTimes || []).some((stop) => displayNameForGroup(stop.stationGroupId) === stationName);
+    }
+
+    function viaStationGroupIdsForTripSegment(trip, routeId, currentStop, nextStop) {
+      const routeName = routeTitle(routeId);
+      const fromName = displayNameForGroup(currentStop?.stationGroupId);
+      const toName = displayNameForGroup(nextStop?.stationGroupId);
+      const hint = TRIP_SEGMENT_VIA_HINTS.find((candidate) =>
+        candidate.routeName === routeName &&
+        candidate.from === fromName &&
+        candidate.to === toName &&
+        (candidate.tripStationNames || []).some((stationName) => tripIncludesStationName(trip, stationName))
+      );
+      if (!hint) return [];
+      return (hint.via || [])
+        .map((stationName) => stationGroupIdByRouteStationName(routeId, stationName))
+        .filter(Boolean);
+    }
+
+    function coordinatesForTripSegmentWithHints(trip, routeId, currentStop, nextStop) {
+      const viaStationGroupIds = viaStationGroupIdsForTripSegment(trip, routeId, currentStop, nextStop);
+      if (!viaStationGroupIds.length) return coordinatesForTripSegment(routeId, currentStop, nextStop);
+      const anchors = [currentStop.stationGroupId, ...viaStationGroupIds, nextStop.stationGroupId];
+      const coordinates = [];
+      for (let index = 0; index < anchors.length - 1; index += 1) {
+        const segment = routeSliceCoordinates(routeId, anchors[index], anchors[index + 1]);
+        if (segment.length < 2) return coordinatesForTripSegment(routeId, currentStop, nextStop);
+        appendCoordinates(coordinates, segment);
+      }
+      return coordinates;
+    }
+
+    function tripStopSequenceSegments(trip, preferredRouteId, stops) {
+      const segments = [];
+      if (!stops?.length || stops.length < 2) return segments;
+      for (let index = 0; index < stops.length - 1; index += 1) {
+        const current = stops[index];
+        const next = stops[index + 1];
+        const routeId = bestScoredRouteIdForTripSegment(trip, current, next, preferredRouteId);
+        const segmentCoordinates = coordinatesForTripSegmentWithHints(trip, routeId, current, next);
+        if (segmentCoordinates.length < 2) return [];
+        const previous = segments[segments.length - 1];
+        if (previous?.routeId === routeId) {
+          appendCoordinates(previous.coordinates, segmentCoordinates);
+        } else {
+          segments.push({ routeId, coordinates: [...segmentCoordinates] });
+        }
+      }
+      return segments;
     }
 
     function routeSliceCoordinates(routeId, fromStationGroupId, toStationGroupId) {
@@ -6352,9 +6494,8 @@
       return featureIds.length ? stationFeatureIdFilter(featureIds) : stationMatchFilter(stationGroupIds || []);
     }
 
-    function tripPathSegments(trip) {
+    function tripPathSegmentsFromSequence(trip, startSequence) {
       if (!trip?.stopTimes?.length) return [];
-      const startSequence = selectedTripStartSequence(trip);
       const segments = [];
       futureLineTraceRanges(trip, startSequence).forEach((trace) => {
         const stops = stopsInSequenceRange(trip, trace.fromSequence, trace.toSequence);
@@ -6362,9 +6503,21 @@
         const fromStop = stops[0];
         const toStop = stops[stops.length - 1];
         const fullTraceSegment = coordinatesForTripSegment(trace.routeId, fromStop, toStop);
+        const stopSequenceSegments = stops.length > 2 ? tripStopSequenceSegments(trip, trace.routeId, stops) : [];
+        const sequenceUsesDifferentRoute = stopSequenceSegments.some((segment) => segment.routeId !== trace.routeId);
         if (fullTraceSegment.length >= 2) {
-          segments.push({ routeId: trace.routeId, coordinates: fullTraceSegment });
-          return;
+          const intermediateStops = stops.slice(1, -1);
+          if (
+            !sequenceUsesDifferentRoute &&
+            (!intermediateStops.length || coordinatePathCoversStops(fullTraceSegment, intermediateStops))
+          ) {
+            segments.push({ routeId: trace.routeId, coordinates: fullTraceSegment });
+            return;
+          }
+          if (stopSequenceSegments.length) {
+            stopSequenceSegments.forEach((segment) => segments.push(segment));
+            return;
+          }
         }
         for (let index = 0; index < stops.length - 1; index += 1) {
           const current = stops[index];
@@ -6374,6 +6527,10 @@
         }
       });
       return segments;
+    }
+
+    function tripPathSegments(trip) {
+      return tripPathSegmentsFromSequence(trip, selectedTripStartSequence(trip));
     }
 
     function tripLocationOnMap(tripId, timeMinute) {
