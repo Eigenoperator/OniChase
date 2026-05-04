@@ -6404,10 +6404,19 @@
     }
 
     function planCursorPreview(playerId = state.activeMode) {
+      const currentPreview = previewPlayer(playerId, state.currentGameMinute);
+      const plannedPreview = previewPlayer(playerId, null);
       if (state.phase === 'PLANNING' && !state.latestResult) {
-        return previewPlayer(playerId, null);
+        return plannedPreview;
       }
-      return previewPlayer(playerId, state.currentGameMinute);
+      if (
+        plannedPreview &&
+        currentPreview &&
+        (plannedPreview.resolvedSteps?.length || 0) > (currentPreview.resolvedSteps?.length || 0)
+      ) {
+        return plannedPreview;
+      }
+      return currentPreview;
     }
 
     function currentReplayEvent() {
