@@ -37,6 +37,7 @@ SERVICE_DAY = "20260427"
 TIMEOUT = 20
 MAX_FETCH_RETRIES = 3
 ROUTE_COLOR = "2369C9"
+SPLIT_COLUMN_STITCH_MAX_GAP_MINUTES = 15
 
 SEARCH_URL = "https://eki.jr-odekake.net/search_free"
 TIMETABLE_BASE = "https://timetable.jr-odekake.net"
@@ -304,6 +305,157 @@ def hhmm_from_minutes(minutes: int) -> str:
     return f"{minutes // 60:02d}:{minutes % 60:02d}"
 
 
+def train_boundary_minutes(train: dict[str, Any], boundary: str) -> int | None:
+    stops = train.get("stop_times") or []
+    if not stops:
+        return None
+    stop = stops[0] if boundary == "first" else stops[-1]
+    return minutes_from_hhmm(stop.get("departure_hhmm") or stop.get("arrival_hhmm"))
+
+
+def train_boundary_station_id(train: dict[str, Any], boundary: str) -> str:
+    stops = train.get("stop_times") or []
+    if not stops:
+        return ""
+    stop = stops[0] if boundary == "first" else stops[-1]
+    return str(stop.get("station_group_id") or stop.get("station_id") or stop.get("station_name_raw") or "")
+
+
+def can_stitch_split_column_trains(left: dict[str, Any], right: dict[str, Any]) -> bool:
+    if left.get("operator_id") != OPERATOR_ID or right.get("operator_id") != OPERATOR_ID:
+        return False
+    if left.get("line_name") != "湖西線" or right.get("line_name") != "湖西線":
+        return False
+    if not left.get("source_url") or left.get("source_url") != right.get("source_url"):
+        return False
+    if train_boundary_station_id(left, "last") != train_boundary_station_id(right, "first"):
+        return False
+    left_arrival = train_boundary_minutes(left, "last")
+    right_departure = train_boundary_minutes(right, "first")
+    if left_arrival is None or right_departure is None:
+        return False
+    gap = right_departure - left_arrival
+    return 0 <= gap <= SPLIT_COLUMN_STITCH_MAX_GAP_MINUTES
+
+
+def merged_boundary_stop(left_stop: dict[str, Any], right_stop: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(left_stop)
+    for key in ("departure_hhmm", "platform", "line_id", "line_name", "match_method", "match_distance_m"):
+        if not merged.get(key) and right_stop.get(key):
+            merged[key] = right_stop[key]
+    if right_stop.get("arrival_hhmm") and not merged.get("arrival_hhmm"):
+        merged["arrival_hhmm"] = right_stop["arrival_hhmm"]
+    return merged
+
+
+def stitch_train_chain(chain: list[dict[str, Any]]) -> dict[str, Any]:
+    stitched = dict(chain[0])
+    numbers = [str(train.get("train_number") or "").strip() for train in chain if train.get("train_number")]
+    normalized_numbers = [normalize_line(number) for number in numbers if number]
+    source_url = str(stitched.get("source_url") or "")
+    train_id = train_id_from_url(source_url)
+    stitched["train_number"] = "+".join(dict.fromkeys(numbers))
+    stitched["service_number"] = stitched["train_number"]
+    stitched["service_instance_id"] = (
+        f"jr_west_official:{normalize_line(str(stitched.get('line_name') or ''))}:"
+        f"{train_id}:{'-'.join(dict.fromkeys(normalized_numbers))}:{SERVICE_DAY}"
+    )
+    stitched["source_trip_id"] = stitched["service_instance_id"]
+    stitched["source_column_count"] = max(int(train.get("source_column_count") or 1) for train in chain)
+    stitched["source_column_index"] = None
+    stitched["source_split_train_numbers"] = numbers
+    stitched["source_split_service_instance_ids"] = [
+        str(train.get("service_instance_id") or "") for train in chain
+    ]
+    stop_times: list[dict[str, Any]] = []
+    for index, train in enumerate(chain):
+        source_stops = [dict(stop) for stop in train.get("stop_times") or []]
+        if not source_stops:
+            continue
+        if index == 0:
+            stop_times.extend(source_stops)
+            continue
+        if stop_times and train_boundary_station_id({"stop_times": [stop_times[-1]]}, "first") == train_boundary_station_id({"stop_times": [source_stops[0]]}, "first"):
+            stop_times[-1] = merged_boundary_stop(stop_times[-1], source_stops[0])
+            stop_times.extend(source_stops[1:])
+        else:
+            stop_times.extend(source_stops)
+    for sequence, stop in enumerate(stop_times, start=1):
+        stop["sequence"] = sequence
+    stitched["stop_times"] = stop_times
+    return stitched
+
+
+def stitch_reviewed_split_column_trains(train_instances: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    by_source_url: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for train in train_instances:
+        if train.get("operator_id") == OPERATOR_ID and train.get("line_name") == "湖西線" and train.get("source_url"):
+            by_source_url[str(train["source_url"])].append(train)
+
+    consumed_ids: set[str] = set()
+    stitched_by_first_id: dict[str, dict[str, Any]] = {}
+    stitched_chains: list[list[str]] = []
+    for trains in by_source_url.values():
+        if len(trains) < 2:
+            continue
+        ordered = sorted(
+            trains,
+            key=lambda train: (
+                train_boundary_minutes(train, "first") if train_boundary_minutes(train, "first") is not None else 99_999,
+                str(train.get("service_instance_id") or ""),
+            ),
+        )
+        for train in ordered:
+            train_id = str(train.get("service_instance_id") or "")
+            if train_id in consumed_ids:
+                continue
+            chain = [train]
+            consumed_ids.add(train_id)
+            while True:
+                candidates = [
+                    candidate for candidate in ordered
+                    if str(candidate.get("service_instance_id") or "") not in consumed_ids
+                    and can_stitch_split_column_trains(chain[-1], candidate)
+                ]
+                candidates.sort(
+                    key=lambda candidate: (
+                        train_boundary_minutes(candidate, "first") if train_boundary_minutes(candidate, "first") is not None else 99_999,
+                        str(candidate.get("service_instance_id") or ""),
+                    )
+                )
+                if not candidates:
+                    break
+                next_train = candidates[0]
+                consumed_ids.add(str(next_train.get("service_instance_id") or ""))
+                chain.append(next_train)
+            if len(chain) >= 2:
+                stitched = stitch_train_chain(chain)
+                stitched_by_first_id[str(chain[0].get("service_instance_id") or "")] = stitched
+                stitched_chains.append([str(item.get("service_instance_id") or "") for item in chain])
+            else:
+                consumed_ids.discard(train_id)
+
+    repaired: list[dict[str, Any]] = []
+    emitted_stitched_ids: set[str] = set()
+    for train in train_instances:
+        service_instance_id = str(train.get("service_instance_id") or "")
+        stitched = stitched_by_first_id.get(service_instance_id)
+        if stitched:
+            repaired.append(stitched)
+            emitted_stitched_ids.add(stitched["service_instance_id"])
+            continue
+        if service_instance_id in consumed_ids:
+            continue
+        repaired.append(train)
+
+    return repaired, {
+        "reviewedSplitColumnStitchCount": len(stitched_chains),
+        "reviewedSplitColumnSourceRowCount": sum(len(chain) for chain in stitched_chains),
+        "reviewedSplitColumnStitchedTrainIds": sorted(emitted_stitched_ids)[:100],
+        "reviewedSplitColumnStitchSamples": stitched_chains[:20],
+    }
+
+
 def normalize_overnight_stop_times(stop_times: list[dict[str, Any]]) -> None:
     previous = -1
     day_offset = 0
@@ -471,7 +623,8 @@ def write_outputs(
     unmatched: list[dict[str, Any]],
     partial: bool,
 ) -> None:
-    trains = sorted(train_instances, key=lambda t: (t.get("line_name") or "", t["stop_times"][0].get("departure_hhmm") or "", t["service_instance_id"]))
+    repaired_train_instances, stitch_audit = stitch_reviewed_split_column_trains(train_instances)
+    trains = sorted(repaired_train_instances, key=lambda t: (t.get("line_name") or "", t["stop_times"][0].get("departure_hhmm") or "", t["service_instance_id"]))
     audit = {
         "schema": "onichase.v4.jrwest_official_train_instances_audit.v1",
         "partial": partial,
@@ -485,6 +638,7 @@ def write_outputs(
         "shortTrainInstanceCount": sum(1 for train in trains if len(train.get("stop_times") or []) < 2),
         "badTimeOrderCount": sum(bad_time_order_count(train) for train in trains),
         "unmatchedStopCount": len(unmatched),
+        **stitch_audit,
         "lineAudits": line_audits,
         "unmatchedStops": unmatched[:1000],
     }
