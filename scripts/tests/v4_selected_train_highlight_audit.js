@@ -235,11 +235,21 @@ async function auditSelectedTrainHighlights(page) {
         checkedOsakaAirportLoopCases += 1;
         const westCovered = westStationIds.some((stationGroupId) => distanceSquaredToSegments(stationGroupId, loopSegments) <= 0.006 * 0.006);
         const eastHighlighted = eastStationIds.some((stationGroupId) => distanceSquaredToSegments(stationGroupId, loopSegments) <= 0.006 * 0.006);
-        if (!westCovered || eastHighlighted) {
+        const selectedRouteTitles = [...new Set(segments.map((segment) => routeTitle(segment.routeId)))];
+        const isHaruka = formatTripLabel(trip).includes('はるか');
+        const harukaHasReviewedAirportPath = !isHaruka || (
+          selectedRouteTitles.includes('大阪環状線') &&
+          selectedRouteTitles.includes('阪和線') &&
+          selectedRouteTitles.includes('関西空港線') &&
+          !selectedRouteTitles.includes('東海道線')
+        );
+        if (!westCovered || eastHighlighted || !harukaHasReviewedAirportPath) {
           failures.push({
             ...sampleTrip(trip, startStop, futureLineTraceRanges(trip, startStop.sequence), 'Osaka airport-bound train should highlight the west side of Osaka Loop'),
             westCovered,
             eastHighlighted,
+            selectedRouteTitles,
+            harukaHasReviewedAirportPath,
             selectedSegments: loopSegments.map((segment) => ({
               route: routeTitle(segment.routeId),
               pointCount: segment.coordinates.length,
