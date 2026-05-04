@@ -129,3 +129,11 @@
 - V4 timetable stop matching must reuse the v3 station alias and station-group matching method.
 - Do not create a separate v4-only station identity system for timetable ingestion unless Scorp explicitly approves a versioned replacement.
 - Physical station coordinates and line geometry remain separate from gameplay station groups, following the existing v3/v4 identity split.
+
+## 17. New Data Must Be Audited Against Old Data
+
+- When adding a new timetable, route, station, operator, cache, or derived data source, always check how it overlaps with existing sources before treating the new data as authoritative.
+- New data can improve coverage, but it can also conflict with older data on the same station, route segment, train family, operator boundary, route name, public label, or physical trace. These overlaps must be explicitly audited.
+- For route-choice and train-label data, verify both the source route identity and the player-facing boarding segment. A new source must not make old correct physical-line choices disappear or leak remote through-service labels into the 1/3 route-choice page.
+- If a new source and an old source both describe the same train or same movement, define or reuse a deterministic priority/merge rule, then add an audit or regression sample covering the overlap.
+- Do not fix only the newly observed station after a conflict is found. Extract the overlap pattern, search for the same class nationwide, and record intentional exceptions in tests or memory.
