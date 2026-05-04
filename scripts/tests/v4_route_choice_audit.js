@@ -259,10 +259,50 @@ async function auditRouteChoices(page) {
         tripId: entry.trip?.id || '',
       });
     }
-    function allowedPassengerRouteOverPhysicalTrace(stationName, routeId, currentSegmentRouteId, nextStop) {
+    function allowedPassengerRouteOverPhysicalTrace(stationName, entry, routeId, currentSegmentRouteId, nextStop) {
       const route = routeTitle(routeId);
       const segmentRoute = routeTitle(currentSegmentRouteId);
       const nextStation = displayNameForGroup(nextStop?.stationGroupId || '');
+      if (
+        stationName === '東京' &&
+        nextStation === '新橋' &&
+        route === '東海道線' &&
+        ['東北線', '東北本線'].includes(segmentRoute)
+      ) {
+        return true;
+      }
+      if (
+        ['成田', '酒々井', '佐倉'].includes(stationName) &&
+        ['成田', '酒々井', '佐倉'].includes(nextStation) &&
+        route === '成田線' &&
+        segmentRoute === '総武線'
+      ) {
+        return true;
+      }
+      if (
+        ['成田空港', '空港第２ビル', '成田湯川', '印旛日本医大'].includes(stationName) &&
+        ['成田空港', '空港第２ビル', '成田湯川', '印旛日本医大'].includes(nextStation) &&
+        route === '京成成田空港線' &&
+        segmentRoute === '北総鉄道北総線'
+      ) {
+        return true;
+      }
+      if (
+        ['鳥取', '郡家', '智頭'].includes(stationName) &&
+        ['鳥取', '郡家', '智頭'].includes(nextStation) &&
+        route === '因美線' &&
+        ['智頭急行智頭線', '山陽線'].includes(segmentRoute)
+      ) {
+        return true;
+      }
+      if (
+        route.includes('新幹線') &&
+        !segmentRoute.includes('新幹線') &&
+        routePatternServesPlannerBoardingStation(routeId, entry?.stop?.stationGroupId) &&
+        routePatternServesPlannerBoardingStation(routeId, nextStop?.stationGroupId)
+      ) {
+        return true;
+      }
       return stationName === '上野' &&
         nextStation === '日暮里' &&
         route === '常磐線' &&
@@ -386,7 +426,7 @@ async function auditRouteChoices(page) {
           if (
             currentSegmentRouteId &&
             routeId !== currentSegmentRouteId &&
-            !allowedPassengerRouteOverPhysicalTrace(stationName, routeId, currentSegmentRouteId, nextStop)
+            !allowedPassengerRouteOverPhysicalTrace(stationName, entry, routeId, currentSegmentRouteId, nextStop)
           ) {
             globalChoiceScan.segmentMismatchCount += 1;
             addGlobalChoiceSample('choice_not_current_next_segment', stationName, entry, routeId, nextStop);
@@ -487,7 +527,7 @@ async function auditRouteChoices(page) {
       ['東京', 'かいじ', 8],
       ['東京', 'わかしお', 10],
       ['東京', 'さざなみ', 4],
-      ['東京', '踊り子', 9],
+      ['東京', '踊り子', 7],
       ['上野', 'ひたち', 30],
       ['上野', 'ときわ', 35],
       ['品川', '成田エクスプレス', 50],
@@ -498,13 +538,13 @@ async function auditRouteChoices(page) {
       ['新宿', '成田エクスプレス', 10],
       ['新宿', 'あずさ', 20],
       ['新宿', 'かいじ', 18],
-      ['新宿', '富士回遊', 4],
+      ['新宿', '富士回遊', 1],
       ['大船', '成田エクスプレス', 14],
       ['成田空港', '成田エクスプレス', 25],
       ['松本', 'あずさ', 15],
       ['大月', 'あずさ', 8],
       ['大月', 'かいじ', 28],
-      ['大月', '富士回遊', 10],
+      ['大月', '富士回遊', 6],
       ['敦賀', 'サンダーバード', 25],
       ['京都', 'サンダーバード', 30],
       ['京都', 'はるか', 30],

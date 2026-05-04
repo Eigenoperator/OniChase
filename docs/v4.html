@@ -1917,6 +1917,9 @@
     const UENO_TOKYO_NORTH_ROUTE_NAMES = new Set([
       '東北線', '東北本線', '宇都宮線', '高崎線', '常磐線', '上越線', '両毛線',
     ]);
+    const JR_EAST_NARITA_BRANCH_STATIONS = new Set(['成田', '酒々井', '佐倉']);
+    const KEISEI_NARITA_SKY_ACCESS_STATIONS = new Set(['成田空港', '空港第２ビル', '成田湯川', '印旛日本医大']);
+    const JR_WEST_INBI_SUPER_HAKUTO_STATIONS = new Set(['鳥取', '郡家', '智頭']);
     const YOKOSUKA_SOBU_RAPID_PHYSICAL_ROUTE_NAMES = new Set([
       '横須賀線', '総武線',
     ]);
@@ -3234,6 +3237,42 @@
       return null;
     }
 
+    function jrEastNaritaBranchChoiceRouteId(entry) {
+      const trip = entry?.trip || entry;
+      const route = tripRoute(trip);
+      if (route?.operatorId !== 'jr_east' || route?.shortName !== '総武線') return null;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      const nextStop = nextStopAfter(trip, boardStop);
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStop);
+      if (!JR_EAST_NARITA_BRANCH_STATIONS.has(boardName) || !JR_EAST_NARITA_BRANCH_STATIONS.has(nextName)) return null;
+      return routeIdByShortNameAndOperator('成田線', 'jr_east');
+    }
+
+    function keiseiNaritaSkyAccessChoiceRouteId(entry) {
+      const trip = entry?.trip || entry;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      const nextStop = nextStopAfter(trip, boardStop);
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStop);
+      if (!KEISEI_NARITA_SKY_ACCESS_STATIONS.has(boardName) || !KEISEI_NARITA_SKY_ACCESS_STATIONS.has(nextName)) return null;
+      const routeNames = new Set([routeTitle(trip?.routeId), ...tripLineTraceNames(trip), trip?.serviceName || ''].filter(Boolean));
+      const looksLikeSkyAccess = [...routeNames].some((name) => /スカイアクセス|北総鉄道北総線|成田空港線/u.test(name));
+      return looksLikeSkyAccess ? routeIdByShortNameAndOperator('成田空港線', 'keisei') : null;
+    }
+
+    function jrWestInbiChoiceRouteId(entry) {
+      const trip = entry?.trip || entry;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      const nextStop = nextStopAfter(trip, boardStop);
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStop);
+      if (!JR_WEST_INBI_SUPER_HAKUTO_STATIONS.has(boardName) || !JR_WEST_INBI_SUPER_HAKUTO_STATIONS.has(nextName)) return null;
+      const routeNames = new Set([routeTitle(trip?.routeId), ...tripLineTraceNames(trip), trip?.serviceName || ''].filter(Boolean));
+      const looksLikeChizuThrough = [...routeNames].some((name) => /智頭急行|スーパーはくと/u.test(name));
+      return looksLikeChizuThrough ? routeIdByShortNameAndOperator('因美線', 'jr_west') : null;
+    }
+
     function routeIdByShortName(shortName) {
       for (const [routeId, route] of state.routeById.entries()) {
         if (route?.shortName === shortName) return routeId;
@@ -3362,12 +3401,21 @@
     }
 
     function namedTrainChoiceLabel(trip) {
+      if (isMusashinoGoTrip(trip)) return 'むさしの号';
       if (!trip || isShinkansenTrip(trip) || !isLimitedExpressTrip(trip)) return '';
       if (isMeitetsuTrip(trip)) return '';
       const limitedExpress = publicLimitedExpressBaseName(trip);
       const label = limitedExpress.name || serviceNameJaLabel(trip);
       if (!label || label === '列車' || isRouteLikeServiceName(label, trip)) return '';
       return NAMED_TRAIN_CHOICE_FAMILY_LABELS[label] || label;
+    }
+
+    function isMusashinoGoTrip(trip) {
+      if (!isJrEastConventionalTrip(trip)) return false;
+      const names = new Set(tripStationNames(trip));
+      if (!names.has('大宮') || !names.has('八王子')) return false;
+      const traceNames = new Set(tripLineTraceNames(trip));
+      return traceNames.has('武蔵野線') && traceNames.has('中央線');
     }
 
     function namedTrainChoiceRouteId(trip) {
@@ -7089,6 +7137,12 @@
       if (shinkansenChoiceRouteId) return [shinkansenChoiceRouteId];
       const maibaraBoundaryRouteId = maibaraBoundaryChoiceRouteId(entry);
       if (maibaraBoundaryRouteId) return [maibaraBoundaryRouteId];
+      const naritaBranchRouteId = jrEastNaritaBranchChoiceRouteId(entry);
+      if (naritaBranchRouteId) return [naritaBranchRouteId];
+      const keiseiNaritaSkyAccessRouteId = keiseiNaritaSkyAccessChoiceRouteId(entry);
+      if (keiseiNaritaSkyAccessRouteId) return [keiseiNaritaSkyAccessRouteId];
+      const inbiRouteId = jrWestInbiChoiceRouteId(entry);
+      if (inbiRouteId) return [inbiRouteId];
       const chuoChoiceRouteId = chuoCorridorChoiceRouteId(entry);
       if (chuoChoiceRouteId) return [chuoChoiceRouteId];
       const yokosukaSobuChoiceRouteId = yokosukaSobuRapidChoiceRouteId(entry);
