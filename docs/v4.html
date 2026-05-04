@@ -6175,11 +6175,22 @@
       if (!stopSequences.length) return [];
       const firstSequence = Math.max(Math.min(...stopSequences), startSequence);
       const lastSequence = Math.max(...stopSequences);
+      const firstStop = trip.stopTimes.find((stop) => stop.sequence === firstSequence) || null;
+      const lastStop = trip.stopTimes.find((stop) => stop.sequence === lastSequence) || null;
+      if (
+        trip.routeId &&
+        state.routeById.has(trip.routeId) &&
+        firstStop &&
+        lastStop &&
+        coordinatesForTripSegment(trip.routeId, firstStop, lastStop).length >= 2
+      ) {
+        return [{ routeId: trip.routeId, fromSequence: firstSequence, toSequence: lastSequence }];
+      }
       const ranges = (trip.lineTrace || [])
         .filter((trace) =>
           trace?.routeId &&
           state.routeById.has(trace.routeId) &&
-          !isThroughServiceTransferAlias(trace.routeId) &&
+          (!isThroughServiceTransferAlias(trace.routeId) || trace.routeId === trip.routeId) &&
           trace.toSequence >= firstSequence &&
           trace.fromSequence <= lastSequence
         )
