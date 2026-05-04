@@ -85,6 +85,11 @@ PHYSICAL_TRACE_WINS_LINE_NAMES = {
 
 REVIEWED_PHYSICAL_SEGMENT_LINE_OVERRIDES = {
     frozenset(("大網", "蘇我")): ("jr_east", "外房線"),
+    frozenset(("京都", "敦賀")): ("jr_west", "湖西線"),
+    frozenset(("京都", "近江今津")): ("jr_west", "湖西線"),
+    frozenset(("京都", "堅田")): ("jr_west", "湖西線"),
+    frozenset(("敦賀", "近江今津")): ("jr_west", "湖西線"),
+    frozenset(("敦賀", "堅田")): ("jr_west", "湖西線"),
 }
 
 REMOTE_THROUGH_SOURCE_LINE_NAMES = {
@@ -732,32 +737,34 @@ def build_line_trace(
     if segment_keys:
         # Keep short terminal tails on the train's source line when the
         # timetable itself labels those endpoint stops with that source line.
-        first_fallback_index = next((index for index, key in enumerate(segment_keys) if key == fallback_key), None)
-        if first_fallback_index is not None and 0 < first_fallback_index <= 2:
-            raw_lines = [
-                canonical_line_name(
-                    raw_by_source_sequence.get(int(stop.get("sourceSequence") or 0), {}).get("line_name")
-                )
-                for stop in normalized_stops[: first_fallback_index + 1]
-            ]
-            if raw_lines and all(line == fallback_line_name for line in raw_lines):
-                for index in range(first_fallback_index):
-                    segment_keys[index] = fallback_key
-        last_fallback_index = next(
-            (index for index in range(len(segment_keys) - 1, -1, -1) if segment_keys[index] == fallback_key),
-            None,
-        )
-        trailing_count = len(segment_keys) - 1 - last_fallback_index if last_fallback_index is not None else 0
-        if last_fallback_index is not None and 0 < trailing_count <= 2:
-            raw_lines = [
-                canonical_line_name(
-                    raw_by_source_sequence.get(int(stop.get("sourceSequence") or 0), {}).get("line_name")
-                )
-                for stop in normalized_stops[last_fallback_index + 1 :]
-            ]
-            if raw_lines and all(line == fallback_line_name for line in raw_lines):
-                for index in range(last_fallback_index + 1, len(segment_keys)):
-                    segment_keys[index] = fallback_key
+        preserve_source_line_terminal_tails = not is_limited_train_type(str(train.get("train_type") or ""))
+        if preserve_source_line_terminal_tails:
+            first_fallback_index = next((index for index, key in enumerate(segment_keys) if key == fallback_key), None)
+            if first_fallback_index is not None and 0 < first_fallback_index <= 2:
+                raw_lines = [
+                    canonical_line_name(
+                        raw_by_source_sequence.get(int(stop.get("sourceSequence") or 0), {}).get("line_name")
+                    )
+                    for stop in normalized_stops[: first_fallback_index + 1]
+                ]
+                if raw_lines and all(line == fallback_line_name for line in raw_lines):
+                    for index in range(first_fallback_index):
+                        segment_keys[index] = fallback_key
+            last_fallback_index = next(
+                (index for index in range(len(segment_keys) - 1, -1, -1) if segment_keys[index] == fallback_key),
+                None,
+            )
+            trailing_count = len(segment_keys) - 1 - last_fallback_index if last_fallback_index is not None else 0
+            if last_fallback_index is not None and 0 < trailing_count <= 2:
+                raw_lines = [
+                    canonical_line_name(
+                        raw_by_source_sequence.get(int(stop.get("sourceSequence") or 0), {}).get("line_name")
+                    )
+                    for stop in normalized_stops[last_fallback_index + 1 :]
+                ]
+                if raw_lines and all(line == fallback_line_name for line in raw_lines):
+                    for index in range(last_fallback_index + 1, len(segment_keys)):
+                        segment_keys[index] = fallback_key
     for index in range(1, len(segment_keys) - 1):
         if segment_keys[index - 1] == segment_keys[index + 1] and segment_keys[index] != segment_keys[index - 1]:
             segment_keys[index] = segment_keys[index - 1]
