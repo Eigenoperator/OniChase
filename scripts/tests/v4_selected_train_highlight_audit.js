@@ -178,13 +178,30 @@ async function auditSelectedTrainHighlights(page) {
         tripPrimaryCovered = true;
         primaryCoverStartCases += 1;
         const ranges = futureLineTraceRanges(trip, startStop.sequence);
-        const expectedOnePrimaryRange = ranges.length === 1 &&
-          ranges[0].routeId === trip.routeId &&
-          ranges[0].fromSequence === startStop.sequence &&
-          ranges[0].toSequence === terminalStop.sequence;
-        if (!expectedOnePrimaryRange) {
-          failures.push(sampleTrip(trip, startStop, ranges, 'primary route can cover future run but highlight is fragmented'));
-          if (failures.length >= 25) break;
+        const mustUseRecordedTrace = Boolean(trip.throughStitched && uniqueTraceRouteIds.length > 1);
+        if (mustUseRecordedTrace) {
+          const expectedTraceRouteIds = new Set((trip.lineTrace || [])
+            .filter((trace) => trace.toSequence >= startStop.sequence && trace.fromSequence <= terminalStop.sequence)
+            .map((trace) => trace.routeId)
+            .filter(Boolean));
+          const actualRouteIds = new Set(ranges.map((trace) => trace.routeId));
+          const missingTraceRoutes = [...expectedTraceRouteIds].filter((routeId) => !actualRouteIds.has(routeId));
+          if (missingTraceRoutes.length) {
+            failures.push({
+              ...sampleTrip(trip, startStop, ranges, 'stitched through train highlight must keep recorded current and downstream trace routes'),
+              missingTraceRoutes: missingTraceRoutes.map((routeId) => routeTitle(routeId)),
+            });
+            if (failures.length >= 25) break;
+          }
+        } else {
+          const expectedOnePrimaryRange = ranges.length === 1 &&
+            ranges[0].routeId === trip.routeId &&
+            ranges[0].fromSequence === startStop.sequence &&
+            ranges[0].toSequence === terminalStop.sequence;
+          if (!expectedOnePrimaryRange) {
+            failures.push(sampleTrip(trip, startStop, ranges, 'primary route can cover future run but highlight is fragmented'));
+            if (failures.length >= 25) break;
+          }
         }
         const primarySegmentCoordinates = routeSliceCoordinates(trip.routeId, startStop.stationGroupId, terminalStop.stationGroupId);
         const primaryEndpointScore = endpointScore(primarySegmentCoordinates, startStop.stationGroupId, terminalStop.stationGroupId);
@@ -198,7 +215,7 @@ async function auditSelectedTrainHighlights(page) {
             primarySegmentEnd: primarySegmentCoordinates.at(-1) || null,
           });
           if (failures.length >= 25) break;
-        } else if (samples.length < 12 && uniqueTraceRouteIds.length > 1) {
+        } else if (samples.length < 12 && uniqueTraceRouteIds.length > 1 && !mustUseRecordedTrace) {
           samples.push(sampleTrip(trip, startStop, ranges, 'multi-trace trip correctly collapsed to primary route'));
         }
 

@@ -6438,7 +6438,9 @@
         ? coordinateDistanceSquared(primarySlice[0], stationLonLat(firstStop.stationGroupId)) +
           coordinateDistanceSquared(primarySlice[primarySlice.length - 1], stationLonLat(lastStop.stationGroupId))
         : Number.POSITIVE_INFINITY;
+      const mustUseRecordedTrace = Boolean(trip.throughStitched && trip.lineTrace?.length);
       if (
+        !mustUseRecordedTrace &&
         trip.routeId &&
         state.routeById.has(trip.routeId) &&
         primaryEndpointScore <= 0.0009
