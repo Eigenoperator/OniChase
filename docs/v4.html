@@ -6167,16 +6167,56 @@
         .map((stop) => stop.stationGroupId);
     }
 
+    function futureLineTraceRanges(trip, startSequence = selectedTripStartSequence(trip)) {
+      if (!trip?.stopTimes?.length) return [];
+      const stopSequences = trip.stopTimes
+        .map((stop) => stop.sequence)
+        .filter((sequence) => Number.isFinite(sequence));
+      if (!stopSequences.length) return [];
+      const firstSequence = Math.max(Math.min(...stopSequences), startSequence);
+      const lastSequence = Math.max(...stopSequences);
+      const ranges = (trip.lineTrace || [])
+        .filter((trace) =>
+          trace?.routeId &&
+          state.routeById.has(trace.routeId) &&
+          !isThroughServiceTransferAlias(trace.routeId) &&
+          trace.toSequence >= firstSequence &&
+          trace.fromSequence <= lastSequence
+        )
+        .map((trace) => ({
+          routeId: trace.routeId,
+          fromSequence: Math.max(trace.fromSequence, firstSequence),
+          toSequence: Math.min(trace.toSequence, lastSequence),
+        }))
+        .filter((trace) => trace.fromSequence <= trace.toSequence);
+      if (ranges.length) {
+        return ranges.sort((a, b) => a.fromSequence - b.fromSequence || a.toSequence - b.toSequence);
+      }
+      if (trip.routeId && state.routeById.has(trip.routeId) && !isThroughServiceTransferAlias(trip.routeId)) {
+        return [{ routeId: trip.routeId, fromSequence: firstSequence, toSequence: lastSequence }];
+      }
+      return [];
+    }
+
+    function stopsInSequenceRange(trip, fromSequence, toSequence) {
+      return (trip?.stopTimes || [])
+        .filter((stop) => stop.sequence >= fromSequence && stop.sequence <= toSequence)
+        .sort((a, b) => a.sequence - b.sequence);
+    }
+
+    function routeIdsForTripSequence(trip, sequence, startSequence = selectedTripStartSequence(trip)) {
+      const ranges = futureLineTraceRanges(trip, startSequence);
+      const routeIds = ranges
+        .filter((trace) => trace.fromSequence <= sequence && sequence <= trace.toSequence)
+        .map((trace) => trace.routeId);
+      if (routeIds.length) return [...new Set(routeIds)];
+      const nextRange = ranges.find((trace) => sequence < trace.fromSequence);
+      const previousRange = [...ranges].reverse().find((trace) => sequence > trace.toSequence);
+      return [nextRange?.routeId, previousRange?.routeId].filter(Boolean);
+    }
+
     function routeIdsForTripStopHighlight(trip, stop, startSequence) {
-      const stops = trip?.stopTimes || [];
-      const stopIndex = stops.indexOf(stop);
-      const routeIds = new Set();
-      const nextStop = stops.slice(stopIndex + 1).find((item) => item.sequence >= startSequence);
-      const previousStop = [...stops.slice(0, stopIndex)].reverse().find((item) => item.sequence >= startSequence);
-      if (nextStop) routeIds.add(routeIdForTripSegment(trip, stop, nextStop));
-      if (previousStop) routeIds.add(routeIdForTripSegment(trip, previousStop, stop));
-      if (!routeIds.size && trip?.routeId) routeIds.add(trip.routeId);
-      return [...routeIds].filter(Boolean);
+      return routeIdsForTripSequence(trip, stop.sequence, startSequence);
     }
 
     function tripStopFeatureIds(trip, stationGroupIds = null) {
@@ -6209,14 +6249,23 @@
       if (!trip?.stopTimes?.length) return [];
       const startSequence = selectedTripStartSequence(trip);
       const segments = [];
-      for (let index = 0; index < trip.stopTimes.length - 1; index += 1) {
-        const current = trip.stopTimes[index];
-        const next = trip.stopTimes[index + 1];
-        if (current.sequence < startSequence) continue;
-        const segmentRouteId = routeIdForTripSegment(trip, current, next);
-        const segment = coordinatesForTripSegment(segmentRouteId, current, next);
-        if (segment.length >= 2) segments.push({ routeId: segmentRouteId, coordinates: segment });
-      }
+      futureLineTraceRanges(trip, startSequence).forEach((trace) => {
+        const stops = stopsInSequenceRange(trip, trace.fromSequence, trace.toSequence);
+        if (stops.length < 2) return;
+        const fromStop = stops[0];
+        const toStop = stops[stops.length - 1];
+        const fullTraceSegment = coordinatesForTripSegment(trace.routeId, fromStop, toStop);
+        if (fullTraceSegment.length >= 2) {
+          segments.push({ routeId: trace.routeId, coordinates: fullTraceSegment });
+          return;
+        }
+        for (let index = 0; index < stops.length - 1; index += 1) {
+          const current = stops[index];
+          const next = stops[index + 1];
+          const segment = coordinatesForTripSegment(trace.routeId, current, next);
+          if (segment.length >= 2) segments.push({ routeId: trace.routeId, coordinates: segment });
+        }
+      });
       return segments;
     }
 
