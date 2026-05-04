@@ -1992,6 +1992,7 @@
       pendingTripIds: { runner: null, hunter: null },
       planningRouteIds: { runner: null, hunter: null },
       pendingCoupledChoices: { runner: null, hunter: null },
+      trainOutlookHtml: '',
       phase: 'PLANNING',
       planningSecondsRemaining: 60,
       currentGameMinute: 360,
@@ -5269,7 +5270,8 @@
     }
 
     function effectiveDepartureMinute(playerId, previewMinute) {
-      const minute = Number.isFinite(previewMinute) ? previewMinute : hhmmToMinutes(state.startTime);
+      const cursorMinute = Number.isFinite(previewMinute) ? previewMinute : hhmmToMinutes(state.startTime);
+      const minute = Math.max(cursorMinute, state.currentGameMinute);
       return playerId === 'hunter' ? Math.max(minute, 420) : minute;
     }
 
@@ -7302,7 +7304,10 @@
           );
         }
       }
-      trainOutlookEl.innerHTML = `<div class="planner-stack">${html || '<div class="empty">No planning options available.</div>'}</div>`;
+      const nextHtml = `<div class="planner-stack">${html || '<div class="empty">No planning options available.</div>'}</div>`;
+      if (state.trainOutlookHtml === nextHtml) return;
+      state.trainOutlookHtml = nextHtml;
+      trainOutlookEl.innerHTML = nextHtml;
       refreshConditionalMarquees(trainOutlookEl);
       trainSummaryEl.querySelectorAll('[data-action]').forEach((button) => {
         button.addEventListener('click', () => {
