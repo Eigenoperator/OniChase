@@ -152,6 +152,8 @@ REVIEWED_PHYSICAL_SEGMENT_LINE_OVERRIDES = {
     frozenset(("諫早", "大村")): ("jr_kyushu", "大村線"),
 }
 
+JOBAN_LIMITED_EXPRESS_SERVICE_PREFIXES = ("ひたち", "ときわ")
+
 REVIEWED_THROUGH_STOP_GROUP_REMAPS = [
     {
         "operator_id": "tobu",
@@ -582,6 +584,16 @@ def is_limited_train_type(train_type: str) -> bool:
     return bool(text and "特急" in text)
 
 
+def is_limited_or_named_limited_train(train: dict[str, Any]) -> bool:
+    if is_limited_train_type(str(train.get("train_type") or "")):
+        return True
+    label_text = " ".join(
+        str(train.get(field) or "")
+        for field in ("service_name", "display_name", "service_name_detail", "route_name")
+    )
+    return bool(named_limited_express_label(label_text))
+
+
 def is_jr_west_lettered_rapid_label(value: str) -> bool:
     text = re.sub(r"\s+", "", str(value or "").strip())
     if not text:
@@ -721,6 +733,34 @@ def line_names_match(left: str | None, right: str | None) -> bool:
     if not left_value or not right_value:
         return False
     return left_value == right_value or left_value.endswith(right_value) or right_value.endswith(left_value)
+
+
+def reviewed_trip_segment_line_override(
+    train: dict[str, Any],
+    left_name: str,
+    right_name: str,
+    left_lines: set[tuple[str, str]],
+    right_lines: set[tuple[str, str]],
+) -> tuple[str, str] | None:
+    service_labels = [
+        str(train.get(field) or "").strip()
+        for field in ("service_name", "display_name", "service_name_detail", "route_name")
+    ]
+    station_pair = {left_name, right_name}
+    if any(label.startswith(JOBAN_LIMITED_EXPRESS_SERVICE_PREFIXES) for label in service_labels):
+        if station_pair == {"品川", "東京"}:
+            return ("jr_east", "東海道線")
+        if station_pair == {"東京", "上野"}:
+            return ("jr_east", "東北線")
+        if "上野" in station_pair:
+            other_lines = right_lines if left_name == "上野" else left_lines
+            if ("jr_east", "常磐線") in other_lines:
+                return ("jr_east", "常磐線")
+        if "仙台" in station_pair:
+            other_lines = right_lines if left_name == "仙台" else left_lines
+            if ("jr_east", "常磐線") in other_lines:
+                return ("jr_east", "常磐線")
+    return None
 
 
 def physical_route_key_for_stop(
@@ -915,16 +955,25 @@ def build_line_trace(
         segment_key_from_adjacent_physical = False
         left_group_id = normalized_stops[index]["stationGroupId"]
         right_group_id = normalized_stops[index + 1]["stationGroupId"]
-        station_pair = frozenset((
-            physical_name_by_group.get(left_group_id, ""),
-            physical_name_by_group.get(right_group_id, ""),
-        ))
-        if station_pair in REVIEWED_PHYSICAL_SEGMENT_LINE_OVERRIDES:
+        left_name = physical_name_by_group.get(left_group_id, "")
+        right_name = physical_name_by_group.get(right_group_id, "")
+        left_lines = reviewed_physical_lines_by_group.get(left_group_id, set())
+        right_lines = reviewed_physical_lines_by_group.get(right_group_id, set())
+        station_pair = frozenset((left_name, right_name))
+        reviewed_segment_override = reviewed_trip_segment_line_override(
+            train,
+            left_name,
+            right_name,
+            left_lines,
+            right_lines,
+        )
+        if reviewed_segment_override:
+            segment_key = reviewed_segment_override
+            segment_key_from_adjacent_physical = True
+        elif station_pair in REVIEWED_PHYSICAL_SEGMENT_LINE_OVERRIDES:
             segment_key = REVIEWED_PHYSICAL_SEGMENT_LINE_OVERRIDES[station_pair]
             segment_key_from_adjacent_physical = True
         else:
-            left_lines = reviewed_physical_lines_by_group.get(left_group_id, set())
-            right_lines = reviewed_physical_lines_by_group.get(right_group_id, set())
             shared_lines = left_lines & right_lines
             same_operator_shared_lines = {
                 line_key for line_key in shared_lines
@@ -985,7 +1034,7 @@ def build_line_trace(
     if segment_keys:
         # Keep short terminal tails on the train's source line when the
         # timetable itself labels those endpoint stops with that source line.
-        preserve_source_line_terminal_tails = not is_limited_train_type(str(train.get("train_type") or ""))
+        preserve_source_line_terminal_tails = not is_limited_or_named_limited_train(train)
         def segment_has_non_fallback_unique_physical_line(index: int) -> bool:
             if index < 0 or index >= len(normalized_stops) - 1:
                 return False

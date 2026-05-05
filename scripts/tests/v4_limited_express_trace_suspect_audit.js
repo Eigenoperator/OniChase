@@ -30,6 +30,9 @@ const REVIEWED_SEGMENT_EXCEPTIONS = new Set([
   reviewedSegmentKey('京都', '堅田', '湖西線'),
   reviewedSegmentKey('敦賀', '近江今津', '湖西線'),
   reviewedSegmentKey('敦賀', '堅田', '湖西線'),
+  reviewedSegmentKey('上野', '土浦', '常磐線'),
+  reviewedSegmentKey('上野', '水戸', '常磐線'),
+  reviewedSegmentKey('仙台', '相馬', '常磐線'),
 ]);
 
 function reviewedSegmentKey(fromName, toName, routeName) {

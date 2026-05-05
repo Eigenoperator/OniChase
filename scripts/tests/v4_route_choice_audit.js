@@ -49,12 +49,19 @@ window.maplibregl = {
 };
 `;
 
+const DEFAULT_STAGES = ['global', 'duplicates', 'known', 'focused'];
+
 function parseArgs(argv) {
   const args = {};
   for (let index = 2; index < argv.length; index += 1) {
     const key = argv[index];
     if (!key.startsWith('--')) continue;
-    args[key.slice(2)] = argv[index + 1];
+    const next = argv[index + 1];
+    if (next === undefined || next.startsWith('--')) {
+      args[key.slice(2)] = true;
+      continue;
+    }
+    args[key.slice(2)] = next;
     index += 1;
   }
   if (!args['page-url']) throw new Error('Missing --page-url');
@@ -65,6 +72,21 @@ function parseIntegerOption(value, defaultValue = null) {
   if (value === undefined || value === null || value === '') return defaultValue;
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? parsed : defaultValue;
+}
+
+function parseStagesOption(value) {
+  if (value === undefined || value === null || value === '' || value === true || value === 'all') {
+    return DEFAULT_STAGES;
+  }
+  if (value === 'none') return [];
+  const knownStages = new Set(DEFAULT_STAGES);
+  const stages = String(value)
+    .split(',')
+    .map((stage) => stage.trim())
+    .filter(Boolean);
+  const unknownStages = stages.filter((stage) => !knownStages.has(stage));
+  if (unknownStages.length) throw new Error(`Unknown --stages value(s): ${unknownStages.join(', ')}`);
+  return [...new Set(stages)];
 }
 
 async function loadPage(pageUrl) {
@@ -118,6 +140,8 @@ async function auditRouteChoices(page, auditOptions) {
     const stationLimit = hasStationLimit && Number.isFinite(Number(auditOptions.stationLimit))
       ? Math.max(0, Number(auditOptions.stationLimit))
       : null;
+    const enabledStages = new Set(Array.isArray(auditOptions.stages) ? auditOptions.stages : ['global', 'duplicates', 'known', 'focused']);
+    const stageEnabled = (stageName) => enabledStages.has(stageName);
     const OMIYA_BRANCH_NEXT_STATIONS = new Set([
       '土呂', '東大宮', '蓮田', '白岡', '久喜', '栗橋', '古河', '野木', '間々田',
       '小山', '小金井', '自治医大', '石橋', '雀宮', '宇都宮',
@@ -187,6 +211,47 @@ async function auditRouteChoices(page, auditOptions) {
 
     const anomalies = [];
     const timings = { startedAtMs: performance.now() };
+    const allTrips = [...state.tripById.values()];
+    const selectedTrips = tripLimit === null
+      ? allTrips.slice(tripStart)
+      : allTrips.slice(tripStart, tripStart + tripLimit);
+    const routeTitleCache = new Map();
+    function titleForRoute(routeId) {
+      const key = routeId || '';
+      if (!routeTitleCache.has(key)) routeTitleCache.set(key, routeTitle(routeId));
+      return routeTitleCache.get(key);
+    }
+    const stationNameCache = new Map();
+    function stationNameForGroupId(stationGroupId) {
+      const key = stationGroupId || '';
+      if (!stationNameCache.has(key)) {
+        const group = state.stationGroupById.get(stationGroupId);
+        stationNameCache.set(key, group?.names?.ja || group?.primaryName || stationGroupId || '');
+      }
+      return stationNameCache.get(key);
+    }
+    const directionTraceRouteCountCache = new Map();
+    function directionTraceRouteCountForTrip(trip) {
+      const key = trip?.id || '';
+      if (!directionTraceRouteCountCache.has(key)) {
+        directionTraceRouteCountCache.set(key, new Set((trip?.lineTrace || [])
+          .map((trace) => trace?.routeId)
+          .filter((candidateRouteId) =>
+            candidateRouteId &&
+            state.routeById.has(candidateRouteId) &&
+            !isThroughServiceTransferAlias(candidateRouteId)
+          )).size);
+      }
+      return directionTraceRouteCountCache.get(key);
+    }
+    function nextStopAfterIndex(stops, index) {
+      const currentSequence = stops[index]?.sequence;
+      if (!Number.isFinite(currentSequence)) return null;
+      for (let nextIndex = index + 1; nextIndex < stops.length; nextIndex += 1) {
+        if (stops[nextIndex]?.sequence > currentSequence) return stops[nextIndex];
+      }
+      return null;
+    }
     const allowedVirtualRouteStations = {
       VIRTUAL_JR_EAST_UENO_TOKYO: new Set(['東京', '上野']),
       VIRTUAL_JR_EAST_YOKOSUKA_SOBU_RAPID: new Set([
@@ -253,6 +318,7 @@ async function auditRouteChoices(page, auditOptions) {
       samples: [],
     };
     const allUenoTokyoChoiceStationSet = new Set();
+    const forbiddenTokyoNorthTrunkChoices = new Set(['東北線', '東北本線', '宇都宮線', '高崎線', '常磐線']);
     function addGlobalChoiceSample(kind, stationName, entry, routeId, nextStop) {
       if (globalChoiceScan.samples.length >= 80) return;
       globalChoiceScan.samples.push({
@@ -395,199 +461,212 @@ async function auditRouteChoices(page, auditOptions) {
       const title = routeTitle(routeId);
       return Boolean(title && [...routeIds].some((candidateRouteId) => routeTitle(candidateRouteId) === title));
     }
-    function routeTraceScanEntries() {
-      const entries = [];
-      const trips = [...state.tripById.values()];
-      const selectedTrips = tripLimit === null ? trips.slice(tripStart) : trips.slice(tripStart, tripStart + tripLimit);
-      selectedTrips.forEach((trip, offset) => {
-        const stops = (trip.stopTimes || []).filter((stop) => Number.isFinite(stop.sequence));
+    Object.assign(globalChoiceScan, {
+      tripStart,
+      tripLimit,
+      tripCount: allTrips.length,
+      selectedTripCount: selectedTrips.length,
+      skipped: !stageEnabled('global'),
+    });
+    Object.assign(globalTrainLabelScan, {
+      tripStart,
+      tripLimit,
+      tripCount: allTrips.length,
+      selectedTripCount: selectedTrips.length,
+      skipped: !stageEnabled('global'),
+    });
+    if (stageEnabled('global')) {
+      for (const trip of selectedTrips) {
+        const stops = trip.stopTimes || [];
         for (let index = 0; index < stops.length - 1; index += 1) {
           const stop = stops[index];
+          if (!Number.isFinite(stop?.sequence)) continue;
+          const nextStop = nextStopAfterIndex(stops, index);
+          if (!nextStop) continue;
           const departureMinute = stopDepartureMinutes(stop);
           if (departureMinute < START_MINUTE) continue;
           const stationGroupId = stop.stationGroupId;
-          const group = state.stationGroupById.get(stationGroupId);
-          entries.push({
-            stationName: group?.names?.ja || group?.primaryName || stationGroupId,
-            entry: {
-              trip,
-              stop,
-              boardStop: stop,
-              departureMinute,
-              routeIds: boardableRouteIdsForStop(trip, stop),
-              queryStationGroupId: stationGroupId,
-            },
+          const stationName = stationNameForGroupId(stationGroupId);
+          const entry = {
+            trip,
+            stop,
+            boardStop: stop,
+            departureMinute,
+            routeIds: boardableRouteIdsForStop(trip, stop),
+            queryStationGroupId: stationGroupId,
+          };
+          globalChoiceScan.checkedRows += 1;
+          const routeIds = routeChoiceIdsForDeparture(entry);
+          globalChoiceScan.checkedChoices += routeIds.length;
+          const currentSegmentRouteId = tracedRouteIdForTripSegment(trip, stop, nextStop);
+          const futureTraceRouteIds = futureTraceRouteIdsForEntry(entry, currentSegmentRouteId);
+          const currentPhysicalRouteIds = currentPhysicalRouteIdsForEntry(entry, currentSegmentRouteId, nextStop);
+          routeIds.forEach((routeId) => {
+            const label = formatTripLabelForBoarding(entry, routeId);
+            const choiceRouteTitle = titleForRoute(routeId);
+            globalTrainLabelScan.checkedLabels += 1;
+            if (choiceRouteTitle === '上野東京ライン') {
+              allUenoTokyoChoiceStationSet.add(stationName);
+            }
+            const namedTrainRouteId = namedTrainChoiceRouteId(trip);
+            if (namedTrainRouteId && routeId !== namedTrainRouteId) {
+              globalTrainLabelScan.namedLimitedExpressNotSeparatedCount += 1;
+              addGlobalTrainLabelSample('named_limited_express_not_separated', stationName, entry, routeId, label);
+            }
+            if (choiceRouteTitle === '路線') {
+              globalChoiceScan.genericRouteLabelCount += 1;
+              addGlobalChoiceSample('generic_route_label', stationName, entry, routeId, nextStop);
+            }
+            const choiceRoute = state.routeById.get(routeId);
+            const rawChoiceLineName = String(choiceRoute?.shortName || choiceRoute?.tags?.lineName || '');
+            if (
+              (choiceRouteTitle.includes('空港線') || rawChoiceLineName.includes('空港線')) &&
+              choiceRoute?.operatorId !== 'keikyu' &&
+              routeSymbolCode(routeId) === 'KK'
+            ) {
+              globalChoiceScan.nonKeikyuAirportLineKkSymbolCount += 1;
+              addGlobalChoiceSample('non_keikyu_airport_line_kk_symbol', stationName, entry, routeId, nextStop);
+            }
+            if (
+              stationName === '横浜' &&
+              ['東京メトロ副都心線', '東京メトロ有楽町線', '京急本線'].includes(choiceRouteTitle) &&
+              ['13号線副都心線', '8号線有楽町線'].includes(trip?.serviceName || '')
+            ) {
+              globalChoiceScan.yokohamaThroughRemoteRouteCount += 1;
+              addGlobalChoiceSample('yokohama_through_remote_route', stationName, entry, routeId, nextStop);
+            }
+            if (/\d+号線/u.test(label)) {
+              globalTrainLabelScan.rawNumberedLineLabelCount += 1;
+              addGlobalTrainLabelSample('raw_numbered_line_label', stationName, entry, routeId, label);
+            }
+            if (/\s直通$/u.test(label)) {
+              globalTrainLabelScan.throughDisplayTextCount += 1;
+              addGlobalTrainLabelSample('through_display_text', stationName, entry, routeId, label);
+            }
+            const publicNumber = publicTripNumber(trip);
+            const shouldDisplayPublicNumber = isShinkansenTrip(trip) ||
+              (isLimitedExpressTrip(trip) && looksLikePublicTrainNumber(publicNumber));
+            if (
+              publicNumber &&
+              shouldDisplayPublicNumber &&
+              !String(label).includes(publicNumber)
+            ) {
+              globalTrainLabelScan.limitedOrShinkansenMissingNumberCount += 1;
+              addGlobalTrainLabelSample('limited_or_shinkansen_missing_number', stationName, entry, routeId, label);
+            }
+            if (isLimitedExpressTrip(trip) && !isShinkansenTrip(trip) && /\d{1,4}号/u.test(label)) {
+              globalTrainLabelScan.limitedExpressGoSuffixCount += 1;
+              addGlobalTrainLabelSample('limited_express_go_suffix', stationName, entry, routeId, label);
+            }
+            const selectedJrRouteId = selectedJrNorthernTrunkLabelRouteId(entry, routeId);
+            const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
+            const directionRouteId = selectedJrRouteId ||
+              directionTerminalRouteIdForTrainLabel(entry, routeId) ||
+              (adjacentDirectionRouteId === routeId && !isJrRoute(state.routeById.get(routeId))
+                ? adjacentDirectionRouteId
+                : null);
+            const directionLabel = directionRouteId ? titleForRoute(directionRouteId) : '';
+            const terminalName = displayNameForGroup((trip?.stopTimes || []).at(-1)?.stationGroupId || '');
+            if (
+              choiceRouteTitle === '都営浅草線' &&
+              ['天空橋', '羽田空港第１・第２ターミナル', '羽田空港第３ターミナル'].includes(terminalName) &&
+              label !== '京急空港線'
+            ) {
+              globalTrainLabelScan.asakusaKeikyuAirportLabelMismatchCount += 1;
+              addGlobalTrainLabelSample('asakusa_keikyu_airport_label_mismatch', stationName, entry, routeId, label);
+            }
+            const directionTraceRouteCount = directionTraceRouteCountForTrip(trip);
+            if (
+              directionTraceRouteCount >= 2 &&
+              directionLabel &&
+              !isShinkansenTrip(trip) &&
+              !isLimitedExpressTrip(trip) &&
+              !(stationName === '米原' && choiceRouteTitle === '東海道線' && label === '東海道線') &&
+              label !== directionLabel
+            ) {
+              globalTrainLabelScan.throughDirectionLabelMismatchCount += 1;
+              addGlobalTrainLabelSample('through_direction_label_mismatch', stationName, entry, routeId, label);
+            }
+            if (isMeitetsuTrip(trip)) {
+              if (!/^[^（）()]+線$/u.test(label) || /^\d+号線/u.test(label)) {
+                globalTrainLabelScan.meitetsuLabelFormatMismatchCount += 1;
+                addGlobalTrainLabelSample('meitetsu_label_format_mismatch', stationName, entry, routeId, label);
+              }
+            }
+            const allowedStations = allowedVirtualRouteStations[routeId];
+            const routeChoiceMatchesTrace = (
+              routeId === trip?.routeId ||
+              routeId === currentSegmentRouteId ||
+              routeIdSetHasRouteOrTitle(currentPhysicalRouteIds, routeId) ||
+              futureTraceRouteIds.has(routeId) ||
+              Boolean(allowedStations) ||
+              isNamedTrainChoiceRouteId(routeId) ||
+              isShinkansenCorridorRoute(routeId) ||
+              allowedPassengerRouteOverPhysicalTrace(stationName, entry, routeId, currentSegmentRouteId, nextStop)
+            );
+            if (!routeChoiceMatchesTrace) {
+              globalChoiceScan.choiceTraceMismatchCount += 1;
+              addGlobalChoiceSample('route_choice_not_in_trip_trace', stationName, entry, routeId, nextStop);
+            }
+            const routeChoiceMatchesCurrentPhysical = (
+              routeIdSetHasRouteOrTitle(currentPhysicalRouteIds, routeId) ||
+              Boolean(allowedStations) ||
+              isNamedTrainChoiceRouteId(routeId) ||
+              isShinkansenCorridorRoute(routeId) ||
+              allowedPassengerRouteOverPhysicalTrace(stationName, entry, routeId, currentSegmentRouteId, nextStop)
+            );
+            if (currentPhysicalRouteIds.size && !routeChoiceMatchesCurrentPhysical) {
+              globalChoiceScan.currentPhysicalMismatchCount += 1;
+              addGlobalChoiceSample('route_choice_not_current_physical_segment', stationName, entry, routeId, nextStop);
+            }
+            if (isShinkansenCorridorRoute(routeId)) return;
+            if (isNamedTrainChoiceRouteId(routeId)) {
+              if (isRouteLikeNamedTrainLabel(choiceRouteTitle)) {
+                globalChoiceScan.routeLikeNamedChoiceCount += 1;
+                addGlobalChoiceSample('route_like_named_choice', stationName, entry, routeId, nextStop);
+              }
+              return;
+            }
+            if (allowedStations) {
+              if (!allowedStations.has(stationName)) {
+                globalChoiceScan.virtualOutsideAllowedStationCount += 1;
+                addGlobalChoiceSample('virtual_outside_allowed_station', stationName, entry, routeId, nextStop);
+              }
+              return;
+            }
+            if (
+              currentPhysicalRouteIds.size &&
+              !routeIdSetHasRouteOrTitle(currentPhysicalRouteIds, routeId) &&
+              !allowedPassengerRouteOverPhysicalTrace(stationName, entry, routeId, currentSegmentRouteId, nextStop)
+            ) {
+              globalChoiceScan.segmentMismatchCount += 1;
+              addGlobalChoiceSample('choice_not_current_next_segment', stationName, entry, routeId, nextStop);
+            }
           });
         }
+      }
+      selectedTrips.forEach((trip) => {
+        if (!trip?.throughStitched) return;
+        const boardStop = (trip.stopTimes || []).find((stop) => stopDepartureMinutes(stop) >= START_MINUTE) ||
+          (trip.stopTimes || [])[0];
+        if (!boardStop) return;
+        globalTrainLabelScan.checkedThroughPreviewTexts += 1;
+        const previewText = trainPreviewText(trip, boardStop);
+        if (/(^|[\s·,，、])直通\s/u.test(previewText)) {
+          globalTrainLabelScan.throughDisplayTextCount += 1;
+          addGlobalTrainLabelSample(
+            'through_preview_display_text',
+            displayNameForGroup(boardStop.stationGroupId),
+            {
+              trip,
+              stop: boardStop,
+              departureMinute: stopDepartureMinutes(boardStop),
+            },
+            trip.routeId,
+            formatTripLabel(trip)
+          );
+        }
       });
-      return {
-        entries,
-        tripCount: trips.length,
-        selectedTripCount: selectedTrips.length,
-        tripStart,
-        tripLimit,
-      };
-    }
-    const routeTraceScan = routeTraceScanEntries();
-    Object.assign(globalChoiceScan, {
-      tripStart: routeTraceScan.tripStart,
-      tripLimit: routeTraceScan.tripLimit,
-      tripCount: routeTraceScan.tripCount,
-      selectedTripCount: routeTraceScan.selectedTripCount,
-    });
-    for (const { stationName, entry } of routeTraceScan.entries) {
-        const nextStop = nextStopFor(entry);
-        if (!nextStop) continue;
-        globalChoiceScan.checkedRows += 1;
-        const routeIds = routeChoiceIdsForDeparture(entry);
-        globalChoiceScan.checkedChoices += routeIds.length;
-        const currentSegmentRouteId = tracedRouteIdForTripSegment(entry.trip, entry.stop, nextStop);
-        const futureTraceRouteIds = futureTraceRouteIdsForEntry(entry, currentSegmentRouteId);
-        const currentPhysicalRouteIds = currentPhysicalRouteIdsForEntry(entry, currentSegmentRouteId, nextStop);
-        routeIds.forEach((routeId) => {
-          const label = formatTripLabelForBoarding(entry, routeId);
-          globalTrainLabelScan.checkedLabels += 1;
-          if (routeTitle(routeId) === '上野東京ライン') {
-            allUenoTokyoChoiceStationSet.add(stationName);
-          }
-          const namedTrainRouteId = namedTrainChoiceRouteId(entry.trip);
-          if (namedTrainRouteId && routeId !== namedTrainRouteId) {
-            globalTrainLabelScan.namedLimitedExpressNotSeparatedCount += 1;
-            addGlobalTrainLabelSample('named_limited_express_not_separated', stationName, entry, routeId, label);
-          }
-          if (routeTitle(routeId) === '路線') {
-            globalChoiceScan.genericRouteLabelCount += 1;
-            addGlobalChoiceSample('generic_route_label', stationName, entry, routeId, nextStop);
-          }
-          const choiceRoute = state.routeById.get(routeId);
-          const choiceRouteTitle = routeTitle(routeId);
-          const rawChoiceLineName = String(choiceRoute?.shortName || choiceRoute?.tags?.lineName || '');
-          if (
-            (choiceRouteTitle.includes('空港線') || rawChoiceLineName.includes('空港線')) &&
-            choiceRoute?.operatorId !== 'keikyu' &&
-            routeSymbolCode(routeId) === 'KK'
-          ) {
-            globalChoiceScan.nonKeikyuAirportLineKkSymbolCount += 1;
-            addGlobalChoiceSample('non_keikyu_airport_line_kk_symbol', stationName, entry, routeId, nextStop);
-          }
-          if (
-            stationName === '横浜' &&
-            ['東京メトロ副都心線', '東京メトロ有楽町線', '京急本線'].includes(routeTitle(routeId)) &&
-            ['13号線副都心線', '8号線有楽町線'].includes(entry.trip?.serviceName || '')
-          ) {
-            globalChoiceScan.yokohamaThroughRemoteRouteCount += 1;
-            addGlobalChoiceSample('yokohama_through_remote_route', stationName, entry, routeId, nextStop);
-          }
-          if (/\d+号線/u.test(label)) {
-            globalTrainLabelScan.rawNumberedLineLabelCount += 1;
-            addGlobalTrainLabelSample('raw_numbered_line_label', stationName, entry, routeId, label);
-          }
-          if (/\s直通$/u.test(label)) {
-            globalTrainLabelScan.throughDisplayTextCount += 1;
-            addGlobalTrainLabelSample('through_display_text', stationName, entry, routeId, label);
-          }
-          const publicNumber = publicTripNumber(entry.trip);
-          const shouldDisplayPublicNumber = isShinkansenTrip(entry.trip) ||
-            (isLimitedExpressTrip(entry.trip) && looksLikePublicTrainNumber(publicNumber));
-          if (
-            publicNumber &&
-            shouldDisplayPublicNumber &&
-            !String(label).includes(publicNumber)
-          ) {
-            globalTrainLabelScan.limitedOrShinkansenMissingNumberCount += 1;
-            addGlobalTrainLabelSample('limited_or_shinkansen_missing_number', stationName, entry, routeId, label);
-          }
-          if (isLimitedExpressTrip(entry.trip) && !isShinkansenTrip(entry.trip) && /\d{1,4}号/u.test(label)) {
-            globalTrainLabelScan.limitedExpressGoSuffixCount += 1;
-            addGlobalTrainLabelSample('limited_express_go_suffix', stationName, entry, routeId, label);
-          }
-          const selectedJrRouteId = selectedJrNorthernTrunkLabelRouteId(entry, routeId);
-          const adjacentDirectionRouteId = adjacentDirectionRouteIdForChoice(entry);
-          const directionRouteId = selectedJrRouteId ||
-            directionTerminalRouteIdForTrainLabel(entry, routeId) ||
-            (adjacentDirectionRouteId === routeId && !isJrRoute(state.routeById.get(routeId))
-              ? adjacentDirectionRouteId
-              : null);
-          const directionLabel = directionRouteId ? routeTitle(directionRouteId) : '';
-          const terminalName = displayNameForGroup((entry.trip?.stopTimes || []).at(-1)?.stationGroupId || '');
-          if (
-            routeTitle(routeId) === '都営浅草線' &&
-            ['天空橋', '羽田空港第１・第２ターミナル', '羽田空港第３ターミナル'].includes(terminalName) &&
-            label !== '京急空港線'
-          ) {
-            globalTrainLabelScan.asakusaKeikyuAirportLabelMismatchCount += 1;
-            addGlobalTrainLabelSample('asakusa_keikyu_airport_label_mismatch', stationName, entry, routeId, label);
-          }
-          const directionTraceRouteCount = new Set((entry.trip?.lineTrace || [])
-            .map((trace) => trace?.routeId)
-            .filter((candidateRouteId) => candidateRouteId && state.routeById.has(candidateRouteId) && !isThroughServiceTransferAlias(candidateRouteId))).size;
-          if (
-            directionTraceRouteCount >= 2 &&
-            directionLabel &&
-            !isShinkansenTrip(entry.trip) &&
-            !isLimitedExpressTrip(entry.trip) &&
-            !(stationName === '米原' && routeTitle(routeId) === '東海道線' && label === '東海道線') &&
-            label !== directionLabel
-          ) {
-            globalTrainLabelScan.throughDirectionLabelMismatchCount += 1;
-            addGlobalTrainLabelSample('through_direction_label_mismatch', stationName, entry, routeId, label);
-          }
-          if (isMeitetsuTrip(entry.trip)) {
-            if (!/^[^（）()]+線$/u.test(label) || /^\d+号線/u.test(label)) {
-              globalTrainLabelScan.meitetsuLabelFormatMismatchCount += 1;
-              addGlobalTrainLabelSample('meitetsu_label_format_mismatch', stationName, entry, routeId, label);
-            }
-          }
-          const allowedStations = allowedVirtualRouteStations[routeId];
-          const routeChoiceMatchesTrace = (
-            routeId === entry.trip?.routeId ||
-            routeId === currentSegmentRouteId ||
-            routeIdSetHasRouteOrTitle(currentPhysicalRouteIds, routeId) ||
-            futureTraceRouteIds.has(routeId) ||
-            Boolean(allowedStations) ||
-            isNamedTrainChoiceRouteId(routeId) ||
-            isShinkansenCorridorRoute(routeId) ||
-            allowedPassengerRouteOverPhysicalTrace(stationName, entry, routeId, currentSegmentRouteId, nextStop)
-          );
-          if (!routeChoiceMatchesTrace) {
-            globalChoiceScan.choiceTraceMismatchCount += 1;
-            addGlobalChoiceSample('route_choice_not_in_trip_trace', stationName, entry, routeId, nextStop);
-          }
-          const routeChoiceMatchesCurrentPhysical = (
-            routeIdSetHasRouteOrTitle(currentPhysicalRouteIds, routeId) ||
-            Boolean(allowedStations) ||
-            isNamedTrainChoiceRouteId(routeId) ||
-            isShinkansenCorridorRoute(routeId) ||
-            allowedPassengerRouteOverPhysicalTrace(stationName, entry, routeId, currentSegmentRouteId, nextStop)
-          );
-          if (currentPhysicalRouteIds.size && !routeChoiceMatchesCurrentPhysical) {
-            globalChoiceScan.currentPhysicalMismatchCount += 1;
-            addGlobalChoiceSample('route_choice_not_current_physical_segment', stationName, entry, routeId, nextStop);
-          }
-          if (isShinkansenCorridorRoute(routeId)) return;
-          if (isNamedTrainChoiceRouteId(routeId)) {
-            if (isRouteLikeNamedTrainLabel(routeTitle(routeId))) {
-              globalChoiceScan.routeLikeNamedChoiceCount += 1;
-              addGlobalChoiceSample('route_like_named_choice', stationName, entry, routeId, nextStop);
-            }
-            return;
-          }
-          if (allowedStations) {
-            if (!allowedStations.has(stationName)) {
-              globalChoiceScan.virtualOutsideAllowedStationCount += 1;
-              addGlobalChoiceSample('virtual_outside_allowed_station', stationName, entry, routeId, nextStop);
-            }
-            return;
-          }
-          if (
-            currentPhysicalRouteIds.size &&
-            !routeIdSetHasRouteOrTitle(currentPhysicalRouteIds, routeId) &&
-            !allowedPassengerRouteOverPhysicalTrace(stationName, entry, routeId, currentSegmentRouteId, nextStop)
-          ) {
-            globalChoiceScan.segmentMismatchCount += 1;
-            addGlobalChoiceSample('choice_not_current_next_segment', stationName, entry, routeId, nextStop);
-          }
-        });
     }
     if (
       globalChoiceScan.segmentMismatchCount ||
@@ -607,6 +686,10 @@ async function auditRouteChoices(page, auditOptions) {
       });
     }
     timings.globalChoiceAndLabelScanMs = performance.now() - timings.startedAtMs;
+    if (stageEnabled('global')) {
+      state.departureQueryCache = new Map();
+      state.routeChoicesByDeparturesCache = new WeakMap();
+    }
     const duplicateScanStartedAtMs = performance.now();
     const duplicateStations = [...state.stationGroupById.entries()];
     const selectedDuplicateStations = stationLimit === null
@@ -617,27 +700,33 @@ async function auditRouteChoices(page, auditOptions) {
       stationLimit,
       stationCount: duplicateStations.length,
       selectedStationCount: selectedDuplicateStations.length,
+      skipped: !stageEnabled('duplicates'),
     });
-    for (const [stationGroupId, group] of selectedDuplicateStations) {
-      const stationName = group.names?.ja || group.primaryName || stationGroupId;
-      duplicateRouteTitleScan.checkedStations += 1;
-      const choices = routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, START_MINUTE, { includeTransferEquivalents: true }));
-      const titleCounts = new Map();
-      choices.forEach((choice) => titleCounts.set(routeTitle(choice.routeId), (titleCounts.get(routeTitle(choice.routeId)) || 0) + 1));
-      const duplicateTitles = [...titleCounts.entries()].filter(([, count]) => count > 1);
-      if (!duplicateTitles.length) continue;
-      duplicateRouteTitleScan.duplicateStationTitleCount += duplicateTitles.length;
-      if (duplicateRouteTitleScan.samples.length < 80) {
-        duplicateRouteTitleScan.samples.push({
-          station: stationName,
-          duplicates: duplicateTitles.map(([title, count]) => ({ title, count })),
-          choices: choices.map((choice) => ({
-            route: routeTitle(choice.routeId),
-            subtitle: routeChoiceSubtitle(choice),
-            firstDeparture: choice.firstDepartureHhmm,
-            trainCount: choice.trainCount,
-          })),
+    if (stageEnabled('duplicates')) {
+      for (const [stationGroupId, group] of selectedDuplicateStations) {
+        const stationName = group.names?.ja || group.primaryName || stationGroupId;
+        duplicateRouteTitleScan.checkedStations += 1;
+        const choices = routeChoicesFromDepartures(departuresForStationGroup(stationGroupId, START_MINUTE, { includeTransferEquivalents: true }));
+        const titleCounts = new Map();
+        choices.forEach((choice) => {
+          const title = titleForRoute(choice.routeId);
+          titleCounts.set(title, (titleCounts.get(title) || 0) + 1);
         });
+        const duplicateTitles = [...titleCounts.entries()].filter(([, count]) => count > 1);
+        if (!duplicateTitles.length) continue;
+        duplicateRouteTitleScan.duplicateStationTitleCount += duplicateTitles.length;
+        if (duplicateRouteTitleScan.samples.length < 80) {
+          duplicateRouteTitleScan.samples.push({
+            station: stationName,
+            duplicates: duplicateTitles.map(([title, count]) => ({ title, count })),
+            choices: choices.map((choice) => ({
+              route: titleForRoute(choice.routeId),
+              subtitle: routeChoiceSubtitle(choice),
+              firstDeparture: choice.firstDepartureHhmm,
+              trainCount: choice.trainCount,
+            })),
+          });
+        }
       }
     }
     if (duplicateRouteTitleScan.duplicateStationTitleCount) {
@@ -648,31 +737,6 @@ async function auditRouteChoices(page, auditOptions) {
       });
     }
     timings.duplicateRouteTitleScanMs = performance.now() - duplicateScanStartedAtMs;
-    const throughPreviewTrips = tripLimit === null
-      ? [...state.tripById.values()].slice(tripStart)
-      : [...state.tripById.values()].slice(tripStart, tripStart + tripLimit);
-    throughPreviewTrips.forEach((trip) => {
-      if (!trip?.throughStitched) return;
-      const boardStop = (trip.stopTimes || []).find((stop) => stopDepartureMinutes(stop) >= START_MINUTE) ||
-        (trip.stopTimes || [])[0];
-      if (!boardStop) return;
-      globalTrainLabelScan.checkedThroughPreviewTexts += 1;
-      const previewText = trainPreviewText(trip, boardStop);
-      if (/(^|[\s·,，、])直通\s/u.test(previewText)) {
-        globalTrainLabelScan.throughDisplayTextCount += 1;
-        addGlobalTrainLabelSample(
-          'through_preview_display_text',
-          displayNameForGroup(boardStop.stationGroupId),
-          {
-            trip,
-            stop: boardStop,
-            departureMinute: stopDepartureMinutes(boardStop),
-          },
-          trip.routeId,
-          formatTripLabel(trip)
-        );
-      }
-    });
     if (
       globalTrainLabelScan.rawNumberedLineLabelCount ||
       globalTrainLabelScan.limitedOrShinkansenMissingNumberCount ||
@@ -689,21 +753,28 @@ async function auditRouteChoices(page, auditOptions) {
         ...globalTrainLabelScan,
       });
     }
+    if (stageEnabled('duplicates')) {
+      state.departureQueryCache = new Map();
+      state.routeChoicesByDeparturesCache = new WeakMap();
+    }
     const knownStationScanStartedAtMs = performance.now();
-    const knownStationChoices = Object.fromEntries(
-      [
-        '東京', '上野', '品川', '新橋', '大宮', '青梅', '八王子', '米原',
-        '敦賀', '京都', '新大阪', '白浜', '新宿', '大船', '成田空港',
-        '松本', '大月', '蘇我', '五井', '木更津', '上総一ノ宮', '成田', '佐倉',
-      ].map((stationName) => [stationName, choicesAt(stationName)])
-    );
-    const routeChoiceTitles = Object.fromEntries(
-      Object.entries(knownStationChoices).map(([stationName, choices]) => [
-        stationName,
-        new Set(choices.map((choice) => choice.route)),
-      ])
-    );
-    for (const stationName of ['大宮', '八王子']) {
+    let knownStationChoices = {};
+    let routeChoiceTitles = {};
+    if (stageEnabled('known')) {
+      knownStationChoices = Object.fromEntries(
+        [
+          '東京', '上野', '品川', '新橋', '大宮', '福島', '山形', '新庄', '青梅', '八王子', '米原',
+          '敦賀', '京都', '新大阪', '白浜', '新宿', '大船', '成田空港',
+          '松本', '大月', '蘇我', '五井', '木更津', '上総一ノ宮', '成田', '佐倉',
+        ].map((stationName) => [stationName, choicesAt(stationName)])
+      );
+      routeChoiceTitles = Object.fromEntries(
+        Object.entries(knownStationChoices).map(([stationName, choices]) => [
+          stationName,
+          new Set(choices.map((choice) => choice.route)),
+        ])
+      );
+      for (const stationName of ['大宮', '八王子']) {
       if (!routeChoiceTitles[stationName]?.has('むさしの号')) {
         anomalies.push({
           kind: 'musashino_named_train_choice_missing',
@@ -721,6 +792,16 @@ async function auditRouteChoices(page, auditOptions) {
         choices: knownStationChoices['東京'],
       });
     }
+    ['東京', '上野', '大宮', '福島', '山形', '新庄'].forEach((stationName) => {
+      if (!routeChoiceTitles[stationName]?.has('山形新幹線')) {
+        anomalies.push({
+          kind: 'yamagata_shinkansen_choice_missing',
+          station: stationName,
+          reason: 'Reviewed Tsubasa B/M source segments must be paired by train number into a Yamagata Shinkansen choice without frontend-only fabrication.',
+          choices: knownStationChoices[stationName],
+        });
+      }
+    });
     const mergedShinkansenChoices = Object.entries(knownStationChoices)
       .flatMap(([station, choices]) => choices
         .filter((choice) => choice.route === '東北・北海道・秋田新幹線')
@@ -742,6 +823,9 @@ async function auditRouteChoices(page, auditOptions) {
       ['東京', 'さざなみ', 4],
       ['東京', '踊り子', 7],
       ['東京', '秋田新幹線', 18],
+      ['東京', '山形新幹線', 14],
+      ['上野', '山形新幹線', 26],
+      ['大宮', '山形新幹線', 26],
       ['上野', 'ひたち', 30],
       ['上野', 'ときわ', 35],
       ['品川', '成田エクスプレス', 50],
@@ -802,6 +886,7 @@ async function auditRouteChoices(page, auditOptions) {
       ['大月', '富士回遊', ['3', '7', '11', '15', '93']],
       ['大月', 'かいじ', ['70', '2', '6', '10', '99']],
       ['東京', '秋田新幹線', ['1', '3', '7', '9', '23']],
+      ['東京', '山形新幹線', ['121', '129', '139', '159', '87', '88']],
     ].forEach(([stationName, routeName, requiredNumbers]) => {
       const actualNumbers = trainNumbersForChoiceAt(stationName, routeName);
       const missingNumbers = requiredNumbers.filter((number) => !actualNumbers.has(number));
@@ -911,7 +996,6 @@ async function auditRouteChoices(page, auditOptions) {
       }
     }
 
-    const forbiddenTokyoNorthTrunkChoices = new Set(['東北線', '東北本線', '宇都宮線', '高崎線', '常磐線']);
     const forbiddenTokyoNorthChoices = knownStationChoices['東京']
       .filter((choice) => forbiddenTokyoNorthTrunkChoices.has(choice.route))
       .map((choice) => choice.route);
@@ -949,8 +1033,14 @@ async function auditRouteChoices(page, auditOptions) {
         forbiddenChoices: [...new Set(forbiddenOmiyaTobuTojoChoices)].sort((a, b) => a.localeCompare(b, 'ja')),
       });
     }
+    }
     timings.knownStationScanMs = performance.now() - knownStationScanStartedAtMs;
     const focusedRuleScanStartedAtMs = performance.now();
+    let coupledUmbrellaSamples = [];
+    let coupledEquivalentTripCount = 0;
+    let coupledEquivalentEdgeCount = 0;
+    let shinkansenEquivalentEdgeCount = 0;
+    if (stageEnabled('focused')) {
     const uenoTakasakiBranchStations = new Set([
       '宮原', '上尾', '北上尾', '桶川', '北本', '鴻巣', '北鴻巣', '吹上',
       '行田', '熊谷', '籠原', '深谷', '岡部', '本庄', '神保原',
@@ -1056,7 +1146,7 @@ async function auditRouteChoices(page, auditOptions) {
       }
     }
 
-    const coupledUmbrellaSamples = [];
+    coupledUmbrellaSamples = [];
     for (const stationName of ['東京', '上野', '大宮', '仙台', '成田空港', '空港第2ビル', '品川', '新大阪', '大阪', '京都', '博多', '宇多津', '岡山', '綾部']) {
       const rows = buildCoupledTrainRows(entriesAt(stationName), null)
         .filter((row) => row.kind === 'coupled');
@@ -1075,10 +1165,10 @@ async function auditRouteChoices(page, auditOptions) {
     const missingCoupledUmbrellaLabels = requiredCoupledUmbrellaLabels.filter((requiredLabel) =>
       !coupledUmbrellaSamples.some((sample) => sample.label === requiredLabel)
     );
-    const coupledEquivalentTripCount = state.coupledEquivalentsByTripId?.size || 0;
-    const coupledEquivalentEdgeCount = [...(state.coupledEquivalentsByTripId?.values() || [])]
+    coupledEquivalentTripCount = state.coupledEquivalentsByTripId?.size || 0;
+    coupledEquivalentEdgeCount = [...(state.coupledEquivalentsByTripId?.values() || [])]
       .reduce((sum, items) => sum + items.length, 0);
-    const shinkansenEquivalentEdgeCount = [...(state.coupledEquivalentsByTripId?.values() || [])]
+    shinkansenEquivalentEdgeCount = [...(state.coupledEquivalentsByTripId?.values() || [])]
       .flat()
       .filter((item) => item.entryId === 'hayabusa_komachi_morioka' || item.entryId === 'yamabiko_tsubasa_fukushima')
       .length;
@@ -1124,10 +1214,12 @@ async function auditRouteChoices(page, auditOptions) {
         reason: 'Even though Shinkansen coupled services do not use the umbrella display rule, their portions must still count as same_train during the shared segment.',
       });
     }
+    }
 
     return {
       checkedAt: new Date().toISOString(),
       auditOptions,
+      enabledStages: [...enabledStages],
       timings: {
         ...timings,
         focusedRuleScanMs: performance.now() - focusedRuleScanStartedAtMs,
@@ -1138,6 +1230,7 @@ async function auditRouteChoices(page, auditOptions) {
       knownStationChoices,
       globalChoiceScan,
       globalTrainLabelScan,
+      duplicateRouteTitleScan,
       coupledScan: {
         registryEntryCount: (state.coupledServiceEntries || []).length,
         equivalentTripCount: coupledEquivalentTripCount,
@@ -1151,23 +1244,170 @@ async function auditRouteChoices(page, auditOptions) {
   }, auditOptions);
 }
 
+function resultForStage(stageResults, stageName) {
+  return stageResults.find((result) => (result.enabledStages || []).includes(stageName)) || null;
+}
+
+function mergeStageResults(stageResults, auditOptions) {
+  const globalResult = resultForStage(stageResults, 'global') || stageResults[0] || {};
+  const duplicateResult = resultForStage(stageResults, 'duplicates') || stageResults[0] || {};
+  const knownResult = resultForStage(stageResults, 'known') || stageResults[0] || {};
+  const focusedResult = resultForStage(stageResults, 'focused') || stageResults[0] || {};
+  const anomalies = stageResults.flatMap((result) => result.anomalies || []);
+  return {
+    checkedAt: new Date().toISOString(),
+    auditOptions,
+    enabledStages: [...auditOptions.stages],
+    loadTimings: {
+      stageRuns: stageResults.map((result) => ({
+        stages: result.enabledStages || [],
+        ...(result.loadTimings || {}),
+      })),
+    },
+    timings: {
+      globalChoiceAndLabelScanMs: globalResult.timings?.globalChoiceAndLabelScanMs || 0,
+      duplicateRouteTitleScanMs: duplicateResult.timings?.duplicateRouteTitleScanMs || 0,
+      knownStationScanMs: knownResult.timings?.knownStationScanMs || 0,
+      focusedRuleScanMs: focusedResult.timings?.focusedRuleScanMs || 0,
+      totalAuditMs: stageResults.reduce((sum, result) => sum + (result.timings?.totalAuditMs || 0), 0),
+    },
+    stationCount: Math.max(...stageResults.map((result) => result.stationCount || 0), 0),
+    tripCount: Math.max(...stageResults.map((result) => result.tripCount || 0), 0),
+    knownStationChoices: knownResult.knownStationChoices || {},
+    globalChoiceScan: globalResult.globalChoiceScan || {},
+    globalTrainLabelScan: globalResult.globalTrainLabelScan || {},
+    duplicateRouteTitleScan: duplicateResult.duplicateRouteTitleScan || {},
+    coupledScan: focusedResult.coupledScan || {},
+    anomalyCount: anomalies.length,
+    anomalies: anomalies.slice(0, 80),
+  };
+}
+
+async function runAuditOnFreshPage(pageUrl, auditOptions) {
+  const { browser, page, loadTimings } = await loadPage(pageUrl);
+  try {
+    const result = await auditRouteChoices(page, auditOptions);
+    result.loadTimings = loadTimings;
+    return result;
+  } finally {
+    await browser.close();
+  }
+}
+
+function mergeGlobalStageChunkResults(chunkResults, auditOptions) {
+  const first = chunkResults[0] || {};
+  const sum = (selector) => chunkResults.reduce((total, result) => total + (selector(result) || 0), 0);
+  const mergeSamples = (selector) => chunkResults.flatMap((result) => selector(result) || []).slice(0, 80);
+  const globalChoiceScan = {
+    ...(first.globalChoiceScan || {}),
+    tripStart: auditOptions.tripStart || 0,
+    tripLimit: auditOptions.tripLimit,
+    tripCount: Math.max(...chunkResults.map((result) => result.globalChoiceScan?.tripCount || 0), 0),
+    selectedTripCount: sum((result) => result.globalChoiceScan?.selectedTripCount),
+    checkedRows: sum((result) => result.globalChoiceScan?.checkedRows),
+    checkedChoices: sum((result) => result.globalChoiceScan?.checkedChoices),
+    segmentMismatchCount: sum((result) => result.globalChoiceScan?.segmentMismatchCount),
+    virtualOutsideAllowedStationCount: sum((result) => result.globalChoiceScan?.virtualOutsideAllowedStationCount),
+    genericRouteLabelCount: sum((result) => result.globalChoiceScan?.genericRouteLabelCount),
+    yokohamaThroughRemoteRouteCount: sum((result) => result.globalChoiceScan?.yokohamaThroughRemoteRouteCount),
+    routeLikeNamedChoiceCount: sum((result) => result.globalChoiceScan?.routeLikeNamedChoiceCount),
+    nonKeikyuAirportLineKkSymbolCount: sum((result) => result.globalChoiceScan?.nonKeikyuAirportLineKkSymbolCount),
+    choiceTraceMismatchCount: sum((result) => result.globalChoiceScan?.choiceTraceMismatchCount),
+    currentPhysicalMismatchCount: sum((result) => result.globalChoiceScan?.currentPhysicalMismatchCount),
+    highlightTraceMismatchCount: sum((result) => result.globalChoiceScan?.highlightTraceMismatchCount),
+    samples: mergeSamples((result) => result.globalChoiceScan?.samples),
+    skipped: false,
+  };
+  const globalTrainLabelScan = {
+    ...(first.globalTrainLabelScan || {}),
+    tripStart: auditOptions.tripStart || 0,
+    tripLimit: auditOptions.tripLimit,
+    tripCount: globalChoiceScan.tripCount,
+    selectedTripCount: globalChoiceScan.selectedTripCount,
+    checkedLabels: sum((result) => result.globalTrainLabelScan?.checkedLabels),
+    rawNumberedLineLabelCount: sum((result) => result.globalTrainLabelScan?.rawNumberedLineLabelCount),
+    limitedOrShinkansenMissingNumberCount: sum((result) => result.globalTrainLabelScan?.limitedOrShinkansenMissingNumberCount),
+    throughDirectionLabelMismatchCount: sum((result) => result.globalTrainLabelScan?.throughDirectionLabelMismatchCount),
+    meitetsuLabelFormatMismatchCount: sum((result) => result.globalTrainLabelScan?.meitetsuLabelFormatMismatchCount),
+    namedLimitedExpressNotSeparatedCount: sum((result) => result.globalTrainLabelScan?.namedLimitedExpressNotSeparatedCount),
+    limitedExpressGoSuffixCount: sum((result) => result.globalTrainLabelScan?.limitedExpressGoSuffixCount),
+    asakusaKeikyuAirportLabelMismatchCount: sum((result) => result.globalTrainLabelScan?.asakusaKeikyuAirportLabelMismatchCount),
+    checkedThroughPreviewTexts: sum((result) => result.globalTrainLabelScan?.checkedThroughPreviewTexts),
+    throughDisplayTextCount: sum((result) => result.globalTrainLabelScan?.throughDisplayTextCount),
+    samples: mergeSamples((result) => result.globalTrainLabelScan?.samples),
+    skipped: false,
+  };
+  const anomalies = chunkResults.flatMap((result) => result.anomalies || []);
+  return {
+    checkedAt: new Date().toISOString(),
+    auditOptions: { ...auditOptions, stages: ['global'] },
+    enabledStages: ['global'],
+    loadTimings: {
+      chunks: chunkResults.map((result) => ({
+        tripStart: result.globalChoiceScan?.tripStart,
+        tripLimit: result.globalChoiceScan?.tripLimit,
+        ...(result.loadTimings || {}),
+      })),
+    },
+    timings: {
+      globalChoiceAndLabelScanMs: sum((result) => result.timings?.globalChoiceAndLabelScanMs),
+      duplicateRouteTitleScanMs: 0,
+      knownStationScanMs: 0,
+      focusedRuleScanMs: 0,
+      totalAuditMs: sum((result) => result.timings?.totalAuditMs),
+    },
+    stationCount: Math.max(...chunkResults.map((result) => result.stationCount || 0), 0),
+    tripCount: Math.max(...chunkResults.map((result) => result.tripCount || 0), 0),
+    knownStationChoices: {},
+    globalChoiceScan,
+    globalTrainLabelScan,
+    duplicateRouteTitleScan: first.duplicateRouteTitleScan || {},
+    coupledScan: {},
+    anomalyCount: anomalies.length,
+    anomalies: anomalies.slice(0, 80),
+  };
+}
+
+async function runStageAudit(pageUrl, auditOptions, stage) {
+  const chunkSize = Math.max(1, Number(auditOptions.tripChunkSize || 20000));
+  if (stage !== 'global' || auditOptions.tripLimit !== null) {
+    return runAuditOnFreshPage(pageUrl, { ...auditOptions, stages: [stage] });
+  }
+  const chunkResults = [];
+  let tripStart = Math.max(0, Number(auditOptions.tripStart || 0));
+  while (true) {
+    const chunkResult = await runAuditOnFreshPage(pageUrl, {
+      ...auditOptions,
+      stages: ['global'],
+      tripStart,
+      tripLimit: chunkSize,
+    });
+    chunkResults.push(chunkResult);
+    const selectedTripCount = chunkResult.globalChoiceScan?.selectedTripCount || 0;
+    const tripCount = chunkResult.globalChoiceScan?.tripCount || 0;
+    if (selectedTripCount < chunkSize || tripStart + selectedTripCount >= tripCount) break;
+    tripStart += chunkSize;
+  }
+  return mergeGlobalStageChunkResults(chunkResults, auditOptions);
+}
+
 (async () => {
   const args = parseArgs(process.argv);
   const auditOptions = {
     tripStart: parseIntegerOption(args['trip-start'], 0),
     tripLimit: parseIntegerOption(args['trip-limit'], null),
+    tripChunkSize: parseIntegerOption(args['trip-chunk-size'], 20000),
     stationStart: parseIntegerOption(args['station-start'], 0),
     stationLimit: parseIntegerOption(args['station-limit'], null),
+    stages: parseStagesOption(args.stages),
   };
-  const { browser, page, loadTimings } = await loadPage(args['page-url']);
-  try {
-    const result = await auditRouteChoices(page, auditOptions);
-    result.loadTimings = loadTimings;
-    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
-    if (result.anomalyCount) process.exitCode = 1;
-  } finally {
-    await browser.close();
+  const stageResults = [];
+  for (const stage of auditOptions.stages) {
+    stageResults.push(await runStageAudit(args['page-url'], auditOptions, stage));
   }
+  const result = stageResults.length === 1 ? stageResults[0] : mergeStageResults(stageResults, auditOptions);
+  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+  if (result.anomalyCount) process.exitCode = 1;
 })().catch((error) => {
   console.error(error);
   process.exit(1);

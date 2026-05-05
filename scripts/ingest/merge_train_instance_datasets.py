@@ -28,6 +28,13 @@ SERVICE_NAME_ALIASES = {
     "かもめ": "Kamome",
 }
 
+SEGMENTED_MINI_SHINKANSEN_SERVICES = {"Tsubasa"}
+
+MINI_SHINKANSEN_SERVICE_LINE_IDS = {
+    "Komachi": "SHINKANSEN_AKITA",
+    "Tsubasa": "SHINKANSEN_YAMAGATA",
+}
+
 
 def load_json(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as f:
@@ -45,8 +52,49 @@ def build_merge_key(train: dict[str, Any], dataset_direction: str | None) -> str
     service_name = canonical_service_name(train)
     service_number = train.get("service_number")
     if service_name and service_number:
+        if service_name in SEGMENTED_MINI_SHINKANSEN_SERVICES and train.get("train_number"):
+            return "::".join(["service_segment", service_name, str(service_number), str(train["train_number"])])
         return "::".join(["service", service_name, str(service_number)])
     return f"train::{train['train_number']}"
+
+
+def mini_shinkansen_line_score(train: dict[str, Any]) -> int:
+    service_name = canonical_service_name(train)
+    expected_line_id = MINI_SHINKANSEN_SERVICE_LINE_IDS.get(str(service_name or ""))
+    if not expected_line_id:
+        return 0
+    score = 0
+    if train.get("line_id") == expected_line_id:
+        score += 1
+    for stop in train.get("stop_times", []):
+        if stop.get("line_id") == expected_line_id:
+            score += 1
+    return score
+
+
+def apply_public_service_line_override(train: dict[str, Any]) -> None:
+    service_name = canonical_service_name(train)
+    expected_line_id = MINI_SHINKANSEN_SERVICE_LINE_IDS.get(str(service_name or ""))
+    if not expected_line_id:
+        return
+    train["line_id"] = expected_line_id
+    for stop in train.get("stop_times", []):
+        stop["line_id"] = expected_line_id
+
+
+def should_replace_current(current: dict[str, Any], candidate: dict[str, Any]) -> tuple[bool, str]:
+    current_line_score = mini_shinkansen_line_score(current)
+    candidate_line_score = mini_shinkansen_line_score(candidate)
+    if candidate_line_score > current_line_score:
+        return True, "replaced_with_preferred_mini_shinkansen_line"
+    if candidate_line_score < current_line_score:
+        return False, "kept_preferred_mini_shinkansen_line"
+
+    current_len = len(current.get("stop_times", []))
+    candidate_len = len(candidate.get("stop_times", []))
+    if candidate_len > current_len:
+        return True, "replaced_with_longer_stop_list"
+    return False, "kept_existing_longer_or_equal_stop_list"
 
 
 def merge_datasets(datasets: list[dict[str, Any]]) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
@@ -63,6 +111,7 @@ def merge_datasets(datasets: list[dict[str, Any]]) -> tuple[dict[str, dict[str, 
             candidate.setdefault("service_instance_id", train_number)
             if candidate.get("service_name") in SERVICE_NAME_ALIASES:
                 candidate["service_name"] = SERVICE_NAME_ALIASES[candidate["service_name"]]
+            apply_public_service_line_override(candidate)
             if dataset_direction and not candidate.get("direction_label"):
                 candidate["direction_label"] = dataset_direction
             merge_key = build_merge_key(candidate, dataset_direction)
@@ -75,14 +124,15 @@ def merge_datasets(datasets: list[dict[str, Any]]) -> tuple[dict[str, dict[str, 
             current = merged[merge_key]
             current_len = len(current.get("stop_times", []))
             candidate_len = len(candidate.get("stop_times", []))
+            should_replace, resolution = should_replace_current(current, candidate)
 
-            if candidate_len > current_len:
+            if should_replace:
                 merged[merge_key] = candidate
                 merge_report.append(
                     {
                         "merge_key": merge_key,
                         "train_number": train_number,
-                        "resolution": "replaced_with_longer_stop_list",
+                        "resolution": resolution,
                         "kept_stop_count": candidate_len,
                         "dropped_stop_count": current_len,
                         "source_dataset_id": dataset_id,
@@ -93,7 +143,7 @@ def merge_datasets(datasets: list[dict[str, Any]]) -> tuple[dict[str, dict[str, 
                     {
                         "merge_key": merge_key,
                         "train_number": train_number,
-                        "resolution": "kept_existing_longer_or_equal_stop_list",
+                        "resolution": resolution,
                         "kept_stop_count": current_len,
                         "dropped_stop_count": candidate_len,
                         "source_dataset_id": dataset_id,

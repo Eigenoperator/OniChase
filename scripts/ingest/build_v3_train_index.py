@@ -41,6 +41,8 @@ DATASET_SPECS = [
     ("shinkansen", "JR Shinkansen", DATA_DIR / "shinkansen_v2_weekday_train_instances_merged.json"),
 ]
 
+SEGMENTED_MINI_SHINKANSEN_SERVICES = {"Tsubasa"}
+
 
 MANUAL_STATION_KEY_ALIASES = {
     "Abukuma": "あぶくま",
@@ -378,9 +380,39 @@ def normalized_train_signature(train: dict[str, Any]) -> tuple:
     )
 
 
-def choose_best_normalized_train(current: dict[str, Any] | None, candidate: dict[str, Any]) -> dict[str, Any]:
+def operating_segment_suffix(train: dict[str, Any]) -> str:
+    match = re.search(r"([A-Z])$", str(train.get("operating_number") or train.get("train_number") or ""))
+    return match.group(1) if match else ""
+
+
+def segmented_mini_shinkansen_pair_score(
+    train: dict[str, Any],
+    segment_suffixes_by_service_number: dict[tuple[str, str], set[str]],
+) -> int:
+    if train.get("service_name") not in SEGMENTED_MINI_SHINKANSEN_SERVICES:
+        return 0
+    service_number = str(train.get("service_number") or "")
+    suffix = operating_segment_suffix(train)
+    if suffix not in {"B", "M"}:
+        return 0
+    suffixes = segment_suffixes_by_service_number.get((str(train.get("service_name") or ""), service_number), set())
+    return 1 if {"B", "M"}.issubset(suffixes) else 0
+
+
+def choose_best_normalized_train(
+    current: dict[str, Any] | None,
+    candidate: dict[str, Any],
+    segment_suffixes_by_service_number: dict[tuple[str, str], set[str]] | None = None,
+) -> dict[str, Any]:
     if current is None:
         return candidate
+    segment_suffixes_by_service_number = segment_suffixes_by_service_number or {}
+    current_pair_score = segmented_mini_shinkansen_pair_score(current, segment_suffixes_by_service_number)
+    candidate_pair_score = segmented_mini_shinkansen_pair_score(candidate, segment_suffixes_by_service_number)
+    if candidate_pair_score > current_pair_score:
+        return candidate
+    if candidate_pair_score < current_pair_score:
+        return current
     current_stops = current.get("stops") or []
     candidate_stops = candidate.get("stops") or []
     if len(candidate_stops) > len(current_stops):
@@ -392,9 +424,20 @@ def choose_best_normalized_train(current: dict[str, Any] | None, candidate: dict
 
 def dedupe_normalized_trains(trains: list[dict[str, Any]]) -> list[dict[str, Any]]:
     by_signature: dict[tuple, dict[str, Any]] = {}
+    segment_suffixes_by_service_number: dict[tuple[str, str], set[str]] = defaultdict(set)
+    for train in trains:
+        if train.get("service_name") in SEGMENTED_MINI_SHINKANSEN_SERVICES:
+            key = (str(train.get("service_name") or ""), str(train.get("service_number") or ""))
+            suffix = operating_segment_suffix(train)
+            if suffix:
+                segment_suffixes_by_service_number[key].add(suffix)
     for train in trains:
         signature = normalized_train_signature(train)
-        by_signature[signature] = choose_best_normalized_train(by_signature.get(signature), train)
+        by_signature[signature] = choose_best_normalized_train(
+            by_signature.get(signature),
+            train,
+            segment_suffixes_by_service_number,
+        )
     return list(by_signature.values())
 
 
