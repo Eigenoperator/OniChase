@@ -12,6 +12,7 @@
       --ink: #182635;
       --muted: #647487;
       --accent: #1a62c2;
+      --hot: #d9485f;
       --shadow: 0 18px 40px rgba(22, 34, 48, 0.12);
       --shadow-soft: 0 10px 24px rgba(22, 34, 48, 0.08);
     }
@@ -89,7 +90,7 @@
     .shell {
       min-height: 0;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 320px;
+      grid-template-columns: minmax(0, 1fr) 390px;
       gap: 20px;
       padding: 20px 24px 24px;
     }
@@ -195,6 +196,14 @@
       gap: 10px;
     }
 
+    .departure-list {
+      display: grid;
+      gap: 8px;
+      max-height: 42vh;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
     .mini-card {
       width: 100%;
       text-align: left;
@@ -208,6 +217,21 @@
     .mini-card.active {
       border-color: rgba(26,98,194,0.34);
       background: rgba(26,98,194,0.10);
+    }
+
+    .mini-card.train {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+
+    .mini-card.train .time {
+      color: var(--hot);
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+      min-width: 48px;
     }
 
     .mini-card strong {
@@ -271,6 +295,17 @@
         </section>
 
         <section>
+          <div class="section-label">Station Departures</div>
+          <div id="departure-info" class="info-box">Click a station on the map.</div>
+          <div id="departure-list" class="departure-list" style="margin-top: 10px;"></div>
+        </section>
+
+        <section>
+          <div class="section-label">Selected Train</div>
+          <div id="train-info" class="info-box">Choose a train from the departure board.</div>
+        </section>
+
+        <section>
           <div class="section-label">JR Service Families</div>
           <div id="family-list" class="card-list"></div>
         </section>
@@ -279,15 +314,29 @@
   </main>
 
   <script>
+    const DATA_BASE = window.location.pathname.includes('/ui/')
+      ? '../data'
+      : './data';
     const DATA_URL = window.location.pathname.includes('/ui/')
       ? '../data/v3_tokyo_phase1_service_views.json'
       : './data/v3_tokyo_phase1_service_views.json';
+    const TRAIN_MANIFEST_URL = `${DATA_BASE}/v3_train_manifest.json`;
+    const DEPARTURES_URL = `${DATA_BASE}/v3_station_departures.json.gz`;
+    const UNIFIED_TRAINS_URL = `${DATA_BASE}/v3_trains_unified.json.gz`;
 
     const state = {
       data: null,
       projection: null,
       viewMode: 'physical',
       selectedFamilyId: null,
+      selectedStationKey: null,
+      selectedTrainId: null,
+      departures: null,
+      trainIndex: null,
+      aliasToStationKey: new Map(),
+      selectedTrain: null,
+      selectedTrainStopKeys: new Set(),
+      selectedTrainLineKeys: new Set(),
       dragging: false,
       zoom: 1,
       minZoom: 0.8,
@@ -296,6 +345,8 @@
       panY: 0,
       dragStartX: 0,
       dragStartY: 0,
+      dragStartSvgX: 0,
+      dragStartSvgY: 0,
       panStartX: 0,
       panStartY: 0,
       labelEntries: [],
@@ -315,6 +366,9 @@
     const mapStats = document.getElementById('map-stats');
     const selectionInfo = document.getElementById('selection-info');
     const familyList = document.getElementById('family-list');
+    const departureInfo = document.getElementById('departure-info');
+    const departureList = document.getElementById('departure-list');
+    const trainInfo = document.getElementById('train-info');
 
     document.getElementById('physical-btn').addEventListener('click', () => setViewMode('physical'));
     document.getElementById('service-btn').addEventListener('click', () => setViewMode('service'));
@@ -326,6 +380,53 @@
 
     function sqr(value) {
       return value * value;
+    }
+
+    function normalizeKey(value) {
+      return String(value || '')
+        .normalize('NFKC')
+        .trim()
+        .toLowerCase()
+        .replace(/[（]/g, '(')
+        .replace(/[）]/g, ')')
+        .replace(/\([^)]*\)/g, '')
+        .replace(/[\s\-‐‑‒–—ー・･'’`]/g, '');
+    }
+
+    function stationKeyForName(name) {
+      const key = normalizeKey(name);
+      return state.aliasToStationKey.get(key) || key;
+    }
+
+    function stationKeyForMapStation(station) {
+      return stationKeyForName(station.name_ja || station.name_en || '');
+    }
+
+    function eventToSvgPoint(event) {
+      const point = svg.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+      const transformed = point.matrixTransform(svg.getScreenCTM().inverse());
+      return {
+        x: transformed.x,
+        y: transformed.y,
+      };
+    }
+
+    async function fetchJsonMaybeGz(url) {
+      if (!url.endsWith('.gz')) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to load ${url}`);
+        return response.json();
+      }
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Failed to load ${url}`);
+      if (!('DecompressionStream' in window)) {
+        throw new Error('This browser cannot decompress gzip data for the v3 timetable index.');
+      }
+      const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
+      const text = await new Response(stream).text();
+      return JSON.parse(text);
     }
 
     function pointSegmentDistanceSq(px, py, ax, ay, bx, by) {
@@ -375,6 +476,36 @@
         .some((line) => stationTouchesPhysicalLine(station, line));
     }
 
+    function lineMatchesSelectedTrain(line) {
+      if (!state.selectedTrain || !state.selectedTrainLineKeys.size) return false;
+      const candidates = [
+        line.line_name_ja,
+        line.label,
+        line.operator_ja,
+        `${line.operator_ja || ''}${line.line_name_ja || ''}`,
+      ].map(normalizeKey).filter(Boolean);
+      return candidates.some((candidate) => {
+        for (const selected of state.selectedTrainLineKeys) {
+          if (candidate === selected || candidate.includes(selected) || selected.includes(candidate)) return true;
+        }
+        return false;
+      });
+    }
+
+    function stationCircleMarkup(station, zoomScale) {
+      const key = `${station.name_ja}_${station.lon}_${station.lat}`;
+      const point = state.labelEntryByKey.get(key)?.point || state.projection.project(station.lat, station.lon);
+      const radius = clamp((station.is_priority ? 0.78 : 0.58) / Math.pow(zoomScale, 0.95), 0.05, station.is_priority ? 0.78 : 0.58);
+      const strokeWidth = clamp((station.is_priority ? 0.28 : 0.22) / Math.pow(zoomScale, 0.42), 0.04, station.is_priority ? 0.28 : 0.22);
+      const mapStationKey = stationKeyForMapStation(station);
+      const selectedStop = state.selectedTrainStopKeys.has(mapStationKey);
+      const selectedStation = mapStationKey === state.selectedStationKey;
+      const fill = selectedStop ? '#ffd45c' : selectedStation ? '#d9485f' : '#ffffff';
+      const stroke = selectedStop || selectedStation ? '#9a2636' : '#17324d';
+      const adjustedRadius = selectedStop || selectedStation ? radius * 1.7 : radius;
+      return `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="${adjustedRadius.toFixed(2)}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth.toFixed(2)}" />`;
+    }
+
     function makeProjection(bounds) {
       const width = 1200;
       const height = 920;
@@ -402,7 +533,7 @@
     }
 
     function visibilityCacheKey() {
-      return `${state.viewMode}|${state.selectedFamilyId || ''}|${zoomBucket()}`;
+      return `${state.viewMode}|${state.selectedFamilyId || ''}|${state.selectedStationKey || ''}|${state.selectedTrainId || ''}|${zoomBucket()}`;
     }
 
     function visibleStations() {
@@ -615,12 +746,8 @@
       if (state.pathMarkupCache.has(cacheKey)) {
         const cached = state.pathMarkupCache.get(cacheKey);
         const stationMarkup = stationMarkerEntries().map((station) => {
-          const key = `${station.name_ja}_${station.lon}_${station.lat}`;
-          const point = state.labelEntryByKey.get(key)?.point || state.projection.project(station.lat, station.lon);
           const zoomScale = Math.max(1, state.zoom);
-          const radius = clamp((station.is_priority ? 0.78 : 0.58) / Math.pow(zoomScale, 0.95), 0.05, station.is_priority ? 0.78 : 0.58);
-          const strokeWidth = clamp((station.is_priority ? 0.28 : 0.22) / Math.pow(zoomScale, 0.42), 0.04, station.is_priority ? 0.28 : 0.22);
-          return `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="${radius.toFixed(2)}" fill="#ffffff" stroke="#17324d" stroke-width="${strokeWidth.toFixed(2)}" />`;
+          return stationCircleMarkup(station, zoomScale);
         }).join('');
         return [
           `<rect x="0" y="0" width="${state.projection.width}" height="${state.projection.height}" fill="transparent" />`,
@@ -646,9 +773,12 @@
           opacity = 0.9;
         }
 
-        const outerWidth = clamp((state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 10 : 7) : 7) / Math.pow(zoomScale, 1.08), 0.22, state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 10 : 7) : 7);
-        const innerWidth = clamp((state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 5.2 : 3.4) : 3.4) / Math.pow(zoomScale, 1.08), 0.12, state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 5.2 : 3.4) : 3.4);
-        return drawPath(line.projectedD, color, outerWidth, innerWidth, opacity);
+        const trainSelected = lineMatchesSelectedTrain(line);
+        const outerBase = trainSelected ? 11 : state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 10 : 7) : 7;
+        const innerBase = trainSelected ? 6.2 : state.viewMode === 'physical' ? (line.kind === 'shinkansen' ? 5.2 : 3.4) : 3.4;
+        const outerWidth = clamp(outerBase / Math.pow(zoomScale, 1.08), 0.22, outerBase);
+        const innerWidth = clamp(innerBase / Math.pow(zoomScale, 1.08), 0.12, innerBase);
+        return drawPath(line.projectedD, trainSelected ? '#d9485f' : color, outerWidth, innerWidth, trainSelected ? 0.98 : opacity);
       }).join('');
 
       const servicePaths = state.viewMode === 'service' && family
@@ -660,11 +790,7 @@
         : '';
 
       const stationMarkup = stationMarkerEntries().map((station) => {
-        const key = `${station.name_ja}_${station.lon}_${station.lat}`;
-        const point = state.labelEntryByKey.get(key)?.point || state.projection.project(station.lat, station.lon);
-        const radius = clamp((station.is_priority ? 0.78 : 0.58) / Math.pow(zoomScale, 0.95), 0.05, station.is_priority ? 0.78 : 0.58);
-        const strokeWidth = clamp((station.is_priority ? 0.28 : 0.22) / Math.pow(zoomScale, 0.42), 0.04, station.is_priority ? 0.28 : 0.22);
-        return `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="${radius.toFixed(2)}" fill="#ffffff" stroke="#17324d" stroke-width="${strokeWidth.toFixed(2)}" />`;
+        return stationCircleMarkup(station, zoomScale);
       }).join('');
 
       state.pathMarkupCache.set(cacheKey, { physicalPaths, servicePaths });
@@ -695,6 +821,107 @@
           setViewMode('service');
         });
       });
+      renderDepartures();
+      renderSelectedTrain();
+    }
+
+    function renderDepartures() {
+      if (!state.departures) {
+        departureInfo.textContent = 'Loading v3 timetable index...';
+        departureList.innerHTML = '';
+        return;
+      }
+      if (!state.selectedStationKey) {
+        departureInfo.textContent = 'Click a station on the map.';
+        departureList.innerHTML = '';
+        return;
+      }
+      const station = state.departures.stations[state.selectedStationKey];
+      if (!station) {
+        departureInfo.textContent = `No indexed departures for ${state.selectedStationKey}.`;
+        departureList.innerHTML = '';
+        return;
+      }
+      const departures = station.departures || [];
+      departureInfo.textContent = `${station.display_name}\n${departures.length} real departures indexed\nAliases: ${(station.aliases || []).slice(0, 5).join(', ')}`;
+      departureList.innerHTML = departures.slice(0, 120).map((departure) => `
+        <button class="mini-card train ${departure.train_id === state.selectedTrainId ? 'active' : ''}" data-train-id="${departure.train_id}">
+          <span class="time">${departure.time || '--:--'}</span>
+          <span>
+            <strong>${departure.service_name || departure.operator} ${departure.train_number || ''}</strong>
+            <span>${departure.operator} / ${departure.line || 'line unknown'} / to ${departure.destination || departure.direction || 'unknown'}</span>
+            <span>${departure.platform ? `Platform ${departure.platform}` : ''}</span>
+          </span>
+        </button>
+      `).join('');
+      departureList.querySelectorAll('[data-train-id]').forEach((node) => {
+        node.addEventListener('click', () => selectTrain(node.getAttribute('data-train-id')));
+      });
+    }
+
+    function renderSelectedTrain() {
+      if (!state.selectedTrainId) {
+        trainInfo.textContent = 'Choose a train from the departure board.';
+        return;
+      }
+      if (!state.selectedTrain) {
+        trainInfo.textContent = 'Loading selected train...';
+        return;
+      }
+      const train = state.selectedTrain;
+      const stopNames = train.stops.map((stop) => `${stop.departure || stop.arrival || '--:--'} ${stop.station_name}`).join('\n');
+      trainInfo.textContent = `${train.operator} / ${train.line || 'line unknown'}\n${train.service_name || ''} ${train.train_number || ''}\nTo ${train.direction || train.stops.at(-1)?.station_name || 'unknown'}\n\nStops:\n${stopNames}`;
+    }
+
+    async function ensureTrainIndex() {
+      if (state.trainIndex) return;
+      const payload = await fetchJsonMaybeGz(UNIFIED_TRAINS_URL);
+      state.trainIndex = new Map(payload.trains.map((train) => [train.id, train]));
+    }
+
+    async function selectTrain(trainId) {
+      state.selectedTrainId = trainId;
+      state.selectedTrain = null;
+      renderSelectedTrain();
+      await ensureTrainIndex();
+      state.selectedTrain = state.trainIndex.get(trainId) || null;
+      state.selectedTrainStopKeys = new Set((state.selectedTrain?.stops || []).map((stop) => stop.station_key));
+      state.selectedTrainLineKeys = new Set((state.selectedTrain?.stops || [])
+        .map((stop) => normalizeKey(stop.line))
+        .filter(Boolean));
+      state.pathMarkupCache.clear();
+      render();
+    }
+
+    function selectNearestStation(event) {
+      if (!state.data || !state.projection) return;
+      const clickPoint = eventToSvgPoint(event);
+      const candidates = [];
+      for (const station of visibleStations()) {
+        const point = state.projection.project(station.lat, station.lon);
+        const screenX = point.x * state.zoom + state.panX;
+        const screenY = point.y * state.zoom + state.panY;
+        const distance = Math.hypot(screenX - clickPoint.x, screenY - clickPoint.y);
+        if (distance <= 18) {
+          candidates.push({ station, distance });
+        }
+      }
+      if (!candidates.length) return;
+      candidates.sort((a, b) => {
+        const aHasDepartures = !!state.departures?.stations?.[stationKeyForMapStation(a.station)];
+        const bHasDepartures = !!state.departures?.stations?.[stationKeyForMapStation(b.station)];
+        if (!!b.station.is_priority !== !!a.station.is_priority) return Number(!!b.station.is_priority) - Number(!!a.station.is_priority);
+        if (bHasDepartures !== aHasDepartures) return Number(bHasDepartures) - Number(aHasDepartures);
+        return a.distance - b.distance;
+      });
+      const best = candidates[0];
+      state.selectedStationKey = stationKeyForMapStation(best.station);
+      state.selectedTrainId = null;
+      state.selectedTrain = null;
+      state.selectedTrainStopKeys = new Set();
+      state.selectedTrainLineKeys = new Set();
+      state.pathMarkupCache.clear();
+      render();
     }
 
     function updateLabelLayer() {
@@ -758,8 +985,16 @@
       state.dragging = true;
       state.dragStartX = event.clientX;
       state.dragStartY = event.clientY;
+      const point = eventToSvgPoint(event);
+      state.dragStartSvgX = point.x;
+      state.dragStartSvgY = point.y;
       state.panStartX = state.panX;
       state.panStartY = state.panY;
+    });
+
+    svg.addEventListener('click', (event) => {
+      if (Math.hypot(event.clientX - state.dragStartX, event.clientY - state.dragStartY) > 4) return;
+      selectNearestStation(event);
     });
 
     window.addEventListener('mouseup', () => {
@@ -768,16 +1003,17 @@
 
     window.addEventListener('mousemove', (event) => {
       if (!state.dragging) return;
-      state.panX = state.panStartX + (event.clientX - state.dragStartX);
-      state.panY = state.panStartY + (event.clientY - state.dragStartY);
+      const point = eventToSvgPoint(event);
+      state.panX = state.panStartX + (point.x - state.dragStartSvgX);
+      state.panY = state.panStartY + (point.y - state.dragStartSvgY);
       applyViewport();
     });
 
     svg.addEventListener('wheel', (event) => {
       event.preventDefault();
-      const rect = svg.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left;
-      const mouseY = event.clientY - rect.top;
+      const point = eventToSvgPoint(event);
+      const mouseX = point.x;
+      const mouseY = point.y;
       const prevZoom = state.zoom;
       const factor = Math.exp(-event.deltaY * 0.0018);
       state.zoom = clamp(state.zoom * factor, state.minZoom, state.maxZoom);
@@ -813,7 +1049,18 @@
     async function init() {
       const response = await fetch(DATA_URL);
       if (!response.ok) throw new Error(`Failed to load ${DATA_URL}`);
-      state.data = await response.json();
+      const [mapData, manifest, departurePayload] = await Promise.all([
+        response.json(),
+        fetch(TRAIN_MANIFEST_URL).then((item) => item.json()),
+        fetchJsonMaybeGz(DEPARTURES_URL),
+      ]);
+      state.data = mapData;
+      state.manifest = manifest;
+      state.departures = departurePayload;
+      Object.entries(state.departures.stations || {}).forEach(([key, station]) => {
+        state.aliasToStationKey.set(normalizeKey(key), key);
+        (station.aliases || []).forEach((alias) => state.aliasToStationKey.set(normalizeKey(alias), key));
+      });
       state.projection = makeProjection(state.data.bounds);
       prepareGeometryCaches();
       buildLabelEntries();

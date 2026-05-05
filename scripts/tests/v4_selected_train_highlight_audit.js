@@ -54,11 +54,45 @@ function parseArgs(argv) {
   for (let index = 2; index < argv.length; index += 1) {
     const key = argv[index];
     if (!key.startsWith('--')) continue;
-    args[key.slice(2)] = argv[index + 1];
-    index += 1;
+    const next = argv[index + 1];
+    if (!next || next.startsWith('--')) {
+      args[key.slice(2)] = true;
+    } else {
+      args[key.slice(2)] = next;
+      index += 1;
+    }
   }
   if (!args['page-url']) throw new Error('Missing --page-url');
   return args;
+}
+
+function integerArg(args, key, defaultValue, { min = 0 } = {}) {
+  if (args[key] === undefined || args[key] === true || args[key] === '') return defaultValue;
+  const value = Number(args[key]);
+  if (!Number.isInteger(value) || value < min) {
+    throw new Error(`Invalid --${key}: expected integer >= ${min}`);
+  }
+  return value;
+}
+
+function auditOptionsFromArgs(args) {
+  const tripLimit = args['trip-limit'] === undefined
+    ? null
+    : integerArg(args, 'trip-limit', null, { min: 1 });
+  const shardCount = integerArg(args, 'shard-count', 1, { min: 1 });
+  const shardIndex = integerArg(args, 'shard-index', 0, { min: 0 });
+  if (shardIndex >= shardCount) {
+    throw new Error('--shard-index must be smaller than --shard-count');
+  }
+  return {
+    tripStart: integerArg(args, 'trip-start', 0, { min: 0 }),
+    tripLimit,
+    shardIndex,
+    shardCount,
+    maxFailures: integerArg(args, 'max-failures', 25, { min: 1 }),
+    progressEvery: integerArg(args, 'progress-every', 0, { min: 0 }),
+    skipOsakaLoop: Boolean(args['skip-osaka-loop']),
+  };
 }
 
 async function loadPage(pageUrl) {
@@ -86,11 +120,21 @@ async function loadPage(pageUrl) {
   return { browser, page };
 }
 
-async function auditSelectedTrainHighlights(page) {
-  return page.evaluate(() => {
+async function auditSelectedTrainHighlights(page, options = {}) {
+  return page.evaluate((auditOptions) => {
+    const tripStart = auditOptions?.tripStart || 0;
+    const tripLimit = Number.isFinite(auditOptions?.tripLimit) ? auditOptions.tripLimit : null;
+    const tripEnd = tripLimit ? tripStart + tripLimit : Number.POSITIVE_INFINITY;
+    const shardIndex = auditOptions?.shardIndex || 0;
+    const shardCount = auditOptions?.shardCount || 1;
+    const maxFailures = auditOptions?.maxFailures || 25;
+    const progressEvery = auditOptions?.progressEvery || 0;
+    const skipOsakaLoop = Boolean(auditOptions?.skipOsakaLoop);
     const samples = [];
     const failures = [];
     const routeStats = new Map();
+    let eligibleTripCount = 0;
+    let selectedTripCount = 0;
     let checkedTrips = 0;
     let multiTraceTrips = 0;
     let primaryCoverTrips = 0;
@@ -190,21 +234,35 @@ async function auditSelectedTrainHighlights(page) {
       })),
     });
 
-    function shouldCheckFutureStopCoverage(trip) {
-      const stationNames = new Set((trip?.stopTimes || []).map((stop) => displayNameForGroup(stop.stationGroupId)));
-      const traceNames = new Set((trip?.lineTrace || []).map((trace) => routeTitle(trace.routeId)));
-      return isShinkansenTrip(trip) &&
-        stationNames.has('高崎') &&
-        stationNames.has('熊谷') &&
-        stationNames.has('大宮') &&
-        stationNames.has('東京') &&
-        traceNames.has('北陸新幹線') &&
-        traceNames.has('上越新幹線');
+    const eligibleTripEntries = [...state.tripById.values()]
+      .map((trip) => ({ trip, stops: (trip.stopTimes || []).filter((stop) => Number.isFinite(stop.sequence)) }))
+      .filter(({ trip, stops }) => trip.routeId && state.routeById.has(trip.routeId) && stops.length >= 2)
+      .map((entry, eligibleIndex) => ({ ...entry, eligibleIndex }));
+    eligibleTripCount = eligibleTripEntries.length;
+    const selectedTripEntries = eligibleTripEntries.filter(({ eligibleIndex }) => (
+      eligibleIndex >= tripStart &&
+      eligibleIndex < tripEnd &&
+      (shardCount <= 1 || eligibleIndex % shardCount === shardIndex)
+    ));
+    selectedTripCount = selectedTripEntries.length;
+
+    function reachedFailureLimit() {
+      return failures.length >= maxFailures;
     }
 
-    for (const trip of state.tripById.values()) {
-      const stops = (trip.stopTimes || []).filter((stop) => Number.isFinite(stop.sequence));
-      if (!trip.routeId || !state.routeById.has(trip.routeId) || stops.length < 2) continue;
+    function reportProgress(entry) {
+      if (!progressEvery || checkedTrips % progressEvery !== 0) return;
+      console.log(`__V4_SELECTED_TRAIN_AUDIT_PROGRESS__ ${JSON.stringify({
+        checkedTrips,
+        selectedTripCount,
+        eligibleTripIndex: entry?.eligibleIndex ?? null,
+        eligibleTripCount,
+        failureCount: failures.length,
+      })}`);
+    }
+
+    for (const entry of selectedTripEntries) {
+      const { trip, stops } = entry;
       checkedTrips += 1;
       const uniqueTraceRouteIds = [...new Set((trip.lineTrace || []).map((trace) => trace.routeId).filter(Boolean))];
       if (uniqueTraceRouteIds.length > 1) multiTraceTrips += 1;
@@ -215,9 +273,8 @@ async function auditSelectedTrainHighlights(page) {
       let tripPrimaryCovered = false;
       for (const startStop of startsToCheck) {
         const ranges = futureLineTraceRanges(trip, startStop.sequence);
-        let pathSegments = null;
-        if (shouldCheckFutureStopCoverage(trip)) {
-          pathSegments = tripPathSegmentsFromSequence(trip, startStop.sequence);
+        let pathSegments = tripPathSegmentsFromSequence(trip, startStop.sequence);
+        if (pathSegments.length) {
           checkedFutureStopCoverageCases += 1;
           const futureStops = stops.filter((stop) => stop.sequence >= startStop.sequence);
           const missingStops = futureStops
@@ -235,7 +292,7 @@ async function auditSelectedTrainHighlights(page) {
                 pointCount: segment.coordinates.length,
               })),
             });
-            if (failures.length >= 25) break;
+            if (reachedFailureLimit()) break;
           }
         }
         const primaryCoordinates = routeSliceCoordinates(trip.routeId, startStop.stationGroupId, terminalStop.stationGroupId);
@@ -257,7 +314,7 @@ async function auditSelectedTrainHighlights(page) {
               ...sampleTrip(trip, startStop, ranges, 'stitched through train highlight must keep recorded current and downstream trace routes'),
               missingTraceRoutes: missingTraceRoutes.map((routeId) => routeTitle(routeId)),
             });
-            if (failures.length >= 25) break;
+            if (reachedFailureLimit()) break;
           }
         } else if (!trip.lineTrace?.length) {
           const expectedOnePrimaryRange = ranges.length === 1 &&
@@ -266,10 +323,9 @@ async function auditSelectedTrainHighlights(page) {
             ranges[0].toSequence === terminalStop.sequence;
           if (!expectedOnePrimaryRange) {
             failures.push(sampleTrip(trip, startStop, ranges, 'primary route can cover future run but highlight is fragmented'));
-            if (failures.length >= 25) break;
+            if (reachedFailureLimit()) break;
           }
         }
-        pathSegments = pathSegments || tripPathSegmentsFromSequence(trip, startStop.sequence);
         if (pathSegments.length) {
           checkedContinuousPathCases += 1;
           const continuityBreaks = continuityBreaksForSegments(pathSegments);
@@ -285,7 +341,7 @@ async function auditSelectedTrainHighlights(page) {
                 pointCount: segment.coordinates.length,
               })),
             });
-            if (failures.length >= 25) break;
+            if (reachedFailureLimit()) break;
           }
         }
         const primarySegmentCoordinates = routeSliceCoordinates(trip.routeId, startStop.stationGroupId, terminalStop.stationGroupId);
@@ -299,7 +355,7 @@ async function auditSelectedTrainHighlights(page) {
             primarySegmentStart: primarySegmentCoordinates[0] || null,
             primarySegmentEnd: primarySegmentCoordinates.at(-1) || null,
           });
-          if (failures.length >= 25) break;
+          if (reachedFailureLimit()) break;
         } else if (samples.length < 12 && uniqueTraceRouteIds.length > 1 && !mustUseRecordedTrace) {
           samples.push(sampleTrip(trip, startStop, ranges, 'multi-trace trip correctly collapsed to primary route'));
         }
@@ -311,7 +367,8 @@ async function auditSelectedTrainHighlights(page) {
         const routeTitleText = routeTitle(trip.routeId);
         routeStats.set(routeTitleText, (routeStats.get(routeTitleText) || 0) + 1);
       }
-      if (failures.length >= 25) break;
+      reportProgress(entry);
+      if (reachedFailureLimit()) break;
     }
 
     const osakaStationGroupId = [...state.stationGroupById.entries()]
@@ -325,7 +382,8 @@ async function auditSelectedTrainHighlights(page) {
     const eastStationIds = ['京橋', '鶴橋']
       .map((stationName) => namedRouteStationGroupId(osakaLoopRouteId, stationName))
       .filter(Boolean);
-    if (osakaStationGroupId && kansaiAirportStationGroupId && osakaLoopRouteId && westStationIds.length && eastStationIds.length) {
+    const fullRangeSelected = tripStart === 0 && !tripLimit && shardCount === 1;
+    if (!skipOsakaLoop && fullRangeSelected && osakaStationGroupId && kansaiAirportStationGroupId && osakaLoopRouteId && westStationIds.length && eastStationIds.length) {
       for (const trip of state.tripById.values()) {
         const stops = (trip.stopTimes || []).filter((stop) => Number.isFinite(stop.sequence));
         const startStop = stops.find((stop) => stop.stationGroupId === osakaStationGroupId);
@@ -357,13 +415,24 @@ async function auditSelectedTrainHighlights(page) {
               pointCount: segment.coordinates.length,
             })),
           });
-          if (failures.length >= 25) break;
+          if (reachedFailureLimit()) break;
         }
         if (checkedOsakaAirportLoopCases >= 40) break;
       }
     }
 
     return {
+      auditOptions: {
+        tripStart,
+        tripLimit,
+        shardIndex,
+        shardCount,
+        maxFailures,
+        progressEvery,
+        skipOsakaLoop,
+      },
+      eligibleTripCount,
+      selectedTripCount,
       checkedTrips,
       multiTraceTrips,
       primaryCoverTrips,
@@ -381,14 +450,22 @@ async function auditSelectedTrainHighlights(page) {
         .map(([route, count]) => ({ route, count })),
       samples,
     };
-  });
+  }, options);
 }
 
 async function main() {
   const args = parseArgs(process.argv);
+  const options = auditOptionsFromArgs(args);
   const { browser, page } = await loadPage(args['page-url']);
+  if (options.progressEvery) {
+    page.on('console', (message) => {
+      const text = message.text();
+      if (!text.startsWith('__V4_SELECTED_TRAIN_AUDIT_PROGRESS__')) return;
+      console.error(text.replace('__V4_SELECTED_TRAIN_AUDIT_PROGRESS__ ', '[progress] '));
+    });
+  }
   try {
-    const result = await auditSelectedTrainHighlights(page);
+    const result = await auditSelectedTrainHighlights(page, options);
     console.log(JSON.stringify(result, null, 2));
     if (result.failureCount) {
       process.exitCode = 1;

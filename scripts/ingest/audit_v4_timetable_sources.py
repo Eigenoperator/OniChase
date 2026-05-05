@@ -290,6 +290,24 @@ EXISTING_TIMETABLE_WORK: dict[str, list[dict[str, Any]]] = {
             "scopeNote": "v3 company-level Keisei batch.",
         }
     ],
+    "近畿日本鉄道": [
+        {
+            "sourceKind": "existing_v4_collector",
+            "title": "Kintetsu official T5/T7 timetable collector",
+            "scripts": ["scripts/ingest/collect_v4_kintetsu_official_train_instances.py"],
+            "dataFiles": ["data/v4_kintetsu_official_weekday_train_instances.json.gz"],
+            "scopeNote": "v4 company-level Kintetsu weekday batch from official station/train-detail timetables.",
+        }
+    ],
+    "名古屋鉄道": [
+        {
+            "sourceKind": "existing_v4_collector",
+            "title": "Meitetsu official TrainDiagram collector",
+            "scripts": ["scripts/ingest/collect_v4_meitetsu_official_train_instances.py"],
+            "dataFiles": ["data/v4_meitetsu_official_weekday_train_instances.json.gz"],
+            "scopeNote": "v4 company-level Meitetsu weekday batch from official Navitime-style TrainDiagram pages.",
+        }
+    ],
     "東京臨海高速鉄道": [
         {
             "sourceKind": "existing_v3_collector",
@@ -797,7 +815,13 @@ def build_registry(args: argparse.Namespace) -> dict[str, Any]:
             for path, count in (lead.get("trainInstanceCounts") or {}).items():
                 unique_existing_file_counts[path] = int(count)
         has_existing = any(
-            lead.get("sourceKind") in {"existing_v3_collector", "existing_partial_collector", "collector_available_not_full"}
+            lead.get("sourceKind")
+            in {
+                "existing_v3_collector",
+                "existing_v4_collector",
+                "existing_partial_collector",
+                "collector_available_not_full",
+            }
             for lead in source_leads
         )
         has_rail_gtfs = any(

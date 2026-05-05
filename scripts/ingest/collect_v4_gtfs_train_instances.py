@@ -15,6 +15,7 @@ import io
 import json
 import math
 import re
+import unicodedata
 import urllib.request
 import zipfile
 from collections import Counter, defaultdict
@@ -34,7 +35,7 @@ DEFAULT_SERVICE_DATE = "2026-04-27"
 
 
 def normalize_name(value: str) -> str:
-    text = (value or "").strip().lower()
+    text = unicodedata.normalize("NFKC", value or "").strip().lower()
     replacements = {
         "　": "",
         " ": "",
@@ -42,6 +43,10 @@ def normalize_name(value: str) -> str:
         "‐": "",
         "ー": "",
         "・": "",
+        "ヶ": "ケ",
+        "ヵ": "カ",
+        "挾": "挟",
+        "祇": "祗",
         "（": "",
         "）": "",
         "(": "",
@@ -62,7 +67,10 @@ def normalize_name(value: str) -> str:
 
 def normalize_name_variants(value: str) -> list[str]:
     raw = value or ""
-    variants = {normalize_name(raw)}
+    normalized_raw = normalize_name(raw)
+    variants = {normalized_raw}
+    if normalized_raw.endswith(("の", "ノ")) and len(normalized_raw) > 1:
+        variants.add(normalized_raw[:-1])
     without_parentheses = re_sub_parenthetical(raw)
     variants.add(normalize_name(without_parentheses))
     # Some tram GTFS feeds include sponsor prefixes before the actual stop name,
@@ -225,7 +233,12 @@ class V4StationMatcher:
                 suffix_candidates = [
                     station
                     for station_key, station in self.physical_by_operator.get(operator_key, [])
-                    if station_key.endswith(name_key) or name_key.endswith(station_key)
+                    if (
+                        station_key.endswith(name_key)
+                        or name_key.endswith(station_key)
+                        or station_key.startswith(name_key)
+                        or name_key.startswith(station_key)
+                    )
                 ]
                 if suffix_candidates:
                     candidates = suffix_candidates

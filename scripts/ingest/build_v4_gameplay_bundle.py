@@ -75,6 +75,63 @@ KINTETSU_LIMITED_EXPRESS_BRAND_RE = re.compile(
     r"(しまかぜ|ひのとり|あをによし|青の交響曲|アーバンライナー|伊勢志摩ライナー|さくらライナー|ビスタカー)"
 )
 
+NAMED_LIMITED_EXPRESS_LABEL_RE = re.compile(
+    r"(?:メトロ)?(?:はこね|えのしま|ホームウェイ|モーニングウェイ|ふじさん|さがみ)\d*号?|"
+    r"(?:サンダーバード|はるか|くろしお|こうのとり|きのさき|はしだて|まいづる|しらさぎ|"
+    r"成田エクスプレス|あずさ|かいじ|富士回遊|ひたち|ときわ|わかしお|さざなみ|しおさい|"
+    r"リバティ|けごん|きぬ|会津|りょうもう|スペーシア|サンライズ|踊り子|ひだ)\d*号?"
+)
+
+SHINKANSEN_SERVICE_LABEL_RE = re.compile(
+    r"(はやぶさ|はやて|やまびこ|なすの|こまち|つばさ|とき|たにがわ|かがやき|はくたか|あさま|つるぎ|"
+    r"のぞみ|ひかり|こだま|みずほ|さくら|つばめ|かもめ)(\d{1,4})?号?"
+)
+
+SHINKANSEN_PUBLIC_SERVICE_NAMES = {
+    "あさま": "Asama",
+    "かがやき": "Kagayaki",
+    "かもめ": "Kamome",
+    "こだま": "Kodama",
+    "こまち": "Komachi",
+    "さくら": "Sakura",
+    "つばさ": "Tsubasa",
+    "つばめ": "Tsubame",
+    "つるぎ": "Tsurugi",
+    "とき": "Toki",
+    "なすの": "Nasuno",
+    "のぞみ": "Nozomi",
+    "はくたか": "Hakutaka",
+    "はやて": "Hayate",
+    "はやぶさ": "Hayabusa",
+    "ひかり": "Hikari",
+    "みずほ": "Mizuho",
+    "やまびこ": "Yamabiko",
+    "たにがわ": "Tanigawa",
+}
+
+SHINKANSEN_SERVICE_CORRIDORS = {
+    "あさま": "SHINKANSEN_HOKURIKU",
+    "かがやき": "SHINKANSEN_HOKURIKU",
+    "こだま": "SHINKANSEN_TOKAIDO_SANYO",
+    "こまち": "SHINKANSEN_AKITA",
+    "さくら": "SHINKANSEN_KYUSHU",
+    "つばさ": "SHINKANSEN_YAMAGATA",
+    "つばめ": "SHINKANSEN_KYUSHU",
+    "つるぎ": "SHINKANSEN_HOKURIKU",
+    "とき": "SHINKANSEN_JOETSU",
+    "なすの": "SHINKANSEN_TOHOKU_HOKKAIDO",
+    "のぞみ": "SHINKANSEN_TOKAIDO_SANYO",
+    "はくたか": "SHINKANSEN_HOKURIKU",
+    "はやて": "SHINKANSEN_TOHOKU_HOKKAIDO",
+    "はやぶさ": "SHINKANSEN_TOHOKU_HOKKAIDO",
+    "ひかり": "SHINKANSEN_TOKAIDO_SANYO",
+    "みずほ": "SHINKANSEN_KYUSHU",
+    "やまびこ": "SHINKANSEN_TOHOKU_HOKKAIDO",
+    "たにがわ": "SHINKANSEN_JOETSU",
+}
+
+NISHI_KYUSHU_SHINKANSEN_STATION_NAMES = {"武雄温泉", "嬉野温泉", "新大村", "諫早", "長崎"}
+
 PHYSICAL_TRACE_WINS_LINE_NAMES = {
     "内房線",
     "外房線",
@@ -90,7 +147,31 @@ REVIEWED_PHYSICAL_SEGMENT_LINE_OVERRIDES = {
     frozenset(("京都", "堅田")): ("jr_west", "湖西線"),
     frozenset(("敦賀", "近江今津")): ("jr_west", "湖西線"),
     frozenset(("敦賀", "堅田")): ("jr_west", "湖西線"),
+    frozenset(("長崎", "諫早")): ("jr_kyushu", "長崎線"),
+    frozenset(("諫早", "新大村")): ("jr_kyushu", "大村線"),
+    frozenset(("諫早", "大村")): ("jr_kyushu", "大村線"),
 }
+
+REVIEWED_THROUGH_STOP_GROUP_REMAPS = [
+    {
+        "operator_id": "tobu",
+        "service_name_prefixes": ("THライナー",),
+        "station_name": "霞ヶ関",
+        "wrong_lines": {("tobu", "東上本線")},
+        "target_lines": {("tokyo_metro", "2号線日比谷線")},
+        "anchor_station_names": {"久喜", "東武動物公園", "春日部", "せんげん台", "新越谷"},
+    },
+]
+
+REVIEWED_THROUGH_PHYSICAL_STATION_REMAPS = [
+    {
+        "operator_id": "tokyo_metro",
+        "service_name_prefixes": ("メトロはこね", "メトロホームウェイ", "メトロえのしま"),
+        "station_names": {"北千住", "大手町", "霞ヶ関", "表参道"},
+        "target_line": ("tokyo_metro", "9号線千代田線"),
+        "anchor_station_names": {"成城学園前", "新百合ヶ丘", "町田", "本厚木", "箱根湯本"},
+    },
+]
 
 REMOTE_THROUGH_SOURCE_LINE_NAMES = {
     "横須賀線",
@@ -253,20 +334,37 @@ def gameplay_trip_signature(trip: dict[str, Any]) -> str:
     return hasher.hexdigest()
 
 
+def gameplay_trip_operational_signature(trip: dict[str, Any]) -> str:
+    hasher = hashlib.sha1()
+    for stop in trip.get("stopTimes") or []:
+        for part in (
+            stop.get("stationGroupId") or "",
+            stop.get("arrivalTimeSec") if isinstance(stop.get("arrivalTimeSec"), int) else "",
+            stop.get("departureTimeSec") if isinstance(stop.get("departureTimeSec"), int) else "",
+        ):
+            hasher.update(str(part).encode("utf-8"))
+            hasher.update(b"\0")
+    return hasher.hexdigest()
+
+
 def gameplay_trip_source_priority(trip_id: str) -> tuple[int, str]:
     text = str(trip_id or "")
+    if text.startswith("shinkansen:"):
+        return (0, text)
     if "_official:" in text or text.startswith("jr_west_official:") or text.startswith("jr_east_official:"):
         return (0, text)
-    if "_navitime:" in text or "navitime" in text:
+    if text.startswith("special_manual:") or "_special_manual:" in text:
         return (1, text)
-    return (2, text)
+    if "_navitime:" in text or "navitime" in text:
+        return (5, text)
+    return (3, text)
 
 
 def choose_best_gameplay_trip(current: dict[str, Any] | None, candidate: dict[str, Any]) -> dict[str, Any]:
     if current is None:
         return candidate
-    current_priority = gameplay_trip_source_priority(str(current.get("id") or ""))
-    candidate_priority = gameplay_trip_source_priority(str(candidate.get("id") or ""))
+    current_priority = gameplay_trip_source_priority(str(current.get("id") or ""))[0]
+    candidate_priority = gameplay_trip_source_priority(str(candidate.get("id") or ""))[0]
     if candidate_priority != current_priority:
         return candidate if candidate_priority < current_priority else current
     current_trace_count = len(current.get("lineTrace") or [])
@@ -285,6 +383,147 @@ def dedupe_gameplay_trip_instances(trip_instances: list[dict[str, Any]]) -> tupl
         by_signature[signature] = choose_best_gameplay_trip(by_signature.get(signature), trip)
     duplicate_count = sum(count - 1 for count in signature_counts.values() if count > 1)
     return sorted(by_signature.values(), key=lambda item: str(item.get("id") or "")), duplicate_count
+
+
+def trip_source_family(trip: dict[str, Any]) -> str:
+    text = str(trip.get("id") or trip.get("sourceFeedKey") or "")
+    if text.startswith("shinkansen:"):
+        return "curated"
+    if "_official:" in text or "_official" in text:
+        return "official"
+    if "_navitime:" in text or "navitime" in text:
+        return "navitime"
+    return "other"
+
+
+ROUTE_LIKE_SERVICE_LABEL_RE = re.compile(
+    r"(?:線|本線|支線|ライン|鉄道|鐵道|電鉄|電鐵|電車|軌道|ケーブル|鋼索)$"
+)
+
+
+def is_plain_route_label_trip(trip: dict[str, Any]) -> bool:
+    if trip.get("displayName") or trip.get("routeName") or trip.get("coupledRouteNames"):
+        return False
+    service_name = str(trip.get("serviceName") or trip.get("serviceNameJa") or "").strip()
+    if not service_name:
+        return True
+    return bool(ROUTE_LIKE_SERVICE_LABEL_RE.search(service_name))
+
+
+def dedupe_overlapping_source_trip_instances(trip_instances: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
+    by_signature: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for trip in trip_instances:
+        by_signature[gameplay_trip_operational_signature(trip)].append(trip)
+    deduped: list[dict[str, Any]] = []
+    duplicate_count = 0
+    for trips in by_signature.values():
+        families = {trip_source_family(trip) for trip in trips}
+        if len(trips) > 1 and "navitime" in families and len(families) > 1:
+            best: dict[str, Any] | None = None
+            for trip in trips:
+                best = choose_best_gameplay_trip(best, trip)
+            assert best is not None
+            deduped.append(best)
+            duplicate_count += len(trips) - 1
+        elif len(trips) > 1 and families == {"navitime"} and all(is_plain_route_label_trip(trip) for trip in trips):
+            best = None
+            for trip in trips:
+                best = choose_best_gameplay_trip(best, trip)
+            assert best is not None
+            deduped.append(best)
+            duplicate_count += len(trips) - 1
+        else:
+            deduped.extend(trips)
+    return sorted(deduped, key=lambda item: str(item.get("id") or "")), duplicate_count
+
+
+def named_limited_express_label(value: Any) -> str:
+    text = re.sub(r"\s+", "", str(value or "").strip())
+    if not text:
+        return ""
+    match = NAMED_LIMITED_EXPRESS_LABEL_RE.search(text)
+    if not match:
+        return ""
+    return match.group(0)
+
+
+def named_limited_express_family(value: Any) -> str:
+    label = named_limited_express_label(value)
+    if not label:
+        return ""
+    return re.sub(r"\d+号$", "", label)
+
+
+def shinkansen_service_match_for_train(train: dict[str, Any]) -> re.Match[str] | None:
+    text = "".join(
+        re.sub(r"\s+", "", str(train.get(field) or ""))
+        for field in ("service_name_detail", "display_name", "service_name", "route_name")
+    )
+    if not text:
+        return None
+    return SHINKANSEN_SERVICE_LABEL_RE.search(text)
+
+
+def train_has_shinkansen_physical_evidence(
+    train: dict[str, Any],
+    physical_station_by_id: dict[str, dict[str, Any]],
+) -> bool:
+    evidence_count = 0
+    for stop in train.get("stop_times") or []:
+        physical_station = physical_station_by_id.get(stop.get("physical_station_id") or stop.get("physicalStationId") or "")
+        line_text = " ".join(
+            str(value or "")
+            for value in (
+                stop.get("line_name"),
+                stop.get("physical_line_name"),
+                (physical_station or {}).get("lineName"),
+            )
+        )
+        if "新幹線" in line_text:
+            evidence_count += 1
+    if evidence_count >= 2:
+        return True
+    station_names = {
+        str(stop.get("station_name_raw") or stop.get("station_name") or "").strip()
+        for stop in train.get("stop_times") or []
+    }
+    return len(station_names & NISHI_KYUSHU_SHINKANSEN_STATION_NAMES) >= 2
+
+
+def reviewed_shinkansen_route_override_for_train(
+    train: dict[str, Any],
+    physical_station_by_id: dict[str, dict[str, Any]],
+) -> dict[str, str] | None:
+    match = shinkansen_service_match_for_train(train)
+    if not match:
+        return None
+    service_name_ja = match.group(1)
+    line_name = SHINKANSEN_SERVICE_CORRIDORS.get(service_name_ja)
+    if service_name_ja == "かもめ":
+        stop_names = {
+            str(stop.get("station_name_raw") or stop.get("station_name") or "").strip()
+            for stop in train.get("stop_times") or []
+        }
+        if len(stop_names & NISHI_KYUSHU_SHINKANSEN_STATION_NAMES) >= 2:
+            line_name = "SHINKANSEN_KYUSHU"
+    if not line_name:
+        return None
+    raw_operator_id = str(train.get("operator_id") or "").strip()
+    original_line_name = str(train.get("line_name") or "").strip()
+    if raw_operator_id == "shinkansen" and original_line_name.startswith("SHINKANSEN_"):
+        return None
+    if not train_has_shinkansen_physical_evidence(train, physical_station_by_id):
+        return None
+    service_number = match.group(2) or ""
+    return {
+        "operator_id": "shinkansen",
+        "operator_name": "JR Shinkansen",
+        "line_name": line_name,
+        "service_name": SHINKANSEN_PUBLIC_SERVICE_NAMES.get(service_name_ja, service_name_ja),
+        "service_number": service_number,
+        "display_name": f"{service_name_ja}{service_number}号" if service_number else service_name_ja,
+        "train_type": "新幹線",
+    }
 
 
 def public_service_name_for_train(train: dict[str, Any], line_name: str) -> str:
@@ -307,6 +546,9 @@ def public_service_name_for_train(train: dict[str, Any], line_name: str) -> str:
         return route_name.replace("寝台特急 ", "")
     if service_detail and train_type == "特急":
         return service_detail
+    inferred_limited_name = named_limited_express_family(service_detail) or named_limited_express_family(display_name)
+    if inferred_limited_name:
+        return inferred_limited_name
     if display_name and train_type == "特急":
         return display_name
     if train_type == "特急":
@@ -366,7 +608,7 @@ def gameplay_display_name_for_train(train: dict[str, Any], operator_name: str) -
     train_type = str(train.get("train_type") or "").strip()
     if not display_name:
         return ""
-    if not is_limited_train_type(train_type):
+    if not is_limited_train_type(train_type) and not named_limited_express_label(display_name):
         return ""
     if operator_name == "近畿日本鉄道" and is_limited_train_type(train_type):
         return normalize_kintetsu_limited_express_label(display_name)
@@ -380,7 +622,7 @@ def gameplay_route_name_for_train(train: dict[str, Any], operator_name: str) -> 
     train_type = str(train.get("train_type") or "").strip()
     if not route_name:
         return ""
-    if not is_limited_train_type(train_type):
+    if not is_limited_train_type(train_type) and not named_limited_express_label(route_name):
         return ""
     if operator_name == "西日本旅客鉄道" and is_jr_west_lettered_rapid_label(route_name):
         return ""
@@ -426,9 +668,9 @@ def resolve_operator_id(
     id_to_name: dict[str, str],
 ) -> str:
     if raw_operator_id is not None:
-        raw_operator_id = str(raw_operator_id)
+        raw_operator_id = builtins.str(raw_operator_id)
     if raw_operator_name is not None:
-        raw_operator_name = str(raw_operator_name)
+        raw_operator_name = builtins.str(raw_operator_name)
     if raw_operator_id and raw_operator_id in id_to_name:
         return raw_operator_id
     if raw_operator_name and raw_operator_name in name_to_id:
@@ -521,6 +763,9 @@ def trace_route_key_for_stop(
     id_to_name: dict[str, str],
 ) -> tuple[str, str] | None:
     raw_line_name = canonical_line_name(stop.get("line_name"))
+    train_line_name = canonical_line_name(train.get("line_name"))
+    if str(train.get("operator_id") or "") == "shinkansen" and is_synthetic_line_name(train.get("line_name")):
+        raw_line_name = train_line_name
     raw_operator_id = resolve_operator_id(
         train.get("operator_id"),
         train.get("operator_name") or stop.get("operator_name"),
@@ -584,6 +829,9 @@ def route_key_for_train(
     id_to_name: dict[str, str],
     physical_station_by_id: dict[str, dict[str, Any]],
 ) -> tuple[str, str]:
+    shinkansen_override = reviewed_shinkansen_route_override_for_train(train, physical_station_by_id)
+    if shinkansen_override:
+        return shinkansen_override["operator_id"], shinkansen_override["line_name"]
     raw_operator_id = resolve_operator_id(train.get("operator_id"), train.get("operator_name"), name_to_id, id_to_name)
     original_line_name = train.get("line_name") or (train.get("stop_times") or [{}])[0].get("line_name") or "未設定路線"
     raw_line_was_synthetic = is_synthetic_line_name(original_line_name)
@@ -738,6 +986,20 @@ def build_line_trace(
         # Keep short terminal tails on the train's source line when the
         # timetable itself labels those endpoint stops with that source line.
         preserve_source_line_terminal_tails = not is_limited_train_type(str(train.get("train_type") or ""))
+        def segment_has_non_fallback_unique_physical_line(index: int) -> bool:
+            if index < 0 or index >= len(normalized_stops) - 1:
+                return False
+            left_group_id = normalized_stops[index]["stationGroupId"]
+            right_group_id = normalized_stops[index + 1]["stationGroupId"]
+            shared_lines = (
+                reviewed_physical_lines_by_group.get(left_group_id, set()) &
+                reviewed_physical_lines_by_group.get(right_group_id, set())
+            )
+            if len(shared_lines) != 1:
+                return False
+            unique_line = next(iter(shared_lines))
+            return unique_line != fallback_key
+
         if preserve_source_line_terminal_tails:
             first_fallback_index = next((index for index, key in enumerate(segment_keys) if key == fallback_key), None)
             if first_fallback_index is not None and 0 < first_fallback_index <= 2:
@@ -747,7 +1009,11 @@ def build_line_trace(
                     )
                     for stop in normalized_stops[: first_fallback_index + 1]
                 ]
-                if raw_lines and all(line == fallback_line_name for line in raw_lines):
+                if (
+                    raw_lines and
+                    all(line == fallback_line_name for line in raw_lines) and
+                    not any(segment_has_non_fallback_unique_physical_line(index) for index in range(first_fallback_index))
+                ):
                     for index in range(first_fallback_index):
                         segment_keys[index] = fallback_key
             last_fallback_index = next(
@@ -762,7 +1028,11 @@ def build_line_trace(
                     )
                     for stop in normalized_stops[last_fallback_index + 1 :]
                 ]
-                if raw_lines and all(line == fallback_line_name for line in raw_lines):
+                if (
+                    raw_lines and
+                    all(line == fallback_line_name for line in raw_lines) and
+                    not any(segment_has_non_fallback_unique_physical_line(index) for index in range(last_fallback_index + 1, len(segment_keys)))
+                ):
                     for index in range(last_fallback_index + 1, len(segment_keys)):
                         segment_keys[index] = fallback_key
     for index in range(1, len(segment_keys) - 1):
@@ -943,6 +1213,125 @@ def rematch_ambiguous_stop_groups(
             stop["physical_station_id"] = physical_station_id
         stop["match_method"] = f"{stop.get('match_method') or 'matched'}+context_line"
         rematched_count += 1
+
+    return stops, rematched_count
+
+
+def rematch_reviewed_through_stop_groups(
+    raw_stops: list[dict[str, Any]],
+    train: dict[str, Any],
+    groups_by_station_name: dict[str, set[str]],
+    physical_station_by_group: dict[str, list[dict[str, Any]]],
+    reviewed_physical_lines_by_group: dict[str, set[tuple[str, str]]],
+) -> tuple[list[dict[str, Any]], int]:
+    stops = [dict(stop) for stop in sorted(raw_stops or [], key=lambda item: item.get("sequence", 0))]
+    if not stops:
+        return stops, 0
+
+    def stop_group_id(stop: dict[str, Any] | None) -> str:
+        return str((stop or {}).get("station_group_id") or (stop or {}).get("station_id") or "")
+
+    def stop_name(stop: dict[str, Any] | None) -> str:
+        return str((stop or {}).get("station_name_raw") or (stop or {}).get("station_name") or "").strip()
+
+    def best_physical_station_id(group_id: str, preferred_lines: set[tuple[str, str]]) -> str:
+        stations = physical_station_by_group.get(group_id) or []
+        for operator_id, line_name in preferred_lines:
+            for station in stations:
+                if (str(station.get("operatorId") or ""), str(station.get("lineName") or "")) == (operator_id, line_name):
+                    return str(station.get("id") or "")
+        return str(stations[0].get("id") or "") if stations else ""
+
+    operator_id = str(train.get("operator_id") or "").strip()
+    service_name = str(train.get("service_name") or train.get("display_name") or "").strip()
+    train_station_names = {stop_name(stop) for stop in stops}
+    rematched_count = 0
+
+    for rule in REVIEWED_THROUGH_STOP_GROUP_REMAPS:
+        if operator_id != rule["operator_id"]:
+            continue
+        if not any(service_name.startswith(prefix) for prefix in rule["service_name_prefixes"]):
+            continue
+        if not (train_station_names & set(rule["anchor_station_names"])):
+            continue
+        candidate_group_ids = groups_by_station_name.get(normalize_station_name(rule["station_name"]), set())
+        if not candidate_group_ids:
+            continue
+        target_group_id = next(
+            (
+                group_id
+                for group_id in sorted(candidate_group_ids)
+                if reviewed_physical_lines_by_group.get(group_id, set()) & set(rule["target_lines"])
+            ),
+            "",
+        )
+        if not target_group_id:
+            continue
+        target_physical_station_id = best_physical_station_id(target_group_id, set(rule["target_lines"]))
+        for stop in stops:
+            if normalize_station_name(stop_name(stop)) != normalize_station_name(rule["station_name"]):
+                continue
+            current_group_id = stop_group_id(stop)
+            current_lines = reviewed_physical_lines_by_group.get(current_group_id, set())
+            if not (current_lines & set(rule["wrong_lines"])) or current_group_id == target_group_id:
+                continue
+            stop["station_group_id"] = target_group_id
+            stop["station_id"] = target_group_id
+            if target_physical_station_id:
+                stop["physical_station_id"] = target_physical_station_id
+            stop["line_name"] = next(iter(rule["target_lines"]))[1]
+            stop["match_method"] = f"{stop.get('match_method') or 'matched'}+reviewed_through_group"
+            rematched_count += 1
+
+    return stops, rematched_count
+
+
+def rematch_reviewed_through_physical_stations(
+    raw_stops: list[dict[str, Any]],
+    train: dict[str, Any],
+    physical_station_by_group: dict[str, list[dict[str, Any]]],
+) -> tuple[list[dict[str, Any]], int]:
+    stops = [dict(stop) for stop in sorted(raw_stops or [], key=lambda item: item.get("sequence", 0))]
+    if not stops:
+        return stops, 0
+
+    def stop_group_id(stop: dict[str, Any] | None) -> str:
+        return str((stop or {}).get("station_group_id") or (stop or {}).get("station_id") or "")
+
+    def stop_name(stop: dict[str, Any] | None) -> str:
+        return str((stop or {}).get("station_name_raw") or (stop or {}).get("station_name") or "").strip()
+
+    def physical_station_id_for_line(group_id: str, line_key: tuple[str, str]) -> str:
+        operator_id, line_name = line_key
+        for station in physical_station_by_group.get(group_id) or []:
+            if (str(station.get("operatorId") or ""), str(station.get("lineName") or "")) == (operator_id, line_name):
+                return str(station.get("id") or "")
+        return ""
+
+    operator_id = str(train.get("operator_id") or "").strip()
+    service_name = str(train.get("service_name") or train.get("display_name") or "").strip()
+    train_station_names = {stop_name(stop) for stop in stops}
+    rematched_count = 0
+
+    for rule in REVIEWED_THROUGH_PHYSICAL_STATION_REMAPS:
+        if operator_id != rule["operator_id"]:
+            continue
+        if not any(service_name.startswith(prefix) for prefix in rule["service_name_prefixes"]):
+            continue
+        if not (train_station_names & set(rule["anchor_station_names"])):
+            continue
+        target_line = rule["target_line"]
+        for stop in stops:
+            if stop_name(stop) not in rule["station_names"]:
+                continue
+            group_id = stop_group_id(stop)
+            physical_station_id = physical_station_id_for_line(group_id, target_line)
+            if not physical_station_id or stop.get("physical_station_id") == physical_station_id:
+                continue
+            stop["physical_station_id"] = physical_station_id
+            stop["line_name"] = target_line[1]
+            stop["match_method"] = f"{stop.get('match_method') or 'matched'}+reviewed_through_physical"
+            rematched_count += 1
 
     return stops, rematched_count
 
@@ -1128,7 +1517,15 @@ def build_timetable(
     trip_instances = []
     route_station_groups: dict[str, set[str]] = defaultdict(set)
     line_station_groups: dict[tuple[str, str], set[str]] = defaultdict(set)
-    stats = {"skipped_short": 0, "skipped_no_route": 0, "skipped_mislabeled_foreign_train": 0, "rematched_ambiguous_stop_group": 0}
+    stats = {
+        "skipped_short": 0,
+        "skipped_no_route": 0,
+        "skipped_mislabeled_foreign_train": 0,
+        "rematched_ambiguous_stop_group": 0,
+        "rematched_reviewed_through_stop_group": 0,
+        "rematched_reviewed_through_physical_station": 0,
+        "remapped_shinkansen_labelled_trip": 0,
+    }
     seen_ids: set[str] = set()
     reviewed_physical_lines_by_group: dict[str, set[tuple[str, str]]] = defaultdict(set)
     physical_station_by_group: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -1158,7 +1555,25 @@ def build_timetable(
             reviewed_physical_lines_by_group,
         )
         stats["rematched_ambiguous_stop_group"] += rematched_count
+        raw_stop_times, reviewed_rematched_count = rematch_reviewed_through_stop_groups(
+            raw_stop_times,
+            train,
+            groups_by_station_name,
+            physical_station_by_group,
+            reviewed_physical_lines_by_group,
+        )
+        stats["rematched_reviewed_through_stop_group"] += reviewed_rematched_count
+        raw_stop_times, reviewed_physical_rematched_count = rematch_reviewed_through_physical_stations(
+            raw_stop_times,
+            train,
+            physical_station_by_group,
+        )
+        stats["rematched_reviewed_through_physical_station"] += reviewed_physical_rematched_count
         train_for_build = {**train, "stop_times": raw_stop_times}
+        shinkansen_override = reviewed_shinkansen_route_override_for_train(train_for_build, physical_station_by_id)
+        if shinkansen_override:
+            train_for_build.update(shinkansen_override)
+            stats["remapped_shinkansen_labelled_trip"] += 1
         operator_id, line_name = route_key_for_train(train_for_build, name_to_id, id_to_name, physical_station_by_id)
         if not operator_id or not line_name:
             stats["skipped_no_route"] += 1
@@ -1222,17 +1637,17 @@ def build_timetable(
                 "routeId": route_id,
                 "serviceName": service_name,
                 "serviceNameJa": service_name,
-                "displayName": gameplay_display_name_for_train(train, id_to_name.get(operator_id, operator_id)),
-                "routeName": gameplay_route_name_for_train(train, id_to_name.get(operator_id, operator_id)),
-                "coupledRouteNames": train.get("coupled_route_names") or train.get("coupledRouteNames") or [],
-                "serviceNumber": train.get("service_number") or train.get("train_number") or "",
-                "publicServiceNumber": train.get("service_number") or train.get("train_number") or "",
-                "operatingNumber": train.get("train_number") or train.get("service_number") or "",
-                "headsign": train.get("headsign") or train.get("destination") or "",
-                "origin": train.get("origin"),
-                "destination": train.get("destination"),
-                "sourceTripId": train.get("source_trip_id"),
-                "sourceFeedKey": train.get("source_feed_key"),
+                "displayName": gameplay_display_name_for_train(train_for_build, id_to_name.get(operator_id, operator_id)),
+                "routeName": gameplay_route_name_for_train(train_for_build, id_to_name.get(operator_id, operator_id)),
+                "coupledRouteNames": train_for_build.get("coupled_route_names") or train_for_build.get("coupledRouteNames") or [],
+                "serviceNumber": train_for_build.get("service_number") or train_for_build.get("train_number") or "",
+                "publicServiceNumber": train_for_build.get("service_number") or train_for_build.get("train_number") or "",
+                "operatingNumber": train_for_build.get("train_number") or train_for_build.get("service_number") or "",
+                "headsign": train_for_build.get("headsign") or train_for_build.get("destination") or "",
+                "origin": train_for_build.get("origin"),
+                "destination": train_for_build.get("destination"),
+                "sourceTripId": train_for_build.get("source_trip_id"),
+                "sourceFeedKey": train_for_build.get("source_feed_key"),
                 "lineTrace": line_trace,
                 "lineSequence": line_sequence,
                 "stopTimes": stop_times,
@@ -1240,6 +1655,8 @@ def build_timetable(
         )
     trip_instances, deduped_duplicate_count = dedupe_gameplay_trip_instances(trip_instances)
     stats["deduped_duplicate_trip"] = deduped_duplicate_count
+    trip_instances, deduped_overlapping_source_count = dedupe_overlapping_source_trip_instances(trip_instances)
+    stats["deduped_overlapping_source_trip"] = deduped_overlapping_source_count
     return trip_instances, route_station_groups, line_station_groups, stats
 
 

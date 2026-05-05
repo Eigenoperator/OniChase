@@ -136,6 +136,7 @@ class V4StopMatcher:
     def __init__(self, v4_map: dict[str, Any], v3_bundle: dict[str, Any]) -> None:
         self.v4_groups_by_name: dict[str, list[dict[str, Any]]] = defaultdict(list)
         self.v4_groups_by_id = {group["id"]: group for group in v4_map["stationGroups"]}
+        self.v4_physical_by_group: dict[str, list[dict[str, Any]]] = defaultdict(list)
         for group in v4_map["stationGroups"]:
             keys = set(group.get("nameKeys") or [])
             keys.add(group.get("nameJa") or "")
@@ -143,6 +144,8 @@ class V4StopMatcher:
                 normalized = normalize_name(key)
                 if normalized:
                     self.v4_groups_by_name[normalized].append(group)
+        for station in v4_map["physicalStations"]:
+            self.v4_physical_by_group[str(station.get("stationGroupId") or "")].append(station)
 
         self.v3_groups_by_id = {group["id"]: group for group in v3_bundle["stationGroups"]}
         self.v3_physical_by_id = {station["id"]: station for station in v3_bundle["physicalStations"]}
@@ -162,6 +165,39 @@ class V4StopMatcher:
             if matching:
                 return matching
         return physicals
+
+    def choose_physical_station(
+        self,
+        group: dict[str, Any],
+        desired_operator: str | None,
+        desired_line: str | None,
+        reference_points: list[dict[str, Any]],
+    ) -> dict[str, Any] | None:
+        stations = self.v4_physical_by_group.get(str(group.get("id") or ""), [])
+        if not stations:
+            return None
+        desired_line_key = normalize_line(desired_line)
+        ranked: list[tuple[float, dict[str, Any]]] = []
+        for station in stations:
+            score = 0.0
+            if desired_operator and station.get("operatorName") == desired_operator:
+                score += 5_000
+            if desired_line_key and normalize_line(station.get("lineName")) == desired_line_key:
+                score += 10_000
+            if reference_points:
+                distance = min(
+                    haversine_m(
+                        float(point["lat"]),
+                        float(point["lon"]),
+                        float(station["lat"]),
+                        float(station["lon"]),
+                    )
+                    for point in reference_points
+                )
+                score -= min(distance, 100_000) / 10
+            ranked.append((score, station))
+        ranked.sort(key=lambda item: item[0], reverse=True)
+        return ranked[0][1]
 
     def match_stop(
         self,
@@ -241,10 +277,12 @@ class V4StopMatcher:
             method = "name_operator_distance"
         else:
             method = "name_distance"
+        physical_station = self.choose_physical_station(best, desired_operator, desired_line, reference_points)
         return {
             "matched": True,
             "method": method,
             "stationGroupId": best["id"],
+            "physicalStationId": physical_station.get("id") if physical_station else None,
             "stationName": best["nameJa"],
             "candidateCount": len(candidates),
             "distanceMeters": round(distance, 1) if distance is not None else None,
@@ -298,7 +336,7 @@ def adapt_trains(v3_bundle: dict[str, Any], v3_unified: dict[str, Any], v4_map: 
                     "station_name_raw": match["stationName"],
                     "station_id": match["stationGroupId"],
                     "station_group_id": match["stationGroupId"],
-                    "physical_station_id": None,
+                    "physical_station_id": match.get("physicalStationId"),
                     "line_id": route.get("shortName") or hint.get("line"),
                     "line_name": match.get("lineName") or route.get("shortName") or hint.get("line"),
                     "arrival_hhmm": seconds_to_hhmm(stop.get("arrivalTimeSec")),

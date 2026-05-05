@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v4.timetable_source_registry.v1",
-  "generatedAt": "2026-04-26T04:37:41+00:00",
+  "generatedAt": "2026-04-27T10:37:43+00:00",
   "sourcePolicy": [
     "Prefer official GTFS/GTFS-JP/API sources before scraping timetable pages.",
     "Reuse the v3 station alias and station-group matching method for v4 timetable stop matching.",
@@ -28,15 +28,15 @@
   "coverageSummary": {
     "operatorCount": 178,
     "operatorLineCount": 596,
-    "gtfsRepositoryFeedsScanned": 564,
-    "operatorLeadKnownTrainInstances": 51018,
-    "uniqueExistingDataFiles": 17,
-    "uniqueKnownTrainInstancesFromExistingFiles": 49880,
+    "gtfsRepositoryFeedsScanned": 565,
+    "operatorLeadKnownTrainInstances": 62153,
+    "uniqueExistingDataFiles": 19,
+    "uniqueKnownTrainInstancesFromExistingFiles": 61015,
     "sourceStatusCounts": {
-      "existing_work": 11,
+      "existing_work": 13,
       "existing_work_and_external_candidate": 7,
       "external_candidate_found": 12,
-      "official_page_candidate_found": 148
+      "official_page_candidate_found": 146
     },
     "gtfsRepositoryMatchStats": {
       "matchedFeeds": 19,
@@ -3567,9 +3567,24 @@
       ],
       "physicalStationCount": 295,
       "trackCenterlineCount": 615,
-      "sourceStatus": "official_page_candidate_found",
-      "knownTrainInstanceCount": 0,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 6437,
       "sourceLeads": [
+        {
+          "sourceKind": "existing_v4_collector",
+          "title": "Meitetsu official TrainDiagram collector",
+          "scripts": [
+            "scripts/ingest/collect_v4_meitetsu_official_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v4_meitetsu_official_weekday_train_instances.json.gz"
+          ],
+          "scopeNote": "v4 company-level Meitetsu weekday batch from official Navitime-style TrainDiagram pages.",
+          "trainInstanceCounts": {
+            "data/v4_meitetsu_official_weekday_train_instances.json.gz": 6437
+          },
+          "totalKnownTrainInstances": 6437
+        },
         {
           "sourceKind": "official_timetable_page_candidate",
           "candidateStatus": "high_confidence",
@@ -4600,34 +4615,6 @@
         {
           "sourceKind": "gtfs_repository_candidate",
           "organizationName": "富山地方鉄道",
-          "feedName": "富山地方鉄道バス",
-          "feedPrefId": 16,
-          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=chitetsu*chitetsubus",
-          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/chitetsu/feeds/chitetsubus/files/feed.zip?uid=21af3af6-d6ee-430c-8b61-bfc4474f8909",
-          "licenseId": "CC0 1.0",
-          "fileFromDate": "2025-10-16",
-          "fileToDate": "2026-10-15",
-          "fileLastUpdatedAt": "2025-10-21T11:39:14.317684+09:00",
-          "routeTypes": [
-            3
-          ],
-          "sampleRouteNames": [
-            "運転教育・済生会病院線",
-            "運転教育・済生会病院線",
-            "新桜・老人・石坂～中央病院線",
-            "新桜・老人・石坂～中央病院線※学休日運休",
-            "新桜・老人・石坂～中央病院線",
-            "新桜・老人・石坂～中央病院線",
-            "新桜・老人・石坂～中央病院線",
-            "新桜・老人・石坂～中央病院線※学休日運休"
-          ],
-          "isRailLike": false,
-          "isBusOnly": true,
-          "candidateStatus": "rejected_bus_only_name_match"
-        },
-        {
-          "sourceKind": "gtfs_repository_candidate",
-          "organizationName": "富山地方鉄道",
           "feedName": "富山地方鉄道市内電車",
           "feedPrefId": 16,
           "feedPageUrl": "https://gtfs-data.jp/search?target_feed=chitetsu*chitetsushinaidensha",
@@ -4648,6 +4635,34 @@
             "富山港線（南富山）",
             "富山港線（南富山）",
             "富山港線（南富山）"
+          ],
+          "isRailLike": false,
+          "isBusOnly": true,
+          "candidateStatus": "rejected_bus_only_name_match"
+        },
+        {
+          "sourceKind": "gtfs_repository_candidate",
+          "organizationName": "富山地方鉄道",
+          "feedName": "富山地方鉄道バス",
+          "feedPrefId": 16,
+          "feedPageUrl": "https://gtfs-data.jp/search?target_feed=chitetsu*chitetsubus",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/chitetsu/feeds/chitetsubus/files/feed.zip?uid=21af3af6-d6ee-430c-8b61-bfc4474f8909",
+          "licenseId": "CC0 1.0",
+          "fileFromDate": "2025-10-16",
+          "fileToDate": "2026-10-15",
+          "fileLastUpdatedAt": "2025-10-21T11:39:14.317684+09:00",
+          "routeTypes": [
+            3
+          ],
+          "sampleRouteNames": [
+            "運転教育・済生会病院線",
+            "運転教育・済生会病院線",
+            "新桜・老人・石坂～中央病院線",
+            "新桜・老人・石坂～中央病院線※学休日運休",
+            "新桜・老人・石坂～中央病院線",
+            "新桜・老人・石坂～中央病院線",
+            "新桜・老人・石坂～中央病院線",
+            "新桜・老人・石坂～中央病院線※学休日運休"
           ],
           "isRailLike": false,
           "isBusOnly": true,
@@ -7615,11 +7630,11 @@
           "feedName": "熊本電鉄バス",
           "feedPrefId": 43,
           "feedPageUrl": "https://gtfs-data.jp/search?target_feed=kumamotodentetsu*kumamotodentetsu-bus",
-          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/kumamotodentetsu/feeds/kumamotodentetsu-bus/files/feed.zip?uid=467ae9cf-5b41-498c-a9d5-584f081a761d",
+          "fileUrl": "https://api.gtfs-data.jp/v2/organizations/kumamotodentetsu/feeds/kumamotodentetsu-bus/files/feed.zip?uid=4e520d63-8ed4-460b-82ce-9fe46f8971f6",
           "licenseId": "CC BY 4.0",
           "fileFromDate": "2026-03-14",
-          "fileToDate": "2026-07-28",
-          "fileLastUpdatedAt": "2026-04-26T04:05:26.507660+09:00",
+          "fileToDate": "2026-07-29",
+          "fileLastUpdatedAt": "2026-04-27T04:05:26.773861+09:00",
           "routeTypes": [
             3
           ],
@@ -9135,9 +9150,24 @@
       ],
       "physicalStationCount": 309,
       "trackCenterlineCount": 636,
-      "sourceStatus": "official_page_candidate_found",
-      "knownTrainInstanceCount": 0,
+      "sourceStatus": "existing_work",
+      "knownTrainInstanceCount": 4698,
       "sourceLeads": [
+        {
+          "sourceKind": "existing_v4_collector",
+          "title": "Kintetsu official T5/T7 timetable collector",
+          "scripts": [
+            "scripts/ingest/collect_v4_kintetsu_official_train_instances.py"
+          ],
+          "dataFiles": [
+            "data/v4_kintetsu_official_weekday_train_instances.json.gz"
+          ],
+          "scopeNote": "v4 company-level Kintetsu weekday batch from official station/train-detail timetables.",
+          "trainInstanceCounts": {
+            "data/v4_kintetsu_official_weekday_train_instances.json.gz": 4698
+          },
+          "totalKnownTrainInstances": 4698
+        },
         {
           "sourceKind": "official_timetable_page_candidate",
           "candidateStatus": "high_confidence",

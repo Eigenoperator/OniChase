@@ -1261,6 +1261,7 @@
       SHINKANSEN_KYUSHU: '九州新幹線',
       SHINKANSEN_NISHI_KYUSHU: '西九州新幹線',
       SHINKANSEN_SANYO_KYUSHU: '山陽・九州新幹線',
+      SHINKANSEN_TOHOKU_HOKKAIDO_AKITA: '東北・北海道・秋田新幹線',
       SHINKANSEN_TOHOKU_HOKKAIDO: '東北・北海道新幹線',
       SHINKANSEN_TOKAIDO_SANYO: '東海道・山陽新幹線',
       SHINKANSEN_YAMAGATA: '山形新幹線',
@@ -1320,6 +1321,7 @@
       SHINKANSEN_KYUSHU: ['九州新幹線'],
       SHINKANSEN_NISHI_KYUSHU: ['西九州新幹線'],
       SHINKANSEN_SANYO_KYUSHU: ['山陽新幹線', '九州新幹線'],
+      SHINKANSEN_TOHOKU_HOKKAIDO_AKITA: ['東北新幹線', '北海道新幹線', '田沢湖線', '奥羽線'],
       SHINKANSEN_TOHOKU_HOKKAIDO: ['東北新幹線', '北海道新幹線'],
       SHINKANSEN_TOKAIDO_SANYO: ['東海道新幹線', '山陽新幹線'],
       SHINKANSEN_YAMAGATA: ['東北新幹線', '奥羽線'],
@@ -1482,6 +1484,7 @@
       SHINKANSEN_KYUSHU: '新',
       SHINKANSEN_NISHI_KYUSHU: '新',
       SHINKANSEN_SANYO_KYUSHU: '新',
+      SHINKANSEN_TOHOKU_HOKKAIDO_AKITA: '新',
       SHINKANSEN_TOHOKU_HOKKAIDO: '新',
       SHINKANSEN_TOKAIDO_SANYO: '新',
       SHINKANSEN_YAMAGATA: '新',
@@ -1816,6 +1819,57 @@
           physicalLines: ['山陽新幹線', '九州新幹線'],
         },
       },
+      VIRTUAL_SHINKANSEN_TOHOKU_HOKKAIDO_AKITA: {
+        id: 'VIRTUAL_SHINKANSEN_TOHOKU_HOKKAIDO_AKITA',
+        operatorId: 'shinkansen',
+        operatorName: 'JR Shinkansen',
+        shortName: 'SHINKANSEN_TOHOKU_HOKKAIDO_AKITA',
+        longName: 'JR Shinkansen SHINKANSEN_TOHOKU_HOKKAIDO_AKITA',
+        color: '#2D9C5B',
+        textColor: '#ffffff',
+        mode: 'shinkansen',
+        tags: {
+          source: 'v4_virtual_corridor',
+          sourceOperatorId: 'shinkansen',
+          lineName: 'SHINKANSEN_TOHOKU_HOKKAIDO_AKITA',
+          displayRule: 'coupled_shared_corridor',
+          physicalLines: ['東北新幹線', '北海道新幹線', '田沢湖線', '奥羽線'],
+        },
+      },
+      VIRTUAL_SHINKANSEN_AKITA: {
+        id: 'VIRTUAL_SHINKANSEN_AKITA',
+        operatorId: 'shinkansen',
+        operatorName: 'JR Shinkansen',
+        shortName: 'SHINKANSEN_AKITA',
+        longName: 'JR Shinkansen SHINKANSEN_AKITA',
+        color: '#E5352E',
+        textColor: '#ffffff',
+        mode: 'shinkansen',
+        tags: {
+          source: 'v4_virtual_corridor',
+          sourceOperatorId: 'shinkansen',
+          lineName: 'SHINKANSEN_AKITA',
+          displayRule: 'operating_corridor',
+          physicalLines: ['東北新幹線', '田沢湖線', '奥羽線'],
+        },
+      },
+      VIRTUAL_SHINKANSEN_YAMAGATA: {
+        id: 'VIRTUAL_SHINKANSEN_YAMAGATA',
+        operatorId: 'shinkansen',
+        operatorName: 'JR Shinkansen',
+        shortName: 'SHINKANSEN_YAMAGATA',
+        longName: 'JR Shinkansen SHINKANSEN_YAMAGATA',
+        color: '#F39800',
+        textColor: '#102033',
+        mode: 'shinkansen',
+        tags: {
+          source: 'v4_virtual_corridor',
+          sourceOperatorId: 'shinkansen',
+          lineName: 'SHINKANSEN_YAMAGATA',
+          displayRule: 'operating_corridor',
+          physicalLines: ['東北新幹線', '奥羽線'],
+        },
+      },
       VIRTUAL_MAIBARA_TOKAIDO_BOUNDARY: {
         id: 'VIRTUAL_MAIBARA_TOKAIDO_BOUNDARY',
         operatorId: 'jr_central',
@@ -1841,6 +1895,7 @@
     const JR_CHUO_RAPID_ROUTE_ID = 'VIRTUAL_JR_EAST_CHUO_RAPID';
     const JR_CHUO_SOBU_LOCAL_ROUTE_ID = 'VIRTUAL_JR_EAST_CHUO_SOBU_LOCAL';
     const SANYO_KYUSHU_CORRIDOR_ROUTE_ID = 'VIRTUAL_SHINKANSEN_SANYO_KYUSHU';
+    const TOHOKU_HOKKAIDO_AKITA_CORRIDOR_ROUTE_ID = 'VIRTUAL_SHINKANSEN_TOHOKU_HOKKAIDO_AKITA';
     const MAIBARA_TOKAIDO_BOUNDARY_ROUTE_ID = 'VIRTUAL_MAIBARA_TOKAIDO_BOUNDARY';
     const REVIEWED_TRIP_PATH_HINTS = Object.freeze([
       {
@@ -1875,6 +1930,2233 @@
         legs: [
           { routeName: '関西空港線', operatorId: 'jr_west', to: '日根野' },
           { routeName: '阪和線', operatorId: 'jr_west', from: '日根野' },
+        ],
+      },
+      {
+        from: '岡山',
+        to: '上郡',
+        tripStationNames: ['鳥取'],
+        legs: [
+          { routeName: '山陽線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '上郡',
+        to: '岡山',
+        tripStationNames: ['鳥取'],
+        legs: [
+          { routeName: '山陽線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '智頭',
+        to: '郡家',
+        tripStationNames: ['上郡'],
+        legs: [
+          { routeName: '因美線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '郡家',
+        to: '智頭',
+        tripStationNames: ['上郡'],
+        legs: [
+          { routeName: '因美線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '郡家',
+        to: '鳥取',
+        tripStationNames: ['上郡'],
+        legs: [
+          { routeName: '因美線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '鳥取',
+        to: '郡家',
+        tripStationNames: ['上郡'],
+        legs: [
+          { routeName: '因美線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '小田原',
+        to: '熱海',
+        tripStationNames: ['伊豆急下田'],
+        legs: [
+          { routeName: '東海道線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '熱海',
+        to: '小田原',
+        tripStationNames: ['伊豆急下田'],
+        legs: [
+          { routeName: '東海道線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '天橋立',
+        to: '宮津',
+        tripStationNames: ['京都', '福知山'],
+        legs: [
+          { routeName: 'WILLER TRAINS宮津線', operatorId: 'willertrains' },
+        ],
+      },
+      {
+        from: '宮津',
+        to: '天橋立',
+        tripStationNames: ['京都', '福知山'],
+        legs: [
+          { routeName: 'WILLER TRAINS宮津線', operatorId: 'willertrains' },
+        ],
+      },
+      {
+        from: '宮津',
+        to: '大江',
+        tripStationNames: ['網野', '豊岡', '天橋立'],
+        legs: [
+          { routeName: 'WILLER TRAINS宮福線', operatorId: 'willertrains' },
+        ],
+      },
+      {
+        from: '大江',
+        to: '宮津',
+        tripStationNames: ['網野', '豊岡', '天橋立'],
+        legs: [
+          { routeName: 'WILLER TRAINS宮福線', operatorId: 'willertrains' },
+        ],
+      },
+      {
+        from: '大江',
+        to: '福知山',
+        tripStationNames: ['網野', '豊岡', '天橋立'],
+        legs: [
+          { routeName: 'WILLER TRAINS宮福線', operatorId: 'willertrains' },
+        ],
+      },
+      {
+        from: '福知山',
+        to: '大江',
+        tripStationNames: ['網野', '豊岡', '天橋立'],
+        legs: [
+          { routeName: 'WILLER TRAINS宮福線', operatorId: 'willertrains' },
+        ],
+      },
+      {
+        from: '飯能',
+        to: '横瀬',
+        tripStationNames: ['西武秩父'],
+        legs: [
+          { routeName: '西武池袋線', operatorId: 'seibu', to: '吾野' },
+          { routeName: '西武秩父線', operatorId: 'seibu', from: '吾野' },
+        ],
+      },
+      {
+        from: '横瀬',
+        to: '飯能',
+        tripStationNames: ['西武秩父'],
+        legs: [
+          { routeName: '西武秩父線', operatorId: 'seibu', to: '吾野' },
+          { routeName: '西武池袋線', operatorId: 'seibu', from: '吾野' },
+        ],
+      },
+      {
+        from: '飯能',
+        to: '西武秩父',
+        tripStationNames: ['池袋', '所沢'],
+        legs: [
+          { routeName: '西武池袋線', operatorId: 'seibu', to: '吾野' },
+          { routeName: '西武秩父線', operatorId: 'seibu', from: '吾野' },
+        ],
+      },
+      {
+        from: '西武秩父',
+        to: '飯能',
+        tripStationNames: ['池袋', '所沢'],
+        legs: [
+          { routeName: '西武秩父線', operatorId: 'seibu', to: '吾野' },
+          { routeName: '西武池袋線', operatorId: 'seibu', from: '吾野' },
+        ],
+      },
+      {
+        from: '横瀬',
+        to: '西武秩父',
+        tripStationNames: ['飯能', '池袋', '所沢'],
+        legs: [
+          { routeName: '西武秩父線', operatorId: 'seibu' },
+        ],
+      },
+      {
+        from: '西武秩父',
+        to: '横瀬',
+        tripStationNames: ['飯能', '池袋', '所沢'],
+        legs: [
+          { routeName: '西武秩父線', operatorId: 'seibu' },
+        ],
+      },
+      {
+        from: '東京',
+        to: '上野',
+        tripStationNames: ['大宮', '長野', '金沢', '敦賀', '新潟'],
+        legs: [
+          { routeName: '東北新幹線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '上野',
+        to: '東京',
+        tripStationNames: ['大宮', '長野', '金沢', '敦賀', '新潟'],
+        legs: [
+          { routeName: '東北新幹線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '上野',
+        to: '大宮',
+        tripStationNames: ['長野', '金沢', '敦賀', '新潟'],
+        legs: [
+          { routeName: '東北新幹線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '大宮',
+        to: '上野',
+        tripStationNames: ['長野', '金沢', '敦賀', '新潟'],
+        legs: [
+          { routeName: '東北新幹線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '東京',
+        to: '大宮',
+        tripStationNames: ['長野', '金沢', '敦賀', '新潟'],
+        legs: [
+          { routeName: '東北新幹線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '大宮',
+        to: '東京',
+        tripStationNames: ['長野', '金沢', '敦賀', '新潟'],
+        legs: [
+          { routeName: '東北新幹線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '大宮',
+        to: '高崎',
+        tripStationNames: ['軽井沢', '長野', '金沢', '敦賀', '新潟', '越後湯沢'],
+        legs: [
+          { routeName: '上越新幹線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '高崎',
+        to: '大宮',
+        tripStationNames: ['軽井沢', '長野', '金沢', '敦賀', '新潟', '越後湯沢'],
+        legs: [
+          { routeName: '上越新幹線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '大宮',
+        to: '軽井沢',
+        tripStationNames: ['長野', '金沢', '敦賀', '軽井沢'],
+        legs: [
+          { routeName: '上越新幹線', operatorId: 'jr_east', to: '高崎' },
+          { routeName: '北陸新幹線', operatorId: 'jr_east', from: '高崎' },
+        ],
+      },
+      {
+        from: '軽井沢',
+        to: '大宮',
+        tripStationNames: ['東京', '上野', '大宮'],
+        legs: [
+          { routeName: '北陸新幹線', operatorId: 'jr_east', to: '高崎' },
+          { routeName: '上越新幹線', operatorId: 'jr_east', from: '高崎' },
+        ],
+      },
+      {
+        from: '大宮',
+        to: '長野',
+        tripStationNames: ['長野', '金沢', '敦賀'],
+        legs: [
+          { routeName: '上越新幹線', operatorId: 'jr_east', to: '高崎' },
+          { routeName: '北陸新幹線', operatorId: 'jr_east', from: '高崎' },
+        ],
+      },
+      {
+        from: '長野',
+        to: '大宮',
+        tripStationNames: ['東京', '上野', '大宮'],
+        legs: [
+          { routeName: '北陸新幹線', operatorId: 'jr_east', to: '高崎' },
+          { routeName: '上越新幹線', operatorId: 'jr_east', from: '高崎' },
+        ],
+      },
+      {
+        from: '高崎',
+        to: '軽井沢',
+        tripStationNames: ['長野', '金沢', '敦賀', '軽井沢'],
+        legs: [
+          { routeName: '北陸新幹線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '軽井沢',
+        to: '高崎',
+        tripStationNames: ['東京', '上野', '大宮'],
+        legs: [
+          { routeName: '北陸新幹線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '上田',
+        to: '長野',
+        tripStationNames: ['東京', '上野', '大宮', '金沢', '敦賀'],
+        legs: [
+          { routeName: '北陸新幹線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '長野',
+        to: '上田',
+        tripStationNames: ['東京', '上野', '大宮', '金沢', '敦賀'],
+        legs: [
+          { routeName: '北陸新幹線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '岡場',
+        to: '谷上',
+        tripStationNames: ['新開地', '湊川'],
+        legs: [
+          { routeName: '神戸電鉄三田線', operatorId: '神戸電鉄', to: '有馬口' },
+          { routeName: '神戸電鉄有馬線', operatorId: '神戸電鉄', from: '有馬口' },
+        ],
+      },
+      {
+        from: '谷上',
+        to: '岡場',
+        tripStationNames: ['三田', '岡場'],
+        legs: [
+          { routeName: '神戸電鉄有馬線', operatorId: '神戸電鉄', to: '有馬口' },
+          { routeName: '神戸電鉄三田線', operatorId: '神戸電鉄', from: '有馬口' },
+        ],
+      },
+      {
+        from: '三田本町',
+        to: 'ウッディタウン中央',
+        tripStationNames: ['フラワータウン', '南ウッディタウン'],
+        legs: [
+          { routeName: '神戸電鉄三田線', operatorId: '神戸電鉄', to: '横山' },
+          {
+            routeName: '神戸電鉄公園都市線',
+            operatorId: '神戸電鉄',
+            from: '横山',
+            via: ['フラワータウン', '南ウッディタウン'],
+          },
+        ],
+      },
+      {
+        from: 'ウッディタウン中央',
+        to: '三田本町',
+        tripStationNames: ['フラワータウン', '南ウッディタウン'],
+        legs: [
+          {
+            routeName: '神戸電鉄公園都市線',
+            operatorId: '神戸電鉄',
+            to: '横山',
+            via: ['南ウッディタウン', 'フラワータウン'],
+          },
+          { routeName: '神戸電鉄三田線', operatorId: '神戸電鉄', from: '横山' },
+        ],
+      },
+      {
+        from: '三田本町',
+        to: '南ウッディタウン',
+        tripStationNames: ['フラワータウン', 'ウッディタウン中央'],
+        legs: [
+          { routeName: '神戸電鉄三田線', operatorId: '神戸電鉄', to: '横山' },
+          {
+            routeName: '神戸電鉄公園都市線',
+            operatorId: '神戸電鉄',
+            from: '横山',
+            via: ['フラワータウン'],
+          },
+        ],
+      },
+      {
+        from: '南ウッディタウン',
+        to: '三田本町',
+        tripStationNames: ['フラワータウン', 'ウッディタウン中央'],
+        legs: [
+          {
+            routeName: '神戸電鉄公園都市線',
+            operatorId: '神戸電鉄',
+            to: '横山',
+            via: ['フラワータウン'],
+          },
+          { routeName: '神戸電鉄三田線', operatorId: '神戸電鉄', from: '横山' },
+        ],
+      },
+      {
+        from: '栃木',
+        to: '大宮',
+        tripStationNames: ['池袋', '東武日光', '鬼怒川温泉'],
+        legs: [
+          { routeName: '東武日光線', operatorId: 'tobu', to: '栗橋' },
+          { routeName: '東北本線', operatorId: 'jr_east', from: '栗橋' },
+        ],
+      },
+      {
+        from: '大宮',
+        to: '栃木',
+        tripStationNames: ['池袋', '東武日光', '鬼怒川温泉'],
+        legs: [
+          { routeName: '東北本線', operatorId: 'jr_east', to: '栗橋' },
+          { routeName: '東武日光線', operatorId: 'tobu', from: '栗橋' },
+        ],
+      },
+      {
+        from: '新鹿沼',
+        to: '大宮',
+        tripStationNames: ['池袋', '東武日光', '鬼怒川温泉'],
+        legs: [
+          { routeName: '東武日光線', operatorId: 'tobu', to: '栗橋' },
+          { routeName: '東北本線', operatorId: 'jr_east', from: '栗橋' },
+        ],
+      },
+      {
+        from: '大宮',
+        to: '新鹿沼',
+        tripStationNames: ['池袋', '東武日光', '鬼怒川温泉'],
+        legs: [
+          { routeName: '東北本線', operatorId: 'jr_east', to: '栗橋' },
+          { routeName: '東武日光線', operatorId: 'tobu', from: '栗橋' },
+        ],
+      },
+      {
+        from: '大宮',
+        to: '池袋',
+        tripStationNames: ['栗橋', '久喜', '栃木', '東武日光', '鬼怒川温泉'],
+        legs: [
+          { routeName: '東北本線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '池袋',
+        to: '大宮',
+        tripStationNames: ['栗橋', '久喜', '栃木', '東武日光', '鬼怒川温泉'],
+        legs: [
+          { routeName: '東北本線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '北千住',
+        to: '霞ヶ関',
+        tripStationNames: ['柏'],
+        legs: [
+          { routeName: '東京メトロ千代田線', operatorId: 'tokyo_metro' },
+        ],
+      },
+      {
+        from: '霞ヶ関',
+        to: '北千住',
+        tripStationNames: ['柏'],
+        legs: [
+          { routeName: '東京メトロ千代田線', operatorId: 'tokyo_metro' },
+        ],
+      },
+      {
+        from: '北千住',
+        to: '霞ヶ関',
+        tripStationNames: ['竹ノ塚', '北越谷', '北春日部', '東武動物公園', '久喜'],
+        legs: [
+          { routeName: '東京メトロ日比谷線', operatorId: 'tokyo_metro' },
+        ],
+      },
+      {
+        from: '霞ヶ関',
+        to: '北千住',
+        tripStationNames: ['竹ノ塚', '北越谷', '北春日部', '東武動物公園', '久喜'],
+        legs: [
+          { routeName: '東京メトロ日比谷線', operatorId: 'tokyo_metro' },
+        ],
+      },
+      {
+        from: '新越谷',
+        to: '霞ヶ関',
+        tripStationNames: ['久喜', '東武動物公園', '北越谷'],
+        legs: [
+          { routeName: '東武伊勢崎線', operatorId: 'tobu', to: '北千住' },
+          { routeName: '東京メトロ日比谷線', operatorId: 'tokyo_metro', from: '北千住' },
+        ],
+      },
+      {
+        from: '霞ヶ関',
+        to: '新越谷',
+        tripStationNames: ['久喜', '東武動物公園', '北越谷'],
+        legs: [
+          { routeName: '東京メトロ日比谷線', operatorId: 'tokyo_metro', to: '北千住' },
+          { routeName: '東武伊勢崎線', operatorId: 'tobu', from: '北千住' },
+        ],
+      },
+      {
+        from: '新越谷',
+        to: '上野',
+        tripStationNames: ['久喜', '東武動物公園', '北越谷'],
+        legs: [
+          { routeName: '東武伊勢崎線', operatorId: 'tobu', to: '北千住' },
+          { routeName: '東京メトロ日比谷線', operatorId: 'tokyo_metro', from: '北千住' },
+        ],
+      },
+      {
+        from: '上野',
+        to: '新越谷',
+        tripStationNames: ['久喜', '東武動物公園', '北越谷'],
+        legs: [
+          { routeName: '東京メトロ日比谷線', operatorId: 'tokyo_metro', to: '北千住' },
+          { routeName: '東武伊勢崎線', operatorId: 'tobu', from: '北千住' },
+        ],
+      },
+      {
+        from: '品川',
+        to: '羽田空港第3ターミナル',
+        tripStationNames: ['成田空港', '押上', '泉岳寺'],
+        legs: [
+          { routeName: '京急本線', operatorId: 'keikyu', to: '京急蒲田' },
+          { routeName: '京急空港線', operatorId: 'keikyu', from: '京急蒲田' },
+        ],
+      },
+      {
+        from: '羽田空港第3ターミナル',
+        to: '品川',
+        tripStationNames: ['成田空港', '押上', '泉岳寺'],
+        legs: [
+          { routeName: '京急空港線', operatorId: 'keikyu', to: '京急蒲田' },
+          { routeName: '京急本線', operatorId: 'keikyu', from: '京急蒲田' },
+        ],
+      },
+      {
+        from: '南栗橋',
+        to: '春日部',
+        tripStationNames: ['浅草', '北千住', '栃木', '東武日光', '鬼怒川温泉'],
+        legs: [
+          { routeName: '東武日光線', operatorId: 'tobu', to: '東武動物公園' },
+          { routeName: '東武伊勢崎線', operatorId: 'tobu', from: '東武動物公園' },
+        ],
+      },
+      {
+        from: '春日部',
+        to: '南栗橋',
+        tripStationNames: ['浅草', '北千住', '栃木', '東武日光', '鬼怒川温泉'],
+        legs: [
+          { routeName: '東武伊勢崎線', operatorId: 'tobu', to: '東武動物公園' },
+          { routeName: '東武日光線', operatorId: 'tobu', from: '東武動物公園' },
+        ],
+      },
+      {
+        from: '春日部',
+        to: '杉戸高野台',
+        tripStationNames: ['浅草', '北千住', '栃木', '東武日光', '鬼怒川温泉'],
+        legs: [
+          { routeName: '東武伊勢崎線', operatorId: 'tobu', to: '東武動物公園' },
+          { routeName: '東武日光線', operatorId: 'tobu', from: '東武動物公園' },
+        ],
+      },
+      {
+        from: '杉戸高野台',
+        to: '春日部',
+        tripStationNames: ['浅草', '北千住', '栃木', '東武日光', '鬼怒川温泉'],
+        legs: [
+          { routeName: '東武日光線', operatorId: 'tobu', to: '東武動物公園' },
+          { routeName: '東武伊勢崎線', operatorId: 'tobu', from: '東武動物公園' },
+        ],
+      },
+      {
+        from: '門戸厄神',
+        to: '塚口',
+        tripStationNames: ['宝塚', '大阪梅田'],
+        legs: [
+          { routeName: '阪急電鉄今津線', operatorId: '阪急電鉄', to: '西宮北口' },
+          { routeName: '阪急電鉄神戸線', operatorId: '阪急電鉄', from: '西宮北口' },
+        ],
+      },
+      {
+        from: '塚口',
+        to: '門戸厄神',
+        tripStationNames: ['宝塚', '大阪梅田'],
+        legs: [
+          { routeName: '阪急電鉄神戸線', operatorId: '阪急電鉄', to: '西宮北口' },
+          { routeName: '阪急電鉄今津線', operatorId: '阪急電鉄', from: '西宮北口' },
+        ],
+      },
+      {
+        from: '新宿',
+        to: '新百合ヶ丘',
+        tripStationNames: ['御殿場'],
+        legs: [
+          { routeName: '小田急小田原線', operatorId: 'odakyu' },
+        ],
+      },
+      {
+        from: '新百合ヶ丘',
+        to: '新宿',
+        tripStationNames: ['御殿場'],
+        legs: [
+          { routeName: '小田急小田原線', operatorId: 'odakyu' },
+        ],
+      },
+      {
+        from: '松田',
+        to: '秦野',
+        tripStationNames: ['御殿場', '新宿'],
+        legs: [
+          { routeName: '小田急小田原線', operatorId: 'odakyu' },
+        ],
+      },
+      {
+        from: '秦野',
+        to: '松田',
+        tripStationNames: ['御殿場', '新宿'],
+        legs: [
+          { routeName: '小田急小田原線', operatorId: 'odakyu' },
+        ],
+      },
+      {
+        from: '表参道',
+        to: '成城学園前',
+        tripStationNames: ['メトロはこね', 'メトロホームウェイ', '箱根湯本', '本厚木'],
+        legs: [
+          { routeName: '東京メトロ千代田線', operatorId: 'tokyo_metro', to: '代々木上原' },
+          { routeName: '小田急小田原線', operatorId: 'odakyu', from: '代々木上原' },
+        ],
+      },
+      {
+        from: '成城学園前',
+        to: '表参道',
+        tripStationNames: ['メトロはこね', 'メトロホームウェイ', '箱根湯本', '本厚木'],
+        legs: [
+          { routeName: '小田急小田原線', operatorId: 'odakyu', to: '代々木上原' },
+          { routeName: '東京メトロ千代田線', operatorId: 'tokyo_metro', from: '代々木上原' },
+        ],
+      },
+      {
+        from: '玉垣',
+        to: '鈴鹿',
+        tripStationNames: ['河原田', '四日市'],
+        legs: [
+          { routeName: '伊勢鉄道伊勢線', operatorId: '伊勢鉄道' },
+        ],
+      },
+      {
+        from: '鈴鹿',
+        to: '玉垣',
+        tripStationNames: ['河原田'],
+        legs: [
+          { routeName: '伊勢鉄道伊勢線', operatorId: '伊勢鉄道' },
+        ],
+      },
+      {
+        from: '鈴鹿',
+        to: '河原田',
+        tripStationNames: ['玉垣', '四日市'],
+        legs: [
+          { routeName: '伊勢鉄道伊勢線', operatorId: '伊勢鉄道' },
+        ],
+      },
+      {
+        from: '河原田',
+        to: '鈴鹿',
+        tripStationNames: ['玉垣'],
+        legs: [
+          { routeName: '伊勢鉄道伊勢線', operatorId: '伊勢鉄道' },
+        ],
+      },
+      {
+        from: '鈴鹿',
+        to: '四日市',
+        tripStationNames: ['津', '名古屋'],
+        legs: [
+          { routeName: '伊勢鉄道伊勢線', operatorId: '伊勢鉄道', to: '河原田' },
+          { routeName: '関西線', operatorId: 'jr_central', from: '河原田' },
+        ],
+      },
+      {
+        from: '四日市',
+        to: '鈴鹿',
+        tripStationNames: ['津', '鳥羽'],
+        legs: [
+          { routeName: '関西線', operatorId: 'jr_central', to: '河原田' },
+          { routeName: '伊勢鉄道伊勢線', operatorId: '伊勢鉄道', from: '河原田' },
+        ],
+      },
+      {
+        from: '岡谷',
+        to: '川岸',
+        tripStationNames: ['辰野'],
+        legs: [
+          { routeName: '中央線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '川岸',
+        to: '岡谷',
+        tripStationNames: ['辰野'],
+        legs: [
+          { routeName: '中央線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '川岸',
+        to: '辰野',
+        tripStationNames: ['岡谷'],
+        legs: [
+          { routeName: '中央線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '辰野',
+        to: '川岸',
+        tripStationNames: ['岡谷'],
+        legs: [
+          { routeName: '中央線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '槻木',
+        to: 'あぶくま',
+        tripStationNames: ['梁川'],
+        legs: [
+          { routeName: '阿武隈急行線', operatorId: '阿武隈急行' },
+        ],
+      },
+      {
+        from: 'あぶくま',
+        to: '槻木',
+        tripStationNames: ['仙台'],
+        legs: [
+          { routeName: '阿武隈急行線', operatorId: '阿武隈急行' },
+        ],
+      },
+      {
+        from: 'あぶくま',
+        to: '梁川',
+        tripStationNames: ['仙台'],
+        legs: [
+          { routeName: '阿武隈急行線', operatorId: '阿武隈急行' },
+        ],
+      },
+      {
+        from: '梁川',
+        to: 'あぶくま',
+        tripStationNames: ['仙台'],
+        legs: [
+          { routeName: '阿武隈急行線', operatorId: '阿武隈急行' },
+        ],
+      },
+      {
+        from: '三島',
+        to: '熱海',
+        tripStationNames: ['修善寺'],
+        legs: [
+          { routeName: '東海道線', operatorId: 'jr_central' },
+        ],
+      },
+      {
+        from: '熱海',
+        to: '三島',
+        tripStationNames: ['修善寺'],
+        legs: [
+          { routeName: '東海道線', operatorId: 'jr_central' },
+        ],
+      },
+      {
+        from: '直江津',
+        to: '高田',
+        tripStationNames: ['上越妙高'],
+        legs: [
+          { routeName: 'えちごトキめき鉄道妙高はねうまライン', operatorId: 'えちごトキめき鉄道' },
+        ],
+      },
+      {
+        from: '高田',
+        to: '直江津',
+        tripStationNames: ['上越妙高'],
+        legs: [
+          { routeName: 'えちごトキめき鉄道妙高はねうまライン', operatorId: 'えちごトキめき鉄道' },
+        ],
+      },
+      {
+        from: '高田',
+        to: '上越妙高',
+        tripStationNames: ['直江津'],
+        legs: [
+          { routeName: 'えちごトキめき鉄道妙高はねうまライン', operatorId: 'えちごトキめき鉄道' },
+        ],
+      },
+      {
+        from: '上越妙高',
+        to: '高田',
+        tripStationNames: ['直江津'],
+        legs: [
+          { routeName: 'えちごトキめき鉄道妙高はねうまライン', operatorId: 'えちごトキめき鉄道' },
+        ],
+      },
+      {
+        from: '上越妙高',
+        to: '新井',
+        tripStationNames: ['直江津'],
+        legs: [
+          { routeName: 'えちごトキめき鉄道妙高はねうまライン', operatorId: 'えちごトキめき鉄道' },
+        ],
+      },
+      {
+        from: '新井',
+        to: '上越妙高',
+        tripStationNames: ['直江津'],
+        legs: [
+          { routeName: 'えちごトキめき鉄道妙高はねうまライン', operatorId: 'えちごトキめき鉄道' },
+        ],
+      },
+      {
+        from: '姫路',
+        to: '三ノ宮',
+        tripStationNames: ['東京', '岡山'],
+        legs: [
+          { routeName: '山陽線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '三ノ宮',
+        to: '姫路',
+        tripStationNames: ['東京', '岡山'],
+        legs: [
+          { routeName: '山陽線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '浜松',
+        to: '姫路',
+        tripStationNames: ['東京', '出雲市'],
+        legs: [
+          { routeName: '東海道線', operatorId: 'jr_central', to: '米原' },
+          { routeName: '東海道線', operatorId: 'jr_west', from: '米原', to: '三ノ宮' },
+          { routeName: '山陽線', operatorId: 'jr_west', from: '三ノ宮' },
+        ],
+      },
+      {
+        from: '姫路',
+        to: '浜松',
+        tripStationNames: ['東京', '出雲市'],
+        legs: [
+          { routeName: '山陽線', operatorId: 'jr_west', to: '三ノ宮' },
+          { routeName: '東海道線', operatorId: 'jr_west', from: '三ノ宮', to: '米原' },
+          { routeName: '東海道線', operatorId: 'jr_central', from: '米原' },
+        ],
+      },
+      {
+        from: '姫路',
+        to: '岡山',
+        tripStationNames: ['東京', '出雲市'],
+        legs: [
+          { routeName: '山陽線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '岡山',
+        to: '姫路',
+        tripStationNames: ['東京', '出雲市'],
+        legs: [
+          { routeName: '山陽線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '新見',
+        to: '米子',
+        tripStationNames: ['東京', '出雲市'],
+        legs: [
+          { routeName: '伯備線', operatorId: 'jr_west', to: '伯耆大山' },
+          { routeName: '山陰線', operatorId: 'jr_west', from: '伯耆大山' },
+        ],
+      },
+      {
+        from: '米子',
+        to: '新見',
+        tripStationNames: ['東京', '出雲市'],
+        legs: [
+          { routeName: '山陰線', operatorId: 'jr_west', to: '伯耆大山' },
+          { routeName: '伯備線', operatorId: 'jr_west', from: '伯耆大山' },
+        ],
+      },
+      {
+        from: '新見',
+        to: '備中高梁',
+        tripStationNames: ['東京', '出雲市'],
+        legs: [
+          { routeName: '伯備線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '備中高梁',
+        to: '新見',
+        tripStationNames: ['東京', '出雲市'],
+        legs: [
+          { routeName: '伯備線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '倉敷',
+        to: '備中高梁',
+        tripStationNames: ['東京', '出雲市'],
+        legs: [
+          { routeName: '伯備線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '備中高梁',
+        to: '倉敷',
+        tripStationNames: ['東京', '出雲市'],
+        legs: [
+          { routeName: '伯備線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '倉敷',
+        to: '岡山',
+        tripStationNames: ['東京', '出雲市'],
+        legs: [
+          { routeName: '山陽線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '岡山',
+        to: '倉敷',
+        tripStationNames: ['東京', '出雲市'],
+        legs: [
+          { routeName: '山陽線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '鹿島神宮',
+        to: '荒野台',
+        tripStationNames: ['水戸'],
+        legs: [
+          { routeName: '鹿島線', operatorId: 'jr_east', to: '鹿島サッカースタジアム' },
+          { routeName: '鹿島臨海鉄道大洗鹿島線', operatorId: '鹿島臨海鉄道', from: '鹿島サッカースタジアム' },
+        ],
+      },
+      {
+        from: '荒野台',
+        to: '鹿島神宮',
+        tripStationNames: ['鹿島神宮'],
+        legs: [
+          { routeName: '鹿島臨海鉄道大洗鹿島線', operatorId: '鹿島臨海鉄道', to: '鹿島サッカースタジアム' },
+          { routeName: '鹿島線', operatorId: 'jr_east', from: '鹿島サッカースタジアム' },
+        ],
+      },
+      {
+        from: '新八代',
+        to: '八代',
+        tripStationNames: ['肥後高田'],
+        legs: [
+          { routeName: '鹿児島線', operatorId: 'jr_kyushu' },
+        ],
+      },
+      {
+        from: '八代',
+        to: '肥後高田',
+        tripStationNames: ['新八代'],
+        legs: [
+          { routeName: '肥薩おれんじ鉄道線', operatorId: '肥薩おれんじ鉄道' },
+        ],
+      },
+      {
+        from: '肥後高田',
+        to: '八代',
+        tripStationNames: ['新八代'],
+        legs: [
+          { routeName: '肥薩おれんじ鉄道線', operatorId: '肥薩おれんじ鉄道' },
+        ],
+      },
+      {
+        from: '八代',
+        to: '新八代',
+        tripStationNames: ['肥後高田'],
+        legs: [
+          { routeName: '鹿児島線', operatorId: 'jr_kyushu' },
+        ],
+      },
+      {
+        from: '宇多津',
+        to: '児島',
+        tripStationNames: ['岡山', '高松', '琴平', '伊予西条', '松山', '高知'],
+        legs: [
+          { routeName: '本四備讃線', operatorId: 'jr_shikoku' },
+        ],
+      },
+      {
+        from: '児島',
+        to: '宇多津',
+        tripStationNames: ['岡山', '高松', '琴平', '伊予西条', '松山', '高知'],
+        legs: [
+          { routeName: '本四備讃線', operatorId: 'jr_shikoku' },
+        ],
+      },
+      {
+        from: '児島',
+        to: '坂出',
+        tripStationNames: ['岡山', '高松'],
+        legs: [
+          { routeName: '本四備讃線', operatorId: 'jr_shikoku', to: '宇多津' },
+          { routeName: '予讃線', operatorId: 'jr_shikoku', from: '宇多津' },
+        ],
+      },
+      {
+        from: '坂出',
+        to: '児島',
+        tripStationNames: ['岡山', '高松'],
+        legs: [
+          { routeName: '予讃線', operatorId: 'jr_shikoku', to: '宇多津' },
+          { routeName: '本四備讃線', operatorId: 'jr_shikoku', from: '宇多津' },
+        ],
+      },
+      {
+        from: '児島',
+        to: '岡山',
+        tripStationNames: ['岡山', '高松', '琴平', '伊予西条', '松山', '高知'],
+        legs: [
+          { routeName: '本四備讃線', operatorId: 'jr_west', to: '茶屋町' },
+          { routeName: '宇野線', operatorId: 'jr_west', from: '茶屋町' },
+        ],
+      },
+      {
+        from: '岡山',
+        to: '児島',
+        tripStationNames: ['岡山', '高松', '琴平', '伊予西条', '松山', '高知'],
+        legs: [
+          { routeName: '宇野線', operatorId: 'jr_west', to: '茶屋町' },
+          { routeName: '本四備讃線', operatorId: 'jr_west', from: '茶屋町' },
+        ],
+      },
+      {
+        from: '下関',
+        to: '門司',
+        tripStationNames: ['小倉'],
+        legs: [
+          { routeName: '山陽線', operatorId: 'jr_kyushu' },
+        ],
+      },
+      {
+        from: '門司',
+        to: '下関',
+        tripStationNames: ['小倉'],
+        legs: [
+          { routeName: '山陽線', operatorId: 'jr_kyushu' },
+        ],
+      },
+      {
+        from: '門司',
+        to: '小倉',
+        tripStationNames: ['下関'],
+        legs: [
+          { routeName: '鹿児島線', operatorId: 'jr_kyushu' },
+        ],
+      },
+      {
+        from: '小倉',
+        to: '門司',
+        tripStationNames: ['下関'],
+        legs: [
+          { routeName: '鹿児島線', operatorId: 'jr_kyushu' },
+        ],
+      },
+      {
+        from: '京王永山',
+        to: '明大前',
+        tripStationNames: ['新宿', '橋本'],
+        legs: [
+          { routeName: '京王相模原線', operatorId: 'keio', to: '調布' },
+          { routeName: '京王線', operatorId: 'keio', from: '調布' },
+        ],
+      },
+      {
+        from: '明大前',
+        to: '京王永山',
+        tripStationNames: ['新宿', '橋本'],
+        legs: [
+          { routeName: '京王線', operatorId: 'keio', to: '調布' },
+          { routeName: '京王相模原線', operatorId: 'keio', from: '調布' },
+        ],
+      },
+      {
+        from: '青砥',
+        to: '新鎌ヶ谷',
+        tripStationNames: ['成田空港'],
+        legs: [
+          { routeName: '京成本線', operatorId: 'keisei', to: '京成高砂' },
+          { routeName: '京成成田空港線', operatorId: 'keisei', from: '京成高砂' },
+        ],
+      },
+      {
+        from: '新鎌ヶ谷',
+        to: '青砥',
+        tripStationNames: ['京成上野', '日暮里'],
+        legs: [
+          { routeName: '京成成田空港線', operatorId: 'keisei', to: '京成高砂' },
+          { routeName: '京成本線', operatorId: 'keisei', from: '京成高砂' },
+        ],
+      },
+      {
+        from: '千葉ニュータウン中央',
+        to: '青砥',
+        tripStationNames: ['京成上野', '日暮里'],
+        legs: [
+          { routeName: '京成成田空港線', operatorId: 'keisei', to: '京成高砂' },
+          { routeName: '京成本線', operatorId: 'keisei', from: '京成高砂' },
+        ],
+      },
+      {
+        from: '伊賀神戸',
+        to: '津',
+        tripStationNames: ['近鉄名古屋'],
+        legs: [
+          { routeName: '近畿日本鉄道大阪線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '津',
+        to: '伊賀神戸',
+        tripStationNames: ['大阪難波', '名張'],
+        legs: [
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道大阪線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '大和八木',
+        to: '津',
+        tripStationNames: ['近鉄名古屋'],
+        legs: [
+          { routeName: '近畿日本鉄道大阪線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '津',
+        to: '大和八木',
+        tripStationNames: ['大阪難波'],
+        legs: [
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道大阪線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '津',
+        to: '名張',
+        tripStationNames: ['大阪難波'],
+        legs: [
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道大阪線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '名張',
+        to: '津',
+        tripStationNames: ['近鉄名古屋'],
+        legs: [
+          { routeName: '近畿日本鉄道大阪線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '津',
+        to: '鶴橋',
+        tripStationNames: ['大阪難波', '大阪上本町'],
+        legs: [
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道大阪線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '鶴橋',
+        to: '津',
+        tripStationNames: ['近鉄名古屋'],
+        legs: [
+          { routeName: '近畿日本鉄道大阪線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '近鉄四日市',
+        to: '伊勢市',
+        tripStationNames: ['賢島', '鳥羽', '宇治山田'],
+        legs: [
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道山田線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '伊勢市',
+        to: '近鉄四日市',
+        tripStationNames: ['近鉄名古屋'],
+        legs: [
+          { routeName: '近畿日本鉄道山田線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '白子',
+        to: '伊勢市',
+        tripStationNames: ['賢島', '鳥羽', '宇治山田'],
+        legs: [
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道山田線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '伊勢市',
+        to: '白子',
+        tripStationNames: ['近鉄名古屋'],
+        legs: [
+          { routeName: '近畿日本鉄道山田線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '津',
+        to: '伊勢市',
+        tripStationNames: ['賢島', '鳥羽', '宇治山田'],
+        legs: [
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道山田線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '伊勢市',
+        to: '津',
+        tripStationNames: ['近鉄名古屋'],
+        legs: [
+          { routeName: '近畿日本鉄道山田線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道名古屋線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '天理',
+        to: '近鉄郡山',
+        tripStationNames: ['大阪難波'],
+        legs: [
+          { routeName: '近畿日本鉄道天理線', operatorId: '近畿日本鉄道', to: '平端' },
+          { routeName: '近畿日本鉄道橿原線', operatorId: '近畿日本鉄道', from: '平端' },
+        ],
+      },
+      {
+        from: '近鉄郡山',
+        to: '天理',
+        tripStationNames: ['天理'],
+        legs: [
+          { routeName: '近畿日本鉄道橿原線', operatorId: '近畿日本鉄道', to: '平端' },
+          { routeName: '近畿日本鉄道天理線', operatorId: '近畿日本鉄道', from: '平端' },
+        ],
+      },
+      {
+        from: '生駒',
+        to: '鶴橋',
+        tripStationNames: ['大阪難波'],
+        legs: [
+          { routeName: '近畿日本鉄道奈良線', operatorId: '近畿日本鉄道', to: '布施' },
+          { routeName: '近畿日本鉄道大阪線', operatorId: '近畿日本鉄道', from: '布施' },
+        ],
+      },
+      {
+        from: '鶴橋',
+        to: '生駒',
+        tripStationNames: ['近鉄奈良', '大和西大寺', '天理'],
+        legs: [
+          { routeName: '近畿日本鉄道大阪線', operatorId: '近畿日本鉄道', to: '布施' },
+          { routeName: '近畿日本鉄道奈良線', operatorId: '近畿日本鉄道', from: '布施' },
+        ],
+      },
+      {
+        from: '名鉄名古屋',
+        to: '岩倉',
+        tripStationNames: ['犬山', '新鵜沼'],
+        legs: [
+          { routeName: '名鉄名古屋本線', operatorId: '名古屋鉄道', to: '東枇杷島' },
+          { routeName: '名鉄犬山線', operatorId: '名古屋鉄道', from: '東枇杷島', via: ['下小田井'], allowPlannerBoardingStation: true },
+        ],
+      },
+      {
+        from: '岩倉',
+        to: '名鉄名古屋',
+        tripStationNames: ['河和', '内海', '中部国際空港', '豊橋', '伊奈'],
+        legs: [
+          { routeName: '名鉄犬山線', operatorId: '名古屋鉄道', to: '東枇杷島', via: ['下小田井'], allowPlannerBoardingStation: true },
+          { routeName: '名鉄名古屋本線', operatorId: '名古屋鉄道', from: '東枇杷島' },
+        ],
+      },
+      {
+        from: '名鉄名古屋',
+        to: '上小田井',
+        tripStationNames: ['犬山', '新鵜沼'],
+        legs: [
+          { routeName: '名鉄名古屋本線', operatorId: '名古屋鉄道', to: '東枇杷島' },
+          { routeName: '名鉄犬山線', operatorId: '名古屋鉄道', from: '東枇杷島', via: ['下小田井'], allowPlannerBoardingStation: true },
+        ],
+      },
+      {
+        from: '上小田井',
+        to: '名鉄名古屋',
+        tripStationNames: ['河和', '内海', '中部国際空港', '豊橋', '伊奈'],
+        legs: [
+          { routeName: '名鉄犬山線', operatorId: '名古屋鉄道', to: '東枇杷島', via: ['下小田井'], allowPlannerBoardingStation: true },
+          { routeName: '名鉄名古屋本線', operatorId: '名古屋鉄道', from: '東枇杷島' },
+        ],
+      },
+      {
+        from: '栄生',
+        to: '上小田井',
+        tripStationNames: ['犬山', '新鵜沼'],
+        legs: [
+          { routeName: '名鉄名古屋本線', operatorId: '名古屋鉄道', to: '東枇杷島' },
+          { routeName: '名鉄犬山線', operatorId: '名古屋鉄道', from: '東枇杷島', via: ['下小田井'], allowPlannerBoardingStation: true },
+        ],
+      },
+      {
+        from: '上小田井',
+        to: '栄生',
+        tripStationNames: ['河和', '内海', '中部国際空港', '豊橋', '伊奈'],
+        legs: [
+          { routeName: '名鉄犬山線', operatorId: '名古屋鉄道', to: '東枇杷島', via: ['下小田井'], allowPlannerBoardingStation: true },
+          { routeName: '名鉄名古屋本線', operatorId: '名古屋鉄道', from: '東枇杷島' },
+        ],
+      },
+      {
+        from: '栄生',
+        to: '岩倉',
+        tripStationNames: ['犬山', '新鵜沼'],
+        legs: [
+          { routeName: '名鉄名古屋本線', operatorId: '名古屋鉄道', to: '東枇杷島' },
+          { routeName: '名鉄犬山線', operatorId: '名古屋鉄道', from: '東枇杷島', via: ['下小田井'], allowPlannerBoardingStation: true },
+        ],
+      },
+      {
+        from: '岩倉',
+        to: '栄生',
+        tripStationNames: ['河和', '内海', '中部国際空港', '豊橋', '伊奈'],
+        legs: [
+          { routeName: '名鉄犬山線', operatorId: '名古屋鉄道', to: '東枇杷島', via: ['下小田井'], allowPlannerBoardingStation: true },
+          { routeName: '名鉄名古屋本線', operatorId: '名古屋鉄道', from: '東枇杷島' },
+        ],
+      },
+      {
+        from: '神宮前',
+        to: '中部国際空港',
+        tripStationNames: ['中部国際空港'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '名鉄常滑線', operatorId: '名古屋鉄道', to: '常滑' },
+          { routeName: '名鉄空港線', operatorId: '名古屋鉄道', from: '常滑' },
+        ],
+      },
+      {
+        from: '中部国際空港',
+        to: '神宮前',
+        tripStationNames: ['神宮前', '名鉄名古屋', '金山'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '名鉄空港線', operatorId: '名古屋鉄道', to: '常滑' },
+          { routeName: '名鉄常滑線', operatorId: '名古屋鉄道', from: '常滑' },
+        ],
+      },
+      {
+        from: '名鉄名古屋',
+        to: '中部国際空港',
+        tripStationNames: ['中部国際空港'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '名鉄名古屋本線', operatorId: '名古屋鉄道', to: '神宮前' },
+          { routeName: '名鉄常滑線', operatorId: '名古屋鉄道', from: '神宮前', to: '常滑' },
+          { routeName: '名鉄空港線', operatorId: '名古屋鉄道', from: '常滑' },
+        ],
+      },
+      {
+        from: '中部国際空港',
+        to: '名鉄名古屋',
+        tripStationNames: ['名鉄名古屋'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '名鉄空港線', operatorId: '名古屋鉄道', to: '常滑' },
+          { routeName: '名鉄常滑線', operatorId: '名古屋鉄道', from: '常滑', to: '神宮前' },
+          { routeName: '名鉄名古屋本線', operatorId: '名古屋鉄道', from: '神宮前' },
+        ],
+      },
+      {
+        from: '難波',
+        to: '堺東',
+        tripStationNames: ['三日市町', '橋本', '極楽橋', '和泉中央'],
+        legs: [
+          { routeName: '南海電気鉄道南海本線', operatorId: '南海電気鉄道', to: '岸里玉出' },
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', from: '岸里玉出' },
+        ],
+      },
+      {
+        from: '新今宮',
+        to: '堺東',
+        tripStationNames: ['三日市町', '橋本', '極楽橋', '和泉中央'],
+        legs: [
+          { routeName: '南海電気鉄道南海本線', operatorId: '南海電気鉄道', to: '岸里玉出' },
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', from: '岸里玉出' },
+        ],
+      },
+      {
+        from: '天下茶屋',
+        to: '堺東',
+        tripStationNames: ['三日市町', '橋本', '極楽橋', '和泉中央'],
+        legs: [
+          { routeName: '南海電気鉄道南海本線', operatorId: '南海電気鉄道', to: '岸里玉出' },
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', from: '岸里玉出' },
+        ],
+      },
+      {
+        from: '堺東',
+        to: '天下茶屋',
+        tripStationNames: ['難波'],
+        legs: [
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', to: '岸里玉出' },
+          { routeName: '南海電気鉄道南海本線', operatorId: '南海電気鉄道', from: '岸里玉出' },
+        ],
+      },
+      {
+        from: '堺東',
+        to: '新今宮',
+        tripStationNames: ['難波'],
+        legs: [
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', to: '岸里玉出' },
+          { routeName: '南海電気鉄道南海本線', operatorId: '南海電気鉄道', from: '岸里玉出' },
+        ],
+      },
+      {
+        from: '堺東',
+        to: '難波',
+        tripStationNames: ['難波'],
+        legs: [
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', to: '岸里玉出' },
+          { routeName: '南海電気鉄道南海本線', operatorId: '南海電気鉄道', from: '岸里玉出' },
+        ],
+      },
+      {
+        from: '堺東',
+        to: '深井',
+        tripStationNames: ['和泉中央', '泉ケ丘', '光明池'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', to: '中百舌鳥' },
+          { routeName: '泉北高速鉄道線', operatorId: '泉北高速鉄道', from: '中百舌鳥' },
+        ],
+      },
+      {
+        from: '深井',
+        to: '堺東',
+        tripStationNames: ['難波'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '泉北高速鉄道線', operatorId: '泉北高速鉄道', to: '中百舌鳥' },
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', from: '中百舌鳥' },
+        ],
+      },
+      {
+        from: '堺東',
+        to: '泉ケ丘',
+        tripStationNames: ['和泉中央', '泉ケ丘', '光明池'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', to: '中百舌鳥' },
+          { routeName: '泉北高速鉄道線', operatorId: '泉北高速鉄道', from: '中百舌鳥' },
+        ],
+      },
+      {
+        from: '泉ケ丘',
+        to: '堺東',
+        tripStationNames: ['難波'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '泉北高速鉄道線', operatorId: '泉北高速鉄道', to: '中百舌鳥' },
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', from: '中百舌鳥' },
+        ],
+      },
+      {
+        from: '天下茶屋',
+        to: '泉ケ丘',
+        tripStationNames: ['和泉中央', '泉ケ丘', '光明池'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '南海電気鉄道南海本線', operatorId: '南海電気鉄道', to: '岸里玉出' },
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', from: '岸里玉出', to: '中百舌鳥' },
+          { routeName: '泉北高速鉄道線', operatorId: '泉北高速鉄道', from: '中百舌鳥' },
+        ],
+      },
+      {
+        from: '泉ケ丘',
+        to: '天下茶屋',
+        tripStationNames: ['難波'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '泉北高速鉄道線', operatorId: '泉北高速鉄道', to: '中百舌鳥' },
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', from: '中百舌鳥', to: '岸里玉出' },
+          { routeName: '南海電気鉄道南海本線', operatorId: '南海電気鉄道', from: '岸里玉出' },
+        ],
+      },
+      {
+        from: '天下茶屋',
+        to: '光明池',
+        tripStationNames: ['和泉中央', '光明池'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '南海電気鉄道南海本線', operatorId: '南海電気鉄道', to: '岸里玉出' },
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', from: '岸里玉出', to: '中百舌鳥' },
+          { routeName: '泉北高速鉄道線', operatorId: '泉北高速鉄道', from: '中百舌鳥' },
+        ],
+      },
+      {
+        from: '光明池',
+        to: '天下茶屋',
+        tripStationNames: ['難波'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '泉北高速鉄道線', operatorId: '泉北高速鉄道', to: '中百舌鳥' },
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', from: '中百舌鳥', to: '岸里玉出' },
+          { routeName: '南海電気鉄道南海本線', operatorId: '南海電気鉄道', from: '岸里玉出' },
+        ],
+      },
+      {
+        from: '天下茶屋',
+        to: '和泉中央',
+        tripStationNames: ['和泉中央'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '南海電気鉄道南海本線', operatorId: '南海電気鉄道', to: '岸里玉出' },
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', from: '岸里玉出', to: '中百舌鳥' },
+          { routeName: '泉北高速鉄道線', operatorId: '泉北高速鉄道', from: '中百舌鳥' },
+        ],
+      },
+      {
+        from: '和泉中央',
+        to: '天下茶屋',
+        tripStationNames: ['難波'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '泉北高速鉄道線', operatorId: '泉北高速鉄道', to: '中百舌鳥' },
+          { routeName: '南海電気鉄道高野線', operatorId: '南海電気鉄道', from: '中百舌鳥', to: '岸里玉出' },
+          { routeName: '南海電気鉄道南海本線', operatorId: '南海電気鉄道', from: '岸里玉出' },
+        ],
+      },
+      {
+        from: '長野',
+        to: '川中島',
+        tripStationNames: ['上田', '小諸'],
+        legs: [
+          { routeName: '信越線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '川中島',
+        to: '篠ノ井',
+        tripStationNames: ['上田', '小諸'],
+        legs: [
+          { routeName: '信越線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '長野',
+        to: '篠ノ井',
+        tripStationNames: ['上田', '小諸'],
+        legs: [
+          { routeName: '信越線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '篠ノ井',
+        to: '長野',
+        tripStationNames: ['長野'],
+        legs: [
+          { routeName: '信越線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '上田',
+        to: '長野',
+        tripStationNames: ['長野'],
+        legs: [
+          { routeName: 'しなの鉄道線', operatorId: 'しなの鉄道', to: '篠ノ井' },
+          { routeName: '信越線', operatorId: 'jr_east', from: '篠ノ井' },
+        ],
+      },
+      {
+        from: '小諸',
+        to: '長野',
+        tripStationNames: ['長野'],
+        legs: [
+          { routeName: 'しなの鉄道線', operatorId: 'しなの鉄道', to: '篠ノ井' },
+          { routeName: '信越線', operatorId: 'jr_east', from: '篠ノ井' },
+        ],
+      },
+      {
+        from: '印旛日本医大',
+        to: '成田湯川',
+        tripStationNames: ['成田空港'],
+        legs: [
+          { routeName: '京成成田空港線', operatorId: 'keisei' },
+        ],
+      },
+      {
+        from: '成田湯川',
+        to: '成田空港',
+        tripStationNames: ['成田空港'],
+        legs: [
+          { routeName: '京成成田空港線', operatorId: 'keisei' },
+        ],
+      },
+      {
+        from: '成田空港',
+        to: '成田湯川',
+        tripStationNames: ['京成高砂', '押上', '品川'],
+        legs: [
+          { routeName: '京成成田空港線', operatorId: 'keisei' },
+        ],
+      },
+      {
+        from: '成田湯川',
+        to: '印旛日本医大',
+        tripStationNames: ['京成高砂', '押上', '品川'],
+        legs: [
+          { routeName: '京成成田空港線', operatorId: 'keisei' },
+        ],
+      },
+      ...[
+        ['鹿児島中央', '川内'],
+        ['川内', '出水'],
+        ['出水', '新水俣'],
+        ['新水俣', '新八代'],
+        ['新八代', '熊本'],
+        ['熊本', '久留米'],
+        ['久留米', '新鳥栖'],
+        ['新鳥栖', '博多'],
+      ].flatMap(([from, to]) => ([
+        {
+          from,
+          to,
+          tripStationNames: ['鹿児島中央'],
+          legs: [
+            { routeName: '九州新幹線', operatorId: 'jr_kyushu' },
+          ],
+        },
+        {
+          from: to,
+          to: from,
+          tripStationNames: ['鹿児島中央'],
+          legs: [
+            { routeName: '九州新幹線', operatorId: 'jr_kyushu' },
+          ],
+        },
+      ])),
+      ...[
+        ['敦賀', '越前たけふ'],
+        ['越前たけふ', '福井'],
+        ['福井', '芦原温泉'],
+        ['芦原温泉', '加賀温泉'],
+        ['加賀温泉', '小松'],
+        ['小松', '金沢'],
+        ['金沢', '新高岡'],
+        ['新高岡', '富山'],
+      ].flatMap(([from, to]) => ([
+        {
+          from,
+          to,
+          tripStationNames: ['越前たけふ', '新高岡'],
+          legs: [
+            { routeName: '北陸新幹線', operatorId: 'jr_west' },
+          ],
+        },
+        {
+          from: to,
+          to: from,
+          tripStationNames: ['越前たけふ', '新高岡'],
+          legs: [
+            { routeName: '北陸新幹線', operatorId: 'jr_west' },
+          ],
+        },
+      ])),
+      {
+        from: '電鉄富山',
+        to: '寺田',
+        tripStationNames: ['立山'],
+        legs: [
+          { routeName: '富山地方鉄道本線', operatorId: '富山地方鉄道' },
+        ],
+      },
+      {
+        from: '寺田',
+        to: '電鉄富山',
+        tripStationNames: ['電鉄富山'],
+        legs: [
+          { routeName: '富山地方鉄道本線', operatorId: '富山地方鉄道' },
+        ],
+      },
+      {
+        from: '電鉄富山',
+        to: '立山',
+        tripStationNames: ['立山'],
+        legs: [
+          { routeName: '富山地方鉄道本線', operatorId: '富山地方鉄道', to: '寺田' },
+          { routeName: '富山地方鉄道立山線', operatorId: '富山地方鉄道', from: '寺田' },
+        ],
+      },
+      {
+        from: '立山',
+        to: '電鉄富山',
+        tripStationNames: ['電鉄富山'],
+        legs: [
+          { routeName: '富山地方鉄道立山線', operatorId: '富山地方鉄道', to: '寺田' },
+          { routeName: '富山地方鉄道本線', operatorId: '富山地方鉄道', from: '寺田' },
+        ],
+      },
+      {
+        from: '会津田島',
+        to: '会津高原尾瀬口',
+        tripStationNames: ['新藤原', '鬼怒川温泉', '浅草'],
+        legs: [
+          { routeName: '会津鉄道会津線', operatorId: '会津鉄道' },
+        ],
+      },
+      {
+        from: '会津高原尾瀬口',
+        to: '会津田島',
+        tripStationNames: ['会津田島'],
+        legs: [
+          { routeName: '会津鉄道会津線', operatorId: '会津鉄道' },
+        ],
+      },
+      {
+        from: '栃木',
+        to: '春日部',
+        tripStationNames: ['浅草'],
+        legs: [
+          { routeName: '東武日光線', operatorId: 'tobu', to: '東武動物公園' },
+          { routeName: '東武伊勢崎線', operatorId: 'tobu', from: '東武動物公園' },
+        ],
+      },
+      {
+        from: '春日部',
+        to: '栃木',
+        tripStationNames: ['会津田島', '鬼怒川温泉', '下今市'],
+        legs: [
+          { routeName: '東武伊勢崎線', operatorId: 'tobu', to: '東武動物公園' },
+          { routeName: '東武日光線', operatorId: 'tobu', from: '東武動物公園' },
+        ],
+      },
+      {
+        from: '板倉東洋大前',
+        to: '春日部',
+        tripStationNames: ['浅草'],
+        legs: [
+          { routeName: '東武日光線', operatorId: 'tobu', to: '東武動物公園' },
+          { routeName: '東武伊勢崎線', operatorId: 'tobu', from: '東武動物公園' },
+        ],
+      },
+      {
+        from: '春日部',
+        to: '板倉東洋大前',
+        tripStationNames: ['会津田島', '鬼怒川温泉', '下今市'],
+        legs: [
+          { routeName: '東武伊勢崎線', operatorId: 'tobu', to: '東武動物公園' },
+          { routeName: '東武日光線', operatorId: 'tobu', from: '東武動物公園' },
+        ],
+      },
+      {
+        from: '鬼怒川温泉',
+        to: '鬼怒川公園',
+        tripStationNames: ['会津若松', '会津田島', '会津高原尾瀬口'],
+        legs: [
+          { routeName: '東武鬼怒川線', operatorId: 'tobu' },
+        ],
+      },
+      {
+        from: '鬼怒川公園',
+        to: '新藤原',
+        tripStationNames: ['会津若松', '会津田島', '会津高原尾瀬口'],
+        legs: [
+          { routeName: '東武鬼怒川線', operatorId: 'tobu' },
+        ],
+      },
+      {
+        from: '新藤原',
+        to: '鬼怒川公園',
+        tripStationNames: ['鬼怒川温泉', '下今市', '浅草'],
+        legs: [
+          { routeName: '東武鬼怒川線', operatorId: 'tobu' },
+        ],
+      },
+      {
+        from: '鬼怒川公園',
+        to: '鬼怒川温泉',
+        tripStationNames: ['鬼怒川温泉', '下今市', '浅草'],
+        legs: [
+          { routeName: '東武鬼怒川線', operatorId: 'tobu' },
+        ],
+      },
+      {
+        from: '出雲大社前',
+        to: '川跡',
+        tripStationNames: ['雲州平田', '松江しんじ湖温泉'],
+        legs: [
+          { routeName: '一畑電車大社線', operatorId: '一畑電車' },
+        ],
+      },
+      {
+        from: '川跡',
+        to: '出雲大社前',
+        tripStationNames: ['出雲大社前'],
+        legs: [
+          { routeName: '一畑電車大社線', operatorId: '一畑電車' },
+        ],
+      },
+      {
+        from: '川跡',
+        to: '雲州平田',
+        tripStationNames: ['出雲大社前', '松江しんじ湖温泉'],
+        legs: [
+          { routeName: '一畑電車北松江線', operatorId: '一畑電車' },
+        ],
+      },
+      {
+        from: '雲州平田',
+        to: '川跡',
+        tripStationNames: ['出雲大社前'],
+        legs: [
+          { routeName: '一畑電車北松江線', operatorId: '一畑電車' },
+        ],
+      },
+      {
+        from: '鹿島神宮',
+        to: '荒野台',
+        tripStationNames: ['大洗', '水戸'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '鹿島線', operatorId: 'jr_east', to: '鹿島サッカースタジアム' },
+          { routeName: '鹿島臨海鉄道大洗鹿島線', operatorId: '鹿島臨海鉄道', from: '鹿島サッカースタジアム' },
+        ],
+      },
+      {
+        from: '荒野台',
+        to: '鹿島神宮',
+        tripStationNames: ['鹿島神宮'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '鹿島臨海鉄道大洗鹿島線', operatorId: '鹿島臨海鉄道', to: '鹿島サッカースタジアム' },
+          { routeName: '鹿島線', operatorId: 'jr_east', from: '鹿島サッカースタジアム' },
+        ],
+      },
+      {
+        from: '西若松',
+        to: '七日町',
+        tripStationNames: ['会津若松'],
+        legs: [
+          { routeName: '只見線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '七日町',
+        to: '会津若松',
+        tripStationNames: ['会津若松'],
+        legs: [
+          { routeName: '只見線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '会津若松',
+        to: '七日町',
+        tripStationNames: ['会津田島', '会津高原尾瀬口', '鬼怒川温泉'],
+        legs: [
+          { routeName: '只見線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '七日町',
+        to: '西若松',
+        tripStationNames: ['会津田島', '会津高原尾瀬口', '鬼怒川温泉'],
+        legs: [
+          { routeName: '只見線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '万博記念公園',
+        to: '山田',
+        tripStationNames: ['彩都西', '千里中央'],
+        legs: [
+          { routeName: '大阪モノレール線', operatorId: '大阪モノレル' },
+        ],
+      },
+      {
+        from: '山田',
+        to: '千里中央',
+        tripStationNames: ['彩都西'],
+        legs: [
+          { routeName: '大阪モノレール線', operatorId: '大阪モノレル' },
+        ],
+      },
+      {
+        from: '千里中央',
+        to: '山田',
+        tripStationNames: ['彩都西'],
+        legs: [
+          { routeName: '大阪モノレール線', operatorId: '大阪モノレル' },
+        ],
+      },
+      {
+        from: '山田',
+        to: '万博記念公園',
+        tripStationNames: ['彩都西'],
+        legs: [
+          { routeName: '大阪モノレール線', operatorId: '大阪モノレル' },
+        ],
+      },
+      {
+        from: '東成田',
+        to: '京成成田',
+        tripStationNames: ['芝山千代田'],
+        legs: [
+          { routeName: '京成東成田線', operatorId: 'keisei' },
+        ],
+      },
+      {
+        from: '京成成田',
+        to: '東成田',
+        tripStationNames: ['芝山千代田'],
+        legs: [
+          { routeName: '京成東成田線', operatorId: 'keisei' },
+        ],
+      },
+      {
+        from: '五稜郭',
+        to: '函館',
+        tripStationNames: ['木古内', '上磯'],
+        legs: [
+          { routeName: '函館線', operatorId: 'jr_hokkaido' },
+        ],
+      },
+      {
+        from: '函館',
+        to: '五稜郭',
+        tripStationNames: ['木古内', '上磯'],
+        legs: [
+          { routeName: '函館線', operatorId: 'jr_hokkaido' },
+        ],
+      },
+      {
+        from: '川西',
+        to: '西岩国',
+        tripStationNames: ['錦町'],
+        legs: [
+          { routeName: '岩徳線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '西岩国',
+        to: '岩国',
+        tripStationNames: ['錦町'],
+        legs: [
+          { routeName: '岩徳線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '岩国',
+        to: '西岩国',
+        tripStationNames: ['錦町'],
+        legs: [
+          { routeName: '岩徳線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '西岩国',
+        to: '川西',
+        tripStationNames: ['錦町'],
+        legs: [
+          { routeName: '岩徳線', operatorId: 'jr_west' },
+        ],
+      },
+      {
+        from: '池袋',
+        to: '新宿',
+        tripStationNames: ['羽沢横浜国大', '海老名'],
+        legs: [
+          { routeName: '山手線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '新宿',
+        to: '池袋',
+        tripStationNames: ['羽沢横浜国大', '海老名'],
+        legs: [
+          { routeName: '山手線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '浦和美園',
+        to: '東川口',
+        tripStationNames: ['海老名', '新横浜', '日吉'],
+        legs: [
+          { routeName: '埼玉高速鉄道線', operatorId: 'saitama_railway' },
+        ],
+      },
+      {
+        from: '東川口',
+        to: '浦和美園',
+        tripStationNames: ['海老名', '新横浜', '日吉'],
+        legs: [
+          { routeName: '埼玉高速鉄道線', operatorId: 'saitama_railway' },
+        ],
+      },
+      {
+        from: '目黒',
+        to: '武蔵小山',
+        tripStationNames: ['日吉', '新横浜', '海老名'],
+        legs: [
+          { routeName: '東急目黒線', operatorId: 'tokyu' },
+        ],
+      },
+      {
+        from: '武蔵小山',
+        to: '目黒',
+        tripStationNames: ['日吉', '新横浜', '海老名'],
+        legs: [
+          { routeName: '東急目黒線', operatorId: 'tokyu' },
+        ],
+      },
+      {
+        from: '越後湯沢',
+        to: '塩沢',
+        tripStationNames: ['直江津', '犀潟'],
+        legs: [
+          { routeName: '上越線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '塩沢',
+        to: '六日町',
+        tripStationNames: ['直江津', '犀潟'],
+        legs: [
+          { routeName: '上越線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '越後湯沢',
+        to: '六日町',
+        tripStationNames: ['直江津', '犀潟'],
+        legs: [
+          { routeName: '上越線', operatorId: 'jr_east', via: ['塩沢'] },
+        ],
+      },
+      {
+        from: '六日町',
+        to: '塩沢',
+        tripStationNames: ['直江津', '越後湯沢'],
+        legs: [
+          { routeName: '上越線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '六日町',
+        to: '越後湯沢',
+        tripStationNames: ['直江津', '越後湯沢'],
+        legs: [
+          { routeName: '上越線', operatorId: 'jr_east', via: ['塩沢'] },
+        ],
+      },
+      {
+        from: '塩沢',
+        to: '越後湯沢',
+        tripStationNames: ['直江津', '越後湯沢'],
+        legs: [
+          { routeName: '上越線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '犀潟',
+        to: '黒井',
+        tripStationNames: ['六日町', '越後湯沢'],
+        legs: [
+          { routeName: '信越線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '黒井',
+        to: '直江津',
+        tripStationNames: ['六日町', '越後湯沢'],
+        legs: [
+          { routeName: '信越線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '犀潟',
+        to: '直江津',
+        tripStationNames: ['六日町', '越後湯沢'],
+        legs: [
+          { routeName: '信越線', operatorId: 'jr_east', via: ['黒井'] },
+        ],
+      },
+      {
+        from: '直江津',
+        to: '黒井',
+        tripStationNames: ['六日町', '越後湯沢'],
+        legs: [
+          { routeName: '信越線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '直江津',
+        to: '犀潟',
+        tripStationNames: ['六日町', '越後湯沢'],
+        legs: [
+          { routeName: '信越線', operatorId: 'jr_east', via: ['黒井'] },
+        ],
+      },
+      {
+        from: '黒井',
+        to: '犀潟',
+        tripStationNames: ['六日町', '越後湯沢'],
+        legs: [
+          { routeName: '信越線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '石動',
+        to: '金沢',
+        tripStationNames: ['泊', '富山'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: 'あいの風とやま鉄道線', operatorId: 'あいの風とやま鉄道', to: '倶利伽羅' },
+          { routeName: 'IRいしかわ鉄道線', operatorId: 'irいしかわ鉄道', from: '倶利伽羅' },
+        ],
+      },
+      {
+        from: '金沢',
+        to: '石動',
+        tripStationNames: ['泊', '富山'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: 'IRいしかわ鉄道線', operatorId: 'irいしかわ鉄道', to: '倶利伽羅' },
+          { routeName: 'あいの風とやま鉄道線', operatorId: 'あいの風とやま鉄道', from: '倶利伽羅' },
+        ],
+      },
+      {
+        from: '立野',
+        to: '瀬田',
+        tripStationNames: ['高森', '肥後大津'],
+        legs: [
+          { routeName: '豊肥線', operatorId: 'jr_kyushu' },
+        ],
+      },
+      {
+        from: '瀬田',
+        to: '肥後大津',
+        tripStationNames: ['高森'],
+        legs: [
+          { routeName: '豊肥線', operatorId: 'jr_kyushu' },
+        ],
+      },
+      {
+        from: '肥後大津',
+        to: '瀬田',
+        tripStationNames: ['高森'],
+        legs: [
+          { routeName: '豊肥線', operatorId: 'jr_kyushu' },
+        ],
+      },
+      {
+        from: '瀬田',
+        to: '立野',
+        tripStationNames: ['高森', '肥後大津'],
+        legs: [
+          { routeName: '豊肥線', operatorId: 'jr_kyushu' },
+        ],
+      },
+      {
+        from: 'ロープウェイ入口',
+        to: '中央区役所前',
+        tripStationNames: ['すすきの', '狸小路'],
+        legs: [
+          {
+            routeName: '一般社団法人札幌市交通事業振興公社山鼻西線',
+            operatorId: '一般社団法人札幌市交通事業振興公社',
+            via: ['西線16条', '西線14条', '西線11条', '西線9条旭山公園通', '西線6条', '西15丁目'],
+          },
+        ],
+      },
+      {
+        from: '中央区役所前',
+        to: 'ロープウェイ入口',
+        tripStationNames: ['すすきの', '狸小路'],
+        legs: [
+          {
+            routeName: '一般社団法人札幌市交通事業振興公社山鼻西線',
+            operatorId: '一般社団法人札幌市交通事業振興公社',
+            via: ['西15丁目', '西線6条', '西線9条旭山公園通', '西線11条', '西線14条', '西線16条'],
+          },
+        ],
+      },
+      {
+        from: '市振',
+        to: '越中宮崎',
+        tripStationNames: ['直江津', '泊'],
+        legs: [
+          { routeName: 'あいの風とやま鉄道線', operatorId: 'あいの風とやま鉄道' },
+        ],
+      },
+      {
+        from: '越中宮崎',
+        to: '泊',
+        tripStationNames: ['直江津'],
+        legs: [
+          { routeName: 'あいの風とやま鉄道線', operatorId: 'あいの風とやま鉄道' },
+        ],
+      },
+      {
+        from: '泊',
+        to: '越中宮崎',
+        tripStationNames: ['直江津'],
+        legs: [
+          { routeName: 'あいの風とやま鉄道線', operatorId: 'あいの風とやま鉄道' },
+        ],
+      },
+      {
+        from: '越中宮崎',
+        to: '市振',
+        tripStationNames: ['直江津', '泊'],
+        legs: [
+          { routeName: 'あいの風とやま鉄道線', operatorId: 'あいの風とやま鉄道' },
+        ],
+      },
+      {
+        from: '大和八木',
+        to: '伊勢市',
+        tripStationNames: ['賢島'],
+        legs: [
+          { routeName: '近畿日本鉄道大阪線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道山田線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
+        ],
+      },
+      {
+        from: '伊勢市',
+        to: '大和八木',
+        tripStationNames: ['京都', '大阪難波'],
+        legs: [
+          { routeName: '近畿日本鉄道山田線', operatorId: '近畿日本鉄道', to: '伊勢中川' },
+          { routeName: '近畿日本鉄道大阪線', operatorId: '近畿日本鉄道', from: '伊勢中川' },
         ],
       },
     ]);
@@ -2034,6 +4316,11 @@
       '新水俣', '出水', '川内', '鹿児島中央',
     ]);
     const HOKKAIDO_SHINKANSEN_STATIONS = new Set(['新函館北斗', '木古内', '奥津軽いまべつ']);
+    const AKITA_SHINKANSEN_ROUTE_CHOICE_BRANCH_STATIONS = new Set(['盛岡', '雫石', '田沢湖', '角館', '大曲', '秋田']);
+    const TOHOKU_AKITA_SHARED_SHINKANSEN_STATIONS = new Set([
+      '東京', '上野', '大宮', '小山', '宇都宮', '那須塩原', '新白河', '郡山', '福島',
+      '白石蔵王', '仙台', '古川', 'くりこま高原', '一ノ関', '水沢江刺', '北上', '新花巻', '盛岡',
+    ]);
 
     const state = {
       bundle: null,
@@ -2938,7 +5225,16 @@
       const routeShortName = normalizeRouteLineLabel(route, route?.shortName || '');
       const routeSourceName = normalizeRouteLineLabel(route, route?.tags?.lineName || '');
       if (/^\d+号線/u.test(text)) return true;
-      return [routeName, routeShortName, routeSourceName]
+      const candidateRouteNames = [routeName, routeShortName, routeSourceName].filter(Boolean);
+      if (
+        normalized.length >= 2 &&
+        candidateRouteNames.some((name) =>
+          name.startsWith(normalized) && /(?:線|本線|鉄道|電鉄|鐵道|電鐵|ライン)$/u.test(name)
+        )
+      ) {
+        return true;
+      }
+      return candidateRouteNames
         .filter(Boolean)
         .some((name) => normalized === name || text === name || normalized.endsWith(name));
     }
@@ -3414,10 +5710,44 @@
       return routeIdByShortName('RINKAI') || routeIdByShortNameAndOperator('りんかい線', 'rinkai');
     }
 
-    function shinkansenCorridorChoiceRouteId(trip) {
+    function isTohokuAkitaSharedShinkansenBoardingSegment(entry, trip, routeShortName) {
+      if (!['SHINKANSEN_TOHOKU_HOKKAIDO', 'SHINKANSEN_AKITA'].includes(routeShortName)) return false;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      const nextStop = nextStopAfter(trip, boardStop);
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStop);
+      if (!TOHOKU_AKITA_SHARED_SHINKANSEN_STATIONS.has(boardName)) return false;
+      if (!TOHOKU_AKITA_SHARED_SHINKANSEN_STATIONS.has(nextName)) return false;
+      const segmentRouteId = tracedRouteIdForTripSegment(trip, boardStop, nextStop);
+      const segmentTitle = routeTitle(segmentRouteId || trip?.routeId || '');
+      return segmentTitle === '東北・北海道新幹線' || segmentTitle === '東北新幹線';
+    }
+
+    function isAkitaShinkansenBranchBoardingSegment(entry, trip, routeShortName) {
+      if (!['SHINKANSEN_TOHOKU_HOKKAIDO', 'SHINKANSEN_AKITA'].includes(routeShortName)) return false;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      const nextStop = nextStopAfter(trip, boardStop);
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStop);
+      if (!AKITA_SHINKANSEN_ROUTE_CHOICE_BRANCH_STATIONS.has(boardName)) return false;
+      if (!AKITA_SHINKANSEN_ROUTE_CHOICE_BRANCH_STATIONS.has(nextName)) return false;
+      return (trip?.stopTimes || []).some((stop) => {
+        const name = stationDisplayNameForStop(stop);
+        return name && name !== '盛岡' && AKITA_SHINKANSEN_ROUTE_CHOICE_BRANCH_STATIONS.has(name);
+      });
+    }
+
+    function shinkansenCorridorChoiceRouteId(entryOrTrip) {
+      const trip = entryOrTrip?.trip || entryOrTrip;
       const route = tripRoute(trip);
       if (!isShinkansenCorridorRoute(route?.id)) return null;
       const shortName = String(route?.shortName || '');
+      if (isAkitaShinkansenBranchBoardingSegment(entryOrTrip, trip, shortName)) {
+        return routeIdByShortName('SHINKANSEN_AKITA') || route.id;
+      }
+      if (isTohokuAkitaSharedShinkansenBoardingSegment(entryOrTrip, trip, shortName)) {
+        return TOHOKU_HOKKAIDO_AKITA_CORRIDOR_ROUTE_ID;
+      }
       if (['SHINKANSEN_AKITA', 'SHINKANSEN_YAMAGATA'].includes(shortName)) {
         const hasHokkaidoSegment = tripUsesShinkansenStationSet(trip, HOKKAIDO_SHINKANSEN_STATIONS, '');
         if (hasHokkaidoSegment) return routeIdByShortName('SHINKANSEN_TOHOKU_HOKKAIDO') || route.id;
@@ -4300,20 +6630,31 @@
       if (!trip?.lineTrace?.length || !currentStop || !nextStop) return null;
       const currentSequence = currentStop.sequence;
       const nextSequence = nextStop.sequence;
+      const cacheKey = `${trip.id || ''}|${currentSequence}|${nextSequence}`;
+      if (!state.tracedSegmentRouteCache) state.tracedSegmentRouteCache = new Map();
+      if (state.tracedSegmentRouteCache.has(cacheKey)) return state.tracedSegmentRouteCache.get(cacheKey);
       const exact = trip.lineTrace.find((trace) =>
         trace.routeId &&
         state.routeById.has(trace.routeId) &&
         currentSequence >= trace.fromSequence &&
         nextSequence <= trace.toSequence
       );
-      if (exact) return exact.routeId;
+      if (exact) {
+        const routeId = reviewedTraceRouteIdForRange(trip, exact) || exact.routeId;
+        if (state.tracedSegmentRouteCache.size > 60000) state.tracedSegmentRouteCache.clear();
+        state.tracedSegmentRouteCache.set(cacheKey, routeId);
+        return routeId;
+      }
       const boundary = trip.lineTrace.find((trace) =>
         trace.routeId &&
         state.routeById.has(trace.routeId) &&
         currentSequence >= trace.fromSequence &&
         currentSequence < trace.toSequence
       );
-      return boundary?.routeId || null;
+      const routeId = boundary ? (reviewedTraceRouteIdForRange(trip, boundary) || boundary.routeId) : null;
+      if (state.tracedSegmentRouteCache.size > 60000) state.tracedSegmentRouteCache.clear();
+      state.tracedSegmentRouteCache.set(cacheKey, routeId);
+      return routeId;
     }
 
     function routeServesAdjacentStops(routeId, currentStop, nextStop) {
@@ -4332,8 +6673,19 @@
       ].includes(routeId);
     }
 
+    function reviewedBoardingRouteIdsForStopPair(trip, currentStop, nextStop) {
+      if (!trip || !currentStop || !nextStop) return [];
+      const reviewedSegments = reviewedTripPathSegmentsForStopPair(trip, currentStop, nextStop);
+      const firstRouteId = reviewedSegments?.[0]?.routeId || null;
+      return firstRouteId && state.routeById.has(firstRouteId) && !isThroughServiceTransferAlias(firstRouteId)
+        ? [firstRouteId]
+        : [];
+    }
+
     function tracedRouteIdsForTripStop(trip, boardStop) {
       const nextStop = nextStopAfter(trip, boardStop);
+      const reviewedRouteIds = reviewedBoardingRouteIdsForStopPair(trip, boardStop, nextStop);
+      if (reviewedRouteIds.length) return reviewedRouteIds;
       const candidateRouteIds = [
         tracedRouteIdForTripSegment(trip, boardStop, nextStop),
         boardStop?.outgoingRouteId,
@@ -4444,6 +6796,8 @@
       state.routePhysicalServeCache = new Map();
       state.routeCanRepresentCache = new Map();
       state.boardableRouteIdsCache = new Map();
+      state.tracedSegmentRouteCache = new Map();
+      state.reviewedTraceRouteIdCache = new Map();
       (bundle.physicalStations || []).forEach((station) => {
         if (!state.stationByGroupId.has(station.stationGroupId)) state.stationByGroupId.set(station.stationGroupId, station);
         if (!state.physicalStationsByGroupId.has(station.stationGroupId)) state.physicalStationsByGroupId.set(station.stationGroupId, []);
@@ -6253,6 +8607,17 @@
       return anchored;
     }
 
+    function anchoredRouteSliceCoordinates(coordinates, fromStationGroupId, toStationGroupId, maxDistance = 0.003) {
+      if (!coordinates?.length || coordinates.length < 2) return [];
+      const from = stationLonLat(fromStationGroupId);
+      const to = stationLonLat(toStationGroupId);
+      if (!from || !to) return [...coordinates];
+      const anchored = [...coordinates];
+      if (coordinateDistanceSquared(anchored[0], from) > maxDistance * maxDistance) anchored.unshift(from);
+      if (coordinateDistanceSquared(anchored[anchored.length - 1], to) > maxDistance * maxDistance) anchored.push(to);
+      return anchored;
+    }
+
     function distanceSquaredToCoordinateSegment(point, start, end) {
       if (!point || !start || !end) return Number.POSITIVE_INFINITY;
       const dx = end[0] - start[0];
@@ -6274,13 +8639,19 @@
       return best;
     }
 
-    function coordinatePathCoversStop(coordinates, stop, maxDistance = 0.006) {
-      const lonLat = stationLonLat(stop?.stationGroupId);
-      return Boolean(lonLat && distanceSquaredToCoordinatePath(lonLat, coordinates) <= maxDistance * maxDistance);
+    function coordinatePathCoversStationGroup(coordinates, stationGroupId, maxDistance = 0.006) {
+      const lonLat = stationLonLat(stationGroupId);
+      return distanceSquaredToCoordinatePath(lonLat, coordinates) <= maxDistance * maxDistance;
     }
 
-    function coordinatePathCoversStops(coordinates, stops) {
-      return (stops || []).every((stop) => coordinatePathCoversStop(coordinates, stop));
+    function coordinatePathCoversStop(coordinates, stop, maxDistance = 0.006) {
+      return coordinatePathCoversStationGroup(coordinates, stop?.stationGroupId, maxDistance);
+    }
+
+    function coordinatePathCoversStops(coordinates, stops, maxDistance = 0.006) {
+      return Boolean(coordinates?.length) && (stops || []).every((stop) =>
+        coordinatePathCoversStop(coordinates, stop, maxDistance)
+      );
     }
 
     function coordinatesForTripSegment(routeId, currentStop, nextStop) {
@@ -6308,10 +8679,14 @@
       });
     }
 
-    function stationGroupIdByRouteStationName(routeId, stationName) {
+    function stationGroupIdByRouteStationName(routeId, stationName, options = {}) {
       for (const stationGroupId of state.stationGroupById.keys()) {
         if (displayNameForGroup(stationGroupId) !== stationName) continue;
-        if (routePhysicallyServesStationGroup(routeId, stationGroupId) || routePatternServesBoardingStation(routeId, stationGroupId)) {
+        if (
+          routePhysicallyServesStationGroup(routeId, stationGroupId) ||
+          routePatternServesBoardingStation(routeId, stationGroupId) ||
+          (options.allowPlannerBoardingStation && routePatternServesPlannerBoardingStation(routeId, stationGroupId))
+        ) {
           return stationGroupId;
         }
       }
@@ -6322,13 +8697,24 @@
       return (trip?.stopTimes || []).some((stop) => displayNameForGroup(stop.stationGroupId) === stationName);
     }
 
-    function routeIdByTripPathHintLeg(leg) {
-      for (const [routeId, route] of state.routeById.entries()) {
-        if (routeTitle(routeId) !== leg.routeName) continue;
-        if (leg.operatorId && route.operatorId !== leg.operatorId) continue;
-        return routeId;
-      }
-      return null;
+    function routeIdByTripPathHintLeg(leg, currentStop = null, nextStop = null) {
+      const candidates = [...state.routeById.entries()]
+        .filter(([routeId, route]) =>
+          routeTitle(routeId) === leg.routeName &&
+          (!leg.operatorId || route.operatorId === leg.operatorId)
+        );
+      if (!candidates.length) return null;
+      const anchorNames = [
+        leg.from || displayNameForGroup(currentStop?.stationGroupId),
+        ...(leg.via || []),
+        leg.to || displayNameForGroup(nextStop?.stationGroupId),
+      ].filter(Boolean);
+      const anchored = candidates.find(([routeId]) =>
+        anchorNames.every((stationName) => stationGroupIdByRouteStationName(routeId, stationName, {
+          allowPlannerBoardingStation: Boolean(leg.allowPlannerBoardingStation),
+        }))
+      );
+      return anchored?.[0] || candidates[0]?.[0] || null;
     }
 
     function reviewedTripPathHintForSegment(trip, currentStop, nextStop) {
@@ -6348,14 +8734,16 @@
         leg.to || displayNameForGroup(nextStop.stationGroupId),
       ];
       const anchors = anchorNames
-        .map((stationName) => stationGroupIdByRouteStationName(routeId, stationName))
+        .map((stationName) => stationGroupIdByRouteStationName(routeId, stationName, {
+          allowPlannerBoardingStation: Boolean(leg.allowPlannerBoardingStation),
+        }))
         .filter(Boolean);
       if (anchors.length < 2) return [];
       const coordinates = [];
       for (let index = 0; index < anchors.length - 1; index += 1) {
         const segment = routeSliceCoordinates(routeId, anchors[index], anchors[index + 1]);
         if (segment.length < 2) return [];
-        appendCoordinates(coordinates, segment);
+        appendCoordinates(coordinates, anchoredRouteSliceCoordinates(segment, anchors[index], anchors[index + 1]));
       }
       return coordinates;
     }
@@ -6365,11 +8753,20 @@
       if (!hint) return null;
       const segments = [];
       (hint.legs || []).forEach((leg) => {
-        const routeId = routeIdByTripPathHintLeg(leg);
+        const routeId = routeIdByTripPathHintLeg(leg, currentStop, nextStop);
         if (!routeId) return;
         const coordinates = coordinatesForReviewedTripPathLeg(routeId, currentStop, nextStop, leg);
         if (coordinates.length >= 2) segments.push({ routeId, coordinates });
       });
+      if (hint.bridgeGaps) {
+        for (let index = 1; index < segments.length; index += 1) {
+          const previousEnd = segments[index - 1].coordinates.at(-1);
+          const currentStart = segments[index].coordinates[0];
+          if (!previousEnd || !currentStart) continue;
+          const gap = Math.sqrt(coordinateDistanceSquared(previousEnd, currentStart));
+          if (gap > 0 && gap <= 0.03) segments[index].coordinates.unshift(previousEnd);
+        }
+      }
       return segments.length === (hint.legs || []).length ? segments : [];
     }
 
@@ -6501,16 +8898,30 @@
         ? coordinateDistanceSquared(primarySlice[0], stationLonLat(firstStop.stationGroupId)) +
           coordinateDistanceSquared(primarySlice[primarySlice.length - 1], stationLonLat(lastStop.stationGroupId))
         : Number.POSITIVE_INFINITY;
+      const futureStops = trip.stopTimes.filter((stop) =>
+        stop.sequence >= firstSequence && stop.sequence <= lastSequence
+      );
+      const primaryCoversFutureStops = primaryEndpointScore <= 0.0009 &&
+        coordinatePathCoversStops(primarySlice, futureStops);
       const mustUseRecordedTrace = Boolean(trip.throughStitched && trip.lineTrace?.length);
+      const recordedTraceRouteIds = new Set((trip.lineTrace || [])
+        .map((trace) => trace?.routeId)
+        .filter((routeId) => routeId && state.routeById.has(routeId)));
+      const hasMultiRouteRecordedTrace = recordedTraceRouteIds.size > 1;
       if (
         !mustUseRecordedTrace &&
+        !hasMultiRouteRecordedTrace &&
         trip.routeId &&
         state.routeById.has(trip.routeId) &&
-        primaryEndpointScore <= 0.0009
+        primaryCoversFutureStops
       ) {
         return [{ routeId: trip.routeId, fromSequence: firstSequence, toSequence: lastSequence }];
       }
       const ranges = (trip.lineTrace || [])
+        .map((trace) => ({
+          ...trace,
+          routeId: reviewedTraceRouteIdForRange(trip, trace),
+        }))
         .filter((trace) =>
           trace?.routeId &&
           state.routeById.has(trace.routeId) &&
@@ -6519,7 +8930,7 @@
           trace.fromSequence <= lastSequence
         )
         .map((trace) => ({
-          routeId: reviewedTraceRouteIdForRange(trip, trace),
+          routeId: trace.routeId,
           fromSequence: Math.max(trace.fromSequence, firstSequence),
           toSequence: Math.min(trace.toSequence, lastSequence),
         }))
@@ -6548,8 +8959,22 @@
       return [...routeNames].some((name) => /スカイアクセス|成田空港線/u.test(name));
     }
 
+    const AKITA_SHINKANSEN_BRANCH_STATIONS = new Set(['田沢湖', '角館', '大曲', '秋田']);
+
+    function tripIncludesAnyStationName(trip, stationNames) {
+      return (trip?.stopTimes || []).some((stop) => stationNames.has(displayNameForGroup(stop.stationGroupId)));
+    }
+
     function reviewedTraceRouteIdForRange(trip, trace) {
       if (!trip || !trace?.routeId) return trace?.routeId || null;
+      const cacheKey = `${trip.id || ''}|${trace.routeId}|${trace.fromSequence}|${trace.toSequence}`;
+      if (!state.reviewedTraceRouteIdCache) state.reviewedTraceRouteIdCache = new Map();
+      if (state.reviewedTraceRouteIdCache.has(cacheKey)) return state.reviewedTraceRouteIdCache.get(cacheKey);
+      const remember = (routeId) => {
+        if (state.reviewedTraceRouteIdCache.size > 60000) state.reviewedTraceRouteIdCache.clear();
+        state.reviewedTraceRouteIdCache.set(cacheKey, routeId);
+        return routeId;
+      };
       const fromStop = stopAtSequence(trip, trace.fromSequence);
       const toStop = stopAtSequence(trip, trace.toSequence);
       const fromName = displayNameForGroup(fromStop?.stationGroupId);
@@ -6560,9 +8985,16 @@
         toName === '東松戸' &&
         tripLooksLikeKeiseiSkyAccess(trip)
       ) {
-        return routeIdByShortNameAndOperator('成田空港線', 'keisei') || trace.routeId;
+        return remember(routeIdByShortNameAndOperator('成田空港線', 'keisei') || trace.routeId);
       }
-      return trace.routeId;
+      if (
+        routeTitle(trace.routeId) === '秋田新幹線' &&
+        isShinkansenTrip(trip) &&
+        !tripIncludesAnyStationName(trip, AKITA_SHINKANSEN_BRANCH_STATIONS)
+      ) {
+        return remember(routeIdByShortNameAndOperator('東北新幹線', 'jr_east') || trace.routeId);
+      }
+      return remember(trace.routeId);
     }
 
     function routeIdsForTripSequence(trip, sequence, startSequence = selectedTripStartSequence(trip)) {
@@ -6647,6 +9079,14 @@
           ? tripTraceStopSequenceSegments(trip, trace.routeId, stops)
           : [];
         const sequenceUsesDifferentRoute = stopSequenceSegments.some((segment) => segment.routeId !== trace.routeId);
+        if (hintedStopPairExists && stopSequenceSegments.length) {
+          stopSequenceSegments.forEach((segment) => {
+            const previous = segments[segments.length - 1];
+            if (previous?.routeId === segment.routeId) appendCoordinates(previous.coordinates, segment.coordinates);
+            else segments.push(segment);
+          });
+          return;
+        }
         if (fullTraceSegment.length >= 2) {
           const intermediateStops = stops.slice(1, -1);
           if (
@@ -7444,7 +9884,7 @@
     function routeChoiceIdsForDeparture(entry) {
       const namedTrainRouteId = namedTrainChoiceRouteId(entry?.trip);
       if (namedTrainRouteId) return [namedTrainRouteId];
-      const shinkansenChoiceRouteId = shinkansenCorridorChoiceRouteId(entry?.trip);
+      const shinkansenChoiceRouteId = shinkansenCorridorChoiceRouteId(entry);
       if (shinkansenChoiceRouteId) return [shinkansenChoiceRouteId];
       const maibaraBoundaryRouteId = maibaraBoundaryChoiceRouteId(entry);
       if (maibaraBoundaryRouteId) return [maibaraBoundaryRouteId];
@@ -7468,6 +9908,8 @@
       const nextStop = nextStopAfter(entry?.trip, boardStop);
       const isUenoTokyoCoreSegment = Boolean(uenoTokyoCoreSegmentChoiceRouteId(entry, entry?.trip, boardStop));
       const currentSegmentRouteId = tracedRouteIdForTripSegment(entry?.trip, boardStop, nextStop);
+      const reviewedBoardingRouteIds = reviewedBoardingRouteIdsForStopPair(entry?.trip, boardStop, nextStop);
+      if (reviewedBoardingRouteIds.length) return reviewedBoardingRouteIds;
       if (
         currentSegmentRouteId &&
         !isThroughServiceTransferAlias(currentSegmentRouteId) &&
@@ -9036,15 +11478,34 @@
       }, sourceTrip, nextSourceStop);
     }
 
-    function buildAkitaShinkansenSyntheticTrip(sharedTrip, branchTrip) {
+    const REVIEWED_MINI_SHINKANSEN_BRANCH_RULES = Object.freeze([
+      {
+        branchServiceName: 'Komachi',
+        sharedServiceNames: ['Hayabusa'],
+        routeShortName: 'SHINKANSEN_AKITA',
+        splitStationName: '盛岡',
+        sharedAnchorStationName: '東京',
+        branchTerminalStationNames: ['秋田'],
+      },
+      {
+        branchServiceName: 'Tsubasa',
+        sharedServiceNames: ['Tsubasa'],
+        routeShortName: 'SHINKANSEN_YAMAGATA',
+        splitStationName: '福島',
+        sharedAnchorStationName: '東京',
+        branchTerminalStationNames: ['山形', '新庄'],
+      },
+    ]);
+
+    function buildReviewedMiniShinkansenSyntheticTrip(sharedTrip, branchTrip, rule) {
       const sharedStops = sharedTrip?.stopTimes || [];
       const branchStops = branchTrip?.stopTimes || [];
-      const sharedSplitIndex = sharedStops.findIndex((stop) => displayNameForGroup(stop.stationGroupId) === '盛岡');
-      const branchSplitIndex = branchStops.findIndex((stop) => displayNameForGroup(stop.stationGroupId) === '盛岡');
+      const sharedSplitIndex = sharedStops.findIndex((stop) => displayNameForGroup(stop.stationGroupId) === rule.splitStationName);
+      const branchSplitIndex = branchStops.findIndex((stop) => displayNameForGroup(stop.stationGroupId) === rule.splitStationName);
       if (sharedSplitIndex < 0 || branchSplitIndex < 0) return null;
-      const akitaRouteId = routeIdByShortName('SHINKANSEN_AKITA') || branchTrip.routeId || sharedTrip.routeId;
+      const branchRouteId = routeIdByShortName(rule.routeShortName) || branchTrip.routeId || sharedTrip.routeId;
       let syntheticStops = [];
-      if (sharedSplitIndex < sharedStops.length - 1 && branchSplitIndex === 0) {
+      if (branchSplitIndex === 0) {
         const prefix = sharedStops.slice(0, sharedSplitIndex).map((stop, index) =>
           syntheticStopFromSource(stop, sharedTrip, sharedStops[index + 1])
         );
@@ -9077,8 +11538,8 @@
       return {
         ...branchTrip,
         id: `coupled-through:${sharedTrip.id}__${branchTrip.id}`,
-        routeId: akitaRouteId,
-        serviceName: branchTrip.serviceName || 'Komachi',
+        routeId: branchRouteId,
+        serviceName: branchTrip.serviceName || rule.branchServiceName,
         serviceNumber: branchTrip.serviceNumber || sharedTrip.serviceNumber || '',
         publicServiceNumber: branchTrip.publicServiceNumber || branchTrip.serviceNumber || sharedTrip.serviceNumber || '',
         headsign: displayNameForGroup(syntheticStops.at(-1)?.stationGroupId || '') || branchTrip.headsign || '',
@@ -9095,7 +11556,7 @@
           sharedTrip.routeId,
           ...(branchTrip.lineTrace || []).map((trace) => trace.routeId),
         ].filter((routeId, index, list) => routeId && list.indexOf(routeId) === index),
-        throughBoundaryStationName: '盛岡',
+        throughBoundaryStationName: rule.splitStationName,
         coupledBranchSynthetic: true,
       };
     }
@@ -9109,25 +11570,32 @@
       });
       const syntheticTrips = [];
       const syntheticIds = new Set();
-      const hayabusaTrips = byServiceAndNumber;
-      for (const [key, branchTrips] of byServiceAndNumber.entries()) {
-        if (!key.startsWith('Komachi|')) continue;
-        const number = key.split('|')[1] || '';
-        const sharedTrips = hayabusaTrips.get(`Hayabusa|${number}`) || [];
-        branchTrips.forEach((branchTrip) => {
-          if (branchTrip.coupledBranchSynthetic) return;
-          const branchNames = new Set((branchTrip.stopTimes || []).map((stop) => displayNameForGroup(stop.stationGroupId)));
-          if (!branchNames.has('盛岡') || !branchNames.has('秋田')) return;
-          sharedTrips.forEach((sharedTrip) => {
-            const sharedNames = new Set((sharedTrip.stopTimes || []).map((stop) => displayNameForGroup(stop.stationGroupId)));
-            if (!sharedNames.has('盛岡') || !sharedNames.has('東京')) return;
-            const synthetic = buildAkitaShinkansenSyntheticTrip(sharedTrip, branchTrip);
-            if (!synthetic || syntheticIds.has(synthetic.id)) return;
-            syntheticIds.add(synthetic.id);
-            syntheticTrips.push(synthetic);
+      REVIEWED_MINI_SHINKANSEN_BRANCH_RULES.forEach((rule) => {
+        for (const [key, branchTrips] of byServiceAndNumber.entries()) {
+          if (!key.startsWith(`${rule.branchServiceName}|`)) continue;
+          const number = key.split('|')[1] || '';
+          const sharedTrips = rule.sharedServiceNames.flatMap((serviceName) =>
+            byServiceAndNumber.get(`${serviceName}|${number}`) || []
+          );
+          branchTrips.forEach((branchTrip) => {
+            if (branchTrip.coupledBranchSynthetic) return;
+            const branchNames = new Set((branchTrip.stopTimes || []).map((stop) => displayNameForGroup(stop.stationGroupId)));
+            if (
+              !branchNames.has(rule.splitStationName) ||
+              !rule.branchTerminalStationNames.some((stationName) => branchNames.has(stationName))
+            ) return;
+            sharedTrips.forEach((sharedTrip) => {
+              if (sharedTrip.id === branchTrip.id) return;
+              const sharedNames = new Set((sharedTrip.stopTimes || []).map((stop) => displayNameForGroup(stop.stationGroupId)));
+              if (!sharedNames.has(rule.splitStationName) || !sharedNames.has(rule.sharedAnchorStationName)) return;
+              const synthetic = buildReviewedMiniShinkansenSyntheticTrip(sharedTrip, branchTrip, rule);
+              if (!synthetic || syntheticIds.has(synthetic.id)) return;
+              syntheticIds.add(synthetic.id);
+              syntheticTrips.push(synthetic);
+            });
           });
-        });
-      }
+        }
+      });
       return syntheticTrips.length ? [...trips, ...syntheticTrips] : trips;
     }
 
@@ -9217,8 +11685,73 @@
       ];
     }
 
+    const SUNRISE_IZUMO_BRANCH_STATIONS = new Set(['倉敷', '備中高梁', '新見', '米子', '安来', '松江', '宍道', '出雲市']);
+    const SUNRISE_SETO_BRANCH_STATIONS = new Set(['児島', '坂出', '高松']);
+
+    function rebuiltLineTraceFromAdjacentStops(trip, stops) {
+      const traces = [];
+      for (let index = 0; index < stops.length - 1; index += 1) {
+        const current = stops[index];
+        const next = stops[index + 1];
+        const reviewedSegments = reviewedTripPathSegmentsForStopPair(trip, current, next);
+        const routeId = reviewedSegments?.[0]?.routeId || routeIdForTripSegment({ ...trip, lineTrace: [] }, current, next);
+        if (!routeId) continue;
+        const entry = {
+          routeId,
+          fromSequence: current.sequence,
+          toSequence: next.sequence,
+          fromStationGroupId: current.stationGroupId,
+          toStationGroupId: next.stationGroupId,
+        };
+        const previous = traces[traces.length - 1];
+        if (previous?.routeId === entry.routeId && previous.toSequence === entry.fromSequence) {
+          previous.toSequence = entry.toSequence;
+          previous.toStationGroupId = entry.toStationGroupId;
+        } else {
+          traces.push(entry);
+        }
+      }
+      return traces;
+    }
+
+    function pruneReviewedCoupledBranchStops(trip) {
+      const label = formatTripLabel(trip);
+      if (!label.includes('サンライズ')) return trip;
+      const stops = trip.stopTimes || [];
+      const stationNames = stops.map((stop) => displayNameForGroup(stop.stationGroupId));
+      const hasIzumoBranch = stationNames.some((stationName) => SUNRISE_IZUMO_BRANCH_STATIONS.has(stationName));
+      const hasSetoBranch = stationNames.some((stationName) => SUNRISE_SETO_BRANCH_STATIONS.has(stationName));
+      let branchToRemove = null;
+      if (hasIzumoBranch && hasSetoBranch) {
+        if (label.includes('出雲')) {
+          branchToRemove = SUNRISE_SETO_BRANCH_STATIONS;
+        } else if (label.includes('瀬戸')) {
+          branchToRemove = SUNRISE_IZUMO_BRANCH_STATIONS;
+        }
+      }
+      const filteredStops = branchToRemove
+        ? stops
+            .filter((stop) => !branchToRemove.has(displayNameForGroup(stop.stationGroupId)))
+            .map((stop, index) => ({ ...stop, sequence: index + 1 }))
+        : stops;
+      if (filteredStops.length < 2) return trip;
+      const prunedTrip = { ...trip, stopTimes: filteredStops, lineTrace: [] };
+      const lineTrace = rebuiltLineTraceFromAdjacentStops(prunedTrip, filteredStops);
+      if (!lineTrace.length) return trip;
+      return {
+        ...prunedTrip,
+        lineTrace,
+        lineSequence: lineTrace
+          .map((trace) => trace.routeId)
+          .filter((routeId, index, list) => routeId && list.indexOf(routeId) === index)
+          .map((routeId) => ({ routeId })),
+        coupledBranchPruned: Boolean(branchToRemove),
+        sunriseTraceRebuilt: true,
+      };
+    }
+
     function normalizeTripForGameplay(trip) {
-      return extendCircularTripForContinuousRide(trip);
+      return extendCircularTripForContinuousRide(pruneReviewedCoupledBranchStops(trip));
     }
 
     function decodeTimetablePayload(payload) {
