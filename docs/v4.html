@@ -1261,7 +1261,6 @@
       SHINKANSEN_KYUSHU: '九州新幹線',
       SHINKANSEN_NISHI_KYUSHU: '西九州新幹線',
       SHINKANSEN_SANYO_KYUSHU: '山陽・九州新幹線',
-      SHINKANSEN_TOHOKU_HOKKAIDO_AKITA: '東北・北海道・秋田新幹線',
       SHINKANSEN_TOHOKU_HOKKAIDO: '東北・北海道新幹線',
       SHINKANSEN_TOKAIDO_SANYO: '東海道・山陽新幹線',
       SHINKANSEN_YAMAGATA: '山形新幹線',
@@ -1321,7 +1320,6 @@
       SHINKANSEN_KYUSHU: ['九州新幹線'],
       SHINKANSEN_NISHI_KYUSHU: ['西九州新幹線'],
       SHINKANSEN_SANYO_KYUSHU: ['山陽新幹線', '九州新幹線'],
-      SHINKANSEN_TOHOKU_HOKKAIDO_AKITA: ['東北新幹線', '北海道新幹線', '田沢湖線', '奥羽線'],
       SHINKANSEN_TOHOKU_HOKKAIDO: ['東北新幹線', '北海道新幹線'],
       SHINKANSEN_TOKAIDO_SANYO: ['東海道新幹線', '山陽新幹線'],
       SHINKANSEN_YAMAGATA: ['東北新幹線', '奥羽線'],
@@ -1484,7 +1482,6 @@
       SHINKANSEN_KYUSHU: '新',
       SHINKANSEN_NISHI_KYUSHU: '新',
       SHINKANSEN_SANYO_KYUSHU: '新',
-      SHINKANSEN_TOHOKU_HOKKAIDO_AKITA: '新',
       SHINKANSEN_TOHOKU_HOKKAIDO: '新',
       SHINKANSEN_TOKAIDO_SANYO: '新',
       SHINKANSEN_YAMAGATA: '新',
@@ -1819,23 +1816,6 @@
           physicalLines: ['山陽新幹線', '九州新幹線'],
         },
       },
-      VIRTUAL_SHINKANSEN_TOHOKU_HOKKAIDO_AKITA: {
-        id: 'VIRTUAL_SHINKANSEN_TOHOKU_HOKKAIDO_AKITA',
-        operatorId: 'shinkansen',
-        operatorName: 'JR Shinkansen',
-        shortName: 'SHINKANSEN_TOHOKU_HOKKAIDO_AKITA',
-        longName: 'JR Shinkansen SHINKANSEN_TOHOKU_HOKKAIDO_AKITA',
-        color: '#2D9C5B',
-        textColor: '#ffffff',
-        mode: 'shinkansen',
-        tags: {
-          source: 'v4_virtual_corridor',
-          sourceOperatorId: 'shinkansen',
-          lineName: 'SHINKANSEN_TOHOKU_HOKKAIDO_AKITA',
-          displayRule: 'coupled_shared_corridor',
-          physicalLines: ['東北新幹線', '北海道新幹線', '田沢湖線', '奥羽線'],
-        },
-      },
       VIRTUAL_SHINKANSEN_AKITA: {
         id: 'VIRTUAL_SHINKANSEN_AKITA',
         operatorId: 'shinkansen',
@@ -1895,7 +1875,6 @@
     const JR_CHUO_RAPID_ROUTE_ID = 'VIRTUAL_JR_EAST_CHUO_RAPID';
     const JR_CHUO_SOBU_LOCAL_ROUTE_ID = 'VIRTUAL_JR_EAST_CHUO_SOBU_LOCAL';
     const SANYO_KYUSHU_CORRIDOR_ROUTE_ID = 'VIRTUAL_SHINKANSEN_SANYO_KYUSHU';
-    const TOHOKU_HOKKAIDO_AKITA_CORRIDOR_ROUTE_ID = 'VIRTUAL_SHINKANSEN_TOHOKU_HOKKAIDO_AKITA';
     const MAIBARA_TOKAIDO_BOUNDARY_ROUTE_ID = 'VIRTUAL_MAIBARA_TOKAIDO_BOUNDARY';
     const REVIEWED_TRIP_PATH_HINTS = Object.freeze([
       {
@@ -4317,10 +4296,6 @@
     ]);
     const HOKKAIDO_SHINKANSEN_STATIONS = new Set(['新函館北斗', '木古内', '奥津軽いまべつ']);
     const AKITA_SHINKANSEN_ROUTE_CHOICE_BRANCH_STATIONS = new Set(['盛岡', '雫石', '田沢湖', '角館', '大曲', '秋田']);
-    const TOHOKU_AKITA_SHARED_SHINKANSEN_STATIONS = new Set([
-      '東京', '上野', '大宮', '小山', '宇都宮', '那須塩原', '新白河', '郡山', '福島',
-      '白石蔵王', '仙台', '古川', 'くりこま高原', '一ノ関', '水沢江刺', '北上', '新花巻', '盛岡',
-    ]);
 
     const state = {
       bundle: null,
@@ -5710,19 +5685,6 @@
       return routeIdByShortName('RINKAI') || routeIdByShortNameAndOperator('りんかい線', 'rinkai');
     }
 
-    function isTohokuAkitaSharedShinkansenBoardingSegment(entry, trip, routeShortName) {
-      if (!['SHINKANSEN_TOHOKU_HOKKAIDO', 'SHINKANSEN_AKITA'].includes(routeShortName)) return false;
-      const boardStop = entry?.boardStop || entry?.stop || null;
-      const nextStop = nextStopAfter(trip, boardStop);
-      const boardName = stationDisplayNameForStop(boardStop);
-      const nextName = stationDisplayNameForStop(nextStop);
-      if (!TOHOKU_AKITA_SHARED_SHINKANSEN_STATIONS.has(boardName)) return false;
-      if (!TOHOKU_AKITA_SHARED_SHINKANSEN_STATIONS.has(nextName)) return false;
-      const segmentRouteId = tracedRouteIdForTripSegment(trip, boardStop, nextStop);
-      const segmentTitle = routeTitle(segmentRouteId || trip?.routeId || '');
-      return segmentTitle === '東北・北海道新幹線' || segmentTitle === '東北新幹線';
-    }
-
     function isAkitaShinkansenBranchBoardingSegment(entry, trip, routeShortName) {
       if (!['SHINKANSEN_TOHOKU_HOKKAIDO', 'SHINKANSEN_AKITA'].includes(routeShortName)) return false;
       const boardStop = entry?.boardStop || entry?.stop || null;
@@ -5744,9 +5706,6 @@
       const shortName = String(route?.shortName || '');
       if (isAkitaShinkansenBranchBoardingSegment(entryOrTrip, trip, shortName)) {
         return routeIdByShortName('SHINKANSEN_AKITA') || route.id;
-      }
-      if (isTohokuAkitaSharedShinkansenBoardingSegment(entryOrTrip, trip, shortName)) {
-        return TOHOKU_HOKKAIDO_AKITA_CORRIDOR_ROUTE_ID;
       }
       if (['SHINKANSEN_AKITA', 'SHINKANSEN_YAMAGATA'].includes(shortName)) {
         const hasHokkaidoSegment = tripUsesShinkansenStationSet(trip, HOKKAIDO_SHINKANSEN_STATIONS, '');
@@ -8137,6 +8096,10 @@
       return labels.length >= 2 ? [...new Set(labels)].join('・') : (entry?.label || '直挂列車');
     }
 
+    function coupledDisplayUsesPortionPicker(entry) {
+      return !String(entry?.system || '').includes('新幹線');
+    }
+
     function buildCoupledTrainRows(trainRows, selectedRouteId) {
       state.coupledChoiceRowsByKey = new Map();
       if (!state.coupledServiceEntries.length || trainRows.length < 2) {
@@ -8146,6 +8109,7 @@
       const consumedTripIds = new Set();
       const rows = [];
       for (const entry of state.coupledServiceEntries) {
+        if (!coupledDisplayUsesPortionPicker(entry)) continue;
         const portions = entry.portions || [];
         if (portions.length < 2) continue;
         const candidates = [];

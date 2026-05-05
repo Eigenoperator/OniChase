@@ -681,12 +681,23 @@ async function auditRouteChoices(page, auditOptions) {
         });
       }
     }
-    if (!routeChoiceTitles['東京']?.has('東北・北海道・秋田新幹線')) {
+    if (!routeChoiceTitles['東京']?.has('秋田新幹線')) {
       anomalies.push({
-        kind: 'tokyo_tohoku_hokkaido_akita_shinkansen_choice_missing',
+        kind: 'tokyo_akita_shinkansen_choice_missing',
         station: '東京',
-        reason: 'Before Morioka, Tohoku/Hokkaido and Akita Shinkansen coupled services should be one player-facing corridor choice.',
+        reason: 'Tokyo must expose the reviewed Komachi branch as its own Akita Shinkansen route choice instead of merging Shinkansen coupled services into one corridor.',
         choices: knownStationChoices['東京'],
+      });
+    }
+    const mergedShinkansenChoices = Object.entries(knownStationChoices)
+      .flatMap(([station, choices]) => choices
+        .filter((choice) => choice.route === '東北・北海道・秋田新幹線')
+        .map((choice) => ({ station, ...choice })));
+    if (mergedShinkansenChoices.length) {
+      anomalies.push({
+        kind: 'shinkansen_coupled_route_choice_merged',
+        reason: 'Shinkansen coupled services are a display exception: route choices stay on each Shinkansen route, while same_train capture equivalence still applies.',
+        samples: mergedShinkansenChoices,
       });
     }
     [
@@ -698,7 +709,7 @@ async function auditRouteChoices(page, auditOptions) {
       ['東京', 'わかしお', 10],
       ['東京', 'さざなみ', 4],
       ['東京', '踊り子', 7],
-      ['東京', '東北・北海道・秋田新幹線', 18],
+      ['東京', '秋田新幹線', 18],
       ['上野', 'ひたち', 30],
       ['上野', 'ときわ', 35],
       ['品川', '成田エクスプレス', 50],
@@ -758,7 +769,7 @@ async function auditRouteChoices(page, auditOptions) {
       ['松本', 'あずさ', ['1', '4', '8', '12', '83']],
       ['大月', '富士回遊', ['3', '7', '11', '15', '93']],
       ['大月', 'かいじ', ['70', '2', '6', '10', '99']],
-      ['東京', '東北・北海道・秋田新幹線', ['1', '3', '7', '9', '23']],
+      ['東京', '秋田新幹線', ['1', '3', '7', '9', '23']],
     ].forEach(([stationName, routeName, requiredNumbers]) => {
       const actualNumbers = trainNumbersForChoiceAt(stationName, routeName);
       const missingNumbers = requiredNumbers.filter((number) => !actualNumbers.has(number));
@@ -850,9 +861,9 @@ async function auditRouteChoices(page, auditOptions) {
     }
 
     const requiredShinkansenChoices = {
-      東京: ['東海道・山陽新幹線', '東北・北海道・秋田新幹線', '上越新幹線', '北陸新幹線'],
+      東京: ['東海道・山陽新幹線', '東北・北海道新幹線', '秋田新幹線', '上越新幹線', '北陸新幹線'],
       品川: ['東海道・山陽新幹線'],
-      大宮: ['東北・北海道・秋田新幹線', '上越新幹線', '北陸新幹線'],
+      大宮: ['東北・北海道新幹線', '秋田新幹線', '上越新幹線', '北陸新幹線'],
     };
     for (const [stationName, requiredRoutes] of Object.entries(requiredShinkansenChoices)) {
       const choices = routeChoiceTitles[stationName] || new Set();
@@ -1014,7 +1025,7 @@ async function auditRouteChoices(page, auditOptions) {
     }
 
     const coupledUmbrellaSamples = [];
-    for (const stationName of ['東京', '上野', '大宮', '仙台', '新大阪', '大阪', '京都', '博多', '宇多津', '岡山', '綾部']) {
+    for (const stationName of ['東京', '上野', '大宮', '仙台', '成田空港', '空港第2ビル', '品川', '新大阪', '大阪', '京都', '博多', '宇多津', '岡山', '綾部']) {
       const rows = buildCoupledTrainRows(entriesAt(stationName), null)
         .filter((row) => row.kind === 'coupled');
       rows.slice(0, 4).forEach((row) => coupledUmbrellaSamples.push({
@@ -1025,9 +1036,20 @@ async function auditRouteChoices(page, auditOptions) {
         portions: row.portions.map((item) => item.portion?.label || formatTripLabel(item.row.trip)),
       }));
     }
+    const shinkansenUmbrellaSamples = coupledUmbrellaSamples.filter((sample) =>
+      [...(sample.portions || []), sample.label].some((label) => /はやぶさ|こまち|やまびこ|つばさ/u.test(String(label || '')))
+    );
+    const requiredCoupledUmbrellaLabels = ['成田エクスプレス', '関空快速・紀州路快速'];
+    const missingCoupledUmbrellaLabels = requiredCoupledUmbrellaLabels.filter((requiredLabel) =>
+      !coupledUmbrellaSamples.some((sample) => sample.label === requiredLabel)
+    );
     const coupledEquivalentTripCount = state.coupledEquivalentsByTripId?.size || 0;
     const coupledEquivalentEdgeCount = [...(state.coupledEquivalentsByTripId?.values() || [])]
       .reduce((sum, items) => sum + items.length, 0);
+    const shinkansenEquivalentEdgeCount = [...(state.coupledEquivalentsByTripId?.values() || [])]
+      .flat()
+      .filter((item) => item.entryId === 'hayabusa_komachi_morioka' || item.entryId === 'yamabiko_tsubasa_fukushima')
+      .length;
     if ((state.coupledServiceEntries || []).length < 16) {
       anomalies.push({
         kind: 'coupled_registry_underfilled',
@@ -1046,7 +1068,28 @@ async function auditRouteChoices(page, auditOptions) {
     if (!coupledUmbrellaSamples.length) {
       anomalies.push({
         kind: 'coupled_umbrella_choice_missing',
-        reason: 'From coupled toward uncoupled direction, train choices should expose an umbrella A・B row before portion selection.',
+        reason: 'From coupled toward uncoupled direction, non-Shinkansen train choices should expose an umbrella A・B row before portion selection.',
+      });
+    }
+    if (missingCoupledUmbrellaLabels.length) {
+      anomalies.push({
+        kind: 'reviewed_non_shinkansen_coupled_umbrella_missing',
+        reason: 'Non-Shinkansen coupled services such as Narita Express and Kansai/Kishuji rapid must keep the umbrella train row + portion picker rule.',
+        missingLabels: missingCoupledUmbrellaLabels,
+        samples: coupledUmbrellaSamples,
+      });
+    }
+    if (shinkansenUmbrellaSamples.length) {
+      anomalies.push({
+        kind: 'shinkansen_coupled_umbrella_visible',
+        reason: 'Shinkansen coupled services are the exception: show each portion under its own Shinkansen route, but keep same_train equivalence for capture.',
+        samples: shinkansenUmbrellaSamples,
+      });
+    }
+    if (!shinkansenEquivalentEdgeCount) {
+      anomalies.push({
+        kind: 'shinkansen_coupled_same_train_equivalence_missing',
+        reason: 'Even though Shinkansen coupled services do not use the umbrella display rule, their portions must still count as same_train during the shared segment.',
       });
     }
 
@@ -1067,6 +1110,7 @@ async function auditRouteChoices(page, auditOptions) {
         registryEntryCount: (state.coupledServiceEntries || []).length,
         equivalentTripCount: coupledEquivalentTripCount,
         equivalentEdgeCount: coupledEquivalentEdgeCount,
+        shinkansenEquivalentEdgeCount,
         umbrellaSamples: coupledUmbrellaSamples.slice(0, 20),
       },
       anomalyCount: anomalies.length,
