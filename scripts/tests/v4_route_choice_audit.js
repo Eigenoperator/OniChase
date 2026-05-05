@@ -243,6 +243,8 @@ async function auditRouteChoices(page, auditOptions) {
       namedLimitedExpressNotSeparatedCount: 0,
       limitedExpressGoSuffixCount: 0,
       asakusaKeikyuAirportLabelMismatchCount: 0,
+      checkedThroughPreviewTexts: 0,
+      throughDisplayTextCount: 0,
       samples: [],
     };
     const duplicateRouteTitleScan = {
@@ -480,6 +482,10 @@ async function auditRouteChoices(page, auditOptions) {
             globalTrainLabelScan.rawNumberedLineLabelCount += 1;
             addGlobalTrainLabelSample('raw_numbered_line_label', stationName, entry, routeId, label);
           }
+          if (/\s直通$/u.test(label)) {
+            globalTrainLabelScan.throughDisplayTextCount += 1;
+            addGlobalTrainLabelSample('through_display_text', stationName, entry, routeId, label);
+          }
           const publicNumber = publicTripNumber(entry.trip);
           const shouldDisplayPublicNumber = isShinkansenTrip(entry.trip) ||
             (isLimitedExpressTrip(entry.trip) && looksLikePublicTrainNumber(publicNumber));
@@ -642,6 +648,31 @@ async function auditRouteChoices(page, auditOptions) {
       });
     }
     timings.duplicateRouteTitleScanMs = performance.now() - duplicateScanStartedAtMs;
+    const throughPreviewTrips = tripLimit === null
+      ? [...state.tripById.values()].slice(tripStart)
+      : [...state.tripById.values()].slice(tripStart, tripStart + tripLimit);
+    throughPreviewTrips.forEach((trip) => {
+      if (!trip?.throughStitched) return;
+      const boardStop = (trip.stopTimes || []).find((stop) => stopDepartureMinutes(stop) >= START_MINUTE) ||
+        (trip.stopTimes || [])[0];
+      if (!boardStop) return;
+      globalTrainLabelScan.checkedThroughPreviewTexts += 1;
+      const previewText = trainPreviewText(trip, boardStop);
+      if (/(^|[\s·,，、])直通\s/u.test(previewText)) {
+        globalTrainLabelScan.throughDisplayTextCount += 1;
+        addGlobalTrainLabelSample(
+          'through_preview_display_text',
+          displayNameForGroup(boardStop.stationGroupId),
+          {
+            trip,
+            stop: boardStop,
+            departureMinute: stopDepartureMinutes(boardStop),
+          },
+          trip.routeId,
+          formatTripLabel(trip)
+        );
+      }
+    });
     if (
       globalTrainLabelScan.rawNumberedLineLabelCount ||
       globalTrainLabelScan.limitedOrShinkansenMissingNumberCount ||
@@ -649,11 +680,12 @@ async function auditRouteChoices(page, auditOptions) {
       globalTrainLabelScan.meitetsuLabelFormatMismatchCount ||
       globalTrainLabelScan.namedLimitedExpressNotSeparatedCount ||
       globalTrainLabelScan.limitedExpressGoSuffixCount ||
-      globalTrainLabelScan.asakusaKeikyuAirportLabelMismatchCount
+      globalTrainLabelScan.asakusaKeikyuAirportLabelMismatchCount ||
+      globalTrainLabelScan.throughDisplayTextCount
     ) {
       anomalies.push({
         kind: 'global_selected_train_label_scan',
-        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, limited express labels must not append 号 after the train number, ordinary through-running labels including Meitetsu must follow the direction-side line, Meitetsu labels must not use parentheses, and named limited-express/named train services must be separated as their own route choices.',
+        reason: 'Selected-train labels must not expose raw x号線 names, limited express/Shinkansen labels must include public train numbers when available, limited express labels must not append 号 after the train number, ordinary through-running labels including Meitetsu must follow the direction-side line, Meitetsu labels must not use parentheses, named limited-express/named train services must be separated as their own route choices, and synthetic/stitched trips must not show extra 直通 display text.',
         ...globalTrainLabelScan,
       });
     }

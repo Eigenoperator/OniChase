@@ -7445,7 +7445,7 @@
           const publicNumber = publicTripNumber(trip);
           if (serviceName && serviceName !== '列車') {
             const serviceLabel = `${serviceName}${publicNumber && !String(serviceName).includes(publicNumber) ? publicNumber : ''}`;
-            return `${serviceLabel} 直通`;
+            return serviceLabel;
           }
         }
         const throughNames = throughRouteIds
@@ -7863,8 +7863,6 @@
       const parts = [];
       if (origin) parts.push(`始発 ${displayNameForGroup(origin.stationGroupId)}`);
       if (terminal) parts.push(`終点 ${displayNameForGroup(terminal.stationGroupId)}`);
-      const throughChain = throughRouteChainLabel(trip);
-      if (throughChain && throughChain !== formatTripLabel(trip)) parts.push(`直通 ${throughChain}`);
       if (nextStop) {
         parts.push(`次 ${displayNameForGroup(nextStop.stationGroupId)}`);
       }
