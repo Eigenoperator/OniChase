@@ -144,6 +144,8 @@ async function auditSelectedTrainHighlights(page, options = {}) {
     let checkedFutureStopCoverageCases = 0;
     let checkedOsakaAirportLoopCases = 0;
     let checkedContinuousPathCases = 0;
+    let checkedMiniShinkansenSharedCases = 0;
+    let checkedMiniShinkansenIndependentTraceCases = 0;
 
     function endpointScore(coordinates, fromStationGroupId, toStationGroupId) {
       const fromLonLat = stationLonLat(fromStationGroupId);
@@ -421,6 +423,58 @@ async function auditSelectedTrainHighlights(page, options = {}) {
       }
     }
 
+    if (!reachedFailureLimit()) {
+      for (const trip of state.tripById.values()) {
+        const label = formatTripLabel(trip);
+        const isTsubasa = label.includes('つばさ');
+        const isKomachi = label.includes('こまち');
+        if (!isTsubasa && !isKomachi) continue;
+        const forbiddenOrdinaryBranchLines = isTsubasa ? new Set(['奥羽線']) : new Set(['奥羽線', '田沢湖線']);
+        const traceTitles = (trip.lineTrace || []).map((trace) => routeTitle(trace.routeId));
+        const leakedOrdinaryTraceTitles = traceTitles.filter((title) => forbiddenOrdinaryBranchLines.has(title));
+        checkedMiniShinkansenIndependentTraceCases += 1;
+        if (!isShinkansenTrip(trip) || leakedOrdinaryTraceTitles.length) {
+          const startStop = (trip.stopTimes || [])[0];
+          failures.push({
+            ...sampleTrip(trip, startStop, futureLineTraceRanges(trip, startStop?.sequence || Number.NEGATIVE_INFINITY), 'Mini-Shinkansen branch trains must stay independent from ordinary branch-line trains in recorded trace identity'),
+            isShinkansenTrip: isShinkansenTrip(trip),
+            traceTitles,
+            leakedOrdinaryTraceTitles,
+          });
+          if (reachedFailureLimit()) break;
+        }
+      }
+    }
+
+    if (!reachedFailureLimit()) {
+      for (const trip of state.tripById.values()) {
+        if (!formatTripLabel(trip).includes('つばさ')) continue;
+        const stationNames = new Set((trip.stopTimes || []).map((stop) => displayNameForGroup(stop.stationGroupId)));
+        if (!stationNames.has('東京') || !stationNames.has('福島')) continue;
+        if (!['米沢', '山形', '新庄'].some((stationName) => stationNames.has(stationName))) continue;
+        const startStop = (trip.stopTimes || [])[0];
+        if (!startStop) continue;
+        const segments = tripPathSegmentsFromSequence(trip, startStop.sequence);
+        const selectedRouteTitles = [...new Set(segments.map((segment) => routeTitle(segment.routeId)))];
+        checkedMiniShinkansenSharedCases += 1;
+        if (
+          !selectedRouteTitles.includes('東北新幹線') ||
+          !selectedRouteTitles.includes('山形新幹線') ||
+          selectedRouteTitles.includes('奥羽線')
+        ) {
+          failures.push({
+            ...sampleTrip(trip, startStop, futureLineTraceRanges(trip, startStop.sequence), 'Tsubasa highlight should keep Shinkansen identity separate from ordinary Ou Line trains while using the physical Tohoku shared trunk'),
+            selectedRouteTitles,
+            selectedSegments: segments.map((segment) => ({
+              route: routeTitle(segment.routeId),
+              pointCount: segment.coordinates.length,
+            })),
+          });
+          if (reachedFailureLimit()) break;
+        }
+      }
+    }
+
     return {
       auditOptions: {
         tripStart,
@@ -442,6 +496,8 @@ async function auditSelectedTrainHighlights(page, options = {}) {
       checkedFutureStopCoverageCases,
       checkedOsakaAirportLoopCases,
       checkedContinuousPathCases,
+      checkedMiniShinkansenSharedCases,
+      checkedMiniShinkansenIndependentTraceCases,
       failureCount: failures.length,
       failures,
       topPrimaryCoverRoutes: [...routeStats.entries()]

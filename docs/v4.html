@@ -1444,6 +1444,8 @@
     const NAMED_TRAIN_CHOICE_FAMILY_LABELS = Object.freeze({
       'Saphir Odoriko': '踊り子',
       'サフィール踊り子': '踊り子',
+      'サンライズ瀬戸': 'サンライズ瀬戸・出雲',
+      'サンライズ出雲': 'サンライズ瀬戸・出雲',
     });
     const KINTETSU_LIMITED_EXPRESS_BRAND_RE = /^(?:特急|観光特急)?\s*(しまかぜ|ひのとり|あをによし|青の交響曲|アーバンライナー|伊勢志摩ライナー|さくらライナー|ビスタカー)/u;
     const ORDINARY_RAPID_SERVICE_NAMES = new Set([
@@ -1909,6 +1911,86 @@
         legs: [
           { routeName: '関西空港線', operatorId: 'jr_west', to: '日根野' },
           { routeName: '阪和線', operatorId: 'jr_west', from: '日根野' },
+        ],
+      },
+      {
+        from: '東京',
+        to: '空港第2ビル',
+        tripStationNames: ['成田空港'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '総武線', operatorId: 'jr_east', to: '佐倉' },
+          { routeName: '成田線', operatorId: 'jr_east', from: '佐倉' },
+        ],
+      },
+      {
+        from: '空港第2ビル',
+        to: '東京',
+        tripStationNames: ['成田空港'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '成田線', operatorId: 'jr_east', to: '佐倉' },
+          { routeName: '総武線', operatorId: 'jr_east', from: '佐倉' },
+        ],
+      },
+      {
+        from: '東京',
+        to: '成田空港',
+        tripStationNames: ['空港第2ビル'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '総武線', operatorId: 'jr_east', to: '佐倉' },
+          { routeName: '成田線', operatorId: 'jr_east', from: '佐倉' },
+        ],
+      },
+      {
+        from: '成田空港',
+        to: '東京',
+        tripStationNames: ['空港第2ビル'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '成田線', operatorId: 'jr_east', to: '佐倉' },
+          { routeName: '総武線', operatorId: 'jr_east', from: '佐倉' },
+        ],
+      },
+      {
+        from: '上諏訪',
+        to: '松本',
+        tripStationNames: ['新宿', '立川', '八王子'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '中央線', operatorId: 'jr_east', to: '塩尻' },
+          { routeName: '篠ノ井線', operatorId: 'jr_east', from: '塩尻' },
+        ],
+      },
+      {
+        from: '松本',
+        to: '上諏訪',
+        tripStationNames: ['新宿', '立川', '八王子'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '篠ノ井線', operatorId: 'jr_east', to: '塩尻' },
+          { routeName: '中央線', operatorId: 'jr_east', from: '塩尻' },
+        ],
+      },
+      {
+        from: '大宮',
+        to: '栃木',
+        tripStationNames: ['東武日光', '鬼怒川温泉'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '東北本線', operatorId: 'jr_east', to: '栗橋' },
+          { routeName: '東武日光線', operatorId: 'tobu', from: '栗橋' },
+        ],
+      },
+      {
+        from: '栃木',
+        to: '大宮',
+        tripStationNames: ['新宿', '池袋'],
+        bridgeGaps: true,
+        legs: [
+          { routeName: '東武日光線', operatorId: 'tobu', to: '栗橋' },
+          { routeName: '東北本線', operatorId: 'jr_east', from: '栗橋' },
         ],
       },
       {
@@ -8091,7 +8173,14 @@
         .map((item) => item?.portion?.label || formatTripLabel(item?.row?.trip))
         .map((label) => String(label || '').replace(/\s.+系$/u, '').trim())
         .filter(Boolean);
-      return labels.length >= 2 ? [...new Set(labels)].join('・') : (entry?.label || '直挂列車');
+      const uniqueLabels = [...new Set(labels)];
+      if (
+        uniqueLabels.includes('サンライズ瀬戸') &&
+        uniqueLabels.includes('サンライズ出雲')
+      ) {
+        return 'サンライズ瀬戸・出雲';
+      }
+      return labels.length >= 2 ? uniqueLabels.join('・') : (entry?.label || '直挂列車');
     }
 
     function coupledDisplayUsesPortionPicker(entry) {
@@ -8921,10 +9010,30 @@
       return [...routeNames].some((name) => /スカイアクセス|成田空港線/u.test(name));
     }
 
-    const AKITA_SHINKANSEN_BRANCH_STATIONS = new Set(['田沢湖', '角館', '大曲', '秋田']);
+    const AKITA_SHINKANSEN_BRANCH_STATIONS = new Set(['雫石', '田沢湖', '角館', '大曲', '秋田']);
+    const YAMAGATA_SHINKANSEN_BRANCH_STATIONS = new Set([
+      '米沢',
+      '高畠',
+      '赤湯',
+      'かみのやま温泉',
+      '山形',
+      '天童',
+      'さくらんぼ東根',
+      '村山',
+      '大石田',
+      '新庄',
+    ]);
+    const MINI_SHINKANSEN_SHARED_TRACE_RULES = Object.freeze([
+      { routeName: '秋田新幹線', branchStations: AKITA_SHINKANSEN_BRANCH_STATIONS },
+      { routeName: '山形新幹線', branchStations: YAMAGATA_SHINKANSEN_BRANCH_STATIONS },
+    ]);
 
-    function tripIncludesAnyStationName(trip, stationNames) {
-      return (trip?.stopTimes || []).some((stop) => stationNames.has(displayNameForGroup(stop.stationGroupId)));
+    function tripRangeIncludesAnyStationName(trip, fromSequence, toSequence, stationNames) {
+      return (trip?.stopTimes || []).some((stop) =>
+        stop.sequence >= fromSequence &&
+        stop.sequence <= toSequence &&
+        stationNames.has(displayNameForGroup(stop.stationGroupId))
+      );
     }
 
     function reviewedTraceRouteIdForRange(trip, trace) {
@@ -8949,12 +9058,13 @@
       ) {
         return remember(routeIdByShortNameAndOperator('成田空港線', 'keisei') || trace.routeId);
       }
+      const miniShinkansenSharedRule = MINI_SHINKANSEN_SHARED_TRACE_RULES.find((rule) => routeTitle(trace.routeId) === rule.routeName);
       if (
-        routeTitle(trace.routeId) === '秋田新幹線' &&
+        miniShinkansenSharedRule &&
         isShinkansenTrip(trip) &&
-        !tripIncludesAnyStationName(trip, AKITA_SHINKANSEN_BRANCH_STATIONS)
+        !tripRangeIncludesAnyStationName(trip, trace.fromSequence, trace.toSequence, miniShinkansenSharedRule.branchStations)
       ) {
-        return remember(routeIdByShortNameAndOperator('東北新幹線', 'jr_east') || trace.routeId);
+        return remember(routeIdByShortNameAndOperator('東北新幹線', 'jr_east') || routeIdByShortName('SHINKANSEN_TOHOKU_HOKKAIDO') || trace.routeId);
       }
       return remember(trace.routeId);
     }
@@ -9808,6 +9918,7 @@
             firstDepartureMinute: entry.departureMinute,
             firstDepartureHhmm: entry.departureHhmm,
             trainCount: 0,
+            trainCountKeys: new Set(),
             displayKey,
             subtitleLabels: [],
           };
@@ -9815,7 +9926,13 @@
           if (subtitle && !current.subtitleLabels.includes(subtitle)) current.subtitleLabels.push(subtitle);
           current.firstDepartureMinute = Math.min(current.firstDepartureMinute, entry.departureMinute);
           current.firstDepartureHhmm = minutesToHhmm(current.firstDepartureMinute);
-          current.trainCount += 1;
+          const countKey = displayKey === 'サンライズ瀬戸・出雲'
+            ? `${entry.departureMinute}|${boardStop?.stationGroupId || ''}`
+            : `${entry.trip?.id || ''}|${entry.departureMinute}|${boardStop?.sequence || ''}`;
+          if (!current.trainCountKeys.has(countKey)) {
+            current.trainCountKeys.add(countKey);
+            current.trainCount += 1;
+          }
           if (!byDisplay.has(displayKey)) {
             byDisplay.set(displayKey, current);
             byRoute.set(routeId, current);
@@ -11712,6 +11829,102 @@
       };
     }
 
+    function sunriseTripHasBothBranches(trip) {
+      const stationNames = (trip?.stopTimes || []).map((stop) => displayNameForGroup(stop.stationGroupId));
+      return stationNames.some((stationName) => SUNRISE_IZUMO_BRANCH_STATIONS.has(stationName)) &&
+        stationNames.some((stationName) => SUNRISE_SETO_BRANCH_STATIONS.has(stationName));
+    }
+
+    function isSeasonalSunriseTrip(trip) {
+      const label = [
+        formatTripLabel(trip),
+        trip?.serviceNumber,
+        trip?.displayName,
+        trip?.serviceName,
+      ].filter(Boolean).join(' ');
+      return /サンライズ/u.test(label) && /(?:91|92|9011|9012)/u.test(label);
+    }
+
+    function sunriseBranchTrip(trip, branchLabel, branchToRemove) {
+      const stops = trip.stopTimes || [];
+      const filteredStops = stops
+        .filter((stop) => !branchToRemove.has(displayNameForGroup(stop.stationGroupId)))
+        .map((stop, index) => ({ ...stop, sequence: index + 1 }));
+      if (filteredStops.length < 2) return null;
+      const prunedTrip = {
+        ...trip,
+        id: `${trip.id}__sunrise_${branchLabel.includes('瀬戸') ? 'seto' : 'izumo'}`,
+        serviceName: 'サンライズ',
+        displayName: branchLabel,
+        routeName: branchLabel,
+        stopTimes: filteredStops,
+        lineTrace: [],
+        coupledRouteNames: ['サンライズ瀬戸', 'サンライズ出雲'],
+        sunriseBranchSynthetic: true,
+      };
+      const lineTrace = rebuiltLineTraceFromAdjacentStops(prunedTrip, filteredStops);
+      if (!lineTrace.length) return null;
+      return {
+        ...prunedTrip,
+        routeId: lineTrace[0]?.routeId || prunedTrip.routeId,
+        lineTrace,
+        lineSequence: lineTrace
+          .map((trace) => trace.routeId)
+          .filter((routeId, index, list) => routeId && list.indexOf(routeId) === index)
+          .map((routeId) => ({ routeId })),
+        coupledBranchPruned: true,
+        sunriseTraceRebuilt: true,
+      };
+    }
+
+    function normalizeTripsForGameplay(trip) {
+      if (isSeasonalSunriseTrip(trip)) return [];
+      if (formatTripLabel(trip).includes('サンライズ') && sunriseTripHasBothBranches(trip)) {
+        const publicNumber = String(trip?.serviceNumber || publicTripNumber(trip) || '').replace(/\D+/gu, '');
+        const branchTrips = [];
+        if (publicNumber.startsWith('50')) {
+          branchTrips.push(sunriseBranchTrip(trip, 'サンライズ瀬戸', SUNRISE_IZUMO_BRANCH_STATIONS));
+        } else if (publicNumber.startsWith('40')) {
+          branchTrips.push(sunriseBranchTrip(trip, 'サンライズ出雲', SUNRISE_SETO_BRANCH_STATIONS));
+        } else {
+          branchTrips.push(
+            sunriseBranchTrip(trip, 'サンライズ瀬戸', SUNRISE_IZUMO_BRANCH_STATIONS),
+            sunriseBranchTrip(trip, 'サンライズ出雲', SUNRISE_SETO_BRANCH_STATIONS),
+          );
+        }
+        return branchTrips.filter(Boolean).map((branchTrip) => extendCircularTripForContinuousRide(branchTrip));
+      }
+      return [normalizeTripForGameplay(trip)];
+    }
+
+    function dedupeReviewedSunriseTrips(trips) {
+      const bestByKey = new Map();
+      const passthrough = [];
+      const score = (trip) => {
+        let value = 0;
+        if (String(trip.id || '').includes('__sunrise_seto')) value += 20;
+        if (!String(trip.id || '').includes('__sunrise_')) value += 10;
+        if (String(trip.id || '').includes('jr_west_official')) value += 4;
+        if (String(trip.id || '').includes('jr_east_official')) value += 3;
+        return value;
+      };
+      trips.forEach((trip) => {
+        const label = formatTripLabel(trip);
+        if (!label.includes('サンライズ')) {
+          passthrough.push(trip);
+          return;
+        }
+        const stops = trip.stopTimes || [];
+        const key = [
+          label.replace(/\d+M?$/u, ''),
+          stops.map((stop) => `${displayNameForGroup(stop.stationGroupId)}:${stop.arrivalTimeSec}:${stop.departureTimeSec}`).join('|'),
+        ].join('::');
+        const current = bestByKey.get(key);
+        if (!current || score(trip) > score(current)) bestByKey.set(key, trip);
+      });
+      return [...passthrough, ...bestByKey.values()];
+    }
+
     function normalizeTripForGameplay(trip) {
       return extendCircularTripForContinuousRide(pruneReviewedCoupledBranchStops(trip));
     }
@@ -11767,7 +11980,9 @@
         state.stationTripsByGroupId = new Map();
         state.departureQueryCache = new Map();
         state.routeChoicesByDeparturesCache = new WeakMap();
-        const gameplayTrips = addReviewedCoupledBranchTrips(stitchThroughRunningTrips(trips)).map(normalizeTripForGameplay);
+        const gameplayTrips = dedupeReviewedSunriseTrips(
+          addReviewedCoupledBranchTrips(stitchThroughRunningTrips(trips)).flatMap(normalizeTripsForGameplay)
+        );
         gameplayTrips.forEach((trip) => {
           state.tripById.set(trip.id, trip);
           const seen = new Set();

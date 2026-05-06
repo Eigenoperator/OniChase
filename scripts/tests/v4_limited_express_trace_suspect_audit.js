@@ -33,6 +33,35 @@ const REVIEWED_SEGMENT_EXCEPTIONS = new Set([
   reviewedSegmentKey('上野', '土浦', '常磐線'),
   reviewedSegmentKey('上野', '水戸', '常磐線'),
   reviewedSegmentKey('仙台', '相馬', '常磐線'),
+  reviewedSegmentKey('東京', '空港第2ビル', '東海道線'),
+  reviewedSegmentKey('東京', '空港第2ビル', '総武線'),
+  reviewedSegmentKey('東京', '空港第2ビル', '成田線'),
+  reviewedSegmentKey('東京', '成田空港', '東海道線'),
+  reviewedSegmentKey('東京', '成田空港', '総武線'),
+  reviewedSegmentKey('東京', '成田空港', '成田線'),
+  reviewedSegmentKey('上諏訪', '松本', '中央線'),
+  reviewedSegmentKey('上諏訪', '松本', '篠ノ井線'),
+  reviewedSegmentKey('名古屋', '米原', '東海道線'),
+  reviewedSegmentKey('名古屋', '米原', '関西線'),
+  reviewedSegmentKey('大宮', '栃木', '東北線'),
+  reviewedSegmentKey('大宮', '栃木', '日光線'),
+  reviewedSegmentKey('大宮', '栃木', '野田線'),
+  reviewedSegmentKey('大宮', '栃木', '東武日光線'),
+  reviewedSegmentKey('津', '鶴橋', '名古屋線'),
+  reviewedSegmentKey('津', '鶴橋', '大阪線'),
+  reviewedSegmentKey('津', '大和八木', '名古屋線'),
+  reviewedSegmentKey('津', '大和八木', '大阪線'),
+  reviewedSegmentKey('津', '名張', '名古屋線'),
+  reviewedSegmentKey('津', '名張', '大阪線'),
+  reviewedSegmentKey('大和八木', '伊勢市', '大阪線'),
+  reviewedSegmentKey('大和八木', '伊勢市', '山田線'),
+  reviewedSegmentKey('大和八木', '伊勢市', '橿原線'),
+  reviewedSegmentKey('近鉄四日市', '伊勢市', '名古屋線'),
+  reviewedSegmentKey('近鉄四日市', '伊勢市', '山田線'),
+  reviewedSegmentKey('白子', '伊勢市', '名古屋線'),
+  reviewedSegmentKey('白子', '伊勢市', '山田線'),
+  reviewedSegmentKey('津', '伊勢市', '名古屋線'),
+  reviewedSegmentKey('津', '伊勢市', '山田線'),
 ]);
 
 function reviewedSegmentKey(fromName, toName, routeName) {
@@ -200,6 +229,15 @@ function main() {
       const offLineStops = stops.filter((stop) => !stationLineSet(stop.station).has(traceName));
       if (offLineStops.length >= 2 || tripOperators.length > 1 || traceOperatorNames.length > 1) {
         const mostlyShinkansen = traces.length > 0 && traces.every((trace) => isShinkansenLikeRoute(trace.route));
+        if (mostlyShinkansen) continue;
+        const terminalTailIsReviewed = offLineStops.length === 1 &&
+          offLineStops[0].sequence === terminal.sequence &&
+          REVIEWED_SEGMENT_EXCEPTIONS.has(reviewedSegmentKey(
+            stationName(stops[stops.length - 2]?.station),
+            stationName(terminal.station),
+            traceName
+          ));
+        if (terminalTailIsReviewed) continue;
         suspects.push({
           severity: severityFor(['long_trip_single_trace_with_line_context_mismatch'], tripDistanceKm, mostlyShinkansen),
           reasons: ['long_trip_single_trace_with_line_context_mismatch'],
@@ -260,12 +298,23 @@ function main() {
       if (absentCoveringRoutes.length) {
         reasons.push('long_pair_trace_route_absent_from_both_endpoint_lines');
       }
+      const sameLineExpressSkip = coveringRouteNames.some((routeName) =>
+        fromLines.has(routeName) && toLines.has(routeName)
+      );
+      if (
+        sameLineExpressSkip &&
+        pairDistanceKm < VERY_LONG_PAIR_KM &&
+        !absentCoveringRoutes.length &&
+        !reasons.includes('reviewed_long_physical_segment')
+      ) {
+        continue;
+      }
       if (mostlyShinkansen && reasons.every((reason) =>
         reason === 'long_adjacent_stop_pair' ||
         reason === 'very_long_adjacent_stop_pair' ||
         reason === 'virtual_shinkansen_corridor_pair'
       )) {
-        reasons.push('normal_shinkansen_express_skip_candidate');
+        continue;
       }
       const uniqueReasons = uniq(reasons);
       suspects.push({
@@ -298,6 +347,9 @@ function main() {
   for (const suspect of suspects) {
     for (const reason of suspect.reasons || []) reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
   }
+  const unreviewedSuspects = suspects.filter((suspect) =>
+    !(suspect.reasons || []).includes('reviewed_long_physical_segment')
+  );
   const output = {
     generatedAt: new Date().toISOString(),
     inputs: {
@@ -313,6 +365,8 @@ function main() {
     candidateTripCount,
     checkedAdjacentPairs,
     suspectCount: suspects.length,
+    reviewedSuspectCount: suspects.length - unreviewedSuspects.length,
+    unreviewedSuspectCount: unreviewedSuspects.length,
     reasonCounts,
     topFamilies: [...familyCounts.entries()]
       .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
@@ -328,9 +382,20 @@ function main() {
     candidateTripCount,
     checkedAdjacentPairs,
     suspectCount: suspects.length,
+    reviewedSuspectCount: suspects.length - unreviewedSuspects.length,
+    unreviewedSuspectCount: unreviewedSuspects.length,
     reasonCounts,
     written: args['json-out'] || null,
     topSuspects: suspects.slice(0, 12).map((suspect) => ({
+      reasons: suspect.reasons,
+      family: suspect.family,
+      trainNumber: suspect.trainNumber,
+      from: suspect.from || suspect.origin,
+      to: suspect.to || suspect.terminal,
+      distanceKm: suspect.distanceKm || suspect.tripDistanceKm,
+      traceRoutes: suspect.coveringTraceRoutes || suspect.traceRoutes,
+    })),
+    topUnreviewedSuspects: unreviewedSuspects.slice(0, 12).map((suspect) => ({
       reasons: suspect.reasons,
       family: suspect.family,
       trainNumber: suspect.trainNumber,

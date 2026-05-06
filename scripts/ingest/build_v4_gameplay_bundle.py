@@ -132,6 +132,46 @@ SHINKANSEN_SERVICE_CORRIDORS = {
 
 NISHI_KYUSHU_SHINKANSEN_STATION_NAMES = {"武雄温泉", "嬉野温泉", "新大村", "諫早", "長崎"}
 
+TOHOKU_SHINKANSEN_TOKYO_FUKUSHIMA_STATION_NAMES = {
+    "東京",
+    "上野",
+    "大宮",
+    "小山",
+    "宇都宮",
+    "那須塩原",
+    "新白河",
+    "郡山",
+    "福島",
+}
+
+TOHOKU_SHINKANSEN_TOKYO_MORIOKA_STATION_NAMES = {
+    *TOHOKU_SHINKANSEN_TOKYO_FUKUSHIMA_STATION_NAMES,
+    "白石蔵王",
+    "仙台",
+    "古川",
+    "くりこま高原",
+    "一ノ関",
+    "水沢江刺",
+    "北上",
+    "新花巻",
+    "盛岡",
+}
+
+MINI_SHINKANSEN_SHARED_SEGMENT_RULES = [
+    {
+        "service_prefixes": ("つばさ", "Tsubasa"),
+        "shared_station_names": TOHOKU_SHINKANSEN_TOKYO_FUKUSHIMA_STATION_NAMES,
+        "physical_line": ("jr_east", "東北新幹線"),
+        "corridor_line": ("shinkansen", "SHINKANSEN_YAMAGATA"),
+    },
+    {
+        "service_prefixes": ("こまち", "Komachi"),
+        "shared_station_names": TOHOKU_SHINKANSEN_TOKYO_MORIOKA_STATION_NAMES,
+        "physical_line": ("jr_east", "東北新幹線"),
+        "corridor_line": ("shinkansen", "SHINKANSEN_AKITA"),
+    },
+]
+
 PHYSICAL_TRACE_WINS_LINE_NAMES = {
     "内房線",
     "外房線",
@@ -492,6 +532,10 @@ def train_has_shinkansen_physical_evidence(
     return len(station_names & NISHI_KYUSHU_SHINKANSEN_STATION_NAMES) >= 2
 
 
+def is_public_shinkansen_corridor_line(operator_id: str, line_name: str) -> bool:
+    return operator_id == "shinkansen" and str(line_name or "").startswith("SHINKANSEN_")
+
+
 def reviewed_shinkansen_route_override_for_train(
     train: dict[str, Any],
     physical_station_by_id: dict[str, dict[str, Any]],
@@ -747,6 +791,12 @@ def reviewed_trip_segment_line_override(
         for field in ("service_name", "display_name", "service_name_detail", "route_name")
     ]
     station_pair = {left_name, right_name}
+    for rule in MINI_SHINKANSEN_SHARED_SEGMENT_RULES:
+        if not any(label.startswith(rule["service_prefixes"]) for label in service_labels):
+            continue
+        if station_pair <= rule["shared_station_names"]:
+            return rule["physical_line"]
+        return rule["corridor_line"]
     if any(label.startswith(JOBAN_LIMITED_EXPRESS_SERVICE_PREFIXES) for label in service_labels):
         if station_pair == {"品川", "東京"}:
             return ("jr_east", "東海道線")
@@ -760,6 +810,9 @@ def reviewed_trip_segment_line_override(
             other_lines = right_lines if left_name == "仙台" else left_lines
             if ("jr_east", "常磐線") in other_lines:
                 return ("jr_east", "常磐線")
+    if any(label.startswith(("ひだ", "Hida")) for label in service_labels):
+        if station_pair == {"名古屋", "米原"}:
+            return ("jr_central", "東海道線")
     return None
 
 
@@ -1655,7 +1708,7 @@ def build_timetable(
         service_name = public_service_name_for_train(train_for_build, line_name)
         service_name = through_destination_service_name(service_name, operator_id, line_name, line_trace, id_to_name)
         attach_stop_route_identity(stop_times, line_trace, route_id)
-        if not line_trace:
+        if not line_trace or is_public_shinkansen_corridor_line(operator_id, line_name):
             route_station_groups[route_id].update(station_group_ids)
             line_station_groups[(operator_id, line_name)].update(station_group_ids)
         for trace in line_trace:
