@@ -1053,8 +1053,8 @@
         <button id="pause-button" type="button">Pause</button>
         <button id="simulate-button" type="button">Replay</button>
         <button id="global-replay-button" type="button">Global Replay</button>
-        <button id="corridor-button" class="debug-only" type="button" hidden>Corridor</button>
-        <button id="service-button" class="debug-only active" type="button" hidden>Service</button>
+        <button id="corridor-button" class="debug-only active" type="button" hidden>Corridor</button>
+        <button id="service-button" class="debug-only" type="button" hidden>Service</button>
         <button id="fit-button" type="button">Fit</button>
       </nav>
     </header>
@@ -4398,7 +4398,7 @@
     const state = {
       bundle: null,
       map: null,
-      viewMode: 'service',
+      viewMode: 'corridor',
       serviceLayersReady: false,
       serviceInteractionsBound: false,
       selectedStationGroupId: null,
@@ -7352,11 +7352,11 @@
         id: 'label-hub',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 4.4,
+        minzoom: 3.8,
         filter: ['>=', ['get', 'label_rank'], 99],
         layout: {
           ...baseLayout,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 4.4, 10.5, 9, 13, 14, 15],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 3.8, 10, 9, 13, 14, 15],
         },
         paint: basePaint,
       });
@@ -7364,11 +7364,11 @@
         id: 'label-major',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 6.7,
+        minzoom: 5.8,
         filter: ['all', ['>=', ['get', 'label_rank'], 90], ['<', ['get', 'label_rank'], 99]],
         layout: {
           ...baseLayout,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 6.7, 10, 11, 12.5, 15, 14],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 5.8, 9.7, 11, 12.5, 15, 14],
         },
         paint: basePaint,
       });
@@ -7376,13 +7376,13 @@
         id: 'label-local',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 9.8,
-        maxzoom: 13.4,
+        minzoom: 8.6,
+        maxzoom: 12.7,
         filter: ['<', ['get', 'label_rank'], 90],
         layout: {
           ...baseLayout,
           'text-padding': 1,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 9.8, 9.4, 12, 10.5, 13.4, 11.4],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 8.6, 8.8, 11.5, 10.2, 12.7, 11.0],
         },
         paint: basePaint,
       });
@@ -7390,20 +7390,20 @@
         id: 'label-local-dense',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 13.4,
+        minzoom: 12.7,
         filter: ['<', ['get', 'label_rank'], 90],
         layout: {
           ...baseLayout,
           'text-variable-anchor': ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'],
           'text-radial-offset': 0.48,
           'text-padding': 1,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 13.4, 11.2, 14.2, 11.8, 16, 13.2],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 12.7, 10.8, 14.2, 11.8, 16, 13.2],
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
         paint: {
           ...basePaint,
-          'text-halo-width': ['interpolate', ['linear'], ['zoom'], 14.2, 1.25, 16, 1.55],
+          'text-halo-width': ['interpolate', ['linear'], ['zoom'], 12.7, 1.15, 16, 1.55],
         },
       });
       map.addLayer({
@@ -12213,7 +12213,7 @@
         bindMapInteractions(map);
         renderStats(bundle);
         renderRouteList();
-        setViewMode('service');
+        setViewMode('corridor');
         zoomPill.textContent = `Zoom ${map.getZoom().toFixed(2)}`;
         const loadMs = Math.round(performance.now() - t0);
         loadPill.textContent = `Map bundle ready in ${loadMs}ms`;
