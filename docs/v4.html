@@ -7842,7 +7842,15 @@
     function dedupeBoardableDepartures(entries) {
       const seen = new Set();
       const looseLogicalIndexByKey = new Map();
+      const exactLogicalIndexByKey = new Map();
       const deduped = [];
+      const dedupePreference = (entry) => {
+        let score = 0;
+        if (entry?.trip?.sunriseBranchSynthetic) score += 100;
+        if ((entry?.trip?.coupledRouteNames || []).some((name) => String(name || '').includes('サンライズ'))) score += 20;
+        if (String(entry?.trip?.id || '').includes('jr_west_official')) score += 5;
+        return score;
+      };
       entries.forEach((entry) => {
         const logicalRouteKey = routeChoiceIdsForDeparture(entry).join('+') || entry.trip.routeId || '';
         const publicNumber = publicTripNumber(entry.trip);
@@ -7868,7 +7876,10 @@
         if (looseLogicalKey && looseLogicalIndexByKey.has(looseLogicalKey)) {
           const existingIndex = looseLogicalIndexByKey.get(looseLogicalKey);
           const existing = deduped[existingIndex];
-          if (entry.trip.routeId === logicalRouteKey && existing?.trip?.routeId !== logicalRouteKey) {
+          if (
+            (entry.trip.routeId === logicalRouteKey && existing?.trip?.routeId !== logicalRouteKey) ||
+            dedupePreference(entry) > dedupePreference(existing)
+          ) {
             deduped[existingIndex] = entry;
           }
           return;
@@ -7887,12 +7898,20 @@
           entry.departureMinute,
           downstream,
         ].join('|');
-        if (seen.has(key)) return;
+        if (seen.has(key)) {
+          const existingIndex = exactLogicalIndexByKey.get(key);
+          const existing = Number.isInteger(existingIndex) ? deduped[existingIndex] : null;
+          if (existing && dedupePreference(entry) > dedupePreference(existing)) {
+            deduped[existingIndex] = entry;
+          }
+          return;
+        }
         if (looseLogicalKey) {
           seen.add(looseLogicalKey);
           looseLogicalIndexByKey.set(looseLogicalKey, deduped.length);
         }
         seen.add(key);
+        exactLogicalIndexByKey.set(key, deduped.length);
         deduped.push(entry);
       });
       return deduped;
@@ -8163,7 +8182,7 @@
       if (!entry || !trip || !boardStop) return null;
       for (const stationName of entry.splitJoinStations || []) {
         const splitStop = stopAtStationName(trip, stationName);
-        if (splitStop && splitStop.sequence > boardStop.sequence) return splitStop;
+        if (splitStop && splitStop.sequence >= boardStop.sequence) return splitStop;
       }
       return null;
     }

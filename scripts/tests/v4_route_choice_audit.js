@@ -159,6 +159,14 @@ async function auditRouteChoices(page, auditOptions) {
       return stationIdsByName(stationName)[0] || null;
     }
 
+    function stationIdByNameAndPrefecture(stationName, prefectureName) {
+      return [...state.stationGroupById.entries()]
+        .find(([, group]) =>
+          (group.names?.ja || group.primaryName) === stationName &&
+          (!prefectureName || (group.tags?.prefectureNamesJa || []).includes(prefectureName))
+        )?.[0] || null;
+    }
+
     function nextStopFor(entry) {
       return (entry.trip?.stopTimes || []).find((stop) => stop.sequence > entry.stop.sequence) || null;
     }
@@ -1356,6 +1364,133 @@ async function auditRouteChoices(page, auditOptions) {
           label: row.label || formatTripLabel(row.entry?.trip),
           departure: row.departureHhmm || row.entry?.departureHhmm,
         })),
+      });
+    }
+    const seasonalSunriseTrips = allTrips
+      .filter((trip) => /サンライズ/u.test(formatTripLabel(trip)))
+      .filter((trip) => /(?:91|92|9011|9012)/u.test([
+        formatTripLabel(trip),
+        trip.serviceNumber,
+        trip.displayName,
+        trip.serviceName,
+      ].filter(Boolean).join(' ')));
+    if (seasonalSunriseTrips.length) {
+      anomalies.push({
+        kind: 'sunrise_seasonal_rows_visible_in_regular_gameplay',
+        reason: 'Seasonal Sunrise 91/92 rows should not inflate the regular weekday gameplay Sunrise route choices.',
+        trips: seasonalSunriseTrips.slice(0, 8).map((trip) => ({
+          id: trip.id,
+          label: formatTripLabel(trip),
+        })),
+      });
+    }
+    function sunrisePlayableRowsAt(stationName, prefectureName = null) {
+      const stationGroupId = prefectureName
+        ? stationIdByNameAndPrefecture(stationName, prefectureName)
+        : firstStationIdByName(stationName);
+      if (!stationGroupId) return { stationName, prefectureName, missingStation: true, choices: [], rows: [] };
+      const preview = {
+        currentState: { kind: 'NODE', stationGroupId },
+        currentMinute: START_MINUTE,
+      };
+      const stationEntries = departuresForStationGroup(stationGroupId, START_MINUTE, { includeTransferEquivalents: true });
+      const choices = routeChoicesFromDepartures(stationEntries)
+        .filter((choice) => routeTitle(choice.routeId).includes('サンライズ'));
+      const rows = choices.flatMap((choice) =>
+        buildCoupledTrainRows(availableRouteDepartures(preview, choice.routeId, 20), choice.routeId)
+      );
+      return {
+        stationName,
+        prefectureName,
+        stationGroupId,
+        choices: choices.map((choice) => ({
+          route: routeTitle(choice.routeId),
+          trainCount: choice.trainCount,
+          firstDeparture: choice.firstDepartureHhmm,
+        })),
+        rows: rows.map((row) => {
+          if (row.kind === 'coupled') {
+            return {
+              kind: 'coupled',
+              label: row.label,
+              departure: row.departureHhmm,
+              terminals: row.portions.map((item) => displayNameForGroup(item.row.trip.stopTimes.at(-1)?.stationGroupId || '')),
+              portions: row.portions.map((item) => item.portion?.label || formatTripLabel(item.row.trip)),
+            };
+          }
+          return {
+            kind: 'trip',
+            label: formatTripLabel(row.entry?.trip),
+            departure: row.entry?.departureHhmm,
+            terminal: displayNameForGroup(row.entry?.trip?.stopTimes?.at(-1)?.stationGroupId || ''),
+          };
+        }),
+      };
+    }
+    const sunriseStationCases = [
+      {
+        name: '東京',
+        expectCoupled: true,
+        expectTerminals: ['高松', '出雲市'],
+        expectOnlyOneRow: true,
+      },
+      {
+        name: '横浜',
+        expectCoupled: true,
+        expectTerminals: ['高松', '出雲市'],
+        expectTokyoBound: true,
+      },
+      {
+        name: '高松',
+        prefecture: '香川県',
+        expectSingleTripLabel: 'サンライズ瀬戸',
+        expectSingleTripTerminal: '東京',
+      },
+      {
+        name: '出雲市',
+        expectSingleTripLabel: 'サンライズ出雲',
+        expectSingleTripTerminal: '東京',
+      },
+      {
+        name: '岡山',
+        expectCoupled: true,
+        expectTerminals: ['高松', '出雲市'],
+      },
+    ];
+    const sunriseStationFailures = [];
+    for (const testCase of sunriseStationCases) {
+      const summary = sunrisePlayableRowsAt(testCase.name, testCase.prefecture || null);
+      const coupledRows = summary.rows.filter((row) => row.kind === 'coupled' && row.label === 'サンライズ瀬戸・出雲');
+      const tripRows = summary.rows.filter((row) => row.kind === 'trip');
+      const terminals = new Set(summary.rows.flatMap((row) => row.kind === 'coupled' ? row.terminals : [row.terminal]));
+      const hasExpectedTerminals = (testCase.expectTerminals || []).every((terminal) => terminals.has(terminal));
+      const hasExpectedSingleTrip = !testCase.expectSingleTripLabel || (
+        tripRows.length === 1 &&
+        tripRows[0].label.includes(testCase.expectSingleTripLabel) &&
+        tripRows[0].terminal === testCase.expectSingleTripTerminal
+      );
+      const hasTokyoBound = !testCase.expectTokyoBound || tripRows.some((row) => row.terminal === '東京');
+      const rowCountOk = !testCase.expectOnlyOneRow || summary.rows.length === 1;
+      if (
+        summary.missingStation ||
+        !summary.choices.length ||
+        (testCase.expectCoupled && !coupledRows.length) ||
+        !hasExpectedTerminals ||
+        !hasExpectedSingleTrip ||
+        !hasTokyoBound ||
+        !rowCountOk
+      ) {
+        sunriseStationFailures.push({
+          testCase,
+          summary,
+        });
+      }
+    }
+    if (sunriseStationFailures.length) {
+      anomalies.push({
+        kind: 'sunrise_seto_izumo_nationwide_direction_regression',
+        reason: 'Sunrise Seto/Izumo must work in both directions and at shared, branch, and split/join stations.',
+        failures: sunriseStationFailures,
       });
     }
     if (shinkansenUmbrellaSamples.length) {
