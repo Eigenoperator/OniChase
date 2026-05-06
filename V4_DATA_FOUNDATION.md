@@ -28,7 +28,7 @@ This is the first `v4` data slice: nationwide real physical rail geometry plus `
 - `docs/data/v4_maplibre/manifest.json`
 - `docs/v4.html`
 
-Current generated counts:
+Current generated counts (2026-05-06 release-candidate bundle):
 
 - Physical stations: `10239`
 - Station groups: `9052`
@@ -39,9 +39,11 @@ Current generated counts:
 - Nationwide operator-line pairs: `596`
 - Unique line names: `552`
 - Track continuity warnings: `12` multi-component operator-line pairs
-- Current train collection: `120425` weekday train instances across `22` source collections and `179` operators
-- Current gameplay export: `618` service routes/patterns and `120420` compact playable trips
-- Current room-server export: `9052` station groups and `120420` SQLite-backed trips
+- Current train collection: `126190` weekday train instances across `22` source collections and `178` operators
+- Current train health: `0` duplicate service ids, `0` short trains, `0` missing station-group stops, `0` missing physical-station stops, and `0` bad time-order trains
+- Current gameplay export: `604` service routes/patterns, `111969` full trips, and `111969` compact playable trips after current dedupe/skip rules
+- Current data-quality audit: `0` errors and `0` warnings across collection coverage, trip integrity, train display, known-station coverage, transfer equivalence, dropped direct services, and browser route-choice merge checks
+- Current room-server export is not the release source of truth; rebuild it only for server experiments.
 
 ## Regenerate
 

@@ -2986,6 +2986,22 @@
         ],
       },
       {
+        from: '坂出',
+        to: '高松',
+        tripStationNames: ['東京', '岡山'],
+        legs: [
+          { routeName: '予讃線', operatorId: 'jr_shikoku' },
+        ],
+      },
+      {
+        from: '高松',
+        to: '坂出',
+        tripStationNames: ['東京', '岡山'],
+        legs: [
+          { routeName: '予讃線', operatorId: 'jr_shikoku' },
+        ],
+      },
+      {
         from: '児島',
         to: '岡山',
         tripStationNames: ['岡山', '高松', '琴平', '伊予西条', '松山', '高知'],
@@ -4437,12 +4453,16 @@
       physicalRouteIdsByGroupId: new Map(),
       tripById: new Map(),
       stationTripsByGroupId: new Map(),
+      stationRouteDepartureCache: new Map(),
       coupledServiceRegistry: null,
       coupledServiceEntries: [],
       coupledChoiceRowsByKey: new Map(),
       coupledEquivalentsByTripId: new Map(),
       departureQueryCache: new Map(),
       routeChoicesByDeparturesCache: new WeakMap(),
+      lastRouteHighlightKey: '',
+      lastTripPathKey: '',
+      lastPlanBoardKey: '',
       timetableStatus: 'idle',
       timetableLoadRequested: false,
       online: {
@@ -7332,11 +7352,11 @@
         id: 'label-hub',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 5.0,
+        minzoom: 4.4,
         filter: ['>=', ['get', 'label_rank'], 99],
         layout: {
           ...baseLayout,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 5, 11, 9, 13, 14, 15],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 4.4, 10.5, 9, 13, 14, 15],
         },
         paint: basePaint,
       });
@@ -7344,11 +7364,11 @@
         id: 'label-major',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 7.4,
+        minzoom: 6.7,
         filter: ['all', ['>=', ['get', 'label_rank'], 90], ['<', ['get', 'label_rank'], 99]],
         layout: {
           ...baseLayout,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 7.4, 10.5, 11, 12.5, 15, 14],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 6.7, 10, 11, 12.5, 15, 14],
         },
         paint: basePaint,
       });
@@ -7356,12 +7376,13 @@
         id: 'label-local',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 11.0,
-        maxzoom: 14.2,
+        minzoom: 9.8,
+        maxzoom: 13.4,
         filter: ['<', ['get', 'label_rank'], 90],
         layout: {
           ...baseLayout,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 11, 10, 14, 12.2, 16, 13.4],
+          'text-padding': 1,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 9.8, 9.4, 12, 10.5, 13.4, 11.4],
         },
         paint: basePaint,
       });
@@ -7369,14 +7390,14 @@
         id: 'label-local-dense',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 14.2,
+        minzoom: 13.4,
         filter: ['<', ['get', 'label_rank'], 90],
         layout: {
           ...baseLayout,
           'text-variable-anchor': ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'],
           'text-radial-offset': 0.48,
           'text-padding': 1,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 14.2, 11.8, 16, 13.2],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 13.4, 11.2, 14.2, 11.8, 16, 13.2],
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
@@ -7788,20 +7809,26 @@
       const seenRows = new Set();
       const searchGroupIds = includeTransferEquivalents ? equivalentStationGroupIds(stationGroupId) : [stationGroupId];
       for (const searchGroupId of searchGroupIds) {
-        for (const trip of state.stationTripsByGroupId.get(searchGroupId) || []) {
-          for (const stop of trip.stopTimes || []) {
-            if (stop.stationGroupId !== searchGroupId) continue;
-            const departureMinute = stopDepartureMinutes(stop);
-            if (departureMinute < currentMinute) continue;
-            const routeIds = boardableRouteIdsForStop(trip, stop);
-            const row = { departureMinute, trip, stop, routeIds, queryStationGroupId: stationGroupId };
-            if (!departureMatchesRoute(row, routeId)) break;
-            const key = `${trip.id}|${stop.sequence}|${departureMinute}`;
-            if (!seenRows.has(key)) {
-              seenRows.add(key);
-              rows.push(row);
-            }
-            break;
+        const candidates = routeId
+          ? stationRouteDepartureCandidates(searchGroupId, routeId)
+          : (state.stationTripsByGroupId.get(searchGroupId) || []).map((trip) => ({
+              trip,
+              stop: trip._firstStopByStationGroupId?.get(searchGroupId) ||
+                (trip.stopTimes || []).find((item) => item.stationGroupId === searchGroupId),
+              routeIds: null,
+            }));
+        for (const candidate of candidates) {
+          const { trip, stop } = candidate;
+          if (!trip || !stop) continue;
+          const departureMinute = stopDepartureMinutes(stop);
+          if (departureMinute < currentMinute) continue;
+          const routeIds = candidate.routeIds || boardableRouteIdsForStop(trip, stop);
+          const row = { departureMinute, trip, stop, routeIds, queryStationGroupId: stationGroupId };
+          if (!departureMatchesRoute(row, routeId)) continue;
+          const key = `${trip.id}|${stop.sequence}|${departureMinute}`;
+          if (!seenRows.has(key)) {
+            seenRows.add(key);
+            rows.push(row);
           }
         }
       }
@@ -7812,6 +7839,22 @@
       }
       state.departureQueryCache.set(cacheKey, rows);
       return Number.isFinite(options.limit) ? rows.slice(0, options.limit) : rows;
+    }
+
+    function stationRouteDepartureCandidates(stationGroupId, routeId) {
+      const cacheKey = `${stationGroupId || ''}|${routeId || ''}`;
+      if (state.stationRouteDepartureCache.has(cacheKey)) return state.stationRouteDepartureCache.get(cacheKey);
+      const candidates = [];
+      for (const trip of state.stationTripsByGroupId.get(stationGroupId) || []) {
+        const stop = trip._firstStopByStationGroupId?.get(stationGroupId) ||
+          (trip.stopTimes || []).find((item) => item.stationGroupId === stationGroupId);
+        if (!stop) continue;
+        const routeIds = boardableRouteIdsForStop(trip, stop);
+        if (!departureMatchesRoute({ trip, stop, routeIds }, routeId)) continue;
+        candidates.push({ trip, stop, routeIds });
+      }
+      state.stationRouteDepartureCache.set(cacheKey, candidates);
+      return candidates;
     }
 
     function availableDepartures(preview, playerId = state.activeMode, options = {}) {
@@ -8115,14 +8158,20 @@
     }
 
     function coupledTripSearchRecord(trip) {
-      if (!trip || typeof trip !== 'object') return { normalizedTripLabels: [], stationNames: new Set() };
+      if (!trip || typeof trip !== 'object') return { normalizedTripLabels: [], stationNames: null };
       if (coupledTripSearchCache.has(trip)) return coupledTripSearchCache.get(trip);
       const record = {
         normalizedTripLabels: coupledTripLabelCandidates(trip).map(normalizeCoupledText).filter(Boolean),
-        stationNames: new Set(tripStationNames(trip)),
+        stationNames: null,
       };
       coupledTripSearchCache.set(trip, record);
       return record;
+    }
+
+    function coupledTripStationNameSet(trip) {
+      const record = coupledTripSearchRecord(trip);
+      if (!record.stationNames) record.stationNames = new Set(tripStationNames(trip));
+      return record.stationNames;
     }
 
     function coupledBranchStationTokens(portion) {
@@ -8152,13 +8201,14 @@
     }
 
     function coupledPortionMatchesTrip(portion, trip) {
-      const { normalizedTripLabels, stationNames } = coupledTripSearchRecord(trip);
+      const { normalizedTripLabels } = coupledTripSearchRecord(trip);
       const { normalizedPortionLabels, branchTokens } = coupledPortionSearchRecord(portion);
       const hasLabelMatch = normalizedPortionLabels.some((portionLabel) =>
         normalizedTripLabels.some((tripLabel) => tripLabel && (tripLabel === portionLabel || tripLabel.includes(portionLabel) || portionLabel.includes(tripLabel)))
       );
       if (!hasLabelMatch) return false;
       if (!branchTokens.length) return true;
+      const stationNames = coupledTripStationNameSet(trip);
       const branchHit = branchTokens.some((token) => stationNames.has(token));
       const distinctiveNameHit = normalizedPortionLabels.some((label) =>
         label.length >= 4 &&
@@ -8524,7 +8574,7 @@
       return coordinatePathLength(forward) <= coordinatePathLength(backward) ? forward : backward;
     }
 
-    function candidateSegmentRouteIds(trip, currentStop, nextStop) {
+    function candidateSegmentRouteIds(trip, currentStop, nextStop, options = {}) {
       const candidates = new Set();
       if (!trip || !currentStop || !nextStop) return [];
       const addCandidate = (routeId) => {
@@ -8534,7 +8584,7 @@
         if (isThroughServiceTransferAlias(routeId) && routeId !== trip.routeId) return;
         candidates.add(routeId);
       };
-      boardableRouteIdsForStop(trip, currentStop).forEach(addCandidate);
+      if (!options.skipTraceDerived) boardableRouteIdsForStop(trip, currentStop).forEach(addCandidate);
       routeIdsForStationAndTransfers(currentStop.stationGroupId, { physicalOnly: true }).forEach(addCandidate);
       routeIdsForStationAndTransfers(nextStop.stationGroupId, { physicalOnly: true }).forEach(addCandidate);
       routeIdsForStationAndTransfers(currentStop.stationGroupId).forEach(addCandidate);
@@ -8543,7 +8593,7 @@
       return [...candidates];
     }
 
-    function tripSegmentRouteScore(trip, currentStop, nextStop, routeId, coordinates, priority, corridorAliases) {
+    function tripSegmentRouteScore(trip, currentStop, nextStop, routeId, coordinates, priority, corridorAliases, options = {}) {
       if (!routeId || !coordinates?.length || coordinates.length < 2) return null;
       const route = state.routeById.get(routeId);
       const isTripRoute = routeId === trip?.routeId;
@@ -8557,7 +8607,7 @@
       const physicalBoth = fromPhysical && toPhysical;
       const patternBoth = fromPattern && toPattern;
       const aliasOverlap = routeTrackAliasOverlapCount(routeId, corridorAliases);
-      const isBoardable = boardableRouteIdsForStop(trip, currentStop).includes(routeId);
+      const isBoardable = !options.skipTraceDerived && boardableRouteIdsForStop(trip, currentStop).includes(routeId);
       const isSelectedRoute = routeId === state.selectedRouteId && (state.selectedTripId === trip?.id || pendingTripId(state.activeMode) === trip?.id);
       let group = 100;
       if (physicalBoth && isTripRoute) group = 0;
@@ -8593,12 +8643,16 @@
       if (tracedRouteId && coordinatesForTripSegment(tracedRouteId, currentStop, nextStop).length >= 2) {
         return tracedRouteId;
       }
-      const candidates = candidateSegmentRouteIds(trip, currentStop, nextStop);
+      return bestCandidateRouteIdForTripSegment(trip, currentStop, nextStop) || trip?.routeId;
+    }
+
+    function bestCandidateRouteIdForTripSegment(trip, currentStop, nextStop, options = {}) {
+      const candidates = candidateSegmentRouteIds(trip, currentStop, nextStop, options);
       const corridorAliases = tripCorridorAliasTokens(trip);
       let best = null;
       candidates.forEach((routeId, priority) => {
         const coordinates = coordinatesForTripSegment(routeId, currentStop, nextStop);
-        const score = tripSegmentRouteScore(trip, currentStop, nextStop, routeId, coordinates, priority, corridorAliases);
+        const score = tripSegmentRouteScore(trip, currentStop, nextStop, routeId, coordinates, priority, corridorAliases, options);
         if (!score) return;
         if (
           !best ||
@@ -8613,7 +8667,7 @@
           best = score;
         }
       });
-      return best?.routeId || trip?.routeId;
+      return best?.routeId || null;
     }
 
     function routeCanAnchorTripSegment(routeId, currentStop, nextStop) {
@@ -8643,6 +8697,21 @@
         resolved = traceRouteId;
       } else if (traceNeedsPhysicalRoute) {
         const resolvedRouteId = routeIdForTripSegment(trip, currentStop, nextStop);
+        if (
+          resolvedRouteId &&
+          state.routeById.has(resolvedRouteId) &&
+          !isThroughServiceTransferAlias(resolvedRouteId) &&
+          coordinatesForTripSegment(resolvedRouteId, currentStop, nextStop).length >= 2
+        ) {
+          resolved = resolvedRouteId;
+        }
+      }
+      if (
+        resolved === traceRouteId &&
+        traceRouteId &&
+        !coordinatesForTripSegment(traceRouteId, currentStop, nextStop).length
+      ) {
+        const resolvedRouteId = bestCandidateRouteIdForTripSegment(trip, currentStop, nextStop, { skipTraceDerived: true });
         if (
           resolvedRouteId &&
           state.routeById.has(resolvedRouteId) &&
@@ -9085,6 +9154,22 @@
       ) {
         return remember(routeIdByShortNameAndOperator('東北新幹線', 'jr_east') || routeIdByShortName('SHINKANSEN_TOHOKU_HOKKAIDO') || trace.routeId);
       }
+      if (
+        fromStop &&
+        toStop &&
+        trace.toSequence - trace.fromSequence <= 1 &&
+        !coordinatesForTripSegment(trace.routeId, fromStop, toStop).length
+      ) {
+        const resolvedRouteId = bestCandidateRouteIdForTripSegment(trip, fromStop, toStop, { skipTraceDerived: true });
+        if (
+          resolvedRouteId &&
+          state.routeById.has(resolvedRouteId) &&
+          !isThroughServiceTransferAlias(resolvedRouteId) &&
+          coordinatesForTripSegment(resolvedRouteId, fromStop, toStop).length >= 2
+        ) {
+          return remember(resolvedRouteId);
+        }
+      }
       return remember(trace.routeId);
     }
 
@@ -9426,16 +9511,24 @@
     function updateSelectedRouteHighlights() {
       const selectedRouteSource = state.map?.getSource('selected-route-path');
       const showingTrip = Boolean(state.selectedTripId || pendingTripId(state.activeMode));
+      const cacheKey = `${state.selectedRouteId || ''}|${showingTrip ? 'trip' : 'route'}`;
+      const cacheable = Boolean(selectedRouteSource || state.map?.getLayer('route-stop-halo'));
+      if (cacheable && state.lastRouteHighlightKey === cacheKey) return;
       if (selectedRouteSource) {
         selectedRouteSource.setData(showingTrip ? { type: 'FeatureCollection', features: [] } : selectedRouteFeatureCollection(state.selectedRouteId));
       }
-      if (!state.map?.getLayer('route-stop-halo')) return;
+      if (!state.map?.getLayer('route-stop-halo')) {
+        if (cacheable) state.lastRouteHighlightKey = cacheKey;
+        return;
+      }
       if (showingTrip || !state.selectedRouteId) {
         state.map.setFilter('route-stop-halo', NONE_STATION_FILTER);
+        state.lastRouteHighlightKey = cacheKey;
         return;
       }
       const routeStops = [...(state.routeStationSetById.get(state.selectedRouteId) || new Set())];
       state.map.setFilter('route-stop-halo', routeStationMatchFilter(state.selectedRouteId, routeStops));
+      state.lastRouteHighlightKey = cacheKey;
     }
 
     function setSelectedRoute(routeId) {
@@ -9518,6 +9611,9 @@
 
     function updateSelectedTripPath() {
       if (!state.map?.getSource('selected-trip-path')) return;
+      const cacheKey = state.selectedTripId || '';
+      if (state.lastTripPathKey === cacheKey) return;
+      state.lastTripPathKey = cacheKey;
       const trip = state.tripById.get(state.selectedTripId);
       const segments = trip ? tripPathSegments(trip) : [];
       state.map.getSource('selected-trip-path').setData({
@@ -10302,12 +10398,13 @@
             : `<div class="empty" data-row-key="empty:onboard-destinations">No downstream stops available.</div>`,
         );
       } else {
-        const departures = availableDepartures(preview);
-        const routeChoices = routeChoicesFromDepartures(departures);
         const planningRouteId = state.planningRouteIds[state.activeMode] || null;
-        const selectedRouteId = routeChoices.some((choice) => choice.routeId === planningRouteId) ? planningRouteId : null;
+        let routeChoices = [];
+        const selectedRouteId = planningRouteId || null;
         const trainRows = selectedRouteId ? buildCoupledTrainRows(availableRouteDepartures(preview, selectedRouteId), selectedRouteId) : [];
         if (!selectedRouteId) {
+          const departures = availableDepartures(preview);
+          routeChoices = routeChoicesFromDepartures(departures);
           html += plannerStep(
             '1/3',
             `Lines at ${currentLabel}`,
@@ -10357,9 +10454,13 @@
     function renderPlanBoard() {
       const steps = activePlayer().steps || [];
       if (!steps.length) {
+        const cacheKey = `empty:${state.activeMode}`;
+        if (state.lastPlanBoardKey === cacheKey) return;
+        state.lastPlanBoardKey = cacheKey;
         planBoardEl.innerHTML = `<div class="empty">No plan yet. Choose a line, then a train, then a destination stop.</div>`;
         return;
       }
+      state.lastPlanBoardKey = '';
       const executedPreview = previewPlayer(state.activeMode, state.currentGameMinute);
       const editableRideIndex = currentEditableRideIndex(executedPreview);
       const floor = protectedPlanLength();
@@ -11812,6 +11913,16 @@
       return traces;
     }
 
+    function reviewedSunriseBranchStop(stop, branchLabel) {
+      const stationName = displayNameForGroup(stop?.stationGroupId);
+      if (branchLabel.includes('瀬戸') && stationName === '高松') {
+        const yosanRouteId = routeIdByShortNameAndOperator('予讃線', 'jr_shikoku');
+        const stationGroupId = stationGroupIdByRouteStationName(yosanRouteId, '高松');
+        if (stationGroupId) return { ...stop, stationGroupId };
+      }
+      return stop;
+    }
+
     function pruneReviewedCoupledBranchStops(trip) {
       const label = formatTripLabel(trip);
       if (!label.includes('サンライズ')) return trip;
@@ -11830,8 +11941,8 @@
       const filteredStops = branchToRemove
         ? stops
             .filter((stop) => !branchToRemove.has(displayNameForGroup(stop.stationGroupId)))
-            .map((stop, index) => ({ ...stop, sequence: index + 1 }))
-        : stops;
+            .map((stop, index) => reviewedSunriseBranchStop({ ...stop, sequence: index + 1 }, label))
+        : stops.map((stop) => reviewedSunriseBranchStop(stop, label));
       if (filteredStops.length < 2) return trip;
       const prunedTrip = { ...trip, stopTimes: filteredStops, lineTrace: [] };
       const lineTrace = rebuiltLineTraceFromAdjacentStops(prunedTrip, filteredStops);
@@ -11864,11 +11975,23 @@
       return /サンライズ/u.test(label) && /(?:91|92|9011|9012)/u.test(label);
     }
 
+    function hasSunriseLabel(trip) {
+      if (!trip) return false;
+      return [
+        trip.serviceName,
+        trip.displayName,
+        trip.routeName,
+        trip.serviceNumber,
+        trip.id,
+        ...(trip.coupledRouteNames || []),
+      ].some((value) => String(value || '').includes('サンライズ'));
+    }
+
     function sunriseBranchTrip(trip, branchLabel, branchToRemove) {
       const stops = trip.stopTimes || [];
       const filteredStops = stops
         .filter((stop) => !branchToRemove.has(displayNameForGroup(stop.stationGroupId)))
-        .map((stop, index) => ({ ...stop, sequence: index + 1 }));
+        .map((stop, index) => reviewedSunriseBranchStop({ ...stop, sequence: index + 1 }, branchLabel));
       if (filteredStops.length < 2) return null;
       const prunedTrip = {
         ...trip,
@@ -11897,8 +12020,9 @@
     }
 
     function normalizeTripsForGameplay(trip) {
-      if (isSeasonalSunriseTrip(trip)) return [];
-      if (formatTripLabel(trip).includes('サンライズ') && sunriseTripHasBothBranches(trip)) {
+      const sunrise = hasSunriseLabel(trip);
+      if (sunrise && isSeasonalSunriseTrip(trip)) return [];
+      if (sunrise && sunriseTripHasBothBranches(trip)) {
         const publicNumber = String(trip?.serviceNumber || publicTripNumber(trip) || '').replace(/\D+/gu, '');
         const branchTrips = [];
         if (publicNumber.startsWith('50')) {
@@ -11913,6 +12037,7 @@
         }
         return branchTrips.filter(Boolean).map((branchTrip) => extendCircularTripForContinuousRide(branchTrip));
       }
+      if (!sunrise && !isCircularRoute(trip?.routeId)) return [trip];
       return [normalizeTripForGameplay(trip)];
     }
 
@@ -11928,6 +12053,10 @@
         return value;
       };
       trips.forEach((trip) => {
+        if (!hasSunriseLabel(trip)) {
+          passthrough.push(trip);
+          return;
+        }
         const label = formatTripLabel(trip);
         if (!label.includes('サンライズ')) {
           passthrough.push(trip);
@@ -11958,6 +12087,7 @@
       const headsigns = payload.headsigns || [];
       const routeNames = payload.routeNames || [];
       const coupledRouteNames = payload.coupledRouteNames || [];
+      const stopEncoding = payload.stopEncoding || 'station-arrival-departure-routes-v1';
       const compactRouteId = (index) => Number.isInteger(index) ? routeIds[index] || '' : '';
       return (payload.trips || []).map((row) => ({
         id: row[0],
@@ -11975,15 +12105,31 @@
         })).filter((trace) => trace.routeId),
         lineSequence: Array.from(new Set((row[5] || []).map((trace) => compactRouteId(trace[2])).filter(Boolean)))
           .map((routeId) => ({ routeId })),
-        stopTimes: (row[4] || []).map((stop, index) => ({
-          sequence: index + 1,
-          stationGroupId: stationGroupIds[stop[0]] || '',
-          arrivalTimeSec: stop[1],
-          departureTimeSec: stop[2],
-          displayRouteId: compactRouteId(stop[3]),
-          outgoingRouteId: compactRouteId(stop[4]),
-          incomingRouteId: compactRouteId(stop[5]),
-        })),
+        stopTimes: (row[4] || []).map((stop, index, stops) => {
+          if (stopEncoding === 'station-arrival-departure-route-overrides-v2') {
+            const tripRouteIndex = row[1];
+            const arrival = stop[1];
+            const departure = stop[2] == null ? arrival : stop[2];
+            return {
+              sequence: index + 1,
+              stationGroupId: stationGroupIds[stop[0]] || '',
+              arrivalTimeSec: arrival,
+              departureTimeSec: departure,
+              displayRouteId: compactRouteId(Number.isInteger(stop[3]) ? stop[3] : tripRouteIndex),
+              outgoingRouteId: index + 1 < stops.length ? compactRouteId(Number.isInteger(stop[4]) ? stop[4] : tripRouteIndex) : '',
+              incomingRouteId: index > 0 ? compactRouteId(Number.isInteger(stop[5]) ? stop[5] : tripRouteIndex) : '',
+            };
+          }
+          return {
+            sequence: index + 1,
+            stationGroupId: stationGroupIds[stop[0]] || '',
+            arrivalTimeSec: stop[1],
+            departureTimeSec: stop[2],
+            displayRouteId: compactRouteId(stop[3]),
+            outgoingRouteId: compactRouteId(stop[4]),
+            incomingRouteId: compactRouteId(stop[5]),
+          };
+        }),
       }));
     }
 
@@ -11997,6 +12143,7 @@
         const trips = decodeTimetablePayload(payload);
         state.tripById = new Map();
         state.stationTripsByGroupId = new Map();
+        state.stationRouteDepartureCache = new Map();
         state.departureQueryCache = new Map();
         state.routeChoicesByDeparturesCache = new WeakMap();
         const gameplayTrips = dedupeReviewedSunriseTrips(
@@ -12005,9 +12152,11 @@
         gameplayTrips.forEach((trip) => {
           state.tripById.set(trip.id, trip);
           const seen = new Set();
+          trip._firstStopByStationGroupId = new Map();
           (trip.stopTimes || []).forEach((stop) => {
             if (seen.has(stop.stationGroupId)) return;
             seen.add(stop.stationGroupId);
+            trip._firstStopByStationGroupId.set(stop.stationGroupId, stop);
             if (!state.stationTripsByGroupId.has(stop.stationGroupId)) state.stationTripsByGroupId.set(stop.stationGroupId, []);
             state.stationTripsByGroupId.get(stop.stationGroupId).push(trip);
           });

@@ -79,7 +79,10 @@ NAMED_LIMITED_EXPRESS_LABEL_RE = re.compile(
     r"(?:メトロ)?(?:はこね|えのしま|ホームウェイ|モーニングウェイ|ふじさん|さがみ)\d*号?|"
     r"(?:サンダーバード|はるか|くろしお|こうのとり|きのさき|はしだて|まいづる|しらさぎ|"
     r"成田エクスプレス|あずさ|かいじ|富士回遊|ひたち|ときわ|わかしお|さざなみ|しおさい|"
-    r"リバティ|けごん|きぬ|会津|りょうもう|スペーシア|サンライズ|踊り子|ひだ)\d*号?"
+    r"リバティ|けごん|きぬ|会津|りょうもう|スペーシア|サンライズ|踊り子|ひだ|"
+    r"みどり|ハウステンボス|ソニック|きりしま|にちりんシーガイア|にちりん|"
+    r"リレーかもめ|かささぎ|ゆふ|ゆふいんの森|うずしお|しおかぜ|南風|"
+    r"宗谷|サロベツ|オホーツク|大雪|北斗|おおぞら|とかち|カムイ|ライラック|すずらん)\d*号?"
 )
 
 SHINKANSEN_SERVICE_LABEL_RE = re.compile(
@@ -611,10 +614,15 @@ def public_service_name_for_train(train: dict[str, Any], line_name: str) -> str:
         return "紀州路快速"
     if service_name and service_name != original_line_name and re.search(
         r"(?:メトロ)?(?:はこね|えのしま|ホームウェイ|モーニングウェイ|ふじさん|さがみ)\d+号|"
-        r"(?:リバティ|けごん|きぬ|会津|りょうもう|スペーシア|サンライズ|踊り子|ひだ)\d*号?",
+        r"(?:リバティ|けごん|きぬ|会津|りょうもう|スペーシア|サンライズ|踊り子|ひだ|"
+        r"ソニック|きりしま|にちりん|にちりんシーガイア|リレーかもめ|かささぎ|"
+        r"ゆふ|ゆふいんの森|うずしお|しおかぜ|南風|宗谷|サロベツ|オホーツク|"
+        r"大雪|北斗|おおぞら|とかち|カムイ|ライラック|すずらん)\d*号?",
         service_name,
     ):
-        return service_name
+        if re.search(r"[［\[]|―|★", service_name):
+            return public_line_name
+        return named_limited_express_family(service_name) or service_name
     return public_line_name
 
 
@@ -1792,23 +1800,47 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
     coupled_route_name_index = {value: index for index, value in enumerate(coupled_route_names)}
     rows = []
     for trip in trip_instances:
+        trip_route_index = route_index[trip["routeId"]]
+        compact_stops = []
+        stop_times = trip.get("stopTimes", [])
+        for stop_index, stop in enumerate(stop_times):
+            arrival = stop.get("arrivalTimeSec")
+            departure = stop.get("departureTimeSec")
+            stop_row = [
+                station_index[stop["stationGroupId"]],
+                arrival,
+                None if departure == arrival else departure,
+            ]
+            route_overrides = [
+                route_index[stop["displayRouteId"]]
+                if stop.get("displayRouteId") in route_index and route_index[stop["displayRouteId"]] != trip_route_index
+                else None,
+                route_index[stop["outgoingRouteId"]]
+                if (
+                    stop_index + 1 < len(stop_times)
+                    and stop.get("outgoingRouteId") in route_index
+                    and route_index[stop["outgoingRouteId"]] != trip_route_index
+                )
+                else None,
+                route_index[stop["incomingRouteId"]]
+                if (
+                    stop_index > 0
+                    and stop.get("incomingRouteId") in route_index
+                    and route_index[stop["incomingRouteId"]] != trip_route_index
+                )
+                else None,
+            ]
+            stop_row.extend(route_overrides)
+            while stop_row and stop_row[-1] is None:
+                stop_row.pop()
+            compact_stops.append(stop_row)
         rows.append(
             [
                 trip["id"],
-                route_index[trip["routeId"]],
+                trip_route_index,
                 service_index[trip.get("serviceName") or ""],
                 trip.get("serviceNumber") or "",
-                [
-                    [
-                        station_index[stop["stationGroupId"]],
-                        stop.get("arrivalTimeSec"),
-                        stop.get("departureTimeSec"),
-                        route_index[stop["displayRouteId"]] if stop.get("displayRouteId") in route_index else None,
-                        route_index[stop["outgoingRouteId"]] if stop.get("outgoingRouteId") in route_index else None,
-                        route_index[stop["incomingRouteId"]] if stop.get("incomingRouteId") in route_index else None,
-                    ]
-                    for stop in trip.get("stopTimes", [])
-                ],
+                compact_stops,
                 [
                     [
                         trace.get("fromSequence"),
@@ -1830,6 +1862,7 @@ def compact_timetable(trip_instances: list[dict[str, Any]], generated_at: str) -
         "generatedAt": generated_at,
         "sourceBundle": "v4_gameplay_map_bundle.json.gz",
         "lineTraceEncoding": "sequence-route-ranges-v1",
+        "stopEncoding": "station-arrival-departure-route-overrides-v2",
         "stationGroupIds": station_group_ids,
         "routeIds": route_ids,
         "serviceNames": service_names,

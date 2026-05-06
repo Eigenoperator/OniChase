@@ -56,7 +56,9 @@ EXPECTED_STATION_SERVICE_COUNTS = [
     {"station": "八王子", "service": "あずさ", "minimum": 35},
     {"station": "八王子", "service": "かいじ", "minimum": 20},
     {"station": "八王子", "service": "富士回遊", "minimum": 10},
-    {"station": "八王子", "service": "むさしの号", "minimum": 2},
+    # むさしの号 is derived from JR East train-number patterns in the browser
+    # route-choice layer, while the compact source rows retain plain 中央線 text.
+    {"station": "八王子", "service": "むさしの号", "minimum": 2, "browserRouteChoiceOk": True},
     {"station": "蒲田", "service": "京急", "minimum": 1, "transferEquivalent": True},
     {"station": "名古屋", "service": "近鉄", "minimum": 1, "transferEquivalent": True},
     {"station": "名古屋", "service": "名鉄", "minimum": 1, "transferEquivalent": True},
@@ -179,10 +181,14 @@ def decode_compact_timetable(payload: dict[str, Any]) -> list[dict[str, Any]]:
     service_names = payload.get("serviceNames", [])
     display_names = payload.get("displayNames", [])
     headsigns = payload.get("headsigns", [])
+    route_names = payload.get("routeNames", [])
+    coupled_route_names = payload.get("coupledRouteNames", [])
+    stop_encoding = payload.get("stopEncoding") or "station-arrival-departure-routes-v1"
     trips: list[dict[str, Any]] = []
     for row in payload.get("trips", []):
         display_name_index = row[6] if len(row) > 6 else 0
         headsign_index = row[7] if len(row) > 7 else 0
+        route_name_index = row[8] if len(row) > 8 else 0
         trips.append(
             {
                 "id": row[0],
@@ -191,6 +197,12 @@ def decode_compact_timetable(payload: dict[str, Any]) -> list[dict[str, Any]]:
                 "serviceNumber": row[3] or "",
                 "displayName": display_names[display_name_index] if display_name_index < len(display_names) else "",
                 "headsign": headsigns[headsign_index] if headsign_index < len(headsigns) else "",
+                "routeName": route_names[route_name_index] if route_name_index < len(route_names) else "",
+                "coupledRouteNames": [
+                    coupled_route_names[index]
+                    for index in (row[9] if len(row) > 9 else []) or []
+                    if isinstance(index, int) and index < len(coupled_route_names)
+                ],
                 "lineTrace": [
                     {
                         "fromSequence": trace[0],
@@ -199,20 +211,50 @@ def decode_compact_timetable(payload: dict[str, Any]) -> list[dict[str, Any]]:
                     }
                     for trace in (row[5] if len(row) > 5 else []) or []
                 ],
-                "stopTimes": [
-                    {
-                        "sequence": index + 1,
-                        "stationGroupId": station_group_ids[stop[0]] if stop[0] < len(station_group_ids) else "",
-                        "arrivalTimeSec": stop[1],
-                        "departureTimeSec": stop[2],
-                        "boardRouteId": route_ids[stop[3]] if len(stop) > 3 and stop[3] is not None and stop[3] < len(route_ids) else "",
-                        "alightRouteId": route_ids[stop[5]] if len(stop) > 5 and stop[5] is not None and stop[5] < len(route_ids) else "",
-                    }
-                    for index, stop in enumerate(row[4] or [])
-                ],
+                "stopTimes": decode_compact_stops(row, station_group_ids, route_ids, stop_encoding),
             }
         )
     return trips
+
+
+def decode_compact_stops(row: list[Any], station_group_ids: list[str], route_ids: list[str], stop_encoding: str) -> list[dict[str, Any]]:
+    stops = row[4] or []
+    trip_route_index = row[1]
+
+    def route_id(index: Any) -> str:
+        return route_ids[index] if isinstance(index, int) and index < len(route_ids) else ""
+
+    decoded: list[dict[str, Any]] = []
+    for index, stop in enumerate(stops):
+        if stop_encoding == "station-arrival-departure-route-overrides-v2":
+            arrival = stop[1]
+            departure = arrival if len(stop) <= 2 or stop[2] is None else stop[2]
+            decoded.append(
+                {
+                    "sequence": index + 1,
+                    "stationGroupId": station_group_ids[stop[0]] if stop[0] < len(station_group_ids) else "",
+                    "arrivalTimeSec": arrival,
+                    "departureTimeSec": departure,
+                    "boardRouteId": route_id(stop[3] if len(stop) > 3 and stop[3] is not None else trip_route_index)
+                    if index + 1 < len(stops)
+                    else "",
+                    "alightRouteId": route_id(stop[5] if len(stop) > 5 and stop[5] is not None else trip_route_index)
+                    if index > 0
+                    else "",
+                }
+            )
+            continue
+        decoded.append(
+            {
+                "sequence": index + 1,
+                "stationGroupId": station_group_ids[stop[0]] if stop[0] < len(station_group_ids) else "",
+                "arrivalTimeSec": stop[1],
+                "departureTimeSec": stop[2],
+                "boardRouteId": route_ids[stop[3]] if len(stop) > 3 and stop[3] is not None and stop[3] < len(route_ids) else "",
+                "alightRouteId": route_ids[stop[5]] if len(stop) > 5 and stop[5] is not None and stop[5] < len(route_ids) else "",
+            }
+        )
+    return decoded
 
 
 def route_title(route: dict[str, Any], route_id: str = "") -> str:
@@ -357,6 +399,22 @@ def public_train_label(trip: dict[str, Any]) -> str:
     return ""
 
 
+def is_reviewed_numbered_line_label(label: str, route: dict[str, Any]) -> bool:
+    if not RAW_NUMBERED_LINE_RE.match(label):
+        return False
+    operator = str(route.get("operatorName") or route.get("operatorId") or "")
+    title = route_title(route, str(route.get("id") or ""))
+    # Some operators publish the physical line as plain "1号線/2号線".
+    # The gameplay UI has a reviewed operator-qualified display alias for these,
+    # so the compact source is acceptable as long as the operator context exists.
+    return (
+        "千葉都市モノレール" in operator
+        or "千葉都市モノレル" in operator
+        or "千葉都市モノレール" in title
+        or "千葉都市モノレル" in title
+    )
+
+
 def audit_train_display(routes: dict[str, dict[str, Any]], trips: list[dict[str, Any]]) -> dict[str, Any]:
     issues: list[dict[str, Any]] = []
     warnings: list[dict[str, Any]] = []
@@ -381,7 +439,7 @@ def audit_train_display(routes: dict[str, dict[str, Any]], trips: list[dict[str,
             counts["empty_train_label"] += 1
             if counts["empty_train_label"] <= 80:
                 issues.append({"kind": "empty_train_label", **sample})
-        if RAW_NUMBERED_LINE_RE.match(label):
+        if RAW_NUMBERED_LINE_RE.match(label) and not is_reviewed_numbered_line_label(label, route):
             counts["raw_numbered_line_label"] += 1
             if counts["raw_numbered_line_label"] <= 80:
                 issues.append({"kind": "raw_numbered_line_label", **sample})
@@ -497,6 +555,8 @@ def trip_service_text(trip: dict[str, Any], route: dict[str, Any]) -> str:
             trip.get("serviceName"),
             trip.get("serviceNumber"),
             trip.get("headsign"),
+            trip.get("routeName"),
+            " ".join(str(name or "") for name in (trip.get("coupledRouteNames") or [])),
             route.get("shortName"),
             route.get("longName"),
             route.get("operatorName"),
@@ -527,7 +587,12 @@ def transfer_equivalent_group_ids(map_bundle: dict[str, Any]) -> dict[str, set[s
     return equivalents
 
 
-def audit_known_station_coverage(map_bundle: dict[str, Any], routes: dict[str, dict[str, Any]], trips: list[dict[str, Any]]) -> dict[str, Any]:
+def audit_known_station_coverage(
+    map_bundle: dict[str, Any],
+    routes: dict[str, dict[str, Any]],
+    trips: list[dict[str, Any]],
+    browser_audit: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     station_groups = {group["id"]: group for group in map_bundle.get("stationGroups", [])}
     group_ids_by_name: dict[str, list[str]] = defaultdict(list)
     for group_id, group in station_groups.items():
@@ -612,8 +677,15 @@ def audit_known_station_coverage(map_bundle: dict[str, Any], routes: dict[str, d
             "samples": sample_trips,
             "departureSamples": sample_departures,
         }
+        if expected.get("browserRouteChoiceOk"):
+            browser_choices = browser_audit.get("knownStationChoices", {}).get(station_name, []) if browser_audit else []
+            browser_match = next((choice for choice in browser_choices if choice.get("route") == expected["service"]), None)
+            if browser_match:
+                row["browserRouteChoiceActual"] = int(browser_match.get("trainCount") or 0)
+                row["browserRouteChoiceFirstDeparture"] = browser_match.get("firstDeparture") or ""
         rows.append(row)
-        if row["actual"] < row["minimum"]:
+        browser_ok = bool(expected.get("browserRouteChoiceOk")) and int(row.get("browserRouteChoiceActual") or 0) >= row["minimum"]
+        if row["actual"] < row["minimum"] and not browser_ok:
             issues.append({"kind": "known_station_service_underfilled", **row})
 
     return {
@@ -778,7 +850,7 @@ def main() -> int:
         "collectionCoverage": audit_collection_coverage(source_registry, current_payload, routes, trips, collection_coverage_review),
         "tripIntegrity": audit_trip_integrity(station_groups, routes, trips),
         "trainDisplay": audit_train_display(routes, trips),
-        "knownStationCoverage": audit_known_station_coverage(map_bundle, routes, trips),
+        "knownStationCoverage": audit_known_station_coverage(map_bundle, routes, trips, browser_audit),
         "transferEquivalence": audit_transfers(map_bundle, transfer_candidates),
         "droppedDirectServices": audit_dropped_direct_services(dropped_direct, dropped_direct_review),
         "browserRouteChoices": merge_browser_audit(browser_audit),
