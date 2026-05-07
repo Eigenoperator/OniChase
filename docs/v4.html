@@ -8238,7 +8238,7 @@
 
     function coupledPortionSearchRecord(portion) {
       if (!portion || typeof portion !== 'object') {
-        return { normalizedPortionLabels: [], branchTokens: [] };
+        return { normalizedPortionLabels: [], normalizedDistinctiveLabels: [], branchTokens: [] };
       }
       if (coupledPortionSearchCache.has(portion)) return coupledPortionSearchCache.get(portion);
       const portionLabels = [
@@ -8247,13 +8247,16 @@
       ].map((value) => String(value || '').trim()).filter(Boolean);
       const record = {
         normalizedPortionLabels: portionLabels.map(normalizeCoupledText).filter(Boolean),
+        normalizedDistinctiveLabels: [portion?.label]
+          .map((value) => normalizeCoupledText(value))
+          .filter(Boolean),
         branchTokens: coupledBranchStationTokens(portion),
       };
       coupledPortionSearchCache.set(portion, record);
       return record;
     }
 
-    function coupledPortionMatchesTrip(portion, trip) {
+    function coupledPortionMatchesTrip(portion, trip, sharedPortionLabels = new Set()) {
       const { normalizedTripLabels } = coupledTripSearchRecord(trip);
       const { normalizedPortionLabels, branchTokens } = coupledPortionSearchRecord(portion);
       const hasLabelMatch = normalizedPortionLabels.some((portionLabel) =>
@@ -8263,7 +8266,9 @@
       if (!branchTokens.length) return true;
       const stationNames = coupledTripStationNameSet(trip);
       const branchHit = branchTokens.some((token) => stationNames.has(token));
-      const distinctiveNameHit = normalizedPortionLabels.some((label) =>
+      const distinctiveNameHit = normalizedPortionLabels
+        .filter((label) => !sharedPortionLabels.has(label))
+        .some((label) =>
         label.length >= 4 &&
         !['快速', '特急', '普通', '急行'].includes(label) &&
         normalizedTripLabels.some((tripLabel) => tripLabel.includes(label))
@@ -8272,8 +8277,17 @@
     }
 
     function coupledPortionIndexesForTrip(entry, trip) {
+      const labelCounts = new Map();
+      (entry?.portions || []).forEach((portion) => {
+        coupledPortionSearchRecord(portion).normalizedPortionLabels.forEach((label) => {
+          labelCounts.set(label, (labelCounts.get(label) || 0) + 1);
+        });
+      });
+      const sharedPortionLabels = new Set([...labelCounts.entries()]
+        .filter(([, count]) => count > 1)
+        .map(([label]) => label));
       return (entry?.portions || [])
-        .map((portion, index) => coupledPortionMatchesTrip(portion, trip) ? index : -1)
+        .map((portion, index) => coupledPortionMatchesTrip(portion, trip, sharedPortionLabels) ? index : -1)
         .filter((index) => index >= 0);
     }
 

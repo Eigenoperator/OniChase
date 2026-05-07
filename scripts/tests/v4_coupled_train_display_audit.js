@@ -140,6 +140,50 @@ function parseArgs(argv) {
         }
       }
 
+      const tokyoNexStationGroupId = stationGroupIdByName('東京');
+      const shinjukuStationGroupId = stationGroupIdByName('新宿');
+      if (tokyoNexStationGroupId && shinjukuStationGroupId) {
+        prepareLocalSession('runner', { startStationId: tokyoNexStationGroupId, startTime: '06:00', endTime: '36:00' });
+        state.currentGameMinute = hhmmToMinutes('06:00');
+        state.phase = 'PLANNING';
+        state.activeMode = 'runner';
+        state.pendingTripIds = { runner: null, hunter: null };
+        state.pendingCoupledChoices = { runner: null, hunter: null };
+        state.planningRouteIds = { runner: null, hunter: null };
+        state.selectedTripId = null;
+        state.selectedRouteId = null;
+        state.trainOutlookHtml = '';
+        renderGame();
+        const nexChoice = routeChoicesFromDepartures(availableDepartures(planCursorPreview('runner')))
+          .find((choice) => routeTitle(choice.routeId) === '成田エクスプレス');
+        if (!nexChoice) {
+          failures.push({ message: 'Tokyo should expose Narita Express route choice' });
+        } else {
+          choosePlanningRoute(nexChoice.routeId);
+          const nexToShinjukuRow = [...document.querySelectorAll('#train-outlook .outlook-row[data-action="choose-trip"], #train-outlook .outlook-row[data-action="choose-coupled"]')]
+            .find((row) => /終点\s*新宿/u.test(row.textContent || ''));
+          if (!nexToShinjukuRow) {
+            failures.push({ message: 'Tokyo Narita Express should expose Shinjuku-bound rows after broad coupled alias filtering' });
+          } else {
+            if (nexToShinjukuRow.dataset.action === 'choose-coupled') {
+              failures.push({
+                message: 'A single Shinjuku-bound Narita Express row must not become a fake coupled umbrella from shared aliases',
+                rowText: nexToShinjukuRow.textContent.trim(),
+              });
+            }
+            chooseTrip(nexToShinjukuRow.dataset.tripId);
+            const shinjukuDestination = [...document.querySelectorAll('#train-outlook .destination-row[data-action="ride-here"]')]
+              .find((row) => row.dataset.stationGroupId === shinjukuStationGroupId || /新宿/u.test(row.textContent || ''));
+            if (!shinjukuDestination) {
+              failures.push({
+                message: 'Selecting a Shinjuku-bound Narita Express at Tokyo must keep Shinjuku as an alighting destination',
+                rowText: nexToShinjukuRow.textContent.trim(),
+              });
+            }
+          }
+        }
+      }
+
       return {
         ok: failures.length === 0,
         failureCount: failures.length,
