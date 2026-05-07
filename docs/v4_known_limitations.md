@@ -13,7 +13,7 @@ V4 is a nationwide railway gameplay release. It is not a full Japanese mobility 
 
 - Most gameplay uses station groups and reviewed same-name transfers. This is good enough for rail gameplay but does not model station-building walking distance.
 - Through-running and coupled services are modeled for gameplay, but the source data remains mixed: some services are direct in source data, some are stitched, and some are coupled for win-condition equivalence.
-- Non-Shinkansen coupled services use coupled-equivalence rules for gameplay. Shinkansen branch services keep their route identities visible while still supporting coupled train equivalence where required.
+- Non-Shinkansen coupled services use coupled-equivalence rules for gameplay and do not show an extra branch picker after a coupled train is selected. Shinkansen branch services keep their route identities visible while still supporting coupled train equivalence where required.
 - Sunrise, Narita Express, Kansai Airport/Kishuji Rapid, mini-Shinkansen, and selected JR West limited express cases have explicit handling. New cases should be added to audits before being trusted.
 
 ## Trace And Highlight Limits

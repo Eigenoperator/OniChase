@@ -16,7 +16,7 @@ V4 moves OniChase from regional prototypes to a nationwide railway gameplay shel
 ## Data And Service Rules
 
 - Ordinary through-running displays the future route segment while preserving route choice consistency.
-- Non-Shinkansen coupled services are treated as the same train for gameplay when reviewed.
+- Non-Shinkansen coupled services are treated as the same train for gameplay when reviewed; selecting the coupled train goes directly to alighting stations rather than a branch picker.
 - Shinkansen branch services keep visible route identity, with special handling for mini-Shinkansen equivalence.
 - Sunrise, Narita Express, Kansai Airport/Kishuji Rapid, JR West named expresses, and selected airport/branch services have release-focused handling.
 - Station grouping uses same-name transfer assumptions; different-name walking transfers are v5 work.

@@ -8372,25 +8372,27 @@
     function chooseCoupledTrain(key) {
       const choice = state.coupledChoiceRowsByKey.get(key);
       if (!choice) return;
-      state.pendingCoupledChoices[state.activeMode] = choice;
-      state.selectedTripId = null;
-      state.pendingTripIds[state.activeMode] = null;
-      state.map?.setFilter('selected-trip-stops', NONE_STATION_FILTER);
-      updateSelectedTripPath();
-      renderGame();
+      const selectedRouteId = choice.selectedRouteId || state.selectedRouteId || null;
+      const representative = coupledRepresentativePortion(choice, selectedRouteId);
+      if (!representative?.row?.trip?.id) return;
+      setSelectedTrip(representative.row.trip.id, selectedRouteId);
+    }
+
+    function coupledRepresentativePortion(row, selectedRouteId = state.selectedRouteId) {
+      return (row?.portions || []).find((item) =>
+        selectedRouteId && routeChoiceIdsForDeparture(item.row).includes(selectedRouteId)
+      ) || (row?.portions || [])[0] || null;
     }
 
     function renderCoupledTrainRow(row, active = false) {
-      const destinations = row.portions
-        .map((item) => `${item.portion?.label || formatTripLabel(item.row.trip)}: ${displayNameForGroup(item.row.trip.stopTimes.at(-1)?.stationGroupId || '')}`)
-        .join(' / ');
+      const representative = coupledRepresentativePortion(row, row.selectedRouteId);
       const rowKey = `coupled:${row.key}`;
       return `
         <button class="outlook-row ${active ? 'active' : ''}" type="button" data-row-key="${escapeHtml(rowKey)}" data-action="choose-coupled" data-coupled-key="${escapeHtml(row.key)}">
           <span class="row-meta">${row.departureHhmm}</span>
           <span>
             <span class="row-title">${escapeHtml(row.label)}</span>
-            <span class="row-sub">直挂 · ${escapeHtml(destinations)}</span>
+            ${representative ? trainPreviewHtml(representative.row.trip, representative.row.boardStop) : '<span class="row-sub">同一列車</span>'}
           </span>
         </button>
       `;
@@ -10429,13 +10431,6 @@
                   </button>
                 `).join('')
               : `<div class="empty" data-row-key="empty:routes">No available lines from this station.</div>`,
-          );
-        } else if (coupledChoice && coupledChoice.selectedRouteId === selectedRouteId) {
-          html += plannerStep(
-            '3/3',
-            `Portions of ${coupledChoice.label}`,
-            'Choose the portion you will ride.',
-            plannerBackNav('back-trains', 'Back to trains') + renderCoupledPortionRows(coupledChoice, selectedRouteId),
           );
         } else {
           html += plannerStep(

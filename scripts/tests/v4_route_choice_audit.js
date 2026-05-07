@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const fs = require('fs');
 const { chromium } = require('playwright');
 
 const MAPLIBRE_STUB = `
@@ -1308,13 +1309,13 @@ async function auditRouteChoices(page, auditOptions) {
     if (!coupledUmbrellaSamples.length) {
       anomalies.push({
         kind: 'coupled_umbrella_choice_missing',
-        reason: 'From coupled toward uncoupled direction, non-Shinkansen train choices should expose an umbrella A・B row before portion selection.',
+        reason: 'Reviewed non-Shinkansen coupled trains should expose an umbrella A・B row when the player boards the coupled physical train.',
       });
     }
     if (missingCoupledUmbrellaLabels.length) {
       anomalies.push({
         kind: 'reviewed_non_shinkansen_coupled_umbrella_missing',
-        reason: 'Non-Shinkansen coupled services such as Narita Express and Kansai/Kishuji rapid must keep the umbrella train row + portion picker rule.',
+        reason: 'Non-Shinkansen coupled services such as Narita Express and Kansai/Kishuji rapid must keep the umbrella train row and must not require a second branch picker after train selection.',
         missingLabels: missingCoupledUmbrellaLabels,
         samples: coupledUmbrellaSamples,
       });
@@ -1720,7 +1721,9 @@ async function runStageAudit(pageUrl, auditOptions, stage) {
     stageResults.push(await runStageAudit(args['page-url'], auditOptions, stage));
   }
   const result = stageResults.length === 1 ? stageResults[0] : mergeStageResults(stageResults, auditOptions);
-  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+  const json = JSON.stringify(result, null, 2);
+  if (args.output && args.output !== true) fs.writeFileSync(args.output, `${json}\n`);
+  process.stdout.write(`${json}\n`);
   if (result.anomalyCount) process.exitCode = 1;
 })().catch((error) => {
   console.error(error);

@@ -154,6 +154,7 @@ Public multiplayer note:
 - v4 Kobe City Subway official CSV open-data collector: [scripts/ingest/collect_v4_kobe_subway_official_train_instances.py](/home/xincheng/toy/Chase/scripts/ingest/collect_v4_kobe_subway_official_train_instances.py)
 - browser regression tests: [scripts/tests](/home/xincheng/toy/Chase/scripts/tests)
 - v4 real MapLibre pan performance gate: [scripts/tests/v4_map_pan_performance_gate.js](/home/xincheng/toy/Chase/scripts/tests/v4_map_pan_performance_gate.js)
+- v4 coupled-train display gate: [scripts/tests/v4_coupled_train_display_audit.js](/home/xincheng/toy/Chase/scripts/tests/v4_coupled_train_display_audit.js)
 
 Useful commands:
 

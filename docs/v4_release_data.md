@@ -77,3 +77,5 @@ The v4 release evidence is summarized by these JSON files:
 - `data/v4_map_pan_performance_release.json`
 
 Do not treat these audit outputs as gameplay source of truth. They are release evidence and regression snapshots.
+
+Coupled-train display is also guarded by `scripts/tests/v4_coupled_train_display_audit.js`.
