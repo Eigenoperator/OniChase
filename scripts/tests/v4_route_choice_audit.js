@@ -218,6 +218,20 @@ async function auditRouteChoices(page, auditOptions) {
       return departuresForStationGroup(stationGroupId, START_MINUTE, { includeTransferEquivalents: true });
     }
 
+    function allEntriesAt(stationName) {
+      const seen = new Set();
+      const entries = [];
+      stationIdsByName(stationName).forEach((stationGroupId) => {
+        departuresForStationGroup(stationGroupId, START_MINUTE, { includeTransferEquivalents: true }).forEach((entry) => {
+          const key = `${entry.trip?.id || ''}|${entry.stop?.sequence || ''}|${entry.departureMinute || ''}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          entries.push(entry);
+        });
+      });
+      return entries;
+    }
+
     const anomalies = [];
     const timings = { startedAtMs: performance.now() };
     const allTrips = [...state.tripById.values()];
@@ -1230,6 +1244,22 @@ async function auditRouteChoices(page, auditOptions) {
           kind: 'ome_branch_central_choice',
           reason: 'Ome branch departures should remain on the Ome Line choice even when the service runs through to Chuo.',
           ...summary,
+        });
+      }
+    }
+
+    for (const stationName of ['中野', '新宿', '四ツ谷', '御茶ノ水', '神田']) {
+      for (const entry of allEntriesAt(stationName)) {
+        const summary = summarizeEntry(stationName, entry);
+        if (!summary.choices.includes('中央線快速')) continue;
+        const labels = routeChoiceIdsForDeparture(entry).map((routeId) => formatTripLabelForBoarding(entry, routeId));
+        const leakedLabels = labels.filter((label) => label === '東北本線' || label === '東北線');
+        if (!leakedLabels.length) continue;
+        anomalies.push({
+          kind: 'chuo_train_label_tohoku_leak',
+          reason: 'Chuo rapid trains between Kanda and Tokyo must remain on 中央線; the Kanda-Tokyo endpoint must not be traced or labeled as 東北本線.',
+          ...summary,
+          labels,
         });
       }
     }

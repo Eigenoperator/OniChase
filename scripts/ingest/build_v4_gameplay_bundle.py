@@ -799,6 +799,10 @@ def reviewed_trip_segment_line_override(
         for field in ("service_name", "display_name", "service_name_detail", "route_name")
     ]
     station_pair = {left_name, right_name}
+    if station_pair == {"神田", "東京"}:
+        central_side_labels = {"中央線", "青梅線", "JR_EAST_CHUO_RAPID", "JR_OME"}
+        if any(canonical_line_name(label) in central_side_labels for label in service_labels):
+            return ("jr_east", "中央線")
     for rule in MINI_SHINKANSEN_SHARED_SEGMENT_RULES:
         if not any(label.startswith(rule["service_prefixes"]) for label in service_labels):
             continue
