@@ -8013,6 +8013,20 @@
     }
 
     function pendingDepartureContext(preview, playerId = state.activeMode) {
+      const coupledChoice = pendingCoupledChoice(playerId);
+      if (coupledChoice && preview.currentState.kind === 'NODE') {
+        const representative = coupledRepresentativePortion(coupledChoice, state.selectedRouteId);
+        const destinations = coupledChoiceDestinationRows(coupledChoice);
+        if (representative?.row?.trip && destinations.length) {
+          return {
+            coupledChoice,
+            trip: representative.row.trip,
+            boardStop: representative.row.boardStop,
+            routeIds: [...new Set((coupledChoice.portions || []).flatMap((item) => item.row.routeIds || boardableRouteIdsForStop(item.row.trip, item.row.boardStop)))],
+            destinations,
+          };
+        }
+      }
       const tripId = pendingTripId(playerId);
       if (!tripId || preview.currentState.kind !== 'NODE') return null;
       const departures = departuresForStationGroup(
@@ -8029,6 +8043,7 @@
         destinations: match.trip.stopTimes
           .filter((stop) => stop.sequence > match.stop.sequence)
           .map((stop) => ({
+            tripId: match.trip.id,
             stationGroupId: stop.stationGroupId,
             label: displayNameForGroup(stop.stationGroupId),
             arrivalHhmm: secToClock(stop.arrivalTimeSec ?? stop.departureTimeSec),
@@ -8413,13 +8428,65 @@
       const selectedRouteId = choice.selectedRouteId || state.selectedRouteId || null;
       const representative = coupledRepresentativePortion(choice, selectedRouteId);
       if (!representative?.row?.trip?.id) return;
-      setSelectedTrip(representative.row.trip.id, selectedRouteId);
+      state.pendingCoupledChoices[state.activeMode] = choice;
+      state.selectedTripId = representative.row.trip.id;
+      state.pendingTripIds[state.activeMode] = representative.row.trip.id;
+      const stationGroupIds = coupledChoiceDestinationRows(choice)
+        .map((item) => item.stationGroupId)
+        .filter(Boolean);
+      state.selectedTripStopIds = [...new Set(stationGroupIds)];
+      state.selectedTripStopFeatureIds = state.selectedTripStopIds.flatMap((stationGroupId) =>
+        (choice.portions || []).flatMap((item) => tripStopFeatureIds(item.row.trip, [stationGroupId]))
+      );
+      state.map?.setFilter('selected-trip-stops', state.selectedTripStopFeatureIds.length
+        ? stationFeatureIdFilter([...new Set(state.selectedTripStopFeatureIds)])
+        : stationMatchFilter(state.selectedTripStopIds));
+      if (selectedRouteId) setSelectedRoute(selectedRouteId, { preservePendingCoupled: true });
+      else if (representative.row.trip.routeId) setSelectedRoute(representative.row.trip.routeId, { preservePendingCoupled: true });
+      updateSelectedTripPath();
+      updateSelectedRouteHighlights();
+      renderRouteCard();
+      renderGame();
     }
 
     function coupledRepresentativePortion(row, selectedRouteId = state.selectedRouteId) {
       return (row?.portions || []).find((item) =>
         selectedRouteId && routeChoiceIdsForDeparture(item.row).includes(selectedRouteId)
       ) || (row?.portions || [])[0] || null;
+    }
+
+    function coupledChoiceDestinationRows(choice) {
+      const byStation = new Map();
+      (choice?.portions || []).forEach((item) => {
+        const row = item.row;
+        const trip = row?.trip;
+        const boardStop = row?.boardStop || row?.stop;
+        if (!trip || !boardStop) return;
+        (trip.stopTimes || [])
+          .filter((stop) => stop.sequence > boardStop.sequence)
+          .forEach((stop) => {
+            const arrivalSec = stop.arrivalTimeSec ?? stop.departureTimeSec;
+            const current = byStation.get(stop.stationGroupId);
+            const candidate = {
+              tripId: trip.id,
+              routeId: trip.routeId,
+              stationGroupId: stop.stationGroupId,
+              label: displayNameForGroup(stop.stationGroupId),
+              arrivalHhmm: secToClock(arrivalSec),
+              arrivalSec,
+              sequence: stop.sequence,
+            };
+            if (!current || arrivalSec < current.arrivalSec || (
+              arrivalSec === current.arrivalSec &&
+              String(trip.id).localeCompare(String(current.tripId)) < 0
+            )) {
+              byStation.set(stop.stationGroupId, candidate);
+            }
+          });
+      });
+      return [...byStation.values()].sort((a, b) =>
+        a.arrivalSec - b.arrivalSec || a.label.localeCompare(b.label, 'ja')
+      );
     }
 
     function renderCoupledTrainRow(row, active = false) {
@@ -9553,7 +9620,7 @@
       if (pending) {
         const destination = pending.destinations.find((item) => item.stationGroupId === stationGroupId);
         if (destination) {
-          addBoardAndRide(pending.trip.id, stationGroupId);
+          addBoardAndRide(destination.tripId || pending.trip.id, stationGroupId);
           return;
         }
       }
@@ -9600,9 +9667,9 @@
       state.lastRouteHighlightKey = cacheKey;
     }
 
-    function setSelectedRoute(routeId) {
+    function setSelectedRoute(routeId, options = {}) {
       state.selectedRouteId = routeId || null;
-      state.pendingCoupledChoices[state.activeMode] = null;
+      if (!options.preservePendingCoupled) state.pendingCoupledChoices[state.activeMode] = null;
       updateSelectedRouteHighlights();
       renderRouteCard();
       renderRouteList();
@@ -9680,23 +9747,36 @@
 
     function updateSelectedTripPath() {
       if (!state.map?.getSource('selected-trip-path')) return;
-      const cacheKey = state.selectedTripId || '';
+      const coupledChoice = pendingCoupledChoice(state.activeMode);
+      const cacheKey = coupledChoice
+        ? `coupled:${coupledChoice.key}`
+        : (state.selectedTripId || '');
       if (state.lastTripPathKey === cacheKey) return;
       state.lastTripPathKey = cacheKey;
       const trip = state.tripById.get(state.selectedTripId);
-      const segments = trip ? tripPathSegments(trip) : [];
+      const segments = coupledChoice?.portions?.length
+        ? coupledChoice.portions.flatMap((item) => {
+            const segmentTrip = item.row.trip;
+            const startSequence = item.row.boardStop?.sequence ?? selectedTripStartSequence(segmentTrip);
+            return tripPathSegmentsFromSequence(segmentTrip, startSequence).map((segment) => ({
+              ...segment,
+              trip: segmentTrip,
+            }));
+          })
+        : (trip ? tripPathSegments(trip).map((segment) => ({ ...segment, trip })) : []);
       state.map.getSource('selected-trip-path').setData({
         type: 'FeatureCollection',
         features: segments
           .filter((segment) => segment.coordinates.length >= 2)
           .map((segment, index) => {
-            const route = state.routeById.get(segment.routeId) || state.routeById.get(trip.routeId);
+            const sourceTrip = segment.trip || trip;
+            const route = state.routeById.get(segment.routeId) || state.routeById.get(sourceTrip?.routeId);
             return {
               type: 'Feature',
               geometry: { type: 'LineString', coordinates: segment.coordinates },
               properties: {
-                id: `${trip.id}-${index}`,
-                route_id: segment.routeId || trip.routeId || '',
+                id: `${sourceTrip?.id || 'trip'}-${index}`,
+                route_id: segment.routeId || sourceTrip?.routeId || '',
                 color: route?.color || '#0f172a',
               },
             };
@@ -10444,11 +10524,11 @@
           plannerBackNav('back-trains', 'Back to trains') +
           (pending.destinations.length
             ? pending.destinations.slice(0, 52).map((item) => `
-                <button class="outlook-row destination-row" type="button" data-row-key="${escapeHtml(`dest:${pending.trip.id}:${item.stationGroupId}`)}" data-action="ride-here" data-trip-id="${pending.trip.id}" data-station-group-id="${item.stationGroupId}">
+                <button class="outlook-row destination-row" type="button" data-row-key="${escapeHtml(`dest:${item.tripId || pending.trip.id}:${item.stationGroupId}`)}" data-action="ride-here" data-trip-id="${escapeHtml(item.tripId || pending.trip.id)}" data-station-group-id="${item.stationGroupId}">
                   <span class="row-meta">${item.arrivalHhmm}</span>
                   <span class="destination-line">
                     <span class="row-title">${item.label}</span>
-                    ${transferChipsHtml(item.stationGroupId, pending.trip.routeId)}
+                    ${transferChipsHtml(item.stationGroupId, item.routeId || pending.trip.routeId)}
                   </span>
                 </button>
               `).join('')

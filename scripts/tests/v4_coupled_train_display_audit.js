@@ -93,7 +93,52 @@ function parseArgs(argv) {
       if (portionRows > 0) failures.push({ message: 'Coupled train must not render portion rows', portionRows, found });
       if (destinationRows <= 0) failures.push({ message: 'Coupled train should expose alighting destination rows', destinationRows, found });
       if (!pendingTrip) failures.push({ message: 'Coupled train should select a representative physical trip', found });
-      if (pendingChoice) failures.push({ message: 'Coupled train should not leave a pending branch choice', found });
+      if (!pendingChoice) failures.push({ message: 'Coupled train should retain coupled context for union destination rows', found });
+
+      const tokyoStationGroupId = stationGroupIdByName('東京');
+      if (tokyoStationGroupId) {
+        prepareLocalSession('runner', { startStationId: tokyoStationGroupId, startTime: '20:00', endTime: '36:00' });
+        state.currentGameMinute = hhmmToMinutes('20:00');
+        state.phase = 'PLANNING';
+        state.activeMode = 'runner';
+        state.pendingTripIds = { runner: null, hunter: null };
+        state.pendingCoupledChoices = { runner: null, hunter: null };
+        state.planningRouteIds = { runner: null, hunter: null };
+        state.selectedTripId = null;
+        state.selectedRouteId = null;
+        state.trainOutlookHtml = '';
+        renderGame();
+        const sunriseChoice = routeChoicesFromDepartures(availableDepartures(planCursorPreview('runner')))
+          .find((choice) => routeTitle(choice.routeId) === 'サンライズ瀬戸・出雲');
+        if (!sunriseChoice) {
+          failures.push({ message: 'Tokyo should expose Sunrise Seto/Izumo route choice' });
+        } else {
+          choosePlanningRoute(sunriseChoice.routeId);
+          const sunriseRow = [...document.querySelectorAll('#train-outlook .outlook-row[data-action="choose-coupled"]')]
+            .find((row) => row.querySelector('.row-title')?.textContent.trim() === 'サンライズ瀬戸・出雲');
+          if (!sunriseRow) {
+            failures.push({ message: 'Tokyo Sunrise should render one coupled umbrella row' });
+          } else {
+            chooseCoupledTrain(sunriseRow.dataset.coupledKey);
+            const pendingSunrise = pendingDepartureContext(planCursorPreview('runner'));
+            const destinationLabels = new Set((pendingSunrise?.destinations || []).map((item) => item.label));
+            const takamatsuDestination = (pendingSunrise?.destinations || []).find((item) => item.label === '高松');
+            const izumoDestination = (pendingSunrise?.destinations || []).find((item) => item.label === '出雲市');
+            if (!destinationLabels.has('高松') || !destinationLabels.has('出雲市')) {
+              failures.push({
+                message: 'Tokyo Sunrise coupled row must expose both Seto and Izumo destinations after selection',
+                destinationLabels: [...destinationLabels],
+              });
+            }
+            if (takamatsuDestination && !/瀬戸/u.test(formatTripLabel(state.tripById.get(takamatsuDestination.tripId)))) {
+              failures.push({ message: 'Takamatsu destination should board the Seto portion', tripId: takamatsuDestination.tripId });
+            }
+            if (izumoDestination && !/出雲/u.test(formatTripLabel(state.tripById.get(izumoDestination.tripId)))) {
+              failures.push({ message: 'Izumoshi destination should board the Izumo portion', tripId: izumoDestination.tripId });
+            }
+          }
+        }
+      }
 
       return {
         ok: failures.length === 0,
