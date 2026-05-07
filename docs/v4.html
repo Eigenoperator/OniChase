@@ -8508,6 +8508,7 @@
       const deduped = [];
       const dedupePreference = (entry) => {
         let score = 0;
+        if (entry?.trip?.coupledBranchSynthetic) score += 120;
         if (entry?.trip?.sunriseBranchSynthetic) score += 100;
         if ((entry?.trip?.coupledRouteNames || []).some((name) => String(name || '').includes('サンライズ'))) score += 20;
         if (String(entry?.trip?.id || '').includes('jr_west_official')) score += 5;
@@ -8524,7 +8525,16 @@
           logicalRouteKey === JR_CHUO_SOBU_LOCAL_ROUTE_ID;
         const stops = entry.trip.stopTimes || [];
         const nextStop = stops.find((stop) => stop.sequence > entry.boardStop.sequence);
-        const looseLogicalKey = usesLooseLogicalKey
+        const shinkansenCoupledNumberKey = publicNumber && isShinkansenTrip(entry.trip)
+          ? [
+              logicalRouteKey,
+              displayNameForGroup(entry.boardStop.stationGroupId),
+              entry.departureMinute,
+              publicNumber,
+              nextStop ? displayNameForGroup(nextStop.stationGroupId) : '',
+            ].join('|')
+          : '';
+        const looseLogicalKey = shinkansenCoupledNumberKey || (usesLooseLogicalKey
           ? [
               logicalRouteKey,
               displayNameForGroup(entry.boardStop.stationGroupId),
@@ -8534,7 +8544,7 @@
               stops.at(-1) ? displayNameForGroup(stops.at(-1).stationGroupId) : '',
               nextStop ? displayNameForGroup(nextStop.stationGroupId) : '',
             ].join('|')
-          : '';
+          : '');
         if (looseLogicalKey && looseLogicalIndexByKey.has(looseLogicalKey)) {
           const existingIndex = looseLogicalIndexByKey.get(looseLogicalKey);
           const existing = deduped[existingIndex];
