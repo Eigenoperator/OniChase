@@ -175,6 +175,28 @@ async function audit(page) {
       failures.push({ reason: 'Narita Express sample trip not found' });
     }
 
+    const thunderbirdKyotoTrip = [...state.tripById.values()]
+      .find((trip) => formatTripLabel(trip).includes('サンダーバード1') &&
+        (trip.stopTimes || []).some((stop) => displayNameForGroup(stop.stationGroupId) === '京都') &&
+        (trip.stopTimes || []).some((stop) => displayNameForGroup(stop.stationGroupId) === '敦賀'));
+    if (thunderbirdKyotoTrip) {
+      const kyotoStop = thunderbirdKyotoTrip.stopTimes.find((stop) => displayNameForGroup(stop.stationGroupId) === '京都');
+      const segments = tripPathSegmentsFromSequence(thunderbirdKyotoTrip, kyotoStop.sequence);
+      const routeTitles = segments.map((segment) => routeTitle(segment.routeId));
+      const hasRequiredRoutes = ['東海道線', '湖西線', '北陸線'].every((routeName) => routeTitles.includes(routeName));
+      if (!hasRequiredRoutes || !segments.every((segment) => segment.coordinates.length >= 2)) {
+        failures.push({
+          reason: 'Thunderbird Kyoto-to-Tsuruga highlight must follow reviewed JR physical routes through Yamashina and Omi-Shiotsu',
+          tripId: thunderbirdKyotoTrip.id,
+          label: formatTripLabel(thunderbirdKyotoTrip),
+          routeTitles,
+          segmentCoordinateCounts: segments.map((segment) => segment.coordinates.length),
+        });
+      }
+    } else {
+      failures.push({ reason: 'Thunderbird Kyoto-to-Tsuruga sample trip not found' });
+    }
+
     return {
       checkedAdjacentSegments,
       checkedLimitedExpressSegments,
