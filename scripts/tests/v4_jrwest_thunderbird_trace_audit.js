@@ -41,6 +41,18 @@ function main() {
   const routeName = (index) => routeNameById.get(routeIds[index]) || routeIds[index] || '';
   const thunderbirdRows = (timetable.trips || [])
     .filter((row) => serviceNames[row[2]] === 'サンダーバード');
+  const thunderbirdNumbers = [...new Set(thunderbirdRows.map((row) => String(row[3] || '')))]
+    .filter(Boolean)
+    .sort((left, right) => Number(left) - Number(right));
+
+  for (let number = 1; number <= 50; number += 1) {
+    if (!thunderbirdNumbers.includes(String(number))) {
+      failures.push({
+        type: 'missing_thunderbird_number',
+        number: String(number),
+      });
+    }
+  }
 
   for (const row of thunderbirdRows) {
     const stops = (row[4] || []).map((stop) => stationName(stop[0]));
@@ -68,6 +80,7 @@ function main() {
 
   const output = {
     thunderbirdTripCount: thunderbirdRows.length,
+    thunderbirdNumbers,
     failureCount: failures.length,
     failures,
     samples,

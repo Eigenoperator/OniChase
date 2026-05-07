@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v4.limited_express_number_gap_audit.v1",
-  "generatedAt": "2026-05-01T21:59:38.741879+00:00",
+  "generatedAt": "2026-05-07T04:08:30.808251+00:00",
   "input": "data/v4_current_weekday_train_instances.json.gz",
   "policy": "Groups numbered named limited-express-like trains by service family, origin, and terminal. For groups with at least minObserved unique train numbers, it infers step=2 when all numbers share parity, otherwise step=1, and reports missing numbers within the observed min/max range. High-priority findings require missing numbers to be absent from that boarding station entirely, so pass-through trains from a farther origin do not look missing. Findings are review candidates, not automatic errors.",
   "parameters": {
@@ -9,13 +9,13 @@
     "includeShinkansen": false
   },
   "summary": {
-    "trainInstanceCount": 125331,
-    "limitedExpressFamilyCount": 86,
-    "numberedLimitedExpressGroupCount": 360,
-    "gapCandidateCount": 0,
-    "highPriorityGapCandidateCount": 0,
-    "reviewedGapPatternCount": 42,
-    "reviewedDenseSequenceCount": 43,
+    "trainInstanceCount": 126207,
+    "limitedExpressFamilyCount": 87,
+    "numberedLimitedExpressGroupCount": 365,
+    "gapCandidateCount": 1,
+    "highPriorityGapCandidateCount": 1,
+    "reviewedGapPatternCount": 41,
+    "reviewedDenseSequenceCount": 47,
     "topFamilies": [
       {
         "serviceFamily": "ソニック",
@@ -34,16 +34,16 @@
         "count": 94
       },
       {
+        "serviceFamily": "いしづち",
+        "count": 80
+      },
+      {
         "serviceFamily": "宇和海",
         "count": 79
       },
       {
         "serviceFamily": "みどり",
         "count": 75
-      },
-      {
-        "serviceFamily": "いしづち",
-        "count": 62
       },
       {
         "serviceFamily": "はるか",
@@ -62,12 +62,20 @@
         "count": 50
       },
       {
-        "serviceFamily": "スーパーはくと",
-        "count": 48
+        "serviceFamily": "サンダーバード",
+        "count": 50
       },
       {
         "serviceFamily": "ひだ",
-        "count": 46
+        "count": 48
+      },
+      {
+        "serviceFamily": "スーパーいなば",
+        "count": 48
+      },
+      {
+        "serviceFamily": "スーパーはくと",
+        "count": 48
       },
       {
         "serviceFamily": "しらさぎ",
@@ -92,14 +100,6 @@
       {
         "serviceFamily": "ハウステンボス",
         "count": 36
-      },
-      {
-        "serviceFamily": "スーパーいなば",
-        "count": 36
-      },
-      {
-        "serviceFamily": "サンダーバード",
-        "count": 33
       },
       {
         "serviceFamily": "踊り子",
@@ -142,16 +142,16 @@
         "count": 27
       },
       {
+        "serviceFamily": "はしだて",
+        "count": 27
+      },
+      {
         "serviceFamily": "南紀",
         "count": 26
       },
       {
         "serviceFamily": "りょうもう",
         "count": 26
-      },
-      {
-        "serviceFamily": "はしだて",
-        "count": 25
       },
       {
         "serviceFamily": "リバティりょうもう",
@@ -179,12 +179,366 @@
       }
     ],
     "skippedCounts": {
-      "not_numbered_named_train": 122464,
+      "not_numbered_named_train": 123274,
       "not_limited_express_like": 660
     }
   },
-  "highPriorityGapCandidates": [],
-  "gapCandidates": [],
+  "highPriorityGapCandidates": [
+    {
+      "serviceFamily": "はこね",
+      "origin": "箱根湯本",
+      "terminal": "新宿",
+      "observedCount": 16,
+      "observedNumbers": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        30,
+        32,
+        34,
+        36,
+        40
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        2,
+        40
+      ],
+      "missingCount": 4,
+      "missingNumbers": [
+        24,
+        26,
+        28,
+        38
+      ],
+      "missingUnseenFromOriginCount": 4,
+      "missingUnseenFromOriginNumbers": [
+        24,
+        26,
+        28,
+        38
+      ],
+      "missingUnseenAtBoardingStationCount": 4,
+      "missingUnseenAtBoardingStationNumbers": [
+        24,
+        26,
+        28,
+        38
+      ],
+      "missingUnseenGloballyCount": 4,
+      "missingUnseenGloballyNumbers": [
+        24,
+        26,
+        28,
+        38
+      ],
+      "coverageDensity": 0.8,
+      "gapRatio": 0.2,
+      "firstDeparture": "09:32",
+      "operators": [
+        "odakyu"
+      ],
+      "sources": [
+        "v3_rematched_to_v4"
+      ],
+      "samples": [
+        {
+          "number": 2,
+          "displayName": "",
+          "departure": "09:32",
+          "trainId": "odakyu:01fe00cc_2026-04-15:7183de122c",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 4,
+          "displayName": "",
+          "departure": "10:34",
+          "trainId": "odakyu:01fe00e6_2026-04-15:9d9f238c43",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 6,
+          "displayName": "",
+          "departure": "11:35",
+          "trainId": "odakyu:01fe0100_2026-04-15:3069302a2a",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 8,
+          "displayName": "",
+          "departure": "12:40",
+          "trainId": "odakyu:01fe011a_2026-04-15:5530d75ec4",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 10,
+          "displayName": "",
+          "departure": "13:35",
+          "trainId": "odakyu:01fe0134_2026-04-15:3abd521679",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 12,
+          "displayName": "",
+          "departure": "14:48",
+          "trainId": "odakyu:01fe0159_2026-04-15:2ccb6a0d28",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 14,
+          "displayName": "",
+          "departure": "15:52",
+          "trainId": "odakyu:01fe0178_2026-04-15:f95dbb0e3d",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 16,
+          "displayName": "",
+          "departure": "16:51",
+          "trainId": "odakyu:01fe019a_2026-04-15:23eb488051",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 18,
+          "displayName": "",
+          "departure": "17:46",
+          "trainId": "odakyu:01fe01b4_2026-04-15:ddf8d7a0f7",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 20,
+          "displayName": "",
+          "departure": "18:36",
+          "trainId": "odakyu:01fe01c9_2026-04-15:3821e8eb32",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 22,
+          "displayName": "",
+          "departure": "19:50",
+          "trainId": "odakyu:01fe01ef_2026-04-15:9dd509dae7",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 30,
+          "displayName": "",
+          "departure": "10:10",
+          "trainId": "odakyu:01fe00dd_2026-04-15:8296e8ccad",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        }
+      ]
+    }
+  ],
+  "gapCandidates": [
+    {
+      "serviceFamily": "はこね",
+      "origin": "箱根湯本",
+      "terminal": "新宿",
+      "observedCount": 16,
+      "observedNumbers": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        30,
+        32,
+        34,
+        36,
+        40
+      ],
+      "expectedStep": 2,
+      "expectedRange": [
+        2,
+        40
+      ],
+      "missingCount": 4,
+      "missingNumbers": [
+        24,
+        26,
+        28,
+        38
+      ],
+      "missingUnseenFromOriginCount": 4,
+      "missingUnseenFromOriginNumbers": [
+        24,
+        26,
+        28,
+        38
+      ],
+      "missingUnseenAtBoardingStationCount": 4,
+      "missingUnseenAtBoardingStationNumbers": [
+        24,
+        26,
+        28,
+        38
+      ],
+      "missingUnseenGloballyCount": 4,
+      "missingUnseenGloballyNumbers": [
+        24,
+        26,
+        28,
+        38
+      ],
+      "coverageDensity": 0.8,
+      "gapRatio": 0.2,
+      "firstDeparture": "09:32",
+      "operators": [
+        "odakyu"
+      ],
+      "sources": [
+        "v3_rematched_to_v4"
+      ],
+      "samples": [
+        {
+          "number": 2,
+          "displayName": "",
+          "departure": "09:32",
+          "trainId": "odakyu:01fe00cc_2026-04-15:7183de122c",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 4,
+          "displayName": "",
+          "departure": "10:34",
+          "trainId": "odakyu:01fe00e6_2026-04-15:9d9f238c43",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 6,
+          "displayName": "",
+          "departure": "11:35",
+          "trainId": "odakyu:01fe0100_2026-04-15:3069302a2a",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 8,
+          "displayName": "",
+          "departure": "12:40",
+          "trainId": "odakyu:01fe011a_2026-04-15:5530d75ec4",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 10,
+          "displayName": "",
+          "departure": "13:35",
+          "trainId": "odakyu:01fe0134_2026-04-15:3abd521679",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 12,
+          "displayName": "",
+          "departure": "14:48",
+          "trainId": "odakyu:01fe0159_2026-04-15:2ccb6a0d28",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 14,
+          "displayName": "",
+          "departure": "15:52",
+          "trainId": "odakyu:01fe0178_2026-04-15:f95dbb0e3d",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 16,
+          "displayName": "",
+          "departure": "16:51",
+          "trainId": "odakyu:01fe019a_2026-04-15:23eb488051",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 18,
+          "displayName": "",
+          "departure": "17:46",
+          "trainId": "odakyu:01fe01b4_2026-04-15:ddf8d7a0f7",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 20,
+          "displayName": "",
+          "departure": "18:36",
+          "trainId": "odakyu:01fe01c9_2026-04-15:3821e8eb32",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 22,
+          "displayName": "",
+          "departure": "19:50",
+          "trainId": "odakyu:01fe01ef_2026-04-15:9dd509dae7",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        },
+        {
+          "number": 30,
+          "displayName": "",
+          "departure": "10:10",
+          "trainId": "odakyu:01fe00dd_2026-04-15:8296e8ccad",
+          "operatorId": "odakyu",
+          "sourceCollection": "v3_rematched_to_v4",
+          "sourceUrl": ""
+        }
+      ]
+    }
+  ],
   "reviewedGapPatterns": [
     {
       "serviceFamily": "あしずり",
@@ -328,7 +682,7 @@
           "number": 2,
           "displayName": "いなほ 2号",
           "departure": "05:27",
-          "trainId": "jr_east_official:白新:train_060_063881",
+          "trainId": "jr_east_official:羽越:train_060_063881",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063881.html"
@@ -337,7 +691,7 @@
           "number": 4,
           "displayName": "いなほ 4号",
           "departure": "06:59",
-          "trainId": "jr_east_official:白新:train_060_063951",
+          "trainId": "jr_east_official:羽越:train_060_063951",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063951.html"
@@ -346,7 +700,7 @@
           "number": 6,
           "displayName": "いなほ 6号",
           "departure": "09:12",
-          "trainId": "jr_east_official:白新:train_060_063961",
+          "trainId": "jr_east_official:羽越:train_060_063961",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063961.html"
@@ -355,7 +709,7 @@
           "number": 10,
           "displayName": "いなほ 10号",
           "departure": "14:41",
-          "trainId": "jr_east_official:白新:train_075_075921",
+          "trainId": "jr_east_official:羽越:train_075_075921",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/075921.html"
@@ -364,7 +718,7 @@
           "number": 12,
           "displayName": "いなほ 12号",
           "departure": "16:03",
-          "trainId": "jr_east_official:白新:train_060_063981",
+          "trainId": "jr_east_official:羽越:train_060_063981",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063981.html"
@@ -509,7 +863,7 @@
           "number": 4,
           "displayName": "きのさき4号",
           "departure": "06:56",
-          "trainId": "jr_west_official:山陰線:91031:20260427",
+          "trainId": "jr_west_official:山陰線:91031:5004m:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91031?date=20260427"
@@ -536,7 +890,7 @@
           "number": 14,
           "displayName": "きのさき14号",
           "departure": "12:43",
-          "trainId": "jr_west_official:山陰線:63521:20260427",
+          "trainId": "jr_west_official:山陰線:63521:5014m:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/63521?date=20260427"
@@ -753,7 +1107,7 @@
           "number": 18,
           "displayName": "こうのとり18号",
           "departure": "13:29",
-          "trainId": "jr_west_official:山陰線:91251:20260427",
+          "trainId": "jr_west_official:福知山線:91251:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91251?date=20260427"
@@ -842,7 +1196,7 @@
           "number": 2,
           "displayName": "こうのとり2号",
           "departure": "05:48",
-          "trainId": "jr_west_official:東海道線:91201:20260427",
+          "trainId": "jr_west_official:福知山線:91201:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91201?date=20260427"
@@ -851,7 +1205,7 @@
           "number": 4,
           "displayName": "こうのとり4号",
           "departure": "06:51",
-          "trainId": "jr_west_official:東海道線:114611:20260427",
+          "trainId": "jr_west_official:福知山線:114611:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/114611?date=20260427"
@@ -860,7 +1214,7 @@
           "number": 6,
           "displayName": "こうのとり6号",
           "departure": "07:45",
-          "trainId": "jr_west_official:東海道線:200761:20260427",
+          "trainId": "jr_west_official:福知山線:200761:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/200761?date=20260427"
@@ -869,7 +1223,7 @@
           "number": 8,
           "displayName": "こうのとり8号",
           "departure": "08:40",
-          "trainId": "jr_west_official:東海道線:91191:20260427",
+          "trainId": "jr_west_official:福知山線:91191:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91191?date=20260427"
@@ -878,7 +1232,7 @@
           "number": 10,
           "displayName": "こうのとり10号",
           "departure": "09:50",
-          "trainId": "jr_west_official:東海道線:91221:20260427",
+          "trainId": "jr_west_official:福知山線:91221:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91221?date=20260427"
@@ -887,7 +1241,7 @@
           "number": 16,
           "displayName": "こうのとり16号",
           "departure": "13:44",
-          "trainId": "jr_west_official:東海道線:200771:20260427",
+          "trainId": "jr_west_official:福知山線:200771:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/200771?date=20260427"
@@ -896,7 +1250,7 @@
           "number": 20,
           "displayName": "こうのとり20号",
           "departure": "15:45",
-          "trainId": "jr_west_official:東海道線:184271:20260427",
+          "trainId": "jr_west_official:福知山線:184271:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/184271?date=20260427"
@@ -905,7 +1259,7 @@
           "number": 24,
           "displayName": "こうのとり24号",
           "departure": "18:00",
-          "trainId": "jr_west_official:東海道線:145481:20260427",
+          "trainId": "jr_west_official:福知山線:145481:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/145481?date=20260427"
@@ -1538,12 +1892,10 @@
       "gapRatio": 0.1,
       "firstDeparture": "06:45",
       "operators": [
-        "jr_central",
-        "jr_west"
+        "jr_central"
       ],
       "sources": [
-        "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-        "v4_jrwest_official_weekday_train_instances_v0_1"
+        "v4_jrcentral_navitime_weekday_train_instances_v0_1"
       ],
       "samples": [
         {
@@ -1608,15 +1960,6 @@
           "operatorId": "jr_central",
           "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
           "sourceUrl": "https://www.navitime.co.jp/diagram/stops/00000105/00340082/?node=00002571&year=2026&month=04&day=27"
-        },
-        {
-          "number": 16,
-          "displayName": "ひだ16号",
-          "departure": "15:34",
-          "trainId": "jr_west_official:北陸線:77161:20260427",
-          "operatorId": "jr_west",
-          "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-          "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/77161?date=20260427"
         },
         {
           "number": 18,
@@ -1686,7 +2029,7 @@
           "number": 8,
           "displayName": "わかしお 8号",
           "departure": "07:39",
-          "trainId": "jr_east_official:京葉:train_045_049461",
+          "trainId": "jr_east_official:外房:train_045_049461",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049461.html"
@@ -1695,7 +2038,7 @@
           "number": 12,
           "displayName": "わかしお 12号",
           "departure": "11:41",
-          "trainId": "jr_east_official:京葉:train_045_049501",
+          "trainId": "jr_east_official:外房:train_045_049501",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049501.html"
@@ -1722,7 +2065,7 @@
           "number": 18,
           "displayName": "わかしお 18号",
           "departure": "16:45",
-          "trainId": "jr_east_official:京葉:train_045_049561",
+          "trainId": "jr_east_official:外房:train_045_049561",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/045/049561.html"
@@ -2641,7 +2984,7 @@
           "number": 3,
           "displayName": "いなほ 3号",
           "departure": "10:50",
-          "trainId": "jr_east_official:白新:train_060_063901",
+          "trainId": "jr_east_official:羽越:train_060_063901",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063901.html"
@@ -2650,7 +2993,7 @@
           "number": 5,
           "displayName": "いなほ 5号",
           "departure": "12:41",
-          "trainId": "jr_east_official:白新:train_075_075911",
+          "trainId": "jr_east_official:羽越:train_075_075911",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/075/075911.html"
@@ -2659,7 +3002,7 @@
           "number": 9,
           "displayName": "いなほ 9号",
           "departure": "17:58",
-          "trainId": "jr_east_official:白新:train_060_063921",
+          "trainId": "jr_east_official:羽越:train_060_063921",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063921.html"
@@ -2668,7 +3011,7 @@
           "number": 11,
           "displayName": "いなほ 11号",
           "departure": "19:38",
-          "trainId": "jr_east_official:白新:train_060_063931",
+          "trainId": "jr_east_official:羽越:train_060_063931",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063931.html"
@@ -2677,7 +3020,7 @@
           "number": 13,
           "displayName": "いなほ 13号",
           "departure": "21:07",
-          "trainId": "jr_east_official:白新:train_060_063941",
+          "trainId": "jr_east_official:羽越:train_060_063941",
           "operatorId": "jr_east",
           "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetables.jreast.co.jp/2605/train/060/063941.html"
@@ -2740,7 +3083,7 @@
           "number": 11,
           "displayName": "きのさき11号",
           "departure": "16:25",
-          "trainId": "jr_west_official:山陰線:63541:20260427",
+          "trainId": "jr_west_official:山陰線:63541:5011m:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/63541?date=20260427"
@@ -2758,7 +3101,7 @@
           "number": 17,
           "displayName": "きのさき17号",
           "departure": "19:28",
-          "trainId": "jr_west_official:山陰線:91011:20260427",
+          "trainId": "jr_west_official:山陰線:91011:5017m:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91011?date=20260427"
@@ -2961,7 +3304,7 @@
           "number": 2,
           "displayName": "はるか2号",
           "departure": "06:31",
-          "trainId": "jr_west_official:関西空港線:151:20260427",
+          "trainId": "jr_west_official:阪和線:151:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/151?date=20260427"
@@ -2970,7 +3313,7 @@
           "number": 4,
           "displayName": "はるか4号",
           "departure": "07:27",
-          "trainId": "jr_west_official:関西空港線:231:20260427",
+          "trainId": "jr_west_official:阪和線:231:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/231?date=20260427"
@@ -2979,7 +3322,7 @@
           "number": 6,
           "displayName": "はるか6号",
           "departure": "07:56",
-          "trainId": "jr_west_official:関西空港線:321:20260427",
+          "trainId": "jr_west_official:阪和線:321:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/321?date=20260427"
@@ -2988,7 +3331,7 @@
           "number": 8,
           "displayName": "はるか8号",
           "departure": "08:41",
-          "trainId": "jr_west_official:関西空港線:401:20260427",
+          "trainId": "jr_west_official:阪和線:401:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/401?date=20260427"
@@ -2997,7 +3340,7 @@
           "number": 10,
           "displayName": "はるか10号",
           "departure": "09:12",
-          "trainId": "jr_west_official:関西空港線:203911:20260427",
+          "trainId": "jr_west_official:阪和線:203911:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/203911?date=20260427"
@@ -3006,7 +3349,7 @@
           "number": 12,
           "displayName": "はるか12号",
           "departure": "09:42",
-          "trainId": "jr_west_official:関西空港線:581:20260427",
+          "trainId": "jr_west_official:阪和線:581:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/581?date=20260427"
@@ -3861,26 +4204,24 @@
       "serviceFamily": "ホームウェイ",
       "origin": "新宿",
       "terminal": "秦野",
-      "observedCount": 9,
+      "observedCount": 5,
       "observedNumbers": [
-        3,
         7,
-        9,
         11,
-        13,
         15,
         17,
-        19,
         21
       ],
       "expectedStep": 2,
       "expectedRange": [
-        3,
+        7,
         21
       ],
-      "missingCount": 1,
+      "missingCount": 3,
       "missingNumbers": [
-        5
+        9,
+        13,
+        19
       ],
       "missingUnseenFromOriginCount": 0,
       "missingUnseenFromOriginNumbers": [],
@@ -3888,9 +4229,9 @@
       "missingUnseenAtBoardingStationNumbers": [],
       "missingUnseenGloballyCount": 0,
       "missingUnseenGloballyNumbers": [],
-      "coverageDensity": 0.9,
-      "gapRatio": 0.1,
-      "firstDeparture": "17:40",
+      "coverageDensity": 0.625,
+      "gapRatio": 0.375,
+      "firstDeparture": "18:40",
       "operators": [
         "odakyu"
       ],
@@ -3898,15 +4239,6 @@
         "v3_rematched_to_v4"
       ],
       "samples": [
-        {
-          "number": 3,
-          "displayName": "",
-          "departure": "17:40",
-          "trainId": "odakyu:81fe0174_2026-04-15:ca3a0c11d5",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
         {
           "number": 7,
           "displayName": "",
@@ -3917,28 +4249,10 @@
           "sourceUrl": ""
         },
         {
-          "number": 9,
-          "displayName": "",
-          "departure": "19:00",
-          "trainId": "odakyu:81fe019f_2026-04-15:a7dd35282d",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
           "number": 11,
           "displayName": "",
           "departure": "19:40",
           "trainId": "odakyu:81fe01b4_2026-04-15:3568632aea",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 13,
-          "displayName": "",
-          "departure": "20:00",
-          "trainId": "odakyu:81fe01bf_2026-04-15:8444406eb6",
           "operatorId": "odakyu",
           "sourceCollection": "v3_rematched_to_v4",
           "sourceUrl": ""
@@ -3957,15 +4271,6 @@
           "displayName": "",
           "departure": "21:00",
           "trainId": "odakyu:81fe01df_2026-04-15:6303186a4a",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 19,
-          "displayName": "",
-          "departure": "21:40",
-          "trainId": "odakyu:81fe01f2_2026-04-15:417611682c",
           "operatorId": "odakyu",
           "sourceCollection": "v3_rematched_to_v4",
           "sourceUrl": ""
@@ -4091,180 +4396,6 @@
       "reviewCategory": "branch_destination_pattern",
       "reviewNote": "Missing-looking numbers 5 and 17 are present from Tokyo but terminate at Hiratsuka rather than Odawara.",
       "reviewSource": "JR East official 2026-05 timetable"
-    },
-    {
-      "serviceFamily": "はこね",
-      "origin": "小田原",
-      "terminal": "町田",
-      "observedCount": 15,
-      "observedNumbers": [
-        2,
-        4,
-        6,
-        8,
-        10,
-        12,
-        14,
-        16,
-        18,
-        20,
-        22,
-        30,
-        32,
-        34,
-        36
-      ],
-      "expectedStep": 2,
-      "expectedRange": [
-        2,
-        36
-      ],
-      "missingCount": 3,
-      "missingNumbers": [
-        24,
-        26,
-        28
-      ],
-      "missingUnseenFromOriginCount": 3,
-      "missingUnseenFromOriginNumbers": [
-        24,
-        26,
-        28
-      ],
-      "missingUnseenAtBoardingStationCount": 3,
-      "missingUnseenAtBoardingStationNumbers": [
-        24,
-        26,
-        28
-      ],
-      "missingUnseenGloballyCount": 3,
-      "missingUnseenGloballyNumbers": [
-        24,
-        26,
-        28
-      ],
-      "coverageDensity": 0.833,
-      "gapRatio": 0.167,
-      "firstDeparture": "09:46",
-      "operators": [
-        "odakyu"
-      ],
-      "sources": [
-        "v3_rematched_to_v4"
-      ],
-      "samples": [
-        {
-          "number": 2,
-          "displayName": "",
-          "departure": "09:46",
-          "trainId": "odakyu:01fe00cc_2026-04-15:b74e78f617",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 4,
-          "displayName": "",
-          "departure": "10:49",
-          "trainId": "odakyu:01fe00e6_2026-04-15:a81cf98c7a",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 6,
-          "displayName": "",
-          "departure": "11:49",
-          "trainId": "odakyu:01fe0100_2026-04-15:26dd295af9",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 8,
-          "displayName": "",
-          "departure": "12:52",
-          "trainId": "odakyu:01fe011a_2026-04-15:146e5a4ef0",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 10,
-          "displayName": "",
-          "departure": "13:47",
-          "trainId": "odakyu:01fe0134_2026-04-15:327fc08dcf",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 12,
-          "displayName": "",
-          "departure": "15:04",
-          "trainId": "odakyu:01fe0159_2026-04-15:4fd2e8f7fa",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 14,
-          "displayName": "",
-          "departure": "16:05",
-          "trainId": "odakyu:01fe0178_2026-04-15:4fcfd851c7",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 16,
-          "displayName": "",
-          "departure": "17:04",
-          "trainId": "odakyu:01fe019a_2026-04-15:3a6c9ab728",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 18,
-          "displayName": "",
-          "departure": "17:59",
-          "trainId": "odakyu:01fe01b4_2026-04-15:71ab930a3f",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 20,
-          "displayName": "",
-          "departure": "18:48",
-          "trainId": "odakyu:01fe01c9_2026-04-15:17d9046abd",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 22,
-          "displayName": "",
-          "departure": "20:02",
-          "trainId": "odakyu:01fe01ef_2026-04-15:6c754845ae",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        },
-        {
-          "number": 30,
-          "displayName": "",
-          "departure": "10:26",
-          "trainId": "odakyu:01fe00dd_2026-04-15:7e354285b1",
-          "operatorId": "odakyu",
-          "sourceCollection": "v3_rematched_to_v4",
-          "sourceUrl": ""
-        }
-      ],
-      "reviewCategory": "holiday_only_pattern",
-      "reviewNote": "Public stop tables for the missing-looking 24号, 26号, and 28号 mark them as Saturday/holiday Hakone services; the current v4 collection is weekday.",
-      "reviewSource": "Public Odakyu Romancecar stop tables, 2026-03-14 revision"
     },
     {
       "serviceFamily": "あずさ",
@@ -5048,7 +5179,7 @@
           "number": 1,
           "displayName": "こうのとり1号",
           "departure": "08:09",
-          "trainId": "jr_west_official:山陰線:91101:20260427",
+          "trainId": "jr_west_official:福知山線:91101:20260427",
           "operatorId": "jr_west",
           "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
           "sourceUrl": "https://timetable.jr-odekake.net/train-timetable/91101?date=20260427"
@@ -5324,6 +5455,39 @@
     }
   ],
   "reviewedDenseSequences": [
+    {
+      "serviceFamily": "サンダーバード",
+      "origin": "大阪",
+      "terminal": "敦賀",
+      "observedCount": 25,
+      "observedNumbers": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19,
+        21,
+        23,
+        25,
+        27,
+        29,
+        31,
+        33,
+        35,
+        37,
+        39,
+        41,
+        43,
+        45,
+        47,
+        49
+      ]
+    },
     {
       "serviceFamily": "サンダーバード",
       "origin": "敦賀",
@@ -5728,6 +5892,22 @@
       ]
     },
     {
+      "serviceFamily": "まいづる",
+      "origin": "京都",
+      "terminal": "東舞鶴",
+      "observedCount": 8,
+      "observedNumbers": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11,
+        13,
+        15
+      ]
+    },
+    {
       "serviceFamily": "しらさぎ",
       "origin": "敦賀",
       "terminal": "米原",
@@ -5833,6 +6013,49 @@
       ]
     },
     {
+      "serviceFamily": "まいづる",
+      "origin": "東舞鶴",
+      "terminal": "京都",
+      "observedCount": 7,
+      "observedNumbers": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14
+      ]
+    },
+    {
+      "serviceFamily": "スーパーいなば",
+      "origin": "上郡",
+      "terminal": "岡山",
+      "observedCount": 6,
+      "observedNumbers": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12
+      ]
+    },
+    {
+      "serviceFamily": "スーパーいなば",
+      "origin": "上郡",
+      "terminal": "鳥取",
+      "observedCount": 6,
+      "observedNumbers": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11
+      ]
+    },
+    {
       "serviceFamily": "スーパーいなば",
       "origin": "岡山",
       "terminal": "上郡",
@@ -5912,19 +6135,6 @@
         8,
         10,
         12
-      ]
-    },
-    {
-      "serviceFamily": "ホームウェイ",
-      "origin": "新宿",
-      "terminal": "藤沢",
-      "observedCount": 5,
-      "observedNumbers": [
-        81,
-        83,
-        85,
-        87,
-        89
       ]
     },
     {

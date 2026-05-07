@@ -69,9 +69,11 @@ LINE_ALIASES = {
 }
 
 EXTRA_LINE_STATION_NAMES = {
-    # Tsuruga is physically mapped as Hokuriku/Obama/Hokuriku Shinkansen, but JR
-    # Odekake exposes Tsuruga-origin Thunderbird services on the Kosei Line tab.
-    "湖西線": ["敦賀"],
+    # Tsuruga is physically mapped as Hokuriku/Obama/Hokuriku Shinkansen, while
+    # Kyoto is mapped on the Tokaido/Nara/Sagano side. JR Odekake exposes
+    # Thunderbird services that skip Kosei intermediate stops from the Kyoto and
+    # Tsuruga Kosei Line timetable tabs, so both must be collection anchors.
+    "湖西線": ["京都", "敦賀"],
 }
 
 TAG_RE = re.compile(r"<[^>]+>")
@@ -624,7 +626,8 @@ def write_outputs(
     partial: bool,
 ) -> None:
     repaired_train_instances, stitch_audit = stitch_reviewed_split_column_trains(train_instances)
-    trains = sorted(repaired_train_instances, key=lambda t: (t.get("line_name") or "", t["stop_times"][0].get("departure_hhmm") or "", t["service_instance_id"]))
+    deduped_train_instances, _ = index_train_instances(repaired_train_instances)
+    trains = sorted(deduped_train_instances, key=lambda t: (t.get("line_name") or "", t["stop_times"][0].get("departure_hhmm") or "", t["service_instance_id"]))
     audit = {
         "schema": "onichase.v4.jrwest_official_train_instances_audit.v1",
         "partial": partial,

@@ -139,6 +139,7 @@
 - New data can improve coverage, but it can also conflict with older data on the same station, route segment, train family, operator boundary, route name, public label, or physical trace. These overlaps must be explicitly audited.
 - For route-choice and train-label data, verify both the source route identity and the player-facing boarding segment. A new source must not make old correct physical-line choices disappear or leak remote through-service labels into the 1/3 route-choice page.
 - If a new source and an old source both describe the same train or same movement, define or reuse a deterministic priority/merge rule, then add an audit or regression sample covering the overlap.
+- For sparse-stop limited express collection, do not rely only on intermediate stations that the train may skip. Include the official timetable tabs at boundary/terminal stations that expose the line service, such as 京都 and 敦賀 for 湖西線 Thunderbird, and add number-gap regression checks for the named service family.
 - Do not fix only the newly observed station after a conflict is found. Extract the overlap pattern, search for the same class nationwide, and record intentional exceptions in tests or memory.
 
 ## 18. Highlights Must Be Continuous
