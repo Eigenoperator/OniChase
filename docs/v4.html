@@ -9998,6 +9998,14 @@
 
     function routeColor(routeId) {
       if (isNamedTrainChoiceRouteId(routeId)) return '#8A5A00';
+      const serviceGeometryColor = (state.serviceGeometryByRouteId.get(routeId) || [])
+        .map((geometry) => geometry?.color)
+        .find(Boolean);
+      if (serviceGeometryColor) return serviceGeometryColor;
+      const trackColor = routeTrackGeometries(routeId)
+        .map((track) => track?.color)
+        .find(Boolean);
+      if (trackColor) return trackColor;
       return state.routeById.get(routeId)?.color || '#667487';
     }
 
