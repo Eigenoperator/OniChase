@@ -8347,6 +8347,15 @@
         .filter((index) => index >= 0);
     }
 
+    function coupledPairingKey(entry, row) {
+      if (!entry || !row?.trip) return '';
+      if (entry.id === 'narita_express_tokyo') {
+        const publicNumber = publicTripNumber(row.trip);
+        return publicNumber ? `nex:${publicNumber}` : '';
+      }
+      return '';
+    }
+
     function stopAtStationName(trip, stationName) {
       return (trip?.stopTimes || []).find((stop) => displayNameForGroup(stop.stationGroupId) === stationName) || null;
     }
@@ -8438,6 +8447,9 @@
             if (consumedTripIds.has(right.row.trip.id)) continue;
             if (right.portionIndex === left.portionIndex) continue;
             if (right.boardStop.stationGroupId !== left.boardStop.stationGroupId) continue;
+            const leftPairingKey = coupledPairingKey(entry, left.row);
+            const rightPairingKey = coupledPairingKey(entry, right.row);
+            if (leftPairingKey && rightPairingKey && leftPairingKey !== rightPairingKey) continue;
             if (Math.abs(right.row.departureMinute - left.row.departureMinute) > 8) continue;
             if (Math.abs(stopArrivalMinutes(right.splitStop) - stopArrivalMinutes(left.splitStop)) > 8) continue;
             matched.push(right);

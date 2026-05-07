@@ -172,13 +172,13 @@ function parseArgs(argv) {
         } else {
           choosePlanningRoute(nexChoice.routeId);
           const nexToShinjukuRow = [...document.querySelectorAll('#train-outlook .outlook-row[data-action="choose-trip"], #train-outlook .outlook-row[data-action="choose-coupled"]')]
-            .find((row) => /終点\s*新宿/u.test(row.textContent || ''));
+            .find((row) => /成田エクスプレス4/u.test(row.textContent || '') && /終点\s*新宿/u.test(row.textContent || ''));
           if (!nexToShinjukuRow) {
-            failures.push({ message: 'Tokyo Narita Express should expose Shinjuku-bound rows after broad coupled alias filtering' });
+            failures.push({ message: 'Tokyo Narita Express should expose single-portion Shinjuku-bound rows after broad coupled alias filtering' });
           } else {
             if (nexToShinjukuRow.dataset.action === 'choose-coupled') {
               failures.push({
-                message: 'A single Shinjuku-bound Narita Express row must not become a fake coupled umbrella from shared aliases',
+                message: 'A single-portion Shinjuku-bound Narita Express row must not become a fake coupled umbrella from shared aliases',
                 rowText: nexToShinjukuRow.textContent.trim(),
               });
             }
@@ -191,6 +191,77 @@ function parseArgs(argv) {
                 rowText: nexToShinjukuRow.textContent.trim(),
               });
             }
+          }
+        }
+      }
+
+      const naritaAirportStationGroupId = stationGroupIdByName('成田空港');
+      if (naritaAirportStationGroupId) {
+        prepareLocalSession('runner', { startTime: '06:00', endTime: '36:00' });
+        state.players.runner.start_station_id = naritaAirportStationGroupId;
+        state.players.runner.steps = [];
+        state.currentGameMinute = hhmmToMinutes('06:00');
+        state.phase = 'PLANNING';
+        state.activeMode = 'runner';
+        state.pendingTripIds = { runner: null, hunter: null };
+        state.pendingCoupledChoices = { runner: null, hunter: null };
+        state.planningRouteIds = { runner: null, hunter: null };
+        state.selectedTripId = null;
+        state.selectedRouteId = null;
+        state.trainOutlookHtml = '';
+        renderGame();
+        const airportNexChoice = routeChoicesFromDepartures(availableDepartures(planCursorPreview('runner')))
+          .find((choice) => routeTitle(choice.routeId) === '成田エクスプレス');
+        if (!airportNexChoice) {
+          failures.push({ message: 'Narita Airport should expose Narita Express route choice' });
+        } else {
+          choosePlanningRoute(airportNexChoice.routeId);
+          const nexCoupledRow = [...document.querySelectorAll('#train-outlook .outlook-row[data-action="choose-coupled"]')]
+            .find((row) => /成田エクスプレス/u.test(row.textContent || ''));
+          if (!nexCoupledRow) {
+            failures.push({ message: 'Narita Airport paired NEX services should render one coupled umbrella row before the Tokyo split' });
+          } else {
+            chooseCoupledTrain(nexCoupledRow.dataset.coupledKey);
+            const portionLabels = [...document.querySelectorAll('#train-outlook [data-row-key^="portion:"]')]
+              .map((row) => row.querySelector('.row-title')?.textContent.trim() || '');
+            if (!portionLabels.includes('成田エクスプレス 新宿系') || !portionLabels.includes('成田エクスプレス 横浜・大船系')) {
+              failures.push({
+                message: 'Narita Airport NEX coupled row must ask for Shinjuku vs Yokohama/Ofuna direction',
+                portionLabels,
+              });
+            }
+          }
+        }
+      }
+
+      if (shinjukuStationGroupId) {
+        prepareLocalSession('runner', { startTime: '06:00', endTime: '36:00' });
+        state.players.runner.start_station_id = shinjukuStationGroupId;
+        state.players.runner.steps = [];
+        state.currentGameMinute = hhmmToMinutes('06:00');
+        state.phase = 'PLANNING';
+        state.activeMode = 'runner';
+        state.pendingTripIds = { runner: null, hunter: null };
+        state.pendingCoupledChoices = { runner: null, hunter: null };
+        state.planningRouteIds = { runner: null, hunter: null };
+        state.selectedTripId = null;
+        state.selectedRouteId = null;
+        state.trainOutlookHtml = '';
+        renderGame();
+        const shinjukuNexChoice = routeChoicesFromDepartures(availableDepartures(planCursorPreview('runner')))
+          .find((choice) => routeTitle(choice.routeId) === '成田エクスプレス');
+        if (!shinjukuNexChoice) {
+          failures.push({ message: 'Shinjuku should expose Narita Express route choice' });
+        } else {
+          choosePlanningRoute(shinjukuNexChoice.routeId);
+          const rowTexts = [...document.querySelectorAll('#train-outlook .outlook-row')]
+            .slice(0, 20)
+            .map((row) => row.textContent.replace(/\s+/g, ' ').trim());
+          if (rowTexts.some((text) => /終点\s*東京/u.test(text))) {
+            failures.push({
+              message: 'Shinjuku NEX should not show leftover Tokyo-only partial rows after coupled full-path repair',
+              rowTexts,
+            });
           }
         }
       }

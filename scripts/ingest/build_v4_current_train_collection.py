@@ -180,6 +180,19 @@ def train_signature(train: dict[str, Any]) -> str:
     hasher = hashlib.sha1()
     display_name = str(train.get("display_name") or train.get("service_name_detail") or "")
     if reviewed_direct_service_allowed_context_stops(train) is not None:
+        if is_narita_express_train(train):
+            stops = train.get("stop_times") or []
+            first_stop = stop_display_name(stops[0]) if stops else ""
+            last_stop = stop_display_name(stops[-1]) if stops else ""
+            for part in (
+                train.get("operator_id") or train.get("operator_name") or "",
+                public_train_identity(train),
+                first_stop,
+                last_stop,
+            ):
+                hasher.update(str(part).encode("utf-8"))
+                hasher.update(b"\0")
+            return hasher.hexdigest()
         for part in (
             train.get("operator_id") or train.get("operator_name") or "",
             public_train_identity(train),
@@ -281,6 +294,191 @@ def invalid_train_reason(train: dict[str, Any]) -> str | None:
 
 def stop_display_name(stop: dict[str, Any]) -> str:
     return str(stop.get("station_name_raw") or stop.get("station_name") or stop.get("stationName") or stop.get("name") or "")
+
+
+def is_narita_express_train(train: dict[str, Any]) -> bool:
+    display_name = str(train.get("display_name") or train.get("service_name_detail") or train.get("service_name") or "")
+    return train.get("operator_id") == "jr_east" and "成田エクスプレス" in display_name
+
+
+def train_service_number_key(train: dict[str, Any]) -> str:
+    number = str(train.get("service_number") or "").strip()
+    if number:
+        return number
+    display_name = str(train.get("display_name") or train.get("service_name_detail") or "")
+    match = re.search(r"(\d+号)", display_name)
+    return match.group(1) if match else ""
+
+
+def merge_same_station_stop(left: dict[str, Any], right: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(left)
+    for key, value in right.items():
+        if key == "sequence":
+            continue
+        if value not in (None, "") and not merged.get(key):
+            merged[key] = value
+    return merged
+
+
+def renumber_stop_times(stops: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    output: list[dict[str, Any]] = []
+    for sequence, stop in enumerate(stops, start=1):
+        item = dict(stop)
+        item["sequence"] = sequence
+        output.append(item)
+    return output
+
+
+def stitch_nex_branch_from_tokyo(
+    branch: dict[str, Any],
+    partner: dict[str, Any],
+    *,
+    direction: str,
+) -> dict[str, Any] | None:
+    branch_stops = [dict(stop) for stop in branch.get("stop_times") or []]
+    partner_stops = [dict(stop) for stop in partner.get("stop_times") or []]
+    if not branch_stops or not partner_stops:
+        return None
+    branch_tokyo_index = next((index for index, stop in enumerate(branch_stops) if stop_display_name(stop) == "東京"), -1)
+    partner_tokyo_index = next((index for index, stop in enumerate(partner_stops) if stop_display_name(stop) == "東京"), -1)
+    if branch_tokyo_index < 0 or partner_tokyo_index < 0:
+        return None
+
+    if direction == "airport_to_branch":
+        stitched_stops = (
+            partner_stops[:partner_tokyo_index]
+            + [merge_same_station_stop(partner_stops[partner_tokyo_index], branch_stops[branch_tokyo_index])]
+            + branch_stops[branch_tokyo_index + 1 :]
+        )
+    elif direction == "branch_to_airport":
+        stitched_stops = (
+            branch_stops[:branch_tokyo_index]
+            + [merge_same_station_stop(branch_stops[branch_tokyo_index], partner_stops[partner_tokyo_index])]
+            + partner_stops[partner_tokyo_index + 1 :]
+        )
+    else:
+        return None
+
+    if len(stitched_stops) <= len(branch_stops):
+        return None
+    stitched = dict(branch)
+    stitched["stop_times"] = renumber_stop_times(stitched_stops)
+    stitched["train_number"] = "+".join(
+        dict.fromkeys(
+            value
+            for value in (
+                str(partner.get("train_number") or ""),
+                str(branch.get("train_number") or ""),
+            )
+            if value
+        )
+    )
+    stitched["source_trip_id"] = str(branch.get("source_trip_id") or branch.get("service_instance_id") or "")
+    stitched["service_instance_id"] = f"{branch.get('service_instance_id')}:nex_coupled_full"
+    stitched["nex_coupled_full_path"] = True
+    return stitched
+
+
+def repair_narita_express_coupled_portions(trains: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Preserve NEX split/join portions as real branch paths before dedupe.
+
+    JR East's vertical NEX timetable publishes some Tokyo split/join portions as
+    a short 東京-新宿 column next to the 成田空港-東京-大船 column.  Those are not
+    duplicates: they are the other coupled portion of the same public train
+    number.  Expand the short branch to the shared physical segment so gameplay
+    can show one shared train row before the 東京 split.
+    """
+
+    by_number: dict[str, list[dict[str, Any]]] = {}
+    for train in trains:
+        if not is_narita_express_train(train):
+            continue
+        number = train_service_number_key(train)
+        if number:
+            by_number.setdefault(number, []).append(train)
+
+    additions: list[dict[str, Any]] = []
+    replaced_partial_ids: set[str] = set()
+    for group in by_number.values():
+        partner_to_airport = None
+        partner_from_airport = None
+        for train in group:
+            names = [stop_display_name(stop) for stop in train.get("stop_times") or []]
+            if "東京" not in names or "大船" not in names or "成田空港" not in names:
+                continue
+            if names[0] == "成田空港" and names[-1] == "大船":
+                partner_from_airport = train
+            elif names[0] == "大船" and names[-1] == "成田空港":
+                partner_to_airport = train
+
+        for train in group:
+            names = [stop_display_name(stop) for stop in train.get("stop_times") or []]
+            if names == ["東京", "渋谷", "新宿"] and partner_from_airport:
+                stitched = stitch_nex_branch_from_tokyo(train, partner_from_airport, direction="airport_to_branch")
+                if stitched:
+                    additions.append(stitched)
+                    replaced_partial_ids.add(str(train.get("service_instance_id") or ""))
+            elif names == ["新宿", "渋谷", "東京"] and partner_to_airport:
+                stitched = stitch_nex_branch_from_tokyo(train, partner_to_airport, direction="branch_to_airport")
+                if stitched:
+                    additions.append(stitched)
+                    replaced_partial_ids.add(str(train.get("service_instance_id") or ""))
+
+    if not additions:
+        return trains
+    existing_ids = {str(train.get("service_instance_id") or "") for train in trains}
+    unique_additions = []
+    for train in additions:
+        train_id = str(train.get("service_instance_id") or "")
+        if train_id in existing_ids:
+            continue
+        existing_ids.add(train_id)
+        unique_additions.append(train)
+    retained_trains = [
+        train for train in trains
+        if str(train.get("service_instance_id") or "") not in replaced_partial_ids
+    ]
+    return remove_narita_express_contained_partials([*retained_trains, *unique_additions])
+
+
+def station_name_sequence(train: dict[str, Any]) -> list[str]:
+    return [stop_display_name(stop) for stop in train.get("stop_times") or []]
+
+
+def is_contiguous_subsequence(needle: list[str], haystack: list[str]) -> bool:
+    if not needle or len(needle) >= len(haystack):
+        return False
+    limit = len(haystack) - len(needle)
+    return any(haystack[index:index + len(needle)] == needle for index in range(limit + 1))
+
+
+def remove_narita_express_contained_partials(trains: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_number: dict[str, list[dict[str, Any]]] = {}
+    for train in trains:
+        if not is_narita_express_train(train):
+            continue
+        number = train_service_number_key(train)
+        if number:
+            by_number.setdefault(number, []).append(train)
+
+    contained_ids: set[str] = set()
+    for group in by_number.values():
+        sequences = [(train, station_name_sequence(train)) for train in group]
+        for train, sequence in sequences:
+            if len(sequence) < 2:
+                continue
+            if any(
+                other is not train and is_contiguous_subsequence(sequence, other_sequence)
+                for other, other_sequence in sequences
+            ):
+                contained_ids.add(str(train.get("service_instance_id") or ""))
+
+    if not contained_ids:
+        return trains
+    return [
+        train for train in trains
+        if str(train.get("service_instance_id") or "") not in contained_ids
+    ]
 
 
 def is_known_v3_synthetic_tail_duplicate(train: dict[str, Any]) -> bool:
@@ -613,6 +811,7 @@ def main() -> int:
             trains.append(item)
             source_counts["v4_public_gtfs"] += 1
 
+    trains = repair_narita_express_coupled_portions(trains)
     raw_train_count = len(trains)
     trains, signature_audit = dedupe_trains(trains)
 
