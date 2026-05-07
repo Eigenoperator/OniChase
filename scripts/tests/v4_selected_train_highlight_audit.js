@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const fs = require('fs');
 const { chromium } = require('playwright');
 
 const MAPLIBRE_STUB = `
@@ -92,6 +93,7 @@ function auditOptionsFromArgs(args) {
     maxFailures: integerArg(args, 'max-failures', 25, { min: 1 }),
     progressEvery: integerArg(args, 'progress-every', 0, { min: 0 }),
     skipOsakaLoop: Boolean(args['skip-osaka-loop']),
+    limitedExpressOnly: Boolean(args['limited-express-only']),
   };
 }
 
@@ -130,6 +132,7 @@ async function auditSelectedTrainHighlights(page, options = {}) {
     const maxFailures = auditOptions?.maxFailures || 25;
     const progressEvery = auditOptions?.progressEvery || 0;
     const skipOsakaLoop = Boolean(auditOptions?.skipOsakaLoop);
+    const limitedExpressOnly = Boolean(auditOptions?.limitedExpressOnly);
     const samples = [];
     const failures = [];
     const routeStats = new Map();
@@ -144,8 +147,16 @@ async function auditSelectedTrainHighlights(page, options = {}) {
     let checkedFutureStopCoverageCases = 0;
     let checkedOsakaAirportLoopCases = 0;
     let checkedContinuousPathCases = 0;
+    let checkedStopIncomingOutgoingCases = 0;
     let checkedMiniShinkansenSharedCases = 0;
     let checkedMiniShinkansenIndependentTraceCases = 0;
+
+    function tripLooksHighRisk(trip) {
+      const label = formatTripLabel(trip);
+      return isLimitedExpressTrip(trip) ||
+        isShinkansenTrip(trip) ||
+        /エクスプレス|はるか|ひたち|ときわ|あずさ|しなの|サンダーバード|成田エクスプレス|ひだ|くろしお|こうのとり|きのさき|はしだて|まいづる|しらさぎ|踊り子|わかしお|さざなみ|しおさい|南紀|ふじさん|はこね|えのしま/u.test(label);
+    }
 
     function endpointScore(coordinates, fromStationGroupId, toStationGroupId) {
       const fromLonLat = stationLonLat(fromStationGroupId);
@@ -220,6 +231,48 @@ async function auditSelectedTrainHighlights(page, options = {}) {
       return breaks;
     }
 
+    function reviewedRouteIdsForStopPair(trip, currentStop, nextStop) {
+      const reviewedSegments = reviewedTripPathSegmentsForStopPair(trip, currentStop, nextStop);
+      if (reviewedSegments?.length) return reviewedSegments.map((segment) => segment.routeId).filter(Boolean);
+      const tracedRouteId = tracedRouteIdForTripSegment(trip, currentStop, nextStop) || trip.routeId;
+      const routeId = physicalRouteIdForTraceStopPair(trip, tracedRouteId, currentStop, nextStop);
+      return routeId ? [routeId] : [];
+    }
+
+    function stopIncomingOutgoingHighlightFailures(trip, stops, startStop) {
+      const issues = [];
+      const futureStops = stops.filter((stop) => stop.sequence >= startStop.sequence);
+      for (let index = 0; index < futureStops.length; index += 1) {
+        const stop = futureStops[index];
+        const expectedRouteIds = new Set();
+        if (index > 0) {
+          reviewedRouteIdsForStopPair(trip, futureStops[index - 1], stop)
+            .forEach((routeId) => expectedRouteIds.add(routeId));
+        }
+        if (index + 1 < futureStops.length) {
+          reviewedRouteIdsForStopPair(trip, stop, futureStops[index + 1])
+            .forEach((routeId) => expectedRouteIds.add(routeId));
+        }
+        if (!expectedRouteIds.size) continue;
+        const actualRouteIds = new Set(routeIdsForTripStopHighlight(trip, stop, startStop.sequence));
+        const missingRouteIds = [...expectedRouteIds].filter((routeId) => !actualRouteIds.has(routeId));
+        const missingStationFeatureRouteIds = [...expectedRouteIds].filter((routeId) =>
+          !routeStationPhysicalIds(routeId, [stop.stationGroupId]).length
+        );
+        if (missingRouteIds.length || missingStationFeatureRouteIds.length) {
+          issues.push({
+            sequence: stop.sequence,
+            station: displayNameForGroup(stop.stationGroupId),
+            expectedRoutes: [...expectedRouteIds].map((routeId) => routeTitle(routeId)),
+            highlightedRoutes: [...actualRouteIds].map((routeId) => routeTitle(routeId)),
+            missingRoutes: missingRouteIds.map((routeId) => routeTitle(routeId)),
+            missingStationFeatureRoutes: missingStationFeatureRouteIds.map((routeId) => routeTitle(routeId)),
+          });
+        }
+      }
+      return issues;
+    }
+
     const sampleTrip = (trip, startStop, ranges, reason) => ({
       reason,
       tripId: trip.id,
@@ -238,7 +291,12 @@ async function auditSelectedTrainHighlights(page, options = {}) {
 
     const eligibleTripEntries = [...state.tripById.values()]
       .map((trip) => ({ trip, stops: (trip.stopTimes || []).filter((stop) => Number.isFinite(stop.sequence)) }))
-      .filter(({ trip, stops }) => trip.routeId && state.routeById.has(trip.routeId) && stops.length >= 2)
+      .filter(({ trip, stops }) =>
+        trip.routeId &&
+        state.routeById.has(trip.routeId) &&
+        stops.length >= 2 &&
+        (!limitedExpressOnly || tripLooksHighRisk(trip))
+      )
       .map((entry, eligibleIndex) => ({ ...entry, eligibleIndex }));
     eligibleTripCount = eligibleTripEntries.length;
     const selectedTripEntries = eligibleTripEntries.filter(({ eligibleIndex }) => (
@@ -289,6 +347,19 @@ async function auditSelectedTrainHighlights(page, options = {}) {
             failures.push({
               ...sampleTrip(trip, startStop, ranges, 'selected train highlight must cover current and downstream stops'),
               missingStops: missingStops.slice(0, 8),
+              selectedSegments: pathSegments.map((segment) => ({
+                route: routeTitle(segment.routeId),
+                pointCount: segment.coordinates.length,
+              })),
+            });
+            if (reachedFailureLimit()) break;
+          }
+          checkedStopIncomingOutgoingCases += 1;
+          const stopHighlightIssues = stopIncomingOutgoingHighlightFailures(trip, stops, startStop);
+          if (stopHighlightIssues.length) {
+            failures.push({
+              ...sampleTrip(trip, startStop, ranges, 'selected train station highlight must include each stop incoming/outgoing route'),
+              stopHighlightIssues: stopHighlightIssues.slice(0, 8),
               selectedSegments: pathSegments.map((segment) => ({
                 route: routeTitle(segment.routeId),
                 pointCount: segment.coordinates.length,
@@ -484,6 +555,7 @@ async function auditSelectedTrainHighlights(page, options = {}) {
         maxFailures,
         progressEvery,
         skipOsakaLoop,
+        limitedExpressOnly,
       },
       eligibleTripCount,
       selectedTripCount,
@@ -496,6 +568,7 @@ async function auditSelectedTrainHighlights(page, options = {}) {
       checkedFutureStopCoverageCases,
       checkedOsakaAirportLoopCases,
       checkedContinuousPathCases,
+      checkedStopIncomingOutgoingCases,
       checkedMiniShinkansenSharedCases,
       checkedMiniShinkansenIndependentTraceCases,
       failureCount: failures.length,
@@ -522,7 +595,11 @@ async function main() {
   }
   try {
     const result = await auditSelectedTrainHighlights(page, options);
-    console.log(JSON.stringify(result, null, 2));
+    const json = JSON.stringify(result, null, 2);
+    if (args.output && args.output !== true) {
+      fs.writeFileSync(args.output, `${json}\n`);
+    }
+    console.log(json);
     if (result.failureCount) {
       process.exitCode = 1;
     }
