@@ -151,7 +151,34 @@ async function auditPlannerInteractions(page) {
       earliest: earliestRouteMinute === null ? null : minutesToHhmm(earliestRouteMinute),
     });
 
-    const routeNode = routeRows.find((row) => row.querySelector('.row-title')?.textContent.includes('山手線')) || routeRows[0];
+    const routeOrderAt = (hhmm) => {
+      resetRunnerAt('東京', hhmm);
+      return activeRows('.route-row[data-action="choose-route"]').map((row) => ({
+        routeId: row.dataset.routeId || '',
+        title: row.querySelector('.row-title')?.textContent.trim() || '',
+        category: routeChoiceSortCategory(row.dataset.routeId || ''),
+      }));
+    };
+    const order0630 = routeOrderAt('06:30');
+    const order1000 = routeOrderAt('10:00');
+    const common0630 = order0630.map((row) => row.title).filter((title) => order1000.some((row) => row.title === title));
+    const common1000 = order1000.map((row) => row.title).filter((title) => order0630.some((row) => row.title === title));
+    check(common0630.join('|') === common1000.join('|'), '1/3 route order should stay stable as time advances', {
+      order0630: common0630,
+      order1000: common1000,
+    });
+    [order0630, order1000].forEach((order, index) => {
+      const badCategoryIndex = order.findIndex((row, rowIndex) => rowIndex > 0 && row.category < order[rowIndex - 1].category);
+      check(badCategoryIndex < 0, '1/3 route order should group Shinkansen, JR/private, then named limited expresses', {
+        sample: index === 0 ? '06:30' : '10:00',
+        order: order.slice(0, 24),
+        badCategoryIndex,
+      });
+    });
+
+    resetRunnerAt('東京', '06:30');
+    const refreshedRouteRows = activeRows('.route-row[data-action="choose-route"]');
+    const routeNode = refreshedRouteRows.find((row) => row.querySelector('.row-title')?.textContent.includes('山手線')) || refreshedRouteRows[0];
     const routeKey = routeNode.dataset.rowKey;
     renderGame();
     renderGame();

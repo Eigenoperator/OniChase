@@ -10265,6 +10265,36 @@
       return choice.subtitleLabels.join('/');
     }
 
+    function routeChoiceSortCategory(routeId) {
+      const title = routeTitle(routeId);
+      const route = state.routeById.get(routeId);
+      if (isShinkansenCorridorRoute(routeId) || route?.operatorId === 'shinkansen' || /新幹線/u.test(title)) return 0;
+      if (isNamedTrainChoiceRouteId(routeId)) return 3;
+      return isJrRoute(route) ? 1 : 2;
+    }
+
+    function routeChoiceStableSortKey(choice) {
+      const routeId = choice?.routeId || '';
+      const route = state.routeById.get(routeId);
+      return [
+        routeChoiceSortCategory(routeId),
+        route?.operatorId || routeSubtitle(routeId) || '',
+        routeTitle(routeId),
+        routeId,
+      ];
+    }
+
+    function compareRouteChoicesStable(a, b) {
+      const left = routeChoiceStableSortKey(a);
+      const right = routeChoiceStableSortKey(b);
+      for (let index = 0; index < left.length; index += 1) {
+        if (left[index] === right[index]) continue;
+        if (typeof left[index] === 'number' && typeof right[index] === 'number') return left[index] - right[index];
+        return String(left[index]).localeCompare(String(right[index]), 'ja');
+      }
+      return (a.firstDepartureMinute || 0) - (b.firstDepartureMinute || 0);
+    }
+
     async function startTutorialMode() {
       entryStatusEl.textContent = 'Loading Tutorial...';
       prepareLocalSession('runner', { startTime: '06:00', endTime: '08:00', tutorialMode: true });
@@ -10313,9 +10343,7 @@
           }
         });
       });
-      const choices = [...byRoute.values()].sort((a, b) =>
-        a.firstDepartureMinute - b.firstDepartureMinute || routeTitle(a.routeId).localeCompare(routeTitle(b.routeId))
-      );
+      const choices = [...byRoute.values()].sort(compareRouteChoicesStable);
       state.routeChoicesByDeparturesCache.set(departures, choices);
       return choices;
     }
