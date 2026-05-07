@@ -7768,10 +7768,64 @@
       return `${route?.operatorId || 'route'}:${routeLogoText(routeId, { transfer: true })}`;
     }
 
-    function transferRouteIdsForStation(stationGroupId, currentRouteId = null) {
+    function previousStopBefore(trip, stop) {
+      if (!trip || !stop) return null;
+      return (trip.stopTimes || [])
+        .filter((item) => item.sequence < stop.sequence)
+        .sort((a, b) => b.sequence - a.sequence)[0] || null;
+    }
+
+    function tripStopBySequence(trip, sequence) {
+      const numericSequence = Number(sequence);
+      if (!trip || !Number.isFinite(numericSequence)) return null;
+      return (trip.stopTimes || []).find((stop) => stop.sequence === numericSequence) || null;
+    }
+
+    function tripRouteIdsAtStop(trip, stop) {
+      if (!trip || !stop) return [];
+      const routeIds = new Set();
+      const previousStop = previousStopBefore(trip, stop);
+      const nextStop = nextStopAfter(trip, stop);
+      [
+        tracedRouteIdForTripSegment(trip, previousStop, stop),
+        tracedRouteIdForTripSegment(trip, stop, nextStop),
+        ...tracedRouteIdsForTripStop(trip, stop),
+      ].forEach((routeId) => {
+        if (routeId && !isThroughServiceTransferAlias(routeId)) routeIds.add(routeId);
+      });
+      if (!routeIds.size && trip.routeId && !isThroughServiceTransferAlias(trip.routeId)) routeIds.add(trip.routeId);
+      return [...routeIds];
+    }
+
+    function tripStopIsRouteBoundary(trip, stop) {
+      if (!trip || !stop) return false;
+      const previousStop = previousStopBefore(trip, stop);
+      const nextStop = nextStopAfter(trip, stop);
+      const previousRouteId = tracedRouteIdForTripSegment(trip, previousStop, stop);
+      const nextRouteId = tracedRouteIdForTripSegment(trip, stop, nextStop);
+      return Boolean(previousRouteId && nextRouteId && previousRouteId !== nextRouteId);
+    }
+
+    function transferContextRouteIdForTripStop(trip, stop) {
+      if (!trip || !stop) return trip?.routeId || null;
+      const nextStop = nextStopAfter(trip, stop);
+      return tracedRouteIdForTripSegment(trip, stop, nextStop) ||
+        tracedRouteIdForTripSegment(trip, previousStopBefore(trip, stop), stop) ||
+        trip.routeId ||
+        null;
+    }
+
+    function transferRouteIdsForStation(stationGroupId, currentRouteId = null, options = {}) {
       const seenLogoKeys = new Set();
+      const contextTrip = options.trip || null;
+      const contextStop = options.stop || tripStopBySequence(contextTrip, options.stopSequence);
+      const ownThroughRouteIds = new Set();
+      if (contextTrip && contextStop && !tripStopIsRouteBoundary(contextTrip, contextStop)) {
+        tripRouteIdsAtStop(contextTrip, contextStop).forEach((routeId) => ownThroughRouteIds.add(routeId));
+      }
       const routeIds = [...routeIdsForStationAndTransfers(stationGroupId, { physicalOnly: true })]
         .filter((routeId) => routeId !== currentRouteId)
+        .filter((routeId) => !ownThroughRouteIds.has(routeId))
         .filter((routeId) => !isThroughServiceTransferAlias(routeId))
         .filter((routeId) => !isThroughServicePartnerRoute(currentRouteId, routeId))
         .sort((a, b) => routeTitle(a).localeCompare(routeTitle(b)));
@@ -7785,8 +7839,8 @@
       return visibleRouteIds;
     }
 
-    function transferChipsHtml(stationGroupId, currentRouteId) {
-      const routeIds = transferRouteIdsForStation(stationGroupId, currentRouteId);
+    function transferChipsHtml(stationGroupId, currentRouteId, options = {}) {
+      const routeIds = transferRouteIdsForStation(stationGroupId, currentRouteId, options);
       if (!routeIds.length) return '';
       const maxSlots = 15;
       const visibleLimit = routeIds.length > maxSlots ? maxSlots - 1 : maxSlots;
@@ -8009,6 +8063,7 @@
         label: displayNameForGroup(stop.stationGroupId),
         arrivalHhmm: secToClock(stop.arrivalTimeSec ?? stop.departureTimeSec),
         sequence: stop.sequence,
+        stop,
       }));
     }
 
@@ -8048,6 +8103,7 @@
             label: displayNameForGroup(stop.stationGroupId),
             arrivalHhmm: secToClock(stop.arrivalTimeSec ?? stop.departureTimeSec),
             sequence: stop.sequence,
+            stop,
           })),
       };
     }
@@ -8489,6 +8545,7 @@
               arrivalHhmm: secToClock(arrivalSec),
               arrivalSec,
               sequence: stop.sequence,
+              stop,
             };
             if (!current || arrivalSec < current.arrivalSec || (
               arrivalSec === current.arrivalSec &&
@@ -10542,7 +10599,7 @@
                   <span class="row-meta">${item.arrivalHhmm}</span>
                   <span class="destination-line">
                     <span class="row-title">${item.label}</span>
-                    ${transferChipsHtml(item.stationGroupId, item.routeId || pending.trip.routeId)}
+                    ${transferChipsHtml(item.stationGroupId, item.routeId || transferContextRouteIdForTripStop(pending.trip, item.stop), { trip: pending.trip, stop: item.stop })}
                   </span>
                 </button>
               `).join('')
@@ -10562,7 +10619,7 @@
                   <span class="row-meta">${item.arrivalHhmm}</span>
                   <span class="destination-line">
                     <span class="row-title">${item.label}</span>
-                    ${transferChipsHtml(item.stationGroupId, preview.currentTrip?.routeId || routeId)}
+                    ${transferChipsHtml(item.stationGroupId, transferContextRouteIdForTripStop(preview.currentTrip, item.stop) || routeId, { trip: preview.currentTrip, stop: item.stop })}
                   </span>
                 </button>
               `).join('')
