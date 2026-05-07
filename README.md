@@ -30,6 +30,12 @@ Browser source pages:
 - landing page output: [docs/index.html](/home/xincheng/toy/Chase/docs/index.html)
 - Pages workflow: [.github/workflows/deploy-pages.yml](/home/xincheng/toy/Chase/.github/workflows/deploy-pages.yml)
 
+V4 release closeout:
+
+- release notes: [docs/v4_release_notes.md](/home/xincheng/toy/Chase/docs/v4_release_notes.md)
+- release data contract: [docs/v4_release_data.md](/home/xincheng/toy/Chase/docs/v4_release_data.md)
+- known limitations: [docs/v4_known_limitations.md](/home/xincheng/toy/Chase/docs/v4_known_limitations.md)
+
 ## Local Test Build
 
 The main current playtest target is the native local client:
@@ -147,6 +153,7 @@ Public multiplayer note:
 - v4 Shintetsu official all-train PDF reconstruction collector: [scripts/ingest/collect_v4_shintetsu_official_train_instances.py](/home/xincheng/toy/Chase/scripts/ingest/collect_v4_shintetsu_official_train_instances.py)
 - v4 Kobe City Subway official CSV open-data collector: [scripts/ingest/collect_v4_kobe_subway_official_train_instances.py](/home/xincheng/toy/Chase/scripts/ingest/collect_v4_kobe_subway_official_train_instances.py)
 - browser regression tests: [scripts/tests](/home/xincheng/toy/Chase/scripts/tests)
+- v4 real MapLibre pan performance gate: [scripts/tests/v4_map_pan_performance_gate.js](/home/xincheng/toy/Chase/scripts/tests/v4_map_pan_performance_gate.js)
 
 Useful commands:
 
