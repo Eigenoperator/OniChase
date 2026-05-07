@@ -197,6 +197,41 @@ async function audit(page) {
       failures.push({ reason: 'Thunderbird Kyoto-to-Tsuruga sample trip not found' });
     }
 
+    const hidaOsakaBranchTrips = [...state.tripById.values()]
+      .filter((trip) => formatTripLabel(trip).includes('ひだ') &&
+        (trip.stopTimes || []).some((stop) => displayNameForGroup(stop.stationGroupId) === '大阪') &&
+        (trip.stopTimes || []).some((stop) => displayNameForGroup(stop.stationGroupId) === '京都'));
+    const hidaDetourTrips = hidaOsakaBranchTrips
+      .filter((trip) => (trip.stopTimes || []).some((stop) => displayNameForGroup(stop.stationGroupId) === '名古屋'));
+    if (hidaDetourTrips.length) {
+      failures.push({
+        reason: 'Osaka/Kyoto Hida branch must not include the Nagoya branch after the Gifu split/join; otherwise selected-train highlight detours through Nagoya',
+        samples: hidaDetourTrips.slice(0, 5).map((trip) => ({
+          tripId: trip.id,
+          label: formatTripLabel(trip),
+          stops: (trip.stopTimes || []).map((stop) => displayNameForGroup(stop.stationGroupId)),
+        })),
+      });
+    }
+    const hida25Trip = hidaOsakaBranchTrips.find((trip) => formatTripLabel(trip).includes('ひだ25'));
+    if (hida25Trip) {
+      const segments = tripPathSegmentsFromSequence(hida25Trip, Math.min(...hida25Trip.stopTimes.map((stop) => stop.sequence)));
+      const routeTitles = segments.map((segment) => routeTitle(segment.routeId));
+      const hasRequiredRoutes = routeTitles.includes('東海道線') && routeTitles.includes('高山線');
+      const stopNames = hida25Trip.stopTimes.map((stop) => displayNameForGroup(stop.stationGroupId));
+      if (!hasRequiredRoutes || stopNames.includes('名古屋') || !segments.every((segment) => segment.coordinates.length >= 2)) {
+        failures.push({
+          reason: 'Hida 25 Osaka/Kyoto branch highlight must follow Tokaido Line to Gifu, then Takayama Line, without a Nagoya detour',
+          tripId: hida25Trip.id,
+          routeTitles,
+          stops: stopNames,
+          segmentCoordinateCounts: segments.map((segment) => segment.coordinates.length),
+        });
+      }
+    } else {
+      failures.push({ reason: 'Hida 25 Osaka/Kyoto branch sample trip not found' });
+    }
+
     return {
       checkedAdjacentSegments,
       checkedLimitedExpressSegments,

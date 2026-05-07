@@ -12269,6 +12269,41 @@
       };
     }
 
+    function pruneReviewedHidaOsakaBranchStops(trip) {
+      const label = formatTripLabel(trip);
+      if (!label.includes('ひだ')) return trip;
+      const stops = trip.stopTimes || [];
+      const stationNames = stops.map((stop) => displayNameForGroup(stop.stationGroupId));
+      const hasOsakaBranch = stationNames.includes('大阪') && stationNames.includes('京都');
+      const hasNagoyaDetour = stationNames.includes('名古屋') &&
+        stationNames.includes('米原') &&
+        stationNames.includes('大垣') &&
+        stationNames.includes('岐阜');
+      if (!hasOsakaBranch || !hasNagoyaDetour) return trip;
+      const maibaraIndex = stationNames.indexOf('米原');
+      const nagoyaIndex = stationNames.indexOf('名古屋');
+      const ogakiIndex = stationNames.indexOf('大垣');
+      const looksOutboundDetour = maibaraIndex >= 0 && maibaraIndex < nagoyaIndex && nagoyaIndex < ogakiIndex;
+      const looksInboundDetour = ogakiIndex >= 0 && ogakiIndex < nagoyaIndex && nagoyaIndex < maibaraIndex;
+      if (!looksOutboundDetour && !looksInboundDetour) return trip;
+      const filteredStops = stops
+        .filter((stop) => displayNameForGroup(stop.stationGroupId) !== '名古屋')
+        .map((stop, index) => ({ ...stop, sequence: index + 1 }));
+      if (filteredStops.length >= stops.length || filteredStops.length < 2) return trip;
+      const prunedTrip = { ...trip, stopTimes: filteredStops, lineTrace: [] };
+      const lineTrace = rebuiltLineTraceFromAdjacentStops(prunedTrip, filteredStops);
+      if (!lineTrace.length) return trip;
+      return {
+        ...prunedTrip,
+        lineTrace,
+        lineSequence: lineTrace
+          .map((trace) => trace.routeId)
+          .filter((routeId, index, list) => routeId && list.indexOf(routeId) === index)
+          .map((routeId) => ({ routeId })),
+        hidaOsakaBranchPruned: true,
+      };
+    }
+
     function sunriseTripHasBothBranches(trip) {
       const stationNames = (trip?.stopTimes || []).map((stop) => displayNameForGroup(stop.stationGroupId));
       return stationNames.some((stationName) => SUNRISE_IZUMO_BRANCH_STATIONS.has(stationName)) &&
@@ -12347,7 +12382,7 @@
         }
         return branchTrips.filter(Boolean).map((branchTrip) => extendCircularTripForContinuousRide(branchTrip));
       }
-      if (!sunrise && !isCircularRoute(trip?.routeId)) return [trip];
+      if (!sunrise && !isCircularRoute(trip?.routeId)) return [pruneReviewedHidaOsakaBranchStops(trip)];
       return [normalizeTripForGameplay(trip)];
     }
 
@@ -12384,7 +12419,7 @@
     }
 
     function normalizeTripForGameplay(trip) {
-      return extendCircularTripForContinuousRide(pruneReviewedCoupledBranchStops(trip));
+      return extendCircularTripForContinuousRide(pruneReviewedHidaOsakaBranchStops(pruneReviewedCoupledBranchStops(trip)));
     }
 
     function decodeTimetablePayload(payload) {
