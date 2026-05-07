@@ -13,7 +13,7 @@ Covered by:
 
 ## Non-Shinkansen Coupled Services
 
-直挂/併结 is not ordinary through-running. A coupled train has multiple public portions that share a physical segment and split/join later. From the shared side, v4 shows an umbrella row and then requires a portion choice; from the branch side, each portion appears as its own normal train. During the shared physical segment, game capture treats the coupled portions as `same_train`.
+直挂/併结 is not ordinary through-running. A coupled train has multiple public portions that share a physical segment and split/join later. From the shared side heading toward a future split, v4 shows an umbrella row and then requires a portion/direction choice before alighting stops. In the reverse direction, each portion appears as its own normal train before the join; after the join there is no future branch choice, so the joined physical train goes directly to alighting stops. During the shared physical segment, game capture treats the coupled portions as `same_train`.
 
 Registry source: `data/v4_coupled_service_registry.json`.
 

@@ -8069,7 +8069,7 @@
 
     function pendingDepartureContext(preview, playerId = state.activeMode) {
       const coupledChoice = pendingCoupledChoice(playerId);
-      if (coupledChoice && preview.currentState.kind === 'NODE') {
+      if (coupledChoice && !coupledChoice.awaitingPortion && preview.currentState.kind === 'NODE') {
         const representative = coupledRepresentativePortion(coupledChoice, state.selectedRouteId);
         const destinations = coupledChoiceDestinationRows(coupledChoice);
         if (representative?.row?.trip && destinations.length) {
@@ -8498,9 +8498,12 @@
       const selectedRouteId = choice.selectedRouteId || state.selectedRouteId || null;
       const representative = coupledRepresentativePortion(choice, selectedRouteId);
       if (!representative?.row?.trip?.id) return;
-      state.pendingCoupledChoices[state.activeMode] = choice;
+      const pendingChoice = coupledChoiceNeedsPortionPicker(choice)
+        ? { ...choice, awaitingPortion: true }
+        : choice;
+      state.pendingCoupledChoices[state.activeMode] = pendingChoice;
       state.selectedTripId = representative.row.trip.id;
-      state.pendingTripIds[state.activeMode] = representative.row.trip.id;
+      state.pendingTripIds[state.activeMode] = pendingChoice.awaitingPortion ? null : representative.row.trip.id;
       const stationGroupIds = coupledChoiceDestinationRows(choice)
         .map((item) => item.stationGroupId)
         .filter(Boolean);
@@ -8517,6 +8520,22 @@
       updateSelectedRouteHighlights();
       renderRouteCard();
       renderGame();
+    }
+
+    function coupledChoiceNeedsPortionPicker(choice) {
+      const terminals = new Set();
+      let hasFutureSplit = false;
+      (choice?.portions || []).forEach((item) => {
+        const row = item.row;
+        const trip = row?.trip;
+        const boardStop = row?.boardStop || row?.stop || choice.boardStop || null;
+        if (!trip || !boardStop) return;
+        const terminal = trip.stopTimes?.at(-1);
+        if (terminal?.stationGroupId) terminals.add(terminal.stationGroupId);
+        const splitStop = downstreamSplitStop(choice.entry, trip, boardStop);
+        if (splitStop && splitStop.sequence >= boardStop.sequence) hasFutureSplit = true;
+      });
+      return Boolean(hasFutureSplit && terminals.size >= 2);
     }
 
     function coupledRepresentativePortion(row, selectedRouteId = state.selectedRouteId) {
@@ -10572,8 +10591,8 @@
 
     function renderTrainOutlook() {
       const preview = planCursorPreview(state.activeMode);
-      const pending = pendingDepartureContext(preview);
       const coupledChoice = pendingCoupledChoice();
+      const pending = pendingDepartureContext(preview);
       trainSummaryEl.hidden = true;
       trainSummaryEl.innerHTML = '';
       if (state.timetableStatus === 'loading' || state.timetableStatus === 'idle') {
@@ -10630,7 +10649,15 @@
         let routeChoices = [];
         const selectedRouteId = planningRouteId || null;
         const trainRows = selectedRouteId ? buildCoupledTrainRows(availableRouteDepartures(preview, selectedRouteId), selectedRouteId) : [];
-        if (!selectedRouteId) {
+        if (coupledChoice?.awaitingPortion) {
+          html += plannerStep(
+            '3/3',
+            `Direction for ${escapeHtml(coupledChoice.label || '直挂列車')}`,
+            'Choose which portion to ride.',
+            plannerBackNav('back-trains', 'Back to trains') +
+            renderCoupledPortionRows(coupledChoice, selectedRouteId),
+          );
+        } else if (!selectedRouteId) {
           const departures = availableDepartures(preview);
           routeChoices = routeChoicesFromDepartures(departures);
           html += plannerStep(
