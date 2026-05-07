@@ -7310,26 +7310,26 @@
         id: 'station-major',
         type: 'circle',
         source: 'stations',
-        minzoom: 7.2,
+        minzoom: 5.8,
         filter: ['all', ['>=', ['get', 'label_rank'], 90], ['<', ['get', 'label_rank'], 99]],
         paint: {
           'circle-color': '#263a51',
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 7.2, 1.8, 11, 3.0, 15, 4.2],
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 5.8, 1.5, 11, 3.0, 15, 4.2],
           'circle-stroke-color': '#ffffff',
-          'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 7.2, 0.45, 13, 1.0],
+          'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 5.8, 0.35, 13, 1.0],
         },
       });
       map.addLayer({
         id: 'station-local',
         type: 'circle',
         source: 'stations',
-        minzoom: 10.4,
+        minzoom: 8.8,
         filter: ['<', ['get', 'label_rank'], 90],
         paint: {
           'circle-color': '#34495f',
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 10.4, 1.5, 14, 3.2, 16, 3.8],
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 8.8, 1.2, 14, 3.2, 16, 3.8],
           'circle-stroke-color': '#ffffff',
-          'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 10.4, 0.35, 14, 0.85],
+          'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 8.8, 0.25, 14, 0.85],
         },
       });
       map.addLayer({
@@ -7368,11 +7368,12 @@
         id: 'label-hub',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 3.2,
+        minzoom: 2.8,
+        maxzoom: 13.8,
         filter: ['>=', ['get', 'label_rank'], 99],
         layout: {
           ...baseLayout,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 3.2, 9.8, 9, 13, 14, 15],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 2.8, 9.8, 9, 13, 13.8, 15],
         },
         paint: basePaint,
       });
@@ -7380,11 +7381,12 @@
         id: 'label-major',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 5.0,
+        minzoom: 4.2,
+        maxzoom: 13.8,
         filter: ['all', ['>=', ['get', 'label_rank'], 90], ['<', ['get', 'label_rank'], 99]],
         layout: {
           ...baseLayout,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 5.0, 9.4, 11, 12.5, 15, 14],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 4.2, 9.2, 11, 12.5, 13.8, 14],
         },
         paint: basePaint,
       });
@@ -7392,13 +7394,13 @@
         id: 'label-local',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 7.4,
-        maxzoom: 11.8,
+        minzoom: 6.2,
+        maxzoom: 9.6,
         filter: ['<', ['get', 'label_rank'], 90],
         layout: {
           ...baseLayout,
           'text-padding': 1,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 7.4, 8.2, 10.5, 9.7, 11.8, 10.8],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 6.2, 7.8, 9.6, 9.8],
         },
         paint: basePaint,
       });
@@ -7406,20 +7408,40 @@
         id: 'label-local-dense',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 11.8,
+        minzoom: 9.6,
+        maxzoom: 13.8,
         filter: ['<', ['get', 'label_rank'], 90],
         layout: {
           ...baseLayout,
           'text-variable-anchor': ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'],
           'text-radial-offset': 0.48,
           'text-padding': 1,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 11.8, 10.2, 14.2, 11.8, 16, 13.2],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 9.6, 9.6, 13.8, 11.6],
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
         paint: {
           ...basePaint,
-          'text-halo-width': ['interpolate', ['linear'], ['zoom'], 11.8, 1.1, 16, 1.55],
+          'text-halo-width': ['interpolate', ['linear'], ['zoom'], 9.6, 1.05, 13.8, 1.45],
+        },
+      });
+      map.addLayer({
+        id: 'label-all-dense',
+        type: 'symbol',
+        source: 'station-labels',
+        minzoom: 13.8,
+        layout: {
+          ...baseLayout,
+          'text-variable-anchor': ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'],
+          'text-radial-offset': 0.46,
+          'text-padding': 0,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 13.8, 10.8, 16, 12.7],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          ...basePaint,
+          'text-halo-width': ['interpolate', ['linear'], ['zoom'], 13.8, 1.35, 16, 1.55],
         },
       });
       map.addLayer({

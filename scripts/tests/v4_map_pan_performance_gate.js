@@ -67,7 +67,7 @@ async function runScenario(page, scenario) {
     const frameIntervals = await framePromise;
     await waitForIdle();
 
-    const labelLayers = ['label-hub', 'label-major', 'label-local', 'label-local-dense']
+    const labelLayers = ['label-hub', 'label-major', 'label-local', 'label-local-dense', 'label-all-dense']
       .map((id) => ({
         id,
         minzoom: state.map.getLayer(id)?.minzoom ?? null,
