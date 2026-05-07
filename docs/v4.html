@@ -1954,6 +1954,22 @@
         ],
       },
       {
+        from: '東京',
+        to: '品川',
+        tripStationNames: ['成田空港'],
+        legs: [
+          { routeName: '東海道線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '品川',
+        to: '東京',
+        tripStationNames: ['成田空港'],
+        legs: [
+          { routeName: '東海道線', operatorId: 'jr_east' },
+        ],
+      },
+      {
         from: '上諏訪',
         to: '松本',
         tripStationNames: ['新宿', '立川', '八王子'],
@@ -8583,6 +8599,7 @@
         if (!routeId) return;
         const route = state.routeById.get(routeId);
         if (isShinkansenTrip(trip) && route?.mode !== 'shinkansen' && route?.operatorId !== 'shinkansen') return;
+        if (!isShinkansenTrip(trip) && (route?.mode === 'shinkansen' || route?.operatorId === 'shinkansen')) return;
         if (isThroughServiceTransferAlias(routeId) && routeId !== trip.routeId) return;
         candidates.add(routeId);
       };
@@ -8795,13 +8812,24 @@
       );
     }
 
-    function coordinatesForTripSegment(routeId, currentStop, nextStop) {
+    function coordinatesForTripSegment(routeId, currentStop, nextStop, options = {}) {
       const direct = routeSliceCoordinates(routeId, currentStop.stationGroupId, nextStop.stationGroupId);
       if (coordinatePathEndpointAnchorsStops(direct, currentStop, nextStop)) {
         return anchoredTripSegmentCoordinates(direct, currentStop, nextStop);
       }
       if (!routeCanAnchorTripSegment(routeId, currentStop, nextStop)) return [];
-      return stationPairCoordinates(currentStop, nextStop);
+      if (options.allowPhysicalGraphFallback) {
+        const physicalPath = globalGraphSliceCoordinates(routeId, currentStop.stationGroupId, nextStop.stationGroupId);
+        if (coordinatePathEndpointAnchorsStops(physicalPath, currentStop, nextStop)) {
+          return anchoredTripSegmentCoordinates(physicalPath, currentStop, nextStop);
+        }
+      }
+      const stationPair = stationPairCoordinates(currentStop, nextStop);
+      const stationPairLength = stationPair.length >= 2 ? coordinatePathLength(stationPair) : Number.POSITIVE_INFINITY;
+      const maxStationPairFallbackLength = Number.isFinite(options.maxStationPairFallbackLength)
+        ? options.maxStationPairFallbackLength
+        : 0.04;
+      return options.allowStationPairFallback !== false && stationPairLength <= maxStationPairFallbackLength ? stationPair : [];
     }
 
     function appendCoordinates(target, coordinates, bridgeCoordinate = null) {
@@ -8928,7 +8956,10 @@
           continue;
         }
         const segmentRouteId = physicalRouteIdForTraceStopPair(trip, traceRouteId, current, next);
-        const segmentCoordinates = coordinatesForTripSegment(segmentRouteId, current, next);
+        const segmentCoordinates = coordinatesForTripSegment(segmentRouteId, current, next, {
+          allowPhysicalGraphFallback: false,
+          allowStationPairFallback: !tripPathRequiresReviewedGeometry(trip),
+        });
         if (segmentCoordinates.length < 2) return [];
         const previous = segments[segments.length - 1];
         if (previous?.routeId === segmentRouteId) appendCoordinates(previous.coordinates, segmentCoordinates, stationLonLat(current.stationGroupId));
@@ -9100,6 +9131,12 @@
       return [...routeNames].some((name) => /スカイアクセス|成田空港線/u.test(name));
     }
 
+    function tripPathRequiresReviewedGeometry(trip) {
+      const label = formatTripLabel(trip);
+      return isLimitedExpressTrip(trip) ||
+        /エクスプレス|はるか|ひたち|ときわ|あずさ|しなの|サンダーバード|成田エクスプレス/u.test(label);
+    }
+
     const AKITA_SHINKANSEN_BRANCH_STATIONS = new Set(['雫石', '田沢湖', '角館', '大曲', '秋田']);
     const YAMAGATA_SHINKANSEN_BRANCH_STATIONS = new Set([
       '米沢',
@@ -9252,7 +9289,6 @@
         const hintedStopPairExists = stops
           .slice(0, -1)
           .some((stop, index) => Boolean(reviewedTripPathHintForSegment(trip, stop, stops[index + 1])));
-        const fullTraceSegment = coordinatesForTripSegment(trace.routeId, fromStop, toStop);
         const stopSequenceSegments = (stops.length > 2 || hintedStopPairExists)
           ? tripTraceStopSequenceSegments(trip, trace.routeId, stops)
           : [];
@@ -9265,6 +9301,10 @@
           });
           return;
         }
+        const fullTraceSegment = coordinatesForTripSegment(trace.routeId, fromStop, toStop, {
+          allowPhysicalGraphFallback: false,
+          allowStationPairFallback: !tripPathRequiresReviewedGeometry(trip),
+        });
         if (fullTraceSegment.length >= 2) {
           const intermediateStops = stops.slice(1, -1);
           if (
@@ -9290,7 +9330,10 @@
           const current = stops[index];
           const next = stops[index + 1];
           const segmentRouteId = physicalRouteIdForTraceStopPair(trip, trace.routeId, current, next);
-          const segment = coordinatesForTripSegment(segmentRouteId, current, next);
+          const segment = coordinatesForTripSegment(segmentRouteId, current, next, {
+            allowPhysicalGraphFallback: false,
+            allowStationPairFallback: !tripPathRequiresReviewedGeometry(trip),
+          });
           if (segment.length >= 2) {
             const previous = segments[segments.length - 1];
             if (previous?.routeId === segmentRouteId) appendCoordinates(previous.coordinates, segment, stationLonLat(current.stationGroupId));
@@ -9323,9 +9366,11 @@
           if (dep <= timeMinute && timeMinute <= nextArr) {
             const ratio = nextArr === dep ? 1 : ((timeMinute - dep) / (nextArr - dep));
             const segmentRouteId = routeIdForTripSegment(trip, stop, nextStop);
-            const position = interpolateCoordinates(coordinatesForTripSegment(segmentRouteId, stop, nextStop), ratio)
-              || routePositionAlongPath(segmentRouteId, stop.stationGroupId, nextStop.stationGroupId, ratio)
-              || interpolateCoordinates([stationLonLat(stop.stationGroupId), stationLonLat(nextStop.stationGroupId)].filter(Boolean), ratio);
+            const position = interpolateCoordinates(coordinatesForTripSegment(segmentRouteId, stop, nextStop, {
+              allowPhysicalGraphFallback: false,
+              allowStationPairFallback: !tripPathRequiresReviewedGeometry(trip),
+            }), ratio)
+              || routePositionAlongPath(segmentRouteId, stop.stationGroupId, nextStop.stationGroupId, ratio);
             return position ? { anchorStationGroupId: nextStop.stationGroupId, position } : null;
           }
         }

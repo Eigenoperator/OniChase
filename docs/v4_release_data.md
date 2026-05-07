@@ -79,3 +79,5 @@ The v4 release evidence is summarized by these JSON files:
 Do not treat these audit outputs as gameplay source of truth. They are release evidence and regression snapshots.
 
 Coupled-train display is also guarded by `scripts/tests/v4_coupled_train_display_audit.js`.
+
+Selected-train physical path safety is guarded by `scripts/tests/v4_trip_path_real_geometry_audit.js`. This audit rejects long synthetic station-to-station highlights and conventional trains borrowing Shinkansen geometry; strict missing-geometry counts are reported as release evidence for future source-data work.

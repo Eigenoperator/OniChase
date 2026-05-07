@@ -148,3 +148,5 @@
 - Do not display a train highlight as disconnected route fragments just because several future line identities are relevant.
 - For selected-train highlights, prefer the train's recorded trace and reviewed path hints over inferred route collections. If the actual route of a train is unclear, verify it from reliable timetable/route sources before adding a reviewed hint.
 - If a limited express or other long-distance service has an ambiguous physical route, such as `サンダーバード` or similar, search current sources and record the reviewed route assumption before using it for highlight continuity.
+- Selected-train highlights and in-train player movement must never use long station-to-station synthetic geometry as a substitute for a missing physical line. If a sparse-stop train skips many stations, the path must be built from real route geometry or from reviewed path hints. Missing geometry is a data/audit problem, not permission to draw a fake straight branch.
+- Conventional trains and limited express trains must not borrow Shinkansen geometry just because the station pair has a shorter Shinkansen-shaped path. Shinkansen geometry is only valid for Shinkansen trips.
