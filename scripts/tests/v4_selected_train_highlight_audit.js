@@ -155,7 +155,8 @@ async function auditSelectedTrainHighlights(page, options = {}) {
       const label = formatTripLabel(trip);
       return isLimitedExpressTrip(trip) ||
         isShinkansenTrip(trip) ||
-        /エクスプレス|はるか|ひたち|ときわ|あずさ|しなの|サンダーバード|成田エクスプレス|ひだ|くろしお|こうのとり|きのさき|はしだて|まいづる|しらさぎ|踊り子|わかしお|さざなみ|しおさい|南紀|ふじさん|はこね|えのしま/u.test(label);
+        /エクスプレス|はるか|ひたち|ときわ|あずさ|しなの|サンダーバード|成田エクスプレス|ひだ|くろしお|こうのとり|きのさき|はしだて|まいづる|しらさぎ|踊り子|わかしお|さざなみ|しおさい|南紀|ふじさん|はこね|えのしま|むさしの号/u.test(label) ||
+        (typeof namedTrainChoiceLabel === 'function' && namedTrainChoiceLabel(trip) === 'むさしの号');
     }
 
     function endpointScore(coordinates, fromStationGroupId, toStationGroupId) {
