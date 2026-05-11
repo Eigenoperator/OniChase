@@ -9003,6 +9003,33 @@
       return marqueeHtml(trainPreviewText(trip, boardStop), 'row-sub');
     }
 
+    function coupledEndpointNames(row, endpoint) {
+      return [...new Set((row?.portions || [])
+        .map((item) => {
+          const stops = item?.row?.trip?.stopTimes || [];
+          const stop = endpoint === 'origin' ? stops[0] : stops.at(-1);
+          return stop ? displayNameForGroup(stop.stationGroupId) : '';
+        })
+        .filter(Boolean))];
+    }
+
+    function coupledTrainPreviewText(row) {
+      const representative = coupledRepresentativePortion(row, row?.selectedRouteId);
+      const boardStop = representative?.row?.boardStop || row?.boardStop || null;
+      const nextStop = nextStopAfter(representative?.row?.trip, boardStop);
+      const origins = coupledEndpointNames(row, 'origin');
+      const terminals = coupledEndpointNames(row, 'terminal');
+      const parts = [];
+      if (origins.length) parts.push(`始発 ${origins.join(' / ')}`);
+      if (terminals.length) parts.push(`終点 ${terminals.join(' / ')}`);
+      if (nextStop) parts.push(`次 ${displayNameForGroup(nextStop.stationGroupId)}`);
+      return parts.join(' · ') || '同一列車';
+    }
+
+    function coupledTrainPreviewHtml(row) {
+      return marqueeHtml(coupledTrainPreviewText(row), 'row-sub');
+    }
+
     function boardingSegmentRouteIdForTrainLabel(entry) {
       const trip = entry?.trip;
       const boardStop = entry?.boardStop || entry?.stop || null;
@@ -9476,7 +9503,7 @@
           <span class="row-meta">${row.departureHhmm}</span>
           <span>
             <span class="row-title">${escapeHtml(row.label)}</span>
-            ${representative ? trainPreviewHtml(representative.row.trip, representative.row.boardStop) : '<span class="row-sub">同一列車</span>'}
+            ${representative ? coupledTrainPreviewHtml(row) : '<span class="row-sub">同一列車</span>'}
           </span>
         </button>
       `;
