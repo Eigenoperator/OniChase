@@ -1307,6 +1307,7 @@
       JR_EAST_KEIHIN_TOHOKU_NEGISHI: ['東北線', '東海道線', '根岸線'],
       JR_EAST_KEIYO_MUSASHINO: ['京葉線', '武蔵野線', '外房線', '内房線', '東金線'],
       JR_EAST_SAIKYO_KAWAGOE: ['山手線', '赤羽線', '東北線', '川越線'],
+      埼京線: ['山手線', '赤羽線', '東北線', '川越線', '相鉄本線', '相鉄新横浜線', '東海道線'],
       JR_EAST_SHONAN_SHINJUKU: ['東海道線', '山手線', '東北線', '高崎線', '上越線', '両毛線', '横須賀線'],
       JR_EAST_SOBU_RAPID: ['総武線', '成田線', '内房線', '外房線', '鹿島線'],
       JR_EAST_TOKAIDO: ['東海道線', '伊東線', '高崎線', '上越線', '両毛線', '東北線', '常磐線', '成田線'],
@@ -1351,6 +1352,7 @@
     });
     const ROUTE_THROUGH_SERVICE_LINE_ALIASES = Object.freeze({
       JR_EAST_SAIKYO_KAWAGOE: ['埼京線', '川越線', 'りんかい線', '臨海副都心線', '相鉄本線', '相鉄新横浜線'],
+      埼京線: ['埼京線', '川越線', 'りんかい線', '臨海副都心線', '相鉄本線', '相鉄新横浜線'],
       JR_KAWAGOE: ['川越線', '八高線'],
       JR_JOBAN: ['常磐線', '常磐線各駅停車', '千代田線', '9号線千代田線'],
       RINKAI: ['りんかい線', '臨海副都心線', '埼京線', '川越線'],
@@ -4927,6 +4929,17 @@
       '大崎', '大井町', '品川シーサイド', '天王洲アイル', '東京テレポート',
       '国際展示場', '東雲', '新木場',
     ]);
+    const SAIKYO_KAWAGOE_STATIONS = new Set([
+      '大崎', '恵比寿', '渋谷', '新宿', '池袋', '板橋', '十条', '赤羽',
+      '北赤羽', '浮間舟渡', '戸田公園', '戸田', '北戸田', '武蔵浦和',
+      '中浦和', '南与野', '与野本町', '北与野', '大宮', '日進', '西大宮',
+      '指扇', '南古谷', '川越',
+    ]);
+    const SAIKYO_KAWAGOE_SIGNATURE_STATIONS = new Set([
+      '板橋', '十条', '北赤羽', '浮間舟渡', '戸田公園', '戸田', '北戸田',
+      '武蔵浦和', '中浦和', '南与野', '与野本町', '北与野', '日進',
+      '西大宮', '指扇', '南古谷', '川越',
+    ]);
     const SANYO_SHINKANSEN_STATIONS = new Set([
       '新大阪', '新神戸', '西明石', '姫路', '相生', '岡山', '新倉敷', '福山', '新尾道', '三原',
       '東広島', '広島', '新岩国', '徳山', '新山口', '厚狭', '新下関', '小倉', '博多',
@@ -6328,6 +6341,30 @@
       );
       if (!looksLikeRinkaiThroughSegment) return null;
       return routeIdByShortName('RINKAI') || routeIdByShortNameAndOperator('りんかい線', 'rinkai');
+    }
+
+    function saikyoKawagoeChoiceRouteId(entry) {
+      const trip = entry?.trip;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      if (!trip || !boardStop) return null;
+      if (!queryStationAllowedForCorridor(entry, SAIKYO_KAWAGOE_STATIONS)) return null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
+      if (!SAIKYO_KAWAGOE_STATIONS.has(boardName) || !SAIKYO_KAWAGOE_STATIONS.has(nextName)) return null;
+      const stationNames = new Set(tripStationNames(trip));
+      const traceNames = new Set([
+        ...tripLineTraceNames(trip),
+        ...boardingFaceRouteNamesForStop(trip, boardStop),
+      ]);
+      const hasSaikyoSignature = [...SAIKYO_KAWAGOE_SIGNATURE_STATIONS].some((name) => stationNames.has(name));
+      const usesSaikyoPhysicalTrunk = traceNames.has('赤羽線') ||
+        traceNames.has('川越線') ||
+        traceNames.has('JR_EAST_SAIKYO_KAWAGOE') ||
+        traceNames.has('埼京線');
+      if (!hasSaikyoSignature || !usesSaikyoPhysicalTrunk) return null;
+      return routeIdByShortName('JR_EAST_SAIKYO_KAWAGOE') ||
+        routeIdByShortNameAndOperator('埼京線', 'jr_east') ||
+        routeIdByShortNameAndOperator('赤羽線', 'jr_east');
     }
 
     function isAkitaShinkansenBranchBoardingSegment(entry, trip, routeShortName) {
@@ -7875,15 +7912,17 @@
     }
 
     function addLabelLayers(map) {
+      const allAnchorOrder = ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'];
       const baseLayout = {
         'text-field': ['coalesce', ['get', 'name_ja'], ['get', 'name_en']],
         'text-font': ['Open Sans Regular'],
-        'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
-        'text-radial-offset': 0.55,
+        'text-variable-anchor': allAnchorOrder,
+        'text-radial-offset': 0.42,
         'text-justify': 'auto',
         'text-allow-overlap': false,
         'text-ignore-placement': false,
         'text-optional': true,
+        'text-padding': 0,
         'symbol-sort-key': ['get', 'sort_rank'],
       };
       const basePaint = {
@@ -7895,12 +7934,14 @@
         id: 'label-hub',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 2.8,
-        maxzoom: 13.8,
+        minzoom: 2.6,
+        maxzoom: 13.2,
         filter: ['>=', ['get', 'label_rank'], 99],
         layout: {
           ...baseLayout,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 2.8, 9.8, 9, 13, 13.8, 15],
+          'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+          'text-radial-offset': 0.5,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 2.6, 9.8, 9, 12.8, 13.2, 14.2],
         },
         paint: basePaint,
       });
@@ -7908,12 +7949,14 @@
         id: 'label-major',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 4.2,
-        maxzoom: 13.8,
+        minzoom: 3.8,
+        maxzoom: 13.2,
         filter: ['all', ['>=', ['get', 'label_rank'], 90], ['<', ['get', 'label_rank'], 99]],
         layout: {
           ...baseLayout,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 4.2, 9.2, 11, 12.5, 13.8, 14],
+          'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+          'text-radial-offset': 0.48,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 3.8, 8.9, 10, 11.4, 13.2, 12.8],
         },
         paint: basePaint,
       });
@@ -7921,13 +7964,12 @@
         id: 'label-local',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 6.2,
-        maxzoom: 9.6,
+        minzoom: 6.8,
+        maxzoom: 9.4,
         filter: ['<', ['get', 'label_rank'], 90],
         layout: {
           ...baseLayout,
-          'text-padding': 1,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 6.2, 7.8, 9.6, 9.8],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 6.8, 7.2, 9.4, 8.0],
         },
         paint: basePaint,
       });
@@ -7935,40 +7977,34 @@
         id: 'label-local-dense',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 9.6,
-        maxzoom: 13.8,
+        minzoom: 9.4,
+        maxzoom: 12.6,
         filter: ['<', ['get', 'label_rank'], 90],
         layout: {
           ...baseLayout,
-          'text-variable-anchor': ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'],
-          'text-radial-offset': 0.48,
-          'text-padding': 1,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 9.6, 9.6, 13.8, 11.6],
-          'text-allow-overlap': true,
-          'text-ignore-placement': true,
+          'text-radial-offset': 0.36,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 9.4, 7.9, 10.2, 8.2, 12.6, 9.8],
         },
         paint: {
           ...basePaint,
-          'text-halo-width': ['interpolate', ['linear'], ['zoom'], 9.6, 1.05, 13.8, 1.45],
+          'text-halo-width': ['interpolate', ['linear'], ['zoom'], 9.4, 0.95, 12.6, 1.3],
         },
       });
       map.addLayer({
         id: 'label-all-dense',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 13.8,
+        minzoom: 12.6,
         layout: {
           ...baseLayout,
-          'text-variable-anchor': ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'],
-          'text-radial-offset': 0.46,
-          'text-padding': 0,
-          'text-size': ['interpolate', ['linear'], ['zoom'], 13.8, 10.8, 16, 12.7],
+          'text-radial-offset': 0.34,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 12.6, 9.2, 14, 10.7, 16, 12.2],
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
         paint: {
           ...basePaint,
-          'text-halo-width': ['interpolate', ['linear'], ['zoom'], 13.8, 1.35, 16, 1.55],
+          'text-halo-width': ['interpolate', ['linear'], ['zoom'], 12.6, 1.18, 16, 1.5],
         },
       });
       map.addLayer({
@@ -10931,6 +10967,8 @@
       if (yokosukaSobuChoiceRouteId) return [yokosukaSobuChoiceRouteId];
       const rinkaiChoiceRouteIdForEntry = rinkaiChoiceRouteId(entry);
       if (rinkaiChoiceRouteIdForEntry) return [rinkaiChoiceRouteIdForEntry];
+      const saikyoKawagoeChoiceRouteIdForEntry = saikyoKawagoeChoiceRouteId(entry);
+      if (saikyoKawagoeChoiceRouteIdForEntry) return [saikyoKawagoeChoiceRouteIdForEntry];
       const jrEastChoiceRouteId = jrEastCorridorChoiceRouteId(entry);
       if (jrEastChoiceRouteId) return [jrEastChoiceRouteId];
       const tripRouteId = entry?.trip?.routeId || entry?.routeId || null;
