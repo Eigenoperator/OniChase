@@ -1748,6 +1748,28 @@
           physicalLines: ['東海道線', '東北線', '高崎線', '常磐線'],
         },
       },
+      VIRTUAL_JR_EAST_SHONAN_SHINJUKU: {
+        id: 'VIRTUAL_JR_EAST_SHONAN_SHINJUKU',
+        operatorId: 'jr_east',
+        operatorName: '東日本旅客鉄道',
+        shortName: 'JR_EAST_SHONAN_SHINJUKU',
+        longName: '東日本旅客鉄道 JR_EAST_SHONAN_SHINJUKU',
+        color: '#E21F26',
+        textColor: '#ffffff',
+        mode: 'rail',
+        tags: {
+          source: 'v4_virtual_corridor',
+          sourceOperatorId: 'jr_east',
+          lineName: 'JR_EAST_SHONAN_SHINJUKU',
+          displayRule: 'operating_corridor',
+          physicalLines: ['東北線', '高崎線', '東海道線', '横須賀線', '山手線'],
+          stationNames: [
+            '大宮', '浦和', '赤羽', '池袋', '新宿', '渋谷', '恵比寿', '大崎',
+            '西大井', '武蔵小杉', '新川崎', '横浜', '保土ケ谷', '保土ヶ谷',
+            '東戸塚', '戸塚', '大船',
+          ],
+        },
+      },
       VIRTUAL_JR_EAST_YOKOSUKA_SOBU_RAPID: {
         id: 'VIRTUAL_JR_EAST_YOKOSUKA_SOBU_RAPID',
         operatorId: 'jr_east',
@@ -1901,6 +1923,7 @@
       },
     });
     const JR_UENO_TOKYO_CORRIDOR_ROUTE_ID = 'VIRTUAL_JR_EAST_UENO_TOKYO';
+    const JR_SHONAN_SHINJUKU_CORRIDOR_ROUTE_ID = 'VIRTUAL_JR_EAST_SHONAN_SHINJUKU';
     const JR_YOKOSUKA_SOBU_RAPID_CORRIDOR_ROUTE_ID = 'VIRTUAL_JR_EAST_YOKOSUKA_SOBU_RAPID';
     const JR_KEIHIN_TOHOKU_NEGISHI_ROUTE_ID = 'VIRTUAL_JR_EAST_KEIHIN_TOHOKU_NEGISHI';
     const JR_CHUO_RAPID_ROUTE_ID = 'VIRTUAL_JR_EAST_CHUO_RAPID';
@@ -2246,7 +2269,7 @@
         tripLabelPattern: '成田エクスプレス',
         tripStationNames: ['成田空港', '空港第2ビル', '大船', '横浜', '武蔵小杉'],
         legs: [
-          { routeName: '横須賀線・総武快速線', operatorId: 'jr_east' },
+          { routeName: '東海道線', operatorId: 'jr_east' },
         ],
       },
       {
@@ -2255,7 +2278,7 @@
         tripLabelPattern: '成田エクスプレス',
         tripStationNames: ['成田空港', '空港第2ビル', '大船', '横浜', '武蔵小杉'],
         legs: [
-          { routeName: '横須賀線・総武快速線', operatorId: 'jr_east' },
+          { routeName: '東海道線', operatorId: 'jr_east' },
         ],
       },
       {
@@ -5141,6 +5164,32 @@
     const UENO_TOKYO_NORTH_ROUTE_NAMES = new Set([
       '東北線', '東北本線', '宇都宮線', '高崎線', '常磐線', '上越線', '両毛線',
     ]);
+    const SHONAN_SHINJUKU_CORRIDOR_STATIONS = new Set([
+      '大宮', '浦和', '赤羽', '池袋', '新宿', '渋谷', '恵比寿', '大崎',
+      '西大井', '武蔵小杉', '新川崎', '横浜', '保土ケ谷', '保土ヶ谷',
+      '東戸塚', '戸塚', '大船',
+    ]);
+    const SHONAN_SHINJUKU_SIGNATURE_STATIONS = new Set([
+      '池袋', '新宿', '渋谷', '恵比寿', '大崎', '西大井', '武蔵小杉',
+    ]);
+    const SHONAN_SHINJUKU_NORTH_STATIONS = new Set([
+      '大宮', '浦和', '赤羽',
+      ...UENO_TOKYO_TAKASAKI_BRANCH_STATIONS,
+      ...UENO_TOKYO_UTSUNOMIYA_BRANCH_STATIONS,
+    ]);
+    const SHONAN_SHINJUKU_TOKAIDO_SIDE_STATIONS = new Set([
+      '小田原', '国府津', '平塚', '茅ケ崎', '茅ヶ崎', '藤沢', '大船',
+      '戸塚', '横浜',
+    ]);
+    const SHONAN_SHINJUKU_YOKOSUKA_SIDE_STATIONS = new Set([
+      '久里浜', '横須賀', '逗子', '鎌倉', '北鎌倉', '大船', '戸塚',
+      '東戸塚', '保土ケ谷', '保土ヶ谷', '横浜', '新川崎', '武蔵小杉',
+      '西大井',
+    ]);
+    const SHONAN_SHINJUKU_SOUTH_STATIONS = new Set([
+      ...SHONAN_SHINJUKU_TOKAIDO_SIDE_STATIONS,
+      ...SHONAN_SHINJUKU_YOKOSUKA_SIDE_STATIONS,
+    ]);
     const JR_EAST_NARITA_BRANCH_STATIONS = new Set(['成田', '酒々井', '佐倉']);
     const KEISEI_NARITA_SKY_ACCESS_STATIONS = new Set(['成田空港', '空港第２ビル', '成田湯川', '印旛日本医大']);
     const JR_WEST_INBI_SUPER_HAKUTO_STATIONS = new Set(['鳥取', '郡家', '智頭']);
@@ -6254,6 +6303,27 @@
       return crossesTokyoUenoCore;
     }
 
+    function isShonanShinjukuLineTrip(trip) {
+      if (!isJrEastConventionalTrip(trip) || isKeihinTohokuNegishiTrip(trip)) return false;
+      const route = tripRoute(trip);
+      if (route?.shortName === 'JR_EAST_SHONAN_SHINJUKU') return true;
+      const stationNames = new Set(tripStationNames(trip));
+      const traceNames = new Set(tripLineTraceNames(trip));
+      const usesShonanCore = [...SHONAN_SHINJUKU_SIGNATURE_STATIONS].some((name) => stationNames.has(name));
+      if (!usesShonanCore) return false;
+      const hasNorthSide = [...SHONAN_SHINJUKU_NORTH_STATIONS].some((name) => stationNames.has(name));
+      const hasSouthSide = [...SHONAN_SHINJUKU_SOUTH_STATIONS].some((name) => stationNames.has(name));
+      if (!hasNorthSide || !hasSouthSide) return false;
+      return (
+        traceNames.has('山手線') ||
+        traceNames.has('東北線') ||
+        traceNames.has('高崎線') ||
+        traceNames.has('横須賀線') ||
+        traceNames.has('東海道線') ||
+        ['東北線', '東北本線', '宇都宮線', '高崎線', '東海道線', '横須賀線'].includes(route?.shortName)
+      );
+    }
+
     function tripLineTraceNames(trip) {
       return (trip?.lineTrace || [])
         .map((trace) => trace?.lineName || state.routeById.get(trace?.routeId || '')?.shortName)
@@ -6379,6 +6449,18 @@
         return JR_UENO_TOKYO_CORRIDOR_ROUTE_ID;
       }
       return null;
+    }
+
+    function shonanShinjukuChoiceRouteId(entry) {
+      const trip = entry?.trip || entry;
+      const boardStop = entry?.boardStop || entry?.stop || null;
+      if (!boardStop || !isShonanShinjukuLineTrip(trip)) return null;
+      if (!queryStationAllowedForCorridor(entry, SHONAN_SHINJUKU_CORRIDOR_STATIONS)) return null;
+      const boardName = stationDisplayNameForStop(boardStop);
+      const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
+      if (!SHONAN_SHINJUKU_CORRIDOR_STATIONS.has(boardName)) return null;
+      if (nextName && !SHONAN_SHINJUKU_CORRIDOR_STATIONS.has(nextName)) return null;
+      return JR_SHONAN_SHINJUKU_CORRIDOR_ROUTE_ID;
     }
 
     function weakenedUenoTokyoReplacementRouteId(trip, boardStop) {
@@ -9085,12 +9167,14 @@
       const selectedRoute = selectedRouteId ? state.routeById.get(selectedRouteId) : null;
       if (!selectedRoute || !isJrRoute(selectedRoute)) return null;
       const selectedTitle = routeTitle(selectedRouteId);
-      if (!['東海道線', '上野東京ライン', '東北本線', '東北線', '宇都宮線', '高崎線', '常磐線'].includes(selectedTitle)) return null;
+      if (!['東海道線', '上野東京ライン', '湘南新宿ライン', '東北本線', '東北線', '宇都宮線', '高崎線', '常磐線'].includes(selectedTitle)) return null;
       const trip = entry?.trip;
       const boardStop = entry?.boardStop || entry?.stop || null;
       const boardName = stationDisplayNameForStop(boardStop);
       const nextName = stationDisplayNameForStop(nextStopAfter(trip, boardStop));
-      const inNorthernTrunkScope = [
+      const shonanScope = selectedRouteId === JR_SHONAN_SHINJUKU_CORRIDOR_ROUTE_ID &&
+        routeChoiceIdsForDeparture(entry).includes(selectedRouteId);
+      const inNorthernTrunkScope = shonanScope || [
         UENO_TOKYO_TOKAIDO_SIDE_STATIONS,
         UENO_TOKYO_CORE_STATIONS,
         UENO_TOKYO_JOBAN_SIDE_STATIONS,
@@ -11401,6 +11485,8 @@
       if (inbiRouteId) return [inbiRouteId];
       const chuoChoiceRouteId = chuoCorridorChoiceRouteId(entry);
       if (chuoChoiceRouteId) return [chuoChoiceRouteId];
+      const shonanShinjukuRouteId = shonanShinjukuChoiceRouteId(entry);
+      if (shonanShinjukuRouteId) return [shonanShinjukuRouteId];
       const yokosukaSobuChoiceRouteId = yokosukaSobuRapidChoiceRouteId(entry);
       if (yokosukaSobuChoiceRouteId) return [yokosukaSobuChoiceRouteId];
       const rinkaiChoiceRouteIdForEntry = rinkaiChoiceRouteId(entry);

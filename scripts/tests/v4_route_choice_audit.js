@@ -277,6 +277,11 @@ async function auditRouteChoices(page, auditOptions) {
     }
     const allowedVirtualRouteStations = {
       VIRTUAL_JR_EAST_UENO_TOKYO: new Set(['東京', '上野']),
+      VIRTUAL_JR_EAST_SHONAN_SHINJUKU: new Set([
+        '大宮', '浦和', '赤羽', '池袋', '新宿', '渋谷', '恵比寿', '大崎',
+        '西大井', '武蔵小杉', '新川崎', '横浜', '保土ケ谷', '保土ヶ谷',
+        '東戸塚', '戸塚', '大船',
+      ]),
       VIRTUAL_JR_EAST_YOKOSUKA_SOBU_RAPID: new Set([
         '久里浜', '衣笠', '横須賀', '田浦', '東逗子', '逗子', '鎌倉', '北鎌倉',
         '大船', '戸塚', '東戸塚', '保土ヶ谷', '横浜', '新川崎', '武蔵小杉',
@@ -414,6 +419,22 @@ async function auditRouteChoices(page, auditOptions) {
         ['鳥取', '郡家', '智頭'].includes(nextStation) &&
         route === '因美線' &&
         ['智頭急行智頭線', '山陽線'].includes(segmentRoute)
+      ) {
+        return true;
+      }
+      if (
+        route === '埼京線' &&
+        [
+          '大崎', '恵比寿', '渋谷', '新宿', '池袋', '板橋', '十条', '赤羽',
+          '北赤羽', '浮間舟渡', '戸田公園', '戸田', '北戸田', '武蔵浦和',
+          '中浦和', '南与野', '与野本町', '北与野', '大宮',
+        ].includes(stationName) &&
+        [
+          '大崎', '恵比寿', '渋谷', '新宿', '池袋', '板橋', '十条', '赤羽',
+          '北赤羽', '浮間舟渡', '戸田公園', '戸田', '北戸田', '武蔵浦和',
+          '中浦和', '南与野', '与野本町', '北与野', '大宮',
+        ].includes(nextStation) &&
+        ['山手線', '赤羽線', '東北線', '東北本線', '川越線', '東海道線', '相鉄本線', '相鉄新横浜線'].includes(segmentRoute)
       ) {
         return true;
       }
@@ -897,7 +918,7 @@ async function auditRouteChoices(page, auditOptions) {
       knownStationChoices = Object.fromEntries(
         [
           '東京', '上野', '品川', '新橋', '大宮', '福島', '米沢', '山形', '新庄', '盛岡', '田沢湖', '大曲', '秋田', '青梅', '八王子', '米原',
-          '敦賀', '京都', '新大阪', '白浜', '新宿', '大船', '成田空港',
+          '敦賀', '京都', '新大阪', '白浜', '新宿', '池袋', '横浜', '大船', '小田原', '逗子', '宇都宮', '高崎', '成田空港',
           '松本', '大月', '蘇我', '五井', '木更津', '上総一ノ宮', '成田', '佐倉',
         ].map((stationName) => [stationName, choicesAt(stationName)])
       );
@@ -925,6 +946,26 @@ async function auditRouteChoices(page, auditOptions) {
         choices: knownStationChoices['東京'],
       });
     }
+    ['新宿', '池袋', '横浜', '大船', '大宮'].forEach((stationName) => {
+      if (!routeChoiceTitles[stationName]?.has('湘南新宿ライン')) {
+        anomalies.push({
+          kind: 'shonan_shinjuku_corridor_choice_missing',
+          station: stationName,
+          reason: 'Shonan-Shinjuku Line is a real JR East operating corridor and should be selectable in its core Omiya-Shinjuku-Yokohama-Ofuna corridor while selected-train highlight stays on the physical trace.',
+          choices: knownStationChoices[stationName],
+        });
+      }
+    });
+    ['小田原', '逗子', '宇都宮', '高崎'].forEach((stationName) => {
+      if (routeChoiceTitles[stationName]?.has('湘南新宿ライン')) {
+        anomalies.push({
+          kind: 'shonan_shinjuku_corridor_leaks_to_branch_station',
+          station: stationName,
+          reason: 'Outside the core Shonan-Shinjuku corridor, branch stations should keep their physical line choices and use through-running train labels after the player selects a train.',
+          choices: knownStationChoices[stationName],
+        });
+      }
+    });
     ['東京', '上野', '大宮', '福島', '山形', '新庄'].forEach((stationName) => {
       if (!routeChoiceTitles[stationName]?.has('山形新幹線')) {
         anomalies.push({
