@@ -7968,7 +7968,7 @@
         type: 'symbol',
         source: 'station-labels',
         minzoom: 2.6,
-        maxzoom: 13.2,
+        maxzoom: 10.8,
         filter: ['>=', ['get', 'label_rank'], 99],
         layout: {
           ...baseLayout,
@@ -7983,7 +7983,7 @@
         type: 'symbol',
         source: 'station-labels',
         minzoom: 3.8,
-        maxzoom: 13.2,
+        maxzoom: 10.8,
         filter: ['all', ['>=', ['get', 'label_rank'], 90], ['<', ['get', 'label_rank'], 99]],
         layout: {
           ...baseLayout,
@@ -8027,7 +8027,7 @@
         id: 'label-all-dense',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 10.8,
+        minzoom: 16.6,
         layout: {
           'text-field': ['coalesce', ['get', 'name_ja'], ['get', 'name_en']],
           'text-font': ['Open Sans Regular'],
@@ -10454,6 +10454,8 @@
       const fontSize = denseStationLabelFontSize(zoom);
       const fragment = document.createDocumentFragment();
       const features = state.stationLabelFeatures || [];
+      const candidates = [];
+      const renderedNames = new Set();
       let rendered = 0;
       for (const feature of features) {
         const props = feature.properties || {};
@@ -10461,13 +10463,28 @@
         if (!name) continue;
         const point = map.project(feature.geometry.coordinates);
         if (point.x < -80 || point.x > width + 80 || point.y < -20 || point.y > height + 20) continue;
+        candidates.push({
+          name,
+          point,
+          labelRank: Number(props.label_rank || 50),
+          routeCount: Number(props.route_count || 0),
+        });
+      }
+      candidates.sort((a, b) => (
+        b.labelRank - a.labelRank ||
+        b.routeCount - a.routeCount ||
+        a.name.localeCompare(b.name, 'ja')
+      ));
+      for (const candidate of candidates) {
+        if (renderedNames.has(candidate.name)) continue;
+        renderedNames.add(candidate.name);
         const node = document.createElement('span');
         node.className = 'station-html-label';
-        node.textContent = name;
-        node.style.left = `${Math.round(point.x)}px`;
-        node.style.top = `${Math.round(point.y)}px`;
+        node.textContent = candidate.name;
+        node.style.left = `${Math.round(candidate.point.x)}px`;
+        node.style.top = `${Math.round(candidate.point.y)}px`;
         node.style.fontSize = `${fontSize.toFixed(1)}px`;
-        node.style.zIndex = String(Math.max(1, Math.round(Number(props.label_rank || 50))));
+        node.style.zIndex = String(Math.max(1, Math.round(candidate.labelRank)));
         fragment.appendChild(node);
         rendered += 1;
       }
