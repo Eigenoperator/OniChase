@@ -197,8 +197,124 @@ def add_bidirectional_interval(
         )
 
 
+def add_clockwise_loop_interval(
+    trains: list[dict[str, Any]],
+    index: PhysicalIndex,
+    *,
+    operator_name: str,
+    line_name: str,
+    direction_label: str,
+    departures: list[str],
+    station_offsets: list[tuple[str, int]],
+    source_url: str,
+    service_date: str,
+) -> None:
+    for idx, departure in enumerate(departures, start=1):
+        trains.append(
+            make_train(
+                index,
+                operator_name=operator_name,
+                line_name=line_name,
+                sequence_no=idx,
+                direction_label=direction_label,
+                source_url=source_url,
+                stops=[
+                    (station_name, add_minutes(departure, offset_minutes))
+                    for station_name, offset_minutes in station_offsets
+                ],
+                service_date=service_date,
+            )
+        )
+
+
+def add_bidirectional_stopping_interval(
+    trains: list[dict[str, Any]],
+    index: PhysicalIndex,
+    *,
+    operator_name: str,
+    line_name: str,
+    departures: list[str],
+    station_offsets: list[tuple[str, int]],
+    source_url: str,
+    service_date: str,
+) -> None:
+    for idx, departure in enumerate(departures, start=1):
+        trains.append(
+            make_train(
+                index,
+                operator_name=operator_name,
+                line_name=line_name,
+                sequence_no=idx,
+                direction_label=f"{station_offsets[0][0]}->{station_offsets[-1][0]}",
+                source_url=source_url,
+                stops=[
+                    (station_name, add_minutes(departure, offset_minutes))
+                    for station_name, offset_minutes in station_offsets
+                ],
+                service_date=service_date,
+            )
+        )
+        final_offset = station_offsets[-1][1]
+        trains.append(
+            make_train(
+                index,
+                operator_name=operator_name,
+                line_name=line_name,
+                sequence_no=idx,
+                direction_label=f"{station_offsets[-1][0]}->{station_offsets[0][0]}",
+                source_url=source_url,
+                stops=[
+                    (station_name, add_minutes(departure, final_offset - offset_minutes))
+                    for station_name, offset_minutes in reversed(station_offsets)
+                ],
+                service_date=service_date,
+            )
+        )
+
+
 def build_trains(index: PhysicalIndex, service_date: str) -> list[dict[str, Any]]:
     trains: list[dict[str, Any]] = []
+
+    # Official Resort Line page: first Resort Gateway Station departure 06:03,
+    # loop time about 13 minutes, trains every 4-13 minutes.
+    add_clockwise_loop_interval(
+        trains,
+        index,
+        operator_name="舞浜リゾートライン",
+        line_name="ディズニーリゾートライン",
+        direction_label="環状",
+        departures=every("06:03", "23:55", 6),
+        station_offsets=[
+            ("リゾートゲートウェイ･ステーション", 0),
+            ("東京ディズニーランド･ステーション", 2),
+            ("ベイサイド･ステーション", 6),
+            ("東京ディズニーシー･ステーション", 10),
+            ("リゾートゲートウェイ･ステーション", 13),
+        ],
+        source_url="https://www.tokyodisneyresort.jp/tdr/resortline/station",
+        service_date=service_date,
+    )
+
+    # Hakone Navi publishes station timetables for 箱根登山ケーブルカー.
+    # The v4 playable layer treats this high-frequency tourist cable as a
+    # 5-minute all-stop shuttle so every intermediate cable station is usable.
+    add_bidirectional_stopping_interval(
+        trains,
+        index,
+        operator_name="小田急箱根",
+        line_name="鋼索線",
+        departures=every("07:40", "19:05", 5),
+        station_offsets=[
+            ("強羅", 0),
+            ("公園下", 2),
+            ("公園上", 3),
+            ("中強羅", 5),
+            ("上強羅", 7),
+            ("早雲山", 10),
+        ],
+        source_url="https://www.hakonenavi.jp/transportation/station/",
+        service_date=service_date,
+    )
 
     # Official table: 09:30, 09:40, then every 20 minutes 10:00-17:00.
     add_bidirectional_interval(
