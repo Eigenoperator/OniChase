@@ -366,7 +366,7 @@ def gameplay_trip_signature(trip: dict[str, Any]) -> str:
         trip.get("origin") or "",
         trip.get("destination") or "",
     ):
-        hasher.update(str(part).encode("utf-8"))
+        hasher.update(builtins.str(part).encode("utf-8"))
         hasher.update(b"\0")
     for stop in trip.get("stopTimes") or []:
         for part in (
@@ -374,7 +374,7 @@ def gameplay_trip_signature(trip: dict[str, Any]) -> str:
             stop.get("arrivalTimeSec") if isinstance(stop.get("arrivalTimeSec"), int) else "",
             stop.get("departureTimeSec") if isinstance(stop.get("departureTimeSec"), int) else "",
         ):
-            hasher.update(str(part).encode("utf-8"))
+            hasher.update(builtins.str(part).encode("utf-8"))
             hasher.update(b"\0")
     return hasher.hexdigest()
 
@@ -387,7 +387,7 @@ def gameplay_trip_operational_signature(trip: dict[str, Any]) -> str:
             stop.get("arrivalTimeSec") if isinstance(stop.get("arrivalTimeSec"), int) else "",
             stop.get("departureTimeSec") if isinstance(stop.get("departureTimeSec"), int) else "",
         ):
-            hasher.update(str(part).encode("utf-8"))
+            hasher.update(builtins.str(part).encode("utf-8"))
             hasher.update(b"\0")
     return hasher.hexdigest()
 
@@ -750,7 +750,7 @@ def is_synthetic_line_name(line_name: str | None) -> bool:
 
 
 def canonical_line_name(line_name: str | None) -> str:
-    value = builtins.str(line_name or "").strip()
+    value = f"{line_name or ''}".strip()
     return SYNTHETIC_LINE_NAME_OVERRIDES.get(value, value)
 
 
