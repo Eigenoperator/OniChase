@@ -8856,7 +8856,7 @@
         type: 'symbol',
         source: 'station-labels',
         minzoom: 9.6,
-        maxzoom: 11.95,
+        maxzoom: 12,
         layout: {
           'text-field': ['coalesce', ['get', 'name_ja'], ['get', 'name_en']],
           'text-font': ['Open Sans Regular'],
@@ -8879,7 +8879,7 @@
         id: 'label-all-final',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 11.95,
+        minzoom: 24,
         layout: {
           'text-field': ['coalesce', ['get', 'name_ja'], ['get', 'name_en']],
           'text-font': ['Open Sans Regular'],
@@ -11382,11 +11382,8 @@
       const map = state.map;
       const overlay = state.stationLabelOverlayEl;
       if (!map || !overlay) return;
-      overlay.classList.add('hidden');
-      overlay.replaceChildren();
-      return;
       const zoom = map.getZoom();
-      if (zoom < 10.8) {
+      if (zoom < 12) {
         overlay.classList.add('hidden');
         overlay.replaceChildren();
         return;
@@ -11399,7 +11396,7 @@
       const fragment = document.createDocumentFragment();
       const features = state.stationLabelFeatures || [];
       const candidates = [];
-      const renderedNames = new Set();
+      const renderedKeys = new Set();
       const occupiedBoxes = [];
       let rendered = 0;
       for (const feature of features) {
@@ -11409,6 +11406,7 @@
         const point = map.project(feature.geometry.coordinates);
         if (point.x < -80 || point.x > width + 80 || point.y < -20 || point.y > height + 20) continue;
         candidates.push({
+          key: props.id || `${props.station_group_id || ''}|${name}`,
           name,
           point,
           labelRank: Number(props.label_rank || 50),
@@ -11421,16 +11419,15 @@
         a.name.localeCompare(b.name, 'ja')
       ));
       for (const candidate of candidates) {
-        if (renderedNames.has(candidate.name)) continue;
+        if (renderedKeys.has(candidate.key)) continue;
         const box = stationHtmlLabelBox(candidate, fontSize, collisionPadding);
         if (
           box.right < 0 || box.left > width ||
-          box.bottom < 0 || box.top > height ||
-          occupiedBoxes.some((occupied) => boxesOverlap(box, occupied))
+          box.bottom < 0 || box.top > height
         ) {
           continue;
         }
-        renderedNames.add(candidate.name);
+        renderedKeys.add(candidate.key);
         occupiedBoxes.push(box);
         const node = document.createElement('span');
         node.className = 'station-html-label';
