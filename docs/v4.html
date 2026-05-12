@@ -1208,6 +1208,7 @@
   <script>
     const MAP_DATA_URL = './data/v4_gameplay_map_bundle.json.gz';
     const TIMETABLE_URL = './data/v4_gameplay_timetable_compact.json.gz';
+    const FARE_RULES_URL = './data/v4_fare_rules.json';
     const TRANSFER_REVIEW_URL = './data/v4_transfer_equivalence_review.json';
     const COUPLED_SERVICE_REGISTRY_URL = './data/v4_coupled_service_registry.json';
     const V3_REPLAY_SCHEMA_VERSION = 'v4.replay.1';
@@ -5502,6 +5503,7 @@
       stationTripsByGroupId: new Map(),
       stationRouteDepartureCache: new Map(),
       coupledServiceRegistry: null,
+      fareRules: null,
       coupledServiceEntries: [],
       coupledChoiceRowsByKey: new Map(),
       coupledEquivalentsByTripId: new Map(),
@@ -7587,20 +7589,106 @@
       return 0;
     }
 
+    function fareBandValue(rows, distanceKm, valueKey = 'yen') {
+      const km = Math.max(1, Math.ceil(distanceKm || 0));
+      const row = (rows || []).find((item) =>
+        km >= (item.fromKm || 1) && (item.toKm === null || item.toKm === undefined || km <= item.toKm)
+      );
+      return row ? { yen: row[valueKey] || 0, row } : null;
+    }
+
+    function fareRuleKeyForOperatorIds(operatorIds, trip = null) {
+      const ids = new Set((operatorIds || []).filter(Boolean));
+      if (ids.size === 1 && ids.has('jr_hokkaido')) return 'jr_hokkaido';
+      if (ids.size === 1 && ids.has('jr_east')) return 'jr_east';
+      if ([...ids].some((id) => id === 'jr_central' || id === 'jr_west')) return 'jr_central_west';
+      if (ids.size === 1 && ids.has('jr_shikoku')) return 'jr_shikoku';
+      if (ids.size === 1 && ids.has('jr_kyushu')) return 'jr_kyushu';
+      if (ids.has('shinkansen') || isShinkansenTrip(trip)) {
+        const route = tripRoute(trip);
+        const routeName = `${route?.shortName || ''} ${routeTitle(route?.id) || ''} ${tripLineTraceNames(trip).join(' ')}`;
+        if (/北海道/u.test(routeName)) return 'jr_hokkaido';
+        if (/九州|西九州/u.test(routeName)) return 'jr_kyushu';
+        if (/東海道|山陽/u.test(routeName)) return 'jr_central_west';
+        return 'jr_east';
+      }
+      if ([...ids].every((id) => id && id.startsWith('jr_'))) return 'jr_central_west';
+      return null;
+    }
+
+    function fareOperatorIdsForSegments(segments, trip) {
+      const operatorIds = (segments || [])
+        .map((segment) => state.routeById.get(segment.route_id || '')?.operatorId)
+        .filter(Boolean);
+      if (operatorIds.length) return [...new Set(operatorIds)];
+      return [tripRoute(trip)?.operatorId].filter(Boolean);
+    }
+
+    function collectedBaseFare(distanceKm, segments, trip) {
+      const rules = state.fareRules;
+      if (!rules?.ordinaryFareTables) return null;
+      const ruleKey = fareRuleKeyForOperatorIds(fareOperatorIdsForSegments(segments, trip), trip);
+      const table = ruleKey ? rules.ordinaryFareTables?.[ruleKey]?.tables?.main : null;
+      const value = fareBandValue(table?.rows, distanceKm, 'yen');
+      return value ? {
+        ...value,
+        ruleKey,
+        source: 'collected_jr_ordinary_fare_table',
+        modelVersion: rules.modelVersion,
+      } : null;
+    }
+
+    function limitedExpressFareTableKey(trip, segments) {
+      const ruleKey = fareRuleKeyForOperatorIds(fareOperatorIdsForSegments(segments, trip), trip);
+      if (ruleKey === 'jr_hokkaido') return 'a_hokkaido';
+      if (ruleKey === 'jr_kyushu') return 'b_kyushu';
+      if (ruleKey === 'jr_east' || ruleKey === 'jr_central_west') return 'a';
+      return 'a';
+    }
+
+    function collectedPremiumFare(distanceKm, premiumType, trip, segments) {
+      const rules = state.fareRules;
+      if (!rules?.limitedExpressSurchargeTables || premiumType !== 'limited_express') return null;
+      const tableKey = limitedExpressFareTableKey(trip, segments);
+      const table = rules.limitedExpressSurchargeTables?.[tableKey];
+      const value = fareBandValue(table?.rows, distanceKm, 'reservedYen');
+      return value ? {
+        ...value,
+        tableKey,
+        source: 'collected_jr_limited_express_reserved_surcharge_table',
+        modelVersion: rules.modelVersion,
+      } : null;
+    }
+
     function estimateTripLegFare(trip, boardStop, alightStop) {
       const segments = farePathSegmentsForLeg(trip, boardStop, alightStop);
       const distanceKm = Number(segments.reduce((sum, segment) => sum + (segment.distance_km || 0), 0).toFixed(3));
       const premiumType = farePremiumForTrip(trip);
-      const baseYen = estimatedBaseFareYen(distanceKm);
-      const premiumYen = estimatedPremiumFareYen(distanceKm, premiumType);
+      const collectedBase = collectedBaseFare(distanceKm, segments, trip);
+      const collectedPremium = collectedPremiumFare(distanceKm, premiumType, trip, segments);
+      const baseYen = collectedBase?.yen ?? estimatedBaseFareYen(distanceKm);
+      const premiumYen = collectedPremium?.yen ?? estimatedPremiumFareYen(distanceKm, premiumType);
+      const baseSource = collectedBase?.source || 'estimated_v4_distance_model';
+      const premiumSource = premiumType === 'none'
+        ? 'none'
+        : (collectedPremium?.source || 'estimated_v4_distance_model');
+      const source = [baseSource, premiumSource].every((item) => item === 'none' || item.startsWith('collected_'))
+        ? 'collected_fare_rules'
+        : (baseSource.startsWith('collected_') || premiumSource.startsWith('collected_')
+          ? 'mixed_collected_and_estimated_fare_rules'
+          : 'estimated_v4_distance_model');
       return {
-        model_version: V4_FARE_MODEL_VERSION,
-        source: 'estimated_v4_distance_model',
+        model_version: state.fareRules?.modelVersion || V4_FARE_MODEL_VERSION,
+        source,
         currency: 'JPY',
         distance_km: distanceKm,
         base_yen: baseYen,
+        base_source: baseSource,
+        base_rule_key: collectedBase?.ruleKey || null,
         premium_type: premiumType,
         premium_yen: premiumYen,
+        premium_source: premiumSource,
+        premium_rule_key: collectedPremium?.tableKey || null,
         total_yen: baseYen + premiumYen,
         segments,
       };
@@ -7678,6 +7766,17 @@
           splitJoinStations: entry.splitJoinStations || [],
           portions: entry.portions || [],
         }));
+    }
+
+    async function loadFareRules() {
+      let payload = null;
+      try {
+        const response = await fetch(FARE_RULES_URL, { cache: 'no-store' });
+        if (response.ok) payload = await response.json();
+      } catch (error) {
+        console.warn('Fare rules unavailable; using estimated fare fallback.', error);
+      }
+      state.fareRules = payload;
     }
 
     function buildStationTransferIndex() {
@@ -14044,6 +14143,7 @@
       const t0 = performance.now();
       await loadTransferReview();
       await loadCoupledServiceRegistry();
+      await loadFareRules();
       const bundle = await fetchJsonMaybeGz(MAP_DATA_URL);
       state.bundle = bundle;
       buildIndexes(bundle);
