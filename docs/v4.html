@@ -7467,6 +7467,123 @@
       return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
+    const V4_FARE_MODEL_VERSION = 'v4_estimated_rail_fare_2026_05';
+
+    function roundFareYen(value) {
+      if (!Number.isFinite(value) || value <= 0) return 0;
+      return Math.ceil(value / 10) * 10;
+    }
+
+    function coordinatePathDistanceMeters(coordinates) {
+      if (!coordinates?.length || coordinates.length < 2) return 0;
+      let meters = 0;
+      for (let index = 1; index < coordinates.length; index += 1) {
+        const segmentMeters = coordinateDistanceMeters(coordinates[index - 1], coordinates[index]);
+        if (Number.isFinite(segmentMeters)) meters += segmentMeters;
+      }
+      return meters;
+    }
+
+    function fareStopsBetween(trip, boardStop, alightStop) {
+      if (!trip || !boardStop || !alightStop) return [];
+      return (trip.stopTimes || [])
+        .filter((stop) => stop.sequence >= boardStop.sequence && stop.sequence <= alightStop.sequence)
+        .sort((a, b) => a.sequence - b.sequence);
+    }
+
+    function farePathSegmentsForLeg(trip, boardStop, alightStop) {
+      const stops = fareStopsBetween(trip, boardStop, alightStop);
+      const segments = [];
+      for (let index = 0; index < stops.length - 1; index += 1) {
+        const currentStop = stops[index];
+        const nextStop = stops[index + 1];
+        const reviewedSegments = reviewedTripPathSegmentsForStopPair(trip, currentStop, nextStop);
+        if (reviewedSegments?.length) {
+          reviewedSegments.forEach((segment) => {
+            const distanceMeters = coordinatePathDistanceMeters(segment.coordinates);
+            segments.push({
+              route_id: segment.routeId || null,
+              from_station_id: currentStop.stationGroupId,
+              to_station_id: nextStop.stationGroupId,
+              distance_km: Number((distanceMeters / 1000).toFixed(3)),
+              geometry_source: 'reviewed_trip_path',
+            });
+          });
+          continue;
+        }
+        const routeId = routeIdForTripSegment(trip, currentStop, nextStop);
+        let coordinates = routeId ? coordinatesForTripSegment(routeId, currentStop, nextStop, {
+          allowPhysicalGraphFallback: false,
+          allowStationPairFallback: !tripPathRequiresReviewedGeometry(trip),
+        }) : [];
+        let geometrySource = coordinates.length >= 2 ? 'route_trace' : 'station_pair';
+        if (coordinates.length < 2) coordinates = stationPairCoordinates(currentStop, nextStop);
+        const distanceMeters = coordinatePathDistanceMeters(coordinates);
+        segments.push({
+          route_id: routeId || null,
+          from_station_id: currentStop.stationGroupId,
+          to_station_id: nextStop.stationGroupId,
+          distance_km: Number((distanceMeters / 1000).toFixed(3)),
+          geometry_source: geometrySource,
+        });
+      }
+      return segments;
+    }
+
+    function farePremiumForTrip(trip) {
+      if (isShinkansenTrip(trip)) return 'shinkansen';
+      if (isLimitedExpressTrip(trip)) return 'limited_express';
+      return 'none';
+    }
+
+    function estimatedBaseFareYen(distanceKm) {
+      if (!Number.isFinite(distanceKm) || distanceKm <= 0) return 0;
+      return roundFareYen(Math.max(150, 140 + (distanceKm * 15.5)));
+    }
+
+    function estimatedPremiumFareYen(distanceKm, premiumType) {
+      if (!Number.isFinite(distanceKm) || distanceKm <= 0) return 0;
+      if (premiumType === 'shinkansen') return roundFareYen(Math.max(870, 800 + (distanceKm * 7.5)));
+      if (premiumType === 'limited_express') return roundFareYen(Math.max(520, 450 + (distanceKm * 5.5)));
+      return 0;
+    }
+
+    function estimateTripLegFare(trip, boardStop, alightStop) {
+      const segments = farePathSegmentsForLeg(trip, boardStop, alightStop);
+      const distanceKm = Number(segments.reduce((sum, segment) => sum + (segment.distance_km || 0), 0).toFixed(3));
+      const premiumType = farePremiumForTrip(trip);
+      const baseYen = estimatedBaseFareYen(distanceKm);
+      const premiumYen = estimatedPremiumFareYen(distanceKm, premiumType);
+      return {
+        model_version: V4_FARE_MODEL_VERSION,
+        source: 'estimated_v4_distance_model',
+        currency: 'JPY',
+        distance_km: distanceKm,
+        base_yen: baseYen,
+        premium_type: premiumType,
+        premium_yen: premiumYen,
+        total_yen: baseYen + premiumYen,
+        segments,
+      };
+    }
+
+    function fareSummaryForLegs(legs) {
+      const totalYen = (legs || []).reduce((sum, leg) => sum + (leg.fare?.total_yen || 0), 0);
+      const baseYen = (legs || []).reduce((sum, leg) => sum + (leg.fare?.base_yen || 0), 0);
+      const premiumYen = (legs || []).reduce((sum, leg) => sum + (leg.fare?.premium_yen || 0), 0);
+      const distanceKm = Number((legs || []).reduce((sum, leg) => sum + (leg.fare?.distance_km || 0), 0).toFixed(3));
+      return {
+        model_version: V4_FARE_MODEL_VERSION,
+        source: 'estimated_v4_distance_model',
+        currency: 'JPY',
+        leg_count: (legs || []).length,
+        distance_km: distanceKm,
+        base_yen: baseYen,
+        premium_yen: premiumYen,
+        total_yen: totalYen,
+      };
+    }
+
     function transferEquivalenceLink(leftGroupId, rightGroupId) {
       if (leftGroupId === rightGroupId) {
         return { transferMinutes: 0, distanceMeters: 0, reason: 'same_station_group' };
@@ -12322,6 +12439,7 @@
       ];
       const steps = playerData.plan ? playerData.plan.steps : (playerData.actions || []);
       const resolvedActions = [];
+      const legs = [];
       for (let i = 0; i < steps.length; i += 1) {
         const action = steps[i];
         if (action.type === 'WAIT_UNTIL') {
@@ -12355,19 +12473,45 @@
           const alightStop = findAlightStop(currentTrip, currentBoardStop.sequence, action.station_id);
           if (!alightStop) throw new Error(`${currentTrip.id} does not reach ${action.station_id}`);
           const arrivalMinute = stopArrivalMinutes(alightStop);
+          const fare = estimateTripLegFare(currentTrip, currentBoardStop, alightStop);
+          const leg = {
+            leg_index: legs.length + 1,
+            board_step_index: i,
+            ride_step_index: i + 1,
+            trip_id: currentTrip.id,
+            trip_label: formatTripLabel(currentTrip),
+            from_station_id: currentBoardStop.stationGroupId,
+            from_label: displayNameForGroup(currentBoardStop.stationGroupId),
+            to_station_id: alightStop.stationGroupId,
+            to_label: displayNameForGroup(alightStop.stationGroupId),
+            board_hhmm: minutesToHhmm(stopDepartureMinutes(currentBoardStop)),
+            alight_hhmm: minutesToHhmm(arrivalMinute),
+            fare,
+          };
+          legs.push(leg);
           events.push(formatEvent(arrivalMinute, 'ALIGHT_TRAIN', playerId, {
             station_group_id: alightStop.stationGroupId,
             trip_id: currentTrip.id,
+            fare,
+            fare_total_yen: fare.total_yen,
             carrier_after: { kind: 'NODE', stationGroupId: alightStop.stationGroupId },
           }));
           currentMinute = arrivalMinute;
           currentStationId = alightStop.stationGroupId;
           currentTrip = null;
           currentBoardStop = null;
-          resolvedActions.push({ step_index: i + 1, ...action });
+          resolvedActions.push({ step_index: i + 1, ...action, fare });
         }
       }
-      return { player_id: playerId, start_station_id: playerData.start_station_id, resolved_actions: resolvedActions, events, final_station_id: currentStationId };
+      return {
+        player_id: playerId,
+        start_station_id: playerData.start_station_id,
+        resolved_actions: resolvedActions,
+        legs,
+        fare_summary: fareSummaryForLegs(legs),
+        events,
+        final_station_id: currentStationId,
+      };
     }
 
     function cloneCarrierState(carrierState) {
@@ -12481,6 +12625,14 @@
         scenario_id: scenario.id,
         dataset_id: state.bundle.metadata?.datasetId || 'v4_nationwide',
         capture: match.capture,
+        fare_summary: {
+          model_version: V4_FARE_MODEL_VERSION,
+          source: 'estimated_v4_distance_model',
+          currency: 'JPY',
+          runner_total_yen: runner.fare_summary?.total_yen || 0,
+          hunter_total_yen: hunter.fare_summary?.total_yen || 0,
+          combined_total_yen: (runner.fare_summary?.total_yen || 0) + (hunter.fare_summary?.total_yen || 0),
+        },
         match_event_log: match.match_event_log,
         players: { runner, hunter },
       };
@@ -12522,7 +12674,8 @@
         final_label: finalStationId ? displayNameForGroup(finalStationId) : replayFinalCarrierLabel(result.match_event_log, seat, player.start_station_id || livePlan.start_station_id),
         final_hhmm: replayFinalHhmm(result.match_event_log, seat),
         steps,
-        legs: [],
+        legs: cloneJson(player.legs || [], []),
+        fare_summary: cloneJson(player.fare_summary || fareSummaryForLegs(player.legs || []), {}),
         resolved_actions: cloneJson(player.resolved_actions || [], []),
       };
     }
@@ -12603,8 +12756,8 @@
         players: { runner, hunter },
         initial_state: replayInitialState(result.match_event_log),
         plans: {
-          runner: { start_station_id: runner.start_station_id, steps: cloneJson(runner.steps, []), legs: cloneJson(runner.legs, []) },
-          hunter: { start_station_id: hunter.start_station_id, steps: cloneJson(hunter.steps, []), legs: cloneJson(hunter.legs, []) },
+          runner: { start_station_id: runner.start_station_id, steps: cloneJson(runner.steps, []), legs: cloneJson(runner.legs, []), fare_summary: cloneJson(runner.fare_summary, {}) },
+          hunter: { start_station_id: hunter.start_station_id, steps: cloneJson(hunter.steps, []), legs: cloneJson(hunter.legs, []), fare_summary: cloneJson(hunter.fare_summary, {}) },
         },
         phase_events: replayPhaseEvents(result.match_event_log),
         events: cloneJson(result.match_event_log, []),
@@ -12612,6 +12765,7 @@
         result: {
           capture: cloneJson(result.capture, null),
           capture_summary: replayCaptureLineFromCapture(result.capture),
+          fare_summary: cloneJson(result.fare_summary, {}),
           online_phase: state.online.lastRoom?.phase || state.phase,
           online_time: minutesToHhmm(state.currentGameMinute),
           issues: [],
@@ -12661,16 +12815,21 @@
         scenario_id: record.scenario?.id || record.record_id || 'v4-shared-replay',
         dataset_id: record.dataset_id || state.bundle?.metadata?.datasetId || 'v4_nationwide',
         capture: cloneJson(record.result?.capture, null),
+        fare_summary: cloneJson(record.result?.fare_summary, {}),
         match_event_log: cloneJson(record.events || [], []),
         players: {
           runner: {
             start_station_id: record.players?.runner?.start_station_id || record.plans?.runner?.start_station_id,
             resolved_actions: cloneJson(record.players?.runner?.resolved_actions || [], []),
+            legs: cloneJson(record.players?.runner?.legs || record.plans?.runner?.legs || [], []),
+            fare_summary: cloneJson(record.players?.runner?.fare_summary || record.plans?.runner?.fare_summary || {}, {}),
             final_station_id: record.players?.runner?.final_station_id || null,
           },
           hunter: {
             start_station_id: record.players?.hunter?.start_station_id || record.plans?.hunter?.start_station_id,
             resolved_actions: cloneJson(record.players?.hunter?.resolved_actions || [], []),
+            legs: cloneJson(record.players?.hunter?.legs || record.plans?.hunter?.legs || [], []),
+            fare_summary: cloneJson(record.players?.hunter?.fare_summary || record.plans?.hunter?.fare_summary || {}, {}),
             final_station_id: record.players?.hunter?.final_station_id || null,
           },
         },
@@ -12890,6 +13049,8 @@
         const result = ensureReplayResult();
         const capture = result.capture;
         const lines = [`Scenario: ${result.scenario_id}`, `Events: ${result.match_event_log.length}`];
+        lines.push(`Runner fare: ¥${result.players?.runner?.fare_summary?.total_yen || 0}`);
+        lines.push(`Hunter fare: ¥${result.players?.hunter?.fare_summary?.total_yen || 0}`);
         if (!capture) lines.push('Capture: none');
         else if (capture.type === 'same_node') lines.push(`Capture: same_node at ${displayNameForGroup(capture.station_group_id)} ${capture.time_hhmm}`);
         else lines.push(`Capture: same_train on ${formatTripLabel(state.tripById.get(capture.trip_id) || { serviceName: capture.trip_id })} ${capture.time_hhmm}`);
