@@ -8910,6 +8910,7 @@
         source: 'station-labels',
         minzoom: 9.6,
         maxzoom: 12,
+        filter: ['>=', ['get', 'label_rank'], ['interpolate', ['linear'], ['zoom'], 9.6, 72, 11.9, 58]],
         layout: {
           'text-field': ['coalesce', ['get', 'name_ja'], ['get', 'name_en']],
           'text-font': ['Open Sans Regular'],
