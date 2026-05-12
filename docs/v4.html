@@ -1028,6 +1028,7 @@
           <div class="setup-field">
             <label for="single-start-station-select">Start Station</label>
             <select id="single-start-station-select" class="room-input">
+              <option value="random">Random</option>
               <option value="SG_N02G_003766">東京</option>
               <option value="SG_N02G_003700">新宿</option>
               <option value="SG_N02G_006079">京都</option>
@@ -7431,6 +7432,11 @@
     function selectedSinglePlayerStartStationId() {
       const select = document.getElementById('single-start-station-select');
       const value = select?.value || 'SG_N02G_003766';
+      if (value === 'random') {
+        const candidates = [...state.stationGroupById.keys()]
+          .filter((stationGroupId) => stationGroupCoordinate(stationGroupId));
+        return candidates[Math.floor(Math.random() * candidates.length)] || 'SG_N02G_003766';
+      }
       if (state.stationGroupById.has(value)) return value;
       return stationGroupIdByDisplayName(value || '東京');
     }
