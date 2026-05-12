@@ -20,7 +20,7 @@
 
 - Always read `STATUS.md` before starting work
 - Always update `STATUS.md` before ending work
-- Daily memory entries use full timestamps
+- Daily memory entries use full timestamps precise to the second, formatted as `YYYY-MM-DD HH:MM:SS ZZZ`
 - Stable project rules must be written into `AXIOMS.md`, not left only in chat
 - If a rule should change, ask Scorp first
 - Never edit an existing rule document in place; create a new versioned rule file instead
