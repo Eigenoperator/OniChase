@@ -8796,7 +8796,7 @@
         type: 'symbol',
         source: 'station-labels',
         minzoom: 2.6,
-        maxzoom: 10.8,
+        maxzoom: 10.7,
         filter: ['>=', ['get', 'label_rank'], 99],
         layout: {
           ...baseLayout,
@@ -8811,7 +8811,7 @@
         type: 'symbol',
         source: 'station-labels',
         minzoom: 3.8,
-        maxzoom: 10.8,
+        maxzoom: 10.7,
         filter: ['all', ['>=', ['get', 'label_rank'], 90], ['<', ['get', 'label_rank'], 99]],
         layout: {
           ...baseLayout,
@@ -8840,7 +8840,7 @@
         type: 'symbol',
         source: 'station-labels',
         minzoom: 9.4,
-        maxzoom: 10.8,
+        maxzoom: 10.7,
         filter: ['all', ['<', ['get', 'label_rank'], 90], ['>=', ['get', 'label_rank'], ['interpolate', ['linear'], ['zoom'], 9.4, 66, 11.4, 54, 12.2, 45]]],
         layout: {
           ...baseLayout,
@@ -8856,7 +8856,7 @@
         id: 'label-all-dense',
         type: 'symbol',
         source: 'station-labels',
-        minzoom: 24,
+        minzoom: 10.8,
         layout: {
           'text-field': ['coalesce', ['get', 'name_ja'], ['get', 'name_en']],
           'text-font': ['Open Sans Regular'],
@@ -11358,6 +11358,9 @@
       const map = state.map;
       const overlay = state.stationLabelOverlayEl;
       if (!map || !overlay) return;
+      overlay.classList.add('hidden');
+      overlay.replaceChildren();
+      return;
       const zoom = map.getZoom();
       if (zoom < 10.8) {
         overlay.classList.add('hidden');
