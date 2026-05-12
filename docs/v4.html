@@ -198,6 +198,19 @@
       background: rgba(255, 255, 255, 0.92);
     }
 
+    .setup-field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .setup-field label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
     .entry-status {
       border-radius: 18px;
       background: rgba(21, 101, 192, 0.08);
@@ -1005,6 +1018,18 @@
         <section class="entry-panel">
           <h3>Single Player</h3>
           <p>Start a local planning session in this browser.</p>
+          <div class="setup-field">
+            <label for="single-start-station-select">Start Station</label>
+            <select id="single-start-station-select" class="room-input">
+              <option value="東京">東京</option>
+              <option value="新宿">新宿</option>
+              <option value="京都">京都</option>
+              <option value="大阪">大阪</option>
+              <option value="博多">博多</option>
+              <option value="高松">高松</option>
+              <option value="札幌">札幌</option>
+            </select>
+          </div>
           <div class="button-row">
             <button id="single-runner-button" class="primary runner" type="button">Play Runner</button>
             <button id="single-hunter-button" class="hunter" type="button">Play Hunter</button>
@@ -5777,6 +5802,10 @@
       state.startTime = options.startTime || '06:00';
       state.endTime = options.endTime || '18:00';
       resetMatch();
+      if (options.startStationId && state.players[seat]) {
+        state.players[seat].start_station_id = options.startStationId;
+        state.players[seat].steps = [];
+      }
       state.tutorialMode = Boolean(options.tutorialMode);
       state.planningSecondsRemaining = options.planningSeconds ?? state.planningSecondsRemaining;
       state.activeMode = seat;
@@ -5786,7 +5815,7 @@
     }
 
     function enterSinglePlayer(seat) {
-      prepareLocalSession(seat);
+      prepareLocalSession(seat, { startStationId: selectedSinglePlayerStartStationId() });
       closeEntry();
       beginTimetableLoadSoon();
     }
@@ -7363,6 +7392,24 @@
       const group = state.stationGroupById.get(stationGroupId);
       const station = state.stationByGroupId.get(stationGroupId);
       return label?.displayNameJa || group?.names?.ja || station?.names?.ja || group?.primaryName || stationGroupId;
+    }
+
+    function stationGroupIdByDisplayName(stationName) {
+      const target = String(stationName || '').trim();
+      if (!target) return '';
+      for (const stationGroupId of state.stationGroupById.keys()) {
+        if (displayNameForGroup(stationGroupId) === target) return stationGroupId;
+      }
+      for (const [stationGroupId, group] of state.stationGroupById.entries()) {
+        const names = [group?.names?.ja, group?.primaryName].filter(Boolean);
+        if (names.includes(target)) return stationGroupId;
+      }
+      return '';
+    }
+
+    function selectedSinglePlayerStartStationId() {
+      const select = document.getElementById('single-start-station-select');
+      return stationGroupIdByDisplayName(select?.value || '東京');
     }
 
     function normalizedTransferStationName(name) {
