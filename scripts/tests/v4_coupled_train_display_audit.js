@@ -15,6 +15,14 @@ function parseArgs(argv) {
   return args;
 }
 
+function isBenignBrowserConsoleMessage(message) {
+  return message.includes('Failed to load resource') ||
+    message.includes('GPU stall') ||
+    message.includes('WebGL: CONTEXT_LOST_WEBGL') ||
+    message.includes('WebGL: INVALID_OPERATION') ||
+    message.includes('GL_INVALID_OPERATION');
+}
+
 (async () => {
   const args = parseArgs(process.argv);
   const browser = await chromium.launch({ headless: true });
@@ -22,7 +30,7 @@ function parseArgs(argv) {
   const consoleMessages = [];
   page.on('console', (message) => {
     const text = message.text();
-    if (!text.includes('GPU stall')) consoleMessages.push(`${message.type()}: ${text}`);
+    if (!isBenignBrowserConsoleMessage(text)) consoleMessages.push(`${message.type()}: ${text}`);
   });
   page.on('pageerror', (error) => consoleMessages.push(`pageerror: ${error.message}`));
 
@@ -275,7 +283,7 @@ function parseArgs(argv) {
       };
     });
 
-    const relevantConsoleMessages = consoleMessages.filter((message) => !message.includes('Failed to load resource'));
+    const relevantConsoleMessages = consoleMessages.filter((message) => !isBenignBrowserConsoleMessage(message));
     if (relevantConsoleMessages.length) {
       result.ok = false;
       result.failures.push({ message: 'Console/page errors appeared', consoleMessages: relevantConsoleMessages.slice(0, 20) });

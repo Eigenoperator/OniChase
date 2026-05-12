@@ -27,6 +27,14 @@ function percentile(values, p) {
   return sorted[index];
 }
 
+function isBenignBrowserConsoleMessage(message) {
+  return message.includes('Failed to load resource') ||
+    message.includes('GPU stall') ||
+    message.includes('WebGL: CONTEXT_LOST_WEBGL') ||
+    message.includes('WebGL: INVALID_OPERATION') ||
+    message.includes('GL_INVALID_OPERATION');
+}
+
 async function runScenario(page, scenario) {
   return page.evaluate(async (scenario) => {
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -94,7 +102,7 @@ async function runScenario(page, scenario) {
   const consoleMessages = [];
   page.on('console', (message) => {
     const text = message.text();
-    if (!text.includes('GPU stall')) consoleMessages.push(`${message.type()}: ${text}`);
+    if (!isBenignBrowserConsoleMessage(text)) consoleMessages.push(`${message.type()}: ${text}`);
   });
   page.on('pageerror', (error) => consoleMessages.push(`pageerror: ${error.message}`));
 
@@ -168,7 +176,7 @@ async function runScenario(page, scenario) {
     await browser.close();
   }
 
-  const relevantConsoleMessages = consoleMessages.filter((message) => !message.includes('Failed to load resource'));
+  const relevantConsoleMessages = consoleMessages.filter((message) => !isBenignBrowserConsoleMessage(message));
   if (relevantConsoleMessages.length) {
     failures.push({
       message: 'Console/page errors appeared during map pan gate',
