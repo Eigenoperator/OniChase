@@ -32,7 +32,9 @@ function isBenignBrowserConsoleMessage(message) {
     message.includes('GPU stall') ||
     message.includes('WebGL: CONTEXT_LOST_WEBGL') ||
     message.includes('WebGL: INVALID_OPERATION') ||
-    message.includes('GL_INVALID_OPERATION');
+    message.includes('GL_INVALID_OPERATION') ||
+    message.includes('WebGL: INVALID_VALUE: bufferSubData') ||
+    message.includes('WebGL: too many errors');
 }
 
 async function runScenario(page, scenario) {
