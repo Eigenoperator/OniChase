@@ -22,19 +22,23 @@ def load_json(path: Path) -> Any:
         return json.load(handle)
 
 
-def known_operator_ids(fare_rules: dict[str, Any]) -> set[str]:
+def known_operator_and_route_ids(fare_rules: dict[str, Any]) -> tuple[set[str], set[str]]:
     operators: set[str] = set()
+    routes: set[str] = set()
     for table in (fare_rules.get("ordinaryFareTables") or {}).values():
-        operators.update(table.get("operatorIds") or [])
+        if table.get("routeIds"):
+            routes.update(table.get("routeIds") or [])
+        else:
+            operators.update(table.get("operatorIds") or [])
     for mapping in (fare_rules.get("operatorFareMappings") or []):
         operators.update(mapping.get("operatorIds") or [])
     if {"jr_hokkaido", "jr_east", "jr_central", "jr_west", "jr_kyushu"} & operators:
         operators.add("shinkansen")
-    return operators
+    return operators, routes
 
 
 def audit(map_bundle: dict[str, Any], fare_rules: dict[str, Any]) -> dict[str, Any]:
-    covered_operator_ids = known_operator_ids(fare_rules)
+    covered_operator_ids, covered_route_ids = known_operator_and_route_ids(fare_rules)
     by_operator: dict[str, dict[str, Any]] = defaultdict(lambda: {
         "operatorId": "",
         "operatorNames": set(),
@@ -42,22 +46,27 @@ def audit(map_bundle: dict[str, Any], fare_rules: dict[str, Any]) -> dict[str, A
         "routeIds": [],
         "routeNames": [],
     })
+    route_covered_by_rule: dict[str, bool] = {}
     for route in map_bundle.get("serviceRoutes") or []:
         operator_id = route.get("operatorId") or ""
+        route_id = route.get("id") or ""
         item = by_operator[operator_id]
         item["operatorId"] = operator_id
         item["operatorNames"].add(route.get("operatorName") or operator_id)
         item["routeCount"] += 1
-        item["routeIds"].append(route.get("id"))
+        item["routeIds"].append(route_id)
         item["routeNames"].append(route.get("shortName") or route.get("longName") or route.get("id"))
+        route_covered_by_rule[route_id] = operator_id in covered_operator_ids or route_id in covered_route_ids
 
     operators = []
     for operator_id, item in by_operator.items():
-        covered = operator_id in covered_operator_ids
+        covered_route_count = sum(1 for route_id in item["routeIds"] if route_covered_by_rule.get(route_id))
+        covered = covered_route_count == item["routeCount"]
         operators.append({
             "operatorId": operator_id,
             "operatorNames": sorted(item["operatorNames"]),
             "routeCount": item["routeCount"],
+            "coveredRouteCount": covered_route_count,
             "coveredByRealFareRule": covered,
             "routeIds": item["routeIds"],
             "routeNames": sorted(set(item["routeNames"])),
@@ -73,8 +82,8 @@ def audit(map_bundle: dict[str, Any], fare_rules: dict[str, Any]) -> dict[str, A
         "coveredOperatorCount": len(covered),
         "missingOperatorCount": len(missing),
         "routeCount": sum(item["routeCount"] for item in operators),
-        "coveredRouteCount": sum(item["routeCount"] for item in covered),
-        "missingRouteCount": sum(item["routeCount"] for item in missing),
+        "coveredRouteCount": sum(item["coveredRouteCount"] for item in operators),
+        "missingRouteCount": sum(item["routeCount"] - item["coveredRouteCount"] for item in operators),
         "failureCount": len(missing),
         "operators": operators,
         "missingOperators": missing,

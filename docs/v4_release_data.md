@@ -11,6 +11,7 @@ The static website reads these files from `docs/data/`:
 - `v4_gameplay_manifest.json`: generated counts, source file names, defaults, and train normalization stats.
 - `v4_coupled_service_registry.json`: reviewed coupled-service rules used by v4 gameplay.
 - `v4_transfer_equivalence_review.json`: same-name transfer review data. Different-name walking transfers are intentionally not enabled in v4.
+- `v4_fare_rules.json`: collected real fare rules used by the gameplay fare ledger. Missing operators are marked unknown instead of estimated.
 - `v4_online_config.json`: optional room-server endpoint. Empty `server_url` means public multiplayer is not configured.
 
 The canonical working copies live in `data/` with the same names. `docs/data/` is the GitHub Pages deployment copy.
@@ -25,6 +26,8 @@ These artifacts are required to rebuild the current v4 gameplay bundle:
 - `data/v4_transfer_equivalence_review.json`
 - `scripts/ingest/build_v4_gameplay_bundle.py`
 - `scripts/ingest/build_v4_maplibre_sources.py`
+- `scripts/ingest/collect_v4_fare_rules.py`
+- `scripts/ingest/audit_v4_fare_rule_coverage.py`
 - `scripts/ingest/v4_visual_identity.py`
 
 Room-server multiplayer additionally requires:
@@ -62,6 +65,15 @@ Current manifest baseline:
 - compact trips: `111969`
 - skipped trains: `309`
 
+Fare rule baseline:
+
+- ordinary fare tables: `40`
+- limited express surcharge tables: `4`
+- covered routes: `382 / 604`
+- unresolved routes: `222 / 604`
+
+The unresolved routes are not estimated. Many remaining private/local railways publish station-pair matrices, special section fares, or add-on fares that cannot be represented exactly by the current distance-band fare resolver. Those routes must stay unknown until an exact station-pair/add-on fare model is added.
+
 ## Release Audit Artifacts
 
 The v4 release evidence is summarized by these JSON files:
@@ -75,6 +87,7 @@ The v4 release evidence is summarized by these JSON files:
 - `data/v4_hub_data_release.json`
 - `data/v4_performance_release.json`
 - `data/v4_map_pan_performance_release.json`
+- `data/v4_fare_rule_coverage_audit.json`
 
 Do not treat these audit outputs as gameplay source of truth. They are release evidence and regression snapshots.
 

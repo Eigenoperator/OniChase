@@ -7580,7 +7580,7 @@
       return row ? { yen: row[valueKey] || 0, row } : null;
     }
 
-    function fareRuleKeyForOperatorIds(operatorIds, trip = null) {
+    function fareRuleKeyForOperatorIds(operatorIds, trip = null, segments = []) {
       const ids = new Set((operatorIds || []).filter(Boolean));
       if (ids.has('shinkansen') || isShinkansenTrip(trip)) {
         const route = tripRoute(trip);
@@ -7591,7 +7591,14 @@
         return 'jr_east';
       }
       const ordinaryTables = state.fareRules?.ordinaryFareTables || {};
+      const routeIds = new Set((segments || []).map((segment) => segment.route_id).filter(Boolean));
+      const routeMatch = Object.entries(ordinaryTables).find(([_key, table]) => {
+        const coveredRouteIds = new Set((table.routeIds || []).filter(Boolean));
+        return routeIds.size > 0 && [...routeIds].every((id) => coveredRouteIds.has(id));
+      });
+      if (routeMatch) return routeMatch[0];
       const directMatch = Object.entries(ordinaryTables).find(([_key, table]) => {
+        if ((table.routeIds || []).length) return false;
         const coveredIds = new Set((table.operatorIds || []).filter(Boolean));
         return ids.size > 0 && [...ids].every((id) => coveredIds.has(id));
       });
@@ -7616,7 +7623,7 @@
     function collectedBaseFare(distanceKm, segments, trip) {
       const rules = state.fareRules;
       if (!rules?.ordinaryFareTables) return null;
-      const ruleKey = fareRuleKeyForOperatorIds(fareOperatorIdsForSegments(segments, trip), trip);
+      const ruleKey = fareRuleKeyForOperatorIds(fareOperatorIdsForSegments(segments, trip), trip, segments);
       const table = ruleKey ? rules.ordinaryFareTables?.[ruleKey]?.tables?.main : null;
       const value = fareBandValue(table?.rows, distanceKm, 'yen');
       return value ? {
@@ -7628,7 +7635,7 @@
     }
 
     function limitedExpressFareTableKey(trip, segments) {
-      const ruleKey = fareRuleKeyForOperatorIds(fareOperatorIdsForSegments(segments, trip), trip);
+      const ruleKey = fareRuleKeyForOperatorIds(fareOperatorIdsForSegments(segments, trip), trip, segments);
       if (ruleKey === 'jr_hokkaido') return 'a_hokkaido';
       if (ruleKey === 'jr_kyushu') return 'b_kyushu';
       if (ruleKey === 'jr_east' || ruleKey === 'jr_central_west') return 'a';
@@ -7649,7 +7656,7 @@
       } : null;
     }
 
-    function estimateTripLegFare(trip, boardStop, alightStop) {
+    function resolveTripLegFare(trip, boardStop, alightStop) {
       const segments = farePathSegmentsForLeg(trip, boardStop, alightStop);
       const distanceKm = Number(segments.reduce((sum, segment) => sum + (segment.distance_km || 0), 0).toFixed(3));
       const premiumType = farePremiumForTrip(trip);
@@ -12607,7 +12614,7 @@
           const alightStop = findAlightStop(currentTrip, currentBoardStop.sequence, action.station_id);
           if (!alightStop) throw new Error(`${currentTrip.id} does not reach ${action.station_id}`);
           const arrivalMinute = stopArrivalMinutes(alightStop);
-          const fare = estimateTripLegFare(currentTrip, currentBoardStop, alightStop);
+          const fare = resolveTripLegFare(currentTrip, currentBoardStop, alightStop);
           const leg = {
             leg_index: legs.length + 1,
             board_step_index: i,

@@ -16,6 +16,13 @@ V4 is a nationwide railway gameplay release. It is not a full Japanese mobility 
 - Non-Shinkansen coupled services use coupled-equivalence rules for gameplay and do not show an extra branch picker after a coupled train is selected. Shinkansen branch services keep their route identities visible while still supporting coupled train equivalence where required.
 - Sunrise, Narita Express, Kansai Airport/Kishuji Rapid, mini-Shinkansen, and selected JR West limited express cases have explicit handling. New cases should be added to audits before being trusted.
 
+## Fare Limits
+
+- V4 has a real fare ledger, not an estimated one. If a leg lacks a collected real fare rule, the fare is reported as unknown/null.
+- Current collected fare coverage is `382 / 604` service routes. The coverage audit is `data/v4_fare_rule_coverage_audit.json`.
+- Remaining private/local railway fares often require exact station-pair matrices, special-section fares, or airport/add-on fares. They must not be forced into distance bands unless the official rule can be represented exactly.
+- Limited express fare is modeled as ordinary base fare plus a collected limited express surcharge. JR conventional limited express uses the published reserved ordinary-car normal-season surcharge as the current default.
+
 ## Trace And Highlight Limits
 
 - Selected-train highlighting now trusts the train's real physical path. If source stop traces are incomplete, the highlight can only be as good as the trace.
