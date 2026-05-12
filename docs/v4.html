@@ -8408,9 +8408,8 @@
       const labelBuckets = new Map();
       stationFeatures.forEach((feature) => {
         const props = feature.properties || {};
-        const companyId = props.operator_id || 'unknown';
         const stationName = props.name_ja || props.name_en || props.station_group_id || props.id;
-        const key = `${companyId}|${props.station_group_id}|${stationName}`;
+        const key = `${props.station_group_id}|${stationName}`;
         if (!labelBuckets.has(key)) {
           labelBuckets.set(key, {
             key,
