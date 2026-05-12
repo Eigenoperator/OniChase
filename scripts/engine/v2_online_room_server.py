@@ -60,6 +60,8 @@ TIMETABLE_PATH: Path | None = None
 TRIP_STORE_PATH: Path | None = None
 DEFAULT_RUNNER_START_STATION_ID = "SG_TOKYO"
 DEFAULT_HUNTER_START_STATION_ID = "SG_SHIN_OSAKA"
+DEFAULT_PLANNING_GAP_SECONDS = 60
+DEFAULT_PLANNING_GAP_INTERVAL_MINUTES = 60
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -270,6 +272,14 @@ def minutes_to_hhmm(value: int) -> str:
     return f"{value // 60:02d}:{value % 60:02d}"
 
 
+def bounded_int(value: Any, fallback: int, minimum: int, maximum: int) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return fallback
+    return max(minimum, min(maximum, parsed))
+
+
 def stop_arrival_minutes(stop: Any) -> int:
     return int(stop_arrival_seconds(stop) / 60)
 
@@ -308,6 +318,8 @@ class RoomState:
     phase: str = "PLANNING"
     current_game_minute: int = 360
     next_planning_minute: int = 420
+    planning_gap_seconds: int = DEFAULT_PLANNING_GAP_SECONDS
+    planning_gap_interval_minutes: int = DEFAULT_PLANNING_GAP_INTERVAL_MINUTES
     players: dict[str, SeatState] = field(
         default_factory=lambda: {
             "runner": SeatState(seat="runner", start_station_id=DEFAULT_RUNNER_START_STATION_ID),
@@ -547,8 +559,8 @@ def advance_room(room: RoomState) -> None:
         if room.current_game_minute >= room.next_planning_minute:
             room.phase = "PLANNING"
             room.reset_ready()
-            room.planning_deadline_monotonic = time.monotonic() + 60
-            room.next_planning_minute = min(room.next_planning_minute + 60, end_minute)
+            room.planning_deadline_monotonic = time.monotonic() + room.planning_gap_seconds
+            room.next_planning_minute = min(room.next_planning_minute + room.planning_gap_interval_minutes, end_minute)
             return
 
 
@@ -557,17 +569,27 @@ class RoomRegistry:
         self._lock = threading.Lock()
         self._rooms: dict[str, RoomState] = {}
 
-    def create_room(self, start_time_hhmm: str, end_time_hhmm: str) -> RoomState:
+    def create_room(
+        self,
+        start_time_hhmm: str,
+        end_time_hhmm: str,
+        planning_gap_seconds: int = DEFAULT_PLANNING_GAP_SECONDS,
+        planning_gap_interval_minutes: int = DEFAULT_PLANNING_GAP_INTERVAL_MINUTES,
+    ) -> RoomState:
         with self._lock:
             room_id = make_room_id()
             while room_id in self._rooms:
                 room_id = make_room_id()
+            start_minute = hhmm_to_minutes(start_time_hhmm)
+            end_minute = hhmm_to_minutes(end_time_hhmm)
             room = RoomState(
                 room_id=room_id,
                 start_time_hhmm=start_time_hhmm,
                 end_time_hhmm=end_time_hhmm,
-                current_game_minute=hhmm_to_minutes(start_time_hhmm),
-                next_planning_minute=min(hhmm_to_minutes(start_time_hhmm) + 60, hhmm_to_minutes(end_time_hhmm)),
+                current_game_minute=start_minute,
+                next_planning_minute=min(start_minute + planning_gap_interval_minutes, end_minute),
+                planning_gap_seconds=planning_gap_seconds,
+                planning_gap_interval_minutes=planning_gap_interval_minutes,
                 phase_started_monotonic=time.monotonic(),
             )
             self._rooms[room_id] = room
@@ -659,7 +681,7 @@ class RoomRegistry:
                     room.match_started = True
                     room.phase = "PLANNING"
                     room.phase_started_monotonic = now
-                    room.planning_deadline_monotonic = now + 60
+                    room.planning_deadline_monotonic = now + room.planning_gap_seconds
                     room.live_capture = None
                     room.reset_ready()
                 elif room.phase == "PLANNING":
@@ -708,6 +730,8 @@ def room_payload(room: RoomState, viewer_seat: str | None = None) -> dict[str, A
         "current_time_hhmm": minutes_to_hhmm(room.current_game_minute),
         "next_planning_minute": room.next_planning_minute,
         "next_planning_hhmm": minutes_to_hhmm(room.next_planning_minute),
+        "planning_gap_seconds": room.planning_gap_seconds,
+        "planning_gap_interval_minutes": room.planning_gap_interval_minutes,
         "match_started": room.match_started,
         "capture": room.live_capture,
         "planning_seconds_remaining": (
@@ -814,6 +838,18 @@ class RoomRequestHandler(BaseHTTPRequestHandler):
             room = REGISTRY.create_room(
                 start_time_hhmm=body.get("start_time_hhmm", "06:00"),
                 end_time_hhmm=body.get("end_time_hhmm", "18:00"),
+                planning_gap_seconds=bounded_int(
+                    body.get("planningGapSeconds", body.get("planning_gap_seconds")),
+                    DEFAULT_PLANNING_GAP_SECONDS,
+                    15,
+                    300,
+                ),
+                planning_gap_interval_minutes=bounded_int(
+                    body.get("planningGapIntervalMinutes", body.get("planning_gap_interval_minutes")),
+                    DEFAULT_PLANNING_GAP_INTERVAL_MINUTES,
+                    30,
+                    240,
+                ),
             )
             self._send_json(
                 HTTPStatus.CREATED,

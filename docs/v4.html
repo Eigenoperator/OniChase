@@ -1019,6 +1019,13 @@
           <h3>Single Player</h3>
           <p>Start a local planning session in this browser.</p>
           <div class="setup-field">
+            <label for="planning-gap-select">Planning Gap</label>
+            <select id="planning-gap-select" class="room-input">
+              <option value="classic">Original · 60s every 1h</option>
+              <option value="short">Short Gap · 30s every 2h</option>
+            </select>
+          </div>
+          <div class="setup-field">
             <label for="single-start-station-select">Start Station</label>
             <select id="single-start-station-select" class="room-input">
               <option value="SG_N02G_003766">東京</option>
@@ -5448,6 +5455,8 @@
       trainOutlookHtml: '',
       phase: 'PLANNING',
       planningSecondsRemaining: 60,
+      planningGapSeconds: 60,
+      planningGapIntervalMinutes: 60,
       currentGameMinute: 360,
       startTime: '06:00',
       endTime: '18:00',
@@ -5801,6 +5810,9 @@
       };
       state.startTime = options.startTime || '06:00';
       state.endTime = options.endTime || '18:00';
+      const gapConfig = options.gapConfig || selectedPlanningGapConfig();
+      state.planningGapSeconds = gapConfig.planningGapSeconds || 60;
+      state.planningGapIntervalMinutes = gapConfig.planningGapIntervalMinutes || 60;
       resetMatch();
       if (options.startStationId && state.players[seat]) {
         state.players[seat].start_station_id = options.startStationId;
@@ -5815,7 +5827,10 @@
     }
 
     function enterSinglePlayer(seat) {
-      prepareLocalSession(seat, { startStationId: selectedSinglePlayerStartStationId() });
+      prepareLocalSession(seat, {
+        startStationId: selectedSinglePlayerStartStationId(),
+        gapConfig: selectedPlanningGapConfig(),
+      });
       closeEntry();
       beginTimetableLoadSoon();
     }
@@ -6003,6 +6018,8 @@
       state.endTime = room.end_time_hhmm;
       state.currentGameMinute = room.current_game_minute;
       state.nextPlanningMinute = room.next_planning_minute;
+      state.planningGapSeconds = room.planning_gap_seconds || 60;
+      state.planningGapIntervalMinutes = room.planning_gap_interval_minutes || 60;
       if (room.planning_seconds_remaining !== null && room.planning_seconds_remaining !== undefined) {
         state.planningSecondsRemaining = room.planning_seconds_remaining;
       }
@@ -6072,7 +6089,11 @@
         }
         const created = await apiJson(`${state.online.serverUrl}/api/rooms`, {
           method: 'POST',
-          body: JSON.stringify({ start_time_hhmm: state.startTime, end_time_hhmm: state.endTime }),
+          body: JSON.stringify({
+            start_time_hhmm: state.startTime,
+            end_time_hhmm: state.endTime,
+            ...selectedPlanningGapConfig(),
+          }),
         });
         state.online.roomId = created.room.room_id;
         roomIdInput.value = created.room.room_id;
@@ -7412,6 +7433,18 @@
       const value = select?.value || 'SG_N02G_003766';
       if (state.stationGroupById.has(value)) return value;
       return stationGroupIdByDisplayName(value || '東京');
+    }
+
+    function selectedPlanningGapConfig() {
+      const select = document.getElementById('planning-gap-select');
+      if (select?.value === 'short') {
+        return { planningGapSeconds: 30, planningGapIntervalMinutes: 120 };
+      }
+      return { planningGapSeconds: 60, planningGapIntervalMinutes: 60 };
+    }
+
+    function nextPlanningMinuteFrom(currentMinute, endMinute) {
+      return Math.min(currentMinute + state.planningGapIntervalMinutes, endMinute);
     }
 
     function normalizedTransferStationName(name) {
@@ -11551,8 +11584,8 @@
             state.currentGameMinute < endMinute
           ) {
             state.phase = 'PLANNING';
-            state.planningSecondsRemaining = 60;
-            state.nextPlanningMinute = Math.min(state.nextPlanningMinute + 60, endMinute);
+            state.planningSecondsRemaining = state.planningGapSeconds;
+            state.nextPlanningMinute = nextPlanningMinuteFrom(state.nextPlanningMinute, endMinute);
           }
         } else {
           state.phase = 'ENDED';
@@ -11605,9 +11638,9 @@
         hunter: { start_station_id: hunterStart, input_mode: 'plan', steps: [] },
       };
       state.phase = 'PLANNING';
-      state.planningSecondsRemaining = 60;
+      state.planningSecondsRemaining = state.planningGapSeconds;
       state.currentGameMinute = hhmmToMinutes(state.startTime);
-      state.nextPlanningMinute = Math.min(hhmmToMinutes(state.startTime) + 60, hhmmToMinutes(state.endTime));
+      state.nextPlanningMinute = nextPlanningMinuteFrom(hhmmToMinutes(state.startTime), hhmmToMinutes(state.endTime));
       state.clockRunning = false;
       state.pendingTripIds = { runner: null, hunter: null };
       state.planningRouteIds = { runner: null, hunter: null };
@@ -14015,7 +14048,7 @@
         hunter: { start_station_id: hunterStart, input_mode: 'plan', steps: [] },
       };
       state.currentGameMinute = hhmmToMinutes(state.startTime);
-      state.nextPlanningMinute = Math.min(hhmmToMinutes(state.startTime) + 60, hhmmToMinutes(state.endTime));
+      state.nextPlanningMinute = nextPlanningMinuteFrom(hhmmToMinutes(state.startTime), hhmmToMinutes(state.endTime));
       const collections = makeFeatureCollections(bundle);
       const map = createMap();
       state.map = map;
