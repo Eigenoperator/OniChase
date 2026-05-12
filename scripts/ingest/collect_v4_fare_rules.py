@@ -254,7 +254,7 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "limitedExpressSurchargeTables": limited_tables,
         "coverageNotes": [
             "JR ordinary fare tables and conventional limited express surcharge tables are collected from published fare-rule pages.",
-            "The game fare resolver uses these tables for JR distance-band legs and falls back to the existing distance estimate where no collected operator table exists.",
+            "The game fare resolver uses these tables for JR distance-band legs and marks fare as unknown where no collected operator table exists.",
             "Limited express fare is represented as base fare plus surcharge; reserved ordinary-car normal-season surcharge is used as the default.",
         ],
     }

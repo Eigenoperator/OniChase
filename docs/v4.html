@@ -7508,12 +7508,7 @@
       return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    const V4_FARE_MODEL_VERSION = 'v4_estimated_rail_fare_2026_05';
-
-    function roundFareYen(value) {
-      if (!Number.isFinite(value) || value <= 0) return 0;
-      return Math.ceil(value / 10) * 10;
-    }
+    const V4_FARE_MODEL_VERSION = 'v4_real_fare_rules_2026_05';
 
     function coordinatePathDistanceMeters(coordinates) {
       if (!coordinates?.length || coordinates.length < 2) return 0;
@@ -7575,18 +7570,6 @@
       if (isShinkansenTrip(trip)) return 'shinkansen';
       if (isLimitedExpressTrip(trip)) return 'limited_express';
       return 'none';
-    }
-
-    function estimatedBaseFareYen(distanceKm) {
-      if (!Number.isFinite(distanceKm) || distanceKm <= 0) return 0;
-      return roundFareYen(Math.max(150, 140 + (distanceKm * 15.5)));
-    }
-
-    function estimatedPremiumFareYen(distanceKm, premiumType) {
-      if (!Number.isFinite(distanceKm) || distanceKm <= 0) return 0;
-      if (premiumType === 'shinkansen') return roundFareYen(Math.max(870, 800 + (distanceKm * 7.5)));
-      if (premiumType === 'limited_express') return roundFareYen(Math.max(520, 450 + (distanceKm * 5.5)));
-      return 0;
     }
 
     function fareBandValue(rows, distanceKm, valueKey = 'yen') {
@@ -7666,20 +7649,19 @@
       const premiumType = farePremiumForTrip(trip);
       const collectedBase = collectedBaseFare(distanceKm, segments, trip);
       const collectedPremium = collectedPremiumFare(distanceKm, premiumType, trip, segments);
-      const baseYen = collectedBase?.yen ?? estimatedBaseFareYen(distanceKm);
-      const premiumYen = collectedPremium?.yen ?? estimatedPremiumFareYen(distanceKm, premiumType);
-      const baseSource = collectedBase?.source || 'estimated_v4_distance_model';
+      const baseYen = collectedBase?.yen ?? null;
+      const premiumYen = premiumType === 'none' ? 0 : (collectedPremium?.yen ?? null);
+      const baseSource = collectedBase?.source || 'missing_real_base_fare_rule';
       const premiumSource = premiumType === 'none'
         ? 'none'
-        : (collectedPremium?.source || 'estimated_v4_distance_model');
-      const source = [baseSource, premiumSource].every((item) => item === 'none' || item.startsWith('collected_'))
-        ? 'collected_fare_rules'
-        : (baseSource.startsWith('collected_') || premiumSource.startsWith('collected_')
-          ? 'mixed_collected_and_estimated_fare_rules'
-          : 'estimated_v4_distance_model');
+        : (collectedPremium?.source || 'missing_real_premium_fare_rule');
+      const missingReasons = [];
+      if (baseYen === null) missingReasons.push('missing_real_base_fare_rule');
+      if (premiumYen === null) missingReasons.push(`missing_real_${premiumType}_fare_rule`);
+      const totalYen = missingReasons.length ? null : baseYen + premiumYen;
       return {
         model_version: state.fareRules?.modelVersion || V4_FARE_MODEL_VERSION,
-        source,
+        source: missingReasons.length ? 'missing_real_fare_rule' : 'collected_fare_rules',
         currency: 'JPY',
         distance_km: distanceKm,
         base_yen: baseYen,
@@ -7689,25 +7671,33 @@
         premium_yen: premiumYen,
         premium_source: premiumSource,
         premium_rule_key: collectedPremium?.tableKey || null,
-        total_yen: baseYen + premiumYen,
+        total_yen: totalYen,
+        fare_known: missingReasons.length === 0,
+        missing_reasons: missingReasons,
         segments,
       };
     }
 
     function fareSummaryForLegs(legs) {
-      const totalYen = (legs || []).reduce((sum, leg) => sum + (leg.fare?.total_yen || 0), 0);
-      const baseYen = (legs || []).reduce((sum, leg) => sum + (leg.fare?.base_yen || 0), 0);
-      const premiumYen = (legs || []).reduce((sum, leg) => sum + (leg.fare?.premium_yen || 0), 0);
+      const knownLegs = (legs || []).filter((leg) => leg.fare?.fare_known);
+      const unknownLegs = (legs || []).filter((leg) => !leg.fare?.fare_known);
+      const totalYen = unknownLegs.length ? null : knownLegs.reduce((sum, leg) => sum + (leg.fare?.total_yen || 0), 0);
+      const baseYen = knownLegs.reduce((sum, leg) => sum + (leg.fare?.base_yen || 0), 0);
+      const premiumYen = knownLegs.reduce((sum, leg) => sum + (leg.fare?.premium_yen || 0), 0);
       const distanceKm = Number((legs || []).reduce((sum, leg) => sum + (leg.fare?.distance_km || 0), 0).toFixed(3));
       return {
-        model_version: V4_FARE_MODEL_VERSION,
-        source: 'estimated_v4_distance_model',
+        model_version: state.fareRules?.modelVersion || V4_FARE_MODEL_VERSION,
+        source: unknownLegs.length ? 'missing_real_fare_rule' : 'collected_fare_rules',
         currency: 'JPY',
         leg_count: (legs || []).length,
+        known_leg_count: knownLegs.length,
+        unknown_leg_count: unknownLegs.length,
         distance_km: distanceKm,
         base_yen: baseYen,
         premium_yen: premiumYen,
         total_yen: totalYen,
+        fare_known: unknownLegs.length === 0,
+        missing_reasons: [...new Set(unknownLegs.flatMap((leg) => leg.fare?.missing_reasons || []))],
       };
     }
 
@@ -7774,7 +7764,7 @@
         const response = await fetch(FARE_RULES_URL, { cache: 'no-store' });
         if (response.ok) payload = await response.json();
       } catch (error) {
-        console.warn('Fare rules unavailable; using estimated fare fallback.', error);
+        console.warn('Fare rules unavailable; fares without collected rules will be marked unknown.', error);
       }
       state.fareRules = payload;
     }
@@ -12759,17 +12749,25 @@
       const runner = expandPlayerPlan('runner', scenario.players.runner, scenario);
       const hunter = expandPlayerPlan('hunter', scenario.players.hunter, scenario);
       const match = buildMatchEventLog(scenario, runner, hunter);
+      const combinedFareKnown = Boolean(runner.fare_summary?.fare_known && hunter.fare_summary?.fare_known);
       return {
         scenario_id: scenario.id,
         dataset_id: state.bundle.metadata?.datasetId || 'v4_nationwide',
         capture: match.capture,
         fare_summary: {
-          model_version: V4_FARE_MODEL_VERSION,
-          source: 'estimated_v4_distance_model',
+          model_version: state.fareRules?.modelVersion || V4_FARE_MODEL_VERSION,
+          source: combinedFareKnown ? 'collected_fare_rules' : 'missing_real_fare_rule',
           currency: 'JPY',
-          runner_total_yen: runner.fare_summary?.total_yen || 0,
-          hunter_total_yen: hunter.fare_summary?.total_yen || 0,
-          combined_total_yen: (runner.fare_summary?.total_yen || 0) + (hunter.fare_summary?.total_yen || 0),
+          runner_total_yen: runner.fare_summary?.total_yen ?? null,
+          hunter_total_yen: hunter.fare_summary?.total_yen ?? null,
+          combined_total_yen: combinedFareKnown
+            ? (runner.fare_summary.total_yen + hunter.fare_summary.total_yen)
+            : null,
+          fare_known: combinedFareKnown,
+          missing_reasons: [...new Set([
+            ...(runner.fare_summary?.missing_reasons || []),
+            ...(hunter.fare_summary?.missing_reasons || []),
+          ])],
         },
         match_event_log: match.match_event_log,
         players: { runner, hunter },
@@ -13099,6 +13097,10 @@
       return state.latestResult;
     }
 
+    function formatFareYen(value) {
+      return Number.isFinite(value) ? `¥${value}` : 'unknown';
+    }
+
     async function copyTextToClipboard(text) {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
@@ -13187,8 +13189,8 @@
         const result = ensureReplayResult();
         const capture = result.capture;
         const lines = [`Scenario: ${result.scenario_id}`, `Events: ${result.match_event_log.length}`];
-        lines.push(`Runner fare: ¥${result.players?.runner?.fare_summary?.total_yen || 0}`);
-        lines.push(`Hunter fare: ¥${result.players?.hunter?.fare_summary?.total_yen || 0}`);
+        lines.push(`Runner fare: ${formatFareYen(result.players?.runner?.fare_summary?.total_yen)}`);
+        lines.push(`Hunter fare: ${formatFareYen(result.players?.hunter?.fare_summary?.total_yen)}`);
         if (!capture) lines.push('Capture: none');
         else if (capture.type === 'same_node') lines.push(`Capture: same_node at ${displayNameForGroup(capture.station_group_id)} ${capture.time_hhmm}`);
         else lines.push(`Capture: same_train on ${formatTripLabel(state.tripById.get(capture.trip_id) || { serviceName: capture.trip_id })} ${capture.time_hhmm}`);
