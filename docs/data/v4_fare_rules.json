@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-12T20:24:08.249239+00:00",
+  "generatedAt": "2026-05-12T20:37:51.998532+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -62,6 +62,116 @@
       "reason": "JR East official explanation: limited express requires an express ticket, conventional limited express charges are by riding distance.",
       "kind": "official_reference",
       "fetchError": "403 Client Error: Forbidden for url: https://www.jreast.co.jp/kippu/1203.html"
+    },
+    {
+      "key": "kintetsu",
+      "url": "https://www.kintetsu.co.jp/gyoumu/kippu/pdf/kirotei_20260314.pdf",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "近畿日本鉄道"
+      ],
+      "operatorName": "近畿日本鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.kintetsu.co.jp_gyoumu_kippu_pdf_kirotei_20260314.pdf.html"
+    },
+    {
+      "key": "tobu",
+      "url": "https://www.tobu.co.jp/pdf/ticket/unchinTable.pdf?2023=",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "tobu"
+      ],
+      "operatorName": "東武鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.tobu.co.jp_pdf_ticket_unchinTable.pdf_2023.html"
+    },
+    {
+      "key": "seibu",
+      "url": "https://www.seiburailway.jp/file.jsp?file%2F202603_fare_bykm.pdf=",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "seibu"
+      ],
+      "operatorName": "西武鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.seiburailway.jp_file.jsp_file_2F202603_fare_bykm.pdf.html"
+    },
+    {
+      "key": "tokyu",
+      "url": "https://www.tokyu.co.jp/railway/ticket/fares/?vm=r",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "tokyu"
+      ],
+      "operatorName": "東急電鉄",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.tokyu.co.jp_railway_ticket_fares_vm_r.html"
+    },
+    {
+      "key": "tokyo_metro",
+      "url": "https://www.tokyometro.jp/ticket/types/regular/index.html",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "tokyo_metro"
+      ],
+      "operatorName": "東京地下鉄",
+      "extraction": "manual_from_official_source",
+      "fetchError": "403 Client Error: Forbidden for url: https://www.tokyometro.jp/ticket/types/regular/index.html"
+    },
+    {
+      "key": "toei_subway",
+      "url": "https://www.kotsu.metro.tokyo.jp/subway/fare/regular.html",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "toei"
+      ],
+      "operatorName": "東京都交通局",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.kotsu.metro.tokyo.jp_subway_fare_regular.html.html"
+    },
+    {
+      "key": "osaka_metro",
+      "url": "https://subway.osakametro.co.jp/guide/fare/fare/price.php",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "大阪市高速電気軌道"
+      ],
+      "operatorName": "Osaka Metro",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_subway.osakametro.co.jp_guide_fare_fare_price.php.html"
+    },
+    {
+      "key": "keio",
+      "url": "https://www.keio.co.jp/train/ticket/fare_chart/fare_chart_km.html",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "keio"
+      ],
+      "operatorName": "京王電鉄",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.keio.co.jp_train_ticket_fare_chart_fare_chart_km.html.html"
+    },
+    {
+      "key": "sotetsu",
+      "url": "https://www.sotetsu.co.jp/media/2019/trans/train/search/pdf/kiro_fares.pdf",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "sotetsu"
+      ],
+      "operatorName": "相模鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.sotetsu.co.jp_media_2019_trans_train_search_pdf_kiro_fares.pdf.html"
+    },
+    {
+      "key": "nagoya_subway",
+      "url": "https://www.kotsu.city.nagoya.jp/rp/subway/trp0000172.htm",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "名古屋市"
+      ],
+      "operatorName": "名古屋市交通局",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.kotsu.city.nagoya.jp_rp_subway_trp0000172.htm.html"
     }
   ],
   "ordinaryFareTables": {
@@ -2206,6 +2316,797 @@
               "fromKm": 961,
               "toKm": 1000,
               "yen": 13640
+            }
+          ]
+        }
+      }
+    },
+    "kintetsu": {
+      "operatorIds": [
+        "近畿日本鉄道"
+      ],
+      "sourceKey": "kintetsu",
+      "operatorName": "近畿日本鉄道",
+      "notes": [
+        "普通旅客運賃・鉄軌道線の大人普通運賃。吉野線/湯の山線/志摩線、鳥羽線、けいはんな線などの加算運賃は未適用。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 3,
+              "yen": 180
+            },
+            {
+              "fromKm": 4,
+              "toKm": 6,
+              "yen": 240
+            },
+            {
+              "fromKm": 7,
+              "toKm": 10,
+              "yen": 300
+            },
+            {
+              "fromKm": 11,
+              "toKm": 14,
+              "yen": 360
+            },
+            {
+              "fromKm": 15,
+              "toKm": 18,
+              "yen": 430
+            },
+            {
+              "fromKm": 19,
+              "toKm": 22,
+              "yen": 490
+            },
+            {
+              "fromKm": 23,
+              "toKm": 26,
+              "yen": 530
+            },
+            {
+              "fromKm": 27,
+              "toKm": 30,
+              "yen": 590
+            },
+            {
+              "fromKm": 31,
+              "toKm": 35,
+              "yen": 680
+            },
+            {
+              "fromKm": 36,
+              "toKm": 40,
+              "yen": 760
+            },
+            {
+              "fromKm": 41,
+              "toKm": 45,
+              "yen": 830
+            },
+            {
+              "fromKm": 46,
+              "toKm": 50,
+              "yen": 910
+            },
+            {
+              "fromKm": 51,
+              "toKm": 55,
+              "yen": 1000
+            },
+            {
+              "fromKm": 56,
+              "toKm": 60,
+              "yen": 1070
+            },
+            {
+              "fromKm": 61,
+              "toKm": 65,
+              "yen": 1140
+            },
+            {
+              "fromKm": 66,
+              "toKm": 70,
+              "yen": 1210
+            },
+            {
+              "fromKm": 71,
+              "toKm": 75,
+              "yen": 1290
+            },
+            {
+              "fromKm": 76,
+              "toKm": 80,
+              "yen": 1370
+            },
+            {
+              "fromKm": 81,
+              "toKm": 85,
+              "yen": 1450
+            },
+            {
+              "fromKm": 86,
+              "toKm": 90,
+              "yen": 1530
+            },
+            {
+              "fromKm": 91,
+              "toKm": 95,
+              "yen": 1600
+            },
+            {
+              "fromKm": 96,
+              "toKm": 100,
+              "yen": 1670
+            },
+            {
+              "fromKm": 101,
+              "toKm": 110,
+              "yen": 1740
+            },
+            {
+              "fromKm": 111,
+              "toKm": 120,
+              "yen": 1880
+            },
+            {
+              "fromKm": 121,
+              "toKm": 130,
+              "yen": 2040
+            },
+            {
+              "fromKm": 131,
+              "toKm": 140,
+              "yen": 2170
+            },
+            {
+              "fromKm": 141,
+              "toKm": 150,
+              "yen": 2310
+            },
+            {
+              "fromKm": 151,
+              "toKm": 160,
+              "yen": 2430
+            },
+            {
+              "fromKm": 161,
+              "toKm": 170,
+              "yen": 2560
+            },
+            {
+              "fromKm": 171,
+              "toKm": 180,
+              "yen": 2710
+            },
+            {
+              "fromKm": 181,
+              "toKm": 190,
+              "yen": 2860
+            },
+            {
+              "fromKm": 191,
+              "toKm": 200,
+              "yen": 3000
+            },
+            {
+              "fromKm": 201,
+              "toKm": 210,
+              "yen": 3130
+            },
+            {
+              "fromKm": 211,
+              "toKm": 220,
+              "yen": 3280
+            },
+            {
+              "fromKm": 221,
+              "toKm": 230,
+              "yen": 3410
+            },
+            {
+              "fromKm": 231,
+              "toKm": 240,
+              "yen": 3560
+            },
+            {
+              "fromKm": 241,
+              "toKm": 250,
+              "yen": 3690
+            }
+          ]
+        }
+      }
+    },
+    "tobu": {
+      "operatorIds": [
+        "tobu"
+      ],
+      "sourceKey": "tobu",
+      "operatorName": "東武鉄道",
+      "notes": [
+        "大人普通運賃。運賃計算キロによる距離分段。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 4,
+              "yen": 160
+            },
+            {
+              "fromKm": 5,
+              "toKm": 7,
+              "yen": 180
+            },
+            {
+              "fromKm": 8,
+              "toKm": 10,
+              "yen": 210
+            },
+            {
+              "fromKm": 11,
+              "toKm": 15,
+              "yen": 270
+            },
+            {
+              "fromKm": 16,
+              "toKm": 20,
+              "yen": 330
+            },
+            {
+              "fromKm": 21,
+              "toKm": 25,
+              "yen": 380
+            },
+            {
+              "fromKm": 26,
+              "toKm": 30,
+              "yen": 430
+            },
+            {
+              "fromKm": 31,
+              "toKm": 35,
+              "yen": 490
+            },
+            {
+              "fromKm": 36,
+              "toKm": 40,
+              "yen": 540
+            },
+            {
+              "fromKm": 41,
+              "toKm": 45,
+              "yen": 610
+            },
+            {
+              "fromKm": 46,
+              "toKm": 50,
+              "yen": 670
+            },
+            {
+              "fromKm": 51,
+              "toKm": 60,
+              "yen": 750
+            },
+            {
+              "fromKm": 61,
+              "toKm": 70,
+              "yen": 830
+            },
+            {
+              "fromKm": 71,
+              "toKm": 80,
+              "yen": 920
+            },
+            {
+              "fromKm": 81,
+              "toKm": 90,
+              "yen": 1000
+            },
+            {
+              "fromKm": 91,
+              "toKm": 100,
+              "yen": 1090
+            },
+            {
+              "fromKm": 101,
+              "toKm": 120,
+              "yen": 1230
+            },
+            {
+              "fromKm": 121,
+              "toKm": 140,
+              "yen": 1400
+            },
+            {
+              "fromKm": 141,
+              "toKm": 178,
+              "yen": 1590
+            }
+          ]
+        }
+      }
+    },
+    "seibu": {
+      "operatorIds": [
+        "seibu"
+      ],
+      "sourceKey": "seibu",
+      "operatorName": "西武鉄道",
+      "notes": [
+        "2025年7月改定後の大人普通旅客運賃・きっぷ10円単位。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 4,
+              "yen": 170
+            },
+            {
+              "fromKm": 5,
+              "toKm": 8,
+              "yen": 210
+            },
+            {
+              "fromKm": 9,
+              "toKm": 12,
+              "yen": 250
+            },
+            {
+              "fromKm": 13,
+              "toKm": 16,
+              "yen": 290
+            },
+            {
+              "fromKm": 17,
+              "toKm": 20,
+              "yen": 330
+            },
+            {
+              "fromKm": 21,
+              "toKm": 24,
+              "yen": 370
+            },
+            {
+              "fromKm": 25,
+              "toKm": 28,
+              "yen": 410
+            },
+            {
+              "fromKm": 29,
+              "toKm": 32,
+              "yen": 450
+            },
+            {
+              "fromKm": 33,
+              "toKm": 36,
+              "yen": 490
+            },
+            {
+              "fromKm": 37,
+              "toKm": 40,
+              "yen": 530
+            },
+            {
+              "fromKm": 41,
+              "toKm": 44,
+              "yen": 560
+            },
+            {
+              "fromKm": 45,
+              "toKm": 48,
+              "yen": 600
+            },
+            {
+              "fromKm": 49,
+              "toKm": 52,
+              "yen": 630
+            },
+            {
+              "fromKm": 53,
+              "toKm": 56,
+              "yen": 660
+            },
+            {
+              "fromKm": 57,
+              "toKm": 60,
+              "yen": 690
+            },
+            {
+              "fromKm": 61,
+              "toKm": 64,
+              "yen": 710
+            },
+            {
+              "fromKm": 65,
+              "toKm": 68,
+              "yen": 740
+            },
+            {
+              "fromKm": 69,
+              "toKm": 72,
+              "yen": 760
+            },
+            {
+              "fromKm": 73,
+              "toKm": 76,
+              "yen": 790
+            },
+            {
+              "fromKm": 77,
+              "toKm": 81,
+              "yen": 800
+            }
+          ]
+        }
+      }
+    },
+    "tokyu": {
+      "operatorIds": [
+        "tokyu"
+      ],
+      "sourceKey": "tokyu",
+      "operatorName": "東急電鉄",
+      "notes": [
+        "片道普通旅客運賃表の大人きっぷ10円単位。世田谷線/こどもの国線は均一運賃だが、この距離表とは別体系。",
+        "東急新横浜線の加算運賃は未適用。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 3,
+              "yen": 140
+            },
+            {
+              "fromKm": 4,
+              "toKm": 7,
+              "yen": 180
+            },
+            {
+              "fromKm": 8,
+              "toKm": 11,
+              "yen": 230
+            },
+            {
+              "fromKm": 12,
+              "toKm": 15,
+              "yen": 250
+            },
+            {
+              "fromKm": 16,
+              "toKm": 20,
+              "yen": 290
+            },
+            {
+              "fromKm": 21,
+              "toKm": 25,
+              "yen": 310
+            },
+            {
+              "fromKm": 26,
+              "toKm": 30,
+              "yen": 350
+            },
+            {
+              "fromKm": 31,
+              "toKm": 35,
+              "yen": 390
+            },
+            {
+              "fromKm": 36,
+              "toKm": 40,
+              "yen": 430
+            }
+          ]
+        }
+      }
+    },
+    "tokyo_metro": {
+      "operatorIds": [
+        "tokyo_metro"
+      ],
+      "sourceKey": "tokyo_metro",
+      "operatorName": "東京地下鉄",
+      "notes": [
+        "東京メトロ普通旅客運賃・きっぷ10円単位。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 6,
+              "yen": 180
+            },
+            {
+              "fromKm": 7,
+              "toKm": 11,
+              "yen": 210
+            },
+            {
+              "fromKm": 12,
+              "toKm": 19,
+              "yen": 260
+            },
+            {
+              "fromKm": 20,
+              "toKm": 27,
+              "yen": 300
+            },
+            {
+              "fromKm": 28,
+              "toKm": 40,
+              "yen": 330
+            }
+          ]
+        }
+      }
+    },
+    "toei_subway": {
+      "operatorIds": [
+        "toei"
+      ],
+      "sourceKey": "toei_subway",
+      "operatorName": "東京都交通局",
+      "notes": [
+        "都営地下鉄普通旅客運賃・きっぷ10円単位。都電荒川線と日暮里・舎人ライナーは別体系のため未適用リスクあり。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 4,
+              "yen": 180
+            },
+            {
+              "fromKm": 5,
+              "toKm": 9,
+              "yen": 220
+            },
+            {
+              "fromKm": 10,
+              "toKm": 15,
+              "yen": 280
+            },
+            {
+              "fromKm": 16,
+              "toKm": 21,
+              "yen": 330
+            },
+            {
+              "fromKm": 22,
+              "toKm": 27,
+              "yen": 380
+            },
+            {
+              "fromKm": 28,
+              "toKm": 46,
+              "yen": 430
+            }
+          ]
+        }
+      }
+    },
+    "osaka_metro": {
+      "operatorIds": [
+        "大阪市高速電気軌道"
+      ],
+      "sourceKey": "osaka_metro",
+      "operatorName": "Osaka Metro",
+      "notes": [
+        "Osaka Metro普通運賃の区数制。距離上限で近似せず、公式区数の距離境界を使用。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 3,
+              "yen": 190
+            },
+            {
+              "fromKm": 4,
+              "toKm": 7,
+              "yen": 240
+            },
+            {
+              "fromKm": 8,
+              "toKm": 13,
+              "yen": 290
+            },
+            {
+              "fromKm": 14,
+              "toKm": 19,
+              "yen": 340
+            },
+            {
+              "fromKm": 20,
+              "toKm": 100,
+              "yen": 390
+            }
+          ]
+        }
+      }
+    },
+    "keio": {
+      "operatorIds": [
+        "keio"
+      ],
+      "sourceKey": "keio",
+      "operatorName": "京王電鉄",
+      "notes": [
+        "2023年10月1日改定のキロ別旅客運賃表・大人普通運賃・きっぷ10円単位。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 4,
+              "yen": 140
+            },
+            {
+              "fromKm": 5,
+              "toKm": 6,
+              "yen": 160
+            },
+            {
+              "fromKm": 7,
+              "toKm": 9,
+              "yen": 190
+            },
+            {
+              "fromKm": 10,
+              "toKm": 12,
+              "yen": 210
+            },
+            {
+              "fromKm": 13,
+              "toKm": 15,
+              "yen": 230
+            },
+            {
+              "fromKm": 16,
+              "toKm": 19,
+              "yen": 280
+            },
+            {
+              "fromKm": 20,
+              "toKm": 24,
+              "yen": 320
+            },
+            {
+              "fromKm": 25,
+              "toKm": 30,
+              "yen": 360
+            },
+            {
+              "fromKm": 31,
+              "toKm": 37,
+              "yen": 390
+            },
+            {
+              "fromKm": 38,
+              "toKm": 44,
+              "yen": 410
+            },
+            {
+              "fromKm": 45,
+              "toKm": 52,
+              "yen": 430
+            }
+          ]
+        }
+      }
+    },
+    "sotetsu": {
+      "operatorIds": [
+        "sotetsu"
+      ],
+      "sourceKey": "sotetsu",
+      "operatorName": "相模鉄道",
+      "notes": [
+        "キロ別旅客運賃表・大人普通運賃・きっぷ10円単位。いずみ野線加算運賃は未適用。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 3,
+              "yen": 150
+            },
+            {
+              "fromKm": 4,
+              "toKm": 7,
+              "yen": 180
+            },
+            {
+              "fromKm": 8,
+              "toKm": 11,
+              "yen": 200
+            },
+            {
+              "fromKm": 12,
+              "toKm": 15,
+              "yen": 230
+            },
+            {
+              "fromKm": 16,
+              "toKm": 19,
+              "yen": 260
+            },
+            {
+              "fromKm": 20,
+              "toKm": 23,
+              "yen": 280
+            },
+            {
+              "fromKm": 24,
+              "toKm": 26,
+              "yen": 310
+            }
+          ]
+        }
+      }
+    },
+    "nagoya_subway": {
+      "operatorIds": [
+        "名古屋市"
+      ],
+      "sourceKey": "nagoya_subway",
+      "operatorName": "名古屋市交通局",
+      "notes": [
+        "地下鉄普通料金・対キロ区間制。大人普通料金。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 3,
+              "yen": 210
+            },
+            {
+              "fromKm": 4,
+              "toKm": 7,
+              "yen": 240
+            },
+            {
+              "fromKm": 8,
+              "toKm": 11,
+              "yen": 270
+            },
+            {
+              "fromKm": 12,
+              "toKm": 15,
+              "yen": 310
+            },
+            {
+              "fromKm": 16,
+              "toKm": 100,
+              "yen": 340
             }
           ]
         }

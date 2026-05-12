@@ -7582,11 +7582,6 @@
 
     function fareRuleKeyForOperatorIds(operatorIds, trip = null) {
       const ids = new Set((operatorIds || []).filter(Boolean));
-      if (ids.size === 1 && ids.has('jr_hokkaido')) return 'jr_hokkaido';
-      if (ids.size === 1 && ids.has('jr_east')) return 'jr_east';
-      if ([...ids].some((id) => id === 'jr_central' || id === 'jr_west')) return 'jr_central_west';
-      if (ids.size === 1 && ids.has('jr_shikoku')) return 'jr_shikoku';
-      if (ids.size === 1 && ids.has('jr_kyushu')) return 'jr_kyushu';
       if (ids.has('shinkansen') || isShinkansenTrip(trip)) {
         const route = tripRoute(trip);
         const routeName = `${route?.shortName || ''} ${routeTitle(route?.id) || ''} ${tripLineTraceNames(trip).join(' ')}`;
@@ -7595,6 +7590,17 @@
         if (/東海道|山陽/u.test(routeName)) return 'jr_central_west';
         return 'jr_east';
       }
+      const ordinaryTables = state.fareRules?.ordinaryFareTables || {};
+      const directMatch = Object.entries(ordinaryTables).find(([_key, table]) => {
+        const coveredIds = new Set((table.operatorIds || []).filter(Boolean));
+        return ids.size > 0 && [...ids].every((id) => coveredIds.has(id));
+      });
+      if (directMatch) return directMatch[0];
+      if (ids.size === 1 && ids.has('jr_hokkaido')) return 'jr_hokkaido';
+      if (ids.size === 1 && ids.has('jr_east')) return 'jr_east';
+      if ([...ids].some((id) => id === 'jr_central' || id === 'jr_west')) return 'jr_central_west';
+      if (ids.size === 1 && ids.has('jr_shikoku')) return 'jr_shikoku';
+      if (ids.size === 1 && ids.has('jr_kyushu')) return 'jr_kyushu';
       if ([...ids].every((id) => id && id.startsWith('jr_'))) return 'jr_central_west';
       return null;
     }
@@ -7616,7 +7622,7 @@
       return value ? {
         ...value,
         ruleKey,
-        source: 'collected_jr_ordinary_fare_table',
+        source: 'collected_ordinary_fare_table',
         modelVersion: rules.modelVersion,
       } : null;
     }

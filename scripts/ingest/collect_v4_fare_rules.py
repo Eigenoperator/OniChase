@@ -81,6 +81,126 @@ OFFICIAL_REFERENCE_SOURCES = [
     },
 ]
 
+# Real adult ordinary fare tables from official operator fare pages/PDFs.
+# Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
+# because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
+MANUAL_OPERATOR_FARE_TABLES = [
+    {
+        "key": "kintetsu",
+        "operatorIds": ["近畿日本鉄道"],
+        "operatorName": "近畿日本鉄道",
+        "url": "https://www.kintetsu.co.jp/gyoumu/kippu/pdf/kirotei_20260314.pdf",
+        "notes": [
+            "普通旅客運賃・鉄軌道線の大人普通運賃。吉野線/湯の山線/志摩線、鳥羽線、けいはんな線などの加算運賃は未適用。",
+        ],
+        "rows": [
+            (1, 3, 180), (4, 6, 240), (7, 10, 300), (11, 14, 360), (15, 18, 430),
+            (19, 22, 490), (23, 26, 530), (27, 30, 590), (31, 35, 680), (36, 40, 760),
+            (41, 45, 830), (46, 50, 910), (51, 55, 1000), (56, 60, 1070), (61, 65, 1140),
+            (66, 70, 1210), (71, 75, 1290), (76, 80, 1370), (81, 85, 1450), (86, 90, 1530),
+            (91, 95, 1600), (96, 100, 1670), (101, 110, 1740), (111, 120, 1880), (121, 130, 2040),
+            (131, 140, 2170), (141, 150, 2310), (151, 160, 2430), (161, 170, 2560),
+            (171, 180, 2710), (181, 190, 2860), (191, 200, 3000), (201, 210, 3130),
+            (211, 220, 3280), (221, 230, 3410), (231, 240, 3560), (241, 250, 3690),
+        ],
+    },
+    {
+        "key": "tobu",
+        "operatorIds": ["tobu"],
+        "operatorName": "東武鉄道",
+        "url": "https://www.tobu.co.jp/pdf/ticket/unchinTable.pdf?2023=",
+        "notes": ["大人普通運賃。運賃計算キロによる距離分段。"],
+        "rows": [
+            (1, 4, 160), (5, 7, 180), (8, 10, 210), (11, 15, 270), (16, 20, 330),
+            (21, 25, 380), (26, 30, 430), (31, 35, 490), (36, 40, 540), (41, 45, 610),
+            (46, 50, 670), (51, 60, 750), (61, 70, 830), (71, 80, 920), (81, 90, 1000),
+            (91, 100, 1090), (101, 120, 1230), (121, 140, 1400), (141, 178, 1590),
+        ],
+    },
+    {
+        "key": "seibu",
+        "operatorIds": ["seibu"],
+        "operatorName": "西武鉄道",
+        "url": "https://www.seiburailway.jp/file.jsp?file%2F202603_fare_bykm.pdf=",
+        "notes": ["2025年7月改定後の大人普通旅客運賃・きっぷ10円単位。"],
+        "rows": [
+            (1, 4, 170), (5, 8, 210), (9, 12, 250), (13, 16, 290), (17, 20, 330),
+            (21, 24, 370), (25, 28, 410), (29, 32, 450), (33, 36, 490), (37, 40, 530),
+            (41, 44, 560), (45, 48, 600), (49, 52, 630), (53, 56, 660), (57, 60, 690),
+            (61, 64, 710), (65, 68, 740), (69, 72, 760), (73, 76, 790), (77, 81, 800),
+        ],
+    },
+    {
+        "key": "tokyu",
+        "operatorIds": ["tokyu"],
+        "operatorName": "東急電鉄",
+        "url": "https://www.tokyu.co.jp/railway/ticket/fares/?vm=r",
+        "notes": [
+            "片道普通旅客運賃表の大人きっぷ10円単位。世田谷線/こどもの国線は均一運賃だが、この距離表とは別体系。",
+            "東急新横浜線の加算運賃は未適用。",
+        ],
+        "rows": [
+            (1, 3, 140), (4, 7, 180), (8, 11, 230), (12, 15, 250), (16, 20, 290),
+            (21, 25, 310), (26, 30, 350), (31, 35, 390), (36, 40, 430),
+        ],
+    },
+    {
+        "key": "tokyo_metro",
+        "operatorIds": ["tokyo_metro"],
+        "operatorName": "東京地下鉄",
+        "url": "https://www.tokyometro.jp/ticket/types/regular/index.html",
+        "notes": ["東京メトロ普通旅客運賃・きっぷ10円単位。"],
+        "rows": [(1, 6, 180), (7, 11, 210), (12, 19, 260), (20, 27, 300), (28, 40, 330)],
+    },
+    {
+        "key": "toei_subway",
+        "operatorIds": ["toei"],
+        "operatorName": "東京都交通局",
+        "url": "https://www.kotsu.metro.tokyo.jp/subway/fare/regular.html",
+        "notes": ["都営地下鉄普通旅客運賃・きっぷ10円単位。都電荒川線と日暮里・舎人ライナーは別体系のため未適用リスクあり。"],
+        "rows": [(1, 4, 180), (5, 9, 220), (10, 15, 280), (16, 21, 330), (22, 27, 380), (28, 46, 430)],
+    },
+    {
+        "key": "osaka_metro",
+        "operatorIds": ["大阪市高速電気軌道"],
+        "operatorName": "Osaka Metro",
+        "url": "https://subway.osakametro.co.jp/guide/fare/fare/price.php",
+        "notes": ["Osaka Metro普通運賃の区数制。距離上限で近似せず、公式区数の距離境界を使用。"],
+        "rows": [(1, 3, 190), (4, 7, 240), (8, 13, 290), (14, 19, 340), (20, 100, 390)],
+    },
+    {
+        "key": "keio",
+        "operatorIds": ["keio"],
+        "operatorName": "京王電鉄",
+        "url": "https://www.keio.co.jp/train/ticket/fare_chart/fare_chart_km.html",
+        "notes": ["2023年10月1日改定のキロ別旅客運賃表・大人普通運賃・きっぷ10円単位。"],
+        "rows": [(1, 4, 140), (5, 6, 160), (7, 9, 190), (10, 12, 210), (13, 15, 230),
+                 (16, 19, 280), (20, 24, 320), (25, 30, 360), (31, 37, 390),
+                 (38, 44, 410), (45, 52, 430)],
+    },
+    {
+        "key": "sotetsu",
+        "operatorIds": ["sotetsu"],
+        "operatorName": "相模鉄道",
+        "url": "https://www.sotetsu.co.jp/media/2019/trans/train/search/pdf/kiro_fares.pdf",
+        "notes": ["キロ別旅客運賃表・大人普通運賃・きっぷ10円単位。いずみ野線加算運賃は未適用。"],
+        "rows": [(1, 3, 150), (4, 7, 180), (8, 11, 200), (12, 15, 230),
+                 (16, 19, 260), (20, 23, 280), (24, 26, 310)],
+    },
+    {
+        "key": "nagoya_subway",
+        "operatorIds": ["名古屋市"],
+        "operatorName": "名古屋市交通局",
+        "url": "https://www.kotsu.city.nagoya.jp/rp/subway/trp0000172.htm",
+        "notes": ["地下鉄普通料金・対キロ区間制。大人普通料金。"],
+        "rows": [(1, 3, 210), (4, 7, 240), (8, 11, 270), (12, 15, 310), (16, 100, 340)],
+    },
+]
+
+
+def manual_rows(rows: list[tuple[int, int | None, int]]) -> list[dict[str, Any]]:
+    return [{"fromKm": start, "toKm": end, "yen": yen} for start, end, yen in rows]
+
 
 class TextExtractor(HTMLParser):
     def __init__(self) -> None:
@@ -243,6 +363,34 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         if error:
             record["fetchError"] = error
         sources.append(record)
+
+    for table in MANUAL_OPERATOR_FARE_TABLES:
+        cache_path, _lines, error = try_fetch_text(table["url"], cache_dir)
+        source_record = {
+            "key": table["key"],
+            "url": table["url"],
+            "kind": "ordinary_fare_table",
+            "operatorIds": table["operatorIds"],
+            "operatorName": table["operatorName"],
+            "extraction": "manual_from_official_source",
+        }
+        if cache_path:
+            source_record["cachePath"] = cache_path
+        if error:
+            source_record["fetchError"] = error
+        sources.append(source_record)
+        ordinary_tables[table["key"]] = {
+            "operatorIds": table["operatorIds"],
+            "sourceKey": table["key"],
+            "operatorName": table["operatorName"],
+            "notes": table.get("notes") or [],
+            "tables": {
+                "main": {
+                    "marker": "adult ordinary fare table",
+                    "rows": manual_rows(table["rows"]),
+                },
+            },
+        }
 
     return {
         "schemaVersion": 1,
