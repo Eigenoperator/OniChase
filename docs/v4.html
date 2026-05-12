@@ -13474,7 +13474,7 @@
 
     function pruneReviewedCoupledBranchStops(trip) {
       const label = formatTripLabel(trip);
-      if (!label.includes('サンライズ')) return trip;
+      if (!hasSunriseLabel(trip)) return trip;
       const stops = trip.stopTimes || [];
       const stationNames = stops.map((stop) => displayNameForGroup(stop.stationGroupId));
       const hasIzumoBranch = stationNames.some((stationName) => SUNRISE_IZUMO_BRANCH_STATIONS.has(stationName));
@@ -13556,7 +13556,7 @@
         trip?.displayName,
         trip?.serviceName,
       ].filter(Boolean).join(' ');
-      return /サンライズ/u.test(label) && /(?:91|92|9011|9012)/u.test(label);
+      return hasSunriseLabel(trip) && /(?:91|92|9011|9012)/u.test(label);
     }
 
     function hasSunriseLabel(trip) {
@@ -13568,7 +13568,7 @@
         trip.serviceNumber,
         trip.id,
         ...(trip.coupledRouteNames || []),
-      ].some((value) => String(value || '').includes('サンライズ'));
+      ].some((value) => /サンライズ(?:瀬戸|出雲)/u.test(String(value || '')));
     }
 
     function sunriseBranchTrip(trip, branchLabel, branchToRemove) {

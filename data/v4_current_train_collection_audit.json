@@ -1,12 +1,12 @@
 {
   "schema": "onichase.v4.current_train_collection_audit.v1",
   "sourceCounts": {
-    "v3_rematched_to_v4": 41353,
+    "v3_rematched_to_v4": 41349,
     "v4_hankyu_official_weekday_train_instances_v0_1": 4047,
     "v4_hiroden_official_weekday_train_instances_v0_1": 1188,
     "v4_iyotetsu_official_weekday_train_instances_v0_1": 742,
     "v4_jrcentral_navitime_weekday_train_instances_v0_1": 1582,
-    "v4_jreast_official_weekday_train_instances_v0_1": 16148,
+    "v4_jreast_official_weekday_train_instances_v0_1": 16144,
     "v4_jrhokkaido_vtime_weekday_train_instances_v0_1": 1369,
     "v4_jrkyushu_navitime_weekday_train_instances_v0_1": 4742,
     "v4_jrshikoku_navitime_weekday_train_instances_v0_1": 1461,
@@ -26,32 +26,55 @@
   },
   "droppedInvalidTrainCounts": {
     "closed_operator_foreign_physical_stop": 1342,
-    "excessive_station_match_distance": 85,
+    "excessive_station_match_distance": 81,
     "source_pollution_low_target_line_touch": 3390,
+    "sunrise_fragment_replaced_by_jrwest_full_train": 12,
     "unmatched_station_ref": 35,
     "v3_synthetic_tail_duplicate": 2
   },
   "droppedInvalidTrainCountsBySource": {
-    "v3_rematched_to_v4": 2,
+    "v3_rematched_to_v4": 6,
     "v4_jrcentral_navitime_weekday_train_instances_v0_1": 2,
-    "v4_jreast_official_weekday_train_instances_v0_1": 35,
+    "v4_jreast_official_weekday_train_instances_v0_1": 39,
     "v4_jrkyushu_navitime_weekday_train_instances_v0_1": 28,
     "v4_jrshikoku_navitime_weekday_train_instances_v0_1": 4,
     "v4_jrwest_official_weekday_train_instances_v0_1": 33,
     "v4_navitime_non_jr_weekday_train_instances_v0_1": 4750
   },
   "droppedInvalidTrainCountsBySourceReason": {
+    "v3_rematched_to_v4|sunrise_fragment_replaced_by_jrwest_full_train": 4,
     "v3_rematched_to_v4|v3_synthetic_tail_duplicate": 2,
     "v4_jrcentral_navitime_weekday_train_instances_v0_1|excessive_station_match_distance": 2,
+    "v4_jreast_official_weekday_train_instances_v0_1|sunrise_fragment_replaced_by_jrwest_full_train": 4,
     "v4_jreast_official_weekday_train_instances_v0_1|unmatched_station_ref": 35,
     "v4_jrkyushu_navitime_weekday_train_instances_v0_1|excessive_station_match_distance": 28,
-    "v4_jrshikoku_navitime_weekday_train_instances_v0_1|excessive_station_match_distance": 4,
+    "v4_jrshikoku_navitime_weekday_train_instances_v0_1|sunrise_fragment_replaced_by_jrwest_full_train": 4,
     "v4_jrwest_official_weekday_train_instances_v0_1|excessive_station_match_distance": 33,
     "v4_navitime_non_jr_weekday_train_instances_v0_1|closed_operator_foreign_physical_stop": 1342,
     "v4_navitime_non_jr_weekday_train_instances_v0_1|excessive_station_match_distance": 18,
     "v4_navitime_non_jr_weekday_train_instances_v0_1|source_pollution_low_target_line_touch": 3390
   },
   "droppedInvalidTrainSamples": [
+    {
+      "serviceInstanceId": "jr_central:JR_CENTRAL_TOKAIDO_00620036_2026-04-15:87f739debb",
+      "sourceCollection": "v3_rematched_to_v4",
+      "reason": "sunrise_fragment_replaced_by_jrwest_full_train"
+    },
+    {
+      "serviceInstanceId": "jr_central:JR_CENTRAL_TOKAIDO_00620037_2026-04-15:dc49ed2440",
+      "sourceCollection": "v3_rematched_to_v4",
+      "reason": "sunrise_fragment_replaced_by_jrwest_full_train"
+    },
+    {
+      "serviceInstanceId": "jr_central:JR_CENTRAL_TOKAIDO_80620025_2026-04-15:6207576fe8",
+      "sourceCollection": "v3_rematched_to_v4",
+      "reason": "sunrise_fragment_replaced_by_jrwest_full_train"
+    },
+    {
+      "serviceInstanceId": "jr_central:JR_CENTRAL_TOKAIDO_80620026_2026-04-15:af89db8f60",
+      "sourceCollection": "v3_rematched_to_v4",
+      "reason": "sunrise_fragment_replaced_by_jrwest_full_train"
+    },
     {
       "serviceInstanceId": "jr_east:557F:b91adfe372",
       "sourceCollection": "v3_rematched_to_v4",
@@ -231,33 +254,10 @@
       "serviceInstanceId": "jr_east_official:気仙沼:train_175_179481",
       "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
       "reason": "unmatched_station_ref"
-    },
-    {
-      "serviceInstanceId": "jr_east_official:気仙沼:train_175_179501",
-      "sourceCollection": "v4_jreast_official_weekday_train_instances_v0_1",
-      "reason": "unmatched_station_ref"
-    },
-    {
-      "serviceInstanceId": "jr_central_navitime:高山線:00000105:80340062:2026-04-27",
-      "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-      "reason": "excessive_station_match_distance",
-      "maxMatchDistanceM": "31506.0"
-    },
-    {
-      "serviceInstanceId": "jr_central_navitime:高山線:00000105:0034006d:2026-04-27",
-      "sourceCollection": "v4_jrcentral_navitime_weekday_train_instances_v0_1",
-      "reason": "excessive_station_match_distance",
-      "maxMatchDistanceM": "31506.0"
-    },
-    {
-      "serviceInstanceId": "jr_west_official:宇野線:33291:3m:20260427",
-      "sourceCollection": "v4_jrwest_official_weekday_train_instances_v0_1",
-      "reason": "excessive_station_match_distance",
-      "maxMatchDistanceM": "33517.5"
     }
   ],
-  "rawTrainInstanceCount": 136147,
-  "trainInstanceCount": 126320,
+  "rawTrainInstanceCount": 136139,
+  "trainInstanceCount": 126312,
   "operatorTrainCounts": {
     "IRいしかわ鉄道": 284,
     "JR Shinkansen": 1152,
@@ -364,9 +364,9 @@
     "東京臨海高速鉄道": 531,
     "東京都": 2818,
     "東急電鉄": 3674,
-    "東日本旅客鉄道": 16048,
+    "東日本旅客鉄道": 16044,
     "東武鉄道": 6945,
-    "東海旅客鉄道": 2775,
+    "東海旅客鉄道": 2771,
     "東葉高速鉄道": 386,
     "松浦鉄道": 107,
     "横浜シーサイドライン": 327,

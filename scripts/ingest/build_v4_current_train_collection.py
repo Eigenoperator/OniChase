@@ -273,10 +273,34 @@ def unresolved_station_ref(stop: dict[str, Any]) -> str | None:
     return None
 
 
+def is_sunrise_seto_izumo_train(train: dict[str, Any]) -> bool:
+    text = " ".join(
+        str(value or "")
+        for value in (
+            train.get("display_name"),
+            train.get("service_name_detail"),
+            train.get("service_name"),
+            train.get("line_name"),
+            train.get("headsign"),
+            train.get("service_instance_id"),
+        )
+    )
+    return bool(re.search(r"サンライズ(?:瀬戸|出雲)", text))
+
+
+def is_canonical_sunrise_source(train: dict[str, Any]) -> bool:
+    return (
+        str(train.get("source_feed_key") or "") == "jr_west_official_20260427"
+        or str(train.get("service_instance_id") or "").startswith("jr_west_official:")
+    )
+
+
 def invalid_train_reason(train: dict[str, Any]) -> str | None:
     stops = train.get("stop_times") or []
     if len(stops) < 2:
         return "short_train"
+    if is_sunrise_seto_izumo_train(train) and not is_canonical_sunrise_source(train):
+        return "sunrise_fragment_replaced_by_jrwest_full_train"
     if is_known_v3_synthetic_tail_duplicate(train):
         return "v3_synthetic_tail_duplicate"
     if has_reviewed_closed_operator_foreign_stops(train):

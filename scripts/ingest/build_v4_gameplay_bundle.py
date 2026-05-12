@@ -317,6 +317,8 @@ def normalize_trip_stop_times(
                 departure = arrival
         previous_minute = departure
         physical_station = physical_station_by_id.get(stop.get("physical_station_id") or stop.get("physicalStationId") or "")
+        if not isinstance(physical_station, dict):
+            physical_station = None
         normalized.append(
             {
                 "sequence": len(normalized) + 1,
