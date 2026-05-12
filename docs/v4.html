@@ -1986,6 +1986,38 @@
         ],
       },
       {
+        from: '新宿',
+        to: '池袋',
+        tripLabelPattern: '埼京',
+        legs: [
+          { routeName: '埼京線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '池袋',
+        to: '新宿',
+        tripLabelPattern: '埼京',
+        legs: [
+          { routeName: '埼京線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '池袋',
+        to: '新宿',
+        tripStationNames: ['海老名', '湘南台'],
+        legs: [
+          { routeName: '埼京線', operatorId: 'jr_east' },
+        ],
+      },
+      {
+        from: '新宿',
+        to: '池袋',
+        tripStationNames: ['海老名', '湘南台'],
+        legs: [
+          { routeName: '埼京線', operatorId: 'jr_east' },
+        ],
+      },
+      {
         from: '明科',
         to: '長野',
         tripLabelPattern: '信州',
@@ -2008,7 +2040,6 @@
       {
         from: '旭川',
         to: '上川',
-        tripLabelPattern: '大雪',
         tripStationNames: ['網走'],
         legs: [
           { routeName: '宗谷線', operatorId: 'jr_hokkaido', to: '新旭川' },
@@ -2018,11 +2049,100 @@
       {
         from: '上川',
         to: '旭川',
-        tripLabelPattern: '大雪',
         tripStationNames: ['網走'],
         legs: [
           { routeName: '石北線', operatorId: 'jr_hokkaido', to: '新旭川' },
           { routeName: '宗谷線', operatorId: 'jr_hokkaido', from: '新旭川' },
+        ],
+      },
+      {
+        from: '当麻',
+        to: '旭川',
+        tripStationNames: ['網走'],
+        legs: [
+          { routeName: '石北線', operatorId: 'jr_hokkaido', to: '新旭川' },
+          { routeName: '宗谷線', operatorId: 'jr_hokkaido', from: '新旭川' },
+        ],
+      },
+      {
+        from: '旭川',
+        to: '当麻',
+        tripStationNames: ['網走'],
+        legs: [
+          { routeName: '宗谷線', operatorId: 'jr_hokkaido', to: '新旭川' },
+          { routeName: '石北線', operatorId: 'jr_hokkaido', from: '新旭川' },
+        ],
+      },
+      {
+        from: '苫小牧',
+        to: '南千歳',
+        tripStationNames: ['函館', '札幌'],
+        legs: [
+          { routeName: '室蘭線', operatorId: 'jr_hokkaido', to: '沼ノ端' },
+          { routeName: '千歳線', operatorId: 'jr_hokkaido', from: '沼ノ端' },
+        ],
+      },
+      {
+        from: '南千歳',
+        to: '苫小牧',
+        tripStationNames: ['函館', '札幌'],
+        legs: [
+          { routeName: '千歳線', operatorId: 'jr_hokkaido', to: '沼ノ端' },
+          { routeName: '室蘭線', operatorId: 'jr_hokkaido', from: '沼ノ端' },
+        ],
+      },
+      {
+        from: '阿波池田',
+        to: '阿波加茂',
+        tripStationNames: ['徳島'],
+        legs: [
+          { routeName: '土讃線', operatorId: 'jr_shikoku', to: '佃' },
+          { routeName: '徳島線', operatorId: 'jr_shikoku', from: '佃' },
+        ],
+      },
+      {
+        from: '阿波加茂',
+        to: '阿波池田',
+        tripStationNames: ['徳島'],
+        legs: [
+          { routeName: '徳島線', operatorId: 'jr_shikoku', to: '佃' },
+          { routeName: '土讃線', operatorId: 'jr_shikoku', from: '佃' },
+        ],
+      },
+      {
+        from: '蔵本',
+        to: '徳島',
+        tripStationNames: ['阿波池田'],
+        legs: [
+          { routeName: '徳島線', operatorId: 'jr_shikoku', to: '佐古' },
+          { routeName: '高徳線', operatorId: 'jr_shikoku', from: '佐古' },
+        ],
+      },
+      {
+        from: '徳島',
+        to: '蔵本',
+        tripStationNames: ['阿波池田'],
+        legs: [
+          { routeName: '高徳線', operatorId: 'jr_shikoku', to: '佐古' },
+          { routeName: '徳島線', operatorId: 'jr_shikoku', from: '佐古' },
+        ],
+      },
+      {
+        from: '新見',
+        to: '矢神',
+        tripStationNames: ['備後落合'],
+        legs: [
+          { routeName: '伯備線', operatorId: 'jr_west', to: '備中神代' },
+          { routeName: '芸備線', operatorId: 'jr_west', from: '備中神代' },
+        ],
+      },
+      {
+        from: '矢神',
+        to: '新見',
+        tripStationNames: ['備後落合'],
+        legs: [
+          { routeName: '芸備線', operatorId: 'jr_west', to: '備中神代' },
+          { routeName: '伯備線', operatorId: 'jr_west', from: '備中神代' },
         ],
       },
       {
@@ -6734,11 +6854,14 @@
         ...tripLineTraceNames(trip),
         ...boardingFaceRouteNamesForStop(trip, boardStop),
       ]);
-      const hasSaikyoSignature = [...SAIKYO_KAWAGOE_SIGNATURE_STATIONS].some((name) => stationNames.has(name));
+      const route = tripRoute(trip);
+      const hasSaikyoSignature = route?.shortName === '埼京線' ||
+        [...SAIKYO_KAWAGOE_SIGNATURE_STATIONS].some((name) => stationNames.has(name));
       const usesSaikyoPhysicalTrunk = traceNames.has('赤羽線') ||
         traceNames.has('川越線') ||
         traceNames.has('JR_EAST_SAIKYO_KAWAGOE') ||
-        traceNames.has('埼京線');
+        traceNames.has('埼京線') ||
+        route?.shortName === '埼京線';
       if (!hasSaikyoSignature || !usesSaikyoPhysicalTrunk) return null;
       return routeIdByShortName('JR_EAST_SAIKYO_KAWAGOE') ||
         routeIdByShortNameAndOperator('埼京線', 'jr_east') ||
@@ -6846,10 +6969,19 @@
     }
 
     function shouldShowTripNumber(trip, serviceName) {
-      const number = publicTripNumber(trip);
+      let number = '';
+      try {
+        number = publicTripNumber(trip);
+      } catch (_error) {
+        number = '';
+      }
       if (!number || String(serviceName || '').includes(number)) return false;
       if (isShinkansenTrip(trip)) return true;
-      if (publicLimitedExpressBaseName(trip).embeddedNumber) return false;
+      try {
+        if (publicLimitedExpressBaseName(trip).embeddedNumber) return false;
+      } catch (_error) {
+        return false;
+      }
       return isLimitedExpressTrip(trip) && looksLikePublicTrainNumber(number);
     }
 
@@ -8505,6 +8637,11 @@
       return stationFeatureIdFilter(routeStationPhysicalIds(routeId, stationGroupIds));
     }
 
+    function setMapFilterIfLayer(layerId, filter) {
+      if (!state.map?.getLayer(layerId)) return;
+      state.map.setFilter(layerId, filter);
+    }
+
     function hhmmToMinutes(value) {
       const [hour, minute] = value.split(':').map(Number);
       return hour * 60 + minute;
@@ -8532,7 +8669,12 @@
           : trip.throughRouteIds;
         if (trip.throughReviewedDirect && !isYokosukaSobuRapidTrip(trip)) {
           const serviceName = serviceNameJaLabel(trip);
-          const publicNumber = publicTripNumber(trip);
+          let publicNumber = '';
+          try {
+            publicNumber = publicTripNumber(trip);
+          } catch (_error) {
+            publicNumber = '';
+          }
           if (serviceName && serviceName !== '列車') {
             const serviceLabel = `${serviceName}${publicNumber && !String(serviceName).includes(publicNumber) ? publicNumber : ''}`;
             return serviceLabel;
@@ -8545,7 +8687,12 @@
         if (throughNames.length === 1) return throughNames[0];
       }
       const serviceName = serviceNameJaLabel(trip) || '列車';
-      const publicNumber = publicTripNumber(trip);
+      let publicNumber = '';
+      try {
+        publicNumber = publicTripNumber(trip);
+      } catch (_error) {
+        publicNumber = '';
+      }
       return `${serviceName}${shouldShowTripNumber(trip, serviceName) ? publicNumber : ''}`;
     }
 
@@ -8815,7 +8962,7 @@
         state.selectedTripId = null;
         state.selectedTripStopIds = [];
         state.selectedTripStopFeatureIds = [];
-        state.map?.setFilter('selected-trip-stops', NONE_STATION_FILTER);
+        setMapFilterIfLayer('selected-trip-stops', NONE_STATION_FILTER);
         updateSelectedRouteHighlights();
       }
     }
@@ -9511,7 +9658,7 @@
       state.selectedTripStopFeatureIds = state.selectedTripStopIds.flatMap((stationGroupId) =>
         (choice.portions || []).flatMap((item) => tripStopFeatureIds(item.row.trip, [stationGroupId]))
       );
-      state.map?.setFilter('selected-trip-stops', state.selectedTripStopFeatureIds.length
+      setMapFilterIfLayer('selected-trip-stops', state.selectedTripStopFeatureIds.length
         ? stationFeatureIdFilter([...new Set(state.selectedTripStopFeatureIds)])
         : stationMatchFilter(state.selectedTripStopIds));
       if (selectedRouteId) setSelectedRoute(selectedRouteId, { preservePendingCoupled: true });
@@ -10083,7 +10230,7 @@
         candidate.to === toName &&
         (isShinkansenTrip(trip) || !(candidate.legs || []).some((leg) => /新幹線/u.test(String(leg.routeName || '')))) &&
         (!candidate.tripLabelPattern || new RegExp(candidate.tripLabelPattern, 'u').test(formatTripLabel(trip))) &&
-        (candidate.tripStationNames || []).some((stationName) => tripIncludesStationName(trip, stationName))
+        (!candidate.tripStationNames || candidate.tripStationNames.some((stationName) => tripIncludesStationName(trip, stationName)))
       ) || null;
     }
 
@@ -10806,7 +10953,7 @@
       const trip = state.tripById.get(state.selectedTripId);
       state.selectedTripStopIds = trip ? selectedTripStopIds(trip) : [];
       state.selectedTripStopFeatureIds = trip ? tripStopFeatureIds(trip, state.selectedTripStopIds) : [];
-      state.map.setFilter('selected-trip-stops', trip ? tripStopsFilter(trip, state.selectedTripStopIds) : NONE_STATION_FILTER);
+      setMapFilterIfLayer('selected-trip-stops', trip ? tripStopsFilter(trip, state.selectedTripStopIds) : NONE_STATION_FILTER);
       if (routeId) setSelectedRoute(routeId);
       else if (trip?.routeId) setSelectedRoute(trip.routeId);
       updateSelectedTripPath();
@@ -11042,7 +11189,7 @@
     function chooseAnotherTrip() {
       clearPendingTrip();
       state.selectedTripStopIds = [];
-      state.map?.setFilter('selected-trip-stops', NONE_STATION_FILTER);
+      setMapFilterIfLayer('selected-trip-stops', NONE_STATION_FILTER);
       updateSelectedTripPath();
       renderGame();
     }
@@ -11130,7 +11277,7 @@
       if (pendingTripId()) {
         clearPendingTrip();
         state.selectedTripStopIds = [];
-        state.map?.setFilter('selected-trip-stops', NONE_STATION_FILTER);
+        setMapFilterIfLayer('selected-trip-stops', NONE_STATION_FILTER);
         updateSelectedTripPath();
         renderGame();
         return;

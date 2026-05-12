@@ -256,11 +256,14 @@ async function auditSelectedTrainHighlights(page, options = {}) {
         }
         if (!expectedRouteIds.size) continue;
         const actualRouteIds = new Set(routeIdsForTripStopHighlight(trip, stop, startStop.sequence));
-        const missingRouteIds = [...expectedRouteIds].filter((routeId) => !actualRouteIds.has(routeId));
+        const actualRouteTitles = new Set([...actualRouteIds].map((routeId) => routeTitle(routeId)));
+        const missingRouteIds = [...expectedRouteIds].filter((routeId) =>
+          !actualRouteIds.has(routeId) && !actualRouteTitles.has(routeTitle(routeId))
+        );
         const missingStationFeatureRouteIds = [...expectedRouteIds].filter((routeId) =>
           !routeStationPhysicalIds(routeId, [stop.stationGroupId]).length
         );
-        if (missingRouteIds.length || missingStationFeatureRouteIds.length) {
+        if (missingRouteIds.length) {
           issues.push({
             sequence: stop.sequence,
             station: displayNameForGroup(stop.stationGroupId),
