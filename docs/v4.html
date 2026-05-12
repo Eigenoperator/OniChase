@@ -1021,13 +1021,13 @@
           <div class="setup-field">
             <label for="single-start-station-select">Start Station</label>
             <select id="single-start-station-select" class="room-input">
-              <option value="東京">東京</option>
-              <option value="新宿">新宿</option>
-              <option value="京都">京都</option>
-              <option value="大阪">大阪</option>
-              <option value="博多">博多</option>
-              <option value="高松">高松</option>
-              <option value="札幌">札幌</option>
+              <option value="SG_N02G_003766">東京</option>
+              <option value="SG_N02G_003700">新宿</option>
+              <option value="SG_N02G_006079">京都</option>
+              <option value="SG_N02G_007068">大阪</option>
+              <option value="SG_N02G_009033">博多</option>
+              <option value="SG_N02G_008163">高松（四国）</option>
+              <option value="SG_N02G_000227">札幌</option>
             </select>
           </div>
           <div class="button-row">
@@ -7409,7 +7409,9 @@
 
     function selectedSinglePlayerStartStationId() {
       const select = document.getElementById('single-start-station-select');
-      return stationGroupIdByDisplayName(select?.value || '東京');
+      const value = select?.value || 'SG_N02G_003766';
+      if (state.stationGroupById.has(value)) return value;
+      return stationGroupIdByDisplayName(value || '東京');
     }
 
     function normalizedTransferStationName(name) {
