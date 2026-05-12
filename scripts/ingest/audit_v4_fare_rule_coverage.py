@@ -30,6 +30,11 @@ def known_operator_and_route_ids(fare_rules: dict[str, Any]) -> tuple[set[str], 
             routes.update(table.get("routeIds") or [])
         else:
             operators.update(table.get("operatorIds") or [])
+    for table in (fare_rules.get("stationPairFareTables") or {}).values():
+        if table.get("routeIds"):
+            routes.update(table.get("routeIds") or [])
+        else:
+            operators.update(table.get("operatorIds") or [])
     for mapping in (fare_rules.get("operatorFareMappings") or []):
         operators.update(mapping.get("operatorIds") or [])
     if {"jr_hokkaido", "jr_east", "jr_central", "jr_west", "jr_kyushu"} & operators:

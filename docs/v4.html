@@ -7580,6 +7580,23 @@
       return row ? { yen: row[valueKey] || 0, row } : null;
     }
 
+    function fareStationName(stationGroupId) {
+      return String(displayNameForGroup(stationGroupId) || '').replace(/\s+/gu, '');
+    }
+
+    function fareStationPairKey(leftName, rightName) {
+      return `${String(leftName || '').replace(/\s+/gu, '')}|${String(rightName || '').replace(/\s+/gu, '')}`;
+    }
+
+    function fareSegmentsRouteIds(segments) {
+      return new Set((segments || []).map((segment) => segment.route_id).filter(Boolean));
+    }
+
+    function fareTableCoversRouteIds(table, routeIds) {
+      const coveredRouteIds = new Set((table?.routeIds || []).filter(Boolean));
+      return routeIds.size > 0 && [...routeIds].every((id) => coveredRouteIds.has(id));
+    }
+
     function fareRuleKeyForOperatorIds(operatorIds, trip = null, segments = []) {
       const ids = new Set((operatorIds || []).filter(Boolean));
       if (ids.has('shinkansen') || isShinkansenTrip(trip)) {
@@ -7634,6 +7651,31 @@
       } : null;
     }
 
+    function collectedStationPairBaseFare(segments) {
+      const rules = state.fareRules;
+      const first = (segments || [])[0];
+      const last = (segments || []).at(-1);
+      if (!rules?.stationPairFareTables || !first?.from_station_id || !last?.to_station_id) return null;
+      const routeIds = fareSegmentsRouteIds(segments);
+      const fromName = fareStationName(first.from_station_id);
+      const toName = fareStationName(last.to_station_id);
+      const directKey = fareStationPairKey(fromName, toName);
+      const reverseKey = fareStationPairKey(toName, fromName);
+      for (const [ruleKey, table] of Object.entries(rules.stationPairFareTables || {})) {
+        if (!fareTableCoversRouteIds(table, routeIds)) continue;
+        const pair = table.pairs?.[directKey] || table.pairs?.[reverseKey];
+        if (!pair) continue;
+        return {
+          yen: pair.yen,
+          row: pair,
+          ruleKey,
+          source: 'collected_station_pair_fare_table',
+          modelVersion: rules.modelVersion,
+        };
+      }
+      return null;
+    }
+
     function limitedExpressFareTableKey(trip, segments) {
       const ruleKey = fareRuleKeyForOperatorIds(fareOperatorIdsForSegments(segments, trip), trip, segments);
       if (ruleKey === 'jr_hokkaido') return 'a_hokkaido';
@@ -7660,7 +7702,7 @@
       const segments = farePathSegmentsForLeg(trip, boardStop, alightStop);
       const distanceKm = Number(segments.reduce((sum, segment) => sum + (segment.distance_km || 0), 0).toFixed(3));
       const premiumType = farePremiumForTrip(trip);
-      const collectedBase = collectedBaseFare(distanceKm, segments, trip);
+      const collectedBase = collectedStationPairBaseFare(segments) || collectedBaseFare(distanceKm, segments, trip);
       const collectedPremium = collectedPremiumFare(distanceKm, premiumType, trip, segments);
       const baseYen = collectedBase?.yen ?? null;
       const premiumYen = premiumType === 'none' ? 0 : (collectedPremium?.yen ?? null);

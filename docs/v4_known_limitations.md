@@ -19,8 +19,8 @@ V4 is a nationwide railway gameplay release. It is not a full Japanese mobility 
 ## Fare Limits
 
 - V4 has a real fare ledger, not an estimated one. If a leg lacks a collected real fare rule, the fare is reported as unknown/null.
-- Current collected fare coverage is `382 / 604` service routes. The coverage audit is `data/v4_fare_rule_coverage_audit.json`.
-- Remaining private/local railway fares often require exact station-pair matrices, special-section fares, or airport/add-on fares. They must not be forced into distance bands unless the official rule can be represented exactly.
+- Current collected fare coverage is `383 / 604` service routes. The coverage audit is `data/v4_fare_rule_coverage_audit.json`.
+- Remaining private/local railway fares often require exact station-pair matrices, special-section fares, or airport/add-on fares. Station-pair fare tables are supported, but they must not be forced into distance bands unless the official rule can be represented exactly.
 - Limited express fare is modeled as ordinary base fare plus a collected limited express surcharge. JR conventional limited express uses the published reserved ordinary-car normal-season surcharge as the current default.
 
 ## Trace And Highlight Limits

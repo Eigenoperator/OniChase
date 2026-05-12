@@ -81,6 +81,17 @@ OFFICIAL_REFERENCE_SOURCES = [
     },
 ]
 
+KITAKYUSHU_MONORAIL_STATION_PAIR_SOURCE = {
+    "key": "kitakyushu_monorail_station_pairs",
+    "operatorIds": ["北九州高速鉄道"],
+    "operatorName": "北九州高速鉄道",
+    "url": "https://kitakyushu-monorail.co.jp/fare/ticket.php",
+    "routeIds": ["V4_ROUTE_95A9919692CE5D"],
+    "notes": [
+        "北九州モノレール公式の普通券運賃表から駅間区分を抽出。100円モノレール区間を含む大人普通運賃。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -506,9 +517,62 @@ MANUAL_OPERATOR_FARE_TABLES = [
     },
 ]
 
+MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
+]
+
 
 def manual_rows(rows: list[tuple[int, int | None, int]]) -> list[dict[str, Any]]:
     return [{"fromKm": start, "toKm": end, "yen": yen} for start, end, yen in rows]
+
+
+def station_pair_key(left_name: str, right_name: str) -> str:
+    return f"{''.join(left_name.split())}|{''.join(right_name.split())}"
+
+
+def manual_station_pairs(pairs: list[tuple[str, str, int]]) -> dict[str, dict[str, Any]]:
+    return {
+        station_pair_key(left_name, right_name): {
+            "fromStationName": left_name,
+            "toStationName": right_name,
+            "yen": yen,
+        }
+        for left_name, right_name, yen in pairs
+    }
+
+
+def parse_kitakyushu_monorail_pairs(html: str) -> dict[str, dict[str, Any]]:
+    station_names: dict[str, str] = {}
+    for match in re.finditer(r'<td class="[^"]*\bstation\b[^"]*" data-target="([^"]+)">(.*?)</td>', html, re.S):
+        text_match = re.search(r'<span class="text">(.*?)</span>', match.group(2), re.S)
+        if text_match:
+            station_names[match.group(1)] = "".join(re.sub(r"<[^>]+>", "", text_match.group(1)).split())
+    zone_yen = {
+        "station-area01": 100,
+        "station-area02": 230,
+        "station-area03": 290,
+        "station-area04": 340,
+        "station-area05": 380,
+    }
+    pairs: dict[str, dict[str, Any]] = {}
+    for match in re.finditer(r'<td class="([^"]*adult[^"]*)"', html):
+        classes = match.group(1).split()
+        zone = next((class_name for class_name in classes if class_name in zone_yen), None)
+        if not zone:
+            continue
+        slugs = [
+            class_name for class_name in classes
+            if class_name not in {"adult", "child"} and class_name not in zone_yen and class_name in station_names
+        ]
+        if len(slugs) != 2:
+            continue
+        left_name = station_names[slugs[0]]
+        right_name = station_names[slugs[1]]
+        pairs[station_pair_key(left_name, right_name)] = {
+            "fromStationName": left_name,
+            "toStationName": right_name,
+            "yen": zone_yen[zone],
+        }
+    return pairs
 
 
 class TextExtractor(HTMLParser):
@@ -542,6 +606,16 @@ def fetch_text(url: str, cache_dir: Path) -> tuple[str, list[str]]:
     parser = TextExtractor()
     parser.feed(response.text)
     return str(cache_path.relative_to(ROOT)), parser.lines
+
+
+def fetch_raw(url: str, cache_dir: Path) -> tuple[str, str]:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / (re.sub(r"[^a-zA-Z0-9_.-]+", "_", url).strip("_") + ".html")
+    response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
+    response.raise_for_status()
+    response.encoding = response.encoding or "utf-8"
+    cache_path.write_text(response.text, encoding=response.encoding)
+    return str(cache_path.relative_to(ROOT)), response.text
 
 
 def try_fetch_text(url: str, cache_dir: Path) -> tuple[str | None, list[str], str | None]:
@@ -621,6 +695,7 @@ def parse_limited_express_rows(lines: list[str], marker: str, max_rows: int = 16
 def build_rules(cache_dir: Path) -> dict[str, Any]:
     sources: list[dict[str, Any]] = []
     ordinary_tables: dict[str, Any] = {}
+    station_pair_tables: dict[str, Any] = {}
     for source in JR_FARE_SOURCES:
         cache_path, lines = fetch_text(source["url"], cache_dir)
         source_record = {
@@ -702,6 +777,52 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
             },
         }
 
+    for table in MANUAL_STATION_PAIR_FARE_TABLES:
+        cache_path, _lines, error = try_fetch_text(table["url"], cache_dir)
+        source_record = {
+            "key": table["key"],
+            "url": table["url"],
+            "kind": "station_pair_fare_table",
+            "operatorIds": table["operatorIds"],
+            "operatorName": table["operatorName"],
+            "extraction": "manual_from_official_source",
+        }
+        if cache_path:
+            source_record["cachePath"] = cache_path
+        if error:
+            source_record["fetchError"] = error
+        sources.append(source_record)
+        station_pair_tables[table["key"]] = {
+            "operatorIds": table["operatorIds"],
+            **({"routeIds": table["routeIds"]} if table.get("routeIds") else {}),
+            "sourceKey": table["key"],
+            "operatorName": table["operatorName"],
+            "notes": table.get("notes") or [],
+            "pairs": manual_station_pairs(table["pairs"]),
+        }
+
+    kitakyushu = KITAKYUSHU_MONORAIL_STATION_PAIR_SOURCE
+    cache_path, html = fetch_raw(kitakyushu["url"], cache_dir)
+    kitakyushu_pairs = parse_kitakyushu_monorail_pairs(html)
+    sources.append({
+        "key": kitakyushu["key"],
+        "url": kitakyushu["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": kitakyushu["operatorIds"],
+        "operatorName": kitakyushu["operatorName"],
+        "extraction": "parsed_station_pair_classes_from_official_html",
+        "pairCount": len(kitakyushu_pairs),
+    })
+    station_pair_tables[kitakyushu["key"]] = {
+        "operatorIds": kitakyushu["operatorIds"],
+        "routeIds": kitakyushu["routeIds"],
+        "sourceKey": kitakyushu["key"],
+        "operatorName": kitakyushu["operatorName"],
+        "notes": kitakyushu["notes"],
+        "pairs": kitakyushu_pairs,
+    }
+
     return {
         "schemaVersion": 1,
         "generatedAt": datetime.now(timezone.utc).isoformat(),
@@ -709,6 +830,7 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "currency": "JPY",
         "sources": sources,
         "ordinaryFareTables": ordinary_tables,
+        "stationPairFareTables": station_pair_tables,
         "limitedExpressSurchargeTables": limited_tables,
         "coverageNotes": [
             "JR ordinary fare tables and conventional limited express surcharge tables are collected from published fare-rule pages.",
@@ -730,6 +852,7 @@ def main() -> None:
     print(json.dumps({
         "output": str(args.output.relative_to(ROOT)),
         "ordinaryTableCount": len(payload["ordinaryFareTables"]),
+        "stationPairTableCount": len(payload["stationPairFareTables"]),
         "limitedExpressTableCount": len(payload["limitedExpressSurchargeTables"]),
         "sourceCount": len(payload["sources"]),
     }, ensure_ascii=False, indent=2))

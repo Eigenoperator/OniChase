@@ -68,11 +68,12 @@ Current manifest baseline:
 Fare rule baseline:
 
 - ordinary fare tables: `40`
+- station-pair fare tables: `1`
 - limited express surcharge tables: `4`
-- covered routes: `382 / 604`
-- unresolved routes: `222 / 604`
+- covered routes: `383 / 604`
+- unresolved routes: `221 / 604`
 
-The unresolved routes are not estimated. Many remaining private/local railways publish station-pair matrices, special section fares, or add-on fares that cannot be represented exactly by the current distance-band fare resolver. Those routes must stay unknown until an exact station-pair/add-on fare model is added.
+The unresolved routes are not estimated. Many remaining private/local railways publish station-pair matrices, special section fares, or add-on fares. V4 now supports station-pair fare tables, but routes without collected exact tables must stay unknown until their official matrix/add-on data is added.
 
 ## Release Audit Artifacts
 
