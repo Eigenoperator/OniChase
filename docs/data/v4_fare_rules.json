@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T02:54:13.073818+00:00",
+  "generatedAt": "2026-05-13T02:58:03.940334+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -414,6 +414,17 @@
       "operatorName": "こうべ未来都市機構",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_koberope.jp_maya_price.html"
+    },
+    {
+      "key": "seikan_tunnel_museum_incline_flat_2026",
+      "url": "https://seikan-tunnel-museum.jp/info.html",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "一般財団法人青函トンネル記念館"
+      ],
+      "operatorName": "一般財団法人青函トンネル記念館",
+      "extraction": "manual_from_official_source",
+      "fetchError": "HTTPSConnectionPool(host='seikan-tunnel-museum.jp', port=443): Max retries exceeded with url: /info.html (Caused by SSLError(SSLError(1, '[SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1032)')))"
     },
     {
       "key": "astram_line_202510",
@@ -5268,6 +5279,31 @@
               "fromKm": 1,
               "toKm": null,
               "yen": 450
+            }
+          ]
+        }
+      }
+    },
+    "seikan_tunnel_museum_incline_flat_2026": {
+      "operatorIds": [
+        "一般財団法人青函トンネル記念館"
+      ],
+      "routeIds": [
+        "V4_ROUTE_883FC855768AA4"
+      ],
+      "sourceKey": "seikan_tunnel_museum_incline_flat_2026",
+      "operatorName": "一般財団法人青函トンネル記念館",
+      "notes": [
+        "青函トンネル記念館公式の体験坑道乗車券。大人片道乗車相当として扱う。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": null,
+              "yen": 1200
             }
           ]
         }

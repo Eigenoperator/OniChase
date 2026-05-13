@@ -643,6 +643,15 @@ MANUAL_OPERATOR_FARE_TABLES = [
         "rows": [(1, None, 450)],
     },
     {
+        "key": "seikan_tunnel_museum_incline_flat_2026",
+        "operatorIds": ["一般財団法人青函トンネル記念館"],
+        "operatorName": "一般財団法人青函トンネル記念館",
+        "url": "https://seikan-tunnel-museum.jp/info.html",
+        "notes": ["青函トンネル記念館公式の体験坑道乗車券。大人片道乗車相当として扱う。"],
+        "routeIds": ["V4_ROUTE_883FC855768AA4"],
+        "rows": [(1, None, 1200)],
+    },
+    {
         "key": "astram_line_202510",
         "operatorIds": ["広島高速交通"],
         "operatorName": "広島高速交通",
