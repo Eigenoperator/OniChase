@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T19:22:23.187590+00:00",
+  "generatedAt": "2026-05-13T19:55:57.528575+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -84,6 +84,17 @@
       "operatorName": "肥薩おれんじ鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.hs-orange.com_common_UploadFileOutput.ashx_c_id_3_flid_3561_id_929_sub_id_5.html"
+    },
+    {
+      "key": "hokuso_railway_202504",
+      "url": "https://www.hokuso-railway.co.jp/docs/railway/passenger_sales.pdf",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "北総鉄道"
+      ],
+      "operatorName": "北総鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.hokuso-railway.co.jp_docs_railway_passenger_sales.pdf.html"
     },
     {
       "key": "izuhakone_railway_202403",
@@ -1008,6 +1019,28 @@
       "operatorName": "甘木鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.amatetsu.jp_new_20240917_info.pdf.html"
+    },
+    {
+      "key": "igr_iwate_ginga_station_pairs_202303",
+      "url": "https://igr.jp/fare",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "アイジアルいわて銀河鉄道"
+      ],
+      "operatorName": "アイジーアールいわて銀河鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_igr.jp_fare.html"
+    },
+    {
+      "key": "yagan_railway_station_pairs_201910",
+      "url": "https://www.yagan.co.jp/fare/",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "野岩鉄道"
+      ],
+      "operatorName": "野岩鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.yagan.co.jp_fare.html"
     },
     {
       "key": "manyosen_station_pairs_202405",
@@ -4564,6 +4597,86 @@
         }
       }
     },
+    "hokuso_railway_202504": {
+      "operatorIds": [
+        "北総鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_E304DA5E373162"
+      ],
+      "sourceKey": "hokuso_railway_202504",
+      "operatorName": "北総鉄道",
+      "notes": [
+        "北総鉄道公式の2025年4月1日旅客営業規則第50条に掲載された大人片道普通旅客運賃を収録。IC 1円単位運賃、京成・都営地下鉄・京急等との連絡運賃、乗継割引、定期、回数券、団体、特殊割引は別体系のため未収録。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 3,
+              "yen": 190
+            },
+            {
+              "fromKm": 4,
+              "toKm": 5,
+              "yen": 280
+            },
+            {
+              "fromKm": 6,
+              "toKm": 7,
+              "yen": 330
+            },
+            {
+              "fromKm": 8,
+              "toKm": 9,
+              "yen": 380
+            },
+            {
+              "fromKm": 10,
+              "toKm": 11,
+              "yen": 430
+            },
+            {
+              "fromKm": 12,
+              "toKm": 14,
+              "yen": 480
+            },
+            {
+              "fromKm": 15,
+              "toKm": 17,
+              "yen": 550
+            },
+            {
+              "fromKm": 18,
+              "toKm": 20,
+              "yen": 620
+            },
+            {
+              "fromKm": 21,
+              "toKm": 23,
+              "yen": 670
+            },
+            {
+              "fromKm": 24,
+              "toKm": 26,
+              "yen": 720
+            },
+            {
+              "fromKm": 27,
+              "toKm": 29,
+              "yen": 770
+            },
+            {
+              "fromKm": 30,
+              "toKm": 33,
+              "yen": 820
+            }
+          ]
+        }
+      }
+    },
     "izuhakone_railway_202403": {
       "operatorIds": [
         "伊豆箱根鉄道"
@@ -7547,12 +7660,13 @@
         "V4_ROUTE_606F2D70D0B351",
         "V4_ROUTE_180A8AC3E9B282",
         "V4_ROUTE_CB287DAA293B22",
-        "V4_ROUTE_3B2B50773C0B7A"
+        "V4_ROUTE_3B2B50773C0B7A",
+        "V4_ROUTE_43CB80819A14B6"
       ],
       "sourceKey": "nankai",
       "operatorName": "南海電気鉄道",
       "notes": [
-        "2025年4月1日改定の南海線及び高野線対キロ区間制。空港線加算運賃と鋼索線は未収集のため覆わない。"
+        "2025年4月1日改定の南海線及び高野線対キロ区間制。南海・泉北合併により旧泉北高速線にも南海電鉄の運賃表を適用。空港線加算運賃と鋼索線は別表で収録するためこの対キロ表では覆わない。"
       ],
       "tables": {
         "main": {
@@ -9690,6 +9804,982 @@
     }
   },
   "stationPairFareTables": {
+    "igr_iwate_ginga_station_pairs_202303": {
+      "operatorIds": [
+        "アイジアルいわて銀河鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_C7A3C3100D6667"
+      ],
+      "sourceKey": "igr_iwate_ginga_station_pairs_202303",
+      "operatorName": "アイジーアールいわて銀河鉄道",
+      "notes": [
+        "IGRいわて銀河鉄道公式の普通運賃表（大人、2023年3月18日改定）から、盛岡-目時間の会社線内大人普通運賃だけを収録。ページには連絡運輸範囲表も併載されているが、v4では旧データとの重複を避けるためIGR線内の station-pair だけを覆う。",
+        "小児運賃、通勤・通学定期、連絡運輸、割引乗車券、企画乗車券は別体系のため未収録。"
+      ],
+      "pairs": {
+        "盛岡|青山": {
+          "fromStationName": "盛岡",
+          "toStationName": "青山",
+          "yen": 230
+        },
+        "盛岡|厨川": {
+          "fromStationName": "盛岡",
+          "toStationName": "厨川",
+          "yen": 320
+        },
+        "青山|厨川": {
+          "fromStationName": "青山",
+          "toStationName": "厨川",
+          "yen": 230
+        },
+        "盛岡|巣子": {
+          "fromStationName": "盛岡",
+          "toStationName": "巣子",
+          "yen": 410
+        },
+        "青山|巣子": {
+          "fromStationName": "青山",
+          "toStationName": "巣子",
+          "yen": 340
+        },
+        "厨川|巣子": {
+          "fromStationName": "厨川",
+          "toStationName": "巣子",
+          "yen": 320
+        },
+        "盛岡|滝沢": {
+          "fromStationName": "盛岡",
+          "toStationName": "滝沢",
+          "yen": 410
+        },
+        "青山|滝沢": {
+          "fromStationName": "青山",
+          "toStationName": "滝沢",
+          "yen": 340
+        },
+        "厨川|滝沢": {
+          "fromStationName": "厨川",
+          "toStationName": "滝沢",
+          "yen": 340
+        },
+        "巣子|滝沢": {
+          "fromStationName": "巣子",
+          "toStationName": "滝沢",
+          "yen": 170
+        },
+        "盛岡|渋民": {
+          "fromStationName": "盛岡",
+          "toStationName": "渋民",
+          "yen": 550
+        },
+        "青山|渋民": {
+          "fromStationName": "青山",
+          "toStationName": "渋民",
+          "yen": 410
+        },
+        "厨川|渋民": {
+          "fromStationName": "厨川",
+          "toStationName": "渋民",
+          "yen": 410
+        },
+        "巣子|渋民": {
+          "fromStationName": "巣子",
+          "toStationName": "渋民",
+          "yen": 340
+        },
+        "滝沢|渋民": {
+          "fromStationName": "滝沢",
+          "toStationName": "渋民",
+          "yen": 320
+        },
+        "盛岡|好摩": {
+          "fromStationName": "盛岡",
+          "toStationName": "好摩",
+          "yen": 690
+        },
+        "青山|好摩": {
+          "fromStationName": "青山",
+          "toStationName": "好摩",
+          "yen": 550
+        },
+        "厨川|好摩": {
+          "fromStationName": "厨川",
+          "toStationName": "好摩",
+          "yen": 550
+        },
+        "巣子|好摩": {
+          "fromStationName": "巣子",
+          "toStationName": "好摩",
+          "yen": 410
+        },
+        "滝沢|好摩": {
+          "fromStationName": "滝沢",
+          "toStationName": "好摩",
+          "yen": 340
+        },
+        "渋民|好摩": {
+          "fromStationName": "渋民",
+          "toStationName": "好摩",
+          "yen": 320
+        },
+        "盛岡|岩手川口": {
+          "fromStationName": "盛岡",
+          "toStationName": "岩手川口",
+          "yen": 830
+        },
+        "青山|岩手川口": {
+          "fromStationName": "青山",
+          "toStationName": "岩手川口",
+          "yen": 690
+        },
+        "厨川|岩手川口": {
+          "fromStationName": "厨川",
+          "toStationName": "岩手川口",
+          "yen": 690
+        },
+        "巣子|岩手川口": {
+          "fromStationName": "巣子",
+          "toStationName": "岩手川口",
+          "yen": 550
+        },
+        "滝沢|岩手川口": {
+          "fromStationName": "滝沢",
+          "toStationName": "岩手川口",
+          "yen": 410
+        },
+        "渋民|岩手川口": {
+          "fromStationName": "渋民",
+          "toStationName": "岩手川口",
+          "yen": 410
+        },
+        "好摩|岩手川口": {
+          "fromStationName": "好摩",
+          "toStationName": "岩手川口",
+          "yen": 320
+        },
+        "盛岡|いわて沼宮内": {
+          "fromStationName": "盛岡",
+          "toStationName": "いわて沼宮内",
+          "yen": 970
+        },
+        "青山|いわて沼宮内": {
+          "fromStationName": "青山",
+          "toStationName": "いわて沼宮内",
+          "yen": 830
+        },
+        "厨川|いわて沼宮内": {
+          "fromStationName": "厨川",
+          "toStationName": "いわて沼宮内",
+          "yen": 830
+        },
+        "巣子|いわて沼宮内": {
+          "fromStationName": "巣子",
+          "toStationName": "いわて沼宮内",
+          "yen": 690
+        },
+        "滝沢|いわて沼宮内": {
+          "fromStationName": "滝沢",
+          "toStationName": "いわて沼宮内",
+          "yen": 550
+        },
+        "渋民|いわて沼宮内": {
+          "fromStationName": "渋民",
+          "toStationName": "いわて沼宮内",
+          "yen": 550
+        },
+        "好摩|いわて沼宮内": {
+          "fromStationName": "好摩",
+          "toStationName": "いわて沼宮内",
+          "yen": 410
+        },
+        "岩手川口|いわて沼宮内": {
+          "fromStationName": "岩手川口",
+          "toStationName": "いわて沼宮内",
+          "yen": 320
+        },
+        "盛岡|御堂": {
+          "fromStationName": "盛岡",
+          "toStationName": "御堂",
+          "yen": 1110
+        },
+        "青山|御堂": {
+          "fromStationName": "青山",
+          "toStationName": "御堂",
+          "yen": 970
+        },
+        "厨川|御堂": {
+          "fromStationName": "厨川",
+          "toStationName": "御堂",
+          "yen": 970
+        },
+        "巣子|御堂": {
+          "fromStationName": "巣子",
+          "toStationName": "御堂",
+          "yen": 830
+        },
+        "滝沢|御堂": {
+          "fromStationName": "滝沢",
+          "toStationName": "御堂",
+          "yen": 830
+        },
+        "渋民|御堂": {
+          "fromStationName": "渋民",
+          "toStationName": "御堂",
+          "yen": 690
+        },
+        "好摩|御堂": {
+          "fromStationName": "好摩",
+          "toStationName": "御堂",
+          "yen": 550
+        },
+        "岩手川口|御堂": {
+          "fromStationName": "岩手川口",
+          "toStationName": "御堂",
+          "yen": 410
+        },
+        "いわて沼宮内|御堂": {
+          "fromStationName": "いわて沼宮内",
+          "toStationName": "御堂",
+          "yen": 320
+        },
+        "盛岡|奥中山高原": {
+          "fromStationName": "盛岡",
+          "toStationName": "奥中山高原",
+          "yen": 1240
+        },
+        "青山|奥中山高原": {
+          "fromStationName": "青山",
+          "toStationName": "奥中山高原",
+          "yen": 1240
+        },
+        "厨川|奥中山高原": {
+          "fromStationName": "厨川",
+          "toStationName": "奥中山高原",
+          "yen": 1110
+        },
+        "巣子|奥中山高原": {
+          "fromStationName": "巣子",
+          "toStationName": "奥中山高原",
+          "yen": 970
+        },
+        "滝沢|奥中山高原": {
+          "fromStationName": "滝沢",
+          "toStationName": "奥中山高原",
+          "yen": 970
+        },
+        "渋民|奥中山高原": {
+          "fromStationName": "渋民",
+          "toStationName": "奥中山高原",
+          "yen": 830
+        },
+        "好摩|奥中山高原": {
+          "fromStationName": "好摩",
+          "toStationName": "奥中山高原",
+          "yen": 690
+        },
+        "岩手川口|奥中山高原": {
+          "fromStationName": "岩手川口",
+          "toStationName": "奥中山高原",
+          "yen": 550
+        },
+        "いわて沼宮内|奥中山高原": {
+          "fromStationName": "いわて沼宮内",
+          "toStationName": "奥中山高原",
+          "yen": 410
+        },
+        "御堂|奥中山高原": {
+          "fromStationName": "御堂",
+          "toStationName": "奥中山高原",
+          "yen": 340
+        },
+        "盛岡|小繋": {
+          "fromStationName": "盛岡",
+          "toStationName": "小繋",
+          "yen": 1490
+        },
+        "青山|小繋": {
+          "fromStationName": "青山",
+          "toStationName": "小繋",
+          "yen": 1370
+        },
+        "厨川|小繋": {
+          "fromStationName": "厨川",
+          "toStationName": "小繋",
+          "yen": 1370
+        },
+        "巣子|小繋": {
+          "fromStationName": "巣子",
+          "toStationName": "小繋",
+          "yen": 1240
+        },
+        "滝沢|小繋": {
+          "fromStationName": "滝沢",
+          "toStationName": "小繋",
+          "yen": 1110
+        },
+        "渋民|小繋": {
+          "fromStationName": "渋民",
+          "toStationName": "小繋",
+          "yen": 1110
+        },
+        "好摩|小繋": {
+          "fromStationName": "好摩",
+          "toStationName": "小繋",
+          "yen": 970
+        },
+        "岩手川口|小繋": {
+          "fromStationName": "岩手川口",
+          "toStationName": "小繋",
+          "yen": 830
+        },
+        "いわて沼宮内|小繋": {
+          "fromStationName": "いわて沼宮内",
+          "toStationName": "小繋",
+          "yen": 690
+        },
+        "御堂|小繋": {
+          "fromStationName": "御堂",
+          "toStationName": "小繋",
+          "yen": 410
+        },
+        "奥中山高原|小繋": {
+          "fromStationName": "奥中山高原",
+          "toStationName": "小繋",
+          "yen": 340
+        },
+        "盛岡|小鳥谷": {
+          "fromStationName": "盛岡",
+          "toStationName": "小鳥谷",
+          "yen": 1610
+        },
+        "青山|小鳥谷": {
+          "fromStationName": "青山",
+          "toStationName": "小鳥谷",
+          "yen": 1610
+        },
+        "厨川|小鳥谷": {
+          "fromStationName": "厨川",
+          "toStationName": "小鳥谷",
+          "yen": 1490
+        },
+        "巣子|小鳥谷": {
+          "fromStationName": "巣子",
+          "toStationName": "小鳥谷",
+          "yen": 1370
+        },
+        "滝沢|小鳥谷": {
+          "fromStationName": "滝沢",
+          "toStationName": "小鳥谷",
+          "yen": 1370
+        },
+        "渋民|小鳥谷": {
+          "fromStationName": "渋民",
+          "toStationName": "小鳥谷",
+          "yen": 1240
+        },
+        "好摩|小鳥谷": {
+          "fromStationName": "好摩",
+          "toStationName": "小鳥谷",
+          "yen": 1110
+        },
+        "岩手川口|小鳥谷": {
+          "fromStationName": "岩手川口",
+          "toStationName": "小鳥谷",
+          "yen": 970
+        },
+        "いわて沼宮内|小鳥谷": {
+          "fromStationName": "いわて沼宮内",
+          "toStationName": "小鳥谷",
+          "yen": 830
+        },
+        "御堂|小鳥谷": {
+          "fromStationName": "御堂",
+          "toStationName": "小鳥谷",
+          "yen": 690
+        },
+        "奥中山高原|小鳥谷": {
+          "fromStationName": "奥中山高原",
+          "toStationName": "小鳥谷",
+          "yen": 550
+        },
+        "小繋|小鳥谷": {
+          "fromStationName": "小繋",
+          "toStationName": "小鳥谷",
+          "yen": 340
+        },
+        "盛岡|一戸": {
+          "fromStationName": "盛岡",
+          "toStationName": "一戸",
+          "yen": 1730
+        },
+        "青山|一戸": {
+          "fromStationName": "青山",
+          "toStationName": "一戸",
+          "yen": 1730
+        },
+        "厨川|一戸": {
+          "fromStationName": "厨川",
+          "toStationName": "一戸",
+          "yen": 1610
+        },
+        "巣子|一戸": {
+          "fromStationName": "巣子",
+          "toStationName": "一戸",
+          "yen": 1490
+        },
+        "滝沢|一戸": {
+          "fromStationName": "滝沢",
+          "toStationName": "一戸",
+          "yen": 1490
+        },
+        "渋民|一戸": {
+          "fromStationName": "渋民",
+          "toStationName": "一戸",
+          "yen": 1370
+        },
+        "好摩|一戸": {
+          "fromStationName": "好摩",
+          "toStationName": "一戸",
+          "yen": 1240
+        },
+        "岩手川口|一戸": {
+          "fromStationName": "岩手川口",
+          "toStationName": "一戸",
+          "yen": 1110
+        },
+        "いわて沼宮内|一戸": {
+          "fromStationName": "いわて沼宮内",
+          "toStationName": "一戸",
+          "yen": 970
+        },
+        "御堂|一戸": {
+          "fromStationName": "御堂",
+          "toStationName": "一戸",
+          "yen": 830
+        },
+        "奥中山高原|一戸": {
+          "fromStationName": "奥中山高原",
+          "toStationName": "一戸",
+          "yen": 690
+        },
+        "小繋|一戸": {
+          "fromStationName": "小繋",
+          "toStationName": "一戸",
+          "yen": 410
+        },
+        "小鳥谷|一戸": {
+          "fromStationName": "小鳥谷",
+          "toStationName": "一戸",
+          "yen": 320
+        },
+        "盛岡|二戸": {
+          "fromStationName": "盛岡",
+          "toStationName": "二戸",
+          "yen": 1970
+        },
+        "青山|二戸": {
+          "fromStationName": "青山",
+          "toStationName": "二戸",
+          "yen": 1850
+        },
+        "厨川|二戸": {
+          "fromStationName": "厨川",
+          "toStationName": "二戸",
+          "yen": 1850
+        },
+        "巣子|二戸": {
+          "fromStationName": "巣子",
+          "toStationName": "二戸",
+          "yen": 1730
+        },
+        "滝沢|二戸": {
+          "fromStationName": "滝沢",
+          "toStationName": "二戸",
+          "yen": 1610
+        },
+        "渋民|二戸": {
+          "fromStationName": "渋民",
+          "toStationName": "二戸",
+          "yen": 1490
+        },
+        "好摩|二戸": {
+          "fromStationName": "好摩",
+          "toStationName": "二戸",
+          "yen": 1370
+        },
+        "岩手川口|二戸": {
+          "fromStationName": "岩手川口",
+          "toStationName": "二戸",
+          "yen": 1240
+        },
+        "いわて沼宮内|二戸": {
+          "fromStationName": "いわて沼宮内",
+          "toStationName": "二戸",
+          "yen": 1110
+        },
+        "御堂|二戸": {
+          "fromStationName": "御堂",
+          "toStationName": "二戸",
+          "yen": 970
+        },
+        "奥中山高原|二戸": {
+          "fromStationName": "奥中山高原",
+          "toStationName": "二戸",
+          "yen": 830
+        },
+        "小繋|二戸": {
+          "fromStationName": "小繋",
+          "toStationName": "二戸",
+          "yen": 550
+        },
+        "小鳥谷|二戸": {
+          "fromStationName": "小鳥谷",
+          "toStationName": "二戸",
+          "yen": 410
+        },
+        "一戸|二戸": {
+          "fromStationName": "一戸",
+          "toStationName": "二戸",
+          "yen": 340
+        },
+        "盛岡|斗米": {
+          "fromStationName": "盛岡",
+          "toStationName": "斗米",
+          "yen": 1970
+        },
+        "青山|斗米": {
+          "fromStationName": "青山",
+          "toStationName": "斗米",
+          "yen": 1970
+        },
+        "厨川|斗米": {
+          "fromStationName": "厨川",
+          "toStationName": "斗米",
+          "yen": 1850
+        },
+        "巣子|斗米": {
+          "fromStationName": "巣子",
+          "toStationName": "斗米",
+          "yen": 1730
+        },
+        "滝沢|斗米": {
+          "fromStationName": "滝沢",
+          "toStationName": "斗米",
+          "yen": 1730
+        },
+        "渋民|斗米": {
+          "fromStationName": "渋民",
+          "toStationName": "斗米",
+          "yen": 1610
+        },
+        "好摩|斗米": {
+          "fromStationName": "好摩",
+          "toStationName": "斗米",
+          "yen": 1490
+        },
+        "岩手川口|斗米": {
+          "fromStationName": "岩手川口",
+          "toStationName": "斗米",
+          "yen": 1370
+        },
+        "いわて沼宮内|斗米": {
+          "fromStationName": "いわて沼宮内",
+          "toStationName": "斗米",
+          "yen": 1240
+        },
+        "御堂|斗米": {
+          "fromStationName": "御堂",
+          "toStationName": "斗米",
+          "yen": 1110
+        },
+        "奥中山高原|斗米": {
+          "fromStationName": "奥中山高原",
+          "toStationName": "斗米",
+          "yen": 830
+        },
+        "小繋|斗米": {
+          "fromStationName": "小繋",
+          "toStationName": "斗米",
+          "yen": 690
+        },
+        "小鳥谷|斗米": {
+          "fromStationName": "小鳥谷",
+          "toStationName": "斗米",
+          "yen": 410
+        },
+        "一戸|斗米": {
+          "fromStationName": "一戸",
+          "toStationName": "斗米",
+          "yen": 340
+        },
+        "二戸|斗米": {
+          "fromStationName": "二戸",
+          "toStationName": "斗米",
+          "yen": 230
+        },
+        "盛岡|金田一温泉": {
+          "fromStationName": "盛岡",
+          "toStationName": "金田一温泉",
+          "yen": 2090
+        },
+        "青山|金田一温泉": {
+          "fromStationName": "青山",
+          "toStationName": "金田一温泉",
+          "yen": 2090
+        },
+        "厨川|金田一温泉": {
+          "fromStationName": "厨川",
+          "toStationName": "金田一温泉",
+          "yen": 1970
+        },
+        "巣子|金田一温泉": {
+          "fromStationName": "巣子",
+          "toStationName": "金田一温泉",
+          "yen": 1850
+        },
+        "滝沢|金田一温泉": {
+          "fromStationName": "滝沢",
+          "toStationName": "金田一温泉",
+          "yen": 1850
+        },
+        "渋民|金田一温泉": {
+          "fromStationName": "渋民",
+          "toStationName": "金田一温泉",
+          "yen": 1730
+        },
+        "好摩|金田一温泉": {
+          "fromStationName": "好摩",
+          "toStationName": "金田一温泉",
+          "yen": 1610
+        },
+        "岩手川口|金田一温泉": {
+          "fromStationName": "岩手川口",
+          "toStationName": "金田一温泉",
+          "yen": 1490
+        },
+        "いわて沼宮内|金田一温泉": {
+          "fromStationName": "いわて沼宮内",
+          "toStationName": "金田一温泉",
+          "yen": 1370
+        },
+        "御堂|金田一温泉": {
+          "fromStationName": "御堂",
+          "toStationName": "金田一温泉",
+          "yen": 1240
+        },
+        "奥中山高原|金田一温泉": {
+          "fromStationName": "奥中山高原",
+          "toStationName": "金田一温泉",
+          "yen": 970
+        },
+        "小繋|金田一温泉": {
+          "fromStationName": "小繋",
+          "toStationName": "金田一温泉",
+          "yen": 830
+        },
+        "小鳥谷|金田一温泉": {
+          "fromStationName": "小鳥谷",
+          "toStationName": "金田一温泉",
+          "yen": 550
+        },
+        "一戸|金田一温泉": {
+          "fromStationName": "一戸",
+          "toStationName": "金田一温泉",
+          "yen": 410
+        },
+        "二戸|金田一温泉": {
+          "fromStationName": "二戸",
+          "toStationName": "金田一温泉",
+          "yen": 340
+        },
+        "斗米|金田一温泉": {
+          "fromStationName": "斗米",
+          "toStationName": "金田一温泉",
+          "yen": 320
+        },
+        "盛岡|目時": {
+          "fromStationName": "盛岡",
+          "toStationName": "目時",
+          "yen": 2420
+        },
+        "青山|目時": {
+          "fromStationName": "青山",
+          "toStationName": "目時",
+          "yen": 2090
+        },
+        "厨川|目時": {
+          "fromStationName": "厨川",
+          "toStationName": "目時",
+          "yen": 2090
+        },
+        "巣子|目時": {
+          "fromStationName": "巣子",
+          "toStationName": "目時",
+          "yen": 1970
+        },
+        "滝沢|目時": {
+          "fromStationName": "滝沢",
+          "toStationName": "目時",
+          "yen": 1850
+        },
+        "渋民|目時": {
+          "fromStationName": "渋民",
+          "toStationName": "目時",
+          "yen": 1850
+        },
+        "好摩|目時": {
+          "fromStationName": "好摩",
+          "toStationName": "目時",
+          "yen": 1730
+        },
+        "岩手川口|目時": {
+          "fromStationName": "岩手川口",
+          "toStationName": "目時",
+          "yen": 1610
+        },
+        "いわて沼宮内|目時": {
+          "fromStationName": "いわて沼宮内",
+          "toStationName": "目時",
+          "yen": 1370
+        },
+        "御堂|目時": {
+          "fromStationName": "御堂",
+          "toStationName": "目時",
+          "yen": 1240
+        },
+        "奥中山高原|目時": {
+          "fromStationName": "奥中山高原",
+          "toStationName": "目時",
+          "yen": 1110
+        },
+        "小繋|目時": {
+          "fromStationName": "小繋",
+          "toStationName": "目時",
+          "yen": 830
+        },
+        "小鳥谷|目時": {
+          "fromStationName": "小鳥谷",
+          "toStationName": "目時",
+          "yen": 690
+        },
+        "一戸|目時": {
+          "fromStationName": "一戸",
+          "toStationName": "目時",
+          "yen": 550
+        },
+        "二戸|目時": {
+          "fromStationName": "二戸",
+          "toStationName": "目時",
+          "yen": 410
+        },
+        "斗米|目時": {
+          "fromStationName": "斗米",
+          "toStationName": "目時",
+          "yen": 340
+        },
+        "金田一温泉|目時": {
+          "fromStationName": "金田一温泉",
+          "toStationName": "目時",
+          "yen": 230
+        }
+      }
+    },
+    "yagan_railway_station_pairs_201910": {
+      "operatorIds": [
+        "野岩鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_1DDEC07EC08E3A"
+      ],
+      "sourceKey": "yagan_railway_station_pairs_201910",
+      "operatorName": "野岩鉄道",
+      "notes": [
+        "野岩鉄道公式の会津鬼怒川線片道普通運賃表（令和元年10月1日改正）から、上段の大人普通運賃だけを収録。下段小人運賃、定期、得割回数券、特急料金、東武・会津鉄道・JR連絡乗車券、障害者割引は別体系のため未収録。"
+      ],
+      "pairs": {
+        "新藤原|龍王峡": {
+          "fromStationName": "新藤原",
+          "toStationName": "龍王峡",
+          "yen": 200
+        },
+        "新藤原|川治温泉": {
+          "fromStationName": "新藤原",
+          "toStationName": "川治温泉",
+          "yen": 300
+        },
+        "龍王峡|川治温泉": {
+          "fromStationName": "龍王峡",
+          "toStationName": "川治温泉",
+          "yen": 300
+        },
+        "新藤原|川治湯元": {
+          "fromStationName": "新藤原",
+          "toStationName": "川治湯元",
+          "yen": 300
+        },
+        "龍王峡|川治湯元": {
+          "fromStationName": "龍王峡",
+          "toStationName": "川治湯元",
+          "yen": 300
+        },
+        "川治温泉|川治湯元": {
+          "fromStationName": "川治温泉",
+          "toStationName": "川治湯元",
+          "yen": 200
+        },
+        "新藤原|湯西川温泉": {
+          "fromStationName": "新藤原",
+          "toStationName": "湯西川温泉",
+          "yen": 520
+        },
+        "龍王峡|湯西川温泉": {
+          "fromStationName": "龍王峡",
+          "toStationName": "湯西川温泉",
+          "yen": 420
+        },
+        "川治温泉|湯西川温泉": {
+          "fromStationName": "川治温泉",
+          "toStationName": "湯西川温泉",
+          "yen": 300
+        },
+        "川治湯元|湯西川温泉": {
+          "fromStationName": "川治湯元",
+          "toStationName": "湯西川温泉",
+          "yen": 300
+        },
+        "新藤原|中三依温泉": {
+          "fromStationName": "新藤原",
+          "toStationName": "中三依温泉",
+          "yen": 740
+        },
+        "龍王峡|中三依温泉": {
+          "fromStationName": "龍王峡",
+          "toStationName": "中三依温泉",
+          "yen": 740
+        },
+        "川治温泉|中三依温泉": {
+          "fromStationName": "川治温泉",
+          "toStationName": "中三依温泉",
+          "yen": 520
+        },
+        "川治湯元|中三依温泉": {
+          "fromStationName": "川治湯元",
+          "toStationName": "中三依温泉",
+          "yen": 520
+        },
+        "湯西川温泉|中三依温泉": {
+          "fromStationName": "湯西川温泉",
+          "toStationName": "中三依温泉",
+          "yen": 420
+        },
+        "新藤原|上三依塩原温泉口": {
+          "fromStationName": "新藤原",
+          "toStationName": "上三依塩原温泉口",
+          "yen": 840
+        },
+        "龍王峡|上三依塩原温泉口": {
+          "fromStationName": "龍王峡",
+          "toStationName": "上三依塩原温泉口",
+          "yen": 840
+        },
+        "川治温泉|上三依塩原温泉口": {
+          "fromStationName": "川治温泉",
+          "toStationName": "上三依塩原温泉口",
+          "yen": 740
+        },
+        "川治湯元|上三依塩原温泉口": {
+          "fromStationName": "川治湯元",
+          "toStationName": "上三依塩原温泉口",
+          "yen": 640
+        },
+        "湯西川温泉|上三依塩原温泉口": {
+          "fromStationName": "湯西川温泉",
+          "toStationName": "上三依塩原温泉口",
+          "yen": 520
+        },
+        "中三依温泉|上三依塩原温泉口": {
+          "fromStationName": "中三依温泉",
+          "toStationName": "上三依塩原温泉口",
+          "yen": 300
+        },
+        "新藤原|男鹿高原": {
+          "fromStationName": "新藤原",
+          "toStationName": "男鹿高原",
+          "yen": 1000
+        },
+        "龍王峡|男鹿高原": {
+          "fromStationName": "龍王峡",
+          "toStationName": "男鹿高原",
+          "yen": 920
+        },
+        "川治温泉|男鹿高原": {
+          "fromStationName": "川治温泉",
+          "toStationName": "男鹿高原",
+          "yen": 840
+        },
+        "川治湯元|男鹿高原": {
+          "fromStationName": "川治湯元",
+          "toStationName": "男鹿高原",
+          "yen": 840
+        },
+        "湯西川温泉|男鹿高原": {
+          "fromStationName": "湯西川温泉",
+          "toStationName": "男鹿高原",
+          "yen": 640
+        },
+        "中三依温泉|男鹿高原": {
+          "fromStationName": "中三依温泉",
+          "toStationName": "男鹿高原",
+          "yen": 420
+        },
+        "上三依塩原温泉口|男鹿高原": {
+          "fromStationName": "上三依塩原温泉口",
+          "toStationName": "男鹿高原",
+          "yen": 300
+        },
+        "新藤原|会津高原尾瀬口": {
+          "fromStationName": "新藤原",
+          "toStationName": "会津高原尾瀬口",
+          "yen": 1090
+        },
+        "龍王峡|会津高原尾瀬口": {
+          "fromStationName": "龍王峡",
+          "toStationName": "会津高原尾瀬口",
+          "yen": 1090
+        },
+        "川治温泉|会津高原尾瀬口": {
+          "fromStationName": "川治温泉",
+          "toStationName": "会津高原尾瀬口",
+          "yen": 1000
+        },
+        "川治湯元|会津高原尾瀬口": {
+          "fromStationName": "川治湯元",
+          "toStationName": "会津高原尾瀬口",
+          "yen": 1000
+        },
+        "湯西川温泉|会津高原尾瀬口": {
+          "fromStationName": "湯西川温泉",
+          "toStationName": "会津高原尾瀬口",
+          "yen": 840
+        },
+        "中三依温泉|会津高原尾瀬口": {
+          "fromStationName": "中三依温泉",
+          "toStationName": "会津高原尾瀬口",
+          "yen": 640
+        },
+        "上三依塩原温泉口|会津高原尾瀬口": {
+          "fromStationName": "上三依塩原温泉口",
+          "toStationName": "会津高原尾瀬口",
+          "yen": 520
+        },
+        "男鹿高原|会津高原尾瀬口": {
+          "fromStationName": "男鹿高原",
+          "toStationName": "会津高原尾瀬口",
+          "yen": 300
+        }
+      }
+    },
     "manyosen_station_pairs_202405": {
       "operatorIds": [
         "万葉線"
