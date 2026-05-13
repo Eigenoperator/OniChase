@@ -5,6 +5,7 @@ import argparse
 import ast
 import json
 import re
+import subprocess
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
@@ -112,6 +113,21 @@ ENODEN_STATION_PAIR_SOURCE = {
     "routeIds": ["V4_ROUTE_293DEFDC462506"],
     "notes": [
         "江ノ島電鉄公式の普通運賃・所要時間ページ内 fareObj から駅間大人普通運賃を抽出。",
+    ],
+}
+
+SANRIKU_STATION_PAIR_SOURCE = {
+    "key": "sanriku_station_pairs_202603",
+    "operatorIds": ["三陸鉄道"],
+    "operatorName": "三陸鉄道",
+    "url": "https://www.sanrikutetsudou.com/wp-content/uploads/2026/03/20260314futuunchinhyou.pdf",
+    "routeIds": [
+        "V4_ROUTE_1946C169C0A7D3",
+        "V4_ROUTE_CCEF6E6684C4E9",
+        "V4_ROUTE_B1E109F61AA54E",
+    ],
+    "notes": [
+        "三陸鉄道公式の2026年3月14日改正普通運賃表から駅間大人普通運賃を抽出。",
     ],
 }
 
@@ -946,6 +962,51 @@ def parse_enoden_pairs(html: str) -> dict[str, dict[str, Any]]:
     return pairs
 
 
+def clean_sanriku_station_name(raw: str) -> str:
+    name = raw.strip()
+    name = re.split(r"\s+特定運賃区間|\s+※八木沢は", name)[0]
+    for note_start in ["吉里吉里ー", "織笠ー", "八木沢・", "宮古ー", "田老ー", "野田玉川ー"]:
+        name = re.split(rf"\s+{re.escape(note_start)}", name)[0]
+    name = name.lstrip("※").strip()
+    return "".join(name.split())
+
+
+def parse_sanriku_pairs(lines: list[str]) -> dict[str, dict[str, Any]]:
+    rows: list[tuple[str, list[int]]] = []
+    station_count = 0
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        match = re.match(r"^((?:[\d,]+\s+)+)(.+)$", stripped)
+        if match:
+            fares = list(reversed([parse_money(token) for token in re.findall(r"[\d,]+", match.group(1))]))
+            station_name = clean_sanriku_station_name(match.group(2))
+            if fares and station_name:
+                rows.append((station_name, fares))
+                station_count = max(station_count, len(fares) + len(rows))
+            continue
+        if rows and station_count and len(rows) < station_count and not re.search(r"\d", stripped):
+            rows.append((clean_sanriku_station_name(stripped), []))
+            if len(rows) >= station_count:
+                break
+
+    stations = [station for station, _fares in rows]
+    pairs: dict[str, dict[str, Any]] = {}
+    for index, (from_station, fares) in enumerate(rows):
+        for offset, yen in enumerate(fares, start=1):
+            target_index = index + offset
+            if target_index >= len(stations):
+                continue
+            to_station = stations[target_index]
+            pairs[station_pair_key(from_station, to_station)] = {
+                "fromStationName": from_station,
+                "toStationName": to_station,
+                "yen": yen,
+            }
+    return pairs
+
+
 class TextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -987,6 +1048,22 @@ def fetch_raw(url: str, cache_dir: Path) -> tuple[str, str]:
     response.encoding = response.encoding or "utf-8"
     cache_path.write_text(response.text, encoding=response.encoding)
     return str(cache_path.relative_to(ROOT)), response.text
+
+
+def fetch_pdf_text(url: str, cache_dir: Path) -> tuple[str, list[str]]:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / (re.sub(r"[^a-zA-Z0-9_.-]+", "_", url).strip("_") + ".pdf")
+    response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
+    response.raise_for_status()
+    cache_path.write_bytes(response.content)
+    completed = subprocess.run(
+        ["pdftotext", "-layout", str(cache_path), "-"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    lines = [" ".join(line.split()) for line in completed.stdout.splitlines() if line.strip()]
+    return str(cache_path.relative_to(ROOT)), lines
 
 
 def try_fetch_text(url: str, cache_dir: Path) -> tuple[str | None, list[str], str | None]:
@@ -1236,6 +1313,28 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": enoden["operatorName"],
         "notes": enoden["notes"],
         "pairs": enoden_pairs,
+    }
+
+    sanriku = SANRIKU_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_pdf_text(sanriku["url"], cache_dir)
+    sanriku_pairs = parse_sanriku_pairs(lines)
+    sources.append({
+        "key": sanriku["key"],
+        "url": sanriku["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": sanriku["operatorIds"],
+        "operatorName": sanriku["operatorName"],
+        "extraction": "parsed_station_pair_matrix_from_official_pdf",
+        "pairCount": len(sanriku_pairs),
+    })
+    station_pair_tables[sanriku["key"]] = {
+        "operatorIds": sanriku["operatorIds"],
+        "routeIds": sanriku["routeIds"],
+        "sourceKey": sanriku["key"],
+        "operatorName": sanriku["operatorName"],
+        "notes": sanriku["notes"],
+        "pairs": sanriku_pairs,
     }
 
     return {
