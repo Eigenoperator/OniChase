@@ -1758,6 +1758,28 @@ def station_pair_flat_rows(station_order: list[str], yen: int) -> list[tuple[str
 
 MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
     {
+        "key": "keihan_iwashimizu_cable_station_pairs_2026",
+        "operatorIds": ["京阪電気鉄道"],
+        "operatorName": "京阪電気鉄道",
+        "url": "https://www.keihan.co.jp/traffic/time-fare/iwashimizu.html",
+        "notes": [
+            "京阪公式の石清水八幡宮参道ケーブル運賃・時刻表に掲載された大人片道普通運賃。往復、小児、定期運賃は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_D6C48165646C89"],
+        "pairs": [("ケーブル八幡宮口", "ケーブル八幡宮山上", 300)],
+    },
+    {
+        "key": "kobe_subway_hokushin_station_pairs_202006",
+        "operatorIds": ["神戸市"],
+        "operatorName": "神戸市交通局",
+        "url": "https://kotsu.city.kobe.lg.jp/subway/ryokin-teiki/kukansu-kyori/hokushin/",
+        "notes": [
+            "神戸市交通局公式の北神線（谷上-新神戸）地下鉄料金表に掲載された大人普通料金。小児、障害者割引、回数、定期料金は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_EEB52C003BB0C5"],
+        "pairs": [("谷上", "新神戸", 280)],
+    },
+    {
         "key": "yakuri_cable_station_pairs_2026",
         "operatorIds": ["四国ケブル"],
         "operatorName": "四国ケーブル",

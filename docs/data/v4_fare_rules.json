@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T05:15:33.102156+00:00",
+  "generatedAt": "2026-05-13T05:18:26.360587+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -920,6 +920,28 @@
       "operatorName": "甘木鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.amatetsu.jp_new_20240917_info.pdf.html"
+    },
+    {
+      "key": "keihan_iwashimizu_cable_station_pairs_2026",
+      "url": "https://www.keihan.co.jp/traffic/time-fare/iwashimizu.html",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "京阪電気鉄道"
+      ],
+      "operatorName": "京阪電気鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.keihan.co.jp_traffic_time-fare_iwashimizu.html.html"
+    },
+    {
+      "key": "kobe_subway_hokushin_station_pairs_202006",
+      "url": "https://kotsu.city.kobe.lg.jp/subway/ryokin-teiki/kukansu-kyori/hokushin/",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "神戸市"
+      ],
+      "operatorName": "神戸市交通局",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_kotsu.city.kobe.lg.jp_subway_ryokin-teiki_kukansu-kyori_hokushin.html"
     },
     {
       "key": "yakuri_cable_station_pairs_2026",
@@ -8430,6 +8452,46 @@
     }
   },
   "stationPairFareTables": {
+    "keihan_iwashimizu_cable_station_pairs_2026": {
+      "operatorIds": [
+        "京阪電気鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_D6C48165646C89"
+      ],
+      "sourceKey": "keihan_iwashimizu_cable_station_pairs_2026",
+      "operatorName": "京阪電気鉄道",
+      "notes": [
+        "京阪公式の石清水八幡宮参道ケーブル運賃・時刻表に掲載された大人片道普通運賃。往復、小児、定期運賃は別体系のため未収録。"
+      ],
+      "pairs": {
+        "ケーブル八幡宮口|ケーブル八幡宮山上": {
+          "fromStationName": "ケーブル八幡宮口",
+          "toStationName": "ケーブル八幡宮山上",
+          "yen": 300
+        }
+      }
+    },
+    "kobe_subway_hokushin_station_pairs_202006": {
+      "operatorIds": [
+        "神戸市"
+      ],
+      "routeIds": [
+        "V4_ROUTE_EEB52C003BB0C5"
+      ],
+      "sourceKey": "kobe_subway_hokushin_station_pairs_202006",
+      "operatorName": "神戸市交通局",
+      "notes": [
+        "神戸市交通局公式の北神線（谷上-新神戸）地下鉄料金表に掲載された大人普通料金。小児、障害者割引、回数、定期料金は別体系のため未収録。"
+      ],
+      "pairs": {
+        "谷上|新神戸": {
+          "fromStationName": "谷上",
+          "toStationName": "新神戸",
+          "yen": 280
+        }
+      }
+    },
     "yakuri_cable_station_pairs_2026": {
       "operatorIds": [
         "四国ケブル"
