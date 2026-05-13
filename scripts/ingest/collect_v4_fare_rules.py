@@ -1782,6 +1782,32 @@ def station_pair_flat_rows(station_order: list[str], yen: int) -> list[tuple[str
 
 MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
     {
+        "key": "nankai_airport_line_station_pairs_202504",
+        "operatorIds": ["南海電気鉄道"],
+        "operatorName": "南海電気鉄道",
+        "url": "https://www.nankai.co.jp/lib/company/handbook/pdf/handbook2025.pdf",
+        "notes": [
+            "南海電気鉄道2025ハンドブックの2025年4月1日改定普通旅客運賃表から、空港線内の大人普通運賃を収録。泉佐野-りんくうタウンは南海線対キロ運賃に空港線加算130円を加算、泉佐野-関西空港は空港線加算230円を加算、りんくうタウン-関西空港は公式特定運賃370円を使用。小児運賃、特急料金、特別車両料金は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_770122636049D3"],
+        "pairs": [
+            ("泉佐野", "りんくうタウン", 310),
+            ("泉佐野", "関西空港", 520),
+            ("りんくうタウン", "関西空港", 370),
+        ],
+    },
+    {
+        "key": "nankai_koyasan_cable_station_pairs_202504",
+        "operatorIds": ["南海電気鉄道"],
+        "operatorName": "南海電気鉄道",
+        "url": "https://www.nankai.co.jp/lib/company/handbook/pdf/handbook2025.pdf",
+        "notes": [
+            "南海電気鉄道2025ハンドブックの鋼索線（高野山ケーブルカー）均一制普通旅客運賃から、大人普通運賃500円を収録。小児運賃および鉄道線との通算乗車時の合算処理は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_B3A1329704DCFE"],
+        "pairs": [("極楽橋", "高野山", 500)],
+    },
+    {
         "key": "yokkaichi_asunarou_station_pairs_201910",
         "operatorIds": ["四日市あすなろう鉄道"],
         "operatorName": "四日市あすなろう鉄道",
