@@ -1584,17 +1584,23 @@ class TextExtractor(HTMLParser):
 def fetch_text(url: str, cache_dir: Path) -> tuple[str, list[str]]:
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path = cache_dir / (re.sub(r"[^a-zA-Z0-9_.-]+", "_", url).strip("_") + ".html")
-    response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
-    response.raise_for_status()
-    cache_path.write_text(response.text, encoding=response.encoding or "utf-8")
+    if cache_path.exists():
+        html = cache_path.read_text(encoding="utf-8", errors="replace")
+    else:
+        response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
+        response.raise_for_status()
+        html = response.text
+        cache_path.write_text(html, encoding=response.encoding or "utf-8")
     parser = TextExtractor()
-    parser.feed(response.text)
+    parser.feed(html)
     return str(cache_path.relative_to(ROOT)), parser.lines
 
 
 def fetch_raw(url: str, cache_dir: Path) -> tuple[str, str]:
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path = cache_dir / (re.sub(r"[^a-zA-Z0-9_.-]+", "_", url).strip("_") + ".html")
+    if cache_path.exists():
+        return str(cache_path.relative_to(ROOT)), cache_path.read_text(encoding="utf-8", errors="replace")
     response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
     response.raise_for_status()
     response.encoding = response.encoding or "utf-8"
@@ -1605,9 +1611,10 @@ def fetch_raw(url: str, cache_dir: Path) -> tuple[str, str]:
 def fetch_pdf_text(url: str, cache_dir: Path) -> tuple[str, list[str]]:
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path = cache_dir / (re.sub(r"[^a-zA-Z0-9_.-]+", "_", url).strip("_") + ".pdf")
-    response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
-    response.raise_for_status()
-    cache_path.write_bytes(response.content)
+    if not cache_path.exists():
+        response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
+        response.raise_for_status()
+        cache_path.write_bytes(response.content)
     completed = subprocess.run(
         ["pdftotext", "-layout", str(cache_path), "-"],
         check=True,
