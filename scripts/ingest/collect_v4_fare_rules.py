@@ -264,6 +264,23 @@ UEDA_DENTETSU_STATION_PAIR_SOURCE = {
     ],
 }
 
+CHIKUTETSU_STATION_PAIR_SOURCE = {
+    "key": "chikutetsu_station_pairs_202409",
+    "operatorIds": ["筑豊電気鉄道"],
+    "operatorName": "筑豊電気鉄道",
+    "url": "https://www.chikutetsu.co.jp/sta_pdf/unchin.pdf",
+    "routeIds": ["V4_ROUTE_517E3EEFBD0DBF"],
+    "stationOrder": [
+        "筑豊直方", "感田", "遠賀野", "木屋瀬", "新木屋瀬", "楠橋",
+        "筑豊香月", "希望が丘高校前", "筑豊中間", "東中間", "通谷",
+        "西山", "三ヶ森", "永犬丸", "今池", "森下", "穴生",
+        "萩原", "熊西", "黒崎駅前",
+    ],
+    "notes": [
+        "筑豊電気鉄道公式の運賃・キロ程表PDFから現金（普通券）大人運賃の三角表を抽出。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -1762,6 +1779,26 @@ def parse_ueda_dentetsu_pairs(lines: list[str], station_order: list[str]) -> dic
     return pairs
 
 
+def parse_chikutetsu_pairs(lines: list[str], station_order: list[str]) -> dict[str, dict[str, Any]]:
+    pairs: dict[str, dict[str, Any]] = {}
+    fare_rows = [
+        line
+        for line in lines
+        if re.match(r"^(?:\d{3}\s+)+", line)
+    ]
+    for origin_index, line in enumerate(fare_rows, start=1):
+        if origin_index >= len(station_order):
+            break
+        fares = [int(value) for value in re.findall(r"\d{3}", line)]
+        expected_count = origin_index
+        if len(fares) < expected_count:
+            return pairs
+        origin_name = station_order[origin_index]
+        for dest_index, yen in enumerate(fares[:expected_count]):
+            add_station_pair(pairs, origin_name, station_order[dest_index], yen)
+    return pairs
+
+
 class TextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -2296,6 +2333,31 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": ueda_dentetsu["operatorName"],
         "notes": ueda_dentetsu["notes"],
         "pairs": ueda_dentetsu_pairs,
+    }
+
+    chikutetsu = CHIKUTETSU_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_pdf_text(chikutetsu["url"], cache_dir)
+    chikutetsu_pairs = parse_chikutetsu_pairs(
+        lines,
+        chikutetsu["stationOrder"],
+    )
+    sources.append({
+        "key": chikutetsu["key"],
+        "url": chikutetsu["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": chikutetsu["operatorIds"],
+        "operatorName": chikutetsu["operatorName"],
+        "extraction": "parsed_station_pair_triangle_from_official_pdf",
+        "pairCount": len(chikutetsu_pairs),
+    })
+    station_pair_tables[chikutetsu["key"]] = {
+        "operatorIds": chikutetsu["operatorIds"],
+        "routeIds": chikutetsu["routeIds"],
+        "sourceKey": chikutetsu["key"],
+        "operatorName": chikutetsu["operatorName"],
+        "notes": chikutetsu["notes"],
+        "pairs": chikutetsu_pairs,
     }
 
     return {
