@@ -325,6 +325,42 @@ ECHIZEN_KATSUYAMA_STATION_PAIR_SOURCE = {
     ],
 }
 
+TOSAKURO_NAKAMURA_SUKUMO_STATION_PAIR_SOURCE = {
+    "key": "tosakuro_nakamura_sukumo_station_pairs",
+    "operatorIds": ["土佐くろしお鉄道"],
+    "operatorName": "土佐くろしお鉄道",
+    "url": "https://www.tosakuro.com/_files/ugd/310f5f_37eea061f96741e38687f6acba2d20f7.pdf",
+    "routeIds": ["V4_ROUTE_3D26D21D635155", "V4_ROUTE_CFD933ACA2790A"],
+    "stationOrder": [
+        "窪川",
+        "若井",
+        "荷稲",
+        "伊与喜",
+        "土佐佐賀",
+        "佐賀公園",
+        "土佐白浜",
+        "有井川",
+        "土佐上川口",
+        "海の王迎",
+        "浮鞭",
+        "土佐入野",
+        "西大方",
+        "古津賀",
+        "中村",
+        "具同",
+        "国見",
+        "有岡",
+        "工業団地",
+        "平田",
+        "東宿毛",
+        "宿毛",
+    ],
+    "notes": [
+        "土佐くろしお鉄道公式の中村・宿毛線運賃表PDFから大人普通運賃の駅間三角表を抽出。PDF右側には自由席特急料金表も併載されているため、普通運賃行の先頭側の駅間運賃だけを使用する。",
+        "自由席特急料金、こども運賃、定期運賃、割引乗車券は別体系のため未収録。ごめん・なはり線はゲーム route にJR高知側の尾巴が混在しているため、この表では覆わない。",
+    ],
+}
+
 SANRIKU_STATION_PAIR_SOURCE = {
     "key": "sanriku_station_pairs_202603",
     "operatorIds": ["三陸鉄道"],
@@ -4357,6 +4393,34 @@ def parse_echizen_katsuyama_pairs(raw_text: str, station_order: list[str]) -> di
     return pairs
 
 
+def parse_prefix_triangle_pdf_pairs(
+    raw_text: str,
+    station_order: list[str],
+    *,
+    source_name: str,
+) -> dict[str, dict[str, Any]]:
+    fare_rows: list[tuple[str, list[int]]] = []
+    expected_count = 1
+    for line in raw_text.splitlines():
+        values = [
+            int(value.replace(",", ""))
+            for value in re.findall(r"\d[\d,]*", line)
+        ]
+        if len(values) < expected_count:
+            continue
+        fare_rows.append((station_order[expected_count], values[:expected_count]))
+        expected_count += 1
+        if expected_count == len(station_order):
+            break
+    if len(fare_rows) != len(station_order) - 1:
+        raise ValueError(f"{source_name} has {len(fare_rows)} fare rows, expected {len(station_order) - 1}")
+    pairs = manual_station_pairs(station_pair_triangle_rows(station_order, fare_rows))
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"{source_name} pair count {len(pairs)} != {expected_pair_count}")
+    return pairs
+
+
 def parse_keihan_otsu_station_pdf_pairs(
     origin_name: str,
     lines: list[str],
@@ -4764,6 +4828,32 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": echizen_katsuyama["operatorName"],
         "notes": echizen_katsuyama["notes"],
         "pairs": echizen_pairs,
+    }
+
+    tosakuro_nakamura_sukumo = TOSAKURO_NAKAMURA_SUKUMO_STATION_PAIR_SOURCE
+    tosakuro_cache_path, tosakuro_raw_text = fetch_pdf_raw_text(tosakuro_nakamura_sukumo["url"], cache_dir)
+    tosakuro_pairs = parse_prefix_triangle_pdf_pairs(
+        tosakuro_raw_text,
+        tosakuro_nakamura_sukumo["stationOrder"],
+        source_name="Tosa Kuroshio Nakamura-Sukumo Line",
+    )
+    sources.append({
+        "key": tosakuro_nakamura_sukumo["key"],
+        "url": tosakuro_nakamura_sukumo["url"],
+        "cachePath": tosakuro_cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": tosakuro_nakamura_sukumo["operatorIds"],
+        "operatorName": tosakuro_nakamura_sukumo["operatorName"],
+        "extraction": "parsed_station_pair_matrix_from_official_pdf",
+        "pairCount": len(tosakuro_pairs),
+    })
+    station_pair_tables[tosakuro_nakamura_sukumo["key"]] = {
+        "operatorIds": tosakuro_nakamura_sukumo["operatorIds"],
+        "routeIds": tosakuro_nakamura_sukumo["routeIds"],
+        "sourceKey": tosakuro_nakamura_sukumo["key"],
+        "operatorName": tosakuro_nakamura_sukumo["operatorName"],
+        "notes": tosakuro_nakamura_sukumo["notes"],
+        "pairs": tosakuro_pairs,
     }
 
     kitakyushu = KITAKYUSHU_MONORAIL_STATION_PAIR_SOURCE
