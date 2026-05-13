@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T22:27:53.049268+00:00",
+  "generatedAt": "2026-05-13T22:33:06.928819+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -1074,6 +1074,17 @@
       "operatorName": "若桜鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_wakatetsu.co.jp_wp_wp-content_uploads_2021_03_unchin-wakasa-20210313-3.svg.html"
+    },
+    {
+      "key": "kishu_railway_station_pairs_202601",
+      "url": "https://kitetsu.jp/railway/",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "紀州鉄道"
+      ],
+      "operatorName": "紀州鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_kitetsu.jp_railway.html"
     },
     {
       "key": "izukyu_station_pairs_202603",
@@ -13853,6 +13864,73 @@
           "fromStationName": "丹比",
           "toStationName": "若桜",
           "yen": 270
+        }
+      }
+    },
+    "kishu_railway_station_pairs_202601": {
+      "operatorIds": [
+        "紀州鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_19B10A93A20E24"
+      ],
+      "sourceKey": "kishu_railway_station_pairs_202601",
+      "operatorName": "紀州鉄道",
+      "notes": [
+        "紀州鉄道公式サイトの普通運賃表と近畿運輸局の業務監査資料にある初乗り120円・最長御坊-西御坊180円の普通旅客運賃体系から、ゲーム側5駅の大人普通運賃を収録。",
+        "公式普通運賃表に明記されている西御坊-紀伊御坊120円、西御坊-学門150円、西御坊-JR御坊180円、紀伊御坊-JR御坊150円を基準に、公開キロ程（御坊0.0、学門1.5、紀伊御坊1.8、市役所前2.4、西御坊2.7km）で市役所前を含む短距離区間を同一普通運賃体系に補完している。",
+        "小児運賃、定期、回数券、JR連絡運賃、障害者割引は別体系のため未収録。"
+      ],
+      "pairs": {
+        "御坊|学門": {
+          "fromStationName": "御坊",
+          "toStationName": "学門",
+          "yen": 150
+        },
+        "御坊|紀伊御坊": {
+          "fromStationName": "御坊",
+          "toStationName": "紀伊御坊",
+          "yen": 150
+        },
+        "学門|紀伊御坊": {
+          "fromStationName": "学門",
+          "toStationName": "紀伊御坊",
+          "yen": 120
+        },
+        "御坊|市役所前": {
+          "fromStationName": "御坊",
+          "toStationName": "市役所前",
+          "yen": 180
+        },
+        "学門|市役所前": {
+          "fromStationName": "学門",
+          "toStationName": "市役所前",
+          "yen": 120
+        },
+        "紀伊御坊|市役所前": {
+          "fromStationName": "紀伊御坊",
+          "toStationName": "市役所前",
+          "yen": 120
+        },
+        "御坊|西御坊": {
+          "fromStationName": "御坊",
+          "toStationName": "西御坊",
+          "yen": 180
+        },
+        "学門|西御坊": {
+          "fromStationName": "学門",
+          "toStationName": "西御坊",
+          "yen": 150
+        },
+        "紀伊御坊|西御坊": {
+          "fromStationName": "紀伊御坊",
+          "toStationName": "西御坊",
+          "yen": 120
+        },
+        "市役所前|西御坊": {
+          "fromStationName": "市役所前",
+          "toStationName": "西御坊",
+          "yen": 120
         }
       }
     },
