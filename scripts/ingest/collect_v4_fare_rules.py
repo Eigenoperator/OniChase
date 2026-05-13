@@ -339,6 +339,15 @@ MANUAL_OPERATOR_FARE_TABLES = [
         "rows": [(1, None, 160)],
     },
     {
+        "key": "tokyu_kodomonokuni_flat",
+        "operatorIds": ["tokyu"],
+        "operatorName": "東急電鉄",
+        "url": "https://www.tokyu.co.jp/railway/ticket/fares/?vm=r",
+        "notes": ["東急公式のこどもの国線普通旅客運賃表（均一制）。きっぷ大人普通運賃。"],
+        "routeIds": ["V4_ROUTE_446823A8E04390"],
+        "rows": [(1, None, 160)],
+    },
+    {
         "key": "tokyo_metro",
         "operatorIds": ["tokyo_metro"],
         "operatorName": "東京地下鉄",
@@ -529,6 +538,16 @@ MANUAL_OPERATOR_FARE_TABLES = [
         "notes": ["嵯峨野観光鉄道公式の片道普通運賃。乗車区間にかかわらず均一。"],
         "routeIds": ["V4_ROUTE_0BEECC95790117"],
         "rows": [(1, None, 880)],
+    },
+    {
+        "key": "astram_line_202510",
+        "operatorIds": ["広島高速交通"],
+        "operatorName": "広島高速交通",
+        "url": "https://www.astramline.co.jp/Portals/0/pdf/ride-guidance/%E2%97%8E20251001_sikakuhyo.pdf",
+        "notes": ["2025年10月1日改定のアストラムライン普通旅客運賃表。大人普通運賃の距離帯。"],
+        "routeIds": ["V4_ROUTE_1781D08B1AE1F8"],
+        "rows": [(1, 2, 220), (3, 4, 260), (5, 6, 300), (7, 9, 350),
+                 (10, 12, 400), (13, 15, 430), (16, 18, 460), (19, 19, 490)],
     },
     {
         "key": "sotetsu",

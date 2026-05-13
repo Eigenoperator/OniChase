@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T02:27:07.183211+00:00",
+  "generatedAt": "2026-05-13T02:32:30.491447+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -161,6 +161,17 @@
       "operatorName": "東急電鉄",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.tokyu.co.jp_railway_sg_howto.html"
+    },
+    {
+      "key": "tokyu_kodomonokuni_flat",
+      "url": "https://www.tokyu.co.jp/railway/ticket/fares/?vm=r",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "tokyu"
+      ],
+      "operatorName": "東急電鉄",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.tokyu.co.jp_railway_ticket_fares_vm_r.html"
     },
     {
       "key": "tokyo_metro",
@@ -359,6 +370,17 @@
       "operatorName": "嵯峨野観光鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.sagano-kanko.co.jp_ticket.html"
+    },
+    {
+      "key": "astram_line_202510",
+      "url": "https://www.astramline.co.jp/Portals/0/pdf/ride-guidance/%E2%97%8E20251001_sikakuhyo.pdf",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "広島高速交通"
+      ],
+      "operatorName": "広島高速交通",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.astramline.co.jp_Portals_0_pdf_ride-guidance_E2_97_8E20251001_sikakuhyo.pdf.html"
     },
     {
       "key": "sotetsu",
@@ -4007,6 +4029,31 @@
         }
       }
     },
+    "tokyu_kodomonokuni_flat": {
+      "operatorIds": [
+        "tokyu"
+      ],
+      "routeIds": [
+        "V4_ROUTE_446823A8E04390"
+      ],
+      "sourceKey": "tokyu_kodomonokuni_flat",
+      "operatorName": "東急電鉄",
+      "notes": [
+        "東急公式のこどもの国線普通旅客運賃表（均一制）。きっぷ大人普通運賃。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": null,
+              "yen": 160
+            }
+          ]
+        }
+      }
+    },
     "tokyo_metro": {
       "operatorIds": [
         "tokyo_metro"
@@ -4959,6 +5006,66 @@
               "fromKm": 1,
               "toKm": null,
               "yen": 880
+            }
+          ]
+        }
+      }
+    },
+    "astram_line_202510": {
+      "operatorIds": [
+        "広島高速交通"
+      ],
+      "routeIds": [
+        "V4_ROUTE_1781D08B1AE1F8"
+      ],
+      "sourceKey": "astram_line_202510",
+      "operatorName": "広島高速交通",
+      "notes": [
+        "2025年10月1日改定のアストラムライン普通旅客運賃表。大人普通運賃の距離帯。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 2,
+              "yen": 220
+            },
+            {
+              "fromKm": 3,
+              "toKm": 4,
+              "yen": 260
+            },
+            {
+              "fromKm": 5,
+              "toKm": 6,
+              "yen": 300
+            },
+            {
+              "fromKm": 7,
+              "toKm": 9,
+              "yen": 350
+            },
+            {
+              "fromKm": 10,
+              "toKm": 12,
+              "yen": 400
+            },
+            {
+              "fromKm": 13,
+              "toKm": 15,
+              "yen": 430
+            },
+            {
+              "fromKm": 16,
+              "toKm": 18,
+              "yen": 460
+            },
+            {
+              "fromKm": 19,
+              "toKm": 19,
+              "yen": 490
             }
           ]
         }
