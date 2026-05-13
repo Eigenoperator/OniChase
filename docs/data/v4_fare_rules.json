@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T17:40:03.521620+00:00",
+  "generatedAt": "2026-05-13T17:47:54.356161+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -702,6 +702,17 @@
       "cachePath": "data/v4_fare_source_cache/https_www.iyotetsu.co.jp_sp_topics_26_0401_rail.pdf.html"
     },
     {
+      "key": "ohmi_railway_201910_current",
+      "url": "https://wwwtb.mlit.go.jp/kinki/content/000332962.pdf",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "近江鉄道"
+      ],
+      "operatorName": "近江鉄道",
+      "extraction": "manual_from_official_source",
+      "fetchError": "404 Client Error: Not Found for url: https://wwwtb.mlit.go.jp/kinki/content/000332962.pdf"
+    },
+    {
       "key": "toyotetsu_city_tram_flat",
       "url": "https://www.toyotetsu.com/shinaisen/charges.html",
       "kind": "ordinary_fare_table",
@@ -997,6 +1008,17 @@
       "operatorName": "高松琴平電気鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.kotoden.co.jp_publichtm_kotoden_fare_image_kiro.pdf.html"
+    },
+    {
+      "key": "daitetsu_ikawa_line_station_pairs_2026",
+      "url": "https://daitetsu.jp/ft_ikawa",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "大井川鐵道"
+      ],
+      "operatorName": "大井川鐵道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_daitetsu.jp_ft_ikawa.html"
     },
     {
       "key": "eizan_electric_railway_station_pairs_202304",
@@ -7822,6 +7844,128 @@
         }
       }
     },
+    "ohmi_railway_201910_current": {
+      "operatorIds": [
+        "近江鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_B6AF6112315CFE",
+        "V4_ROUTE_E62AF762866424",
+        "V4_ROUTE_60D1E17DCF42DB"
+      ],
+      "sourceKey": "ohmi_railway_201910_current",
+      "operatorName": "近江鉄道",
+      "notes": [
+        "国土交通省近畿運輸局の近江鉄道旅客運賃上限設定認可申請資料に掲載された普通旅客運賃（大人）。同資料の参考欄で現行運賃は普通旅客運賃160円から1,050円で変わらないとされているため、2026年時点のゲーム内普通運賃分段として収録。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 2,
+              "yen": 160
+            },
+            {
+              "fromKm": 3,
+              "toKm": 3,
+              "yen": 180
+            },
+            {
+              "fromKm": 4,
+              "toKm": 5,
+              "yen": 250
+            },
+            {
+              "fromKm": 6,
+              "toKm": 7,
+              "yen": 310
+            },
+            {
+              "fromKm": 8,
+              "toKm": 9,
+              "yen": 390
+            },
+            {
+              "fromKm": 10,
+              "toKm": 11,
+              "yen": 460
+            },
+            {
+              "fromKm": 12,
+              "toKm": 13,
+              "yen": 530
+            },
+            {
+              "fromKm": 14,
+              "toKm": 15,
+              "yen": 590
+            },
+            {
+              "fromKm": 16,
+              "toKm": 17,
+              "yen": 650
+            },
+            {
+              "fromKm": 18,
+              "toKm": 19,
+              "yen": 700
+            },
+            {
+              "fromKm": 20,
+              "toKm": 21,
+              "yen": 760
+            },
+            {
+              "fromKm": 22,
+              "toKm": 24,
+              "yen": 800
+            },
+            {
+              "fromKm": 25,
+              "toKm": 27,
+              "yen": 850
+            },
+            {
+              "fromKm": 28,
+              "toKm": 30,
+              "yen": 890
+            },
+            {
+              "fromKm": 31,
+              "toKm": 33,
+              "yen": 930
+            },
+            {
+              "fromKm": 34,
+              "toKm": 36,
+              "yen": 960
+            },
+            {
+              "fromKm": 37,
+              "toKm": 39,
+              "yen": 990
+            },
+            {
+              "fromKm": 40,
+              "toKm": 42,
+              "yen": 1010
+            },
+            {
+              "fromKm": 43,
+              "toKm": 45,
+              "yen": 1030
+            },
+            {
+              "fromKm": 46,
+              "toKm": 48,
+              "yen": 1050
+            }
+          ]
+        }
+      }
+    },
     "toyotetsu_city_tram_flat": {
       "operatorIds": [
         "豊橋鉄道"
@@ -9276,6 +9420,476 @@
           "fromStationName": "高松築港",
           "toStationName": "琴電志度",
           "yen": 500
+        }
+      }
+    },
+    "daitetsu_ikawa_line_station_pairs_2026": {
+      "operatorIds": [
+        "大井川鐵道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_0744003A7A9F3E"
+      ],
+      "sourceKey": "daitetsu_ikawa_line_station_pairs_2026",
+      "operatorName": "大井川鐵道",
+      "notes": [
+        "大井川鐵道公式の井川線（南アルプスあぷとライン）運賃表から大人普通運賃の駅間三角表を転記。大井川本線はゲーム側が千頭-金谷の全線構造を保持している一方、現行公式ページは大井川本線・代行区間を分けているため、この表では井川線だけを覆う。"
+      ],
+      "pairs": {
+        "千頭|川根両国": {
+          "fromStationName": "千頭",
+          "toStationName": "川根両国",
+          "yen": 160
+        },
+        "千頭|沢間": {
+          "fromStationName": "千頭",
+          "toStationName": "沢間",
+          "yen": 160
+        },
+        "千頭|土本": {
+          "fromStationName": "千頭",
+          "toStationName": "土本",
+          "yen": 210
+        },
+        "千頭|川根小山": {
+          "fromStationName": "千頭",
+          "toStationName": "川根小山",
+          "yen": 310
+        },
+        "千頭|奥泉": {
+          "fromStationName": "千頭",
+          "toStationName": "奥泉",
+          "yen": 420
+        },
+        "千頭|アプトいちしろ": {
+          "fromStationName": "千頭",
+          "toStationName": "アプトいちしろ",
+          "yen": 520
+        },
+        "千頭|長島ダム": {
+          "fromStationName": "千頭",
+          "toStationName": "長島ダム",
+          "yen": 620
+        },
+        "千頭|ひらんだ": {
+          "fromStationName": "千頭",
+          "toStationName": "ひらんだ",
+          "yen": 670
+        },
+        "千頭|奥大井湖上": {
+          "fromStationName": "千頭",
+          "toStationName": "奥大井湖上",
+          "yen": 720
+        },
+        "千頭|接岨峡温泉": {
+          "fromStationName": "千頭",
+          "toStationName": "接岨峡温泉",
+          "yen": 830
+        },
+        "千頭|尾盛": {
+          "fromStationName": "千頭",
+          "toStationName": "尾盛",
+          "yen": 930
+        },
+        "千頭|閑蔵": {
+          "fromStationName": "千頭",
+          "toStationName": "閑蔵",
+          "yen": 1080
+        },
+        "千頭|井川": {
+          "fromStationName": "千頭",
+          "toStationName": "井川",
+          "yen": 1340
+        },
+        "川根両国|沢間": {
+          "fromStationName": "川根両国",
+          "toStationName": "沢間",
+          "yen": 160
+        },
+        "川根両国|土本": {
+          "fromStationName": "川根両国",
+          "toStationName": "土本",
+          "yen": 160
+        },
+        "川根両国|川根小山": {
+          "fromStationName": "川根両国",
+          "toStationName": "川根小山",
+          "yen": 260
+        },
+        "川根両国|奥泉": {
+          "fromStationName": "川根両国",
+          "toStationName": "奥泉",
+          "yen": 360
+        },
+        "川根両国|アプトいちしろ": {
+          "fromStationName": "川根両国",
+          "toStationName": "アプトいちしろ",
+          "yen": 470
+        },
+        "川根両国|長島ダム": {
+          "fromStationName": "川根両国",
+          "toStationName": "長島ダム",
+          "yen": 570
+        },
+        "川根両国|ひらんだ": {
+          "fromStationName": "川根両国",
+          "toStationName": "ひらんだ",
+          "yen": 620
+        },
+        "川根両国|奥大井湖上": {
+          "fromStationName": "川根両国",
+          "toStationName": "奥大井湖上",
+          "yen": 670
+        },
+        "川根両国|接岨峡温泉": {
+          "fromStationName": "川根両国",
+          "toStationName": "接岨峡温泉",
+          "yen": 780
+        },
+        "川根両国|尾盛": {
+          "fromStationName": "川根両国",
+          "toStationName": "尾盛",
+          "yen": 880
+        },
+        "川根両国|閑蔵": {
+          "fromStationName": "川根両国",
+          "toStationName": "閑蔵",
+          "yen": 1030
+        },
+        "川根両国|井川": {
+          "fromStationName": "川根両国",
+          "toStationName": "井川",
+          "yen": 1290
+        },
+        "沢間|土本": {
+          "fromStationName": "沢間",
+          "toStationName": "土本",
+          "yen": 160
+        },
+        "沢間|川根小山": {
+          "fromStationName": "沢間",
+          "toStationName": "川根小山",
+          "yen": 210
+        },
+        "沢間|奥泉": {
+          "fromStationName": "沢間",
+          "toStationName": "奥泉",
+          "yen": 310
+        },
+        "沢間|アプトいちしろ": {
+          "fromStationName": "沢間",
+          "toStationName": "アプトいちしろ",
+          "yen": 420
+        },
+        "沢間|長島ダム": {
+          "fromStationName": "沢間",
+          "toStationName": "長島ダム",
+          "yen": 470
+        },
+        "沢間|ひらんだ": {
+          "fromStationName": "沢間",
+          "toStationName": "ひらんだ",
+          "yen": 570
+        },
+        "沢間|奥大井湖上": {
+          "fromStationName": "沢間",
+          "toStationName": "奥大井湖上",
+          "yen": 620
+        },
+        "沢間|接岨峡温泉": {
+          "fromStationName": "沢間",
+          "toStationName": "接岨峡温泉",
+          "yen": 720
+        },
+        "沢間|尾盛": {
+          "fromStationName": "沢間",
+          "toStationName": "尾盛",
+          "yen": 830
+        },
+        "沢間|閑蔵": {
+          "fromStationName": "沢間",
+          "toStationName": "閑蔵",
+          "yen": 980
+        },
+        "沢間|井川": {
+          "fromStationName": "沢間",
+          "toStationName": "井川",
+          "yen": 1240
+        },
+        "土本|川根小山": {
+          "fromStationName": "土本",
+          "toStationName": "川根小山",
+          "yen": 160
+        },
+        "土本|奥泉": {
+          "fromStationName": "土本",
+          "toStationName": "奥泉",
+          "yen": 210
+        },
+        "土本|アプトいちしろ": {
+          "fromStationName": "土本",
+          "toStationName": "アプトいちしろ",
+          "yen": 310
+        },
+        "土本|長島ダム": {
+          "fromStationName": "土本",
+          "toStationName": "長島ダム",
+          "yen": 420
+        },
+        "土本|ひらんだ": {
+          "fromStationName": "土本",
+          "toStationName": "ひらんだ",
+          "yen": 470
+        },
+        "土本|奥大井湖上": {
+          "fromStationName": "土本",
+          "toStationName": "奥大井湖上",
+          "yen": 520
+        },
+        "土本|接岨峡温泉": {
+          "fromStationName": "土本",
+          "toStationName": "接岨峡温泉",
+          "yen": 620
+        },
+        "土本|尾盛": {
+          "fromStationName": "土本",
+          "toStationName": "尾盛",
+          "yen": 720
+        },
+        "土本|閑蔵": {
+          "fromStationName": "土本",
+          "toStationName": "閑蔵",
+          "yen": 880
+        },
+        "土本|井川": {
+          "fromStationName": "土本",
+          "toStationName": "井川",
+          "yen": 1140
+        },
+        "川根小山|奥泉": {
+          "fromStationName": "川根小山",
+          "toStationName": "奥泉",
+          "yen": 160
+        },
+        "川根小山|アプトいちしろ": {
+          "fromStationName": "川根小山",
+          "toStationName": "アプトいちしろ",
+          "yen": 260
+        },
+        "川根小山|長島ダム": {
+          "fromStationName": "川根小山",
+          "toStationName": "長島ダム",
+          "yen": 310
+        },
+        "川根小山|ひらんだ": {
+          "fromStationName": "川根小山",
+          "toStationName": "ひらんだ",
+          "yen": 360
+        },
+        "川根小山|奥大井湖上": {
+          "fromStationName": "川根小山",
+          "toStationName": "奥大井湖上",
+          "yen": 470
+        },
+        "川根小山|接岨峡温泉": {
+          "fromStationName": "川根小山",
+          "toStationName": "接岨峡温泉",
+          "yen": 520
+        },
+        "川根小山|尾盛": {
+          "fromStationName": "川根小山",
+          "toStationName": "尾盛",
+          "yen": 620
+        },
+        "川根小山|閑蔵": {
+          "fromStationName": "川根小山",
+          "toStationName": "閑蔵",
+          "yen": 780
+        },
+        "川根小山|井川": {
+          "fromStationName": "川根小山",
+          "toStationName": "井川",
+          "yen": 1030
+        },
+        "奥泉|アプトいちしろ": {
+          "fromStationName": "奥泉",
+          "toStationName": "アプトいちしろ",
+          "yen": 160
+        },
+        "奥泉|長島ダム": {
+          "fromStationName": "奥泉",
+          "toStationName": "長島ダム",
+          "yen": 210
+        },
+        "奥泉|ひらんだ": {
+          "fromStationName": "奥泉",
+          "toStationName": "ひらんだ",
+          "yen": 310
+        },
+        "奥泉|奥大井湖上": {
+          "fromStationName": "奥泉",
+          "toStationName": "奥大井湖上",
+          "yen": 360
+        },
+        "奥泉|接岨峡温泉": {
+          "fromStationName": "奥泉",
+          "toStationName": "接岨峡温泉",
+          "yen": 420
+        },
+        "奥泉|尾盛": {
+          "fromStationName": "奥泉",
+          "toStationName": "尾盛",
+          "yen": 570
+        },
+        "奥泉|閑蔵": {
+          "fromStationName": "奥泉",
+          "toStationName": "閑蔵",
+          "yen": 670
+        },
+        "奥泉|井川": {
+          "fromStationName": "奥泉",
+          "toStationName": "井川",
+          "yen": 930
+        },
+        "アプトいちしろ|長島ダム": {
+          "fromStationName": "アプトいちしろ",
+          "toStationName": "長島ダム",
+          "yen": 160
+        },
+        "アプトいちしろ|ひらんだ": {
+          "fromStationName": "アプトいちしろ",
+          "toStationName": "ひらんだ",
+          "yen": 160
+        },
+        "アプトいちしろ|奥大井湖上": {
+          "fromStationName": "アプトいちしろ",
+          "toStationName": "奥大井湖上",
+          "yen": 210
+        },
+        "アプトいちしろ|接岨峡温泉": {
+          "fromStationName": "アプトいちしろ",
+          "toStationName": "接岨峡温泉",
+          "yen": 310
+        },
+        "アプトいちしろ|尾盛": {
+          "fromStationName": "アプトいちしろ",
+          "toStationName": "尾盛",
+          "yen": 420
+        },
+        "アプトいちしろ|閑蔵": {
+          "fromStationName": "アプトいちしろ",
+          "toStationName": "閑蔵",
+          "yen": 570
+        },
+        "アプトいちしろ|井川": {
+          "fromStationName": "アプトいちしろ",
+          "toStationName": "井川",
+          "yen": 830
+        },
+        "長島ダム|ひらんだ": {
+          "fromStationName": "長島ダム",
+          "toStationName": "ひらんだ",
+          "yen": 160
+        },
+        "長島ダム|奥大井湖上": {
+          "fromStationName": "長島ダム",
+          "toStationName": "奥大井湖上",
+          "yen": 160
+        },
+        "長島ダム|接岨峡温泉": {
+          "fromStationName": "長島ダム",
+          "toStationName": "接岨峡温泉",
+          "yen": 260
+        },
+        "長島ダム|尾盛": {
+          "fromStationName": "長島ダム",
+          "toStationName": "尾盛",
+          "yen": 360
+        },
+        "長島ダム|閑蔵": {
+          "fromStationName": "長島ダム",
+          "toStationName": "閑蔵",
+          "yen": 520
+        },
+        "長島ダム|井川": {
+          "fromStationName": "長島ダム",
+          "toStationName": "井川",
+          "yen": 780
+        },
+        "ひらんだ|奥大井湖上": {
+          "fromStationName": "ひらんだ",
+          "toStationName": "奥大井湖上",
+          "yen": 160
+        },
+        "ひらんだ|接岨峡温泉": {
+          "fromStationName": "ひらんだ",
+          "toStationName": "接岨峡温泉",
+          "yen": 160
+        },
+        "ひらんだ|尾盛": {
+          "fromStationName": "ひらんだ",
+          "toStationName": "尾盛",
+          "yen": 310
+        },
+        "ひらんだ|閑蔵": {
+          "fromStationName": "ひらんだ",
+          "toStationName": "閑蔵",
+          "yen": 420
+        },
+        "ひらんだ|井川": {
+          "fromStationName": "ひらんだ",
+          "toStationName": "井川",
+          "yen": 670
+        },
+        "奥大井湖上|接岨峡温泉": {
+          "fromStationName": "奥大井湖上",
+          "toStationName": "接岨峡温泉",
+          "yen": 160
+        },
+        "奥大井湖上|尾盛": {
+          "fromStationName": "奥大井湖上",
+          "toStationName": "尾盛",
+          "yen": 210
+        },
+        "奥大井湖上|閑蔵": {
+          "fromStationName": "奥大井湖上",
+          "toStationName": "閑蔵",
+          "yen": 360
+        },
+        "奥大井湖上|井川": {
+          "fromStationName": "奥大井湖上",
+          "toStationName": "井川",
+          "yen": 620
+        },
+        "接岨峡温泉|尾盛": {
+          "fromStationName": "接岨峡温泉",
+          "toStationName": "尾盛",
+          "yen": 160
+        },
+        "接岨峡温泉|閑蔵": {
+          "fromStationName": "接岨峡温泉",
+          "toStationName": "閑蔵",
+          "yen": 260
+        },
+        "接岨峡温泉|井川": {
+          "fromStationName": "接岨峡温泉",
+          "toStationName": "井川",
+          "yen": 520
+        },
+        "尾盛|閑蔵": {
+          "fromStationName": "尾盛",
+          "toStationName": "閑蔵",
+          "yen": 160
+        },
+        "尾盛|井川": {
+          "fromStationName": "尾盛",
+          "toStationName": "井川",
+          "yen": 420
+        },
+        "閑蔵|井川": {
+          "fromStationName": "閑蔵",
+          "toStationName": "井川",
+          "yen": 260
         }
       }
     },

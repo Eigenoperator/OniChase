@@ -1712,6 +1712,42 @@ MANUAL_OPERATOR_FARE_TABLES = [
         ],
     },
     {
+        "key": "ohmi_railway_201910_current",
+        "operatorIds": ["近江鉄道"],
+        "operatorName": "近江鉄道",
+        "url": "https://wwwtb.mlit.go.jp/kinki/content/000332962.pdf",
+        "notes": [
+            "国土交通省近畿運輸局の近江鉄道旅客運賃上限設定認可申請資料に掲載された普通旅客運賃（大人）。同資料の参考欄で現行運賃は普通旅客運賃160円から1,050円で変わらないとされているため、2026年時点のゲーム内普通運賃分段として収録。",
+        ],
+        "routeIds": [
+            "V4_ROUTE_B6AF6112315CFE",
+            "V4_ROUTE_E62AF762866424",
+            "V4_ROUTE_60D1E17DCF42DB",
+        ],
+        "rows": [
+            (1, 2, 160),
+            (3, 3, 180),
+            (4, 5, 250),
+            (6, 7, 310),
+            (8, 9, 390),
+            (10, 11, 460),
+            (12, 13, 530),
+            (14, 15, 590),
+            (16, 17, 650),
+            (18, 19, 700),
+            (20, 21, 760),
+            (22, 24, 800),
+            (25, 27, 850),
+            (28, 30, 890),
+            (31, 33, 930),
+            (34, 36, 960),
+            (37, 39, 990),
+            (40, 42, 1010),
+            (43, 45, 1030),
+            (46, 48, 1050),
+        ],
+    },
+    {
         "key": "toyotetsu_city_tram_flat",
         "operatorIds": ["豊橋鉄道"],
         "operatorName": "豊橋鉄道",
@@ -2020,6 +2056,21 @@ def station_pair_triangle_rows(
     return pairs
 
 
+def station_pair_upper_triangle_rows(
+    station_order: list[str],
+    fare_rows: list[tuple[str, list[int]]],
+) -> list[tuple[str, str, int]]:
+    pairs: list[tuple[str, str, int]] = []
+    for row_station, fares in fare_rows:
+        row_index = station_order.index(row_station)
+        expected = len(station_order) - row_index - 1
+        if len(fares) != expected:
+            raise ValueError(f"{row_station} fare row has {len(fares)} fares, expected {expected}")
+        for next_station, yen in zip(station_order[row_index + 1:], fares, strict=True):
+            pairs.append((row_station, next_station, yen))
+    return pairs
+
+
 def station_pair_flat_rows(station_order: list[str], yen: int) -> list[tuple[str, str, int]]:
     pairs: list[tuple[str, str, int]] = []
     for index, station in enumerate(station_order):
@@ -2058,6 +2109,49 @@ MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
             ("片原町", "八栗新道", 420),
             ("高松築港", "琴電志度", 500),
         ],
+    },
+    {
+        "key": "daitetsu_ikawa_line_station_pairs_2026",
+        "operatorIds": ["大井川鐵道"],
+        "operatorName": "大井川鐵道",
+        "url": "https://daitetsu.jp/ft_ikawa",
+        "notes": [
+            "大井川鐵道公式の井川線（南アルプスあぷとライン）運賃表から大人普通運賃の駅間三角表を転記。大井川本線はゲーム側が千頭-金谷の全線構造を保持している一方、現行公式ページは大井川本線・代行区間を分けているため、この表では井川線だけを覆う。",
+        ],
+        "routeIds": ["V4_ROUTE_0744003A7A9F3E"],
+        "pairs": station_pair_upper_triangle_rows(
+            [
+                "千頭",
+                "川根両国",
+                "沢間",
+                "土本",
+                "川根小山",
+                "奥泉",
+                "アプトいちしろ",
+                "長島ダム",
+                "ひらんだ",
+                "奥大井湖上",
+                "接岨峡温泉",
+                "尾盛",
+                "閑蔵",
+                "井川",
+            ],
+            [
+                ("千頭", [160, 160, 210, 310, 420, 520, 620, 670, 720, 830, 930, 1080, 1340]),
+                ("川根両国", [160, 160, 260, 360, 470, 570, 620, 670, 780, 880, 1030, 1290]),
+                ("沢間", [160, 210, 310, 420, 470, 570, 620, 720, 830, 980, 1240]),
+                ("土本", [160, 210, 310, 420, 470, 520, 620, 720, 880, 1140]),
+                ("川根小山", [160, 260, 310, 360, 470, 520, 620, 780, 1030]),
+                ("奥泉", [160, 210, 310, 360, 420, 570, 670, 930]),
+                ("アプトいちしろ", [160, 160, 210, 310, 420, 570, 830]),
+                ("長島ダム", [160, 160, 260, 360, 520, 780]),
+                ("ひらんだ", [160, 160, 310, 420, 670]),
+                ("奥大井湖上", [160, 210, 360, 620]),
+                ("接岨峡温泉", [160, 260, 520]),
+                ("尾盛", [160, 420]),
+                ("閑蔵", [260]),
+            ],
+        ),
     },
     {
         "key": "eizan_electric_railway_station_pairs_202304",
