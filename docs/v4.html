@@ -7704,6 +7704,10 @@
       } : null;
     }
 
+    function fareDistanceKmForSegments(segments) {
+      return Number((segments || []).reduce((sum, segment) => sum + (segment.distance_km || 0), 0).toFixed(3));
+    }
+
     function collectedStationPairBaseFare(segments) {
       const rules = state.fareRules;
       const first = (segments || [])[0];
@@ -7727,6 +7731,50 @@
         };
       }
       return null;
+    }
+
+    function collectedSingleBaseFare(segments, trip) {
+      const distanceKm = fareDistanceKmForSegments(segments);
+      return collectedStationPairBaseFare(segments) || collectedBaseFare(distanceKm, segments, trip);
+    }
+
+    function collectedCompositeBaseFare(segments, trip) {
+      if (!segments?.length) return null;
+      const whole = collectedSingleBaseFare(segments, trip);
+      if (whole) return {
+        ...whole,
+        components: [{ ...whole, fromSegmentIndex: 0, toSegmentIndex: segments.length - 1 }],
+      };
+
+      const components = [];
+      let cursor = 0;
+      while (cursor < segments.length) {
+        let best = null;
+        for (let end = segments.length; end > cursor; end -= 1) {
+          const chunk = segments.slice(cursor, end);
+          const fare = collectedSingleBaseFare(chunk, trip);
+          if (!fare) continue;
+          best = {
+            ...fare,
+            fromSegmentIndex: cursor,
+            toSegmentIndex: end - 1,
+            distance_km: fareDistanceKmForSegments(chunk),
+          };
+          break;
+        }
+        if (!best) return null;
+        components.push(best);
+        cursor = best.toSegmentIndex + 1;
+      }
+
+      return {
+        yen: components.reduce((sum, item) => sum + (item.yen || 0), 0),
+        row: null,
+        ruleKey: components.map((item) => item.ruleKey).filter(Boolean).join('+') || null,
+        source: 'collected_composite_base_fare',
+        modelVersion: state.fareRules?.modelVersion,
+        components,
+      };
     }
 
     function limitedExpressFareTableKey(trip, segments) {
@@ -7753,9 +7801,9 @@
 
     function resolveTripLegFare(trip, boardStop, alightStop) {
       const segments = farePathSegmentsForLeg(trip, boardStop, alightStop);
-      const distanceKm = Number(segments.reduce((sum, segment) => sum + (segment.distance_km || 0), 0).toFixed(3));
+      const distanceKm = fareDistanceKmForSegments(segments);
       const premiumType = farePremiumForTrip(trip);
-      const collectedBase = collectedStationPairBaseFare(segments) || collectedBaseFare(distanceKm, segments, trip);
+      const collectedBase = collectedCompositeBaseFare(segments, trip);
       const collectedPremium = collectedPremiumFare(distanceKm, premiumType, trip, segments);
       const baseYen = collectedBase?.yen ?? null;
       const premiumYen = premiumType === 'none' ? 0 : (collectedPremium?.yen ?? null);
@@ -7782,6 +7830,7 @@
         total_yen: totalYen,
         fare_known: missingReasons.length === 0,
         missing_reasons: missingReasons,
+        base_components: collectedBase?.components || [],
         segments,
       };
     }
