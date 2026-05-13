@@ -305,6 +305,42 @@ JOSHIN_DENTETSU_STATION_PAIR_SOURCE = {
     ],
 }
 
+JOMO_RAILWAY_STATION_PAIR_SOURCE = {
+    "key": "jomo_railway_station_pairs_201910",
+    "operatorIds": ["上毛電気鉄道"],
+    "operatorName": "上毛電気鉄道",
+    "url": "https://jomorailway.com/fare_nomal.html",
+    "routeIds": ["V4_ROUTE_63569A128DCFA4"],
+    "stationOrder": [
+        "中央前橋",
+        "城東",
+        "三俣",
+        "片貝",
+        "上泉",
+        "赤坂",
+        "心臓血管センター",
+        "江木",
+        "大胡",
+        "樋越",
+        "北原",
+        "新屋",
+        "粕川",
+        "膳",
+        "新里",
+        "新川",
+        "東新川",
+        "赤城",
+        "桐生球場前",
+        "天王宿",
+        "富士山下",
+        "丸山下",
+        "西桐生",
+    ],
+    "notes": [
+        "上毛電気鉄道公式の駅間普通旅客運賃表（令和元年10月1日から）から、大人普通運賃を駅間表として抽出。",
+    ],
+}
+
 UEDA_DENTETSU_STATION_PAIR_SOURCE = {
     "key": "ueda_dentetsu_station_pairs_201910",
     "operatorIds": ["上田電鉄"],
@@ -2611,6 +2647,35 @@ def parse_joshin_dentetsu_page(
     return pairs
 
 
+def parse_jomo_railway_pairs(html: str, station_order: list[str]) -> dict[str, dict[str, Any]]:
+    label_matches = list(re.finditer(r'<label class="title"[^>]*>(.*?)</label>', html, re.S | re.I))
+    station_names = set(station_order)
+    pairs: dict[str, dict[str, Any]] = {}
+    for label_index, label_match in enumerate(label_matches):
+        origin_name = clean_html_table_cell(label_match.group(1)).removesuffix("駅")
+        if origin_name not in station_names:
+            continue
+        block_end = label_matches[label_index + 1].start() if label_index + 1 < len(label_matches) else len(html)
+        block = html[label_match.end():block_end]
+        table_match = re.search(r"<table\b.*?</table>", block, re.S | re.I)
+        if not table_match:
+            raise ValueError(f"missing Jomo fare table for {origin_name}")
+        for row_html in re.findall(r"<tr\b.*?</tr>", table_match.group(0), re.S | re.I):
+            cells = [
+                clean_html_table_cell(cell)
+                for cell in re.findall(r"<t[dh]\b[^>]*>(.*?)</t[dh]>", row_html, re.S | re.I)
+            ]
+            if len(cells) < 2:
+                continue
+            dest_name, fare_text = cells[0], cells[1]
+            if dest_name in station_names and fare_text.isdigit() and dest_name != origin_name:
+                add_station_pair(pairs, origin_name, dest_name, int(fare_text))
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"Jomo Railway pair count {len(pairs)} != {expected_pair_count}")
+    return pairs
+
+
 def parse_km_range(value: str) -> tuple[int, int | None] | None:
     normalized = value.replace(",", "")
     match = re.search(r"(\d+)-(\d+)", normalized)
@@ -3075,6 +3140,28 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": joshin["operatorName"],
         "notes": joshin["notes"],
         "pairs": joshin_pairs,
+    }
+
+    jomo = JOMO_RAILWAY_STATION_PAIR_SOURCE
+    cache_path, html = fetch_raw(jomo["url"], cache_dir)
+    jomo_pairs = parse_jomo_railway_pairs(html, jomo["stationOrder"])
+    sources.append({
+        "key": jomo["key"],
+        "url": jomo["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": jomo["operatorIds"],
+        "operatorName": jomo["operatorName"],
+        "extraction": "parsed_station_pair_tables_from_official_html",
+        "pairCount": len(jomo_pairs),
+    })
+    station_pair_tables[jomo["key"]] = {
+        "operatorIds": jomo["operatorIds"],
+        "routeIds": jomo["routeIds"],
+        "sourceKey": jomo["key"],
+        "operatorName": jomo["operatorName"],
+        "notes": jomo["notes"],
+        "pairs": jomo_pairs,
     }
 
     ueda_dentetsu = UEDA_DENTETSU_STATION_PAIR_SOURCE
