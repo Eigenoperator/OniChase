@@ -363,6 +363,28 @@ KASHIMA_RINKAI_STATION_PAIR_SOURCE = {
     ],
 }
 
+YAMAGATA_RAILWAY_STATION_PAIR_SOURCE = {
+    "key": "yamagata_railway_station_pairs",
+    "operatorIds": ["山形鉄道"],
+    "operatorName": "山形鉄道",
+    "url": "https://flower-liner.jp/fare/",
+    "routeIds": ["V4_ROUTE_4D7811873081BC"],
+    "notes": [
+        "山形鉄道公式サイトのフラワー長井線普通旅客運賃表から大人普通運賃の駅間表を抽出。",
+    ],
+}
+
+MOKA_RAILWAY_STATION_PAIR_SOURCE = {
+    "key": "moka_railway_station_pairs",
+    "operatorIds": ["真岡鐵道"],
+    "operatorName": "真岡鐵道",
+    "url": "https://www.moka-railway.co.jp/fare/",
+    "routeIds": ["V4_ROUTE_96548170FFBBE9"],
+    "notes": [
+        "真岡鐵道公式サイトの2019年10月1日改定普通運賃表から大人普通運賃の駅間表を抽出。SL乗車時のSL整理券は別料金のため未適用。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -1253,6 +1275,26 @@ MANUAL_OPERATOR_FARE_TABLES = [
             (72, 75, 1140),
         ],
     },
+    {
+        "key": "amagi_railway_202410",
+        "operatorIds": ["甘木鉄道"],
+        "operatorName": "甘木鉄道",
+        "url": "https://www.amatetsu.jp/new/20240917_info.pdf",
+        "notes": [
+            "甘木鉄道公式の2024年10月1日鉄道旅客運賃改定資料に掲載された普通旅客運賃（大人、片道）の改定後運賃。",
+        ],
+        "routeIds": ["V4_ROUTE_9F8733701EB54D"],
+        "rows": [
+            (1, 1, 140),
+            (2, 2, 200),
+            (3, 4, 250),
+            (5, 6, 290),
+            (7, 8, 340),
+            (9, 10, 380),
+            (11, 12, 410),
+            (13, 14, 430),
+        ],
+    },
 ]
 
 def station_pair_triangle_rows(
@@ -2140,6 +2182,85 @@ def parse_money(value: str) -> int:
     return int(re.sub(r"\D+", "", value))
 
 
+def parse_first_money(value: str) -> int:
+    normalized = value.translate(str.maketrans("０１２３４５６７８９，", "0123456789,"))
+    match = re.search(r"\d[\d,]*", normalized)
+    if not match:
+        raise ValueError(f"missing money in {value!r}")
+    return int(match.group(0).replace(",", ""))
+
+
+def clean_html_table_cell(value: str) -> str:
+    value = re.sub(r"<br\s*/?>", "\n", value, flags=re.I)
+    value = re.sub(r"<[^>]+>", " ", value)
+    value = unescape(value)
+    return re.sub(r"[ \t\r\f\v]+", " ", value).strip()
+
+
+def first_html_table_rows_after_marker(html: str, marker: str) -> list[list[str]]:
+    start = html.find(marker)
+    if start < 0:
+        raise ValueError(f"missing marker {marker!r}")
+    match = re.search(r"<table\b.*?</table>", html[start:], re.S | re.I)
+    if not match:
+        raise ValueError(f"missing table after marker {marker!r}")
+    table = match.group(0)
+    rows: list[list[str]] = []
+    for row_html in re.findall(r"<tr\b.*?</tr>", table, re.S | re.I):
+        cells = [
+            clean_html_table_cell(cell)
+            for cell in re.findall(r"<t[dh]\b[^>]*>(.*?)</t[dh]>", row_html, re.S | re.I)
+        ]
+        if cells:
+            rows.append(cells)
+    return rows
+
+
+def parse_yamagata_railway_pairs(html: str) -> dict[str, dict[str, Any]]:
+    rows = first_html_table_rows_after_marker(html, "普通旅客運賃表")
+    header = rows[0]
+    station_order = ["赤湯", *header[1:-1]]
+    pairs: list[tuple[str, str, int]] = []
+    for row_index, row in enumerate(rows[1:]):
+        if row_index >= len(station_order) - 1:
+            break
+        expected_station = station_order[row_index]
+        row_station = row[0] if row[0] == expected_station else (row[1] if len(row) > 1 else "")
+        if row_station != expected_station:
+            raise ValueError(f"unexpected Yamagata row station {row_station!r}, expected {expected_station!r}")
+        fare_cells = row[1:-1] if row_index == 0 else row[2:-1]
+        expected_count = len(station_order) - row_index - 1
+        if len(fare_cells) != expected_count:
+            raise ValueError(f"{row_station} fare row has {len(fare_cells)} fares, expected {expected_count}")
+        for to_station, fare_cell in zip(station_order[row_index + 1:], fare_cells, strict=True):
+            pairs.append((row_station, to_station, parse_first_money(fare_cell)))
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"Yamagata Railway pair count {len(pairs)} != {expected_pair_count}")
+    return manual_station_pairs(pairs)
+
+
+def parse_moka_railway_pairs(html: str) -> dict[str, dict[str, Any]]:
+    rows = first_html_table_rows_after_marker(html, '<div id="unchin-pc"')
+    header = rows[0]
+    station_order = header[1:]
+    pairs: list[tuple[str, str, int]] = []
+    for row_index, row in enumerate(rows[1:]):
+        if row_index >= len(station_order):
+            break
+        row_station = row[0]
+        if row_station != station_order[row_index]:
+            raise ValueError(f"unexpected Moka row station {row_station!r}, expected {station_order[row_index]!r}")
+        if len(row) != len(station_order) + 1:
+            raise ValueError(f"{row_station} fare row has {len(row)} cells")
+        for to_index in range(row_index + 1, len(station_order)):
+            pairs.append((row_station, station_order[to_index], parse_first_money(row[to_index + 1])))
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"Moka Railway pair count {len(pairs)} != {expected_pair_count}")
+    return manual_station_pairs(pairs)
+
+
 def parse_km_range(value: str) -> tuple[int, int | None] | None:
     normalized = value.replace(",", "")
     match = re.search(r"(\d+)-(\d+)", normalized)
@@ -2741,6 +2862,50 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": kashima_rinkai["operatorName"],
         "notes": kashima_rinkai["notes"],
         "pairs": kashima_rinkai_pairs,
+    }
+
+    yamagata_railway = YAMAGATA_RAILWAY_STATION_PAIR_SOURCE
+    cache_path, html = fetch_raw(yamagata_railway["url"], cache_dir)
+    yamagata_railway_pairs = parse_yamagata_railway_pairs(html)
+    sources.append({
+        "key": yamagata_railway["key"],
+        "url": yamagata_railway["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": yamagata_railway["operatorIds"],
+        "operatorName": yamagata_railway["operatorName"],
+        "extraction": "parsed_station_pair_table_from_official_html",
+        "pairCount": len(yamagata_railway_pairs),
+    })
+    station_pair_tables[yamagata_railway["key"]] = {
+        "operatorIds": yamagata_railway["operatorIds"],
+        "routeIds": yamagata_railway["routeIds"],
+        "sourceKey": yamagata_railway["key"],
+        "operatorName": yamagata_railway["operatorName"],
+        "notes": yamagata_railway["notes"],
+        "pairs": yamagata_railway_pairs,
+    }
+
+    moka_railway = MOKA_RAILWAY_STATION_PAIR_SOURCE
+    cache_path, html = fetch_raw(moka_railway["url"], cache_dir)
+    moka_railway_pairs = parse_moka_railway_pairs(html)
+    sources.append({
+        "key": moka_railway["key"],
+        "url": moka_railway["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": moka_railway["operatorIds"],
+        "operatorName": moka_railway["operatorName"],
+        "extraction": "parsed_station_pair_table_from_official_html",
+        "pairCount": len(moka_railway_pairs),
+    })
+    station_pair_tables[moka_railway["key"]] = {
+        "operatorIds": moka_railway["operatorIds"],
+        "routeIds": moka_railway["routeIds"],
+        "sourceKey": moka_railway["key"],
+        "operatorName": moka_railway["operatorName"],
+        "notes": moka_railway["notes"],
+        "pairs": moka_railway_pairs,
     }
 
     return {

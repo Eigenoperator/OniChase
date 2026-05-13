@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T03:29:13.096371+00:00",
+  "generatedAt": "2026-05-13T03:39:48.299395+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -900,6 +900,17 @@
       "cachePath": "data/v4_fare_source_cache/https_www.nishitetsu.jp_train_2026_unchin-kaitei-ninka.html"
     },
     {
+      "key": "amagi_railway_202410",
+      "url": "https://www.amatetsu.jp/new/20240917_info.pdf",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "甘木鉄道"
+      ],
+      "operatorName": "甘木鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.amatetsu.jp_new_20240917_info.pdf.html"
+    },
+    {
       "key": "hitachinaka_seaside_station_pairs_202110",
       "url": "https://www.hitachinaka-rail.co.jp/timetable/fare_2021.pdf",
       "kind": "station_pair_fare_table",
@@ -1303,6 +1314,30 @@
       "operatorName": "鹿島臨海鉄道",
       "extraction": "parsed_station_pair_triangle_from_official_pdf",
       "pairCount": 120
+    },
+    {
+      "key": "yamagata_railway_station_pairs",
+      "url": "https://flower-liner.jp/fare/",
+      "cachePath": "data/v4_fare_source_cache/https_flower-liner.jp_fare.html",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "山形鉄道"
+      ],
+      "operatorName": "山形鉄道",
+      "extraction": "parsed_station_pair_table_from_official_html",
+      "pairCount": 136
+    },
+    {
+      "key": "moka_railway_station_pairs",
+      "url": "https://www.moka-railway.co.jp/fare/",
+      "cachePath": "data/v4_fare_source_cache/https_www.moka-railway.co.jp_fare.html",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "真岡鐵道"
+      ],
+      "operatorName": "真岡鐵道",
+      "extraction": "parsed_station_pair_table_from_official_html",
+      "pairCount": 136
     }
   ],
   "ordinaryFareTables": {
@@ -7843,6 +7878,66 @@
               "fromKm": 72,
               "toKm": 75,
               "yen": 1140
+            }
+          ]
+        }
+      }
+    },
+    "amagi_railway_202410": {
+      "operatorIds": [
+        "甘木鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_9F8733701EB54D"
+      ],
+      "sourceKey": "amagi_railway_202410",
+      "operatorName": "甘木鉄道",
+      "notes": [
+        "甘木鉄道公式の2024年10月1日鉄道旅客運賃改定資料に掲載された普通旅客運賃（大人、片道）の改定後運賃。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 1,
+              "yen": 140
+            },
+            {
+              "fromKm": 2,
+              "toKm": 2,
+              "yen": 200
+            },
+            {
+              "fromKm": 3,
+              "toKm": 4,
+              "yen": 250
+            },
+            {
+              "fromKm": 5,
+              "toKm": 6,
+              "yen": 290
+            },
+            {
+              "fromKm": 7,
+              "toKm": 8,
+              "yen": 340
+            },
+            {
+              "fromKm": 9,
+              "toKm": 10,
+              "yen": 380
+            },
+            {
+              "fromKm": 11,
+              "toKm": 12,
+              "yen": 410
+            },
+            {
+              "fromKm": 13,
+              "toKm": 14,
+              "yen": 430
             }
           ]
         }
@@ -23585,6 +23680,1396 @@
           "fromStationName": "鹿島サッカースタジアム",
           "toStationName": "鹿島神宮",
           "yen": 200
+        }
+      }
+    },
+    "yamagata_railway_station_pairs": {
+      "operatorIds": [
+        "山形鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_4D7811873081BC"
+      ],
+      "sourceKey": "yamagata_railway_station_pairs",
+      "operatorName": "山形鉄道",
+      "notes": [
+        "山形鉄道公式サイトのフラワー長井線普通旅客運賃表から大人普通運賃の駅間表を抽出。"
+      ],
+      "pairs": {
+        "赤湯|南陽市役所": {
+          "fromStationName": "赤湯",
+          "toStationName": "南陽市役所",
+          "yen": 190
+        },
+        "赤湯|宮内": {
+          "fromStationName": "赤湯",
+          "toStationName": "宮内",
+          "yen": 240
+        },
+        "赤湯|おりはた": {
+          "fromStationName": "赤湯",
+          "toStationName": "おりはた",
+          "yen": 290
+        },
+        "赤湯|梨郷": {
+          "fromStationName": "赤湯",
+          "toStationName": "梨郷",
+          "yen": 340
+        },
+        "赤湯|西大塚": {
+          "fromStationName": "赤湯",
+          "toStationName": "西大塚",
+          "yen": 430
+        },
+        "赤湯|今泉": {
+          "fromStationName": "赤湯",
+          "toStationName": "今泉",
+          "yen": 470
+        },
+        "赤湯|時庭": {
+          "fromStationName": "赤湯",
+          "toStationName": "時庭",
+          "yen": 520
+        },
+        "赤湯|南長井": {
+          "fromStationName": "赤湯",
+          "toStationName": "南長井",
+          "yen": 570
+        },
+        "赤湯|長井": {
+          "fromStationName": "赤湯",
+          "toStationName": "長井",
+          "yen": 620
+        },
+        "赤湯|あやめ公園": {
+          "fromStationName": "赤湯",
+          "toStationName": "あやめ公園",
+          "yen": 620
+        },
+        "赤湯|羽前成田": {
+          "fromStationName": "赤湯",
+          "toStationName": "羽前成田",
+          "yen": 670
+        },
+        "赤湯|白兎": {
+          "fromStationName": "赤湯",
+          "toStationName": "白兎",
+          "yen": 690
+        },
+        "赤湯|蚕桑": {
+          "fromStationName": "赤湯",
+          "toStationName": "蚕桑",
+          "yen": 710
+        },
+        "赤湯|鮎貝": {
+          "fromStationName": "赤湯",
+          "toStationName": "鮎貝",
+          "yen": 730
+        },
+        "赤湯|四季の郷": {
+          "fromStationName": "赤湯",
+          "toStationName": "四季の郷",
+          "yen": 750
+        },
+        "赤湯|荒砥": {
+          "fromStationName": "赤湯",
+          "toStationName": "荒砥",
+          "yen": 760
+        },
+        "南陽市役所|宮内": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "宮内",
+          "yen": 240
+        },
+        "南陽市役所|おりはた": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "おりはた",
+          "yen": 240
+        },
+        "南陽市役所|梨郷": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "梨郷",
+          "yen": 290
+        },
+        "南陽市役所|西大塚": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "西大塚",
+          "yen": 390
+        },
+        "南陽市役所|今泉": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "今泉",
+          "yen": 430
+        },
+        "南陽市役所|時庭": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "時庭",
+          "yen": 470
+        },
+        "南陽市役所|南長井": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "南長井",
+          "yen": 570
+        },
+        "南陽市役所|長井": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "長井",
+          "yen": 570
+        },
+        "南陽市役所|あやめ公園": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "あやめ公園",
+          "yen": 620
+        },
+        "南陽市役所|羽前成田": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "羽前成田",
+          "yen": 670
+        },
+        "南陽市役所|白兎": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "白兎",
+          "yen": 690
+        },
+        "南陽市役所|蚕桑": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "蚕桑",
+          "yen": 690
+        },
+        "南陽市役所|鮎貝": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "鮎貝",
+          "yen": 730
+        },
+        "南陽市役所|四季の郷": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "四季の郷",
+          "yen": 730
+        },
+        "南陽市役所|荒砥": {
+          "fromStationName": "南陽市役所",
+          "toStationName": "荒砥",
+          "yen": 750
+        },
+        "宮内|おりはた": {
+          "fromStationName": "宮内",
+          "toStationName": "おりはた",
+          "yen": 190
+        },
+        "宮内|梨郷": {
+          "fromStationName": "宮内",
+          "toStationName": "梨郷",
+          "yen": 240
+        },
+        "宮内|西大塚": {
+          "fromStationName": "宮内",
+          "toStationName": "西大塚",
+          "yen": 340
+        },
+        "宮内|今泉": {
+          "fromStationName": "宮内",
+          "toStationName": "今泉",
+          "yen": 390
+        },
+        "宮内|時庭": {
+          "fromStationName": "宮内",
+          "toStationName": "時庭",
+          "yen": 430
+        },
+        "宮内|南長井": {
+          "fromStationName": "宮内",
+          "toStationName": "南長井",
+          "yen": 520
+        },
+        "宮内|長井": {
+          "fromStationName": "宮内",
+          "toStationName": "長井",
+          "yen": 520
+        },
+        "宮内|あやめ公園": {
+          "fromStationName": "宮内",
+          "toStationName": "あやめ公園",
+          "yen": 570
+        },
+        "宮内|羽前成田": {
+          "fromStationName": "宮内",
+          "toStationName": "羽前成田",
+          "yen": 570
+        },
+        "宮内|白兎": {
+          "fromStationName": "宮内",
+          "toStationName": "白兎",
+          "yen": 670
+        },
+        "宮内|蚕桑": {
+          "fromStationName": "宮内",
+          "toStationName": "蚕桑",
+          "yen": 670
+        },
+        "宮内|鮎貝": {
+          "fromStationName": "宮内",
+          "toStationName": "鮎貝",
+          "yen": 710
+        },
+        "宮内|四季の郷": {
+          "fromStationName": "宮内",
+          "toStationName": "四季の郷",
+          "yen": 710
+        },
+        "宮内|荒砥": {
+          "fromStationName": "宮内",
+          "toStationName": "荒砥",
+          "yen": 730
+        },
+        "おりはた|梨郷": {
+          "fromStationName": "おりはた",
+          "toStationName": "梨郷",
+          "yen": 240
+        },
+        "おりはた|西大塚": {
+          "fromStationName": "おりはた",
+          "toStationName": "西大塚",
+          "yen": 290
+        },
+        "おりはた|今泉": {
+          "fromStationName": "おりはた",
+          "toStationName": "今泉",
+          "yen": 340
+        },
+        "おりはた|時庭": {
+          "fromStationName": "おりはた",
+          "toStationName": "時庭",
+          "yen": 430
+        },
+        "おりはた|南長井": {
+          "fromStationName": "おりはた",
+          "toStationName": "南長井",
+          "yen": 470
+        },
+        "おりはた|長井": {
+          "fromStationName": "おりはた",
+          "toStationName": "長井",
+          "yen": 470
+        },
+        "おりはた|あやめ公園": {
+          "fromStationName": "おりはた",
+          "toStationName": "あやめ公園",
+          "yen": 520
+        },
+        "おりはた|羽前成田": {
+          "fromStationName": "おりはた",
+          "toStationName": "羽前成田",
+          "yen": 570
+        },
+        "おりはた|白兎": {
+          "fromStationName": "おりはた",
+          "toStationName": "白兎",
+          "yen": 620
+        },
+        "おりはた|蚕桑": {
+          "fromStationName": "おりはた",
+          "toStationName": "蚕桑",
+          "yen": 670
+        },
+        "おりはた|鮎貝": {
+          "fromStationName": "おりはた",
+          "toStationName": "鮎貝",
+          "yen": 690
+        },
+        "おりはた|四季の郷": {
+          "fromStationName": "おりはた",
+          "toStationName": "四季の郷",
+          "yen": 710
+        },
+        "おりはた|荒砥": {
+          "fromStationName": "おりはた",
+          "toStationName": "荒砥",
+          "yen": 730
+        },
+        "梨郷|西大塚": {
+          "fromStationName": "梨郷",
+          "toStationName": "西大塚",
+          "yen": 240
+        },
+        "梨郷|今泉": {
+          "fromStationName": "梨郷",
+          "toStationName": "今泉",
+          "yen": 290
+        },
+        "梨郷|時庭": {
+          "fromStationName": "梨郷",
+          "toStationName": "時庭",
+          "yen": 390
+        },
+        "梨郷|南長井": {
+          "fromStationName": "梨郷",
+          "toStationName": "南長井",
+          "yen": 430
+        },
+        "梨郷|長井": {
+          "fromStationName": "梨郷",
+          "toStationName": "長井",
+          "yen": 430
+        },
+        "梨郷|あやめ公園": {
+          "fromStationName": "梨郷",
+          "toStationName": "あやめ公園",
+          "yen": 470
+        },
+        "梨郷|羽前成田": {
+          "fromStationName": "梨郷",
+          "toStationName": "羽前成田",
+          "yen": 520
+        },
+        "梨郷|白兎": {
+          "fromStationName": "梨郷",
+          "toStationName": "白兎",
+          "yen": 570
+        },
+        "梨郷|蚕桑": {
+          "fromStationName": "梨郷",
+          "toStationName": "蚕桑",
+          "yen": 570
+        },
+        "梨郷|鮎貝": {
+          "fromStationName": "梨郷",
+          "toStationName": "鮎貝",
+          "yen": 670
+        },
+        "梨郷|四季の郷": {
+          "fromStationName": "梨郷",
+          "toStationName": "四季の郷",
+          "yen": 670
+        },
+        "梨郷|荒砥": {
+          "fromStationName": "梨郷",
+          "toStationName": "荒砥",
+          "yen": 690
+        },
+        "西大塚|今泉": {
+          "fromStationName": "西大塚",
+          "toStationName": "今泉",
+          "yen": 190
+        },
+        "西大塚|時庭": {
+          "fromStationName": "西大塚",
+          "toStationName": "時庭",
+          "yen": 290
+        },
+        "西大塚|南長井": {
+          "fromStationName": "西大塚",
+          "toStationName": "南長井",
+          "yen": 340
+        },
+        "西大塚|長井": {
+          "fromStationName": "西大塚",
+          "toStationName": "長井",
+          "yen": 340
+        },
+        "西大塚|あやめ公園": {
+          "fromStationName": "西大塚",
+          "toStationName": "あやめ公園",
+          "yen": 390
+        },
+        "西大塚|羽前成田": {
+          "fromStationName": "西大塚",
+          "toStationName": "羽前成田",
+          "yen": 430
+        },
+        "西大塚|白兎": {
+          "fromStationName": "西大塚",
+          "toStationName": "白兎",
+          "yen": 470
+        },
+        "西大塚|蚕桑": {
+          "fromStationName": "西大塚",
+          "toStationName": "蚕桑",
+          "yen": 520
+        },
+        "西大塚|鮎貝": {
+          "fromStationName": "西大塚",
+          "toStationName": "鮎貝",
+          "yen": 570
+        },
+        "西大塚|四季の郷": {
+          "fromStationName": "西大塚",
+          "toStationName": "四季の郷",
+          "yen": 620
+        },
+        "西大塚|荒砥": {
+          "fromStationName": "西大塚",
+          "toStationName": "荒砥",
+          "yen": 670
+        },
+        "今泉|時庭": {
+          "fromStationName": "今泉",
+          "toStationName": "時庭",
+          "yen": 240
+        },
+        "今泉|南長井": {
+          "fromStationName": "今泉",
+          "toStationName": "南長井",
+          "yen": 290
+        },
+        "今泉|長井": {
+          "fromStationName": "今泉",
+          "toStationName": "長井",
+          "yen": 340
+        },
+        "今泉|あやめ公園": {
+          "fromStationName": "今泉",
+          "toStationName": "あやめ公園",
+          "yen": 340
+        },
+        "今泉|羽前成田": {
+          "fromStationName": "今泉",
+          "toStationName": "羽前成田",
+          "yen": 390
+        },
+        "今泉|白兎": {
+          "fromStationName": "今泉",
+          "toStationName": "白兎",
+          "yen": 430
+        },
+        "今泉|蚕桑": {
+          "fromStationName": "今泉",
+          "toStationName": "蚕桑",
+          "yen": 470
+        },
+        "今泉|鮎貝": {
+          "fromStationName": "今泉",
+          "toStationName": "鮎貝",
+          "yen": 520
+        },
+        "今泉|四季の郷": {
+          "fromStationName": "今泉",
+          "toStationName": "四季の郷",
+          "yen": 570
+        },
+        "今泉|荒砥": {
+          "fromStationName": "今泉",
+          "toStationName": "荒砥",
+          "yen": 620
+        },
+        "時庭|南長井": {
+          "fromStationName": "時庭",
+          "toStationName": "南長井",
+          "yen": 240
+        },
+        "時庭|長井": {
+          "fromStationName": "時庭",
+          "toStationName": "長井",
+          "yen": 240
+        },
+        "時庭|あやめ公園": {
+          "fromStationName": "時庭",
+          "toStationName": "あやめ公園",
+          "yen": 290
+        },
+        "時庭|羽前成田": {
+          "fromStationName": "時庭",
+          "toStationName": "羽前成田",
+          "yen": 340
+        },
+        "時庭|白兎": {
+          "fromStationName": "時庭",
+          "toStationName": "白兎",
+          "yen": 390
+        },
+        "時庭|蚕桑": {
+          "fromStationName": "時庭",
+          "toStationName": "蚕桑",
+          "yen": 390
+        },
+        "時庭|鮎貝": {
+          "fromStationName": "時庭",
+          "toStationName": "鮎貝",
+          "yen": 470
+        },
+        "時庭|四季の郷": {
+          "fromStationName": "時庭",
+          "toStationName": "四季の郷",
+          "yen": 470
+        },
+        "時庭|荒砥": {
+          "fromStationName": "時庭",
+          "toStationName": "荒砥",
+          "yen": 520
+        },
+        "南長井|長井": {
+          "fromStationName": "南長井",
+          "toStationName": "長井",
+          "yen": 190
+        },
+        "南長井|あやめ公園": {
+          "fromStationName": "南長井",
+          "toStationName": "あやめ公園",
+          "yen": 190
+        },
+        "南長井|羽前成田": {
+          "fromStationName": "南長井",
+          "toStationName": "羽前成田",
+          "yen": 240
+        },
+        "南長井|白兎": {
+          "fromStationName": "南長井",
+          "toStationName": "白兎",
+          "yen": 290
+        },
+        "南長井|蚕桑": {
+          "fromStationName": "南長井",
+          "toStationName": "蚕桑",
+          "yen": 340
+        },
+        "南長井|鮎貝": {
+          "fromStationName": "南長井",
+          "toStationName": "鮎貝",
+          "yen": 430
+        },
+        "南長井|四季の郷": {
+          "fromStationName": "南長井",
+          "toStationName": "四季の郷",
+          "yen": 430
+        },
+        "南長井|荒砥": {
+          "fromStationName": "南長井",
+          "toStationName": "荒砥",
+          "yen": 470
+        },
+        "長井|あやめ公園": {
+          "fromStationName": "長井",
+          "toStationName": "あやめ公園",
+          "yen": 190
+        },
+        "長井|羽前成田": {
+          "fromStationName": "長井",
+          "toStationName": "羽前成田",
+          "yen": 240
+        },
+        "長井|白兎": {
+          "fromStationName": "長井",
+          "toStationName": "白兎",
+          "yen": 290
+        },
+        "長井|蚕桑": {
+          "fromStationName": "長井",
+          "toStationName": "蚕桑",
+          "yen": 340
+        },
+        "長井|鮎貝": {
+          "fromStationName": "長井",
+          "toStationName": "鮎貝",
+          "yen": 390
+        },
+        "長井|四季の郷": {
+          "fromStationName": "長井",
+          "toStationName": "四季の郷",
+          "yen": 430
+        },
+        "長井|荒砥": {
+          "fromStationName": "長井",
+          "toStationName": "荒砥",
+          "yen": 470
+        },
+        "あやめ公園|羽前成田": {
+          "fromStationName": "あやめ公園",
+          "toStationName": "羽前成田",
+          "yen": 190
+        },
+        "あやめ公園|白兎": {
+          "fromStationName": "あやめ公園",
+          "toStationName": "白兎",
+          "yen": 290
+        },
+        "あやめ公園|蚕桑": {
+          "fromStationName": "あやめ公園",
+          "toStationName": "蚕桑",
+          "yen": 290
+        },
+        "あやめ公園|鮎貝": {
+          "fromStationName": "あやめ公園",
+          "toStationName": "鮎貝",
+          "yen": 390
+        },
+        "あやめ公園|四季の郷": {
+          "fromStationName": "あやめ公園",
+          "toStationName": "四季の郷",
+          "yen": 390
+        },
+        "あやめ公園|荒砥": {
+          "fromStationName": "あやめ公園",
+          "toStationName": "荒砥",
+          "yen": 430
+        },
+        "羽前成田|白兎": {
+          "fromStationName": "羽前成田",
+          "toStationName": "白兎",
+          "yen": 240
+        },
+        "羽前成田|蚕桑": {
+          "fromStationName": "羽前成田",
+          "toStationName": "蚕桑",
+          "yen": 240
+        },
+        "羽前成田|鮎貝": {
+          "fromStationName": "羽前成田",
+          "toStationName": "鮎貝",
+          "yen": 340
+        },
+        "羽前成田|四季の郷": {
+          "fromStationName": "羽前成田",
+          "toStationName": "四季の郷",
+          "yen": 340
+        },
+        "羽前成田|荒砥": {
+          "fromStationName": "羽前成田",
+          "toStationName": "荒砥",
+          "yen": 390
+        },
+        "白兎|蚕桑": {
+          "fromStationName": "白兎",
+          "toStationName": "蚕桑",
+          "yen": 190
+        },
+        "白兎|鮎貝": {
+          "fromStationName": "白兎",
+          "toStationName": "鮎貝",
+          "yen": 290
+        },
+        "白兎|四季の郷": {
+          "fromStationName": "白兎",
+          "toStationName": "四季の郷",
+          "yen": 290
+        },
+        "白兎|荒砥": {
+          "fromStationName": "白兎",
+          "toStationName": "荒砥",
+          "yen": 340
+        },
+        "蚕桑|鮎貝": {
+          "fromStationName": "蚕桑",
+          "toStationName": "鮎貝",
+          "yen": 240
+        },
+        "蚕桑|四季の郷": {
+          "fromStationName": "蚕桑",
+          "toStationName": "四季の郷",
+          "yen": 240
+        },
+        "蚕桑|荒砥": {
+          "fromStationName": "蚕桑",
+          "toStationName": "荒砥",
+          "yen": 290
+        },
+        "鮎貝|四季の郷": {
+          "fromStationName": "鮎貝",
+          "toStationName": "四季の郷",
+          "yen": 190
+        },
+        "鮎貝|荒砥": {
+          "fromStationName": "鮎貝",
+          "toStationName": "荒砥",
+          "yen": 240
+        },
+        "四季の郷|荒砥": {
+          "fromStationName": "四季の郷",
+          "toStationName": "荒砥",
+          "yen": 190
+        }
+      }
+    },
+    "moka_railway_station_pairs": {
+      "operatorIds": [
+        "真岡鐵道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_96548170FFBBE9"
+      ],
+      "sourceKey": "moka_railway_station_pairs",
+      "operatorName": "真岡鐵道",
+      "notes": [
+        "真岡鐵道公式サイトの2019年10月1日改定普通運賃表から大人普通運賃の駅間表を抽出。SL乗車時のSL整理券は別料金のため未適用。"
+      ],
+      "pairs": {
+        "下館|二高前": {
+          "fromStationName": "下館",
+          "toStationName": "二高前",
+          "yen": 190
+        },
+        "下館|折本": {
+          "fromStationName": "下館",
+          "toStationName": "折本",
+          "yen": 240
+        },
+        "下館|ひぐち": {
+          "fromStationName": "下館",
+          "toStationName": "ひぐち",
+          "yen": 240
+        },
+        "下館|久下田": {
+          "fromStationName": "下館",
+          "toStationName": "久下田",
+          "yen": 340
+        },
+        "下館|寺内": {
+          "fromStationName": "下館",
+          "toStationName": "寺内",
+          "yen": 410
+        },
+        "下館|真岡": {
+          "fromStationName": "下館",
+          "toStationName": "真岡",
+          "yen": 560
+        },
+        "下館|北真岡": {
+          "fromStationName": "下館",
+          "toStationName": "北真岡",
+          "yen": 560
+        },
+        "下館|西田井": {
+          "fromStationName": "下館",
+          "toStationName": "西田井",
+          "yen": 630
+        },
+        "下館|北山": {
+          "fromStationName": "下館",
+          "toStationName": "北山",
+          "yen": 700
+        },
+        "下館|益子": {
+          "fromStationName": "下館",
+          "toStationName": "益子",
+          "yen": 780
+        },
+        "下館|七井": {
+          "fromStationName": "下館",
+          "toStationName": "七井",
+          "yen": 840
+        },
+        "下館|多田羅": {
+          "fromStationName": "下館",
+          "toStationName": "多田羅",
+          "yen": 890
+        },
+        "下館|市塙": {
+          "fromStationName": "下館",
+          "toStationName": "市塙",
+          "yen": 940
+        },
+        "下館|笹原田": {
+          "fromStationName": "下館",
+          "toStationName": "笹原田",
+          "yen": 1000
+        },
+        "下館|天矢場": {
+          "fromStationName": "下館",
+          "toStationName": "天矢場",
+          "yen": 1000
+        },
+        "下館|茂木": {
+          "fromStationName": "下館",
+          "toStationName": "茂木",
+          "yen": 1050
+        },
+        "二高前|折本": {
+          "fromStationName": "二高前",
+          "toStationName": "折本",
+          "yen": 190
+        },
+        "二高前|ひぐち": {
+          "fromStationName": "二高前",
+          "toStationName": "ひぐち",
+          "yen": 240
+        },
+        "二高前|久下田": {
+          "fromStationName": "二高前",
+          "toStationName": "久下田",
+          "yen": 240
+        },
+        "二高前|寺内": {
+          "fromStationName": "二高前",
+          "toStationName": "寺内",
+          "yen": 410
+        },
+        "二高前|真岡": {
+          "fromStationName": "二高前",
+          "toStationName": "真岡",
+          "yen": 480
+        },
+        "二高前|北真岡": {
+          "fromStationName": "二高前",
+          "toStationName": "北真岡",
+          "yen": 480
+        },
+        "二高前|西田井": {
+          "fromStationName": "二高前",
+          "toStationName": "西田井",
+          "yen": 560
+        },
+        "二高前|北山": {
+          "fromStationName": "二高前",
+          "toStationName": "北山",
+          "yen": 630
+        },
+        "二高前|益子": {
+          "fromStationName": "二高前",
+          "toStationName": "益子",
+          "yen": 700
+        },
+        "二高前|七井": {
+          "fromStationName": "二高前",
+          "toStationName": "七井",
+          "yen": 780
+        },
+        "二高前|多田羅": {
+          "fromStationName": "二高前",
+          "toStationName": "多田羅",
+          "yen": 840
+        },
+        "二高前|市塙": {
+          "fromStationName": "二高前",
+          "toStationName": "市塙",
+          "yen": 890
+        },
+        "二高前|笹原田": {
+          "fromStationName": "二高前",
+          "toStationName": "笹原田",
+          "yen": 940
+        },
+        "二高前|天矢場": {
+          "fromStationName": "二高前",
+          "toStationName": "天矢場",
+          "yen": 940
+        },
+        "二高前|茂木": {
+          "fromStationName": "二高前",
+          "toStationName": "茂木",
+          "yen": 1000
+        },
+        "折本|ひぐち": {
+          "fromStationName": "折本",
+          "toStationName": "ひぐち",
+          "yen": 190
+        },
+        "折本|久下田": {
+          "fromStationName": "折本",
+          "toStationName": "久下田",
+          "yen": 190
+        },
+        "折本|寺内": {
+          "fromStationName": "折本",
+          "toStationName": "寺内",
+          "yen": 340
+        },
+        "折本|真岡": {
+          "fromStationName": "折本",
+          "toStationName": "真岡",
+          "yen": 410
+        },
+        "折本|北真岡": {
+          "fromStationName": "折本",
+          "toStationName": "北真岡",
+          "yen": 480
+        },
+        "折本|西田井": {
+          "fromStationName": "折本",
+          "toStationName": "西田井",
+          "yen": 560
+        },
+        "折本|北山": {
+          "fromStationName": "折本",
+          "toStationName": "北山",
+          "yen": 560
+        },
+        "折本|益子": {
+          "fromStationName": "折本",
+          "toStationName": "益子",
+          "yen": 630
+        },
+        "折本|七井": {
+          "fromStationName": "折本",
+          "toStationName": "七井",
+          "yen": 700
+        },
+        "折本|多田羅": {
+          "fromStationName": "折本",
+          "toStationName": "多田羅",
+          "yen": 780
+        },
+        "折本|市塙": {
+          "fromStationName": "折本",
+          "toStationName": "市塙",
+          "yen": 840
+        },
+        "折本|笹原田": {
+          "fromStationName": "折本",
+          "toStationName": "笹原田",
+          "yen": 890
+        },
+        "折本|天矢場": {
+          "fromStationName": "折本",
+          "toStationName": "天矢場",
+          "yen": 940
+        },
+        "折本|茂木": {
+          "fromStationName": "折本",
+          "toStationName": "茂木",
+          "yen": 1000
+        },
+        "ひぐち|久下田": {
+          "fromStationName": "ひぐち",
+          "toStationName": "久下田",
+          "yen": 190
+        },
+        "ひぐち|寺内": {
+          "fromStationName": "ひぐち",
+          "toStationName": "寺内",
+          "yen": 240
+        },
+        "ひぐち|真岡": {
+          "fromStationName": "ひぐち",
+          "toStationName": "真岡",
+          "yen": 340
+        },
+        "ひぐち|北真岡": {
+          "fromStationName": "ひぐち",
+          "toStationName": "北真岡",
+          "yen": 410
+        },
+        "ひぐち|西田井": {
+          "fromStationName": "ひぐち",
+          "toStationName": "西田井",
+          "yen": 480
+        },
+        "ひぐち|北山": {
+          "fromStationName": "ひぐち",
+          "toStationName": "北山",
+          "yen": 560
+        },
+        "ひぐち|益子": {
+          "fromStationName": "ひぐち",
+          "toStationName": "益子",
+          "yen": 560
+        },
+        "ひぐち|七井": {
+          "fromStationName": "ひぐち",
+          "toStationName": "七井",
+          "yen": 630
+        },
+        "ひぐち|多田羅": {
+          "fromStationName": "ひぐち",
+          "toStationName": "多田羅",
+          "yen": 700
+        },
+        "ひぐち|市塙": {
+          "fromStationName": "ひぐち",
+          "toStationName": "市塙",
+          "yen": 780
+        },
+        "ひぐち|笹原田": {
+          "fromStationName": "ひぐち",
+          "toStationName": "笹原田",
+          "yen": 890
+        },
+        "ひぐち|天矢場": {
+          "fromStationName": "ひぐち",
+          "toStationName": "天矢場",
+          "yen": 890
+        },
+        "ひぐち|茂木": {
+          "fromStationName": "ひぐち",
+          "toStationName": "茂木",
+          "yen": 940
+        },
+        "久下田|寺内": {
+          "fromStationName": "久下田",
+          "toStationName": "寺内",
+          "yen": 240
+        },
+        "久下田|真岡": {
+          "fromStationName": "久下田",
+          "toStationName": "真岡",
+          "yen": 340
+        },
+        "久下田|北真岡": {
+          "fromStationName": "久下田",
+          "toStationName": "北真岡",
+          "yen": 340
+        },
+        "久下田|西田井": {
+          "fromStationName": "久下田",
+          "toStationName": "西田井",
+          "yen": 410
+        },
+        "久下田|北山": {
+          "fromStationName": "久下田",
+          "toStationName": "北山",
+          "yen": 480
+        },
+        "久下田|益子": {
+          "fromStationName": "久下田",
+          "toStationName": "益子",
+          "yen": 560
+        },
+        "久下田|七井": {
+          "fromStationName": "久下田",
+          "toStationName": "七井",
+          "yen": 630
+        },
+        "久下田|多田羅": {
+          "fromStationName": "久下田",
+          "toStationName": "多田羅",
+          "yen": 700
+        },
+        "久下田|市塙": {
+          "fromStationName": "久下田",
+          "toStationName": "市塙",
+          "yen": 780
+        },
+        "久下田|笹原田": {
+          "fromStationName": "久下田",
+          "toStationName": "笹原田",
+          "yen": 840
+        },
+        "久下田|天矢場": {
+          "fromStationName": "久下田",
+          "toStationName": "天矢場",
+          "yen": 840
+        },
+        "久下田|茂木": {
+          "fromStationName": "久下田",
+          "toStationName": "茂木",
+          "yen": 890
+        },
+        "寺内|真岡": {
+          "fromStationName": "寺内",
+          "toStationName": "真岡",
+          "yen": 190
+        },
+        "寺内|北真岡": {
+          "fromStationName": "寺内",
+          "toStationName": "北真岡",
+          "yen": 240
+        },
+        "寺内|西田井": {
+          "fromStationName": "寺内",
+          "toStationName": "西田井",
+          "yen": 340
+        },
+        "寺内|北山": {
+          "fromStationName": "寺内",
+          "toStationName": "北山",
+          "yen": 410
+        },
+        "寺内|益子": {
+          "fromStationName": "寺内",
+          "toStationName": "益子",
+          "yen": 410
+        },
+        "寺内|七井": {
+          "fromStationName": "寺内",
+          "toStationName": "七井",
+          "yen": 480
+        },
+        "寺内|多田羅": {
+          "fromStationName": "寺内",
+          "toStationName": "多田羅",
+          "yen": 560
+        },
+        "寺内|市塙": {
+          "fromStationName": "寺内",
+          "toStationName": "市塙",
+          "yen": 630
+        },
+        "寺内|笹原田": {
+          "fromStationName": "寺内",
+          "toStationName": "笹原田",
+          "yen": 780
+        },
+        "寺内|天矢場": {
+          "fromStationName": "寺内",
+          "toStationName": "天矢場",
+          "yen": 780
+        },
+        "寺内|茂木": {
+          "fromStationName": "寺内",
+          "toStationName": "茂木",
+          "yen": 840
+        },
+        "真岡|北真岡": {
+          "fromStationName": "真岡",
+          "toStationName": "北真岡",
+          "yen": 190
+        },
+        "真岡|西田井": {
+          "fromStationName": "真岡",
+          "toStationName": "西田井",
+          "yen": 240
+        },
+        "真岡|北山": {
+          "fromStationName": "真岡",
+          "toStationName": "北山",
+          "yen": 240
+        },
+        "真岡|益子": {
+          "fromStationName": "真岡",
+          "toStationName": "益子",
+          "yen": 340
+        },
+        "真岡|七井": {
+          "fromStationName": "真岡",
+          "toStationName": "七井",
+          "yen": 410
+        },
+        "真岡|多田羅": {
+          "fromStationName": "真岡",
+          "toStationName": "多田羅",
+          "yen": 480
+        },
+        "真岡|市塙": {
+          "fromStationName": "真岡",
+          "toStationName": "市塙",
+          "yen": 560
+        },
+        "真岡|笹原田": {
+          "fromStationName": "真岡",
+          "toStationName": "笹原田",
+          "yen": 630
+        },
+        "真岡|天矢場": {
+          "fromStationName": "真岡",
+          "toStationName": "天矢場",
+          "yen": 700
+        },
+        "真岡|茂木": {
+          "fromStationName": "真岡",
+          "toStationName": "茂木",
+          "yen": 780
+        },
+        "北真岡|西田井": {
+          "fromStationName": "北真岡",
+          "toStationName": "西田井",
+          "yen": 190
+        },
+        "北真岡|北山": {
+          "fromStationName": "北真岡",
+          "toStationName": "北山",
+          "yen": 240
+        },
+        "北真岡|益子": {
+          "fromStationName": "北真岡",
+          "toStationName": "益子",
+          "yen": 340
+        },
+        "北真岡|七井": {
+          "fromStationName": "北真岡",
+          "toStationName": "七井",
+          "yen": 410
+        },
+        "北真岡|多田羅": {
+          "fromStationName": "北真岡",
+          "toStationName": "多田羅",
+          "yen": 480
+        },
+        "北真岡|市塙": {
+          "fromStationName": "北真岡",
+          "toStationName": "市塙",
+          "yen": 560
+        },
+        "北真岡|笹原田": {
+          "fromStationName": "北真岡",
+          "toStationName": "笹原田",
+          "yen": 630
+        },
+        "北真岡|天矢場": {
+          "fromStationName": "北真岡",
+          "toStationName": "天矢場",
+          "yen": 630
+        },
+        "北真岡|茂木": {
+          "fromStationName": "北真岡",
+          "toStationName": "茂木",
+          "yen": 700
+        },
+        "西田井|北山": {
+          "fromStationName": "西田井",
+          "toStationName": "北山",
+          "yen": 190
+        },
+        "西田井|益子": {
+          "fromStationName": "西田井",
+          "toStationName": "益子",
+          "yen": 190
+        },
+        "西田井|七井": {
+          "fromStationName": "西田井",
+          "toStationName": "七井",
+          "yen": 340
+        },
+        "西田井|多田羅": {
+          "fromStationName": "西田井",
+          "toStationName": "多田羅",
+          "yen": 340
+        },
+        "西田井|市塙": {
+          "fromStationName": "西田井",
+          "toStationName": "市塙",
+          "yen": 480
+        },
+        "西田井|笹原田": {
+          "fromStationName": "西田井",
+          "toStationName": "笹原田",
+          "yen": 560
+        },
+        "西田井|天矢場": {
+          "fromStationName": "西田井",
+          "toStationName": "天矢場",
+          "yen": 560
+        },
+        "西田井|茂木": {
+          "fromStationName": "西田井",
+          "toStationName": "茂木",
+          "yen": 630
+        },
+        "北山|益子": {
+          "fromStationName": "北山",
+          "toStationName": "益子",
+          "yen": 190
+        },
+        "北山|七井": {
+          "fromStationName": "北山",
+          "toStationName": "七井",
+          "yen": 240
+        },
+        "北山|多田羅": {
+          "fromStationName": "北山",
+          "toStationName": "多田羅",
+          "yen": 340
+        },
+        "北山|市塙": {
+          "fromStationName": "北山",
+          "toStationName": "市塙",
+          "yen": 410
+        },
+        "北山|笹原田": {
+          "fromStationName": "北山",
+          "toStationName": "笹原田",
+          "yen": 480
+        },
+        "北山|天矢場": {
+          "fromStationName": "北山",
+          "toStationName": "天矢場",
+          "yen": 560
+        },
+        "北山|茂木": {
+          "fromStationName": "北山",
+          "toStationName": "茂木",
+          "yen": 560
+        },
+        "益子|七井": {
+          "fromStationName": "益子",
+          "toStationName": "七井",
+          "yen": 190
+        },
+        "益子|多田羅": {
+          "fromStationName": "益子",
+          "toStationName": "多田羅",
+          "yen": 240
+        },
+        "益子|市塙": {
+          "fromStationName": "益子",
+          "toStationName": "市塙",
+          "yen": 340
+        },
+        "益子|笹原田": {
+          "fromStationName": "益子",
+          "toStationName": "笹原田",
+          "yen": 410
+        },
+        "益子|天矢場": {
+          "fromStationName": "益子",
+          "toStationName": "天矢場",
+          "yen": 480
+        },
+        "益子|茂木": {
+          "fromStationName": "益子",
+          "toStationName": "茂木",
+          "yen": 560
+        },
+        "七井|多田羅": {
+          "fromStationName": "七井",
+          "toStationName": "多田羅",
+          "yen": 190
+        },
+        "七井|市塙": {
+          "fromStationName": "七井",
+          "toStationName": "市塙",
+          "yen": 240
+        },
+        "七井|笹原田": {
+          "fromStationName": "七井",
+          "toStationName": "笹原田",
+          "yen": 340
+        },
+        "七井|天矢場": {
+          "fromStationName": "七井",
+          "toStationName": "天矢場",
+          "yen": 410
+        },
+        "七井|茂木": {
+          "fromStationName": "七井",
+          "toStationName": "茂木",
+          "yen": 480
+        },
+        "多田羅|市塙": {
+          "fromStationName": "多田羅",
+          "toStationName": "市塙",
+          "yen": 190
+        },
+        "多田羅|笹原田": {
+          "fromStationName": "多田羅",
+          "toStationName": "笹原田",
+          "yen": 240
+        },
+        "多田羅|天矢場": {
+          "fromStationName": "多田羅",
+          "toStationName": "天矢場",
+          "yen": 340
+        },
+        "多田羅|茂木": {
+          "fromStationName": "多田羅",
+          "toStationName": "茂木",
+          "yen": 410
+        },
+        "市塙|笹原田": {
+          "fromStationName": "市塙",
+          "toStationName": "笹原田",
+          "yen": 190
+        },
+        "市塙|天矢場": {
+          "fromStationName": "市塙",
+          "toStationName": "天矢場",
+          "yen": 240
+        },
+        "市塙|茂木": {
+          "fromStationName": "市塙",
+          "toStationName": "茂木",
+          "yen": 340
+        },
+        "笹原田|天矢場": {
+          "fromStationName": "笹原田",
+          "toStationName": "天矢場",
+          "yen": 190
+        },
+        "笹原田|茂木": {
+          "fromStationName": "笹原田",
+          "toStationName": "茂木",
+          "yen": 190
+        },
+        "天矢場|茂木": {
+          "fromStationName": "天矢場",
+          "toStationName": "茂木",
+          "yen": 190
         }
       }
     }
