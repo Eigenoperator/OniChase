@@ -154,6 +154,49 @@ WAKAYAMA_DENTETSU_STATION_PAIR_SOURCE = {
     ],
 }
 
+SENDAI_AIRPORT_TRANSIT_STATION_PAIR_SOURCE = {
+    "key": "sendai_airport_transit_station_pairs_202603",
+    "operatorIds": ["仙台空港鉄道"],
+    "operatorName": "仙台空港鉄道",
+    "routeIds": ["V4_ROUTE_660D6C88CEEFD5"],
+    "pages": [
+        ("仙台", "https://www.senat.co.jp/fare/sendai/"),
+        ("長町", "https://www.senat.co.jp/fare/nagamachi/"),
+        ("太子堂", "https://www.senat.co.jp/fare/taishidou/"),
+        ("南仙台", "https://www.senat.co.jp/fare/minamisen/"),
+        ("名取", "https://www.senat.co.jp/fare/natori/"),
+        ("杜せきのした", "https://www.senat.co.jp/fare/moriseki/"),
+        ("美田園", "https://www.senat.co.jp/fare/mitazono/"),
+        ("仙台空港", "https://www.senat.co.jp/fare/sendaiair/"),
+    ],
+    "notes": [
+        "仙台空港鉄道公式の各駅運賃ページに掲載されたきっぷ大人運賃を駅間表として抽出。",
+    ],
+}
+
+AONAMI_LINE_STATION_PAIR_SOURCE = {
+    "key": "aonami_line_station_pairs_2026",
+    "operatorIds": ["名古屋臨海高速鉄道"],
+    "operatorName": "名古屋臨海高速鉄道",
+    "routeIds": ["V4_ROUTE_8347D8D79CF2BA"],
+    "pages": [
+        ("名古屋", "https://www.aonamiline.co.jp/train/an01-nagoya/an01-fare"),
+        ("ささしまライブ", "https://www.aonamiline.co.jp/train/an02-sasashima-raibu/an02-fare"),
+        ("小本", "https://www.aonamiline.co.jp/train/an03-komoto/an03-fare"),
+        ("荒子", "https://www.aonamiline.co.jp/train/an04-arako/an04-fare"),
+        ("南荒子", "https://www.aonamiline.co.jp/train/an05-minami-arako/an05-fare"),
+        ("中島", "https://www.aonamiline.co.jp/train/an06-nakajima/an06-fare"),
+        ("港北", "https://www.aonamiline.co.jp/train/an07-kohoku/an07-fare"),
+        ("荒子川公園", "https://www.aonamiline.co.jp/train/an08-arakogawa-koen/an08-fare"),
+        ("稲永", "https://www.aonamiline.co.jp/train/an09-inaei/an09-fare"),
+        ("野跡", "https://www.aonamiline.co.jp/train/an10-noseki/an10-fare"),
+        ("金城ふ頭", "https://www.aonamiline.co.jp/train/an11-kinjo-futo/an11-fare"),
+    ],
+    "notes": [
+        "あおなみ線公式の各駅運賃表に掲載された大人普通運賃を駅間表として抽出。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -1402,6 +1445,7 @@ def parse_kobe_new_transit_pairs(html: str) -> dict[str, dict[str, Any]]:
 
 
 def clean_station_label(raw: str) -> str:
+    raw = re.sub(r'<span[^>]*class="[^"]*\byomi\b[^"]*".*?</span>', "", raw, flags=re.S)
     text = unescape(re.sub(r"<[^>]+>", "", raw))
     text = "".join(text.replace("\xa0", " ").split())
     text = re.sub(r"^[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]+", "", text)
@@ -1443,6 +1487,56 @@ def parse_wakayama_dentetsu_pairs(html: str) -> dict[str, dict[str, Any]]:
                 "toStationName": dest_name,
                 "yen": int(adult),
             })
+    return pairs
+
+
+def add_station_pair(pairs: dict[str, dict[str, Any]], origin_name: str, dest_name: str, yen: int) -> None:
+    if not origin_name or not dest_name or origin_name == dest_name:
+        return
+    key = station_pair_key(origin_name, dest_name)
+    reverse_key = station_pair_key(dest_name, origin_name)
+    if reverse_key in pairs:
+        return
+    pairs.setdefault(key, {
+        "fromStationName": origin_name,
+        "toStationName": dest_name,
+        "yen": yen,
+    })
+
+
+def parse_sendai_airport_transit_page(origin_name: str, html: str) -> dict[str, dict[str, Any]]:
+    table_match = re.search(r'<table[^>]*class="[^"]*\buntin\b[^"]*"[^>]*>(.*?)</table>', html, flags=re.S)
+    if not table_match:
+        return {}
+    pairs: dict[str, dict[str, Any]] = {}
+    rows = re.findall(r"<tr[^>]*>(.*?)</tr>", table_match.group(1), flags=re.S)
+    for row in rows:
+        if "kodomo" in row:
+            continue
+        cells = re.findall(r"<(?:th|td)[^>]*>(.*?)</(?:th|td)>", row, flags=re.S)
+        if len(cells) < 3:
+            continue
+        adult = clean_fare_cell(cells[0]).replace(",", "")
+        dest_name = clean_station_label(cells[1])
+        if adult.isdigit():
+            add_station_pair(pairs, origin_name, dest_name, int(adult))
+    return pairs
+
+
+def parse_aonami_line_page(origin_name: str, html: str) -> dict[str, dict[str, Any]]:
+    table_match = re.search(r'<div class="price-table">.*?<table>(.*?)</table>', html, flags=re.S)
+    if not table_match:
+        return {}
+    pairs: dict[str, dict[str, Any]] = {}
+    rows = re.findall(r"<tr[^>]*>(.*?)</tr>", table_match.group(1), flags=re.S)
+    for row in rows:
+        cells = re.findall(r"<(?:th|td)[^>]*>(.*?)</(?:th|td)>", row, flags=re.S)
+        if len(cells) < 4:
+            continue
+        dest_name = re.sub(r"\(当駅\)", "", clean_station_label(cells[0]))
+        adult = clean_fare_cell(cells[3]).replace(",", "").replace("円", "")
+        if adult.isdigit():
+            add_station_pair(pairs, origin_name, dest_name, int(adult))
     return pairs
 
 
@@ -1818,6 +1912,70 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": wakayama_dentetsu["operatorName"],
         "notes": wakayama_dentetsu["notes"],
         "pairs": wakayama_dentetsu_pairs,
+    }
+
+    sendai_airport = SENDAI_AIRPORT_TRANSIT_STATION_PAIR_SOURCE
+    sendai_airport_pairs: dict[str, dict[str, Any]] = {}
+    sendai_airport_cache_paths: list[str] = []
+    for origin_name, url in sendai_airport["pages"]:
+        cache_path, html = fetch_raw(url, cache_dir)
+        sendai_airport_cache_paths.append(cache_path)
+        for pair in parse_sendai_airport_transit_page(origin_name, html).values():
+            add_station_pair(
+                sendai_airport_pairs,
+                pair["fromStationName"],
+                pair["toStationName"],
+                pair["yen"],
+            )
+    sources.append({
+        "key": sendai_airport["key"],
+        "urls": [url for _origin_name, url in sendai_airport["pages"]],
+        "cachePaths": sendai_airport_cache_paths,
+        "kind": "station_pair_fare_table",
+        "operatorIds": sendai_airport["operatorIds"],
+        "operatorName": sendai_airport["operatorName"],
+        "extraction": "parsed_station_pair_tables_from_official_station_pages",
+        "pairCount": len(sendai_airport_pairs),
+    })
+    station_pair_tables[sendai_airport["key"]] = {
+        "operatorIds": sendai_airport["operatorIds"],
+        "routeIds": sendai_airport["routeIds"],
+        "sourceKey": sendai_airport["key"],
+        "operatorName": sendai_airport["operatorName"],
+        "notes": sendai_airport["notes"],
+        "pairs": sendai_airport_pairs,
+    }
+
+    aonami_line = AONAMI_LINE_STATION_PAIR_SOURCE
+    aonami_line_pairs: dict[str, dict[str, Any]] = {}
+    aonami_line_cache_paths: list[str] = []
+    for origin_name, url in aonami_line["pages"]:
+        cache_path, html = fetch_raw(url, cache_dir)
+        aonami_line_cache_paths.append(cache_path)
+        for pair in parse_aonami_line_page(origin_name, html).values():
+            add_station_pair(
+                aonami_line_pairs,
+                pair["fromStationName"],
+                pair["toStationName"],
+                pair["yen"],
+            )
+    sources.append({
+        "key": aonami_line["key"],
+        "urls": [url for _origin_name, url in aonami_line["pages"]],
+        "cachePaths": aonami_line_cache_paths,
+        "kind": "station_pair_fare_table",
+        "operatorIds": aonami_line["operatorIds"],
+        "operatorName": aonami_line["operatorName"],
+        "extraction": "parsed_station_pair_tables_from_official_station_pages",
+        "pairCount": len(aonami_line_pairs),
+    })
+    station_pair_tables[aonami_line["key"]] = {
+        "operatorIds": aonami_line["operatorIds"],
+        "routeIds": aonami_line["routeIds"],
+        "sourceKey": aonami_line["key"],
+        "operatorName": aonami_line["operatorName"],
+        "notes": aonami_line["notes"],
+        "pairs": aonami_line_pairs,
     }
 
     return {
