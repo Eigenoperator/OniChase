@@ -550,6 +550,64 @@ KANTETSU_STATION_PAIR_SOURCE = {
     ],
 }
 
+SANGI_RAILWAY_STATION_PAIR_SOURCES = [
+    {
+        "key": "sangi_railway_sangi_line_station_pairs_201910",
+        "operatorIds": ["三岐鉄道"],
+        "operatorName": "三岐鉄道",
+        "url": "https://sangirail.co.jp/files/20191001sangi-unchin(1).pdf",
+        "routeIds": ["V4_ROUTE_13E9D86DF2B2BD"],
+        "stationOrder": [
+            "近鉄富田",
+            "大矢知",
+            "平津",
+            "暁学園前",
+            "山城",
+            "保々",
+            "北勢中央公園口",
+            "梅戸井",
+            "大安",
+            "三里",
+            "丹生川",
+            "伊勢治田",
+            "東藤原",
+            "西野尻",
+            "西藤原",
+        ],
+        "rowLabels": {
+            "北勢中央公園口": "公園口",
+        },
+        "notes": [
+            "三岐鉄道公式の三岐線普通運賃表PDF（2019年10月1日改定）から、大人普通運賃の駅間三角表を抽出。定期券欄は除外。",
+        ],
+    },
+    {
+        "key": "sangi_railway_hokusei_line_station_pairs_201910",
+        "operatorIds": ["三岐鉄道"],
+        "operatorName": "三岐鉄道",
+        "url": "https://sangirail.co.jp/files/20191001hokusei-unchin.pdf",
+        "routeIds": ["V4_ROUTE_171C260C28EB92"],
+        "stationOrder": [
+            "西桑名",
+            "馬道",
+            "西別所",
+            "蓮花寺",
+            "在良",
+            "星川",
+            "七和",
+            "穴太",
+            "東員",
+            "大泉",
+            "楚原",
+            "麻生田",
+            "阿下喜",
+        ],
+        "notes": [
+            "三岐鉄道公式の北勢線普通運賃表PDF（2019年10月1日改定）から、大人普通運賃の駅間三角表を抽出。定期券欄は除外。",
+        ],
+    },
+]
+
 UEDA_DENTETSU_STATION_PAIR_SOURCE = {
     "key": "ueda_dentetsu_station_pairs_201910",
     "operatorIds": ["上田電鉄"],
@@ -3142,6 +3200,41 @@ def parse_kantetsu_pairs(lines: list[str], station_order: list[str]) -> dict[str
     return pairs
 
 
+def parse_compact_forward_triangle_pairs(
+    lines: list[str],
+    station_order: list[str],
+    *,
+    source_name: str,
+    row_labels: dict[str, str] | None = None,
+) -> dict[str, dict[str, Any]]:
+    pairs: list[tuple[str, str, int]] = []
+    for station_index, station_name in enumerate(station_order[:-1]):
+        expected_count = len(station_order) - station_index - 1
+        row_label = (row_labels or {}).get(station_name, station_name)
+        row_fares = None
+        for line in lines:
+            normalized = re.sub(r"\s+", "", line)
+            position = normalized.find(row_label)
+            if position < 0:
+                continue
+            match = re.match(r"(?:\d{3})+", normalized[position + len(row_label):])
+            if not match:
+                continue
+            chunks = [int(match.group(0)[offset:offset + 3]) for offset in range(0, len(match.group(0)), 3)]
+            if len(chunks) >= expected_count:
+                row_fares = chunks[:expected_count]
+                break
+        if row_fares is None:
+            raise ValueError(f"missing {source_name} fare row for {station_name}")
+        for target_name, yen in zip(station_order[station_index + 1:], row_fares, strict=True):
+            pairs.append((station_name, target_name, yen))
+    pair_table = manual_station_pairs(pairs)
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pair_table) != expected_pair_count:
+        raise ValueError(f"{source_name} pair count {len(pair_table)} != {expected_pair_count}")
+    return pair_table
+
+
 def parse_km_range(value: str) -> tuple[int, int | None] | None:
     normalized = value.replace(",", "")
     match = re.search(r"(\d+)-(\d+)", normalized)
@@ -3738,6 +3831,33 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "notes": kantetsu["notes"],
         "pairs": kantetsu_pairs,
     }
+
+    for sangi in SANGI_RAILWAY_STATION_PAIR_SOURCES:
+        cache_path, lines = fetch_pdf_text(sangi["url"], cache_dir)
+        sangi_pairs = parse_compact_forward_triangle_pairs(
+            lines,
+            sangi["stationOrder"],
+            source_name=sangi["key"],
+            row_labels=sangi.get("rowLabels"),
+        )
+        sources.append({
+            "key": sangi["key"],
+            "url": sangi["url"],
+            "cachePath": cache_path,
+            "kind": "station_pair_fare_table",
+            "operatorIds": sangi["operatorIds"],
+            "operatorName": sangi["operatorName"],
+            "extraction": "parsed_compact_station_pair_triangle_from_official_pdf",
+            "pairCount": len(sangi_pairs),
+        })
+        station_pair_tables[sangi["key"]] = {
+            "operatorIds": sangi["operatorIds"],
+            "routeIds": sangi["routeIds"],
+            "sourceKey": sangi["key"],
+            "operatorName": sangi["operatorName"],
+            "notes": sangi["notes"],
+            "pairs": sangi_pairs,
+        }
 
     ueda_dentetsu = UEDA_DENTETSU_STATION_PAIR_SOURCE
     cache_path, lines = fetch_text(ueda_dentetsu["url"], cache_dir)
