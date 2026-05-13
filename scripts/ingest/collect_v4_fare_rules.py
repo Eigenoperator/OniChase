@@ -7,6 +7,8 @@ import hashlib
 import json
 import re
 import subprocess
+import tempfile
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from html import unescape
 from html.parser import HTMLParser
@@ -358,6 +360,55 @@ TOSAKURO_NAKAMURA_SUKUMO_STATION_PAIR_SOURCE = {
     "notes": [
         "土佐くろしお鉄道公式の中村・宿毛線運賃表PDFから大人普通運賃の駅間三角表を抽出。PDF右側には自由席特急料金表も併載されているため、普通運賃行の先頭側の駅間運賃だけを使用する。",
         "自由席特急料金、こども運賃、定期運賃、割引乗車券は別体系のため未収録。ごめん・なはり線はゲーム route にJR高知側の尾巴が混在しているため、この表では覆わない。",
+    ],
+}
+
+ICHIBATA_STATION_PAIR_SOURCE = {
+    "key": "ichibata_station_pairs_202503",
+    "operatorIds": ["一畑電車"],
+    "operatorName": "一畑電車",
+    "url": "https://railway.ichibata.co.jp/wp-content/media/fare20250301.pdf",
+    "routeIds": ["V4_ROUTE_9783546D7EAF3F", "V4_ROUTE_4B83A1B9C42AEF"],
+    "stationOrder": [
+        "電鉄出雲市",
+        "出雲科学館パークタウン前",
+        "大津町",
+        "武志",
+        "川跡",
+        "大寺",
+        "美談",
+        "旅伏",
+        "雲州平田",
+        "布崎",
+        "湖遊館新駅",
+        "園",
+        "一畑口",
+        "伊野灘",
+        "津ノ森",
+        "高ノ宮",
+        "松江フォーゲルパーク",
+        "秋鹿町",
+        "長江",
+        "朝日ヶ丘",
+        "松江イングリッシュガーデン前",
+        "松江しんじ湖温泉",
+        "高浜",
+        "遥堪",
+        "浜山公園北口",
+        "出雲大社前",
+    ],
+    "samplePairs": {
+        "電鉄出雲市|出雲科学館パークタウン前": 190,
+        "電鉄出雲市|松江しんじ湖温泉": 770,
+        "電鉄出雲市|出雲大社前": 550,
+        "川跡|出雲大社前": 400,
+        "高浜|遥堪": 190,
+        "松江しんじ湖温泉|出雲大社前": 900,
+        "遥堪|出雲大社前": 190,
+    },
+    "notes": [
+        "一畑電車公式の2025年3月1日改定・普通旅客運賃表PDFから、全社駅間表の上段（大人普通運賃）だけを抽出。PDFの下段小人運賃、定期、回数券、割引乗車券は別体系のため未収録。",
+        "ゲーム側表記に合わせ、公式PDFの「遙堪」は「遥堪」に正規化している。北松江線・大社線は同一事業者内で駅間表が一体のため、会社全体の station-pair 表として収録する。",
     ],
 }
 
@@ -4005,6 +4056,35 @@ def fetch_pdf_raw_text(url: str, cache_dir: Path) -> tuple[str, str]:
     return str(cache_path.relative_to(ROOT)), completed.stdout
 
 
+def fetch_pdf_xml_text_elements(url: str, cache_dir: Path) -> tuple[str, list[dict[str, Any]]]:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / (cache_stem_for_url(url) + ".pdf")
+    if not cache_path.exists():
+        response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
+        response.raise_for_status()
+        cache_path.write_bytes(response.content)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        output_prefix = Path(temp_dir) / "pdf_xml"
+        subprocess.run(
+            ["pdftohtml", "-xml", "-f", "1", "-l", "1", str(cache_path), str(output_prefix)],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        root = ET.parse(output_prefix.with_suffix(".xml")).getroot()
+    elements: list[dict[str, Any]] = []
+    for node in root.iter("text"):
+        text = re.sub(r"\s+", " ", "".join(node.itertext())).strip()
+        if not text:
+            continue
+        elements.append({
+            "top": int(node.attrib.get("top", "0")),
+            "left": int(node.attrib.get("left", "0")),
+            "text": text,
+        })
+    return str(cache_path.relative_to(ROOT)), elements
+
+
 def try_fetch_text(url: str, cache_dir: Path) -> tuple[str | None, list[str], str | None]:
     try:
       cache_path, lines = fetch_text(url, cache_dir)
@@ -4429,6 +4509,56 @@ def parse_prefix_triangle_pdf_pairs(
     expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
     if len(pairs) != expected_pair_count:
         raise ValueError(f"{source_name} pair count {len(pairs)} != {expected_pair_count}")
+    return pairs
+
+
+def parse_ichibata_pairs(
+    elements: list[dict[str, Any]],
+    station_order: list[str],
+    sample_pairs: dict[str, int],
+) -> dict[str, dict[str, Any]]:
+    numeric_rows: dict[int, list[tuple[int, list[int]]]] = {}
+    for element in elements:
+        top = int(element["top"])
+        if top < 160 or top > 760:
+            continue
+        text = element["text"].translate(str.maketrans("０１２３４５６７８９，", "0123456789,"))
+        if not re.fullmatch(r"[0-9, ]+", text):
+            continue
+        values = [int(value.replace(",", "")) for value in re.findall(r"\d[\d,]*", text)]
+        if values:
+            numeric_rows.setdefault(top, []).append((int(element["left"]), values))
+
+    row_tops = sorted(numeric_rows)[:len(station_order) - 1]
+    if len(row_tops) != len(station_order) - 1:
+        raise ValueError(f"Ichibata fare PDF has {len(row_tops)} fare rows, expected {len(station_order) - 1}")
+
+    fare_rows: list[tuple[str, list[int]]] = []
+    for row_index, top in enumerate(row_tops):
+        expected = len(station_order) - row_index - 1
+        chunks = sorted(numeric_rows[top])
+        suffix_values: list[int] = []
+        for _left, values in reversed(chunks):
+            suffix_values = [*values, *suffix_values]
+            if len(suffix_values) >= expected:
+                break
+        if len(suffix_values) != expected:
+            raise ValueError(
+                f"Ichibata row {row_index} {station_order[row_index]} has "
+                f"{len(suffix_values)} adult fares, expected {expected}"
+            )
+        if any(value < 190 for value in suffix_values):
+            raise ValueError(f"Ichibata row {row_index} adult suffix includes child fare values: {suffix_values}")
+        fare_rows.append((station_order[row_index], suffix_values))
+
+    pairs = manual_station_pairs(station_pair_upper_triangle_rows(station_order, fare_rows))
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"Ichibata pair count {len(pairs)} != {expected_pair_count}")
+    for pair_key, expected_yen in sample_pairs.items():
+        actual_yen = pairs.get(pair_key, {}).get("yen")
+        if actual_yen != expected_yen:
+            raise ValueError(f"Ichibata sample {pair_key} is {actual_yen}, expected {expected_yen}")
     return pairs
 
 
@@ -4865,6 +4995,32 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": tosakuro_nakamura_sukumo["operatorName"],
         "notes": tosakuro_nakamura_sukumo["notes"],
         "pairs": tosakuro_pairs,
+    }
+
+    ichibata = ICHIBATA_STATION_PAIR_SOURCE
+    ichibata_cache_path, ichibata_elements = fetch_pdf_xml_text_elements(ichibata["url"], cache_dir)
+    ichibata_pairs = parse_ichibata_pairs(
+        ichibata_elements,
+        ichibata["stationOrder"],
+        ichibata["samplePairs"],
+    )
+    sources.append({
+        "key": ichibata["key"],
+        "url": ichibata["url"],
+        "cachePath": ichibata_cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": ichibata["operatorIds"],
+        "operatorName": ichibata["operatorName"],
+        "extraction": "parsed_adult_station_pair_matrix_from_official_pdf_xml",
+        "pairCount": len(ichibata_pairs),
+    })
+    station_pair_tables[ichibata["key"]] = {
+        "operatorIds": ichibata["operatorIds"],
+        "routeIds": ichibata["routeIds"],
+        "sourceKey": ichibata["key"],
+        "operatorName": ichibata["operatorName"],
+        "notes": ichibata["notes"],
+        "pairs": ichibata_pairs,
     }
 
     kitakyushu = KITAKYUSHU_MONORAIL_STATION_PAIR_SOURCE
