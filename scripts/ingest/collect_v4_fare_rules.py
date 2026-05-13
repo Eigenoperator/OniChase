@@ -1846,6 +1846,26 @@ MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
         "pairs": [("極楽橋", "高野山", 500)],
     },
     {
+        "key": "odakyu_hakone_cable_station_pairs_202210",
+        "operatorIds": ["小田急箱根"],
+        "operatorName": "小田急箱根",
+        "url": "https://www.hakonenavi.jp/assets/file/hakone-tozan_fee_221001.pdf",
+        "notes": [
+            "小田急箱根（箱根登山鉄道）公式の2022年10月1日改定・普通旅客運賃表から、鋼索線（箱根登山ケーブルカー）内の大人普通運賃だけを転記。鉄道線、小児運賃、団体割引、特急券、フリーパス類は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_EA2933F3255769"],
+        "pairs": station_pair_triangle_rows(
+            ["強羅", "公園下", "公園上", "中強羅", "上強羅", "早雲山"],
+            [
+                ("公園下", [90]),
+                ("公園上", [170, 90]),
+                ("中強羅", [250, 170, 90]),
+                ("上強羅", [340, 250, 170, 90]),
+                ("早雲山", [430, 340, 250, 170, 90]),
+            ],
+        ),
+    },
+    {
         "key": "yokkaichi_asunarou_station_pairs_201910",
         "operatorIds": ["四日市あすなろう鉄道"],
         "operatorName": "四日市あすなろう鉄道",
