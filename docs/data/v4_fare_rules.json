@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T23:13:30.663648+00:00",
+  "generatedAt": "2026-05-13T23:49:51.699058+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -55,6 +55,17 @@
       "url": "https://jr-group.jp/zairaisen-tokkyu-ryokin/",
       "cachePath": "data/v4_fare_source_cache/https_jr-group.jp_zairaisen-tokkyu-ryokin.html",
       "kind": "limited_express_surcharge_table"
+    },
+    {
+      "key": "jr_shinkansen_reserved_surcharge",
+      "url": "https://jr-shinkansen.net/fee-board.html",
+      "kind": "shinkansen_surcharge_table",
+      "extraction": "manual_from_published_distance_tables",
+      "notes": [
+        "新幹線の通常期・普通車指定席特急料金の距離帯表。JR東日本公式は新幹線特急料金を駅間ごとに定め、全区間自由席は通常期指定席から530円引き、改札を出ない新幹線乗継は通し計算と案内している。v4ではまず通常期指定席の基本距離帯を収録する。",
+        "のぞみ・みずほ・はやぶさ・こまち等の列車別加算、東京-上野加算、北陸新幹線の上越妙高またぎ加算、東海道/九州新幹線直通時の博多打切り計算、北海道新幹線の特定料金、山形/秋田新幹線直通特例、シーズン差額、グリーン/グランクラスは未収録。"
+      ],
+      "cachePath": "data/v4_fare_source_cache/https_jr-shinkansen.net_fee-board.html.html"
     },
     {
       "key": "jreast_limited_express_ticket",
@@ -92457,6 +92468,243 @@
           "toKm": null,
           "reservedYen": 3830,
           "unreservedYen": 3300
+        }
+      ]
+    },
+    "shinkansen_jr_east": {
+      "marker": "新幹線 通常期 普通車指定席 特急料金",
+      "notes": [
+        "新幹線の通常期・普通車指定席特急料金の距離帯表。JR東日本公式は新幹線特急料金を駅間ごとに定め、全区間自由席は通常期指定席から530円引き、改札を出ない新幹線乗継は通し計算と案内している。v4ではまず通常期指定席の基本距離帯を収録する。",
+        "のぞみ・みずほ・はやぶさ・こまち等の列車別加算、東京-上野加算、北陸新幹線の上越妙高またぎ加算、東海道/九州新幹線直通時の博多打切り計算、北海道新幹線の特定料金、山形/秋田新幹線直通特例、シーズン差額、グリーン/グランクラスは未収録。"
+      ],
+      "rows": [
+        {
+          "fromKm": 1,
+          "toKm": 100,
+          "reservedYen": 2400,
+          "unreservedYen": 1870
+        },
+        {
+          "fromKm": 101,
+          "toKm": 150,
+          "reservedYen": 2830,
+          "unreservedYen": 2300
+        },
+        {
+          "fromKm": 151,
+          "toKm": 200,
+          "reservedYen": 3170,
+          "unreservedYen": 2640
+        },
+        {
+          "fromKm": 201,
+          "toKm": 300,
+          "reservedYen": 4060,
+          "unreservedYen": 3530
+        },
+        {
+          "fromKm": 301,
+          "toKm": 400,
+          "reservedYen": 4830,
+          "unreservedYen": 4300
+        },
+        {
+          "fromKm": 401,
+          "toKm": 500,
+          "reservedYen": 5370,
+          "unreservedYen": 4840
+        },
+        {
+          "fromKm": 501,
+          "toKm": 600,
+          "reservedYen": 5700,
+          "unreservedYen": 5170
+        },
+        {
+          "fromKm": 601,
+          "toKm": 700,
+          "reservedYen": 6070,
+          "unreservedYen": 5540
+        },
+        {
+          "fromKm": 701,
+          "toKm": 800,
+          "reservedYen": 6600,
+          "unreservedYen": 6070
+        }
+      ]
+    },
+    "shinkansen_tokaido_sanyo": {
+      "marker": "新幹線 通常期 普通車指定席 特急料金",
+      "notes": [
+        "新幹線の通常期・普通車指定席特急料金の距離帯表。JR東日本公式は新幹線特急料金を駅間ごとに定め、全区間自由席は通常期指定席から530円引き、改札を出ない新幹線乗継は通し計算と案内している。v4ではまず通常期指定席の基本距離帯を収録する。",
+        "のぞみ・みずほ・はやぶさ・こまち等の列車別加算、東京-上野加算、北陸新幹線の上越妙高またぎ加算、東海道/九州新幹線直通時の博多打切り計算、北海道新幹線の特定料金、山形/秋田新幹線直通特例、シーズン差額、グリーン/グランクラスは未収録。"
+      ],
+      "rows": [
+        {
+          "fromKm": 1,
+          "toKm": 100,
+          "reservedYen": 2290,
+          "unreservedYen": 1760
+        },
+        {
+          "fromKm": 101,
+          "toKm": 200,
+          "reservedYen": 3060,
+          "unreservedYen": 2530
+        },
+        {
+          "fromKm": 201,
+          "toKm": 300,
+          "reservedYen": 3930,
+          "unreservedYen": 3400
+        },
+        {
+          "fromKm": 301,
+          "toKm": 400,
+          "reservedYen": 4710,
+          "unreservedYen": 4180
+        },
+        {
+          "fromKm": 401,
+          "toKm": 500,
+          "reservedYen": 5150,
+          "unreservedYen": 4620
+        },
+        {
+          "fromKm": 501,
+          "toKm": 600,
+          "reservedYen": 5490,
+          "unreservedYen": 4960
+        },
+        {
+          "fromKm": 601,
+          "toKm": 700,
+          "reservedYen": 5920,
+          "unreservedYen": 5390
+        },
+        {
+          "fromKm": 701,
+          "toKm": 800,
+          "reservedYen": 6460,
+          "unreservedYen": 5930
+        },
+        {
+          "fromKm": 801,
+          "toKm": 900,
+          "reservedYen": 7030,
+          "unreservedYen": 6500
+        },
+        {
+          "fromKm": 901,
+          "toKm": 1000,
+          "reservedYen": 7570,
+          "unreservedYen": 7040
+        },
+        {
+          "fromKm": 1001,
+          "toKm": 1100,
+          "reservedYen": 8130,
+          "unreservedYen": 7600
+        },
+        {
+          "fromKm": 1101,
+          "toKm": 1200,
+          "reservedYen": 8670,
+          "unreservedYen": 8140
+        }
+      ]
+    },
+    "shinkansen_kyushu": {
+      "marker": "新幹線 通常期 普通車指定席 特急料金",
+      "notes": [
+        "新幹線の通常期・普通車指定席特急料金の距離帯表。JR東日本公式は新幹線特急料金を駅間ごとに定め、全区間自由席は通常期指定席から530円引き、改札を出ない新幹線乗継は通し計算と案内している。v4ではまず通常期指定席の基本距離帯を収録する。",
+        "のぞみ・みずほ・はやぶさ・こまち等の列車別加算、東京-上野加算、北陸新幹線の上越妙高またぎ加算、東海道/九州新幹線直通時の博多打切り計算、北海道新幹線の特定料金、山形/秋田新幹線直通特例、シーズン差額、グリーン/グランクラスは未収録。"
+      ],
+      "rows": [
+        {
+          "fromKm": 1,
+          "toKm": 50,
+          "reservedYen": 1790,
+          "unreservedYen": 1260
+        },
+        {
+          "fromKm": 51,
+          "toKm": 100,
+          "reservedYen": 2290,
+          "unreservedYen": 1760
+        },
+        {
+          "fromKm": 101,
+          "toKm": 150,
+          "reservedYen": 3060,
+          "unreservedYen": 2530
+        },
+        {
+          "fromKm": 151,
+          "toKm": 200,
+          "reservedYen": 3770,
+          "unreservedYen": 3240
+        },
+        {
+          "fromKm": 201,
+          "toKm": 250,
+          "reservedYen": 4400,
+          "unreservedYen": 3870
+        },
+        {
+          "fromKm": 251,
+          "toKm": 300,
+          "reservedYen": 5030,
+          "unreservedYen": 4500
+        }
+      ]
+    },
+    "shinkansen_hokkaido": {
+      "marker": "新幹線 通常期 普通車指定席 特急料金",
+      "notes": [
+        "新幹線の通常期・普通車指定席特急料金の距離帯表。JR東日本公式は新幹線特急料金を駅間ごとに定め、全区間自由席は通常期指定席から530円引き、改札を出ない新幹線乗継は通し計算と案内している。v4ではまず通常期指定席の基本距離帯を収録する。",
+        "のぞみ・みずほ・はやぶさ・こまち等の列車別加算、東京-上野加算、北陸新幹線の上越妙高またぎ加算、東海道/九州新幹線直通時の博多打切り計算、北海道新幹線の特定料金、山形/秋田新幹線直通特例、シーズン差額、グリーン/グランクラスは未収録。"
+      ],
+      "rows": [
+        {
+          "fromKm": 1,
+          "toKm": 50,
+          "reservedYen": 2560,
+          "unreservedYen": 2030
+        },
+        {
+          "fromKm": 51,
+          "toKm": 100,
+          "reservedYen": 3380,
+          "unreservedYen": 2850
+        },
+        {
+          "fromKm": 101,
+          "toKm": 150,
+          "reservedYen": 4530,
+          "unreservedYen": 4000
+        }
+      ]
+    },
+    "shinkansen_hokuriku_west": {
+      "marker": "新幹線 通常期 普通車指定席 特急料金",
+      "notes": [
+        "新幹線の通常期・普通車指定席特急料金の距離帯表。JR東日本公式は新幹線特急料金を駅間ごとに定め、全区間自由席は通常期指定席から530円引き、改札を出ない新幹線乗継は通し計算と案内している。v4ではまず通常期指定席の基本距離帯を収録する。",
+        "のぞみ・みずほ・はやぶさ・こまち等の列車別加算、東京-上野加算、北陸新幹線の上越妙高またぎ加算、東海道/九州新幹線直通時の博多打切り計算、北海道新幹線の特定料金、山形/秋田新幹線直通特例、シーズン差額、グリーン/グランクラスは未収録。"
+      ],
+      "rows": [
+        {
+          "fromKm": 1,
+          "toKm": 100,
+          "reservedYen": 2400,
+          "unreservedYen": 1870
+        },
+        {
+          "fromKm": 101,
+          "toKm": 200,
+          "reservedYen": 3170,
+          "unreservedYen": 2640
         }
       ]
     }

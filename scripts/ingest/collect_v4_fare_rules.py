@@ -86,6 +86,59 @@ LIMITED_EXPRESS_SOURCE = {
     ],
 }
 
+SHINKANSEN_SURCHARGE_SOURCE = {
+    "key": "jr_shinkansen_reserved_surcharge",
+    "url": "https://jr-shinkansen.net/fee-board.html",
+    "notes": [
+        "新幹線の通常期・普通車指定席特急料金の距離帯表。JR東日本公式は新幹線特急料金を駅間ごとに定め、全区間自由席は通常期指定席から530円引き、改札を出ない新幹線乗継は通し計算と案内している。v4ではまず通常期指定席の基本距離帯を収録する。",
+        "のぞみ・みずほ・はやぶさ・こまち等の列車別加算、東京-上野加算、北陸新幹線の上越妙高またぎ加算、東海道/九州新幹線直通時の博多打切り計算、北海道新幹線の特定料金、山形/秋田新幹線直通特例、シーズン差額、グリーン/グランクラスは未収録。",
+    ],
+    "tables": {
+        "shinkansen_jr_east": [
+            (1, 100, 2400),
+            (101, 150, 2830),
+            (151, 200, 3170),
+            (201, 300, 4060),
+            (301, 400, 4830),
+            (401, 500, 5370),
+            (501, 600, 5700),
+            (601, 700, 6070),
+            (701, 800, 6600),
+        ],
+        "shinkansen_tokaido_sanyo": [
+            (1, 100, 2290),
+            (101, 200, 3060),
+            (201, 300, 3930),
+            (301, 400, 4710),
+            (401, 500, 5150),
+            (501, 600, 5490),
+            (601, 700, 5920),
+            (701, 800, 6460),
+            (801, 900, 7030),
+            (901, 1000, 7570),
+            (1001, 1100, 8130),
+            (1101, 1200, 8670),
+        ],
+        "shinkansen_kyushu": [
+            (1, 50, 1790),
+            (51, 100, 2290),
+            (101, 150, 3060),
+            (151, 200, 3770),
+            (201, 250, 4400),
+            (251, 300, 5030),
+        ],
+        "shinkansen_hokkaido": [
+            (1, 50, 2560),
+            (51, 100, 3380),
+            (101, 150, 4530),
+        ],
+        "shinkansen_hokuriku_west": [
+            (1, 100, 2400),
+            (101, 200, 3170),
+        ],
+    },
+}
+
 OFFICIAL_REFERENCE_SOURCES = [
     {
         "key": "jreast_limited_express_ticket",
@@ -6339,6 +6392,34 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
                 "marker": table["marker"],
                 "rows": rows,
             }
+
+    shinkansen_cache_path, _shinkansen_lines, shinkansen_error = try_fetch_text(SHINKANSEN_SURCHARGE_SOURCE["url"], cache_dir)
+    shinkansen_source_record = {
+        "key": SHINKANSEN_SURCHARGE_SOURCE["key"],
+        "url": SHINKANSEN_SURCHARGE_SOURCE["url"],
+        "kind": "shinkansen_surcharge_table",
+        "extraction": "manual_from_published_distance_tables",
+        "notes": SHINKANSEN_SURCHARGE_SOURCE["notes"],
+    }
+    if shinkansen_cache_path:
+        shinkansen_source_record["cachePath"] = shinkansen_cache_path
+    if shinkansen_error:
+        shinkansen_source_record["fetchError"] = shinkansen_error
+    sources.append(shinkansen_source_record)
+    for key, rows in SHINKANSEN_SURCHARGE_SOURCE["tables"].items():
+        limited_tables[key] = {
+            "marker": "新幹線 通常期 普通車指定席 特急料金",
+            "notes": SHINKANSEN_SURCHARGE_SOURCE["notes"],
+            "rows": [
+                {
+                    "fromKm": from_km,
+                    "toKm": to_km,
+                    "reservedYen": yen,
+                    "unreservedYen": max(0, yen - 530),
+                }
+                for from_km, to_km, yen in rows
+            ],
+        }
 
     for reference in OFFICIAL_REFERENCE_SOURCES:
         cache_path, _lines, error = try_fetch_text(reference["url"], cache_dir)

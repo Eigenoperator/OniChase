@@ -7650,14 +7650,51 @@
       return routeIds.size > 0 && [...routeIds].every((id) => coveredRouteIds.has(id));
     }
 
+    function shinkansenFareAreaKey(trip, segments) {
+      const route = tripRoute(trip);
+      const segmentRouteIds = [...fareSegmentsRouteIds(segments)];
+      const segmentRouteText = segmentRouteIds
+        .map((routeId) => {
+          const segmentRoute = state.routeById.get(routeId || '');
+          return `${segmentRoute?.shortName || ''} ${segmentRoute?.longName || ''} ${segmentRoute?.operatorName || ''} ${segmentRoute?.tags?.lineName || ''}`;
+        })
+        .join(' ');
+      const firstSegment = (segments || [])[0];
+      const lastSegment = (segments || []).at(-1);
+      const endpointText = `${fareStationName(firstSegment?.from_station_id)} ${fareStationName(lastSegment?.to_station_id)}`;
+      const tripText = [
+        route?.shortName,
+        routeTitle(route?.id),
+        trip?.serviceName,
+        trip?.serviceNameJa,
+        trip?.displayName,
+        trip?.routeName,
+        trip?.headsign,
+        ...(tripLineTraceNames(trip) || []),
+        ...((trip?.lineSequence || []).map((line) => line?.lineName || '')),
+      ].filter(Boolean).join(' ');
+      const combinedText = `${segmentRouteText} ${tripText}`;
+      if (/東海道|山陽|TOKAIDO_SANYO/u.test(combinedText)) return 'tokaido_sanyo';
+      if (/九州|西九州|KYUSHU|NISHI_KYUSHU/u.test(combinedText)) return 'kyushu';
+      if (/北海道/u.test(segmentRouteText) || /新函館北斗|木古内|奥津軽/u.test(endpointText)) return 'hokkaido';
+      if (/北陸/u.test(segmentRouteText)) {
+        const westOnly = segmentRouteIds.length > 0 && segmentRouteIds.every((routeId) => {
+          const segmentRoute = state.routeById.get(routeId || '');
+          const text = `${segmentRoute?.operatorName || ''} ${segmentRoute?.shortName || ''} ${segmentRoute?.longName || ''}`;
+          return /西日本|敦賀|金沢|富山/u.test(text);
+        });
+        return westOnly ? 'hokuriku_west' : 'jr_east';
+      }
+      return 'jr_east';
+    }
+
     function fareRuleKeyForOperatorIds(operatorIds, trip = null, segments = []) {
       const ids = new Set((operatorIds || []).filter(Boolean));
       if (ids.has('shinkansen') || isShinkansenTrip(trip)) {
-        const route = tripRoute(trip);
-        const routeName = `${route?.shortName || ''} ${routeTitle(route?.id) || ''} ${tripLineTraceNames(trip).join(' ')}`;
-        if (/北海道/u.test(routeName)) return 'jr_hokkaido';
-        if (/九州|西九州/u.test(routeName)) return 'jr_kyushu';
-        if (/東海道|山陽/u.test(routeName)) return 'jr_central_west';
+        const areaKey = shinkansenFareAreaKey(trip, segments);
+        if (areaKey === 'hokkaido') return 'jr_hokkaido';
+        if (areaKey === 'kyushu') return 'jr_kyushu';
+        if (areaKey === 'tokaido_sanyo') return 'jr_central_west';
         return 'jr_east';
       }
       const ordinaryTables = state.fareRules?.ordinaryFareTables || {};
@@ -7785,16 +7822,29 @@
       return 'a';
     }
 
+    function shinkansenFareTableKey(trip, segments) {
+      const areaKey = shinkansenFareAreaKey(trip, segments);
+      if (areaKey === 'hokkaido') return 'shinkansen_hokkaido';
+      if (areaKey === 'kyushu') return 'shinkansen_kyushu';
+      if (areaKey === 'tokaido_sanyo') return 'shinkansen_tokaido_sanyo';
+      if (areaKey === 'hokuriku_west') return 'shinkansen_hokuriku_west';
+      return 'shinkansen_jr_east';
+    }
+
     function collectedPremiumFare(distanceKm, premiumType, trip, segments) {
       const rules = state.fareRules;
-      if (!rules?.limitedExpressSurchargeTables || premiumType !== 'limited_express') return null;
-      const tableKey = limitedExpressFareTableKey(trip, segments);
+      if (!rules?.limitedExpressSurchargeTables || premiumType === 'none') return null;
+      const tableKey = premiumType === 'shinkansen'
+        ? shinkansenFareTableKey(trip, segments)
+        : limitedExpressFareTableKey(trip, segments);
       const table = rules.limitedExpressSurchargeTables?.[tableKey];
       const value = fareBandValue(table?.rows, distanceKm, 'reservedYen');
       return value ? {
         ...value,
         tableKey,
-        source: 'collected_jr_limited_express_reserved_surcharge_table',
+        source: premiumType === 'shinkansen'
+          ? 'collected_jr_shinkansen_reserved_surcharge_table'
+          : 'collected_jr_limited_express_reserved_surcharge_table',
         modelVersion: rules.modelVersion,
       } : null;
     }
