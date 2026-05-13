@@ -876,6 +876,64 @@ MOKA_RAILWAY_STATION_PAIR_SOURCE = {
     ],
 }
 
+NISHIKIGAWA_RAILWAY_STATION_PAIR_SOURCE = {
+    "key": "nishikigawa_railway_station_pairs",
+    "operatorIds": ["錦川鉄道"],
+    "operatorName": "錦川鉄道",
+    "url": "https://nishikigawa.com/fare-table/",
+    "routeIds": ["V4_ROUTE_D3F7FC3026DBAF"],
+    "stationOrder": [
+        "岩国",
+        "西岩国",
+        "川西",
+        "清流新岩国",
+        "守内かさ神",
+        "南河内",
+        "行波",
+        "北河内",
+        "椋野",
+        "南桑",
+        "根笠",
+        "河山",
+        "柳瀬",
+        "錦町",
+    ],
+    "notes": [
+        "錦川鉄道公式の運賃表ページから大人普通運賃を抽出。公式ページの注記どおり川西-岩国間はJR岩徳線だが、錦川鉄道公式表が岩国・西岩国を含む全駅相互運賃として掲載しているため、ゲーム側の錦川清流線 route 全体を station-pair 表で覆う。",
+        "小児運賃、定期運賃、各種割引、企画券は別体系のため未収録。",
+    ],
+}
+
+WATARASE_KEIKOKU_STATION_PAIR_SOURCE = {
+    "key": "watarase_keikoku_station_pairs",
+    "operatorIds": ["わたらせ渓谷鐵道"],
+    "operatorName": "わたらせ渓谷鐵道",
+    "url": "https://www.watetsu.com/rail-info/fare.php",
+    "routeIds": ["V4_ROUTE_F010FCAB5431F6"],
+    "stationOrder": [
+        "桐生",
+        "下新田",
+        "相老",
+        "運動公園",
+        "大間々",
+        "上神梅",
+        "本宿",
+        "水沼",
+        "花輪",
+        "中野",
+        "小中",
+        "神戸",
+        "沢入",
+        "原向",
+        "通洞",
+        "足尾",
+        "間藤",
+    ],
+    "notes": [
+        "わたらせ渓谷鐵道公式の運賃表ページに掲載された普通旅客運賃表から、各出発駅別の大人普通運賃だけを抽出。小児運賃、定期運賃、一日フリーきっぷ、トロッコ整理券・料金、団体割引は別体系のため未収録。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -3683,6 +3741,68 @@ def parse_moka_railway_pairs(html: str) -> dict[str, dict[str, Any]]:
     return manual_station_pairs(pairs)
 
 
+def parse_nishikigawa_railway_pairs(
+    lines: list[str],
+    station_order: list[str],
+) -> dict[str, dict[str, Any]]:
+    station_names = set(station_order)
+    pairs: dict[str, dict[str, Any]] = {}
+    current_origin: str | None = None
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if (
+            line in station_names
+            and index + 4 < len(lines)
+            and lines[index + 1:index + 5] == ["駅名", "大人", "小人", "通勤定期（1ヶ月/3ヶ月/6ヶ月）"]
+        ):
+            current_origin = line
+            index += 5
+            continue
+        if current_origin and line in station_names and index + 1 < len(lines) and lines[index + 1].endswith("円"):
+            if line != current_origin:
+                add_station_pair(pairs, current_origin, line, parse_first_money(lines[index + 1]))
+            index += 2
+            continue
+        index += 1
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"Nishikigawa Railway pair count {len(pairs)} != {expected_pair_count}")
+    return pairs
+
+
+def parse_watarase_keikoku_pairs(
+    lines: list[str],
+    station_order: list[str],
+) -> dict[str, dict[str, Any]]:
+    station_names = set(station_order)
+    pairs: dict[str, dict[str, Any]] = {}
+    for origin_name in station_order:
+        header = f"{origin_name}駅から"
+        try:
+            start = lines.index(header)
+        except ValueError as error:
+            raise ValueError(f"missing Watarase fare section for {origin_name}") from error
+        index = start + 1
+        while index < len(lines):
+            line = lines[index]
+            if line.endswith("駅から") and line != header:
+                break
+            if line in station_names:
+                if index + 2 >= len(lines):
+                    break
+                adult_fare = lines[index + 1]
+                if adult_fare != "-" and line != origin_name:
+                    add_station_pair(pairs, origin_name, line, parse_first_money(adult_fare))
+                index += 3
+                continue
+            index += 1
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"Watarase Keikoku Railway pair count {len(pairs)} != {expected_pair_count}")
+    return pairs
+
+
 def parse_joshin_dentetsu_page(
     origin_name: str,
     lines: list[str],
@@ -4895,6 +5015,56 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": moka_railway["operatorName"],
         "notes": moka_railway["notes"],
         "pairs": moka_railway_pairs,
+    }
+
+    nishikigawa_railway = NISHIKIGAWA_RAILWAY_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_text(nishikigawa_railway["url"], cache_dir)
+    nishikigawa_railway_pairs = parse_nishikigawa_railway_pairs(
+        lines,
+        nishikigawa_railway["stationOrder"],
+    )
+    sources.append({
+        "key": nishikigawa_railway["key"],
+        "url": nishikigawa_railway["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": nishikigawa_railway["operatorIds"],
+        "operatorName": nishikigawa_railway["operatorName"],
+        "extraction": "parsed_station_pair_table_from_official_html",
+        "pairCount": len(nishikigawa_railway_pairs),
+    })
+    station_pair_tables[nishikigawa_railway["key"]] = {
+        "operatorIds": nishikigawa_railway["operatorIds"],
+        "routeIds": nishikigawa_railway["routeIds"],
+        "sourceKey": nishikigawa_railway["key"],
+        "operatorName": nishikigawa_railway["operatorName"],
+        "notes": nishikigawa_railway["notes"],
+        "pairs": nishikigawa_railway_pairs,
+    }
+
+    watarase_keikoku = WATARASE_KEIKOKU_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_text(watarase_keikoku["url"], cache_dir)
+    watarase_keikoku_pairs = parse_watarase_keikoku_pairs(
+        lines,
+        watarase_keikoku["stationOrder"],
+    )
+    sources.append({
+        "key": watarase_keikoku["key"],
+        "url": watarase_keikoku["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": watarase_keikoku["operatorIds"],
+        "operatorName": watarase_keikoku["operatorName"],
+        "extraction": "parsed_station_pair_tables_from_official_html",
+        "pairCount": len(watarase_keikoku_pairs),
+    })
+    station_pair_tables[watarase_keikoku["key"]] = {
+        "operatorIds": watarase_keikoku["operatorIds"],
+        "routeIds": watarase_keikoku["routeIds"],
+        "sourceKey": watarase_keikoku["key"],
+        "operatorName": watarase_keikoku["operatorName"],
+        "notes": watarase_keikoku["notes"],
+        "pairs": watarase_keikoku_pairs,
     }
 
     return {
