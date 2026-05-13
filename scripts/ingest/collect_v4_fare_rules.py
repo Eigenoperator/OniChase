@@ -131,6 +131,17 @@ SANRIKU_STATION_PAIR_SOURCE = {
     ],
 }
 
+KOBE_NEW_TRANSIT_STATION_PAIR_SOURCE = {
+    "key": "kobe_new_transit_station_pairs",
+    "operatorIds": ["神戸新交通"],
+    "operatorName": "神戸新交通",
+    "url": "https://www.knt-liner.co.jp/ticket/fee/",
+    "routeIds": ["V4_ROUTE_7525EA6275E923", "V4_ROUTE_1F959938CAAAC0"],
+    "notes": [
+        "神戸新交通公式の普通旅客運賃表からポートライナー・六甲ライナーの駅間大人普通運賃を抽出。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -204,6 +215,40 @@ MANUAL_OPERATOR_FARE_TABLES = [
             (11, 13, 390), (14, 17, 470), (18, 21, 540), (22, 25, 600),
             (26, 29, 650), (30, 34, 710), (35, 39, 740), (40, 44, 770),
             (45, 49, 810), (50, 54, 840), (55, 60, 860),
+        ],
+    },
+    {
+        "key": "keisei_main_202603",
+        "operatorIds": ["keisei"],
+        "operatorName": "京成電鉄",
+        "url": "https://new-www.keisei.co.jp/keisei/tetudou/goriyo/pdf/keisei_260314.pdf",
+        "notes": [
+            "2026年3月14日現在の旅客営業規則第77条第1項の大人片道普通旅客運賃。空港加算運賃・成田空港線併算・千原線内運賃は別体系。",
+        ],
+        "routeIds": [
+            "V4_ROUTE_AF3DADBA36B0AE",
+            "V4_ROUTE_4DDE1DDBC9F48A",
+            "V4_ROUTE_E67CFC3198A6A5",
+            "V4_ROUTE_E8462BA3669C4E",
+            "V4_ROUTE_D46B19B1C06952",
+        ],
+        "rows": [
+            (1, 3, 140), (4, 5, 160), (6, 10, 190), (11, 15, 270),
+            (16, 20, 330), (21, 25, 380), (26, 30, 440), (31, 35, 500),
+            (36, 40, 550), (41, 45, 610), (46, 50, 680), (51, 55, 740),
+            (56, 60, 790), (61, 65, 850), (66, 70, 910),
+        ],
+    },
+    {
+        "key": "keisei_chihara_201910",
+        "operatorIds": ["keisei"],
+        "operatorName": "京成電鉄",
+        "url": "https://new-www.keisei.co.jp/keisei/tetudou/goriyo/pdf/keisei_260314.pdf",
+        "notes": ["旅客営業規則別表第2号の4に掲載された千原線内適用のキロ別普通旅客運賃。"],
+        "routeIds": ["V4_ROUTE_3492E341CE56F0"],
+        "rows": [
+            (1, 3, 190), (4, 5, 260), (6, 6, 280), (7, 7, 300),
+            (8, 8, 320), (9, 9, 330), (10, 10, 350), (11, 11, 370),
         ],
     },
     {
@@ -370,6 +415,20 @@ MANUAL_OPERATOR_FARE_TABLES = [
             (16, 20, 320), (21, 25, 350), (26, 30, 410), (31, 35, 460),
             (36, 40, 510), (41, 45, 570), (46, 50, 620), (51, 55, 670),
             (56, 60, 710), (61, 67, 740),
+        ],
+    },
+    {
+        "key": "shintetsu_202501",
+        "operatorIds": ["神戸電鉄"],
+        "operatorName": "神戸電鉄",
+        "url": "https://www.shintetsu.co.jp/railway/info/01_ryoki.pdf",
+        "notes": ["2025年1月19日改定の旅客営業規則別表第3号・大人普通旅客運賃。"],
+        "rows": [
+            (1, 2, 210), (3, 4, 270), (5, 6, 340), (7, 8, 390),
+            (9, 10, 440), (11, 12, 480), (13, 14, 520), (15, 17, 560),
+            (18, 20, 600), (21, 23, 640), (24, 26, 670), (27, 29, 700),
+            (30, 32, 720), (33, 36, 750), (37, 40, 780), (41, 44, 810),
+            (45, 49, 830), (50, 54, 850), (55, 58, 880),
         ],
     },
     {
@@ -865,6 +924,44 @@ MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
             ("大山ケーブル", "阿夫利神社", 640),
         ],
     },
+    {
+        "key": "shonan_monorail_station_pairs_202603",
+        "operatorIds": ["湘南モノレル"],
+        "operatorName": "湘南モノレール",
+        "url": "https://www.shonan-monorail.co.jp/ticket/",
+        "notes": ["2026年3月14日改定の各駅普通旅客運賃表から大人普通運賃を転記。"],
+        "routeIds": ["V4_ROUTE_1478E287C522FF"],
+        "pairs": [
+            ("大船", "富士見町", 220),
+            ("大船", "湘南町屋", 220),
+            ("大船", "湘南深沢", 240),
+            ("大船", "西鎌倉", 290),
+            ("大船", "片瀬山", 320),
+            ("大船", "目白山下", 340),
+            ("大船", "湘南江の島", 340),
+            ("富士見町", "湘南町屋", 220),
+            ("富士見町", "湘南深沢", 220),
+            ("富士見町", "西鎌倉", 260),
+            ("富士見町", "片瀬山", 290),
+            ("富士見町", "目白山下", 320),
+            ("富士見町", "湘南江の島", 320),
+            ("湘南町屋", "湘南深沢", 220),
+            ("湘南町屋", "西鎌倉", 240),
+            ("湘南町屋", "片瀬山", 260),
+            ("湘南町屋", "目白山下", 290),
+            ("湘南町屋", "湘南江の島", 290),
+            ("湘南深沢", "西鎌倉", 240),
+            ("湘南深沢", "片瀬山", 240),
+            ("湘南深沢", "目白山下", 260),
+            ("湘南深沢", "湘南江の島", 260),
+            ("西鎌倉", "片瀬山", 220),
+            ("西鎌倉", "目白山下", 220),
+            ("西鎌倉", "湘南江の島", 220),
+            ("片瀬山", "目白山下", 220),
+            ("片瀬山", "湘南江の島", 220),
+            ("目白山下", "湘南江の島", 220),
+        ],
+    },
 ]
 
 
@@ -1022,6 +1119,39 @@ def parse_sanriku_pairs(lines: list[str]) -> dict[str, dict[str, Any]]:
                 "toStationName": to_station,
                 "yen": yen,
             }
+    return pairs
+
+
+def parse_kobe_new_transit_pairs(html: str) -> dict[str, dict[str, Any]]:
+    table_blocks = re.findall(r'<table class="v2-fee-table[^"]*">(.*?)</table>', html, flags=re.S)
+    pairs: dict[str, dict[str, Any]] = {}
+    for block in table_blocks[:2]:
+        rows = re.findall(r"<tr>(.*?)</tr>", block, flags=re.S)
+        station_names: list[str] = []
+        row_fares: list[list[int]] = []
+        for row in rows:
+            th_match = re.search(r"<th[^>]*>(.*?)</th>", row, flags=re.S)
+            if not th_match:
+                continue
+            th_text = re.sub(r"\[[A-Z0-9]+\]", "", th_match.group(1))
+            station_name = "".join(re.sub(r"<[^>]+>", "", th_text).split())
+            if not station_name:
+                continue
+            after_header = row[th_match.end():]
+            fares = [int(value) for value in re.findall(r'<span class="adu">(\d+)</span>', after_header)]
+            station_names.append(station_name)
+            row_fares.append(fares)
+        for index, from_station in enumerate(station_names):
+            for offset, yen in enumerate(row_fares[index], start=1):
+                target_index = index + offset
+                if target_index >= len(station_names):
+                    continue
+                to_station = station_names[target_index]
+                pairs[station_pair_key(from_station, to_station)] = {
+                    "fromStationName": from_station,
+                    "toStationName": to_station,
+                    "yen": yen,
+                }
     return pairs
 
 
@@ -1353,6 +1483,28 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": sanriku["operatorName"],
         "notes": sanriku["notes"],
         "pairs": sanriku_pairs,
+    }
+
+    kobe_new_transit = KOBE_NEW_TRANSIT_STATION_PAIR_SOURCE
+    cache_path, html = fetch_raw(kobe_new_transit["url"], cache_dir)
+    kobe_new_transit_pairs = parse_kobe_new_transit_pairs(html)
+    sources.append({
+        "key": kobe_new_transit["key"],
+        "url": kobe_new_transit["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": kobe_new_transit["operatorIds"],
+        "operatorName": kobe_new_transit["operatorName"],
+        "extraction": "parsed_station_pair_matrix_from_official_html",
+        "pairCount": len(kobe_new_transit_pairs),
+    })
+    station_pair_tables[kobe_new_transit["key"]] = {
+        "operatorIds": kobe_new_transit["operatorIds"],
+        "routeIds": kobe_new_transit["routeIds"],
+        "sourceKey": kobe_new_transit["key"],
+        "operatorName": kobe_new_transit["operatorName"],
+        "notes": kobe_new_transit["notes"],
+        "pairs": kobe_new_transit_pairs,
     }
 
     return {
