@@ -2315,6 +2315,17 @@ MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
         ],
     },
     {
+        "key": "keihan_iwashimizu_cable_station_pair_2026",
+        "operatorIds": ["京阪電気鉄道"],
+        "operatorName": "京阪電気鉄道",
+        "url": "https://www.keihan.co.jp/traffic/time-fare/iwashimizu.html",
+        "notes": [
+            "京阪電気鉄道公式の石清水八幡宮参道ケーブル運賃・時刻表ページに掲載された普通運賃の大人片道300円を収録。往復運賃、小児運賃、通勤・通学定期運賃は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_D6C48165646C89"],
+        "pairs": [("ケーブル八幡宮口", "ケーブル八幡宮山上", 300)],
+    },
+    {
         "key": "daitetsu_ikawa_line_station_pairs_2026",
         "operatorIds": ["大井川鐵道"],
         "operatorName": "大井川鐵道",
