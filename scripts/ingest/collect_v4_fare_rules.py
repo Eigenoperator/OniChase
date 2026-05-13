@@ -1137,6 +1137,29 @@ MANUAL_OPERATOR_FARE_TABLES = [
         ],
     },
     {
+        "key": "noto_railway_ordinary_201910",
+        "operatorIds": ["のと鉄道"],
+        "operatorName": "のと鉄道",
+        "url": "https://nototetsu.jp/wp-content/uploads/2022/12/2019.10kaisei-ninka.pdf",
+        "notes": [
+            "のと鉄道公式の2019年10月1日改定認可PDFに掲載された大人普通運賃の対キロ区間制。七尾-和倉温泉間の特定運賃190円は station-pair 特例として別表に収録。",
+        ],
+        "routeIds": ["V4_ROUTE_5F3470AE16E598"],
+        "rows": [
+            (1, 4, 210),
+            (5, 8, 290),
+            (9, 10, 370),
+            (11, 12, 380),
+            (13, 15, 430),
+            (16, 16, 460),
+            (17, 20, 530),
+            (21, 24, 610),
+            (25, 28, 690),
+            (29, 32, 780),
+            (33, 34, 850),
+        ],
+    },
+    {
         "key": "rinkai_line_201910",
         "operatorIds": ["rinkai"],
         "operatorName": "東京臨海高速鉄道",
@@ -1819,6 +1842,17 @@ def station_pair_flat_rows(station_order: list[str], yen: int) -> list[tuple[str
 
 
 MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
+    {
+        "key": "noto_railway_station_pair_special_201910",
+        "operatorIds": ["のと鉄道"],
+        "operatorName": "のと鉄道",
+        "url": "https://nototetsu.jp/wp-content/uploads/2022/12/2019.10kaisei-ninka.pdf",
+        "notes": [
+            "のと鉄道公式の2019年10月1日改定認可PDFに掲載された七尾-和倉温泉間の特定運賃190円を収録。通常の対キロ区間制とは別体系のため、この駅間だけ station-pair 特例として扱う。",
+        ],
+        "routeIds": ["V4_ROUTE_5F3470AE16E598"],
+        "pairs": [("七尾", "和倉温泉", 190)],
+    },
     {
         "key": "nankai_airport_line_station_pairs_202504",
         "operatorIds": ["南海電気鉄道"],

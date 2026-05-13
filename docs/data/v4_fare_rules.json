@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T06:37:38.184480+00:00",
+  "generatedAt": "2026-05-13T06:42:40.242778+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -304,6 +304,17 @@
       "operatorName": "くま川鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_kumagawa-rail.com_time-fare.html"
+    },
+    {
+      "key": "noto_railway_ordinary_201910",
+      "url": "https://nototetsu.jp/wp-content/uploads/2022/12/2019.10kaisei-ninka.pdf",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "のと鉄道"
+      ],
+      "operatorName": "のと鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_nototetsu.jp_wp-content_uploads_2022_12_2019.10kaisei-ninka.pdf.html"
     },
     {
       "key": "rinkai_line_201910",
@@ -931,6 +942,17 @@
       "operatorName": "甘木鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.amatetsu.jp_new_20240917_info.pdf.html"
+    },
+    {
+      "key": "noto_railway_station_pair_special_201910",
+      "url": "https://nototetsu.jp/wp-content/uploads/2022/12/2019.10kaisei-ninka.pdf",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "のと鉄道"
+      ],
+      "operatorName": "のと鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_nototetsu.jp_wp-content_uploads_2022_12_2019.10kaisei-ninka.pdf.html"
     },
     {
       "key": "nankai_airport_line_station_pairs_202504",
@@ -5535,6 +5557,81 @@
         }
       }
     },
+    "noto_railway_ordinary_201910": {
+      "operatorIds": [
+        "のと鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_5F3470AE16E598"
+      ],
+      "sourceKey": "noto_railway_ordinary_201910",
+      "operatorName": "のと鉄道",
+      "notes": [
+        "のと鉄道公式の2019年10月1日改定認可PDFに掲載された大人普通運賃の対キロ区間制。七尾-和倉温泉間の特定運賃190円は station-pair 特例として別表に収録。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 4,
+              "yen": 210
+            },
+            {
+              "fromKm": 5,
+              "toKm": 8,
+              "yen": 290
+            },
+            {
+              "fromKm": 9,
+              "toKm": 10,
+              "yen": 370
+            },
+            {
+              "fromKm": 11,
+              "toKm": 12,
+              "yen": 380
+            },
+            {
+              "fromKm": 13,
+              "toKm": 15,
+              "yen": 430
+            },
+            {
+              "fromKm": 16,
+              "toKm": 16,
+              "yen": 460
+            },
+            {
+              "fromKm": 17,
+              "toKm": 20,
+              "yen": 530
+            },
+            {
+              "fromKm": 21,
+              "toKm": 24,
+              "yen": 610
+            },
+            {
+              "fromKm": 25,
+              "toKm": 28,
+              "yen": 690
+            },
+            {
+              "fromKm": 29,
+              "toKm": 32,
+              "yen": 780
+            },
+            {
+              "fromKm": 33,
+              "toKm": 34,
+              "yen": 850
+            }
+          ]
+        }
+      }
+    },
     "rinkai_line_201910": {
       "operatorIds": [
         "rinkai"
@@ -8654,6 +8751,26 @@
     }
   },
   "stationPairFareTables": {
+    "noto_railway_station_pair_special_201910": {
+      "operatorIds": [
+        "のと鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_5F3470AE16E598"
+      ],
+      "sourceKey": "noto_railway_station_pair_special_201910",
+      "operatorName": "のと鉄道",
+      "notes": [
+        "のと鉄道公式の2019年10月1日改定認可PDFに掲載された七尾-和倉温泉間の特定運賃190円を収録。通常の対キロ区間制とは別体系のため、この駅間だけ station-pair 特例として扱う。"
+      ],
+      "pairs": {
+        "七尾|和倉温泉": {
+          "fromStationName": "七尾",
+          "toStationName": "和倉温泉",
+          "yen": 190
+        }
+      }
+    },
     "nankai_airport_line_station_pairs_202504": {
       "operatorIds": [
         "南海電気鉄道"
