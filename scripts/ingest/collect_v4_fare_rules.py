@@ -197,6 +197,37 @@ AONAMI_LINE_STATION_PAIR_SOURCE = {
     ],
 }
 
+TAMA_MONORAIL_STATION_PAIR_SOURCE = {
+    "key": "tama_monorail_station_pairs_2026",
+    "operatorIds": ["tama_monorail"],
+    "operatorName": "多摩都市モノレール",
+    "routeIds": ["V4_ROUTE_E05060FC18A845"],
+    "pages": [
+        ("上北台", "https://www.tama-monorail.co.jp/monorail/station/kamikitadai/fare.html"),
+        ("桜街道", "https://www.tama-monorail.co.jp/monorail/station/sakurakaido/fare.html"),
+        ("玉川上水", "https://www.tama-monorail.co.jp/monorail/station/tamagawajosui/fare.html"),
+        ("砂川七番", "https://www.tama-monorail.co.jp/monorail/station/sunagawa-nanaban/fare.html"),
+        ("泉体育館", "https://www.tama-monorail.co.jp/monorail/station/izumi-taiikukan/fare.html"),
+        ("立飛", "https://www.tama-monorail.co.jp/monorail/station/tachihi/fare.html"),
+        ("高松", "https://www.tama-monorail.co.jp/monorail/station/takamatsu/fare.html"),
+        ("立川北", "https://www.tama-monorail.co.jp/monorail/station/tachikawa-kita/fare.html"),
+        ("立川南", "https://www.tama-monorail.co.jp/monorail/station/tachikawa-minami/fare.html"),
+        ("柴崎体育館", "https://www.tama-monorail.co.jp/monorail/station/shibasaki-taiikukan/fare.html"),
+        ("甲州街道", "https://www.tama-monorail.co.jp/monorail/station/koshukaido/fare.html"),
+        ("万願寺", "https://www.tama-monorail.co.jp/monorail/station/manganji/fare.html"),
+        ("高幡不動", "https://www.tama-monorail.co.jp/monorail/station/takahatafudo/fare.html"),
+        ("程久保", "https://www.tama-monorail.co.jp/monorail/station/hodokubo/fare.html"),
+        ("多摩動物公園", "https://www.tama-monorail.co.jp/monorail/station/tama-dobutsukoen/fare.html"),
+        ("中央大学・明星大学", "https://www.tama-monorail.co.jp/monorail/station/chuo-daigaku-meisei-daigaku/fare.html"),
+        ("大塚・帝京大学", "https://www.tama-monorail.co.jp/monorail/station/otsuka-teikyo-daigaku/fare.html"),
+        ("松が谷", "https://www.tama-monorail.co.jp/monorail/station/matsugaya/fare.html"),
+        ("多摩センター", "https://www.tama-monorail.co.jp/monorail/station/tama-center/fare.html"),
+    ],
+    "notes": [
+        "多摩モノレール公式の各駅運賃・所要時間ページから、きっぷ大人普通運賃を駅間表として抽出。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -1559,6 +1590,31 @@ def parse_aonami_line_page(origin_name: str, html: str) -> dict[str, dict[str, A
     return pairs
 
 
+def parse_tama_monorail_page(origin_name: str, html: str) -> dict[str, dict[str, Any]]:
+    pairs: dict[str, dict[str, Any]] = {}
+    current_yen: int | None = None
+    rows = re.findall(r"<tr[^>]*class=\"[^\"]*\bprice__row\b[^\"]*\"[^>]*>(.*?)</tr>", html, flags=re.S)
+    for row in rows:
+        row = re.sub(r"<!--.*?-->", "", row, flags=re.S)
+        station_match = re.search(r'<th[^>]*class="[^"]*\bprice__cell--index\b[^"]*"[^>]*>(.*?)</th>', row, flags=re.S)
+        if not station_match:
+            continue
+        dest_name = clean_station_label(station_match.group(1))
+        fare_match = re.search(r'<td[^>]*class="[^"]*\bprice__cell--fill--gray\b[^"]*"[^>]*>(.*?)</td>', row, flags=re.S)
+        if fare_match:
+            fare_text = clean_fare_cell(fare_match.group(1))
+            ticket_match = re.search(r"\((\d+)\)", fare_text)
+            if ticket_match:
+                current_yen = int(ticket_match.group(1))
+            elif fare_text.isdigit():
+                current_yen = int(fare_text)
+            else:
+                current_yen = None
+        if current_yen is not None:
+            add_station_pair(pairs, origin_name, dest_name, current_yen)
+    return pairs
+
+
 class TextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -1589,8 +1645,9 @@ def fetch_text(url: str, cache_dir: Path) -> tuple[str, list[str]]:
     else:
         response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
         response.raise_for_status()
-        html = response.text
-        cache_path.write_text(html, encoding=response.encoding or "utf-8")
+        encoding = response.encoding if response.encoding and response.encoding.lower() != "iso-8859-1" else response.apparent_encoding
+        html = response.content.decode(encoding or "utf-8", errors="replace")
+        cache_path.write_text(html, encoding="utf-8")
     parser = TextExtractor()
     parser.feed(html)
     return str(cache_path.relative_to(ROOT)), parser.lines
@@ -1603,9 +1660,10 @@ def fetch_raw(url: str, cache_dir: Path) -> tuple[str, str]:
         return str(cache_path.relative_to(ROOT)), cache_path.read_text(encoding="utf-8", errors="replace")
     response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
     response.raise_for_status()
-    response.encoding = response.encoding or "utf-8"
-    cache_path.write_text(response.text, encoding=response.encoding)
-    return str(cache_path.relative_to(ROOT)), response.text
+    encoding = response.encoding if response.encoding and response.encoding.lower() != "iso-8859-1" else response.apparent_encoding
+    html = response.content.decode(encoding or "utf-8", errors="replace")
+    cache_path.write_text(html, encoding="utf-8")
+    return str(cache_path.relative_to(ROOT)), html
 
 
 def fetch_pdf_text(url: str, cache_dir: Path) -> tuple[str, list[str]]:
@@ -2002,6 +2060,38 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": aonami_line["operatorName"],
         "notes": aonami_line["notes"],
         "pairs": aonami_line_pairs,
+    }
+
+    tama_monorail = TAMA_MONORAIL_STATION_PAIR_SOURCE
+    tama_monorail_pairs: dict[str, dict[str, Any]] = {}
+    tama_monorail_cache_paths: list[str] = []
+    for origin_name, url in tama_monorail["pages"]:
+        cache_path, html = fetch_raw(url, cache_dir)
+        tama_monorail_cache_paths.append(cache_path)
+        for pair in parse_tama_monorail_page(origin_name, html).values():
+            add_station_pair(
+                tama_monorail_pairs,
+                pair["fromStationName"],
+                pair["toStationName"],
+                pair["yen"],
+            )
+    sources.append({
+        "key": tama_monorail["key"],
+        "urls": [url for _origin_name, url in tama_monorail["pages"]],
+        "cachePaths": tama_monorail_cache_paths,
+        "kind": "station_pair_fare_table",
+        "operatorIds": tama_monorail["operatorIds"],
+        "operatorName": tama_monorail["operatorName"],
+        "extraction": "parsed_station_pair_tables_from_official_station_pages",
+        "pairCount": len(tama_monorail_pairs),
+    })
+    station_pair_tables[tama_monorail["key"]] = {
+        "operatorIds": tama_monorail["operatorIds"],
+        "routeIds": tama_monorail["routeIds"],
+        "sourceKey": tama_monorail["key"],
+        "operatorName": tama_monorail["operatorName"],
+        "notes": tama_monorail["notes"],
+        "pairs": tama_monorail_pairs,
     }
 
     return {
