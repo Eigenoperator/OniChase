@@ -1758,6 +1758,29 @@ def station_pair_flat_rows(station_order: list[str], yen: int) -> list[tuple[str
 
 MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
     {
+        "key": "yokkaichi_asunarou_station_pairs_201910",
+        "operatorIds": ["四日市あすなろう鉄道"],
+        "operatorName": "四日市あすなろう鉄道",
+        "url": "https://yar.co.jp/imgdata/202408071638181.pdf",
+        "notes": [
+            "四日市あすなろう鉄道公式の普通旅客運賃表（2019年10月改定）から、大人普通運賃の三角表を転記。上段の大人運賃のみを収録し、下段の小児運賃、定期券、割引運賃は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_702A48945EFB6B", "V4_ROUTE_CF49068E0D09DC"],
+        "pairs": station_pair_triangle_rows(
+            ["あすなろう四日市", "赤堀", "日永", "南日永", "泊", "追分", "小古曽", "内部", "西日野"],
+            [
+                ("赤堀", [200]),
+                ("日永", [200, 200]),
+                ("南日永", [200, 200, 200]),
+                ("泊", [270, 200, 200, 200]),
+                ("追分", [270, 270, 200, 200, 200]),
+                ("小古曽", [270, 270, 270, 200, 200, 200]),
+                ("内部", [270, 270, 270, 270, 200, 200, 200]),
+                ("西日野", [270, 200, 200, 200, 270, 270, 270, 270]),
+            ],
+        ),
+    },
+    {
         "key": "keihan_iwashimizu_cable_station_pairs_2026",
         "operatorIds": ["京阪電気鉄道"],
         "operatorName": "京阪電気鉄道",
