@@ -481,6 +481,75 @@ NAGANO_DENTETSU_STATION_PAIR_SOURCE = {
     ],
 }
 
+KANTETSU_STATION_PAIR_SOURCE = {
+    "key": "kantetsu_station_pairs_202410",
+    "operatorIds": ["関東鉄道"],
+    "operatorName": "関東鉄道",
+    "routeIds": ["V4_ROUTE_B53EC1588BC817", "V4_ROUTE_522E1C1515745E"],
+    "baseUrl": "https://www.kantetsu.co.jp/train/files_fare/",
+    "stationOrder": [
+        "取手",
+        "西取手",
+        "寺原",
+        "新取手",
+        "ゆめみ野",
+        "稲戸井",
+        "戸頭",
+        "南守谷",
+        "守谷",
+        "新守谷",
+        "小絹",
+        "水海道",
+        "北水海道",
+        "中妻",
+        "三妻",
+        "南石下",
+        "石下",
+        "玉村",
+        "宗道",
+        "下妻",
+        "大宝",
+        "騰波ノ江",
+        "黒子",
+        "大田郷",
+        "下館",
+        "佐貫",
+        "入地",
+        "竜ヶ崎",
+    ],
+    "pages": [
+        "1_toride.pdf",
+        "2_nishitoride.pdf",
+        "3_terahara.pdf",
+        "4_shintoride.pdf",
+        "5_yumemino.pdf",
+        "6_inatoi.pdf",
+        "7_togashira.pdf",
+        "8_minamimoriya.pdf",
+        "9_moriya.pdf",
+        "10_shinmoriya.pdf",
+        "11_kokinu.pdf",
+        "12_mitsukaido.pdf",
+        "13_kitamitsukaido.pdf",
+        "14_nakatsuma.pdf",
+        "15_mitsuma.pdf",
+        "16_minamiishige.pdf",
+        "17_ishige.pdf",
+        "18_tamamura.pdf",
+        "19_sodo.pdf",
+        "20_shimotsuma.pdf",
+        "21_daiho.pdf",
+        "22_tobanoe.pdf",
+        "23_kurogo.pdf",
+        "24_otago.pdf",
+        "25_shimodate.pdf",
+        "28_ryugasaki.pdf",
+    ],
+    "notes": [
+        "関東鉄道公式の各駅運賃表PDF（2024年10月1日改正）から、常総線・竜ヶ崎線の大人普通運賃を駅間表として抽出。IC運賃・定期運賃は別体系のため未収録。",
+    ],
+}
+
 UEDA_DENTETSU_STATION_PAIR_SOURCE = {
     "key": "ueda_dentetsu_station_pairs_201910",
     "operatorIds": ["上田電鉄"],
@@ -3026,6 +3095,29 @@ def parse_nagano_dentetsu_pairs(lines: list[str], station_order: list[str]) -> d
     return pairs
 
 
+def parse_kantetsu_pairs(lines: list[str], station_order: list[str]) -> dict[str, dict[str, Any]]:
+    station_names = set(station_order)
+    stations_by_length = sorted(station_order, key=len, reverse=True)
+    pairs: dict[str, dict[str, Any]] = {}
+    current_origin: str | None = None
+    for line in lines:
+        normalized = re.sub(r"\s+", "", line)
+        header_match = re.search(r"(?:常総線|竜ヶ崎線)(.+?)駅", normalized)
+        if header_match and header_match.group(1) in station_names:
+            current_origin = header_match.group(1)
+            continue
+        if current_origin is None or "当駅" in normalized:
+            continue
+        dest_name = next((station for station in stations_by_length if normalized.startswith(station)), None)
+        if not dest_name or dest_name == current_origin:
+            continue
+        values = re.findall(r"\d+\.\d+|\d[\d,]*", line)
+        if len(values) < 3:
+            continue
+        add_station_pair(pairs, current_origin, dest_name, parse_first_money(values[1]))
+    return pairs
+
+
 def parse_km_range(value: str) -> tuple[int, int | None] | None:
     normalized = value.replace(",", "")
     match = re.search(r"(\d+)-(\d+)", normalized)
@@ -3582,6 +3674,45 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": nagano_dentetsu["operatorName"],
         "notes": nagano_dentetsu["notes"],
         "pairs": nagano_dentetsu_pairs,
+    }
+
+    kantetsu = KANTETSU_STATION_PAIR_SOURCE
+    kantetsu_pairs: dict[str, dict[str, Any]] = {}
+    kantetsu_cache_paths: list[str] = []
+    for page in kantetsu["pages"]:
+        url = kantetsu["baseUrl"] + page
+        cache_path, lines = fetch_pdf_text(url, cache_dir)
+        kantetsu_cache_paths.append(cache_path)
+        for pair in parse_kantetsu_pairs(lines, kantetsu["stationOrder"]).values():
+            add_station_pair(
+                kantetsu_pairs,
+                pair["fromStationName"],
+                pair["toStationName"],
+                pair["yen"],
+            )
+    expected_kantetsu_pairs = (
+        25 * 24 // 2
+        + 3 * 2 // 2
+    )
+    if len(kantetsu_pairs) != expected_kantetsu_pairs:
+        raise ValueError(f"Kantetsu pair count {len(kantetsu_pairs)} != {expected_kantetsu_pairs}")
+    sources.append({
+        "key": kantetsu["key"],
+        "urls": [kantetsu["baseUrl"] + page for page in kantetsu["pages"]],
+        "cachePaths": kantetsu_cache_paths,
+        "kind": "station_pair_fare_table",
+        "operatorIds": kantetsu["operatorIds"],
+        "operatorName": kantetsu["operatorName"],
+        "extraction": "parsed_station_pair_tables_from_official_station_pdfs",
+        "pairCount": len(kantetsu_pairs),
+    })
+    station_pair_tables[kantetsu["key"]] = {
+        "operatorIds": kantetsu["operatorIds"],
+        "routeIds": kantetsu["routeIds"],
+        "sourceKey": kantetsu["key"],
+        "operatorName": kantetsu["operatorName"],
+        "notes": kantetsu["notes"],
+        "pairs": kantetsu_pairs,
     }
 
     ueda_dentetsu = UEDA_DENTETSU_STATION_PAIR_SOURCE
