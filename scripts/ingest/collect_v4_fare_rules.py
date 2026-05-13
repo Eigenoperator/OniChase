@@ -608,6 +608,60 @@ SANGI_RAILWAY_STATION_PAIR_SOURCES = [
     },
 ]
 
+AKITA_NAIRIKU_STATION_PAIR_SOURCE = {
+    "key": "akita_nairiku_station_pairs_202003",
+    "operatorIds": ["秋田内陸縦貫鉄道"],
+    "operatorName": "秋田内陸縦貫鉄道",
+    "url": "https://www.akita-nairiku.com/fare/pdf/nairiku_fare20200314.pdf",
+    "routeIds": ["V4_ROUTE_27982D8F6724D8"],
+    "stationOrder": [
+        "鷹巣",
+        "西鷹巣",
+        "縄文小ヶ田",
+        "大野台",
+        "合川",
+        "上杉",
+        "米内沢",
+        "桂瀬",
+        "阿仁前田温泉",
+        "前田南",
+        "小渕",
+        "阿仁合",
+        "荒瀬",
+        "萱草",
+        "笑内",
+        "岩野目",
+        "比立内",
+        "奥阿仁",
+        "阿仁マタギ",
+        "戸沢",
+        "上桧木内",
+        "左通",
+        "羽後中里",
+        "松葉",
+        "羽後長戸呂",
+        "八津",
+        "西明寺",
+        "羽後太田",
+        "角館",
+    ],
+    "rowLabels": {
+        "縄文小ヶ田": "小ケ田",
+        "阿仁前田温泉": "田温泉",
+        "阿仁マタギ": "マタギ",
+        "戸沢": "戸 沢",
+        "上桧木内": "木 内",
+        "左通": "左 通",
+        "羽後中里": "中 里",
+        "羽後長戸呂": "長戸呂",
+        "八津": "八 津",
+        "羽後太田": "太 田",
+    },
+    "notes": [
+        "秋田内陸縦貫鉄道公式の駅間普通運賃表PDFから、大人普通運賃の駅間三角表を抽出。PDF下部の急行料金表は普通運賃ではないため除外。",
+    ],
+}
+
 UEDA_DENTETSU_STATION_PAIR_SOURCE = {
     "key": "ueda_dentetsu_station_pairs_201910",
     "operatorIds": ["上田電鉄"],
@@ -3235,6 +3289,38 @@ def parse_compact_forward_triangle_pairs(
     return pair_table
 
 
+def parse_spaced_forward_triangle_pairs(
+    lines: list[str],
+    station_order: list[str],
+    *,
+    source_name: str,
+    row_labels: dict[str, str] | None = None,
+    max_fare_yen: int = 5000,
+) -> dict[str, dict[str, Any]]:
+    pairs: list[tuple[str, str, int]] = []
+    for station_index, station_name in enumerate(station_order[:-1]):
+        expected_count = len(station_order) - station_index - 1
+        row_label = (row_labels or {}).get(station_name, station_name)
+        row_fares = None
+        for line in lines:
+            position = line.rfind(row_label)
+            if position < 0:
+                continue
+            values = [parse_first_money(value) for value in re.findall(r"\d[\d,]*", line[position + len(row_label):])]
+            if len(values) >= expected_count and all(100 <= value <= max_fare_yen for value in values[:expected_count]):
+                row_fares = values[:expected_count]
+                break
+        if row_fares is None:
+            raise ValueError(f"missing {source_name} fare row for {station_name}")
+        for target_name, yen in zip(station_order[station_index + 1:], row_fares, strict=True):
+            pairs.append((station_name, target_name, yen))
+    pair_table = manual_station_pairs(pairs)
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pair_table) != expected_pair_count:
+        raise ValueError(f"{source_name} pair count {len(pair_table)} != {expected_pair_count}")
+    return pair_table
+
+
 def parse_km_range(value: str) -> tuple[int, int | None] | None:
     normalized = value.replace(",", "")
     match = re.search(r"(\d+)-(\d+)", normalized)
@@ -3858,6 +3944,33 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
             "notes": sangi["notes"],
             "pairs": sangi_pairs,
         }
+
+    akita_nairiku = AKITA_NAIRIKU_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_pdf_text(akita_nairiku["url"], cache_dir)
+    akita_nairiku_pairs = parse_spaced_forward_triangle_pairs(
+        lines,
+        akita_nairiku["stationOrder"],
+        source_name=akita_nairiku["key"],
+        row_labels=akita_nairiku["rowLabels"],
+    )
+    sources.append({
+        "key": akita_nairiku["key"],
+        "url": akita_nairiku["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": akita_nairiku["operatorIds"],
+        "operatorName": akita_nairiku["operatorName"],
+        "extraction": "parsed_station_pair_triangle_from_official_pdf",
+        "pairCount": len(akita_nairiku_pairs),
+    })
+    station_pair_tables[akita_nairiku["key"]] = {
+        "operatorIds": akita_nairiku["operatorIds"],
+        "routeIds": akita_nairiku["routeIds"],
+        "sourceKey": akita_nairiku["key"],
+        "operatorName": akita_nairiku["operatorName"],
+        "notes": akita_nairiku["notes"],
+        "pairs": akita_nairiku_pairs,
+    }
 
     ueda_dentetsu = UEDA_DENTETSU_STATION_PAIR_SOURCE
     cache_path, lines = fetch_text(ueda_dentetsu["url"], cache_dir)
