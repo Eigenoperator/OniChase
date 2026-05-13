@@ -228,6 +228,27 @@ TAMA_MONORAIL_STATION_PAIR_SOURCE = {
     ],
 }
 
+LINIMO_STATION_PAIR_SOURCE = {
+    "key": "linimo_station_pairs_202604",
+    "operatorIds": ["愛知高速交通"],
+    "operatorName": "愛知高速交通",
+    "routeIds": ["V4_ROUTE_B9AC66005C8F85"],
+    "pages": [
+        ("藤が丘", "https://www.linimo.jp/station/2018030611485318.html"),
+        ("はなみずき通", "https://www.linimo.jp/station/2018030614050137.html"),
+        ("杁ヶ池公園", "https://www.linimo.jp/station/2018030614142550.html"),
+        ("長久手古戦場", "https://www.linimo.jp/station/2018030614204396.html"),
+        ("芸大通", "https://www.linimo.jp/station/2018030614265795.html"),
+        ("公園西", "https://www.linimo.jp/station/2018030614330679.html"),
+        ("愛・地球博記念公園", "https://www.linimo.jp/station/2018020517154892.html"),
+        ("陶磁資料館南", "https://www.linimo.jp/station/2018030614392599.html"),
+        ("八草", "https://www.linimo.jp/station/2018030614442117.html"),
+    ],
+    "notes": [
+        "愛知高速交通リニモ公式の各駅普通乗車券ページから大人普通運賃を駅間表として抽出。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -1615,6 +1636,27 @@ def parse_tama_monorail_page(origin_name: str, html: str) -> dict[str, dict[str,
     return pairs
 
 
+def parse_linimo_page(origin_name: str, html: str) -> dict[str, dict[str, Any]]:
+    start = html.find("<h2>普通乗車券</h2>")
+    if start < 0:
+        return {}
+    adult_start = html.find("<p class=\"hm_bodytext_l\">大人</p>", start)
+    child_start = html.find("<p class=\"hm_bodytext_l\">小児</p>", adult_start)
+    if adult_start < 0 or child_start < 0:
+        return {}
+    adult_block = html[adult_start:child_start]
+    pairs: dict[str, dict[str, Any]] = {}
+    for row in re.findall(r"<tr>(.*?)</tr>", adult_block, flags=re.S):
+        cells = re.findall(r"<td[^>]*>(.*?)</td>", row, flags=re.S)
+        if len(cells) < 2:
+            continue
+        dest_name = clean_station_label(cells[0])
+        fare_text = clean_fare_cell(cells[1]).replace(",", "").replace("円", "")
+        if fare_text.isdigit():
+            add_station_pair(pairs, origin_name, dest_name, int(fare_text))
+    return pairs
+
+
 class TextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -2092,6 +2134,38 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": tama_monorail["operatorName"],
         "notes": tama_monorail["notes"],
         "pairs": tama_monorail_pairs,
+    }
+
+    linimo = LINIMO_STATION_PAIR_SOURCE
+    linimo_pairs: dict[str, dict[str, Any]] = {}
+    linimo_cache_paths: list[str] = []
+    for origin_name, url in linimo["pages"]:
+        cache_path, html = fetch_raw(url, cache_dir)
+        linimo_cache_paths.append(cache_path)
+        for pair in parse_linimo_page(origin_name, html).values():
+            add_station_pair(
+                linimo_pairs,
+                pair["fromStationName"],
+                pair["toStationName"],
+                pair["yen"],
+            )
+    sources.append({
+        "key": linimo["key"],
+        "urls": [url for _origin_name, url in linimo["pages"]],
+        "cachePaths": linimo_cache_paths,
+        "kind": "station_pair_fare_table",
+        "operatorIds": linimo["operatorIds"],
+        "operatorName": linimo["operatorName"],
+        "extraction": "parsed_station_pair_tables_from_official_station_pages",
+        "pairCount": len(linimo_pairs),
+    })
+    station_pair_tables[linimo["key"]] = {
+        "operatorIds": linimo["operatorIds"],
+        "routeIds": linimo["routeIds"],
+        "sourceKey": linimo["key"],
+        "operatorName": linimo["operatorName"],
+        "notes": linimo["notes"],
+        "pairs": linimo_pairs,
     }
 
     return {
