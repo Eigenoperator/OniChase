@@ -2157,6 +2157,24 @@ MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
         ],
     },
     {
+        "key": "asa_coast_railway_station_pairs_202403",
+        "operatorIds": ["阿佐海岸鉄道"],
+        "operatorName": "阿佐海岸鉄道",
+        "url": "https://asatetu.com/fee/",
+        "notes": [
+            "阿佐海岸鉄道公式の2024年3月12日掲載・平日ルート運賃画像から、阿波海南駅・海部駅・宍喰駅・甲浦駅相互の上段大人運賃だけを転記。阿波海南文化村、海の駅東洋町、道の駅宍喰温泉などの道路区間停留所、小児運賃、障がい者割引、回数券、定期券は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_0D3D97E8936C8A"],
+        "pairs": station_pair_triangle_rows(
+            ["阿波海南", "海部", "宍喰", "甲浦"],
+            [
+                ("海部", [200]),
+                ("宍喰", [400, 300]),
+                ("甲浦", [500, 400, 200]),
+            ],
+        ),
+    },
+    {
         "key": "nankai_airport_line_station_pairs_202504",
         "operatorIds": ["南海電気鉄道"],
         "operatorName": "南海電気鉄道",
