@@ -341,6 +341,56 @@ JOMO_RAILWAY_STATION_PAIR_SOURCE = {
     ],
 }
 
+CHICHIBU_RAILWAY_STATION_PAIR_SOURCE = {
+    "key": "chichibu_railway_station_pairs_202410",
+    "operatorIds": ["秩父鉄道"],
+    "operatorName": "秩父鉄道",
+    "url": "https://www.chichibu-railway.co.jp/train/wp-content/uploads/sites/2/2024/09/kakueki_20241001.pdf",
+    "routeIds": ["V4_ROUTE_47E4369685B9DF"],
+    "stationOrder": [
+        "羽生",
+        "西羽生",
+        "新郷",
+        "武州荒木",
+        "東行田",
+        "行田市",
+        "持田",
+        "ソシオ流通センター",
+        "熊谷",
+        "上熊谷",
+        "石原",
+        "ひろせ野鳥の森",
+        "大麻生",
+        "明戸",
+        "武川",
+        "永田",
+        "ふかや花園",
+        "小前田",
+        "桜沢",
+        "寄居",
+        "波久礼",
+        "樋口",
+        "野上",
+        "長瀞",
+        "上長瀞",
+        "親鼻",
+        "皆野",
+        "和銅黒谷",
+        "大野原",
+        "秩父",
+        "御花畑",
+        "影森",
+        "浦山口",
+        "武州中川",
+        "武州日野",
+        "白久",
+        "三峰口",
+    ],
+    "notes": [
+        "秩父鉄道公式の各駅定期・普通運賃表PDF（2024年10月1日以降）から、大人普通運賃を駅間表として抽出。",
+    ],
+}
+
 UEDA_DENTETSU_STATION_PAIR_SOURCE = {
     "key": "ueda_dentetsu_station_pairs_201910",
     "operatorIds": ["上田電鉄"],
@@ -2676,6 +2726,34 @@ def parse_jomo_railway_pairs(html: str, station_order: list[str]) -> dict[str, d
     return pairs
 
 
+def parse_chichibu_railway_pairs(lines: list[str], station_order: list[str]) -> dict[str, dict[str, Any]]:
+    station_names = set(station_order)
+    stations_by_length = sorted(station_order, key=len, reverse=True)
+    current_origin: str | None = None
+    pairs: dict[str, dict[str, Any]] = {}
+    for line in lines:
+        normalized_line = re.sub(r"\s+", "", line)
+        if normalized_line in station_names:
+            current_origin = normalized_line
+            continue
+        if current_origin is None:
+            continue
+        row_match = re.match(r"^\d+\.\d\s+(.+)$", line)
+        if not row_match:
+            continue
+        row_body = re.sub(r"\s+", "", row_match.group(1))
+        dest_name = next((station for station in stations_by_length if row_body.startswith(station)), None)
+        values = re.findall(r"\d[\d,]*", line)
+        if not dest_name or len(values) < 3:
+            continue
+        if dest_name != current_origin:
+            add_station_pair(pairs, current_origin, dest_name, int(values[-2].replace(",", "")))
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"Chichibu Railway pair count {len(pairs)} != {expected_pair_count}")
+    return pairs
+
+
 def parse_km_range(value: str) -> tuple[int, int | None] | None:
     normalized = value.replace(",", "")
     match = re.search(r"(\d+)-(\d+)", normalized)
@@ -3162,6 +3240,28 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": jomo["operatorName"],
         "notes": jomo["notes"],
         "pairs": jomo_pairs,
+    }
+
+    chichibu = CHICHIBU_RAILWAY_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_pdf_text(chichibu["url"], cache_dir)
+    chichibu_pairs = parse_chichibu_railway_pairs(lines, chichibu["stationOrder"])
+    sources.append({
+        "key": chichibu["key"],
+        "url": chichibu["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": chichibu["operatorIds"],
+        "operatorName": chichibu["operatorName"],
+        "extraction": "parsed_station_pair_tables_from_official_pdf",
+        "pairCount": len(chichibu_pairs),
+    })
+    station_pair_tables[chichibu["key"]] = {
+        "operatorIds": chichibu["operatorIds"],
+        "routeIds": chichibu["routeIds"],
+        "sourceKey": chichibu["key"],
+        "operatorName": chichibu["operatorName"],
+        "notes": chichibu["notes"],
+        "pairs": chichibu_pairs,
     }
 
     ueda_dentetsu = UEDA_DENTETSU_STATION_PAIR_SOURCE
