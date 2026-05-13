@@ -1866,6 +1866,26 @@ MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
         ),
     },
     {
+        "key": "tkj_johoku_line_station_pairs_2026",
+        "operatorIds": ["jr東海交通事業"],
+        "operatorName": "JR東海交通事業",
+        "url": "https://tkj-i.co.jp/timetable/",
+        "notes": [
+            "JR東海交通事業公式の城北線各駅運賃表画像から、大人普通運賃だけを転記。小児運賃、回数券、定期券、JR線連絡運賃は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_61AFEBA48292E6"],
+        "pairs": station_pair_triangle_rows(
+            ["枇杷島", "尾張星の宮", "小田井", "比良", "味美", "勝川"],
+            [
+                ("尾張星の宮", [230]),
+                ("小田井", [320, 230]),
+                ("比良", [390, 320, 230]),
+                ("味美", [450, 390, 320, 230]),
+                ("勝川", [450, 450, 390, 320, 230]),
+            ],
+        ),
+    },
+    {
         "key": "yokkaichi_asunarou_station_pairs_201910",
         "operatorIds": ["四日市あすなろう鉄道"],
         "operatorName": "四日市あすなろう鉄道",
