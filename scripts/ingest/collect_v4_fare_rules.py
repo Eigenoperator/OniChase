@@ -1671,6 +1671,28 @@ MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
         ],
     },
     {
+        "key": "hojo_railway_station_pairs_202407",
+        "operatorIds": ["北条鉄道"],
+        "operatorName": "北条鉄道",
+        "url": "https://kasaipublictrans.jp/public-transport/hojo-train/",
+        "notes": [
+            "加西市公共交通ポータルNAVIGOかさい掲載の北条鉄道大人運賃表画像（2024年7月掲載）から、北条線内の大人普通運賃を転記。",
+        ],
+        "routeIds": ["V4_ROUTE_83652696DA1295"],
+        "pairs": station_pair_triangle_rows(
+            ["北条町", "播磨横田", "長", "播磨下里", "法華口", "田原", "網引", "粟生"],
+            [
+                ("播磨横田", [210]),
+                ("長", [210, 160]),
+                ("播磨下里", [260, 210, 160]),
+                ("法華口", [310, 260, 210, 160]),
+                ("田原", [360, 310, 260, 210, 160]),
+                ("網引", [390, 310, 310, 260, 210, 160]),
+                ("粟生", [420, 390, 360, 310, 310, 260, 210]),
+            ],
+        ),
+    },
+    {
         "key": "tarumi_railway_station_pairs_201910",
         "operatorIds": ["樽見鉄道"],
         "operatorName": "樽見鉄道",
