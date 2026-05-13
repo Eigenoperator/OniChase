@@ -1758,6 +1758,20 @@ def station_pair_flat_rows(station_order: list[str], yen: int) -> list[tuple[str
 
 MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
     {
+        "key": "yakuri_cable_station_pairs_2026",
+        "operatorIds": ["四国ケブル"],
+        "operatorName": "四国ケーブル",
+        "url": "https://www.shikoku-cable.co.jp/yakuri/price/",
+        "notes": [
+            "四国ケーブル公式の八栗ケーブル普通運賃。大人片道は上り（八栗登山口→八栗山上）600円、下り（八栗山上→八栗登山口）500円の方向別運賃として収録。往復、小学生、団体、割引運賃は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_6D177612D76A98"],
+        "pairs": [
+            ("八栗登山口", "八栗山上", 600),
+            ("八栗山上", "八栗登山口", 500),
+        ],
+    },
+    {
         "key": "kuramadera_cable_station_pairs_2026",
         "operatorIds": ["鞍馬寺"],
         "operatorName": "鞍馬寺",

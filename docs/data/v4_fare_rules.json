@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T05:13:49.339609+00:00",
+  "generatedAt": "2026-05-13T05:15:33.102156+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -920,6 +920,17 @@
       "operatorName": "甘木鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.amatetsu.jp_new_20240917_info.pdf.html"
+    },
+    {
+      "key": "yakuri_cable_station_pairs_2026",
+      "url": "https://www.shikoku-cable.co.jp/yakuri/price/",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "四国ケブル"
+      ],
+      "operatorName": "四国ケーブル",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.shikoku-cable.co.jp_yakuri_price.html"
     },
     {
       "key": "kuramadera_cable_station_pairs_2026",
@@ -8419,6 +8430,31 @@
     }
   },
   "stationPairFareTables": {
+    "yakuri_cable_station_pairs_2026": {
+      "operatorIds": [
+        "四国ケブル"
+      ],
+      "routeIds": [
+        "V4_ROUTE_6D177612D76A98"
+      ],
+      "sourceKey": "yakuri_cable_station_pairs_2026",
+      "operatorName": "四国ケーブル",
+      "notes": [
+        "四国ケーブル公式の八栗ケーブル普通運賃。大人片道は上り（八栗登山口→八栗山上）600円、下り（八栗山上→八栗登山口）500円の方向別運賃として収録。往復、小学生、団体、割引運賃は別体系のため未収録。"
+      ],
+      "pairs": {
+        "八栗登山口|八栗山上": {
+          "fromStationName": "八栗登山口",
+          "toStationName": "八栗山上",
+          "yen": 600
+        },
+        "八栗山上|八栗登山口": {
+          "fromStationName": "八栗山上",
+          "toStationName": "八栗登山口",
+          "yen": 500
+        }
+      }
+    },
     "kuramadera_cable_station_pairs_2026": {
       "operatorIds": [
         "鞍馬寺"
