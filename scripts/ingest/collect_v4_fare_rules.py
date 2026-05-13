@@ -691,6 +691,30 @@ MOKA_RAILWAY_STATION_PAIR_SOURCE = {
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
 MANUAL_OPERATOR_FARE_TABLES = [
     {
+        "key": "izuhakone_railway_202403",
+        "operatorIds": ["伊豆箱根鉄道"],
+        "operatorName": "伊豆箱根鉄道",
+        "url": "https://www.izuhakone.co.jp/sunzudaiyu/zunzu_sub_nav/schedule/p010102_d/fil/railway__20240316.pdf",
+        "notes": [
+            "伊豆箱根鉄道公式の2024年3月16日改定普通旅客運賃表。駿豆線・大雄山線共通の営業キロ分段による大人普通運賃で、公式駅間表と同じ分段を収録。",
+        ],
+        "routeIds": ["V4_ROUTE_50912B7A0CB22D", "V4_ROUTE_FA934902412828"],
+        "rows": [
+            (1, 3, 160),
+            (4, 4, 170),
+            (5, 5, 190),
+            (6, 6, 210),
+            (7, 7, 240),
+            (8, 8, 270),
+            (9, 10, 310),
+            (11, 12, 360),
+            (13, 14, 400),
+            (15, 16, 440),
+            (17, 18, 490),
+            (19, 20, 550),
+        ],
+    },
+    {
         "key": "kintetsu",
         "operatorIds": ["近畿日本鉄道"],
         "operatorName": "近畿日本鉄道",
