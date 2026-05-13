@@ -281,6 +281,21 @@ CHIKUTETSU_STATION_PAIR_SOURCE = {
     ],
 }
 
+FUKUSHIMA_KOTSU_IIZAKA_STATION_PAIR_SOURCE = {
+    "key": "fukushima_kotsu_iizaka_station_pairs_202505",
+    "operatorIds": ["福島交通"],
+    "operatorName": "福島交通",
+    "url": "https://ii-den.jp/files/newsrelease/files/0129_file02.pdf",
+    "routeIds": ["V4_ROUTE_63F2F02E85FE15"],
+    "stationOrder": [
+        "福島", "曽根田", "美術館図書館前", "岩代清水", "泉", "上松川",
+        "笹谷", "桜水", "平野", "医王寺前", "花水坂", "飯坂温泉",
+    ],
+    "notes": [
+        "福島交通公式の2025年5月17日改定飯坂線普通旅客運賃表PDFから大人普通運賃の三角表を抽出。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -1799,6 +1814,25 @@ def parse_chikutetsu_pairs(lines: list[str], station_order: list[str]) -> dict[s
     return pairs
 
 
+def parse_fukushima_kotsu_iizaka_pairs(lines: list[str], station_order: list[str]) -> dict[str, dict[str, Any]]:
+    pairs: dict[str, dict[str, Any]] = {}
+    try:
+        start_index = lines.index("福島交通飯坂線 普通旅客運賃表")
+    except ValueError:
+        return pairs
+    for origin_index in range(1, len(station_order)):
+        line_index = start_index + origin_index * 3
+        if line_index >= len(lines):
+            return pairs
+        fares = [int(value) for value in re.findall(r"\d{3}", lines[line_index])]
+        if len(fares) != origin_index:
+            return pairs
+        origin_name = station_order[origin_index]
+        for dest_index, yen in enumerate(fares):
+            add_station_pair(pairs, origin_name, station_order[dest_index], yen)
+    return pairs
+
+
 class TextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -2358,6 +2392,31 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": chikutetsu["operatorName"],
         "notes": chikutetsu["notes"],
         "pairs": chikutetsu_pairs,
+    }
+
+    fukushima_kotsu = FUKUSHIMA_KOTSU_IIZAKA_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_pdf_text(fukushima_kotsu["url"], cache_dir)
+    fukushima_kotsu_pairs = parse_fukushima_kotsu_iizaka_pairs(
+        lines,
+        fukushima_kotsu["stationOrder"],
+    )
+    sources.append({
+        "key": fukushima_kotsu["key"],
+        "url": fukushima_kotsu["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": fukushima_kotsu["operatorIds"],
+        "operatorName": fukushima_kotsu["operatorName"],
+        "extraction": "parsed_station_pair_triangle_from_official_pdf",
+        "pairCount": len(fukushima_kotsu_pairs),
+    })
+    station_pair_tables[fukushima_kotsu["key"]] = {
+        "operatorIds": fukushima_kotsu["operatorIds"],
+        "routeIds": fukushima_kotsu["routeIds"],
+        "sourceKey": fukushima_kotsu["key"],
+        "operatorName": fukushima_kotsu["operatorName"],
+        "notes": fukushima_kotsu["notes"],
+        "pairs": fukushima_kotsu_pairs,
     }
 
     return {
