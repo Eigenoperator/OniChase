@@ -249,6 +249,62 @@ LINIMO_STATION_PAIR_SOURCE = {
     ],
 }
 
+JOSHIN_DENTETSU_STATION_PAIR_SOURCE = {
+    "key": "joshin_dentetsu_station_pairs_2026",
+    "operatorIds": ["上信電鉄"],
+    "operatorName": "上信電鉄",
+    "routeIds": ["V4_ROUTE_F2FF376BAD3742"],
+    "stationOrder": [
+        "高崎",
+        "南高崎",
+        "佐野のわたし",
+        "根小屋",
+        "高崎商科大学前",
+        "山名",
+        "西山名",
+        "馬庭",
+        "吉井",
+        "西吉井",
+        "上州新屋",
+        "上州福島",
+        "東富岡",
+        "上州富岡",
+        "西富岡",
+        "上州七日市",
+        "上州一ノ宮",
+        "神農原",
+        "南蛇井",
+        "千平",
+        "下仁田",
+    ],
+    "pages": [
+        ("高崎", "https://www.joshin-dentetsu.co.jp/station/12/"),
+        ("南高崎", "https://www.joshin-dentetsu.co.jp/station/13/"),
+        ("佐野のわたし", "https://www.joshin-dentetsu.co.jp/station/14/"),
+        ("根小屋", "https://www.joshin-dentetsu.co.jp/station/15/"),
+        ("高崎商科大学前", "https://www.joshin-dentetsu.co.jp/station/17/"),
+        ("山名", "https://www.joshin-dentetsu.co.jp/station/18/"),
+        ("西山名", "https://www.joshin-dentetsu.co.jp/station/19/"),
+        ("馬庭", "https://www.joshin-dentetsu.co.jp/station/20/"),
+        ("吉井", "https://www.joshin-dentetsu.co.jp/station/21/"),
+        ("西吉井", "https://www.joshin-dentetsu.co.jp/station/22/"),
+        ("上州新屋", "https://www.joshin-dentetsu.co.jp/station/23/"),
+        ("上州福島", "https://www.joshin-dentetsu.co.jp/station/24/"),
+        ("東富岡", "https://www.joshin-dentetsu.co.jp/station/25/"),
+        ("上州富岡", "https://www.joshin-dentetsu.co.jp/station/26/"),
+        ("西富岡", "https://www.joshin-dentetsu.co.jp/station/27/"),
+        ("上州七日市", "https://www.joshin-dentetsu.co.jp/station/28/"),
+        ("上州一ノ宮", "https://www.joshin-dentetsu.co.jp/station/29/"),
+        ("神農原", "https://www.joshin-dentetsu.co.jp/station/30/"),
+        ("南蛇井", "https://www.joshin-dentetsu.co.jp/station/31/"),
+        ("千平", "https://www.joshin-dentetsu.co.jp/station/32/"),
+        ("下仁田", "https://www.joshin-dentetsu.co.jp/station/33/"),
+    ],
+    "notes": [
+        "上信電鉄公式の各駅ページに掲載された片道運賃表から、大人普通運賃を駅間表として抽出。",
+    ],
+}
+
 UEDA_DENTETSU_STATION_PAIR_SOURCE = {
     "key": "ueda_dentetsu_station_pairs_201910",
     "operatorIds": ["上田電鉄"],
@@ -2527,6 +2583,34 @@ def parse_moka_railway_pairs(html: str) -> dict[str, dict[str, Any]]:
     return manual_station_pairs(pairs)
 
 
+def parse_joshin_dentetsu_page(
+    origin_name: str,
+    lines: list[str],
+    station_order: list[str],
+) -> dict[str, dict[str, Any]]:
+    if origin_name not in station_order:
+        raise ValueError(f"unknown Joshin origin station {origin_name!r}")
+    try:
+        start = lines.index("運賃")
+    except ValueError:
+        return {}
+    end = lines.index("アクセス", start) if "アクセス" in lines[start:] else len(lines)
+    table_lines = lines[start:end]
+    pairs: dict[str, dict[str, Any]] = {}
+    station_names = set(station_order)
+    index = 0
+    while index < len(table_lines) - 1:
+        dest_name = table_lines[index]
+        fare_text = table_lines[index + 1]
+        if dest_name in station_names and fare_text.endswith("円"):
+            if dest_name != origin_name:
+                add_station_pair(pairs, origin_name, dest_name, parse_first_money(fare_text))
+            index += 8
+            continue
+        index += 1
+    return pairs
+
+
 def parse_km_range(value: str) -> tuple[int, int | None] | None:
     normalized = value.replace(",", "")
     match = re.search(r"(\d+)-(\d+)", normalized)
@@ -2956,6 +3040,41 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": linimo["operatorName"],
         "notes": linimo["notes"],
         "pairs": linimo_pairs,
+    }
+
+    joshin = JOSHIN_DENTETSU_STATION_PAIR_SOURCE
+    joshin_pairs: dict[str, dict[str, Any]] = {}
+    joshin_cache_paths: list[str] = []
+    for origin_name, url in joshin["pages"]:
+        cache_path, lines = fetch_text(url, cache_dir)
+        joshin_cache_paths.append(cache_path)
+        for pair in parse_joshin_dentetsu_page(origin_name, lines, joshin["stationOrder"]).values():
+            add_station_pair(
+                joshin_pairs,
+                pair["fromStationName"],
+                pair["toStationName"],
+                pair["yen"],
+            )
+    expected_joshin_pairs = len(joshin["stationOrder"]) * (len(joshin["stationOrder"]) - 1) // 2
+    if len(joshin_pairs) != expected_joshin_pairs:
+        raise ValueError(f"Joshin Dentetsu pair count {len(joshin_pairs)} != {expected_joshin_pairs}")
+    sources.append({
+        "key": joshin["key"],
+        "urls": [url for _origin_name, url in joshin["pages"]],
+        "cachePaths": joshin_cache_paths,
+        "kind": "station_pair_fare_table",
+        "operatorIds": joshin["operatorIds"],
+        "operatorName": joshin["operatorName"],
+        "extraction": "parsed_station_pair_tables_from_official_station_pages",
+        "pairCount": len(joshin_pairs),
+    })
+    station_pair_tables[joshin["key"]] = {
+        "operatorIds": joshin["operatorIds"],
+        "routeIds": joshin["routeIds"],
+        "sourceKey": joshin["key"],
+        "operatorName": joshin["operatorName"],
+        "notes": joshin["notes"],
+        "pairs": joshin_pairs,
     }
 
     ueda_dentetsu = UEDA_DENTETSU_STATION_PAIR_SOURCE
