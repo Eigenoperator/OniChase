@@ -1543,7 +1543,59 @@ def station_pair_triangle_rows(
     return pairs
 
 
+def station_pair_flat_rows(station_order: list[str], yen: int) -> list[tuple[str, str, int]]:
+    pairs: list[tuple[str, str, int]] = []
+    for index, station in enumerate(station_order):
+        for next_station in station_order[index + 1:]:
+            pairs.append((station, next_station, yen))
+    return pairs
+
+
 MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
+    {
+        "key": "toyohashi_atsumi_station_pairs_202403",
+        "operatorIds": ["豊橋鉄道"],
+        "operatorName": "豊橋鉄道",
+        "url": "https://www.toyotetsu.com/ufile/library/2022_file.pdf",
+        "notes": [
+            "豊橋鉄道公式の鉄軌道事業旅客運賃改定資料に掲載された2024年春改定後の渥美線普通旅客運賃。既存の駅間表に対して公式資料どおり全区間30円加算した大人普通運賃だけを収録。",
+        ],
+        "routeIds": ["V4_ROUTE_4D89F60D3DB058"],
+        "pairs": station_pair_triangle_rows(
+            ["新豊橋", "柳生橋", "小池", "愛知大学前", "南栄", "高師", "芦原", "植田", "向ヶ丘", "大清水", "老津", "杉山", "やぐま台", "神戸", "豊島", "三河田原"],
+            [
+                ("柳生橋", [170]),
+                ("小池", [170, 170]),
+                ("愛知大学前", [170, 170, 170]),
+                ("南栄", [170, 170, 170, 170]),
+                ("高師", [170, 170, 170, 170, 200]),
+                ("芦原", [170, 170, 170, 170, 200, 220]),
+                ("植田", [170, 170, 170, 170, 200, 220, 250]),
+                ("向ヶ丘", [170, 170, 170, 170, 200, 220, 250, 280]),
+                ("大清水", [170, 170, 170, 200, 220, 220, 250, 280, 310]),
+                ("老津", [170, 170, 200, 220, 250, 280, 310, 310, 340, 370]),
+                ("杉山", [170, 200, 220, 250, 280, 310, 340, 370, 370, 400, 420]),
+                ("やぐま台", [170, 170, 220, 250, 280, 310, 340, 370, 400, 420, 420, 450]),
+                ("神戸", [170, 170, 200, 280, 310, 340, 370, 400, 420, 450, 450, 480, 500]),
+                ("豊島", [170, 170, 200, 250, 310, 340, 370, 400, 420, 450, 480, 500, 530, 550]),
+                ("三河田原", [170, 170, 170, 220, 280, 340, 370, 400, 420, 450, 480, 500, 530, 530, 550]),
+            ],
+        ),
+    },
+    {
+        "key": "toyohashi_city_line_station_pairs_202403",
+        "operatorIds": ["豊橋鉄道"],
+        "operatorName": "豊橋鉄道",
+        "url": "https://www.toyotetsu.com/shinaisen/charges.html",
+        "notes": [
+            "豊橋鉄道公式の市内線運賃・定期券ページに掲載された全線一律の片道大人普通運賃（200円）を、全停留場間の駅間表として収録。",
+        ],
+        "routeIds": ["V4_ROUTE_84FDC3869098B6"],
+        "pairs": station_pair_flat_rows(
+            ["駅前", "駅前大通", "新川", "札木", "市役所前", "豊橋公園前", "東八町", "前畑", "東田坂上", "東田", "競輪場前", "井原", "赤岩口", "運動公園前"],
+            200,
+        ),
+    },
     {
         "key": "hitachinaka_seaside_station_pairs_202110",
         "operatorIds": ["ひたちなか海浜鉄道"],
