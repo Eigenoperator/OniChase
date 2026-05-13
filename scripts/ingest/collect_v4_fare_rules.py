@@ -1758,6 +1758,30 @@ def station_pair_flat_rows(station_order: list[str], yen: int) -> list[tuple[str
 
 MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
     {
+        "key": "choshi_dentetsu_station_pairs_201910",
+        "operatorIds": ["銚子電気鉄道"],
+        "operatorName": "銚子電気鉄道",
+        "url": "https://www.choshi-dentetsu.jp/wp-content/uploads/2024/12/fare2019.jpg",
+        "notes": [
+            "銚子電気鉄道公式の普通旅客運賃表（令和元年10月1日改定）から、大人普通運賃の三角表を転記。小児運賃、一日乗車券、割引運賃は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_C0852E06ADC6AE"],
+        "pairs": station_pair_triangle_rows(
+            ["銚子", "仲ノ町", "観音", "本銚子", "笠上黒生", "西海鹿島", "海鹿島", "君ヶ浜", "犬吠", "外川"],
+            [
+                ("仲ノ町", [180]),
+                ("観音", [210, 180]),
+                ("本銚子", [210, 210, 180]),
+                ("笠上黒生", [240, 240, 210, 180]),
+                ("西海鹿島", [270, 240, 240, 210, 180]),
+                ("海鹿島", [270, 270, 240, 210, 180, 180]),
+                ("君ヶ浜", [300, 300, 270, 240, 210, 210, 210]),
+                ("犬吠", [350, 300, 300, 270, 240, 240, 210, 180]),
+                ("外川", [350, 350, 350, 300, 270, 270, 240, 210, 180]),
+            ],
+        ),
+    },
+    {
         "key": "toyohashi_atsumi_station_pairs_202403",
         "operatorIds": ["豊橋鉄道"],
         "operatorName": "豊橋鉄道",
