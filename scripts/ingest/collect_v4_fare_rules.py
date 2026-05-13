@@ -7,6 +7,7 @@ import json
 import re
 import subprocess
 from datetime import datetime, timezone
+from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
@@ -139,6 +140,17 @@ KOBE_NEW_TRANSIT_STATION_PAIR_SOURCE = {
     "routeIds": ["V4_ROUTE_7525EA6275E923", "V4_ROUTE_1F959938CAAAC0"],
     "notes": [
         "神戸新交通公式の普通旅客運賃表からポートライナー・六甲ライナーの駅間大人普通運賃を抽出。",
+    ],
+}
+
+WAKAYAMA_DENTETSU_STATION_PAIR_SOURCE = {
+    "key": "wakayama_dentetsu_station_pairs_202605",
+    "operatorIds": ["和歌山電鐵"],
+    "operatorName": "和歌山電鐵",
+    "url": "https://wakayama-dentetsu.co.jp/fare/",
+    "routeIds": ["V4_ROUTE_F82B58357C2811"],
+    "notes": [
+        "和歌山電鐵公式の普通運賃ページに掲載された乗車駅別普通運賃表から大人普通運賃を抽出。",
     ],
 }
 
@@ -465,6 +477,15 @@ MANUAL_OPERATOR_FARE_TABLES = [
         "notes": ["2024年4月1日改正の流鉄流山線キロ別普通旅客運賃表。"],
         "routeIds": ["V4_ROUTE_BC12B87F3168A6"],
         "rows": [(1, 2, 140), (3, 3, 150), (4, 4, 190), (5, 5, 200), (6, 6, 220)],
+    },
+    {
+        "key": "sagano_scenic_railway_flat_2026",
+        "operatorIds": ["嵯峨野観光鉄道"],
+        "operatorName": "嵯峨野観光鉄道",
+        "url": "https://www.sagano-kanko.co.jp/ticket/",
+        "notes": ["嵯峨野観光鉄道公式の片道普通運賃。乗車区間にかかわらず均一。"],
+        "routeIds": ["V4_ROUTE_0BEECC95790117"],
+        "rows": [(1, None, 880)],
     },
     {
         "key": "sotetsu",
@@ -1380,6 +1401,51 @@ def parse_kobe_new_transit_pairs(html: str) -> dict[str, dict[str, Any]]:
     return pairs
 
 
+def clean_station_label(raw: str) -> str:
+    text = unescape(re.sub(r"<[^>]+>", "", raw))
+    text = "".join(text.replace("\xa0", " ").split())
+    text = re.sub(r"^[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]+", "", text)
+    return text
+
+
+def clean_fare_cell(raw: str) -> str:
+    without_bg = re.sub(r'<span[^>]*class="[^"]*\bswl-cell-bg\b[^"]*".*?</span>', "", raw, flags=re.S)
+    return "".join(unescape(re.sub(r"<[^>]+>", "", without_bg)).replace("\xa0", " ").split())
+
+
+def parse_wakayama_dentetsu_pairs(html: str) -> dict[str, dict[str, Any]]:
+    block_pattern = re.compile(
+        r'<summary[^>]*>.*?<span class="swell-block-accordion__label">(.*?)</span>.*?</summary>'
+        r'<div.*?<table.*?>(.*?)</table>',
+        re.S,
+    )
+    pairs: dict[str, dict[str, Any]] = {}
+    for _origin_raw, table_html in block_pattern.findall(html):
+        parsed_rows: list[tuple[str, str]] = []
+        rows = re.findall(r"<tr>(.*?)</tr>", table_html, flags=re.S)
+        for row in rows[1:]:
+            cells = re.findall(r"<(?:th|td)[^>]*>(.*?)</(?:th|td)>", row, flags=re.S)
+            if len(cells) < 3:
+                continue
+            parsed_rows.append((clean_station_label(cells[0]), clean_fare_cell(cells[1])))
+        origin_name = next((station for station, adult in parsed_rows if station and not adult.isdigit()), "")
+        if not origin_name:
+            continue
+        for dest_name, adult in parsed_rows:
+            if not dest_name or dest_name == origin_name or not adult.isdigit():
+                continue
+            key = station_pair_key(origin_name, dest_name)
+            reverse_key = station_pair_key(dest_name, origin_name)
+            if reverse_key in pairs:
+                continue
+            pairs.setdefault(key, {
+                "fromStationName": origin_name,
+                "toStationName": dest_name,
+                "yen": int(adult),
+            })
+    return pairs
+
+
 class TextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -1730,6 +1796,28 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": kobe_new_transit["operatorName"],
         "notes": kobe_new_transit["notes"],
         "pairs": kobe_new_transit_pairs,
+    }
+
+    wakayama_dentetsu = WAKAYAMA_DENTETSU_STATION_PAIR_SOURCE
+    cache_path, html = fetch_raw(wakayama_dentetsu["url"], cache_dir)
+    wakayama_dentetsu_pairs = parse_wakayama_dentetsu_pairs(html)
+    sources.append({
+        "key": wakayama_dentetsu["key"],
+        "url": wakayama_dentetsu["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": wakayama_dentetsu["operatorIds"],
+        "operatorName": wakayama_dentetsu["operatorName"],
+        "extraction": "parsed_station_pair_tables_from_official_html",
+        "pairCount": len(wakayama_dentetsu_pairs),
+    })
+    station_pair_tables[wakayama_dentetsu["key"]] = {
+        "operatorIds": wakayama_dentetsu["operatorIds"],
+        "routeIds": wakayama_dentetsu["routeIds"],
+        "sourceKey": wakayama_dentetsu["key"],
+        "operatorName": wakayama_dentetsu["operatorName"],
+        "notes": wakayama_dentetsu["notes"],
+        "pairs": wakayama_dentetsu_pairs,
     }
 
     return {

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T01:53:52.640015+00:00",
+  "generatedAt": "2026-05-13T02:11:23.266487+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -348,6 +348,17 @@
       "operatorName": "流鉄",
       "extraction": "manual_from_official_source",
       "fetchError": "HTTPSConnectionPool(host='www.ryutetsu.jp', port=443): Max retries exceeded with url: /info/wp-content/uploads/2024/02/2024%E5%B9%B44%E6%9C%881%E6%97%A5%E6%94%B9%E6%AD%A3%E9%81%8B%E8%B3%83%E8%A1%A8.pdf (Caused by SSLError(SSLCertVerificationError(1, \"[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'www.ryutetsu.jp'. (_ssl.c:1032)\")))"
+    },
+    {
+      "key": "sagano_scenic_railway_flat_2026",
+      "url": "https://www.sagano-kanko.co.jp/ticket/",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "嵯峨野観光鉄道"
+      ],
+      "operatorName": "嵯峨野観光鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.sagano-kanko.co.jp_ticket.html"
     },
     {
       "key": "sotetsu",
@@ -914,6 +925,18 @@
       "operatorName": "神戸新交通",
       "extraction": "parsed_station_pair_matrix_from_official_html",
       "pairCount": 81
+    },
+    {
+      "key": "wakayama_dentetsu_station_pairs_202605",
+      "url": "https://wakayama-dentetsu.co.jp/fare/",
+      "cachePath": "data/v4_fare_source_cache/https_wakayama-dentetsu.co.jp_fare.html",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "和歌山電鐵"
+      ],
+      "operatorName": "和歌山電鐵",
+      "extraction": "parsed_station_pair_tables_from_official_html",
+      "pairCount": 91
     }
   ],
   "ordinaryFareTables": {
@@ -4845,6 +4868,31 @@
               "fromKm": 6,
               "toKm": 6,
               "yen": 220
+            }
+          ]
+        }
+      }
+    },
+    "sagano_scenic_railway_flat_2026": {
+      "operatorIds": [
+        "嵯峨野観光鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_0BEECC95790117"
+      ],
+      "sourceKey": "sagano_scenic_railway_flat_2026",
+      "operatorName": "嵯峨野観光鉄道",
+      "notes": [
+        "嵯峨野観光鉄道公式の片道普通運賃。乗車区間にかかわらず均一。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": null,
+              "yen": 880
             }
           ]
         }
@@ -14261,6 +14309,476 @@
           "fromStationName": "アイランドセンター",
           "toStationName": "マリンパーク",
           "yen": 210
+        }
+      }
+    },
+    "wakayama_dentetsu_station_pairs_202605": {
+      "operatorIds": [
+        "和歌山電鐵"
+      ],
+      "routeIds": [
+        "V4_ROUTE_F82B58357C2811"
+      ],
+      "sourceKey": "wakayama_dentetsu_station_pairs_202605",
+      "operatorName": "和歌山電鐵",
+      "notes": [
+        "和歌山電鐵公式の普通運賃ページに掲載された乗車駅別普通運賃表から大人普通運賃を抽出。"
+      ],
+      "pairs": {
+        "和歌山|田中口": {
+          "fromStationName": "和歌山",
+          "toStationName": "田中口",
+          "yen": 190
+        },
+        "和歌山|日前宮": {
+          "fromStationName": "和歌山",
+          "toStationName": "日前宮",
+          "yen": 190
+        },
+        "和歌山|神前": {
+          "fromStationName": "和歌山",
+          "toStationName": "神前",
+          "yen": 190
+        },
+        "和歌山|竈山": {
+          "fromStationName": "和歌山",
+          "toStationName": "竈山",
+          "yen": 250
+        },
+        "和歌山|交通センター前": {
+          "fromStationName": "和歌山",
+          "toStationName": "交通センター前",
+          "yen": 250
+        },
+        "和歌山|岡崎前": {
+          "fromStationName": "和歌山",
+          "toStationName": "岡崎前",
+          "yen": 250
+        },
+        "和歌山|吉礼": {
+          "fromStationName": "和歌山",
+          "toStationName": "吉礼",
+          "yen": 320
+        },
+        "和歌山|伊太祈曽": {
+          "fromStationName": "和歌山",
+          "toStationName": "伊太祈曽",
+          "yen": 320
+        },
+        "和歌山|山東": {
+          "fromStationName": "和歌山",
+          "toStationName": "山東",
+          "yen": 370
+        },
+        "和歌山|大池遊園": {
+          "fromStationName": "和歌山",
+          "toStationName": "大池遊園",
+          "yen": 370
+        },
+        "和歌山|西山口": {
+          "fromStationName": "和歌山",
+          "toStationName": "西山口",
+          "yen": 410
+        },
+        "和歌山|甘露寺前": {
+          "fromStationName": "和歌山",
+          "toStationName": "甘露寺前",
+          "yen": 410
+        },
+        "和歌山|貴志": {
+          "fromStationName": "和歌山",
+          "toStationName": "貴志",
+          "yen": 410
+        },
+        "田中口|日前宮": {
+          "fromStationName": "田中口",
+          "toStationName": "日前宮",
+          "yen": 190
+        },
+        "田中口|神前": {
+          "fromStationName": "田中口",
+          "toStationName": "神前",
+          "yen": 190
+        },
+        "田中口|竈山": {
+          "fromStationName": "田中口",
+          "toStationName": "竈山",
+          "yen": 250
+        },
+        "田中口|交通センター前": {
+          "fromStationName": "田中口",
+          "toStationName": "交通センター前",
+          "yen": 250
+        },
+        "田中口|岡崎前": {
+          "fromStationName": "田中口",
+          "toStationName": "岡崎前",
+          "yen": 250
+        },
+        "田中口|吉礼": {
+          "fromStationName": "田中口",
+          "toStationName": "吉礼",
+          "yen": 250
+        },
+        "田中口|伊太祈曽": {
+          "fromStationName": "田中口",
+          "toStationName": "伊太祈曽",
+          "yen": 320
+        },
+        "田中口|山東": {
+          "fromStationName": "田中口",
+          "toStationName": "山東",
+          "yen": 320
+        },
+        "田中口|大池遊園": {
+          "fromStationName": "田中口",
+          "toStationName": "大池遊園",
+          "yen": 370
+        },
+        "田中口|西山口": {
+          "fromStationName": "田中口",
+          "toStationName": "西山口",
+          "yen": 370
+        },
+        "田中口|甘露寺前": {
+          "fromStationName": "田中口",
+          "toStationName": "甘露寺前",
+          "yen": 410
+        },
+        "田中口|貴志": {
+          "fromStationName": "田中口",
+          "toStationName": "貴志",
+          "yen": 410
+        },
+        "日前宮|神前": {
+          "fromStationName": "日前宮",
+          "toStationName": "神前",
+          "yen": 190
+        },
+        "日前宮|竈山": {
+          "fromStationName": "日前宮",
+          "toStationName": "竈山",
+          "yen": 190
+        },
+        "日前宮|交通センター前": {
+          "fromStationName": "日前宮",
+          "toStationName": "交通センター前",
+          "yen": 250
+        },
+        "日前宮|岡崎前": {
+          "fromStationName": "日前宮",
+          "toStationName": "岡崎前",
+          "yen": 250
+        },
+        "日前宮|吉礼": {
+          "fromStationName": "日前宮",
+          "toStationName": "吉礼",
+          "yen": 250
+        },
+        "日前宮|伊太祈曽": {
+          "fromStationName": "日前宮",
+          "toStationName": "伊太祈曽",
+          "yen": 320
+        },
+        "日前宮|山東": {
+          "fromStationName": "日前宮",
+          "toStationName": "山東",
+          "yen": 320
+        },
+        "日前宮|大池遊園": {
+          "fromStationName": "日前宮",
+          "toStationName": "大池遊園",
+          "yen": 370
+        },
+        "日前宮|西山口": {
+          "fromStationName": "日前宮",
+          "toStationName": "西山口",
+          "yen": 370
+        },
+        "日前宮|甘露寺前": {
+          "fromStationName": "日前宮",
+          "toStationName": "甘露寺前",
+          "yen": 370
+        },
+        "日前宮|貴志": {
+          "fromStationName": "日前宮",
+          "toStationName": "貴志",
+          "yen": 410
+        },
+        "神前|竈山": {
+          "fromStationName": "神前",
+          "toStationName": "竈山",
+          "yen": 190
+        },
+        "神前|交通センター前": {
+          "fromStationName": "神前",
+          "toStationName": "交通センター前",
+          "yen": 190
+        },
+        "神前|岡崎前": {
+          "fromStationName": "神前",
+          "toStationName": "岡崎前",
+          "yen": 190
+        },
+        "神前|吉礼": {
+          "fromStationName": "神前",
+          "toStationName": "吉礼",
+          "yen": 250
+        },
+        "神前|伊太祈曽": {
+          "fromStationName": "神前",
+          "toStationName": "伊太祈曽",
+          "yen": 250
+        },
+        "神前|山東": {
+          "fromStationName": "神前",
+          "toStationName": "山東",
+          "yen": 320
+        },
+        "神前|大池遊園": {
+          "fromStationName": "神前",
+          "toStationName": "大池遊園",
+          "yen": 320
+        },
+        "神前|西山口": {
+          "fromStationName": "神前",
+          "toStationName": "西山口",
+          "yen": 370
+        },
+        "神前|甘露寺前": {
+          "fromStationName": "神前",
+          "toStationName": "甘露寺前",
+          "yen": 370
+        },
+        "神前|貴志": {
+          "fromStationName": "神前",
+          "toStationName": "貴志",
+          "yen": 370
+        },
+        "竈山|交通センター前": {
+          "fromStationName": "竈山",
+          "toStationName": "交通センター前",
+          "yen": 190
+        },
+        "竈山|岡崎前": {
+          "fromStationName": "竈山",
+          "toStationName": "岡崎前",
+          "yen": 190
+        },
+        "竈山|吉礼": {
+          "fromStationName": "竈山",
+          "toStationName": "吉礼",
+          "yen": 190
+        },
+        "竈山|伊太祈曽": {
+          "fromStationName": "竈山",
+          "toStationName": "伊太祈曽",
+          "yen": 250
+        },
+        "竈山|山東": {
+          "fromStationName": "竈山",
+          "toStationName": "山東",
+          "yen": 250
+        },
+        "竈山|大池遊園": {
+          "fromStationName": "竈山",
+          "toStationName": "大池遊園",
+          "yen": 320
+        },
+        "竈山|西山口": {
+          "fromStationName": "竈山",
+          "toStationName": "西山口",
+          "yen": 320
+        },
+        "竈山|甘露寺前": {
+          "fromStationName": "竈山",
+          "toStationName": "甘露寺前",
+          "yen": 370
+        },
+        "竈山|貴志": {
+          "fromStationName": "竈山",
+          "toStationName": "貴志",
+          "yen": 370
+        },
+        "交通センター前|岡崎前": {
+          "fromStationName": "交通センター前",
+          "toStationName": "岡崎前",
+          "yen": 190
+        },
+        "交通センター前|吉礼": {
+          "fromStationName": "交通センター前",
+          "toStationName": "吉礼",
+          "yen": 190
+        },
+        "交通センター前|伊太祈曽": {
+          "fromStationName": "交通センター前",
+          "toStationName": "伊太祈曽",
+          "yen": 250
+        },
+        "交通センター前|山東": {
+          "fromStationName": "交通センター前",
+          "toStationName": "山東",
+          "yen": 250
+        },
+        "交通センター前|大池遊園": {
+          "fromStationName": "交通センター前",
+          "toStationName": "大池遊園",
+          "yen": 320
+        },
+        "交通センター前|西山口": {
+          "fromStationName": "交通センター前",
+          "toStationName": "西山口",
+          "yen": 320
+        },
+        "交通センター前|甘露寺前": {
+          "fromStationName": "交通センター前",
+          "toStationName": "甘露寺前",
+          "yen": 320
+        },
+        "交通センター前|貴志": {
+          "fromStationName": "交通センター前",
+          "toStationName": "貴志",
+          "yen": 370
+        },
+        "岡崎前|吉礼": {
+          "fromStationName": "岡崎前",
+          "toStationName": "吉礼",
+          "yen": 190
+        },
+        "岡崎前|伊太祈曽": {
+          "fromStationName": "岡崎前",
+          "toStationName": "伊太祈曽",
+          "yen": 190
+        },
+        "岡崎前|山東": {
+          "fromStationName": "岡崎前",
+          "toStationName": "山東",
+          "yen": 250
+        },
+        "岡崎前|大池遊園": {
+          "fromStationName": "岡崎前",
+          "toStationName": "大池遊園",
+          "yen": 250
+        },
+        "岡崎前|西山口": {
+          "fromStationName": "岡崎前",
+          "toStationName": "西山口",
+          "yen": 320
+        },
+        "岡崎前|甘露寺前": {
+          "fromStationName": "岡崎前",
+          "toStationName": "甘露寺前",
+          "yen": 320
+        },
+        "岡崎前|貴志": {
+          "fromStationName": "岡崎前",
+          "toStationName": "貴志",
+          "yen": 320
+        },
+        "吉礼|伊太祈曽": {
+          "fromStationName": "吉礼",
+          "toStationName": "伊太祈曽",
+          "yen": 190
+        },
+        "吉礼|山東": {
+          "fromStationName": "吉礼",
+          "toStationName": "山東",
+          "yen": 190
+        },
+        "吉礼|大池遊園": {
+          "fromStationName": "吉礼",
+          "toStationName": "大池遊園",
+          "yen": 250
+        },
+        "吉礼|西山口": {
+          "fromStationName": "吉礼",
+          "toStationName": "西山口",
+          "yen": 250
+        },
+        "吉礼|甘露寺前": {
+          "fromStationName": "吉礼",
+          "toStationName": "甘露寺前",
+          "yen": 320
+        },
+        "吉礼|貴志": {
+          "fromStationName": "吉礼",
+          "toStationName": "貴志",
+          "yen": 320
+        },
+        "伊太祈曽|山東": {
+          "fromStationName": "伊太祈曽",
+          "toStationName": "山東",
+          "yen": 190
+        },
+        "伊太祈曽|大池遊園": {
+          "fromStationName": "伊太祈曽",
+          "toStationName": "大池遊園",
+          "yen": 250
+        },
+        "伊太祈曽|西山口": {
+          "fromStationName": "伊太祈曽",
+          "toStationName": "西山口",
+          "yen": 250
+        },
+        "伊太祈曽|甘露寺前": {
+          "fromStationName": "伊太祈曽",
+          "toStationName": "甘露寺前",
+          "yen": 250
+        },
+        "伊太祈曽|貴志": {
+          "fromStationName": "伊太祈曽",
+          "toStationName": "貴志",
+          "yen": 320
+        },
+        "山東|大池遊園": {
+          "fromStationName": "山東",
+          "toStationName": "大池遊園",
+          "yen": 190
+        },
+        "山東|西山口": {
+          "fromStationName": "山東",
+          "toStationName": "西山口",
+          "yen": 190
+        },
+        "山東|甘露寺前": {
+          "fromStationName": "山東",
+          "toStationName": "甘露寺前",
+          "yen": 250
+        },
+        "山東|貴志": {
+          "fromStationName": "山東",
+          "toStationName": "貴志",
+          "yen": 250
+        },
+        "大池遊園|西山口": {
+          "fromStationName": "大池遊園",
+          "toStationName": "西山口",
+          "yen": 190
+        },
+        "大池遊園|甘露寺前": {
+          "fromStationName": "大池遊園",
+          "toStationName": "甘露寺前",
+          "yen": 190
+        },
+        "大池遊園|貴志": {
+          "fromStationName": "大池遊園",
+          "toStationName": "貴志",
+          "yen": 190
+        },
+        "西山口|甘露寺前": {
+          "fromStationName": "西山口",
+          "toStationName": "甘露寺前",
+          "yen": 190
+        },
+        "西山口|貴志": {
+          "fromStationName": "西山口",
+          "toStationName": "貴志",
+          "yen": 190
+        },
+        "甘露寺前|貴志": {
+          "fromStationName": "甘露寺前",
+          "toStationName": "貴志",
+          "yen": 190
         }
       }
     }
