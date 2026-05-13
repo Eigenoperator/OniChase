@@ -3931,6 +3931,22 @@ MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
         ),
     },
     {
+        "key": "tateyama_kurobe_cable_station_pairs_202604",
+        "operatorIds": ["立山黒部貫光"],
+        "operatorName": "立山黒部貫光",
+        "url": "https://www.alpen-route.com/access_new/fare/person/route_data.json",
+        "notes": [
+            "立山黒部アルペンルート公式運賃検索データ（2026年4月15日以降適用）から、鋼索線としてゲームに存在する立山-美女平と黒部平-黒部湖の大人片道運賃だけを収録。",
+            "現在のゲーム側 route は離れた2つの鋼索鉄道区間を同一routeIdに束ねているため、美女平-黒部平など途中の高原バス・トロリーバス・ロープウェイ区間はこの鉄道運賃表では覆わない。",
+            "小児運賃、往復割引、団体、障害者割引、バス、ロープウェイ、電鉄富山・扇沢・長野方面の連絡運賃は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_B2DB73B58E1C85"],
+        "pairs": [
+            ("立山", "美女平", 1090),
+            ("黒部平", "黒部湖", 1150),
+        ],
+    },
+    {
         "key": "nankai_airport_line_station_pairs_202504",
         "operatorIds": ["南海電気鉄道"],
         "operatorName": "南海電気鉄道",

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T22:47:50.167661+00:00",
+  "generatedAt": "2026-05-13T22:51:42.131793+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -1393,6 +1393,17 @@
       "operatorName": "富士山麓電気鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.fujikyu-railway.jp_common_images_tickets_pdf_260401teikigai.pdf.html"
+    },
+    {
+      "key": "tateyama_kurobe_cable_station_pairs_202604",
+      "url": "https://www.alpen-route.com/access_new/fare/person/route_data.json",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "立山黒部貫光"
+      ],
+      "operatorName": "立山黒部貫光",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.alpen-route.com_access_new_fare_person_route_data.json.html"
     },
     {
       "key": "nankai_airport_line_station_pairs_202504",
@@ -31698,6 +31709,33 @@
           "fromStationName": "富士急ハイランド",
           "toStationName": "河口湖",
           "yen": 170
+        }
+      }
+    },
+    "tateyama_kurobe_cable_station_pairs_202604": {
+      "operatorIds": [
+        "立山黒部貫光"
+      ],
+      "routeIds": [
+        "V4_ROUTE_B2DB73B58E1C85"
+      ],
+      "sourceKey": "tateyama_kurobe_cable_station_pairs_202604",
+      "operatorName": "立山黒部貫光",
+      "notes": [
+        "立山黒部アルペンルート公式運賃検索データ（2026年4月15日以降適用）から、鋼索線としてゲームに存在する立山-美女平と黒部平-黒部湖の大人片道運賃だけを収録。",
+        "現在のゲーム側 route は離れた2つの鋼索鉄道区間を同一routeIdに束ねているため、美女平-黒部平など途中の高原バス・トロリーバス・ロープウェイ区間はこの鉄道運賃表では覆わない。",
+        "小児運賃、往復割引、団体、障害者割引、バス、ロープウェイ、電鉄富山・扇沢・長野方面の連絡運賃は別体系のため未収録。"
+      ],
+      "pairs": {
+        "立山|美女平": {
+          "fromStationName": "立山",
+          "toStationName": "美女平",
+          "yen": 1090
+        },
+        "黒部平|黒部湖": {
+          "fromStationName": "黒部平",
+          "toStationName": "黒部湖",
+          "yen": 1150
         }
       }
     },
