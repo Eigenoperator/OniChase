@@ -2004,6 +2004,24 @@ MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
         ),
     },
     {
+        "key": "hieizan_railway_sakamoto_cable_station_pairs_202604",
+        "operatorIds": ["比叡山鉄道"],
+        "operatorName": "比叡山鉄道",
+        "url": "https://sakamoto-cable.jp/guide/",
+        "notes": [
+            "比叡山鉄道公式の時刻表・運賃ページに掲載された坂本ケーブルの大人片道運賃960円を収録。往復運賃、回数券、定期券、団体割引、障がい者割引、小児運賃は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_A7608498447722"],
+        "pairs": station_pair_triangle_rows(
+            ["ケーブル坂本", "ほうらい丘", "もたて山", "ケーブル延暦寺"],
+            [
+                ("ほうらい丘", [960]),
+                ("もたて山", [960, 960]),
+                ("ケーブル延暦寺", [960, 960, 960]),
+            ],
+        ),
+    },
+    {
         "key": "nankai_airport_line_station_pairs_202504",
         "operatorIds": ["南海電気鉄道"],
         "operatorName": "南海電気鉄道",
