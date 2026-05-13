@@ -143,6 +143,44 @@ KOBE_NEW_TRANSIT_STATION_PAIR_SOURCE = {
     ],
 }
 
+KEIHAN_ISHIYAMA_SAKAMOTO_STATION_PAIR_SOURCE = {
+    "key": "keihan_ishiyama_sakamoto_station_pairs_202510",
+    "operatorIds": ["京阪電気鉄道"],
+    "operatorName": "京阪電気鉄道",
+    "routeIds": ["V4_ROUTE_62F34CE15D1FDD"],
+    "pages": [
+        ("石山寺", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/600.pdf"),
+        ("唐橋前", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/601.pdf"),
+        ("京阪石山", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/602.pdf"),
+        ("粟津", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/603.pdf"),
+        ("瓦ヶ浜", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/604.pdf"),
+        ("中ノ庄", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/605.pdf"),
+        ("膳所本町", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/606.pdf"),
+        ("錦", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/607.pdf"),
+        ("京阪膳所", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/608.pdf"),
+        ("石場", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/609.pdf"),
+        ("島ノ関", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/610.pdf"),
+        ("びわ湖浜大津", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/611.pdf"),
+        ("三井寺", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/612.pdf"),
+        ("大津市役所前", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/613.pdf"),
+        ("京阪大津京", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/614.pdf"),
+        ("近江神宮前", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/615.pdf"),
+        ("南滋賀", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/616.pdf"),
+        ("滋賀里", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/617.pdf"),
+        ("穴太", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/618.pdf"),
+        ("松ノ馬場", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/619.pdf"),
+        ("坂本比叡山口", "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/620.pdf"),
+    ],
+    "stationOrder": [
+        "石山寺", "唐橋前", "京阪石山", "粟津", "瓦ヶ浜", "中ノ庄", "膳所本町", "錦",
+        "京阪膳所", "石場", "島ノ関", "びわ湖浜大津", "三井寺", "大津市役所前",
+        "京阪大津京", "近江神宮前", "南滋賀", "滋賀里", "穴太", "松ノ馬場", "坂本比叡山口",
+    ],
+    "notes": [
+        "京阪公式の各駅普通運賃・定期券運賃PDF（2025年10月1日改定）から、石山坂本線内の大人普通運賃だけを抽出。京津線、京都市営地下鉄連絡、定期券、小児運賃は別体系のため未収録。",
+    ],
+}
+
 WAKAYAMA_DENTETSU_STATION_PAIR_SOURCE = {
     "key": "wakayama_dentetsu_station_pairs_202605",
     "operatorIds": ["和歌山電鐵"],
@@ -3355,6 +3393,36 @@ def parse_numbered_pdf_triangle_pairs(
     return pairs
 
 
+def parse_keihan_otsu_station_pdf_pairs(
+    origin_name: str,
+    lines: list[str],
+    station_names: set[str],
+) -> dict[str, dict[str, Any]]:
+    pairs: dict[str, dict[str, Any]] = {}
+    in_otsu_section = False
+    for line in lines:
+        if line == "大津線":
+            in_otsu_section = True
+            continue
+        if in_otsu_section and line.startswith("京都市営地下鉄"):
+            break
+        if not in_otsu_section:
+            continue
+        parts = line.split()
+        if len(parts) < 3:
+            continue
+        destination_name = parts[0]
+        if destination_name not in station_names or destination_name == origin_name:
+            continue
+        try:
+            float(parts[1])
+        except ValueError:
+            continue
+        yen = parse_first_money(parts[2])
+        add_station_pair(pairs, origin_name, destination_name, yen)
+    return pairs
+
+
 def parse_nagano_dentetsu_pairs(lines: list[str], station_order: list[str]) -> dict[str, dict[str, Any]]:
     fare_rows: list[tuple[str, list[int]]] = []
     for station_index, station_name in enumerate(station_order[1:], start=1):
@@ -3656,6 +3724,51 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": kitakyushu["operatorName"],
         "notes": kitakyushu["notes"],
         "pairs": kitakyushu_pairs,
+    }
+
+    keihan_ishiyama_sakamoto = KEIHAN_ISHIYAMA_SAKAMOTO_STATION_PAIR_SOURCE
+    keihan_ishiyama_sakamoto_pairs: dict[str, dict[str, Any]] = {}
+    keihan_ishiyama_sakamoto_cache_paths: list[str] = []
+    keihan_ishiyama_sakamoto_stations = set(keihan_ishiyama_sakamoto["stationOrder"])
+    for origin_name, url in keihan_ishiyama_sakamoto["pages"]:
+        cache_path, lines = fetch_pdf_text(url, cache_dir)
+        keihan_ishiyama_sakamoto_cache_paths.append(cache_path)
+        for pair in parse_keihan_otsu_station_pdf_pairs(
+            origin_name,
+            lines,
+            keihan_ishiyama_sakamoto_stations,
+        ).values():
+            add_station_pair(
+                keihan_ishiyama_sakamoto_pairs,
+                pair["fromStationName"],
+                pair["toStationName"],
+                pair["yen"],
+            )
+    expected_keihan_ishiyama_sakamoto_pairs = (
+        len(keihan_ishiyama_sakamoto["stationOrder"]) * (len(keihan_ishiyama_sakamoto["stationOrder"]) - 1) // 2
+    )
+    if len(keihan_ishiyama_sakamoto_pairs) != expected_keihan_ishiyama_sakamoto_pairs:
+        raise ValueError(
+            f"Keihan Ishiyama-Sakamoto pair count {len(keihan_ishiyama_sakamoto_pairs)} "
+            f"!= {expected_keihan_ishiyama_sakamoto_pairs}"
+        )
+    sources.append({
+        "key": keihan_ishiyama_sakamoto["key"],
+        "urls": [url for _origin_name, url in keihan_ishiyama_sakamoto["pages"]],
+        "cachePaths": keihan_ishiyama_sakamoto_cache_paths,
+        "kind": "station_pair_fare_table",
+        "operatorIds": keihan_ishiyama_sakamoto["operatorIds"],
+        "operatorName": keihan_ishiyama_sakamoto["operatorName"],
+        "extraction": "parsed_station_pair_tables_from_official_station_pdf_pages",
+        "pairCount": len(keihan_ishiyama_sakamoto_pairs),
+    })
+    station_pair_tables[keihan_ishiyama_sakamoto["key"]] = {
+        "operatorIds": keihan_ishiyama_sakamoto["operatorIds"],
+        "routeIds": keihan_ishiyama_sakamoto["routeIds"],
+        "sourceKey": keihan_ishiyama_sakamoto["key"],
+        "operatorName": keihan_ishiyama_sakamoto["operatorName"],
+        "notes": keihan_ishiyama_sakamoto["notes"],
+        "pairs": keihan_ishiyama_sakamoto_pairs,
     }
 
     new_shuttle = NEW_SHUTTLE_STATION_PAIR_SOURCE
