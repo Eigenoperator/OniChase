@@ -296,6 +296,40 @@ FUKUSHIMA_KOTSU_IIZAKA_STATION_PAIR_SOURCE = {
     ],
 }
 
+AICHI_LOOP_STATION_PAIR_SOURCE = {
+    "key": "aichi_loop_station_pairs_202503",
+    "operatorIds": ["愛知環状鉄道"],
+    "operatorName": "愛知環状鉄道",
+    "url": "https://www.aikanrailway.co.jp/pdf/price_normal.pdf",
+    "routeIds": ["V4_ROUTE_C291999D273BB1"],
+    "stationOrder": [
+        "高蔵寺", "中水野", "瀬戸市", "瀬戸口", "山口", "八草", "篠原",
+        "保見", "貝津", "四郷", "愛環梅坪", "新豊田", "新上挙母",
+        "三河豊田", "末野原", "永覚", "三河上郷", "北野桝塚", "大門",
+        "北岡崎", "中岡崎", "六名", "岡崎",
+    ],
+    "notes": [
+        "愛知環状鉄道公式の2025年3月15日改定普通券・定期券運賃表PDFから普通券大人運賃の三角表を抽出。",
+    ],
+}
+
+SHIMABARA_RAILWAY_STATION_PAIR_SOURCE = {
+    "key": "shimabara_railway_station_pairs_202604",
+    "operatorIds": ["島原鉄道"],
+    "operatorName": "島原鉄道",
+    "url": "https://www.shimatetsu.co.jp/upload/save/content/button/41ba50f3e17660e5f1044b47df1ed4e1.pdf",
+    "routeIds": ["V4_ROUTE_4CF71AC3B1F0DC"],
+    "stationOrder": [
+        "諫早", "本諫早", "幸", "小野", "干拓の里", "森山", "釜ノ鼻",
+        "諫早東高校", "愛野", "阿母崎", "吾妻", "古部", "大正",
+        "西郷", "神代", "多比良", "有明湯江", "大三東", "松尾",
+        "三会", "島原", "霊丘公園", "島原船津", "島原港",
+    ],
+    "notes": [
+        "島原鉄道公式の2026年4月1日改正普通旅客運賃表PDFから駅間大人普通運賃の三角表を抽出。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -1833,6 +1867,35 @@ def parse_fukushima_kotsu_iizaka_pairs(lines: list[str], station_order: list[str
     return pairs
 
 
+def parse_aichi_loop_pairs(lines: list[str], station_order: list[str]) -> dict[str, dict[str, Any]]:
+    pairs: dict[str, dict[str, Any]] = {}
+    for origin_index, origin_name in enumerate(station_order[1:], start=1):
+        line = next((value for value in lines if origin_name in value.split()), "")
+        if not line:
+            return pairs
+        fares = [int(value) for value in re.findall(r"\d{3}", line.split(origin_name, 1)[1])]
+        if len(fares) != origin_index:
+            return pairs
+        for dest_index, yen in enumerate(fares):
+            add_station_pair(pairs, origin_name, station_order[dest_index], yen)
+    return pairs
+
+
+def parse_shimabara_railway_pairs(lines: list[str], station_order: list[str]) -> dict[str, dict[str, Any]]:
+    pairs: dict[str, dict[str, Any]] = {}
+    for origin_index, origin_name in enumerate(station_order[:-1]):
+        line = next((value for value in lines if value.startswith(origin_name + " ")), "")
+        if not line:
+            return pairs
+        fares = [int(value) for value in re.findall(r"\d{3,4}", line.split(origin_name, 1)[1])]
+        expected_count = len(station_order) - origin_index - 1
+        if len(fares) != expected_count:
+            return pairs
+        for offset, yen in enumerate(fares, start=1):
+            add_station_pair(pairs, origin_name, station_order[origin_index + offset], yen)
+    return pairs
+
+
 class TextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -2417,6 +2480,53 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": fukushima_kotsu["operatorName"],
         "notes": fukushima_kotsu["notes"],
         "pairs": fukushima_kotsu_pairs,
+    }
+
+    aichi_loop = AICHI_LOOP_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_pdf_text(aichi_loop["url"], cache_dir)
+    aichi_loop_pairs = parse_aichi_loop_pairs(lines, aichi_loop["stationOrder"])
+    sources.append({
+        "key": aichi_loop["key"],
+        "url": aichi_loop["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": aichi_loop["operatorIds"],
+        "operatorName": aichi_loop["operatorName"],
+        "extraction": "parsed_station_pair_triangle_from_official_pdf",
+        "pairCount": len(aichi_loop_pairs),
+    })
+    station_pair_tables[aichi_loop["key"]] = {
+        "operatorIds": aichi_loop["operatorIds"],
+        "routeIds": aichi_loop["routeIds"],
+        "sourceKey": aichi_loop["key"],
+        "operatorName": aichi_loop["operatorName"],
+        "notes": aichi_loop["notes"],
+        "pairs": aichi_loop_pairs,
+    }
+
+    shimabara_railway = SHIMABARA_RAILWAY_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_pdf_text(shimabara_railway["url"], cache_dir)
+    shimabara_railway_pairs = parse_shimabara_railway_pairs(
+        lines,
+        shimabara_railway["stationOrder"],
+    )
+    sources.append({
+        "key": shimabara_railway["key"],
+        "url": shimabara_railway["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": shimabara_railway["operatorIds"],
+        "operatorName": shimabara_railway["operatorName"],
+        "extraction": "parsed_station_pair_triangle_from_official_pdf",
+        "pairCount": len(shimabara_railway_pairs),
+    })
+    station_pair_tables[shimabara_railway["key"]] = {
+        "operatorIds": shimabara_railway["operatorIds"],
+        "routeIds": shimabara_railway["routeIds"],
+        "sourceKey": shimabara_railway["key"],
+        "operatorName": shimabara_railway["operatorName"],
+        "notes": shimabara_railway["notes"],
+        "pairs": shimabara_railway_pairs,
     }
 
     return {
