@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 from datetime import datetime, timezone
@@ -92,6 +93,28 @@ KITAKYUSHU_MONORAIL_STATION_PAIR_SOURCE = {
     ],
 }
 
+NEW_SHUTTLE_STATION_PAIR_SOURCE = {
+    "key": "new_shuttle_station_pairs",
+    "operatorIds": ["埼玉新都市交通"],
+    "operatorName": "埼玉新都市交通",
+    "url": "https://www.new-shuttle.jp/ticket/pricelist/",
+    "routeIds": ["V4_ROUTE_BA8D8FF9F3D5E3"],
+    "notes": [
+        "ニューシャトル公式の普通片道運賃（きっぷ）駅間表から大人普通運賃を抽出。",
+    ],
+}
+
+ENODEN_STATION_PAIR_SOURCE = {
+    "key": "enoden_station_pairs",
+    "operatorIds": ["江ノ島電鉄"],
+    "operatorName": "江ノ島電鉄",
+    "url": "https://www.enoden.co.jp/train/fare/",
+    "routeIds": ["V4_ROUTE_293DEFDC462506"],
+    "notes": [
+        "江ノ島電鉄公式の普通運賃・所要時間ページ内 fareObj から駅間大人普通運賃を抽出。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -139,6 +162,32 @@ MANUAL_OPERATOR_FARE_TABLES = [
             (21, 24, 370), (25, 28, 410), (29, 32, 450), (33, 36, 490), (37, 40, 530),
             (41, 44, 560), (45, 48, 600), (49, 52, 630), (53, 56, 660), (57, 60, 690),
             (61, 64, 710), (65, 68, 740), (69, 72, 760), (73, 76, 790), (77, 81, 800),
+        ],
+    },
+    {
+        "key": "hankyu",
+        "operatorIds": ["阪急電鉄"],
+        "operatorName": "阪急電鉄",
+        "url": "https://www.hankyu.co.jp/files/upload/topics/230117Bar/230117_ft.pdf",
+        "notes": ["2023年4月1日以降の鉄道駅バリアフリー料金加算後の改定普通運賃（大人）。"],
+        "rows": [
+            (1, 4, 170), (5, 9, 200), (10, 14, 240), (15, 19, 280),
+            (20, 26, 290), (27, 33, 330), (34, 42, 390), (43, 51, 410),
+            (52, 60, 480), (61, 70, 540), (71, 76, 640),
+        ],
+    },
+    {
+        "key": "sanyo_railway_202501",
+        "operatorIds": ["山陽電気鉄道"],
+        "operatorName": "山陽電気鉄道",
+        "url": "https://www.sanyo-railway.co.jp/media/1724821276.pdf",
+        "notes": ["2025年1月19日改定の普通旅客運賃（鉄道駅バリアフリー料金を含む）。"],
+        "routeIds": ["V4_ROUTE_A161B9B7A92889", "V4_ROUTE_74DDF18E66DBF2"],
+        "rows": [
+            (1, 2, 170), (3, 4, 200), (5, 7, 250), (8, 10, 320),
+            (11, 13, 390), (14, 17, 470), (18, 21, 540), (22, 25, 600),
+            (26, 29, 650), (30, 34, 710), (35, 39, 740), (40, 44, 770),
+            (45, 49, 810), (50, 54, 840), (55, 60, 860),
         ],
     },
     {
@@ -222,6 +271,51 @@ MANUAL_OPERATOR_FARE_TABLES = [
         "rows": [(1, 3, 190), (4, 7, 240), (8, 13, 290), (14, 19, 340), (20, 100, 390)],
     },
     {
+        "key": "sendai_subway_201910",
+        "operatorIds": ["仙台市"],
+        "operatorName": "仙台市交通局",
+        "url": "https://www.kotsu.city.sendai.jp/assets/img/fare/unchin/unchin.pdf",
+        "notes": [
+            "令和6年度資料の地下鉄普通乗車券・対キロ区間制。仙台駅中心の3駅均一運賃は station-pair 特例として未適用。",
+        ],
+        "routeIds": ["V4_ROUTE_D3D48A3812F260", "V4_ROUTE_8524C7C2A8A068"],
+        "rows": [(1, 3, 210), (4, 6, 250), (7, 9, 310), (10, 12, 340), (13, None, 370)],
+    },
+    {
+        "key": "osaka_monorail_201910",
+        "operatorIds": ["大阪モノレル"],
+        "operatorName": "大阪モノレール",
+        "url": "https://www.osaka-monorail.co.jp/common/pdf/fares_20191001.pdf",
+        "notes": ["2019年10月1日改正の普通運賃・キロ程表。運賃計算キロは1km未満端数切り上げ。"],
+        "routeIds": ["V4_ROUTE_A0C96269989D55", "V4_ROUTE_7A61104BF8E409"],
+        "rows": [
+            (1, 2, 200), (3, 4, 250), (5, 6, 290), (7, 8, 340),
+            (9, 10, 380), (11, 12, 410), (13, 14, 440), (15, 16, 470),
+            (17, 22, 500),
+        ],
+    },
+    {
+        "key": "tokyo_monorail_202403",
+        "operatorIds": ["tokyo_monorail"],
+        "operatorName": "東京モノレール",
+        "url": "https://www.mlit.go.jp/common/001613622.pdf",
+        "notes": ["2024年3月実施の改定上限運賃・普通旅客運賃（大人）10円単位。"],
+        "routeIds": ["V4_ROUTE_5EE0E74B2B815C"],
+        "rows": [
+            (1, 1, 180), (2, 5, 230), (6, 8, 320),
+            (9, 11, 390), (12, 14, 460), (15, 18, 520),
+        ],
+    },
+    {
+        "key": "rinkai_line_201910",
+        "operatorIds": ["rinkai"],
+        "operatorName": "東京臨海高速鉄道",
+        "url": "https://www.twr.co.jp/Portals/0/resources/info/2019/20190906_fare%20revision.pdf",
+        "notes": ["2019年10月1日改定のりんかい線普通旅客運賃。公式の運賃区数対応表を距離区分に写したもの。"],
+        "routeIds": ["V4_ROUTE_07B6D9691E858A"],
+        "rows": [(1, 3, 210), (4, 6, 280), (7, 9, 340), (10, 13, 400)],
+    },
+    {
         "key": "keio",
         "operatorIds": ["keio"],
         "operatorName": "京王電鉄",
@@ -232,6 +326,19 @@ MANUAL_OPERATOR_FARE_TABLES = [
                  (38, 44, 410), (45, 52, 430)],
     },
     {
+        "key": "keikyu_202310",
+        "operatorIds": ["keikyu"],
+        "operatorName": "京浜急行電鉄",
+        "url": "https://www.keikyu.co.jp/cp/unchinkaitei/pdf/futsuu_unchin.pdf",
+        "notes": ["2023年10月1日改定の普通旅客運賃（大人）・10円単位きっぷ運賃。"],
+        "rows": [
+            (1, 3, 150), (4, 6, 180), (7, 10, 230), (11, 15, 280),
+            (16, 20, 320), (21, 25, 350), (26, 30, 410), (31, 35, 460),
+            (36, 40, 510), (41, 45, 570), (46, 50, 620), (51, 55, 670),
+            (56, 60, 710), (61, 67, 740),
+        ],
+    },
+    {
         "key": "sotetsu",
         "operatorIds": ["sotetsu"],
         "operatorName": "相模鉄道",
@@ -239,6 +346,20 @@ MANUAL_OPERATOR_FARE_TABLES = [
         "notes": ["キロ別旅客運賃表・大人普通運賃・きっぷ10円単位。いずみ野線加算運賃は未適用。"],
         "rows": [(1, 3, 150), (4, 7, 180), (8, 11, 200), (12, 15, 230),
                  (16, 19, 260), (20, 23, 280), (24, 26, 310)],
+    },
+    {
+        "key": "odakyu",
+        "operatorIds": ["odakyu"],
+        "operatorName": "小田急電鉄",
+        "url": "https://www.odakyu.jp/ticket/doc/passenger_operating_rules.pdf?202411=",
+        "notes": [
+            "旅客営業規則の別表第1号ロに定める片道普通旅客運賃（10円単位）に、第130条の鉄道駅バリアフリー料金10円を加算した大人普通運賃。",
+        ],
+        "rows": [(1, 3, 140), (4, 6, 170), (7, 9, 200), (10, 13, 230),
+                 (14, 17, 270), (18, 21, 300), (22, 25, 330), (26, 29, 360),
+                 (30, 33, 390), (34, 37, 430), (38, 41, 480), (42, 45, 520),
+                 (46, 49, 560), (50, 56, 610), (57, 61, 650), (62, 66, 700),
+                 (67, 71, 750), (72, 76, 800), (77, 81, 850), (82, 83, 910)],
     },
     {
         "key": "nagoya_subway",
@@ -376,6 +497,27 @@ MANUAL_OPERATOR_FARE_TABLES = [
         "rows": [(1, None, 240)],
     },
     {
+        "key": "toyama_chitetsu_rail_202504",
+        "operatorIds": ["富山地方鉄道"],
+        "operatorName": "富山地方鉄道",
+        "url": "https://m.chitetsu.co.jp/wp-content/uploads/2025/03/57f926382b6e9c826ae79da324e7afe6.pdf",
+        "notes": ["2025年4月1日改定の鉄道線普通旅客運賃（対キロ区間制）。市内電車は別表で覆う。"],
+        "routeIds": [
+            "V4_ROUTE_5FFA88A8BE3B1E",
+            "V4_ROUTE_F7B8284C459AB2",
+            "V4_ROUTE_B2C1AF1BE22620",
+            "V4_ROUTE_A54E9A4FFCFC02",
+        ],
+        "rows": [
+            (1, 3, 240), (4, 6, 360), (7, 9, 480), (10, 12, 600),
+            (13, 15, 740), (16, 18, 840), (19, 21, 960), (22, 24, 1080),
+            (25, 27, 1200), (28, 30, 1300), (31, 33, 1420), (34, 36, 1520),
+            (37, 39, 1620), (40, 42, 1720), (43, 45, 1820), (46, 48, 1920),
+            (49, 51, 2020), (52, 54, 2160), (55, 57, 2200), (58, 60, 2260),
+            (61, 63, 2300), (64, 66, 2360), (67, 68, 2460),
+        ],
+    },
+    {
         "key": "hakodate_city_tram",
         "operatorIds": ["函館市"],
         "operatorName": "函館市企業局交通部",
@@ -415,6 +557,88 @@ MANUAL_OPERATOR_FARE_TABLES = [
         "notes": ["豊橋鉄道市内線（東田本線）の大人均一運賃。渥美線は別体系のためこの表では覆わない。"],
         "routeIds": ["V4_ROUTE_84FDC3869098B6"],
         "rows": [(1, None, 200)],
+    },
+    {
+        "key": "saitama_railway",
+        "operatorIds": ["saitama_railway"],
+        "operatorName": "埼玉高速鉄道",
+        "url": "https://www.s-rail.co.jp/ticket/info/",
+        "notes": ["埼玉高速鉄道公式のキロ別普通旅客運賃。"],
+        "routeIds": ["V4_ROUTE_787615FAEEC907"],
+        "rows": [(1, 3, 210), (4, 5, 270), (6, 7, 310), (8, 9, 350),
+                 (10, 11, 400), (12, 13, 440), (14, 15, 480)],
+    },
+    {
+        "key": "iga_railway",
+        "operatorIds": ["伊賀鉄道"],
+        "operatorName": "伊賀鉄道",
+        "url": "https://www.igatetsu.co.jp/datawp/unchin/pdf/20250201_unchin.pdf",
+        "notes": ["2025年2月1日改定の伊賀鉄道普通運賃表。大人普通運賃。"],
+        "routeIds": ["V4_ROUTE_FCC18193CE8DC9"],
+        "rows": [(1, 3, 220), (4, 6, 280), (7, 10, 330), (11, 14, 400), (15, None, 450)],
+    },
+    {
+        "key": "yamaman_yukarigaoka_flat",
+        "operatorIds": ["山万"],
+        "operatorName": "山万",
+        "url": "https://town.yukarigaoka.jp/yukariline/fare/",
+        "notes": ["山万ユーカリが丘線の普通乗車券均一大人運賃。"],
+        "routeIds": ["V4_ROUTE_D79F266E74EE99"],
+        "rows": [(1, None, 200)],
+    },
+    {
+        "key": "disney_resort_line_flat",
+        "operatorIds": ["舞浜リゾトライン"],
+        "operatorName": "舞浜リゾートライン",
+        "url": "https://www.tokyodisneyresort.jp/tdr/resortline/fare.html",
+        "notes": ["ディズニーリゾートラインの普通乗車券均一大人運賃。"],
+        "routeIds": ["V4_ROUTE_D17798F2575CB0"],
+        "rows": [(1, None, 300)],
+    },
+    {
+        "key": "takao_tozan_cable_flat",
+        "operatorIds": ["高尾登山電鉄"],
+        "operatorName": "高尾登山電鉄",
+        "url": "https://www.takaotozan.co.jp/timeprice/?vm=r",
+        "notes": ["高尾山ケーブルカー普通旅客運賃。リフトも同額だが、v4 route は鋼索線のみを覆う。"],
+        "routeIds": ["V4_ROUTE_B74E1B273832D9"],
+        "rows": [(1, None, 490)],
+    },
+    {
+        "key": "tsukuba_cable_flat",
+        "operatorIds": ["筑波観光鉄道"],
+        "operatorName": "筑波観光鉄道",
+        "url": "https://mt-tsukuba.com/cablecar-fare/",
+        "notes": ["筑波山ケーブルカー普通片道大人運賃。"],
+        "routeIds": ["V4_ROUTE_EDA95EE10345C5"],
+        "rows": [(1, None, 590)],
+    },
+    {
+        "key": "mitake_cable_flat",
+        "operatorIds": ["御岳登山鉄道"],
+        "operatorName": "御岳登山鉄道",
+        "url": "https://www.mitaketozan.co.jp/timetable.html",
+        "notes": ["御岳登山鉄道ケーブルカー運賃の普通片道大人運賃。"],
+        "routeIds": ["V4_ROUTE_46512B60E1D0DF"],
+        "rows": [(1, None, 600)],
+    },
+    {
+        "key": "jukkoku_cable_flat",
+        "operatorIds": ["十国峠"],
+        "operatorName": "十国峠",
+        "url": "https://www.jukkoku-cable.jp/guide/index.html",
+        "notes": ["十国峠パノラマケーブルカー普通片道おとな運賃。"],
+        "routeIds": ["V4_ROUTE_4CD50E3AFF2F0F"],
+        "rows": [(1, None, 370)],
+    },
+    {
+        "key": "amanohashidate_cable_flat",
+        "operatorIds": ["丹後海陸交通"],
+        "operatorName": "丹後海陸交通",
+        "url": "https://www.tankai.jp/trip/cable/",
+        "notes": ["天橋立ケーブルカー府中-傘松間の普通片道大人運賃。"],
+        "routeIds": ["V4_ROUTE_BDF24746541A78"],
+        "rows": [(1, None, 400)],
     },
     {
         "key": "yurikamome",
@@ -515,9 +739,98 @@ MANUAL_OPERATOR_FARE_TABLES = [
         "rows": [(1, 3, 210), (4, 7, 250), (8, 11, 290), (12, 15, 330),
                  (16, 19, 360), (20, 21, 380)],
     },
+    {
+        "key": "nose_railway",
+        "operatorIds": ["能勢電鉄"],
+        "operatorName": "能勢電鉄",
+        "url": "https://noseden.hankyu.co.jp/ticket/overview.html",
+        "notes": [
+            "2025年1月19日改定の普通運賃・営業キロ程表から大人普通運賃を整理。営業キロ程の1キロ未満は切り上げ。",
+        ],
+        "routeIds": [
+            "V4_ROUTE_A1600E265C3FC2",
+            "V4_ROUTE_C7BD253DAE1CBD",
+        ],
+        "rows": [(1, 2, 180), (3, 4, 220), (5, 6, 260), (7, 8, 300),
+                 (9, 10, 320), (11, 12, 350), (13, None, 360)],
+    },
+    {
+        "key": "heichiku_regular",
+        "operatorIds": ["平成筑豊鉄道"],
+        "operatorName": "平成筑豊鉄道",
+        "url": "https://www.heichiku.net/heichiku/corp/",
+        "notes": [
+            "会社概要の普通旅客運賃（対キロ区間制）に掲載された2025年10月18日改定後の大人普通運賃。門司港レトロ観光線は別体系。",
+        ],
+        "routeIds": [
+            "V4_ROUTE_F6A67794050DD3",
+            "V4_ROUTE_160F838832EA21",
+            "V4_ROUTE_8514D7B051C091",
+        ],
+        "rows": [(1, 3, 270), (4, 6, 340), (7, 9, 400), (10, 12, 450),
+                 (13, 15, 500), (16, 18, 560), (19, 21, 620), (22, 24, 700),
+                 (25, 27, 770), (28, 30, 840), (31, 33, 930), (34, 36, 1000),
+                 (37, 39, 1060), (40, 42, 1120), (43, 43, 1190)],
+    },
+    {
+        "key": "nishitetsu_202604",
+        "operatorIds": ["西日本鉄道"],
+        "operatorName": "西日本鉄道",
+        "url": "https://www.nishitetsu.jp/train/2026_unchin-kaitei-ninka/",
+        "notes": ["2026年4月1日実施の鉄道運賃改定後の普通旅客運賃（大人）。"],
+        "rows": [
+            (1, 3, 180), (4, 6, 240), (7, 9, 300), (10, 13, 360),
+            (14, 17, 420), (18, 21, 480), (22, 26, 540), (27, 31, 600),
+            (32, 36, 660), (37, 41, 720), (42, 46, 780), (47, 51, 840),
+            (52, 56, 900), (57, 61, 960), (62, 66, 1020), (67, 71, 1080),
+            (72, 75, 1140),
+        ],
+    },
 ]
 
 MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
+    {
+        "key": "kita_osaka_kyuko_station_pairs",
+        "operatorIds": ["北大阪急行電鉄"],
+        "operatorName": "北大阪急行電鉄",
+        "url": "https://www.kita-kyu.co.jp/wp/wp-content/uploads/2023/08/enshinfares.pdf",
+        "notes": [
+            "北大阪急行公式の南北線延伸線開業後普通券運賃表。箕面萱野・箕面船場阪大前の運賃は加算運賃込み。",
+        ],
+        "routeIds": ["V4_ROUTE_F54A44B56FBA97"],
+        "pairs": [
+            ("箕面萱野", "箕面船場阪大前", 160),
+            ("箕面萱野", "千里中央", 190),
+            ("箕面萱野", "桃山台", 200),
+            ("箕面萱野", "緑地公園", 220),
+            ("箕面萱野", "江坂", 240),
+            ("箕面船場阪大前", "千里中央", 160),
+            ("箕面船場阪大前", "桃山台", 190),
+            ("箕面船場阪大前", "緑地公園", 200),
+            ("箕面船場阪大前", "江坂", 220),
+            ("千里中央", "桃山台", 100),
+            ("千里中央", "緑地公園", 130),
+            ("千里中央", "江坂", 140),
+            ("桃山台", "緑地公園", 100),
+            ("桃山台", "江坂", 130),
+            ("緑地公園", "江坂", 100),
+        ],
+    },
+    {
+        "key": "oyama_cable_station_pairs",
+        "operatorIds": ["大山観光電鉄"],
+        "operatorName": "大山観光電鉄",
+        "url": "https://www.ooyama-cable.co.jp/timetable/",
+        "notes": [
+            "大山ケーブルカー普通片道大人運賃。中間駅までと始発終点間の全3駅ペア。",
+        ],
+        "routeIds": ["V4_ROUTE_B9B9AABDAB4D38"],
+        "pairs": [
+            ("大山ケーブル", "大山寺", 360),
+            ("大山寺", "阿夫利神社", 360),
+            ("大山ケーブル", "阿夫利神社", 640),
+        ],
+    },
 ]
 
 
@@ -572,6 +885,64 @@ def parse_kitakyushu_monorail_pairs(html: str) -> dict[str, dict[str, Any]]:
             "toStationName": right_name,
             "yen": zone_yen[zone],
         }
+    return pairs
+
+
+def parse_new_shuttle_pairs(html: str) -> dict[str, dict[str, Any]]:
+    pairs: dict[str, dict[str, Any]] = {}
+    for block_match in re.finditer(
+        r'<span class="m-box-accordion__head-title">普通片道運賃（きっぷ）</span>(.*?)(?=<span class="m-box-accordion__head-title">IC運賃</span>)',
+        html,
+        re.S,
+    ):
+        block = block_match.group(1)
+        origin_match = re.search(r'<span class="cred">([^<]+?)（乗車駅）</span>', block)
+        if not origin_match:
+            continue
+        origin_name = "".join(origin_match.group(1).split())
+        for row_match in re.finditer(r"<tr>(.*?)</tr>", block, re.S):
+            row = row_match.group(1)
+            name_match = re.search(r'<th[^>]*>(.*?)</th>', row, re.S)
+            adult_match = re.search(r'<td class="tar">([0-9]+)</td>', row)
+            if not name_match or not adult_match:
+                continue
+            dest_text = re.sub(r"<[^>]+>", "", name_match.group(1))
+            dest_name = re.sub(r"（乗車駅）", "", "".join(dest_text.split()))
+            if not dest_name or dest_name == origin_name:
+                continue
+            yen = int(adult_match.group(1))
+            key = station_pair_key(origin_name, dest_name)
+            pairs.setdefault(key, {
+                "fromStationName": origin_name,
+                "toStationName": dest_name,
+                "yen": yen,
+            })
+    return pairs
+
+
+def parse_enoden_pairs(html: str) -> dict[str, dict[str, Any]]:
+    station_options: dict[int, str] = {}
+    for option_match in re.finditer(r'<option value="en(\d+)">([^<]+?)駅</option>', html):
+        index = int(option_match.group(1)) - 1
+        station_options.setdefault(index, "".join(option_match.group(2).split()))
+    table_match = re.search(r"var fareObj = (\[.*?\]);", html, re.S)
+    if not table_match:
+        return {}
+    table = ast.literal_eval(table_match.group(1))
+    pairs: dict[str, dict[str, Any]] = {}
+    for left_index, row in enumerate(table):
+        left_name = station_options.get(left_index)
+        if not left_name:
+            continue
+        for right_index, yen in enumerate(row):
+            right_name = station_options.get(right_index)
+            if not right_name or right_index <= left_index or not isinstance(yen, int):
+                continue
+            pairs[station_pair_key(left_name, right_name)] = {
+                "fromStationName": left_name,
+                "toStationName": right_name,
+                "yen": yen,
+            }
     return pairs
 
 
@@ -821,6 +1192,50 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": kitakyushu["operatorName"],
         "notes": kitakyushu["notes"],
         "pairs": kitakyushu_pairs,
+    }
+
+    new_shuttle = NEW_SHUTTLE_STATION_PAIR_SOURCE
+    cache_path, html = fetch_raw(new_shuttle["url"], cache_dir)
+    new_shuttle_pairs = parse_new_shuttle_pairs(html)
+    sources.append({
+        "key": new_shuttle["key"],
+        "url": new_shuttle["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": new_shuttle["operatorIds"],
+        "operatorName": new_shuttle["operatorName"],
+        "extraction": "parsed_station_pair_rows_from_official_html",
+        "pairCount": len(new_shuttle_pairs),
+    })
+    station_pair_tables[new_shuttle["key"]] = {
+        "operatorIds": new_shuttle["operatorIds"],
+        "routeIds": new_shuttle["routeIds"],
+        "sourceKey": new_shuttle["key"],
+        "operatorName": new_shuttle["operatorName"],
+        "notes": new_shuttle["notes"],
+        "pairs": new_shuttle_pairs,
+    }
+
+    enoden = ENODEN_STATION_PAIR_SOURCE
+    cache_path, html = fetch_raw(enoden["url"], cache_dir)
+    enoden_pairs = parse_enoden_pairs(html)
+    sources.append({
+        "key": enoden["key"],
+        "url": enoden["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": enoden["operatorIds"],
+        "operatorName": enoden["operatorName"],
+        "extraction": "parsed_js_fare_matrix_from_official_html",
+        "pairCount": len(enoden_pairs),
+    })
+    station_pair_tables[enoden["key"]] = {
+        "operatorIds": enoden["operatorIds"],
+        "routeIds": enoden["routeIds"],
+        "sourceKey": enoden["key"],
+        "operatorName": enoden["operatorName"],
+        "notes": enoden["notes"],
+        "pairs": enoden_pairs,
     }
 
     return {
