@@ -330,6 +330,22 @@ SHIMABARA_RAILWAY_STATION_PAIR_SOURCE = {
     ],
 }
 
+IBARA_RAILWAY_STATION_PAIR_SOURCE = {
+    "key": "ibara_railway_station_pairs_202510",
+    "operatorIds": ["井原鉄道"],
+    "operatorName": "井原鉄道",
+    "url": "https://www.ibara-railway.co.jp/wp-content/uploads/2025/09/f8dca081c7d888a86d0fd595a8752833.pdf",
+    "routeIds": ["V4_ROUTE_1A350AB2DFD5B6"],
+    "stationOrder": [
+        "総社", "清音", "川辺宿", "吉備真備", "備中呉妹", "三谷", "矢掛",
+        "小田", "早雲の里荏原", "井原", "いずえ", "子守唄の里高屋",
+        "御領", "湯野", "神辺",
+    ],
+    "notes": [
+        "井原鉄道公式の2025年10月1日改定普通旅客運賃表PDFから大人普通運賃の三角表を抽出。総社-清音は公式注記の特定運賃190円を適用。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -1909,6 +1925,30 @@ def parse_shimabara_railway_pairs(lines: list[str], station_order: list[str]) ->
     return pairs
 
 
+def parse_ibara_railway_pairs(lines: list[str], station_order: list[str]) -> dict[str, dict[str, Any]]:
+    pairs: dict[str, dict[str, Any]] = {}
+    add_station_pair(pairs, "総社", "清音", 190)
+    fare_rows = [
+        line
+        for line in lines
+        if re.match(r"^[0-9]", line)
+    ]
+    for origin_index, line in enumerate(fare_rows, start=2):
+        if origin_index >= len(station_order):
+            break
+        values = [
+            int(value.replace(",", ""))
+            for value in re.findall(r"[0-9]{1,3}(?:,[0-9]{3})*", line)
+        ]
+        expected_count = origin_index
+        if len(values) < expected_count:
+            return pairs
+        origin_name = station_order[origin_index]
+        for dest_index, yen in enumerate(values[:expected_count]):
+            add_station_pair(pairs, origin_name, station_order[dest_index], yen)
+    return pairs
+
+
 class TextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -2540,6 +2580,31 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": shimabara_railway["operatorName"],
         "notes": shimabara_railway["notes"],
         "pairs": shimabara_railway_pairs,
+    }
+
+    ibara_railway = IBARA_RAILWAY_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_pdf_text(ibara_railway["url"], cache_dir)
+    ibara_railway_pairs = parse_ibara_railway_pairs(
+        lines,
+        ibara_railway["stationOrder"],
+    )
+    sources.append({
+        "key": ibara_railway["key"],
+        "url": ibara_railway["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": ibara_railway["operatorIds"],
+        "operatorName": ibara_railway["operatorName"],
+        "extraction": "parsed_station_pair_triangle_from_official_pdf",
+        "pairCount": len(ibara_railway_pairs),
+    })
+    station_pair_tables[ibara_railway["key"]] = {
+        "operatorIds": ibara_railway["operatorIds"],
+        "routeIds": ibara_railway["routeIds"],
+        "sourceKey": ibara_railway["key"],
+        "operatorName": ibara_railway["operatorName"],
+        "notes": ibara_railway["notes"],
+        "pairs": ibara_railway_pairs,
     }
 
     return {
