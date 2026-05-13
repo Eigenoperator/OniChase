@@ -391,6 +391,96 @@ CHICHIBU_RAILWAY_STATION_PAIR_SOURCE = {
     ],
 }
 
+TENHAMA_STATION_PAIR_SOURCE = {
+    "key": "tenhama_station_pairs_202410",
+    "operatorIds": ["天竜浜名湖鉄道"],
+    "operatorName": "天竜浜名湖鉄道",
+    "url": "https://www.tenhama.co.jp/wp-content/uploads/078e045baf8688aca2ed7b1d2e5893ce.pdf",
+    "routeIds": ["V4_ROUTE_096F9D1B898AF5"],
+    "stationOrder": [
+        "掛川",
+        "掛川市役所前",
+        "西掛川",
+        "桜木",
+        "いこいの広場",
+        "細谷",
+        "原谷",
+        "原田",
+        "戸綿",
+        "遠州森",
+        "森町病院前",
+        "円田",
+        "遠江一宮",
+        "敷地",
+        "豊岡",
+        "上野部",
+        "天竜二俣",
+        "二俣本町",
+        "西鹿島",
+        "岩水寺",
+        "宮口",
+        "フルーツパーク",
+        "都田",
+        "常葉大学前",
+        "金指",
+        "岡地",
+        "気賀",
+        "西気賀",
+        "寸座",
+        "浜名湖佐久米",
+        "東都筑",
+        "都筑",
+        "三ヶ日",
+        "奥浜名湖",
+        "尾奈",
+        "知波田",
+        "大森",
+        "アスモ前",
+        "新所原",
+    ],
+    "notes": [
+        "天竜浜名湖鉄道公式の全体運賃表（2024年10月1日運賃改定）から、大人普通旅客運賃の駅間三角表を抽出。",
+    ],
+}
+
+NAGANO_DENTETSU_STATION_PAIR_SOURCE = {
+    "key": "nagano_dentetsu_station_pairs_202512",
+    "operatorIds": ["長野電鉄"],
+    "operatorName": "長野電鉄",
+    "url": "https://www.nagaden-net.co.jp/hubfs/unchin_20251201.pdf?hsLang=ja",
+    "routeIds": ["V4_ROUTE_51D54564F0D68F"],
+    "stationOrder": [
+        "長野",
+        "市役所前",
+        "権堂",
+        "善光寺下",
+        "本郷",
+        "桐原",
+        "信濃吉田",
+        "朝陽",
+        "附属中学前",
+        "柳原",
+        "村山",
+        "日野",
+        "須坂",
+        "北須坂",
+        "小布施",
+        "都住",
+        "桜沢",
+        "延徳",
+        "信州中野",
+        "中野松川",
+        "信濃竹原",
+        "夜間瀬",
+        "上条",
+        "湯田中",
+    ],
+    "notes": [
+        "長野電鉄公式の全線運賃表PDF（令和7年12月1日改定）から、大人普通旅客運賃の駅間三角表を抽出。",
+        "特急料金（一律大人100円）は普通運賃とは別体系のため、この表には含めない。",
+    ],
+}
+
 UEDA_DENTETSU_STATION_PAIR_SOURCE = {
     "key": "ueda_dentetsu_station_pairs_201910",
     "operatorIds": ["上田電鉄"],
@@ -2827,6 +2917,63 @@ def parse_chichibu_railway_pairs(lines: list[str], station_order: list[str]) -> 
     return pairs
 
 
+def parse_numbered_pdf_triangle_pairs(
+    lines: list[str],
+    station_order: list[str],
+    *,
+    source_name: str,
+) -> dict[str, dict[str, Any]]:
+    fare_rows: list[tuple[str, list[int]]] = []
+    for station_index, station_name in enumerate(station_order[1:], start=2):
+        row_line = next(
+            (
+                line
+                for line in lines
+                if re.match(rf"^{station_index}\s", line) and station_name in line
+            ),
+            None,
+        )
+        if row_line is None:
+            if station_name == "フルーツパーク":
+                row_line = next((line for line in lines if re.match(rf"^{station_index}\s", line) and "パーク" in line), None)
+            elif station_name == "浜名湖佐久米":
+                row_line = next((line for line in lines if re.match(rf"^{station_index}\s", line)), None)
+        if row_line is None:
+            raise ValueError(f"missing {source_name} fare row for {station_index} {station_name}")
+        values = [parse_first_money(value) for value in re.findall(r"\d[\d,]*", row_line)]
+        if not values or values[0] != station_index:
+            raise ValueError(f"unexpected {source_name} fare row prefix: {row_line}")
+        fares = values[1:station_index]
+        if len(fares) != station_index - 1:
+            raise ValueError(f"{source_name} {station_name} fare row has {len(fares)} fares, expected {station_index - 1}")
+        fare_rows.append((station_name, fares))
+    pairs = manual_station_pairs(station_pair_triangle_rows(station_order, fare_rows))
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"{source_name} pair count {len(pairs)} != {expected_pair_count}")
+    return pairs
+
+
+def parse_nagano_dentetsu_pairs(lines: list[str], station_order: list[str]) -> dict[str, dict[str, Any]]:
+    fare_rows: list[tuple[str, list[int]]] = []
+    for station_index, station_name in enumerate(station_order[1:], start=1):
+        if station_name == "附属中学前":
+            row_line = next((line for line in lines if "附属中" in line and len(re.findall(r"\d{3,4}", line)) >= station_index), None)
+        else:
+            row_line = next((line for line in lines if station_name in line and len(re.findall(r"\d{3,4}", line)) >= station_index), None)
+        if row_line is None:
+            raise ValueError(f"missing Nagano Dentetsu fare row for {station_name}")
+        fares = [int(value) for value in re.findall(r"\d{3,4}", row_line)[:station_index]]
+        if len(fares) != station_index:
+            raise ValueError(f"Nagano Dentetsu {station_name} fare row has {len(fares)} fares, expected {station_index}")
+        fare_rows.append((station_name, fares))
+    pairs = manual_station_pairs(station_pair_triangle_rows(station_order, fare_rows))
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"Nagano Dentetsu pair count {len(pairs)} != {expected_pair_count}")
+    return pairs
+
+
 def parse_km_range(value: str) -> tuple[int, int | None] | None:
     normalized = value.replace(",", "")
     match = re.search(r"(\d+)-(\d+)", normalized)
@@ -3335,6 +3482,54 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": chichibu["operatorName"],
         "notes": chichibu["notes"],
         "pairs": chichibu_pairs,
+    }
+
+    tenhama = TENHAMA_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_pdf_text(tenhama["url"], cache_dir)
+    tenhama_pairs = parse_numbered_pdf_triangle_pairs(
+        lines,
+        tenhama["stationOrder"],
+        source_name="Tenhama",
+    )
+    sources.append({
+        "key": tenhama["key"],
+        "url": tenhama["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": tenhama["operatorIds"],
+        "operatorName": tenhama["operatorName"],
+        "extraction": "parsed_station_pair_triangle_from_official_pdf",
+        "pairCount": len(tenhama_pairs),
+    })
+    station_pair_tables[tenhama["key"]] = {
+        "operatorIds": tenhama["operatorIds"],
+        "routeIds": tenhama["routeIds"],
+        "sourceKey": tenhama["key"],
+        "operatorName": tenhama["operatorName"],
+        "notes": tenhama["notes"],
+        "pairs": tenhama_pairs,
+    }
+
+    nagano_dentetsu = NAGANO_DENTETSU_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_pdf_text(nagano_dentetsu["url"], cache_dir)
+    nagano_dentetsu_pairs = parse_nagano_dentetsu_pairs(lines, nagano_dentetsu["stationOrder"])
+    sources.append({
+        "key": nagano_dentetsu["key"],
+        "url": nagano_dentetsu["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": nagano_dentetsu["operatorIds"],
+        "operatorName": nagano_dentetsu["operatorName"],
+        "extraction": "parsed_station_pair_triangle_from_official_pdf",
+        "pairCount": len(nagano_dentetsu_pairs),
+    })
+    station_pair_tables[nagano_dentetsu["key"]] = {
+        "operatorIds": nagano_dentetsu["operatorIds"],
+        "routeIds": nagano_dentetsu["routeIds"],
+        "sourceKey": nagano_dentetsu["key"],
+        "operatorName": nagano_dentetsu["operatorName"],
+        "notes": nagano_dentetsu["notes"],
+        "pairs": nagano_dentetsu_pairs,
     }
 
     ueda_dentetsu = UEDA_DENTETSU_STATION_PAIR_SOURCE
