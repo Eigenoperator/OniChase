@@ -117,6 +117,46 @@ ENODEN_STATION_PAIR_SOURCE = {
     ],
 }
 
+YORO_RAILWAY_STATION_PAIR_SOURCE = {
+    "key": "yoro_railway_station_pairs_202502",
+    "operatorIds": ["養老鉄道"],
+    "operatorName": "養老鉄道",
+    "url": "https://www.yororailway.co.jp/wp-content/uploads/2025/02/fare-data01.pdf",
+    "routeIds": ["V4_ROUTE_E7786B27777EE4"],
+    "stationOrder": [
+        "桑名",
+        "播磨",
+        "下深谷",
+        "下野代",
+        "多度",
+        "美濃松山",
+        "石津",
+        "美濃山崎",
+        "駒野",
+        "美濃津屋",
+        "養老",
+        "美濃高田",
+        "烏江",
+        "大外羽",
+        "友江",
+        "美濃青柳",
+        "西大垣",
+        "大垣",
+        "室",
+        "北大垣",
+        "東赤坂",
+        "広神戸",
+        "北神戸",
+        "池野",
+        "北池野",
+        "美濃本郷",
+        "揖斐",
+    ],
+    "notes": [
+        "養老鉄道公式の全体普通運賃表PDFから、上段の大人普通運賃だけを抽出。下段の小児運賃、通勤・通学定期、回数券、1日フリーきっぷは別体系のため未収録。",
+    ],
+}
+
 SANRIKU_STATION_PAIR_SOURCE = {
     "key": "sanriku_station_pairs_202603",
     "operatorIds": ["三陸鉄道"],
@@ -3730,6 +3770,24 @@ def parse_numbered_pdf_triangle_pairs(
     return pairs
 
 
+def parse_yoro_railway_pairs(lines: list[str], station_order: list[str]) -> dict[str, dict[str, Any]]:
+    fare_rows: list[tuple[str, list[int]]] = []
+    for station_index, station_name in enumerate(station_order[1:], start=1):
+        label_index = next((index for index, line in enumerate(lines) if line.strip() == station_name), None)
+        if label_index is None or label_index == 0:
+            raise ValueError(f"missing Yoro Railway fare row label for {station_name}")
+        adult_line = lines[label_index - 1]
+        fares = [parse_first_money(value) for value in re.findall(r"\d[\d,]*", adult_line)]
+        if len(fares) != station_index:
+            raise ValueError(f"Yoro Railway {station_name} fare row has {len(fares)} fares, expected {station_index}: {adult_line}")
+        fare_rows.append((station_name, fares))
+    pairs = manual_station_pairs(station_pair_triangle_rows(station_order, fare_rows))
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"Yoro Railway pair count {len(pairs)} != {expected_pair_count}")
+    return pairs
+
+
 def parse_keihan_otsu_station_pdf_pairs(
     origin_name: str,
     lines: list[str],
@@ -4040,6 +4098,28 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
             "notes": table.get("notes") or [],
             "pairs": manual_station_pairs(table["pairs"]),
         }
+
+    yoro = YORO_RAILWAY_STATION_PAIR_SOURCE
+    yoro_cache_path, yoro_lines = fetch_pdf_text(yoro["url"], cache_dir)
+    yoro_pairs = parse_yoro_railway_pairs(yoro_lines, yoro["stationOrder"])
+    sources.append({
+        "key": yoro["key"],
+        "url": yoro["url"],
+        "cachePath": yoro_cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": yoro["operatorIds"],
+        "operatorName": yoro["operatorName"],
+        "extraction": "parsed_adult_rows_from_official_pdf",
+        "pairCount": len(yoro_pairs),
+    })
+    station_pair_tables[yoro["key"]] = {
+        "operatorIds": yoro["operatorIds"],
+        "routeIds": yoro["routeIds"],
+        "sourceKey": yoro["key"],
+        "operatorName": yoro["operatorName"],
+        "notes": yoro["notes"],
+        "pairs": yoro_pairs,
+    }
 
     kitakyushu = KITAKYUSHU_MONORAIL_STATION_PAIR_SOURCE
     cache_path, html = fetch_raw(kitakyushu["url"], cache_dir)
