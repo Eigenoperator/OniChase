@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
 import json
 import re
 import subprocess
@@ -18,6 +19,13 @@ import requests
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT = ROOT / "docs" / "data" / "v4_fare_rules.json"
 DEFAULT_CACHE_DIR = ROOT / "data" / "v4_fare_source_cache"
+
+
+def cache_stem_for_url(url: str) -> str:
+    stem = re.sub(r"[^a-zA-Z0-9_.-]+", "_", url).strip("_")
+    if len(stem) > 160:
+        stem = f"{stem[:120]}_{hashlib.sha256(url.encode('utf-8')).hexdigest()[:16]}"
+    return stem
 
 JR_FARE_SOURCES = [
     {
@@ -154,6 +162,129 @@ YORO_RAILWAY_STATION_PAIR_SOURCE = {
     ],
     "notes": [
         "養老鉄道公式の全体普通運賃表PDFから、上段の大人普通運賃だけを抽出。下段の小児運賃、通勤・通学定期、回数券、1日フリーきっぷは別体系のため未収録。",
+    ],
+}
+
+MATSUURA_RAILWAY_STATION_PAIR_SOURCE = {
+    "key": "matsuura_railway_station_pairs_202410",
+    "operatorIds": ["松浦鉄道"],
+    "operatorName": "松浦鉄道",
+    "url": "https://matutetu.com/relays/download/787/2103/326//?file=%2Ffiles%2Flibs%2F4890%2F202408251723586779.pdf&file_name=%E6%99%AE%E9%80%9A%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8%E3%80%96%E4%BB%A4%E5%92%8C6%E5%B9%B410%E6%9C%881%E6%97%A5%E6%94%B9%E5%AE%9A%E3%80%97",
+    "routeIds": ["V4_ROUTE_188DAD9E0512B4"],
+    "stationOrder": [
+        "有田",
+        "三代橋",
+        "黒川",
+        "蔵宿",
+        "西有田",
+        "大木",
+        "山谷",
+        "夫婦石",
+        "金武",
+        "川東",
+        "伊万里",
+        "東山代",
+        "里",
+        "楠久",
+        "鳴石",
+        "久原",
+        "波瀬",
+        "浦ノ崎",
+        "福島口",
+        "今福",
+        "鷹島口",
+        "前浜",
+        "調川",
+        "松浦",
+        "松浦発電所前",
+        "御厨",
+        "西木場",
+        "東田平",
+        "中田平",
+        "たびら平戸口",
+        "西田平",
+        "すえたちばな",
+        "江迎鹿町",
+        "高岩",
+        "いのつき",
+        "潜竜ヶ滝",
+        "吉井",
+        "神田",
+        "清峰高校前",
+        "佐々",
+        "小浦",
+        "真申",
+        "棚方",
+        "相浦",
+        "大学",
+        "上相浦",
+        "本山",
+        "中里",
+        "皆瀬",
+        "野中",
+        "左石",
+        "泉福寺",
+        "山の田",
+        "北佐世保",
+        "中佐世保",
+        "佐世保中央",
+        "佐世保",
+    ],
+    "notes": [
+        "松浦鉄道公式の2024年10月1日改定・駅間普通旅客運賃表（実施）PDFから大人普通運賃の全駅間三角表を抽出。PDFは3ページに分割され、後半駅は前半30駅への表と後半駅同士の表を結合している。",
+        "小児運賃、定期運賃、団体運賃、企画乗車券は別体系のため未収録。",
+    ],
+}
+
+NAGARAGAWA_RAILWAY_STATION_PAIR_SOURCE = {
+    "key": "nagaragawa_railway_station_pairs_202203",
+    "operatorIds": ["長良川鉄道"],
+    "operatorName": "長良川鉄道",
+    "url": "http://www.nagatetsu.co.jp/wp/wp-content/uploads/2022/04/20220312RegularFare.pdf",
+    "routeIds": ["V4_ROUTE_EB781F5E159E91"],
+    "stationOrder": [
+        "美濃太田",
+        "前平公園",
+        "加茂野",
+        "富加",
+        "関富岡",
+        "関口",
+        "せきてらす前",
+        "関",
+        "関市役所前",
+        "関下有知",
+        "松森",
+        "美濃市",
+        "梅山",
+        "湯の洞温泉口",
+        "洲原",
+        "母野",
+        "木尾",
+        "八坂",
+        "みなみ子宝温泉",
+        "大矢",
+        "福野",
+        "美並苅安",
+        "赤池",
+        "深戸",
+        "相生",
+        "郡上八幡",
+        "自然園前",
+        "山田",
+        "徳永",
+        "郡上大和",
+        "万場",
+        "上万場",
+        "大中",
+        "大島",
+        "美濃白鳥",
+        "白鳥高原",
+        "白山長滝",
+        "北濃",
+    ],
+    "notes": [
+        "長良川鉄道公式の普通旅客運賃表PDF（2022年3月12日掲載、令和元年10月1日改正）から大人普通運賃の全駅間三角表を抽出。",
+        "小児運賃、定期運賃、回数券、企画乗車券、観光列車料金は別体系のため未収録。",
     ],
 }
 
@@ -3730,7 +3861,7 @@ class TextExtractor(HTMLParser):
 
 def fetch_text(url: str, cache_dir: Path) -> tuple[str, list[str]]:
     cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_path = cache_dir / (re.sub(r"[^a-zA-Z0-9_.-]+", "_", url).strip("_") + ".html")
+    cache_path = cache_dir / (cache_stem_for_url(url) + ".html")
     if cache_path.exists():
         html = cache_path.read_text(encoding="utf-8", errors="replace")
     else:
@@ -3746,7 +3877,7 @@ def fetch_text(url: str, cache_dir: Path) -> tuple[str, list[str]]:
 
 def fetch_raw(url: str, cache_dir: Path) -> tuple[str, str]:
     cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_path = cache_dir / (re.sub(r"[^a-zA-Z0-9_.-]+", "_", url).strip("_") + ".html")
+    cache_path = cache_dir / (cache_stem_for_url(url) + ".html")
     if cache_path.exists():
         return str(cache_path.relative_to(ROOT)), cache_path.read_text(encoding="utf-8", errors="replace")
     response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
@@ -3759,7 +3890,7 @@ def fetch_raw(url: str, cache_dir: Path) -> tuple[str, str]:
 
 def fetch_pdf_text(url: str, cache_dir: Path) -> tuple[str, list[str]]:
     cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_path = cache_dir / (re.sub(r"[^a-zA-Z0-9_.-]+", "_", url).strip("_") + ".pdf")
+    cache_path = cache_dir / (cache_stem_for_url(url) + ".pdf")
     if not cache_path.exists():
         response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
         response.raise_for_status()
@@ -3772,6 +3903,22 @@ def fetch_pdf_text(url: str, cache_dir: Path) -> tuple[str, list[str]]:
     )
     lines = [" ".join(line.split()) for line in completed.stdout.splitlines() if line.strip()]
     return str(cache_path.relative_to(ROOT)), lines
+
+
+def fetch_pdf_raw_text(url: str, cache_dir: Path) -> tuple[str, str]:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / (cache_stem_for_url(url) + ".pdf")
+    if not cache_path.exists():
+        response = requests.get(url, timeout=30, headers={"User-Agent": "OniChase fare rule collector/1.0"})
+        response.raise_for_status()
+        cache_path.write_bytes(response.content)
+    completed = subprocess.run(
+        ["pdftotext", "-layout", str(cache_path), "-"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return str(cache_path.relative_to(ROOT)), completed.stdout
 
 
 def try_fetch_text(url: str, cache_dir: Path) -> tuple[str | None, list[str], str | None]:
@@ -4064,6 +4211,82 @@ def parse_yoro_railway_pairs(lines: list[str], station_order: list[str]) -> dict
     expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
     if len(pairs) != expected_pair_count:
         raise ValueError(f"Yoro Railway pair count {len(pairs)} != {expected_pair_count}")
+    return pairs
+
+
+def parse_matsuura_railway_pairs(raw_text: str, station_order: list[str]) -> dict[str, dict[str, Any]]:
+    pages = raw_text.split("\f")
+    if len(pages) < 3:
+        raise ValueError("Matsuura Railway fare PDF did not contain the expected 3 text pages")
+
+    def page_fare_rows(page_text: str) -> list[list[int]]:
+        rows: list[list[int]] = []
+        for line in page_text.splitlines():
+            line = line.split("令和", 1)[0]
+            values = [
+                int(value.lstrip("★").replace(",", ""))
+                for value in re.findall(r"★?\d[\d,]*", line)
+            ]
+            if values:
+                rows.append(values)
+        return rows
+
+    first_page_rows = page_fare_rows(pages[0])
+    second_page_rows = page_fare_rows(pages[1])
+    third_page_rows = page_fare_rows(pages[2])
+    if [len(row) for row in first_page_rows] != list(range(1, 30)):
+        raise ValueError("unexpected Matsuura first-page triangle shape")
+    if len(second_page_rows) != len(station_order) - 30 or any(len(row) != 30 for row in second_page_rows):
+        raise ValueError("unexpected Matsuura second-page front-block shape")
+    if [len(row) for row in third_page_rows] != list(range(1, len(station_order) - 30)):
+        raise ValueError("unexpected Matsuura third-page rear triangle shape")
+
+    fare_rows: list[tuple[str, list[int]]] = []
+    for row_index, fares in enumerate(first_page_rows, start=1):
+        fare_rows.append((station_order[row_index], fares))
+    for offset, front_fares in enumerate(second_page_rows):
+        row_index = 30 + offset
+        rear_fares = third_page_rows[offset - 1] if offset else []
+        fares = [*front_fares, *rear_fares]
+        if len(fares) != row_index:
+            raise ValueError(f"Matsuura {station_order[row_index]} fare row has {len(fares)} fares, expected {row_index}")
+        fare_rows.append((station_order[row_index], fares))
+
+    pairs = manual_station_pairs(station_pair_triangle_rows(station_order, fare_rows))
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"Matsuura Railway pair count {len(pairs)} != {expected_pair_count}")
+    return pairs
+
+
+def parse_single_pdf_triangle_pairs(
+    raw_text: str,
+    station_order: list[str],
+    *,
+    source_name: str,
+) -> dict[str, dict[str, Any]]:
+    fare_rows: list[tuple[str, list[int]]] = []
+    for line in raw_text.splitlines():
+        line = line.split("令和", 1)[0]
+        values = [
+            int(value.replace(",", ""))
+            for value in re.findall(r"\d[\d,]*", line)
+        ]
+        if not values:
+            continue
+        row_index = len(values)
+        if row_index >= len(station_order):
+            raise ValueError(f"{source_name} fare row is too long: {line}")
+        fare_rows.append((station_order[row_index], values))
+    if len(fare_rows) != len(station_order) - 1:
+        raise ValueError(f"{source_name} has {len(fare_rows)} fare rows, expected {len(station_order) - 1}")
+    for expected_index, (station_name, fares) in enumerate(fare_rows, start=1):
+        if len(fares) != expected_index:
+            raise ValueError(f"{source_name} {station_name} fare row has {len(fares)} fares, expected {expected_index}")
+    pairs = manual_station_pairs(station_pair_triangle_rows(station_order, fare_rows))
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"{source_name} pair count {len(pairs)} != {expected_pair_count}")
     return pairs
 
 
@@ -4398,6 +4621,57 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": yoro["operatorName"],
         "notes": yoro["notes"],
         "pairs": yoro_pairs,
+    }
+
+    matsuura = MATSUURA_RAILWAY_STATION_PAIR_SOURCE
+    matsuura_cache_path, matsuura_raw_text = fetch_pdf_raw_text(matsuura["url"], cache_dir)
+    matsuura_pairs = parse_matsuura_railway_pairs(
+        matsuura_raw_text,
+        matsuura["stationOrder"],
+    )
+    sources.append({
+        "key": matsuura["key"],
+        "url": matsuura["url"],
+        "cachePath": matsuura_cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": matsuura["operatorIds"],
+        "operatorName": matsuura["operatorName"],
+        "extraction": "parsed_station_pair_matrix_from_official_pdf",
+        "pairCount": len(matsuura_pairs),
+    })
+    station_pair_tables[matsuura["key"]] = {
+        "operatorIds": matsuura["operatorIds"],
+        "routeIds": matsuura["routeIds"],
+        "sourceKey": matsuura["key"],
+        "operatorName": matsuura["operatorName"],
+        "notes": matsuura["notes"],
+        "pairs": matsuura_pairs,
+    }
+
+    nagaragawa = NAGARAGAWA_RAILWAY_STATION_PAIR_SOURCE
+    nagaragawa_cache_path, nagaragawa_raw_text = fetch_pdf_raw_text(nagaragawa["url"], cache_dir)
+    nagaragawa_pairs = parse_single_pdf_triangle_pairs(
+        nagaragawa_raw_text,
+        nagaragawa["stationOrder"],
+        source_name="Nagaragawa Railway",
+    )
+    sources.append({
+        "key": nagaragawa["key"],
+        "url": nagaragawa["url"],
+        "cachePath": nagaragawa_cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": nagaragawa["operatorIds"],
+        "operatorName": nagaragawa["operatorName"],
+        "extraction": "parsed_station_pair_matrix_from_official_pdf",
+        "pairCount": len(nagaragawa_pairs),
+    })
+    station_pair_tables[nagaragawa["key"]] = {
+        "operatorIds": nagaragawa["operatorIds"],
+        "routeIds": nagaragawa["routeIds"],
+        "sourceKey": nagaragawa["key"],
+        "operatorName": nagaragawa["operatorName"],
+        "notes": nagaragawa["notes"],
+        "pairs": nagaragawa_pairs,
     }
 
     kitakyushu = KITAKYUSHU_MONORAIL_STATION_PAIR_SOURCE
