@@ -346,6 +346,23 @@ IBARA_RAILWAY_STATION_PAIR_SOURCE = {
     ],
 }
 
+KASHIMA_RINKAI_STATION_PAIR_SOURCE = {
+    "key": "kashima_rinkai_station_pairs_202603",
+    "operatorIds": ["鹿島臨海鉄道"],
+    "operatorName": "鹿島臨海鉄道",
+    "url": "https://www.rintetsu.co.jp/wp-content/uploads/2026/03/5d068f3d57fdee6c10b5a8936a456fdc.pdf",
+    "routeIds": ["V4_ROUTE_06B853D81B2B75"],
+    "stationOrder": [
+        "水戸", "東水戸", "常澄", "大洗", "涸沼", "鹿島旭", "徳宿",
+        "新鉾田", "北浦湖畔", "大洋", "鹿島灘", "鹿島大野",
+        "長者ヶ浜潮騒はまなす公園前", "荒野台", "鹿島サッカースタジアム",
+        "鹿島神宮",
+    ],
+    "notes": [
+        "鹿島臨海鉄道公式の2026年3月14日改定普通旅客運賃表PDFから大洗鹿島線関連の大人普通運賃を抽出。荒野台-鹿島サッカースタジアムは線内普通運賃230円を採用し、JR鹿島神宮相互利用時の特殊割引運賃は別条件のため未適用。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -1949,6 +1966,33 @@ def parse_ibara_railway_pairs(lines: list[str], station_order: list[str]) -> dic
     return pairs
 
 
+def parse_kashima_rinkai_pairs(lines: list[str], station_order: list[str]) -> dict[str, dict[str, Any]]:
+    pairs: dict[str, dict[str, Any]] = {}
+    row_names = station_order[:-3]
+    adult_rows = [
+        line
+        for line in lines
+        if line.startswith("大人 ")
+    ][:len(row_names)]
+    if len(adult_rows) != len(row_names):
+        return pairs
+    for origin_index, line in enumerate(adult_rows):
+        values = [
+            int(value.replace(",", ""))
+            for value in re.findall(r"[0-9]{1,3}(?:,[0-9]{3})*", line)
+        ]
+        expected_count = len(station_order) - origin_index - 1
+        if len(values) != expected_count:
+            return pairs
+        origin_name = station_order[origin_index]
+        for dest_name, yen in zip(station_order[origin_index + 1:], reversed(values)):
+            add_station_pair(pairs, origin_name, dest_name, yen)
+    add_station_pair(pairs, "荒野台", "鹿島サッカースタジアム", 230)
+    add_station_pair(pairs, "荒野台", "鹿島神宮", 430)
+    add_station_pair(pairs, "鹿島サッカースタジアム", "鹿島神宮", 200)
+    return pairs
+
+
 class TextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -2605,6 +2649,31 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": ibara_railway["operatorName"],
         "notes": ibara_railway["notes"],
         "pairs": ibara_railway_pairs,
+    }
+
+    kashima_rinkai = KASHIMA_RINKAI_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_pdf_text(kashima_rinkai["url"], cache_dir)
+    kashima_rinkai_pairs = parse_kashima_rinkai_pairs(
+        lines,
+        kashima_rinkai["stationOrder"],
+    )
+    sources.append({
+        "key": kashima_rinkai["key"],
+        "url": kashima_rinkai["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": kashima_rinkai["operatorIds"],
+        "operatorName": kashima_rinkai["operatorName"],
+        "extraction": "parsed_station_pair_triangle_from_official_pdf",
+        "pairCount": len(kashima_rinkai_pairs),
+    })
+    station_pair_tables[kashima_rinkai["key"]] = {
+        "operatorIds": kashima_rinkai["operatorIds"],
+        "routeIds": kashima_rinkai["routeIds"],
+        "sourceKey": kashima_rinkai["key"],
+        "operatorName": kashima_rinkai["operatorName"],
+        "notes": kashima_rinkai["notes"],
+        "pairs": kashima_rinkai_pairs,
     }
 
     return {
