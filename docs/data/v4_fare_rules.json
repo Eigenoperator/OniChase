@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T05:10:39.502187+00:00",
+  "generatedAt": "2026-05-13T05:13:49.339609+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -920,6 +920,17 @@
       "operatorName": "甘木鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.amatetsu.jp_new_20240917_info.pdf.html"
+    },
+    {
+      "key": "kuramadera_cable_station_pairs_2026",
+      "url": "https://www.kuramadera.or.jp/access.html",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "鞍馬寺"
+      ],
+      "operatorName": "鞍馬寺",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.kuramadera.or.jp_access.html.html"
     },
     {
       "key": "choshi_dentetsu_station_pairs_201910",
@@ -8408,6 +8419,26 @@
     }
   },
   "stationPairFareTables": {
+    "kuramadera_cable_station_pairs_2026": {
+      "operatorIds": [
+        "鞍馬寺"
+      ],
+      "routeIds": [
+        "V4_ROUTE_BD8424D09C8D45"
+      ],
+      "sourceKey": "kuramadera_cable_station_pairs_2026",
+      "operatorName": "鞍馬寺",
+      "notes": [
+        "鞍馬寺公式のケーブルコース案内に掲載されたケーブル寄付金（大人・片道200円）を、山門-多宝塔間の片道相当運賃として収録。小学生以下、愛山費、徒歩コースは別体系のため未収録。"
+      ],
+      "pairs": {
+        "山門|多宝塔": {
+          "fromStationName": "山門",
+          "toStationName": "多宝塔",
+          "yen": 200
+        }
+      }
+    },
     "choshi_dentetsu_station_pairs_201910": {
       "operatorIds": [
         "銚子電気鉄道"

@@ -1758,6 +1758,17 @@ def station_pair_flat_rows(station_order: list[str], yen: int) -> list[tuple[str
 
 MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
     {
+        "key": "kuramadera_cable_station_pairs_2026",
+        "operatorIds": ["鞍馬寺"],
+        "operatorName": "鞍馬寺",
+        "url": "https://www.kuramadera.or.jp/access.html",
+        "notes": [
+            "鞍馬寺公式のケーブルコース案内に掲載されたケーブル寄付金（大人・片道200円）を、山門-多宝塔間の片道相当運賃として収録。小学生以下、愛山費、徒歩コースは別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_BD8424D09C8D45"],
+        "pairs": [("山門", "多宝塔", 200)],
+    },
+    {
         "key": "choshi_dentetsu_station_pairs_201910",
         "operatorIds": ["銚子電気鉄道"],
         "operatorName": "銚子電気鉄道",
