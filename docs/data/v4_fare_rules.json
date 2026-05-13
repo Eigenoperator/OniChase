@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T21:10:10.800116+00:00",
+  "generatedAt": "2026-05-13T22:22:48.464177+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -181,6 +181,17 @@
         "keisei"
       ],
       "operatorName": "京成電鉄",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_new-www.keisei.co.jp_keisei_tetudou_goriyo_pdf_keisei_260314.pdf.html"
+    },
+    {
+      "key": "keisei_matsudo_line_202603",
+      "url": "https://new-www.keisei.co.jp/keisei/tetudou/goriyo/pdf/keisei_260314.pdf",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "新京成電鉄"
+      ],
+      "operatorName": "京成電鉄松戸線",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_new-www.keisei.co.jp_keisei_tetudou_goriyo_pdf_keisei_260314.pdf.html"
     },
@@ -1019,6 +1030,39 @@
       "operatorName": "甘木鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.amatetsu.jp_new_20240917_info.pdf.html"
+    },
+    {
+      "key": "kyoto_tango_railway_station_pairs_201910",
+      "url": "https://trains.willer.co.jp/ticket/faretable/pdf/faretable201910.pdf",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "willertrains"
+      ],
+      "operatorName": "WILLER TRAINS",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_trains.willer.co.jp_ticket_faretable_pdf_faretable201910.pdf.html"
+    },
+    {
+      "key": "shinano_railway_station_pairs_202603",
+      "url": "https://www.shinanorailway.co.jp/rail-info/fare/docs/20260314_shinetsu.pdf",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "しなの鉄道"
+      ],
+      "operatorName": "しなの鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.shinanorailway.co.jp_rail-info_fare_docs_20260314_shinetsu.pdf.html"
+    },
+    {
+      "key": "keihan_keishin_station_pairs_202510",
+      "url": "https://www.keihan.co.jp/traffic/station/assets/pdf/fare/500.pdf",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "京阪電気鉄道"
+      ],
+      "operatorName": "京阪電気鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.keihan.co.jp_traffic_station_assets_pdf_fare_500.pdf.html"
     },
     {
       "key": "izukyu_station_pairs_202603",
@@ -5637,6 +5681,57 @@
         }
       }
     },
+    "keisei_matsudo_line_202603": {
+      "operatorIds": [
+        "新京成電鉄"
+      ],
+      "routeIds": [
+        "V4_ROUTE_446917FE264A8D"
+      ],
+      "sourceKey": "keisei_matsudo_line_202603",
+      "operatorName": "京成電鉄松戸線",
+      "notes": [
+        "京成電鉄公式の2026年3月14日旅客営業規則第77条第6項から、松戸線各駅相互発着の大人片道普通旅客運賃だけを収録。ゲーム側 routeId は旧新京成線のままだが、2025年4月1日の京成電鉄への合併後は京成松戸線として同条項が適用される。",
+        "京成本線・成田スカイアクセス線・北総線との乗継/連絡運賃、IC運賃、小児運賃、定期、空港加算、バリアフリー料金、割引運賃は別体系のため未収録。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 5,
+              "yen": 170
+            },
+            {
+              "fromKm": 6,
+              "toKm": 9,
+              "yen": 190
+            },
+            {
+              "fromKm": 10,
+              "toKm": 13,
+              "yen": 210
+            },
+            {
+              "fromKm": 14,
+              "toKm": 17,
+              "yen": 230
+            },
+            {
+              "fromKm": 18,
+              "toKm": 22,
+              "yen": 260
+            },
+            {
+              "fromKm": 23,
+              "toKm": 27,
+              "yen": 280
+            }
+          ]
+        }
+      }
+    },
     "tokyu": {
       "operatorIds": [
         "tokyu"
@@ -9925,6 +10020,3635 @@
     }
   },
   "stationPairFareTables": {
+    "kyoto_tango_railway_station_pairs_201910": {
+      "operatorIds": [
+        "willertrains"
+      ],
+      "routeIds": [
+        "V4_ROUTE_69F491596F64E6",
+        "V4_ROUTE_CB37B94EC12D1E"
+      ],
+      "sourceKey": "kyoto_tango_railway_station_pairs_201910",
+      "operatorName": "WILLER TRAINS",
+      "notes": [
+        "京都丹後鉄道公式の普通旅客運賃表PDFから、宮舞線・宮豊線・宮福線の大人普通運賃だけを収録。宮津線側、西舞鶴-豊岡の宮舞/宮豊線内、宮村-福知山の宮福線内、宮津を介した両線間の普通運賃を同じ公式表から転記している。",
+        "小児運賃、特急料金、特別車両料金、観光列車整理券、企画乗車券、回数券、定期、団体・割引運賃、JR連絡運賃は別体系のため未収録。"
+      ],
+      "pairs": {
+        "西舞鶴|四所": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "四所",
+          "yen": 200
+        },
+        "西舞鶴|東雲": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "東雲",
+          "yen": 250
+        },
+        "四所|東雲": {
+          "fromStationName": "四所",
+          "toStationName": "東雲",
+          "yen": 200
+        },
+        "西舞鶴|丹後神崎": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "丹後神崎",
+          "yen": 350
+        },
+        "四所|丹後神崎": {
+          "fromStationName": "四所",
+          "toStationName": "丹後神崎",
+          "yen": 250
+        },
+        "東雲|丹後神崎": {
+          "fromStationName": "東雲",
+          "toStationName": "丹後神崎",
+          "yen": 200
+        },
+        "西舞鶴|丹後由良": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "丹後由良",
+          "yen": 350
+        },
+        "四所|丹後由良": {
+          "fromStationName": "四所",
+          "toStationName": "丹後由良",
+          "yen": 250
+        },
+        "東雲|丹後由良": {
+          "fromStationName": "東雲",
+          "toStationName": "丹後由良",
+          "yen": 200
+        },
+        "丹後神崎|丹後由良": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "丹後由良",
+          "yen": 150
+        },
+        "西舞鶴|栗田": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "栗田",
+          "yen": 450
+        },
+        "四所|栗田": {
+          "fromStationName": "四所",
+          "toStationName": "栗田",
+          "yen": 350
+        },
+        "東雲|栗田": {
+          "fromStationName": "東雲",
+          "toStationName": "栗田",
+          "yen": 300
+        },
+        "丹後神崎|栗田": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "栗田",
+          "yen": 250
+        },
+        "丹後由良|栗田": {
+          "fromStationName": "丹後由良",
+          "toStationName": "栗田",
+          "yen": 200
+        },
+        "西舞鶴|宮津": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "宮津",
+          "yen": 600
+        },
+        "四所|宮津": {
+          "fromStationName": "四所",
+          "toStationName": "宮津",
+          "yen": 450
+        },
+        "東雲|宮津": {
+          "fromStationName": "東雲",
+          "toStationName": "宮津",
+          "yen": 400
+        },
+        "丹後神崎|宮津": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "宮津",
+          "yen": 300
+        },
+        "丹後由良|宮津": {
+          "fromStationName": "丹後由良",
+          "toStationName": "宮津",
+          "yen": 300
+        },
+        "栗田|宮津": {
+          "fromStationName": "栗田",
+          "toStationName": "宮津",
+          "yen": 200
+        },
+        "西舞鶴|天橋立": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "天橋立",
+          "yen": 650
+        },
+        "四所|天橋立": {
+          "fromStationName": "四所",
+          "toStationName": "天橋立",
+          "yen": 500
+        },
+        "東雲|天橋立": {
+          "fromStationName": "東雲",
+          "toStationName": "天橋立",
+          "yen": 450
+        },
+        "丹後神崎|天橋立": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "天橋立",
+          "yen": 400
+        },
+        "丹後由良|天橋立": {
+          "fromStationName": "丹後由良",
+          "toStationName": "天橋立",
+          "yen": 350
+        },
+        "栗田|天橋立": {
+          "fromStationName": "栗田",
+          "toStationName": "天橋立",
+          "yen": 250
+        },
+        "宮津|天橋立": {
+          "fromStationName": "宮津",
+          "toStationName": "天橋立",
+          "yen": 200
+        },
+        "西舞鶴|岩滝口": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "岩滝口",
+          "yen": 700
+        },
+        "四所|岩滝口": {
+          "fromStationName": "四所",
+          "toStationName": "岩滝口",
+          "yen": 650
+        },
+        "東雲|岩滝口": {
+          "fromStationName": "東雲",
+          "toStationName": "岩滝口",
+          "yen": 500
+        },
+        "丹後神崎|岩滝口": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "岩滝口",
+          "yen": 450
+        },
+        "丹後由良|岩滝口": {
+          "fromStationName": "丹後由良",
+          "toStationName": "岩滝口",
+          "yen": 450
+        },
+        "栗田|岩滝口": {
+          "fromStationName": "栗田",
+          "toStationName": "岩滝口",
+          "yen": 350
+        },
+        "宮津|岩滝口": {
+          "fromStationName": "宮津",
+          "toStationName": "岩滝口",
+          "yen": 250
+        },
+        "天橋立|岩滝口": {
+          "fromStationName": "天橋立",
+          "toStationName": "岩滝口",
+          "yen": 200
+        },
+        "西舞鶴|与謝野": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "与謝野",
+          "yen": 800
+        },
+        "四所|与謝野": {
+          "fromStationName": "四所",
+          "toStationName": "与謝野",
+          "yen": 700
+        },
+        "東雲|与謝野": {
+          "fromStationName": "東雲",
+          "toStationName": "与謝野",
+          "yen": 600
+        },
+        "丹後神崎|与謝野": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "与謝野",
+          "yen": 500
+        },
+        "丹後由良|与謝野": {
+          "fromStationName": "丹後由良",
+          "toStationName": "与謝野",
+          "yen": 500
+        },
+        "栗田|与謝野": {
+          "fromStationName": "栗田",
+          "toStationName": "与謝野",
+          "yen": 400
+        },
+        "宮津|与謝野": {
+          "fromStationName": "宮津",
+          "toStationName": "与謝野",
+          "yen": 300
+        },
+        "天橋立|与謝野": {
+          "fromStationName": "天橋立",
+          "toStationName": "与謝野",
+          "yen": 250
+        },
+        "岩滝口|与謝野": {
+          "fromStationName": "岩滝口",
+          "toStationName": "与謝野",
+          "yen": 150
+        },
+        "西舞鶴|京丹後大宮": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "京丹後大宮",
+          "yen": 1000
+        },
+        "四所|京丹後大宮": {
+          "fromStationName": "四所",
+          "toStationName": "京丹後大宮",
+          "yen": 850
+        },
+        "東雲|京丹後大宮": {
+          "fromStationName": "東雲",
+          "toStationName": "京丹後大宮",
+          "yen": 800
+        },
+        "丹後神崎|京丹後大宮": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "京丹後大宮",
+          "yen": 650
+        },
+        "丹後由良|京丹後大宮": {
+          "fromStationName": "丹後由良",
+          "toStationName": "京丹後大宮",
+          "yen": 650
+        },
+        "栗田|京丹後大宮": {
+          "fromStationName": "栗田",
+          "toStationName": "京丹後大宮",
+          "yen": 500
+        },
+        "宮津|京丹後大宮": {
+          "fromStationName": "宮津",
+          "toStationName": "京丹後大宮",
+          "yen": 400
+        },
+        "天橋立|京丹後大宮": {
+          "fromStationName": "天橋立",
+          "toStationName": "京丹後大宮",
+          "yen": 350
+        },
+        "岩滝口|京丹後大宮": {
+          "fromStationName": "岩滝口",
+          "toStationName": "京丹後大宮",
+          "yen": 300
+        },
+        "与謝野|京丹後大宮": {
+          "fromStationName": "与謝野",
+          "toStationName": "京丹後大宮",
+          "yen": 250
+        },
+        "西舞鶴|峰山": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "峰山",
+          "yen": 1100
+        },
+        "四所|峰山": {
+          "fromStationName": "四所",
+          "toStationName": "峰山",
+          "yen": 1000
+        },
+        "東雲|峰山": {
+          "fromStationName": "東雲",
+          "toStationName": "峰山",
+          "yen": 950
+        },
+        "丹後神崎|峰山": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "峰山",
+          "yen": 800
+        },
+        "丹後由良|峰山": {
+          "fromStationName": "丹後由良",
+          "toStationName": "峰山",
+          "yen": 800
+        },
+        "栗田|峰山": {
+          "fromStationName": "栗田",
+          "toStationName": "峰山",
+          "yen": 650
+        },
+        "宮津|峰山": {
+          "fromStationName": "宮津",
+          "toStationName": "峰山",
+          "yen": 500
+        },
+        "天橋立|峰山": {
+          "fromStationName": "天橋立",
+          "toStationName": "峰山",
+          "yen": 450
+        },
+        "岩滝口|峰山": {
+          "fromStationName": "岩滝口",
+          "toStationName": "峰山",
+          "yen": 400
+        },
+        "与謝野|峰山": {
+          "fromStationName": "与謝野",
+          "toStationName": "峰山",
+          "yen": 350
+        },
+        "京丹後大宮|峰山": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "峰山",
+          "yen": 200
+        },
+        "西舞鶴|網野": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "網野",
+          "yen": 1200
+        },
+        "四所|網野": {
+          "fromStationName": "四所",
+          "toStationName": "網野",
+          "yen": 1150
+        },
+        "東雲|網野": {
+          "fromStationName": "東雲",
+          "toStationName": "網野",
+          "yen": 1100
+        },
+        "丹後神崎|網野": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "網野",
+          "yen": 1000
+        },
+        "丹後由良|網野": {
+          "fromStationName": "丹後由良",
+          "toStationName": "網野",
+          "yen": 950
+        },
+        "栗田|網野": {
+          "fromStationName": "栗田",
+          "toStationName": "網野",
+          "yen": 800
+        },
+        "宮津|網野": {
+          "fromStationName": "宮津",
+          "toStationName": "網野",
+          "yen": 700
+        },
+        "天橋立|網野": {
+          "fromStationName": "天橋立",
+          "toStationName": "網野",
+          "yen": 600
+        },
+        "岩滝口|網野": {
+          "fromStationName": "岩滝口",
+          "toStationName": "網野",
+          "yen": 500
+        },
+        "与謝野|網野": {
+          "fromStationName": "与謝野",
+          "toStationName": "網野",
+          "yen": 450
+        },
+        "京丹後大宮|網野": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "網野",
+          "yen": 350
+        },
+        "峰山|網野": {
+          "fromStationName": "峰山",
+          "toStationName": "網野",
+          "yen": 250
+        },
+        "西舞鶴|夕日ヶ浦木津温泉": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 1300
+        },
+        "四所|夕日ヶ浦木津温泉": {
+          "fromStationName": "四所",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 1200
+        },
+        "東雲|夕日ヶ浦木津温泉": {
+          "fromStationName": "東雲",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 1150
+        },
+        "丹後神崎|夕日ヶ浦木津温泉": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 1100
+        },
+        "丹後由良|夕日ヶ浦木津温泉": {
+          "fromStationName": "丹後由良",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 1100
+        },
+        "栗田|夕日ヶ浦木津温泉": {
+          "fromStationName": "栗田",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 950
+        },
+        "宮津|夕日ヶ浦木津温泉": {
+          "fromStationName": "宮津",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 850
+        },
+        "天橋立|夕日ヶ浦木津温泉": {
+          "fromStationName": "天橋立",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 700
+        },
+        "岩滝口|夕日ヶ浦木津温泉": {
+          "fromStationName": "岩滝口",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 650
+        },
+        "与謝野|夕日ヶ浦木津温泉": {
+          "fromStationName": "与謝野",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 600
+        },
+        "京丹後大宮|夕日ヶ浦木津温泉": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 450
+        },
+        "峰山|夕日ヶ浦木津温泉": {
+          "fromStationName": "峰山",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 350
+        },
+        "網野|夕日ヶ浦木津温泉": {
+          "fromStationName": "網野",
+          "toStationName": "夕日ヶ浦木津温泉",
+          "yen": 200
+        },
+        "西舞鶴|小天橋": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "小天橋",
+          "yen": 1450
+        },
+        "四所|小天橋": {
+          "fromStationName": "四所",
+          "toStationName": "小天橋",
+          "yen": 1300
+        },
+        "東雲|小天橋": {
+          "fromStationName": "東雲",
+          "toStationName": "小天橋",
+          "yen": 1200
+        },
+        "丹後神崎|小天橋": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "小天橋",
+          "yen": 1150
+        },
+        "丹後由良|小天橋": {
+          "fromStationName": "丹後由良",
+          "toStationName": "小天橋",
+          "yen": 1150
+        },
+        "栗田|小天橋": {
+          "fromStationName": "栗田",
+          "toStationName": "小天橋",
+          "yen": 1100
+        },
+        "宮津|小天橋": {
+          "fromStationName": "宮津",
+          "toStationName": "小天橋",
+          "yen": 950
+        },
+        "天橋立|小天橋": {
+          "fromStationName": "天橋立",
+          "toStationName": "小天橋",
+          "yen": 850
+        },
+        "岩滝口|小天橋": {
+          "fromStationName": "岩滝口",
+          "toStationName": "小天橋",
+          "yen": 800
+        },
+        "与謝野|小天橋": {
+          "fromStationName": "与謝野",
+          "toStationName": "小天橋",
+          "yen": 700
+        },
+        "京丹後大宮|小天橋": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "小天橋",
+          "yen": 500
+        },
+        "峰山|小天橋": {
+          "fromStationName": "峰山",
+          "toStationName": "小天橋",
+          "yen": 450
+        },
+        "網野|小天橋": {
+          "fromStationName": "網野",
+          "toStationName": "小天橋",
+          "yen": 300
+        },
+        "夕日ヶ浦木津温泉|小天橋": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "小天橋",
+          "yen": 200
+        },
+        "西舞鶴|かぶと山": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "かぶと山",
+          "yen": 1450
+        },
+        "四所|かぶと山": {
+          "fromStationName": "四所",
+          "toStationName": "かぶと山",
+          "yen": 1400
+        },
+        "東雲|かぶと山": {
+          "fromStationName": "東雲",
+          "toStationName": "かぶと山",
+          "yen": 1300
+        },
+        "丹後神崎|かぶと山": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "かぶと山",
+          "yen": 1200
+        },
+        "丹後由良|かぶと山": {
+          "fromStationName": "丹後由良",
+          "toStationName": "かぶと山",
+          "yen": 1200
+        },
+        "栗田|かぶと山": {
+          "fromStationName": "栗田",
+          "toStationName": "かぶと山",
+          "yen": 1100
+        },
+        "宮津|かぶと山": {
+          "fromStationName": "宮津",
+          "toStationName": "かぶと山",
+          "yen": 1000
+        },
+        "天橋立|かぶと山": {
+          "fromStationName": "天橋立",
+          "toStationName": "かぶと山",
+          "yen": 950
+        },
+        "岩滝口|かぶと山": {
+          "fromStationName": "岩滝口",
+          "toStationName": "かぶと山",
+          "yen": 850
+        },
+        "与謝野|かぶと山": {
+          "fromStationName": "与謝野",
+          "toStationName": "かぶと山",
+          "yen": 800
+        },
+        "京丹後大宮|かぶと山": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "かぶと山",
+          "yen": 600
+        },
+        "峰山|かぶと山": {
+          "fromStationName": "峰山",
+          "toStationName": "かぶと山",
+          "yen": 500
+        },
+        "網野|かぶと山": {
+          "fromStationName": "網野",
+          "toStationName": "かぶと山",
+          "yen": 350
+        },
+        "夕日ヶ浦木津温泉|かぶと山": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "かぶと山",
+          "yen": 250
+        },
+        "小天橋|かぶと山": {
+          "fromStationName": "小天橋",
+          "toStationName": "かぶと山",
+          "yen": 200
+        },
+        "西舞鶴|久美浜": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "久美浜",
+          "yen": 1500
+        },
+        "四所|久美浜": {
+          "fromStationName": "四所",
+          "toStationName": "久美浜",
+          "yen": 1450
+        },
+        "東雲|久美浜": {
+          "fromStationName": "東雲",
+          "toStationName": "久美浜",
+          "yen": 1400
+        },
+        "丹後神崎|久美浜": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "久美浜",
+          "yen": 1300
+        },
+        "丹後由良|久美浜": {
+          "fromStationName": "丹後由良",
+          "toStationName": "久美浜",
+          "yen": 1200
+        },
+        "栗田|久美浜": {
+          "fromStationName": "栗田",
+          "toStationName": "久美浜",
+          "yen": 1150
+        },
+        "宮津|久美浜": {
+          "fromStationName": "宮津",
+          "toStationName": "久美浜",
+          "yen": 1100
+        },
+        "天橋立|久美浜": {
+          "fromStationName": "天橋立",
+          "toStationName": "久美浜",
+          "yen": 1000
+        },
+        "岩滝口|久美浜": {
+          "fromStationName": "岩滝口",
+          "toStationName": "久美浜",
+          "yen": 950
+        },
+        "与謝野|久美浜": {
+          "fromStationName": "与謝野",
+          "toStationName": "久美浜",
+          "yen": 850
+        },
+        "京丹後大宮|久美浜": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "久美浜",
+          "yen": 650
+        },
+        "峰山|久美浜": {
+          "fromStationName": "峰山",
+          "toStationName": "久美浜",
+          "yen": 500
+        },
+        "網野|久美浜": {
+          "fromStationName": "網野",
+          "toStationName": "久美浜",
+          "yen": 400
+        },
+        "夕日ヶ浦木津温泉|久美浜": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "久美浜",
+          "yen": 300
+        },
+        "小天橋|久美浜": {
+          "fromStationName": "小天橋",
+          "toStationName": "久美浜",
+          "yen": 200
+        },
+        "かぶと山|久美浜": {
+          "fromStationName": "かぶと山",
+          "toStationName": "久美浜",
+          "yen": 150
+        },
+        "西舞鶴|コウノトリの郷": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "コウノトリの郷",
+          "yen": 1500
+        },
+        "四所|コウノトリの郷": {
+          "fromStationName": "四所",
+          "toStationName": "コウノトリの郷",
+          "yen": 1500
+        },
+        "東雲|コウノトリの郷": {
+          "fromStationName": "東雲",
+          "toStationName": "コウノトリの郷",
+          "yen": 1500
+        },
+        "丹後神崎|コウノトリの郷": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "コウノトリの郷",
+          "yen": 1450
+        },
+        "丹後由良|コウノトリの郷": {
+          "fromStationName": "丹後由良",
+          "toStationName": "コウノトリの郷",
+          "yen": 1450
+        },
+        "栗田|コウノトリの郷": {
+          "fromStationName": "栗田",
+          "toStationName": "コウノトリの郷",
+          "yen": 1300
+        },
+        "宮津|コウノトリの郷": {
+          "fromStationName": "宮津",
+          "toStationName": "コウノトリの郷",
+          "yen": 1200
+        },
+        "天橋立|コウノトリの郷": {
+          "fromStationName": "天橋立",
+          "toStationName": "コウノトリの郷",
+          "yen": 1150
+        },
+        "岩滝口|コウノトリの郷": {
+          "fromStationName": "岩滝口",
+          "toStationName": "コウノトリの郷",
+          "yen": 1100
+        },
+        "与謝野|コウノトリの郷": {
+          "fromStationName": "与謝野",
+          "toStationName": "コウノトリの郷",
+          "yen": 1000
+        },
+        "京丹後大宮|コウノトリの郷": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "コウノトリの郷",
+          "yen": 850
+        },
+        "峰山|コウノトリの郷": {
+          "fromStationName": "峰山",
+          "toStationName": "コウノトリの郷",
+          "yen": 700
+        },
+        "網野|コウノトリの郷": {
+          "fromStationName": "網野",
+          "toStationName": "コウノトリの郷",
+          "yen": 600
+        },
+        "夕日ヶ浦木津温泉|コウノトリの郷": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "コウノトリの郷",
+          "yen": 450
+        },
+        "小天橋|コウノトリの郷": {
+          "fromStationName": "小天橋",
+          "toStationName": "コウノトリの郷",
+          "yen": 350
+        },
+        "かぶと山|コウノトリの郷": {
+          "fromStationName": "かぶと山",
+          "toStationName": "コウノトリの郷",
+          "yen": 300
+        },
+        "久美浜|コウノトリの郷": {
+          "fromStationName": "久美浜",
+          "toStationName": "コウノトリの郷",
+          "yen": 250
+        },
+        "西舞鶴|豊岡": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "豊岡",
+          "yen": 1500
+        },
+        "四所|豊岡": {
+          "fromStationName": "四所",
+          "toStationName": "豊岡",
+          "yen": 1500
+        },
+        "東雲|豊岡": {
+          "fromStationName": "東雲",
+          "toStationName": "豊岡",
+          "yen": 1500
+        },
+        "丹後神崎|豊岡": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "豊岡",
+          "yen": 1500
+        },
+        "丹後由良|豊岡": {
+          "fromStationName": "丹後由良",
+          "toStationName": "豊岡",
+          "yen": 1450
+        },
+        "栗田|豊岡": {
+          "fromStationName": "栗田",
+          "toStationName": "豊岡",
+          "yen": 1400
+        },
+        "宮津|豊岡": {
+          "fromStationName": "宮津",
+          "toStationName": "豊岡",
+          "yen": 1300
+        },
+        "天橋立|豊岡": {
+          "fromStationName": "天橋立",
+          "toStationName": "豊岡",
+          "yen": 1200
+        },
+        "岩滝口|豊岡": {
+          "fromStationName": "岩滝口",
+          "toStationName": "豊岡",
+          "yen": 1150
+        },
+        "与謝野|豊岡": {
+          "fromStationName": "与謝野",
+          "toStationName": "豊岡",
+          "yen": 1100
+        },
+        "京丹後大宮|豊岡": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "豊岡",
+          "yen": 950
+        },
+        "峰山|豊岡": {
+          "fromStationName": "峰山",
+          "toStationName": "豊岡",
+          "yen": 800
+        },
+        "網野|豊岡": {
+          "fromStationName": "網野",
+          "toStationName": "豊岡",
+          "yen": 650
+        },
+        "夕日ヶ浦木津温泉|豊岡": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "豊岡",
+          "yen": 500
+        },
+        "小天橋|豊岡": {
+          "fromStationName": "小天橋",
+          "toStationName": "豊岡",
+          "yen": 400
+        },
+        "かぶと山|豊岡": {
+          "fromStationName": "かぶと山",
+          "toStationName": "豊岡",
+          "yen": 350
+        },
+        "久美浜|豊岡": {
+          "fromStationName": "久美浜",
+          "toStationName": "豊岡",
+          "yen": 300
+        },
+        "コウノトリの郷|豊岡": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "豊岡",
+          "yen": 150
+        },
+        "宮村|喜多": {
+          "fromStationName": "宮村",
+          "toStationName": "喜多",
+          "yen": 150
+        },
+        "宮村|辛皮": {
+          "fromStationName": "宮村",
+          "toStationName": "辛皮",
+          "yen": 250
+        },
+        "宮村|大江山口内宮": {
+          "fromStationName": "宮村",
+          "toStationName": "大江山口内宮",
+          "yen": 300
+        },
+        "宮村|二俣": {
+          "fromStationName": "宮村",
+          "toStationName": "二俣",
+          "yen": 350
+        },
+        "宮村|大江高校前": {
+          "fromStationName": "宮村",
+          "toStationName": "大江高校前",
+          "yen": 400
+        },
+        "宮村|大江": {
+          "fromStationName": "宮村",
+          "toStationName": "大江",
+          "yen": 400
+        },
+        "宮村|公庄": {
+          "fromStationName": "宮村",
+          "toStationName": "公庄",
+          "yen": 450
+        },
+        "宮村|下天津": {
+          "fromStationName": "宮村",
+          "toStationName": "下天津",
+          "yen": 500
+        },
+        "宮村|牧": {
+          "fromStationName": "宮村",
+          "toStationName": "牧",
+          "yen": 500
+        },
+        "宮村|荒河かしの木台": {
+          "fromStationName": "宮村",
+          "toStationName": "荒河かしの木台",
+          "yen": 600
+        },
+        "宮村|福知山市民病院口": {
+          "fromStationName": "宮村",
+          "toStationName": "福知山市民病院口",
+          "yen": 650
+        },
+        "宮村|福知山": {
+          "fromStationName": "宮村",
+          "toStationName": "福知山",
+          "yen": 650
+        },
+        "喜多|辛皮": {
+          "fromStationName": "喜多",
+          "toStationName": "辛皮",
+          "yen": 200
+        },
+        "喜多|大江山口内宮": {
+          "fromStationName": "喜多",
+          "toStationName": "大江山口内宮",
+          "yen": 300
+        },
+        "喜多|二俣": {
+          "fromStationName": "喜多",
+          "toStationName": "二俣",
+          "yen": 300
+        },
+        "喜多|大江高校前": {
+          "fromStationName": "喜多",
+          "toStationName": "大江高校前",
+          "yen": 350
+        },
+        "喜多|大江": {
+          "fromStationName": "喜多",
+          "toStationName": "大江",
+          "yen": 350
+        },
+        "喜多|公庄": {
+          "fromStationName": "喜多",
+          "toStationName": "公庄",
+          "yen": 400
+        },
+        "喜多|下天津": {
+          "fromStationName": "喜多",
+          "toStationName": "下天津",
+          "yen": 450
+        },
+        "喜多|牧": {
+          "fromStationName": "喜多",
+          "toStationName": "牧",
+          "yen": 500
+        },
+        "喜多|荒河かしの木台": {
+          "fromStationName": "喜多",
+          "toStationName": "荒河かしの木台",
+          "yen": 600
+        },
+        "喜多|福知山市民病院口": {
+          "fromStationName": "喜多",
+          "toStationName": "福知山市民病院口",
+          "yen": 600
+        },
+        "喜多|福知山": {
+          "fromStationName": "喜多",
+          "toStationName": "福知山",
+          "yen": 650
+        },
+        "辛皮|大江山口内宮": {
+          "fromStationName": "辛皮",
+          "toStationName": "大江山口内宮",
+          "yen": 200
+        },
+        "辛皮|二俣": {
+          "fromStationName": "辛皮",
+          "toStationName": "二俣",
+          "yen": 200
+        },
+        "辛皮|大江高校前": {
+          "fromStationName": "辛皮",
+          "toStationName": "大江高校前",
+          "yen": 250
+        },
+        "辛皮|大江": {
+          "fromStationName": "辛皮",
+          "toStationName": "大江",
+          "yen": 250
+        },
+        "辛皮|公庄": {
+          "fromStationName": "辛皮",
+          "toStationName": "公庄",
+          "yen": 300
+        },
+        "辛皮|下天津": {
+          "fromStationName": "辛皮",
+          "toStationName": "下天津",
+          "yen": 350
+        },
+        "辛皮|牧": {
+          "fromStationName": "辛皮",
+          "toStationName": "牧",
+          "yen": 400
+        },
+        "辛皮|荒河かしの木台": {
+          "fromStationName": "辛皮",
+          "toStationName": "荒河かしの木台",
+          "yen": 450
+        },
+        "辛皮|福知山市民病院口": {
+          "fromStationName": "辛皮",
+          "toStationName": "福知山市民病院口",
+          "yen": 450
+        },
+        "辛皮|福知山": {
+          "fromStationName": "辛皮",
+          "toStationName": "福知山",
+          "yen": 500
+        },
+        "大江山口内宮|二俣": {
+          "fromStationName": "大江山口内宮",
+          "toStationName": "二俣",
+          "yen": 150
+        },
+        "大江山口内宮|大江高校前": {
+          "fromStationName": "大江山口内宮",
+          "toStationName": "大江高校前",
+          "yen": 200
+        },
+        "大江山口内宮|大江": {
+          "fromStationName": "大江山口内宮",
+          "toStationName": "大江",
+          "yen": 200
+        },
+        "大江山口内宮|公庄": {
+          "fromStationName": "大江山口内宮",
+          "toStationName": "公庄",
+          "yen": 250
+        },
+        "大江山口内宮|下天津": {
+          "fromStationName": "大江山口内宮",
+          "toStationName": "下天津",
+          "yen": 300
+        },
+        "大江山口内宮|牧": {
+          "fromStationName": "大江山口内宮",
+          "toStationName": "牧",
+          "yen": 350
+        },
+        "大江山口内宮|荒河かしの木台": {
+          "fromStationName": "大江山口内宮",
+          "toStationName": "荒河かしの木台",
+          "yen": 350
+        },
+        "大江山口内宮|福知山市民病院口": {
+          "fromStationName": "大江山口内宮",
+          "toStationName": "福知山市民病院口",
+          "yen": 400
+        },
+        "大江山口内宮|福知山": {
+          "fromStationName": "大江山口内宮",
+          "toStationName": "福知山",
+          "yen": 400
+        },
+        "二俣|大江高校前": {
+          "fromStationName": "二俣",
+          "toStationName": "大江高校前",
+          "yen": 150
+        },
+        "二俣|大江": {
+          "fromStationName": "二俣",
+          "toStationName": "大江",
+          "yen": 150
+        },
+        "二俣|公庄": {
+          "fromStationName": "二俣",
+          "toStationName": "公庄",
+          "yen": 200
+        },
+        "二俣|下天津": {
+          "fromStationName": "二俣",
+          "toStationName": "下天津",
+          "yen": 250
+        },
+        "二俣|牧": {
+          "fromStationName": "二俣",
+          "toStationName": "牧",
+          "yen": 300
+        },
+        "二俣|荒河かしの木台": {
+          "fromStationName": "二俣",
+          "toStationName": "荒河かしの木台",
+          "yen": 350
+        },
+        "二俣|福知山市民病院口": {
+          "fromStationName": "二俣",
+          "toStationName": "福知山市民病院口",
+          "yen": 350
+        },
+        "二俣|福知山": {
+          "fromStationName": "二俣",
+          "toStationName": "福知山",
+          "yen": 400
+        },
+        "大江高校前|大江": {
+          "fromStationName": "大江高校前",
+          "toStationName": "大江",
+          "yen": 150
+        },
+        "大江高校前|公庄": {
+          "fromStationName": "大江高校前",
+          "toStationName": "公庄",
+          "yen": 200
+        },
+        "大江高校前|下天津": {
+          "fromStationName": "大江高校前",
+          "toStationName": "下天津",
+          "yen": 200
+        },
+        "大江高校前|牧": {
+          "fromStationName": "大江高校前",
+          "toStationName": "牧",
+          "yen": 250
+        },
+        "大江高校前|荒河かしの木台": {
+          "fromStationName": "大江高校前",
+          "toStationName": "荒河かしの木台",
+          "yen": 300
+        },
+        "大江高校前|福知山市民病院口": {
+          "fromStationName": "大江高校前",
+          "toStationName": "福知山市民病院口",
+          "yen": 300
+        },
+        "大江高校前|福知山": {
+          "fromStationName": "大江高校前",
+          "toStationName": "福知山",
+          "yen": 350
+        },
+        "大江|公庄": {
+          "fromStationName": "大江",
+          "toStationName": "公庄",
+          "yen": 150
+        },
+        "大江|下天津": {
+          "fromStationName": "大江",
+          "toStationName": "下天津",
+          "yen": 200
+        },
+        "大江|牧": {
+          "fromStationName": "大江",
+          "toStationName": "牧",
+          "yen": 250
+        },
+        "大江|荒河かしの木台": {
+          "fromStationName": "大江",
+          "toStationName": "荒河かしの木台",
+          "yen": 300
+        },
+        "大江|福知山市民病院口": {
+          "fromStationName": "大江",
+          "toStationName": "福知山市民病院口",
+          "yen": 300
+        },
+        "大江|福知山": {
+          "fromStationName": "大江",
+          "toStationName": "福知山",
+          "yen": 350
+        },
+        "公庄|下天津": {
+          "fromStationName": "公庄",
+          "toStationName": "下天津",
+          "yen": 150
+        },
+        "公庄|牧": {
+          "fromStationName": "公庄",
+          "toStationName": "牧",
+          "yen": 200
+        },
+        "公庄|荒河かしの木台": {
+          "fromStationName": "公庄",
+          "toStationName": "荒河かしの木台",
+          "yen": 250
+        },
+        "公庄|福知山市民病院口": {
+          "fromStationName": "公庄",
+          "toStationName": "福知山市民病院口",
+          "yen": 250
+        },
+        "公庄|福知山": {
+          "fromStationName": "公庄",
+          "toStationName": "福知山",
+          "yen": 300
+        },
+        "下天津|牧": {
+          "fromStationName": "下天津",
+          "toStationName": "牧",
+          "yen": 150
+        },
+        "下天津|荒河かしの木台": {
+          "fromStationName": "下天津",
+          "toStationName": "荒河かしの木台",
+          "yen": 200
+        },
+        "下天津|福知山市民病院口": {
+          "fromStationName": "下天津",
+          "toStationName": "福知山市民病院口",
+          "yen": 250
+        },
+        "下天津|福知山": {
+          "fromStationName": "下天津",
+          "toStationName": "福知山",
+          "yen": 250
+        },
+        "牧|荒河かしの木台": {
+          "fromStationName": "牧",
+          "toStationName": "荒河かしの木台",
+          "yen": 150
+        },
+        "牧|福知山市民病院口": {
+          "fromStationName": "牧",
+          "toStationName": "福知山市民病院口",
+          "yen": 200
+        },
+        "牧|福知山": {
+          "fromStationName": "牧",
+          "toStationName": "福知山",
+          "yen": 200
+        },
+        "荒河かしの木台|福知山市民病院口": {
+          "fromStationName": "荒河かしの木台",
+          "toStationName": "福知山市民病院口",
+          "yen": 150
+        },
+        "荒河かしの木台|福知山": {
+          "fromStationName": "荒河かしの木台",
+          "toStationName": "福知山",
+          "yen": 150
+        },
+        "福知山市民病院口|福知山": {
+          "fromStationName": "福知山市民病院口",
+          "toStationName": "福知山",
+          "yen": 150
+        },
+        "西舞鶴|宮村": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "宮村",
+          "yen": 600
+        },
+        "四所|宮村": {
+          "fromStationName": "四所",
+          "toStationName": "宮村",
+          "yen": 450
+        },
+        "東雲|宮村": {
+          "fromStationName": "東雲",
+          "toStationName": "宮村",
+          "yen": 400
+        },
+        "丹後神崎|宮村": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "宮村",
+          "yen": 350
+        },
+        "丹後由良|宮村": {
+          "fromStationName": "丹後由良",
+          "toStationName": "宮村",
+          "yen": 300
+        },
+        "栗田|宮村": {
+          "fromStationName": "栗田",
+          "toStationName": "宮村",
+          "yen": 200
+        },
+        "宮津|宮村": {
+          "fromStationName": "宮津",
+          "toStationName": "宮村",
+          "yen": 150
+        },
+        "天橋立|宮村": {
+          "fromStationName": "天橋立",
+          "toStationName": "宮村",
+          "yen": 200
+        },
+        "岩滝口|宮村": {
+          "fromStationName": "岩滝口",
+          "toStationName": "宮村",
+          "yen": 300
+        },
+        "与謝野|宮村": {
+          "fromStationName": "与謝野",
+          "toStationName": "宮村",
+          "yen": 350
+        },
+        "京丹後大宮|宮村": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "宮村",
+          "yen": 450
+        },
+        "峰山|宮村": {
+          "fromStationName": "峰山",
+          "toStationName": "宮村",
+          "yen": 600
+        },
+        "網野|宮村": {
+          "fromStationName": "網野",
+          "toStationName": "宮村",
+          "yen": 700
+        },
+        "夕日ヶ浦木津温泉|宮村": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "宮村",
+          "yen": 850
+        },
+        "小天橋|宮村": {
+          "fromStationName": "小天橋",
+          "toStationName": "宮村",
+          "yen": 1000
+        },
+        "かぶと山|宮村": {
+          "fromStationName": "かぶと山",
+          "toStationName": "宮村",
+          "yen": 1100
+        },
+        "久美浜|宮村": {
+          "fromStationName": "久美浜",
+          "toStationName": "宮村",
+          "yen": 1100
+        },
+        "コウノトリの郷|宮村": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "宮村",
+          "yen": 1200
+        },
+        "豊岡|宮村": {
+          "fromStationName": "豊岡",
+          "toStationName": "宮村",
+          "yen": 1300
+        },
+        "西舞鶴|喜多": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "喜多",
+          "yen": 650
+        },
+        "四所|喜多": {
+          "fromStationName": "四所",
+          "toStationName": "喜多",
+          "yen": 500
+        },
+        "東雲|喜多": {
+          "fromStationName": "東雲",
+          "toStationName": "喜多",
+          "yen": 450
+        },
+        "丹後神崎|喜多": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "喜多",
+          "yen": 400
+        },
+        "丹後由良|喜多": {
+          "fromStationName": "丹後由良",
+          "toStationName": "喜多",
+          "yen": 350
+        },
+        "栗田|喜多": {
+          "fromStationName": "栗田",
+          "toStationName": "喜多",
+          "yen": 250
+        },
+        "宮津|喜多": {
+          "fromStationName": "宮津",
+          "toStationName": "喜多",
+          "yen": 200
+        },
+        "天橋立|喜多": {
+          "fromStationName": "天橋立",
+          "toStationName": "喜多",
+          "yen": 250
+        },
+        "岩滝口|喜多": {
+          "fromStationName": "岩滝口",
+          "toStationName": "喜多",
+          "yen": 300
+        },
+        "与謝野|喜多": {
+          "fromStationName": "与謝野",
+          "toStationName": "喜多",
+          "yen": 350
+        },
+        "京丹後大宮|喜多": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "喜多",
+          "yen": 500
+        },
+        "峰山|喜多": {
+          "fromStationName": "峰山",
+          "toStationName": "喜多",
+          "yen": 600
+        },
+        "網野|喜多": {
+          "fromStationName": "網野",
+          "toStationName": "喜多",
+          "yen": 800
+        },
+        "夕日ヶ浦木津温泉|喜多": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "喜多",
+          "yen": 950
+        },
+        "小天橋|喜多": {
+          "fromStationName": "小天橋",
+          "toStationName": "喜多",
+          "yen": 1000
+        },
+        "かぶと山|喜多": {
+          "fromStationName": "かぶと山",
+          "toStationName": "喜多",
+          "yen": 1100
+        },
+        "久美浜|喜多": {
+          "fromStationName": "久美浜",
+          "toStationName": "喜多",
+          "yen": 1150
+        },
+        "コウノトリの郷|喜多": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "喜多",
+          "yen": 1300
+        },
+        "豊岡|喜多": {
+          "fromStationName": "豊岡",
+          "toStationName": "喜多",
+          "yen": 1300
+        },
+        "西舞鶴|辛皮": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "辛皮",
+          "yen": 800
+        },
+        "四所|辛皮": {
+          "fromStationName": "四所",
+          "toStationName": "辛皮",
+          "yen": 650
+        },
+        "東雲|辛皮": {
+          "fromStationName": "東雲",
+          "toStationName": "辛皮",
+          "yen": 600
+        },
+        "丹後神崎|辛皮": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "辛皮",
+          "yen": 500
+        },
+        "丹後由良|辛皮": {
+          "fromStationName": "丹後由良",
+          "toStationName": "辛皮",
+          "yen": 450
+        },
+        "栗田|辛皮": {
+          "fromStationName": "栗田",
+          "toStationName": "辛皮",
+          "yen": 350
+        },
+        "宮津|辛皮": {
+          "fromStationName": "宮津",
+          "toStationName": "辛皮",
+          "yen": 300
+        },
+        "天橋立|辛皮": {
+          "fromStationName": "天橋立",
+          "toStationName": "辛皮",
+          "yen": 350
+        },
+        "岩滝口|辛皮": {
+          "fromStationName": "岩滝口",
+          "toStationName": "辛皮",
+          "yen": 400
+        },
+        "与謝野|辛皮": {
+          "fromStationName": "与謝野",
+          "toStationName": "辛皮",
+          "yen": 450
+        },
+        "京丹後大宮|辛皮": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "辛皮",
+          "yen": 650
+        },
+        "峰山|辛皮": {
+          "fromStationName": "峰山",
+          "toStationName": "辛皮",
+          "yen": 700
+        },
+        "網野|辛皮": {
+          "fromStationName": "網野",
+          "toStationName": "辛皮",
+          "yen": 950
+        },
+        "夕日ヶ浦木津温泉|辛皮": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "辛皮",
+          "yen": 1000
+        },
+        "小天橋|辛皮": {
+          "fromStationName": "小天橋",
+          "toStationName": "辛皮",
+          "yen": 1150
+        },
+        "かぶと山|辛皮": {
+          "fromStationName": "かぶと山",
+          "toStationName": "辛皮",
+          "yen": 1200
+        },
+        "久美浜|辛皮": {
+          "fromStationName": "久美浜",
+          "toStationName": "辛皮",
+          "yen": 1200
+        },
+        "コウノトリの郷|辛皮": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "辛皮",
+          "yen": 1400
+        },
+        "豊岡|辛皮": {
+          "fromStationName": "豊岡",
+          "toStationName": "辛皮",
+          "yen": 1450
+        },
+        "西舞鶴|大江山口内宮": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "大江山口内宮",
+          "yen": 850
+        },
+        "四所|大江山口内宮": {
+          "fromStationName": "四所",
+          "toStationName": "大江山口内宮",
+          "yen": 700
+        },
+        "東雲|大江山口内宮": {
+          "fromStationName": "東雲",
+          "toStationName": "大江山口内宮",
+          "yen": 650
+        },
+        "丹後神崎|大江山口内宮": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "大江山口内宮",
+          "yen": 600
+        },
+        "丹後由良|大江山口内宮": {
+          "fromStationName": "丹後由良",
+          "toStationName": "大江山口内宮",
+          "yen": 500
+        },
+        "栗田|大江山口内宮": {
+          "fromStationName": "栗田",
+          "toStationName": "大江山口内宮",
+          "yen": 400
+        },
+        "宮津|大江山口内宮": {
+          "fromStationName": "宮津",
+          "toStationName": "大江山口内宮",
+          "yen": 350
+        },
+        "天橋立|大江山口内宮": {
+          "fromStationName": "天橋立",
+          "toStationName": "大江山口内宮",
+          "yen": 400
+        },
+        "岩滝口|大江山口内宮": {
+          "fromStationName": "岩滝口",
+          "toStationName": "大江山口内宮",
+          "yen": 450
+        },
+        "与謝野|大江山口内宮": {
+          "fromStationName": "与謝野",
+          "toStationName": "大江山口内宮",
+          "yen": 500
+        },
+        "京丹後大宮|大江山口内宮": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "大江山口内宮",
+          "yen": 700
+        },
+        "峰山|大江山口内宮": {
+          "fromStationName": "峰山",
+          "toStationName": "大江山口内宮",
+          "yen": 850
+        },
+        "網野|大江山口内宮": {
+          "fromStationName": "網野",
+          "toStationName": "大江山口内宮",
+          "yen": 1000
+        },
+        "夕日ヶ浦木津温泉|大江山口内宮": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "大江山口内宮",
+          "yen": 1100
+        },
+        "小天橋|大江山口内宮": {
+          "fromStationName": "小天橋",
+          "toStationName": "大江山口内宮",
+          "yen": 1200
+        },
+        "かぶと山|大江山口内宮": {
+          "fromStationName": "かぶと山",
+          "toStationName": "大江山口内宮",
+          "yen": 1200
+        },
+        "久美浜|大江山口内宮": {
+          "fromStationName": "久美浜",
+          "toStationName": "大江山口内宮",
+          "yen": 1300
+        },
+        "コウノトリの郷|大江山口内宮": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "大江山口内宮",
+          "yen": 1450
+        },
+        "豊岡|大江山口内宮": {
+          "fromStationName": "豊岡",
+          "toStationName": "大江山口内宮",
+          "yen": 1500
+        },
+        "西舞鶴|二俣": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "二俣",
+          "yen": 950
+        },
+        "四所|二俣": {
+          "fromStationName": "四所",
+          "toStationName": "二俣",
+          "yen": 800
+        },
+        "東雲|二俣": {
+          "fromStationName": "東雲",
+          "toStationName": "二俣",
+          "yen": 700
+        },
+        "丹後神崎|二俣": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "二俣",
+          "yen": 600
+        },
+        "丹後由良|二俣": {
+          "fromStationName": "丹後由良",
+          "toStationName": "二俣",
+          "yen": 600
+        },
+        "栗田|二俣": {
+          "fromStationName": "栗田",
+          "toStationName": "二俣",
+          "yen": 450
+        },
+        "宮津|二俣": {
+          "fromStationName": "宮津",
+          "toStationName": "二俣",
+          "yen": 350
+        },
+        "天橋立|二俣": {
+          "fromStationName": "天橋立",
+          "toStationName": "二俣",
+          "yen": 450
+        },
+        "岩滝口|二俣": {
+          "fromStationName": "岩滝口",
+          "toStationName": "二俣",
+          "yen": 500
+        },
+        "与謝野|二俣": {
+          "fromStationName": "与謝野",
+          "toStationName": "二俣",
+          "yen": 600
+        },
+        "京丹後大宮|二俣": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "二俣",
+          "yen": 700
+        },
+        "峰山|二俣": {
+          "fromStationName": "峰山",
+          "toStationName": "二俣",
+          "yen": 850
+        },
+        "網野|二俣": {
+          "fromStationName": "網野",
+          "toStationName": "二俣",
+          "yen": 1000
+        },
+        "夕日ヶ浦木津温泉|二俣": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "二俣",
+          "yen": 1150
+        },
+        "小天橋|二俣": {
+          "fromStationName": "小天橋",
+          "toStationName": "二俣",
+          "yen": 1200
+        },
+        "かぶと山|二俣": {
+          "fromStationName": "かぶと山",
+          "toStationName": "二俣",
+          "yen": 1300
+        },
+        "久美浜|二俣": {
+          "fromStationName": "久美浜",
+          "toStationName": "二俣",
+          "yen": 1400
+        },
+        "コウノトリの郷|二俣": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "二俣",
+          "yen": 1500
+        },
+        "豊岡|二俣": {
+          "fromStationName": "豊岡",
+          "toStationName": "二俣",
+          "yen": 1500
+        },
+        "西舞鶴|大江高校前": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "大江高校前",
+          "yen": 950
+        },
+        "四所|大江高校前": {
+          "fromStationName": "四所",
+          "toStationName": "大江高校前",
+          "yen": 850
+        },
+        "東雲|大江高校前": {
+          "fromStationName": "東雲",
+          "toStationName": "大江高校前",
+          "yen": 700
+        },
+        "丹後神崎|大江高校前": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "大江高校前",
+          "yen": 650
+        },
+        "丹後由良|大江高校前": {
+          "fromStationName": "丹後由良",
+          "toStationName": "大江高校前",
+          "yen": 650
+        },
+        "栗田|大江高校前": {
+          "fromStationName": "栗田",
+          "toStationName": "大江高校前",
+          "yen": 500
+        },
+        "宮津|大江高校前": {
+          "fromStationName": "宮津",
+          "toStationName": "大江高校前",
+          "yen": 400
+        },
+        "天橋立|大江高校前": {
+          "fromStationName": "天橋立",
+          "toStationName": "大江高校前",
+          "yen": 500
+        },
+        "岩滝口|大江高校前": {
+          "fromStationName": "岩滝口",
+          "toStationName": "大江高校前",
+          "yen": 600
+        },
+        "与謝野|大江高校前": {
+          "fromStationName": "与謝野",
+          "toStationName": "大江高校前",
+          "yen": 650
+        },
+        "京丹後大宮|大江高校前": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "大江高校前",
+          "yen": 800
+        },
+        "峰山|大江高校前": {
+          "fromStationName": "峰山",
+          "toStationName": "大江高校前",
+          "yen": 950
+        },
+        "網野|大江高校前": {
+          "fromStationName": "網野",
+          "toStationName": "大江高校前",
+          "yen": 1100
+        },
+        "夕日ヶ浦木津温泉|大江高校前": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "大江高校前",
+          "yen": 1150
+        },
+        "小天橋|大江高校前": {
+          "fromStationName": "小天橋",
+          "toStationName": "大江高校前",
+          "yen": 1300
+        },
+        "かぶと山|大江高校前": {
+          "fromStationName": "かぶと山",
+          "toStationName": "大江高校前",
+          "yen": 1300
+        },
+        "久美浜|大江高校前": {
+          "fromStationName": "久美浜",
+          "toStationName": "大江高校前",
+          "yen": 1400
+        },
+        "コウノトリの郷|大江高校前": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "大江高校前",
+          "yen": 1500
+        },
+        "豊岡|大江高校前": {
+          "fromStationName": "豊岡",
+          "toStationName": "大江高校前",
+          "yen": 1500
+        },
+        "西舞鶴|大江": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "大江",
+          "yen": 1000
+        },
+        "四所|大江": {
+          "fromStationName": "四所",
+          "toStationName": "大江",
+          "yen": 850
+        },
+        "東雲|大江": {
+          "fromStationName": "東雲",
+          "toStationName": "大江",
+          "yen": 800
+        },
+        "丹後神崎|大江": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "大江",
+          "yen": 650
+        },
+        "丹後由良|大江": {
+          "fromStationName": "丹後由良",
+          "toStationName": "大江",
+          "yen": 650
+        },
+        "栗田|大江": {
+          "fromStationName": "栗田",
+          "toStationName": "大江",
+          "yen": 500
+        },
+        "宮津|大江": {
+          "fromStationName": "宮津",
+          "toStationName": "大江",
+          "yen": 400
+        },
+        "天橋立|大江": {
+          "fromStationName": "天橋立",
+          "toStationName": "大江",
+          "yen": 500
+        },
+        "岩滝口|大江": {
+          "fromStationName": "岩滝口",
+          "toStationName": "大江",
+          "yen": 600
+        },
+        "与謝野|大江": {
+          "fromStationName": "与謝野",
+          "toStationName": "大江",
+          "yen": 650
+        },
+        "京丹後大宮|大江": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "大江",
+          "yen": 800
+        },
+        "峰山|大江": {
+          "fromStationName": "峰山",
+          "toStationName": "大江",
+          "yen": 950
+        },
+        "網野|大江": {
+          "fromStationName": "網野",
+          "toStationName": "大江",
+          "yen": 1100
+        },
+        "夕日ヶ浦木津温泉|大江": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "大江",
+          "yen": 1200
+        },
+        "小天橋|大江": {
+          "fromStationName": "小天橋",
+          "toStationName": "大江",
+          "yen": 1300
+        },
+        "かぶと山|大江": {
+          "fromStationName": "かぶと山",
+          "toStationName": "大江",
+          "yen": 1400
+        },
+        "久美浜|大江": {
+          "fromStationName": "久美浜",
+          "toStationName": "大江",
+          "yen": 1400
+        },
+        "コウノトリの郷|大江": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "大江",
+          "yen": 1500
+        },
+        "豊岡|大江": {
+          "fromStationName": "豊岡",
+          "toStationName": "大江",
+          "yen": 1500
+        },
+        "西舞鶴|公庄": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "公庄",
+          "yen": 1000
+        },
+        "四所|公庄": {
+          "fromStationName": "四所",
+          "toStationName": "公庄",
+          "yen": 950
+        },
+        "東雲|公庄": {
+          "fromStationName": "東雲",
+          "toStationName": "公庄",
+          "yen": 850
+        },
+        "丹後神崎|公庄": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "公庄",
+          "yen": 700
+        },
+        "丹後由良|公庄": {
+          "fromStationName": "丹後由良",
+          "toStationName": "公庄",
+          "yen": 700
+        },
+        "栗田|公庄": {
+          "fromStationName": "栗田",
+          "toStationName": "公庄",
+          "yen": 600
+        },
+        "宮津|公庄": {
+          "fromStationName": "宮津",
+          "toStationName": "公庄",
+          "yen": 450
+        },
+        "天橋立|公庄": {
+          "fromStationName": "天橋立",
+          "toStationName": "公庄",
+          "yen": 600
+        },
+        "岩滝口|公庄": {
+          "fromStationName": "岩滝口",
+          "toStationName": "公庄",
+          "yen": 650
+        },
+        "与謝野|公庄": {
+          "fromStationName": "与謝野",
+          "toStationName": "公庄",
+          "yen": 700
+        },
+        "京丹後大宮|公庄": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "公庄",
+          "yen": 850
+        },
+        "峰山|公庄": {
+          "fromStationName": "峰山",
+          "toStationName": "公庄",
+          "yen": 1000
+        },
+        "網野|公庄": {
+          "fromStationName": "網野",
+          "toStationName": "公庄",
+          "yen": 1150
+        },
+        "夕日ヶ浦木津温泉|公庄": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "公庄",
+          "yen": 1200
+        },
+        "小天橋|公庄": {
+          "fromStationName": "小天橋",
+          "toStationName": "公庄",
+          "yen": 1400
+        },
+        "かぶと山|公庄": {
+          "fromStationName": "かぶと山",
+          "toStationName": "公庄",
+          "yen": 1400
+        },
+        "久美浜|公庄": {
+          "fromStationName": "久美浜",
+          "toStationName": "公庄",
+          "yen": 1450
+        },
+        "コウノトリの郷|公庄": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "公庄",
+          "yen": 1500
+        },
+        "豊岡|公庄": {
+          "fromStationName": "豊岡",
+          "toStationName": "公庄",
+          "yen": 1500
+        },
+        "西舞鶴|下天津": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "下天津",
+          "yen": 1100
+        },
+        "四所|下天津": {
+          "fromStationName": "四所",
+          "toStationName": "下天津",
+          "yen": 1000
+        },
+        "東雲|下天津": {
+          "fromStationName": "東雲",
+          "toStationName": "下天津",
+          "yen": 850
+        },
+        "丹後神崎|下天津": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "下天津",
+          "yen": 800
+        },
+        "丹後由良|下天津": {
+          "fromStationName": "丹後由良",
+          "toStationName": "下天津",
+          "yen": 800
+        },
+        "栗田|下天津": {
+          "fromStationName": "栗田",
+          "toStationName": "下天津",
+          "yen": 650
+        },
+        "宮津|下天津": {
+          "fromStationName": "宮津",
+          "toStationName": "下天津",
+          "yen": 500
+        },
+        "天橋立|下天津": {
+          "fromStationName": "天橋立",
+          "toStationName": "下天津",
+          "yen": 650
+        },
+        "岩滝口|下天津": {
+          "fromStationName": "岩滝口",
+          "toStationName": "下天津",
+          "yen": 700
+        },
+        "与謝野|下天津": {
+          "fromStationName": "与謝野",
+          "toStationName": "下天津",
+          "yen": 800
+        },
+        "京丹後大宮|下天津": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "下天津",
+          "yen": 950
+        },
+        "峰山|下天津": {
+          "fromStationName": "峰山",
+          "toStationName": "下天津",
+          "yen": 1100
+        },
+        "網野|下天津": {
+          "fromStationName": "網野",
+          "toStationName": "下天津",
+          "yen": 1150
+        },
+        "夕日ヶ浦木津温泉|下天津": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "下天津",
+          "yen": 1300
+        },
+        "小天橋|下天津": {
+          "fromStationName": "小天橋",
+          "toStationName": "下天津",
+          "yen": 1400
+        },
+        "かぶと山|下天津": {
+          "fromStationName": "かぶと山",
+          "toStationName": "下天津",
+          "yen": 1450
+        },
+        "久美浜|下天津": {
+          "fromStationName": "久美浜",
+          "toStationName": "下天津",
+          "yen": 1500
+        },
+        "コウノトリの郷|下天津": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "下天津",
+          "yen": 1500
+        },
+        "豊岡|下天津": {
+          "fromStationName": "豊岡",
+          "toStationName": "下天津",
+          "yen": 1500
+        },
+        "西舞鶴|牧": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "牧",
+          "yen": 1100
+        },
+        "四所|牧": {
+          "fromStationName": "四所",
+          "toStationName": "牧",
+          "yen": 1000
+        },
+        "東雲|牧": {
+          "fromStationName": "東雲",
+          "toStationName": "牧",
+          "yen": 950
+        },
+        "丹後神崎|牧": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "牧",
+          "yen": 850
+        },
+        "丹後由良|牧": {
+          "fromStationName": "丹後由良",
+          "toStationName": "牧",
+          "yen": 800
+        },
+        "栗田|牧": {
+          "fromStationName": "栗田",
+          "toStationName": "牧",
+          "yen": 650
+        },
+        "宮津|牧": {
+          "fromStationName": "宮津",
+          "toStationName": "牧",
+          "yen": 600
+        },
+        "天橋立|牧": {
+          "fromStationName": "天橋立",
+          "toStationName": "牧",
+          "yen": 650
+        },
+        "岩滝口|牧": {
+          "fromStationName": "岩滝口",
+          "toStationName": "牧",
+          "yen": 800
+        },
+        "与謝野|牧": {
+          "fromStationName": "与謝野",
+          "toStationName": "牧",
+          "yen": 850
+        },
+        "京丹後大宮|牧": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "牧",
+          "yen": 1000
+        },
+        "峰山|牧": {
+          "fromStationName": "峰山",
+          "toStationName": "牧",
+          "yen": 1100
+        },
+        "網野|牧": {
+          "fromStationName": "網野",
+          "toStationName": "牧",
+          "yen": 1200
+        },
+        "夕日ヶ浦木津温泉|牧": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "牧",
+          "yen": 1300
+        },
+        "小天橋|牧": {
+          "fromStationName": "小天橋",
+          "toStationName": "牧",
+          "yen": 1450
+        },
+        "かぶと山|牧": {
+          "fromStationName": "かぶと山",
+          "toStationName": "牧",
+          "yen": 1500
+        },
+        "久美浜|牧": {
+          "fromStationName": "久美浜",
+          "toStationName": "牧",
+          "yen": 1500
+        },
+        "コウノトリの郷|牧": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "牧",
+          "yen": 1500
+        },
+        "豊岡|牧": {
+          "fromStationName": "豊岡",
+          "toStationName": "牧",
+          "yen": 1500
+        },
+        "西舞鶴|荒河かしの木台": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "荒河かしの木台",
+          "yen": 1150
+        },
+        "四所|荒河かしの木台": {
+          "fromStationName": "四所",
+          "toStationName": "荒河かしの木台",
+          "yen": 1100
+        },
+        "東雲|荒河かしの木台": {
+          "fromStationName": "東雲",
+          "toStationName": "荒河かしの木台",
+          "yen": 1000
+        },
+        "丹後神崎|荒河かしの木台": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "荒河かしの木台",
+          "yen": 950
+        },
+        "丹後由良|荒河かしの木台": {
+          "fromStationName": "丹後由良",
+          "toStationName": "荒河かしの木台",
+          "yen": 850
+        },
+        "栗田|荒河かしの木台": {
+          "fromStationName": "栗田",
+          "toStationName": "荒河かしの木台",
+          "yen": 700
+        },
+        "宮津|荒河かしの木台": {
+          "fromStationName": "宮津",
+          "toStationName": "荒河かしの木台",
+          "yen": 650
+        },
+        "天橋立|荒河かしの木台": {
+          "fromStationName": "天橋立",
+          "toStationName": "荒河かしの木台",
+          "yen": 700
+        },
+        "岩滝口|荒河かしの木台": {
+          "fromStationName": "岩滝口",
+          "toStationName": "荒河かしの木台",
+          "yen": 800
+        },
+        "与謝野|荒河かしの木台": {
+          "fromStationName": "与謝野",
+          "toStationName": "荒河かしの木台",
+          "yen": 850
+        },
+        "京丹後大宮|荒河かしの木台": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "荒河かしの木台",
+          "yen": 1000
+        },
+        "峰山|荒河かしの木台": {
+          "fromStationName": "峰山",
+          "toStationName": "荒河かしの木台",
+          "yen": 1150
+        },
+        "網野|荒河かしの木台": {
+          "fromStationName": "網野",
+          "toStationName": "荒河かしの木台",
+          "yen": 1300
+        },
+        "夕日ヶ浦木津温泉|荒河かしの木台": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "荒河かしの木台",
+          "yen": 1400
+        },
+        "小天橋|荒河かしの木台": {
+          "fromStationName": "小天橋",
+          "toStationName": "荒河かしの木台",
+          "yen": 1450
+        },
+        "かぶと山|荒河かしの木台": {
+          "fromStationName": "かぶと山",
+          "toStationName": "荒河かしの木台",
+          "yen": 1500
+        },
+        "久美浜|荒河かしの木台": {
+          "fromStationName": "久美浜",
+          "toStationName": "荒河かしの木台",
+          "yen": 1500
+        },
+        "コウノトリの郷|荒河かしの木台": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "荒河かしの木台",
+          "yen": 1500
+        },
+        "豊岡|荒河かしの木台": {
+          "fromStationName": "豊岡",
+          "toStationName": "荒河かしの木台",
+          "yen": 1500
+        },
+        "西舞鶴|福知山市民病院口": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "福知山市民病院口",
+          "yen": 1150
+        },
+        "四所|福知山市民病院口": {
+          "fromStationName": "四所",
+          "toStationName": "福知山市民病院口",
+          "yen": 1100
+        },
+        "東雲|福知山市民病院口": {
+          "fromStationName": "東雲",
+          "toStationName": "福知山市民病院口",
+          "yen": 1000
+        },
+        "丹後神崎|福知山市民病院口": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "福知山市民病院口",
+          "yen": 950
+        },
+        "丹後由良|福知山市民病院口": {
+          "fromStationName": "丹後由良",
+          "toStationName": "福知山市民病院口",
+          "yen": 950
+        },
+        "栗田|福知山市民病院口": {
+          "fromStationName": "栗田",
+          "toStationName": "福知山市民病院口",
+          "yen": 800
+        },
+        "宮津|福知山市民病院口": {
+          "fromStationName": "宮津",
+          "toStationName": "福知山市民病院口",
+          "yen": 650
+        },
+        "天橋立|福知山市民病院口": {
+          "fromStationName": "天橋立",
+          "toStationName": "福知山市民病院口",
+          "yen": 800
+        },
+        "岩滝口|福知山市民病院口": {
+          "fromStationName": "岩滝口",
+          "toStationName": "福知山市民病院口",
+          "yen": 850
+        },
+        "与謝野|福知山市民病院口": {
+          "fromStationName": "与謝野",
+          "toStationName": "福知山市民病院口",
+          "yen": 950
+        },
+        "京丹後大宮|福知山市民病院口": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "福知山市民病院口",
+          "yen": 1100
+        },
+        "峰山|福知山市民病院口": {
+          "fromStationName": "峰山",
+          "toStationName": "福知山市民病院口",
+          "yen": 1150
+        },
+        "網野|福知山市民病院口": {
+          "fromStationName": "網野",
+          "toStationName": "福知山市民病院口",
+          "yen": 1300
+        },
+        "夕日ヶ浦木津温泉|福知山市民病院口": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "福知山市民病院口",
+          "yen": 1400
+        },
+        "小天橋|福知山市民病院口": {
+          "fromStationName": "小天橋",
+          "toStationName": "福知山市民病院口",
+          "yen": 1500
+        },
+        "かぶと山|福知山市民病院口": {
+          "fromStationName": "かぶと山",
+          "toStationName": "福知山市民病院口",
+          "yen": 1500
+        },
+        "久美浜|福知山市民病院口": {
+          "fromStationName": "久美浜",
+          "toStationName": "福知山市民病院口",
+          "yen": 1500
+        },
+        "コウノトリの郷|福知山市民病院口": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "福知山市民病院口",
+          "yen": 1500
+        },
+        "豊岡|福知山市民病院口": {
+          "fromStationName": "豊岡",
+          "toStationName": "福知山市民病院口",
+          "yen": 1500
+        },
+        "西舞鶴|福知山": {
+          "fromStationName": "西舞鶴",
+          "toStationName": "福知山",
+          "yen": 1200
+        },
+        "四所|福知山": {
+          "fromStationName": "四所",
+          "toStationName": "福知山",
+          "yen": 1100
+        },
+        "東雲|福知山": {
+          "fromStationName": "東雲",
+          "toStationName": "福知山",
+          "yen": 1100
+        },
+        "丹後神崎|福知山": {
+          "fromStationName": "丹後神崎",
+          "toStationName": "福知山",
+          "yen": 1000
+        },
+        "丹後由良|福知山": {
+          "fromStationName": "丹後由良",
+          "toStationName": "福知山",
+          "yen": 950
+        },
+        "栗田|福知山": {
+          "fromStationName": "栗田",
+          "toStationName": "福知山",
+          "yen": 800
+        },
+        "宮津|福知山": {
+          "fromStationName": "宮津",
+          "toStationName": "福知山",
+          "yen": 700
+        },
+        "天橋立|福知山": {
+          "fromStationName": "天橋立",
+          "toStationName": "福知山",
+          "yen": 800
+        },
+        "岩滝口|福知山": {
+          "fromStationName": "岩滝口",
+          "toStationName": "福知山",
+          "yen": 850
+        },
+        "与謝野|福知山": {
+          "fromStationName": "与謝野",
+          "toStationName": "福知山",
+          "yen": 950
+        },
+        "京丹後大宮|福知山": {
+          "fromStationName": "京丹後大宮",
+          "toStationName": "福知山",
+          "yen": 1100
+        },
+        "峰山|福知山": {
+          "fromStationName": "峰山",
+          "toStationName": "福知山",
+          "yen": 1150
+        },
+        "網野|福知山": {
+          "fromStationName": "網野",
+          "toStationName": "福知山",
+          "yen": 1300
+        },
+        "夕日ヶ浦木津温泉|福知山": {
+          "fromStationName": "夕日ヶ浦木津温泉",
+          "toStationName": "福知山",
+          "yen": 1450
+        },
+        "小天橋|福知山": {
+          "fromStationName": "小天橋",
+          "toStationName": "福知山",
+          "yen": 1500
+        },
+        "かぶと山|福知山": {
+          "fromStationName": "かぶと山",
+          "toStationName": "福知山",
+          "yen": 1500
+        },
+        "久美浜|福知山": {
+          "fromStationName": "久美浜",
+          "toStationName": "福知山",
+          "yen": 1500
+        },
+        "コウノトリの郷|福知山": {
+          "fromStationName": "コウノトリの郷",
+          "toStationName": "福知山",
+          "yen": 1500
+        },
+        "豊岡|福知山": {
+          "fromStationName": "豊岡",
+          "toStationName": "福知山",
+          "yen": 1500
+        }
+      }
+    },
+    "shinano_railway_station_pairs_202603": {
+      "operatorIds": [
+        "しなの鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_B11683EC2A178F",
+        "V4_ROUTE_0BF866A52922AE"
+      ],
+      "sourceKey": "shinano_railway_station_pairs_202603",
+      "operatorName": "しなの鉄道",
+      "notes": [
+        "しなの鉄道公式の2026年3月14日旅客運賃表PDFから、しなの鉄道線（篠ノ井-軽井沢）と北しなの線（長野-妙高高原）の大人普通きっぷ運賃だけを収録。PDFにはJR信越線・篠ノ井線・小海線・飯山線、えちごトキめき鉄道との連絡運賃も併載されているが、旧データとの重複を避けるため会社線内だけを覆う。",
+        "IC運賃、小児運賃、通勤・通学定期、乗継割引、JR/他社連絡運賃、企画券、割引運賃は別体系のため未収録。"
+      ],
+      "pairs": {
+        "篠ノ井|屋代高校前": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "屋代高校前",
+          "yen": 240
+        },
+        "篠ノ井|屋代": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "屋代",
+          "yen": 240
+        },
+        "屋代高校前|屋代": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "屋代",
+          "yen": 190
+        },
+        "篠ノ井|千曲": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "千曲",
+          "yen": 250
+        },
+        "屋代高校前|千曲": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "千曲",
+          "yen": 240
+        },
+        "屋代|千曲": {
+          "fromStationName": "屋代",
+          "toStationName": "千曲",
+          "yen": 190
+        },
+        "篠ノ井|戸倉": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "戸倉",
+          "yen": 260
+        },
+        "屋代高校前|戸倉": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "戸倉",
+          "yen": 250
+        },
+        "屋代|戸倉": {
+          "fromStationName": "屋代",
+          "toStationName": "戸倉",
+          "yen": 240
+        },
+        "千曲|戸倉": {
+          "fromStationName": "千曲",
+          "toStationName": "戸倉",
+          "yen": 190
+        },
+        "篠ノ井|坂城": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "坂城",
+          "yen": 350
+        },
+        "屋代高校前|坂城": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "坂城",
+          "yen": 280
+        },
+        "屋代|坂城": {
+          "fromStationName": "屋代",
+          "toStationName": "坂城",
+          "yen": 260
+        },
+        "千曲|坂城": {
+          "fromStationName": "千曲",
+          "toStationName": "坂城",
+          "yen": 250
+        },
+        "戸倉|坂城": {
+          "fromStationName": "戸倉",
+          "toStationName": "坂城",
+          "yen": 240
+        },
+        "篠ノ井|テクノさかき": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "テクノさかき",
+          "yen": 410
+        },
+        "屋代高校前|テクノさかき": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "テクノさかき",
+          "yen": 320
+        },
+        "屋代|テクノさかき": {
+          "fromStationName": "屋代",
+          "toStationName": "テクノさかき",
+          "yen": 280
+        },
+        "千曲|テクノさかき": {
+          "fromStationName": "千曲",
+          "toStationName": "テクノさかき",
+          "yen": 260
+        },
+        "戸倉|テクノさかき": {
+          "fromStationName": "戸倉",
+          "toStationName": "テクノさかき",
+          "yen": 250
+        },
+        "坂城|テクノさかき": {
+          "fromStationName": "坂城",
+          "toStationName": "テクノさかき",
+          "yen": 190
+        },
+        "篠ノ井|西上田": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "西上田",
+          "yen": 480
+        },
+        "屋代高校前|西上田": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "西上田",
+          "yen": 410
+        },
+        "屋代|西上田": {
+          "fromStationName": "屋代",
+          "toStationName": "西上田",
+          "yen": 370
+        },
+        "千曲|西上田": {
+          "fromStationName": "千曲",
+          "toStationName": "西上田",
+          "yen": 300
+        },
+        "戸倉|西上田": {
+          "fromStationName": "戸倉",
+          "toStationName": "西上田",
+          "yen": 260
+        },
+        "坂城|西上田": {
+          "fromStationName": "坂城",
+          "toStationName": "西上田",
+          "yen": 240
+        },
+        "テクノさかき|西上田": {
+          "fromStationName": "テクノさかき",
+          "toStationName": "西上田",
+          "yen": 240
+        },
+        "篠ノ井|上田": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "上田",
+          "yen": 590
+        },
+        "屋代高校前|上田": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "上田",
+          "yen": 500
+        },
+        "屋代|上田": {
+          "fromStationName": "屋代",
+          "toStationName": "上田",
+          "yen": 460
+        },
+        "千曲|上田": {
+          "fromStationName": "千曲",
+          "toStationName": "上田",
+          "yen": 410
+        },
+        "戸倉|上田": {
+          "fromStationName": "戸倉",
+          "toStationName": "上田",
+          "yen": 350
+        },
+        "坂城|上田": {
+          "fromStationName": "坂城",
+          "toStationName": "上田",
+          "yen": 260
+        },
+        "テクノさかき|上田": {
+          "fromStationName": "テクノさかき",
+          "toStationName": "上田",
+          "yen": 250
+        },
+        "西上田|上田": {
+          "fromStationName": "西上田",
+          "toStationName": "上田",
+          "yen": 240
+        },
+        "篠ノ井|信濃国分寺": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "信濃国分寺",
+          "yen": 630
+        },
+        "屋代高校前|信濃国分寺": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "信濃国分寺",
+          "yen": 570
+        },
+        "屋代|信濃国分寺": {
+          "fromStationName": "屋代",
+          "toStationName": "信濃国分寺",
+          "yen": 520
+        },
+        "千曲|信濃国分寺": {
+          "fromStationName": "千曲",
+          "toStationName": "信濃国分寺",
+          "yen": 460
+        },
+        "戸倉|信濃国分寺": {
+          "fromStationName": "戸倉",
+          "toStationName": "信濃国分寺",
+          "yen": 410
+        },
+        "坂城|信濃国分寺": {
+          "fromStationName": "坂城",
+          "toStationName": "信濃国分寺",
+          "yen": 320
+        },
+        "テクノさかき|信濃国分寺": {
+          "fromStationName": "テクノさかき",
+          "toStationName": "信濃国分寺",
+          "yen": 260
+        },
+        "西上田|信濃国分寺": {
+          "fromStationName": "西上田",
+          "toStationName": "信濃国分寺",
+          "yen": 250
+        },
+        "上田|信濃国分寺": {
+          "fromStationName": "上田",
+          "toStationName": "信濃国分寺",
+          "yen": 190
+        },
+        "篠ノ井|大屋": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "大屋",
+          "yen": 700
+        },
+        "屋代高校前|大屋": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "大屋",
+          "yen": 630
+        },
+        "屋代|大屋": {
+          "fromStationName": "屋代",
+          "toStationName": "大屋",
+          "yen": 590
+        },
+        "千曲|大屋": {
+          "fromStationName": "千曲",
+          "toStationName": "大屋",
+          "yen": 520
+        },
+        "戸倉|大屋": {
+          "fromStationName": "戸倉",
+          "toStationName": "大屋",
+          "yen": 480
+        },
+        "坂城|大屋": {
+          "fromStationName": "坂城",
+          "toStationName": "大屋",
+          "yen": 370
+        },
+        "テクノさかき|大屋": {
+          "fromStationName": "テクノさかき",
+          "toStationName": "大屋",
+          "yen": 320
+        },
+        "西上田|大屋": {
+          "fromStationName": "西上田",
+          "toStationName": "大屋",
+          "yen": 260
+        },
+        "上田|大屋": {
+          "fromStationName": "上田",
+          "toStationName": "大屋",
+          "yen": 240
+        },
+        "信濃国分寺|大屋": {
+          "fromStationName": "信濃国分寺",
+          "toStationName": "大屋",
+          "yen": 190
+        },
+        "篠ノ井|田中": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "田中",
+          "yen": 760
+        },
+        "屋代高校前|田中": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "田中",
+          "yen": 700
+        },
+        "屋代|田中": {
+          "fromStationName": "屋代",
+          "toStationName": "田中",
+          "yen": 650
+        },
+        "千曲|田中": {
+          "fromStationName": "千曲",
+          "toStationName": "田中",
+          "yen": 590
+        },
+        "戸倉|田中": {
+          "fromStationName": "戸倉",
+          "toStationName": "田中",
+          "yen": 540
+        },
+        "坂城|田中": {
+          "fromStationName": "坂城",
+          "toStationName": "田中",
+          "yen": 460
+        },
+        "テクノさかき|田中": {
+          "fromStationName": "テクノさかき",
+          "toStationName": "田中",
+          "yen": 390
+        },
+        "西上田|田中": {
+          "fromStationName": "西上田",
+          "toStationName": "田中",
+          "yen": 320
+        },
+        "上田|田中": {
+          "fromStationName": "上田",
+          "toStationName": "田中",
+          "yen": 250
+        },
+        "信濃国分寺|田中": {
+          "fromStationName": "信濃国分寺",
+          "toStationName": "田中",
+          "yen": 240
+        },
+        "大屋|田中": {
+          "fromStationName": "大屋",
+          "toStationName": "田中",
+          "yen": 240
+        },
+        "篠ノ井|滋野": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "滋野",
+          "yen": 850
+        },
+        "屋代高校前|滋野": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "滋野",
+          "yen": 760
+        },
+        "屋代|滋野": {
+          "fromStationName": "屋代",
+          "toStationName": "滋野",
+          "yen": 720
+        },
+        "千曲|滋野": {
+          "fromStationName": "千曲",
+          "toStationName": "滋野",
+          "yen": 680
+        },
+        "戸倉|滋野": {
+          "fromStationName": "戸倉",
+          "toStationName": "滋野",
+          "yen": 610
+        },
+        "坂城|滋野": {
+          "fromStationName": "坂城",
+          "toStationName": "滋野",
+          "yen": 520
+        },
+        "テクノさかき|滋野": {
+          "fromStationName": "テクノさかき",
+          "toStationName": "滋野",
+          "yen": 460
+        },
+        "西上田|滋野": {
+          "fromStationName": "西上田",
+          "toStationName": "滋野",
+          "yen": 390
+        },
+        "上田|滋野": {
+          "fromStationName": "上田",
+          "toStationName": "滋野",
+          "yen": 300
+        },
+        "信濃国分寺|滋野": {
+          "fromStationName": "信濃国分寺",
+          "toStationName": "滋野",
+          "yen": 260
+        },
+        "大屋|滋野": {
+          "fromStationName": "大屋",
+          "toStationName": "滋野",
+          "yen": 250
+        },
+        "田中|滋野": {
+          "fromStationName": "田中",
+          "toStationName": "滋野",
+          "yen": 240
+        },
+        "篠ノ井|小諸": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "小諸",
+          "yen": 980
+        },
+        "屋代高校前|小諸": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "小諸",
+          "yen": 900
+        },
+        "屋代|小諸": {
+          "fromStationName": "屋代",
+          "toStationName": "小諸",
+          "yen": 850
+        },
+        "千曲|小諸": {
+          "fromStationName": "千曲",
+          "toStationName": "小諸",
+          "yen": 810
+        },
+        "戸倉|小諸": {
+          "fromStationName": "戸倉",
+          "toStationName": "小諸",
+          "yen": 740
+        },
+        "坂城|小諸": {
+          "fromStationName": "坂城",
+          "toStationName": "小諸",
+          "yen": 650
+        },
+        "テクノさかき|小諸": {
+          "fromStationName": "テクノさかき",
+          "toStationName": "小諸",
+          "yen": 590
+        },
+        "西上田|小諸": {
+          "fromStationName": "西上田",
+          "toStationName": "小諸",
+          "yen": 520
+        },
+        "上田|小諸": {
+          "fromStationName": "上田",
+          "toStationName": "小諸",
+          "yen": 410
+        },
+        "信濃国分寺|小諸": {
+          "fromStationName": "信濃国分寺",
+          "toStationName": "小諸",
+          "yen": 370
+        },
+        "大屋|小諸": {
+          "fromStationName": "大屋",
+          "toStationName": "小諸",
+          "yen": 300
+        },
+        "田中|小諸": {
+          "fromStationName": "田中",
+          "toStationName": "小諸",
+          "yen": 260
+        },
+        "滋野|小諸": {
+          "fromStationName": "滋野",
+          "toStationName": "小諸",
+          "yen": 240
+        },
+        "篠ノ井|平原": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "平原",
+          "yen": 1050
+        },
+        "屋代高校前|平原": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "平原",
+          "yen": 980
+        },
+        "屋代|平原": {
+          "fromStationName": "屋代",
+          "toStationName": "平原",
+          "yen": 940
+        },
+        "千曲|平原": {
+          "fromStationName": "千曲",
+          "toStationName": "平原",
+          "yen": 870
+        },
+        "戸倉|平原": {
+          "fromStationName": "戸倉",
+          "toStationName": "平原",
+          "yen": 830
+        },
+        "坂城|平原": {
+          "fromStationName": "坂城",
+          "toStationName": "平原",
+          "yen": 740
+        },
+        "テクノさかき|平原": {
+          "fromStationName": "テクノさかき",
+          "toStationName": "平原",
+          "yen": 680
+        },
+        "西上田|平原": {
+          "fromStationName": "西上田",
+          "toStationName": "平原",
+          "yen": 610
+        },
+        "上田|平原": {
+          "fromStationName": "上田",
+          "toStationName": "平原",
+          "yen": 500
+        },
+        "信濃国分寺|平原": {
+          "fromStationName": "信濃国分寺",
+          "toStationName": "平原",
+          "yen": 430
+        },
+        "大屋|平原": {
+          "fromStationName": "大屋",
+          "toStationName": "平原",
+          "yen": 390
+        },
+        "田中|平原": {
+          "fromStationName": "田中",
+          "toStationName": "平原",
+          "yen": 300
+        },
+        "滋野|平原": {
+          "fromStationName": "滋野",
+          "toStationName": "平原",
+          "yen": 260
+        },
+        "小諸|平原": {
+          "fromStationName": "小諸",
+          "toStationName": "平原",
+          "yen": 240
+        },
+        "篠ノ井|御代田": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "御代田",
+          "yen": 1160
+        },
+        "屋代高校前|御代田": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "御代田",
+          "yen": 1090
+        },
+        "屋代|御代田": {
+          "fromStationName": "屋代",
+          "toStationName": "御代田",
+          "yen": 1050
+        },
+        "千曲|御代田": {
+          "fromStationName": "千曲",
+          "toStationName": "御代田",
+          "yen": 980
+        },
+        "戸倉|御代田": {
+          "fromStationName": "戸倉",
+          "toStationName": "御代田",
+          "yen": 940
+        },
+        "坂城|御代田": {
+          "fromStationName": "坂城",
+          "toStationName": "御代田",
+          "yen": 850
+        },
+        "テクノさかき|御代田": {
+          "fromStationName": "テクノさかき",
+          "toStationName": "御代田",
+          "yen": 790
+        },
+        "西上田|御代田": {
+          "fromStationName": "西上田",
+          "toStationName": "御代田",
+          "yen": 720
+        },
+        "上田|御代田": {
+          "fromStationName": "上田",
+          "toStationName": "御代田",
+          "yen": 610
+        },
+        "信濃国分寺|御代田": {
+          "fromStationName": "信濃国分寺",
+          "toStationName": "御代田",
+          "yen": 540
+        },
+        "大屋|御代田": {
+          "fromStationName": "大屋",
+          "toStationName": "御代田",
+          "yen": 500
+        },
+        "田中|御代田": {
+          "fromStationName": "田中",
+          "toStationName": "御代田",
+          "yen": 430
+        },
+        "滋野|御代田": {
+          "fromStationName": "滋野",
+          "toStationName": "御代田",
+          "yen": 350
+        },
+        "小諸|御代田": {
+          "fromStationName": "小諸",
+          "toStationName": "御代田",
+          "yen": 250
+        },
+        "平原|御代田": {
+          "fromStationName": "平原",
+          "toStationName": "御代田",
+          "yen": 240
+        },
+        "篠ノ井|信濃追分": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "信濃追分",
+          "yen": 1290
+        },
+        "屋代高校前|信濃追分": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "信濃追分",
+          "yen": 1230
+        },
+        "屋代|信濃追分": {
+          "fromStationName": "屋代",
+          "toStationName": "信濃追分",
+          "yen": 1180
+        },
+        "千曲|信濃追分": {
+          "fromStationName": "千曲",
+          "toStationName": "信濃追分",
+          "yen": 1120
+        },
+        "戸倉|信濃追分": {
+          "fromStationName": "戸倉",
+          "toStationName": "信濃追分",
+          "yen": 1070
+        },
+        "坂城|信濃追分": {
+          "fromStationName": "坂城",
+          "toStationName": "信濃追分",
+          "yen": 980
+        },
+        "テクノさかき|信濃追分": {
+          "fromStationName": "テクノさかき",
+          "toStationName": "信濃追分",
+          "yen": 920
+        },
+        "西上田|信濃追分": {
+          "fromStationName": "西上田",
+          "toStationName": "信濃追分",
+          "yen": 850
+        },
+        "上田|信濃追分": {
+          "fromStationName": "上田",
+          "toStationName": "信濃追分",
+          "yen": 740
+        },
+        "信濃国分寺|信濃追分": {
+          "fromStationName": "信濃国分寺",
+          "toStationName": "信濃追分",
+          "yen": 680
+        },
+        "大屋|信濃追分": {
+          "fromStationName": "大屋",
+          "toStationName": "信濃追分",
+          "yen": 630
+        },
+        "田中|信濃追分": {
+          "fromStationName": "田中",
+          "toStationName": "信濃追分",
+          "yen": 570
+        },
+        "滋野|信濃追分": {
+          "fromStationName": "滋野",
+          "toStationName": "信濃追分",
+          "yen": 480
+        },
+        "小諸|信濃追分": {
+          "fromStationName": "小諸",
+          "toStationName": "信濃追分",
+          "yen": 350
+        },
+        "平原|信濃追分": {
+          "fromStationName": "平原",
+          "toStationName": "信濃追分",
+          "yen": 280
+        },
+        "御代田|信濃追分": {
+          "fromStationName": "御代田",
+          "toStationName": "信濃追分",
+          "yen": 240
+        },
+        "篠ノ井|中軽井沢": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "中軽井沢",
+          "yen": 1380
+        },
+        "屋代高校前|中軽井沢": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "中軽井沢",
+          "yen": 1290
+        },
+        "屋代|中軽井沢": {
+          "fromStationName": "屋代",
+          "toStationName": "中軽井沢",
+          "yen": 1250
+        },
+        "千曲|中軽井沢": {
+          "fromStationName": "千曲",
+          "toStationName": "中軽井沢",
+          "yen": 1200
+        },
+        "戸倉|中軽井沢": {
+          "fromStationName": "戸倉",
+          "toStationName": "中軽井沢",
+          "yen": 1140
+        },
+        "坂城|中軽井沢": {
+          "fromStationName": "坂城",
+          "toStationName": "中軽井沢",
+          "yen": 1050
+        },
+        "テクノさかき|中軽井沢": {
+          "fromStationName": "テクノさかき",
+          "toStationName": "中軽井沢",
+          "yen": 980
+        },
+        "西上田|中軽井沢": {
+          "fromStationName": "西上田",
+          "toStationName": "中軽井沢",
+          "yen": 920
+        },
+        "上田|中軽井沢": {
+          "fromStationName": "上田",
+          "toStationName": "中軽井沢",
+          "yen": 810
+        },
+        "信濃国分寺|中軽井沢": {
+          "fromStationName": "信濃国分寺",
+          "toStationName": "中軽井沢",
+          "yen": 760
+        },
+        "大屋|中軽井沢": {
+          "fromStationName": "大屋",
+          "toStationName": "中軽井沢",
+          "yen": 700
+        },
+        "田中|中軽井沢": {
+          "fromStationName": "田中",
+          "toStationName": "中軽井沢",
+          "yen": 630
+        },
+        "滋野|中軽井沢": {
+          "fromStationName": "滋野",
+          "toStationName": "中軽井沢",
+          "yen": 540
+        },
+        "小諸|中軽井沢": {
+          "fromStationName": "小諸",
+          "toStationName": "中軽井沢",
+          "yen": 410
+        },
+        "平原|中軽井沢": {
+          "fromStationName": "平原",
+          "toStationName": "中軽井沢",
+          "yen": 350
+        },
+        "御代田|中軽井沢": {
+          "fromStationName": "御代田",
+          "toStationName": "中軽井沢",
+          "yen": 260
+        },
+        "信濃追分|中軽井沢": {
+          "fromStationName": "信濃追分",
+          "toStationName": "中軽井沢",
+          "yen": 240
+        },
+        "篠ノ井|軽井沢": {
+          "fromStationName": "篠ノ井",
+          "toStationName": "軽井沢",
+          "yen": 1470
+        },
+        "屋代高校前|軽井沢": {
+          "fromStationName": "屋代高校前",
+          "toStationName": "軽井沢",
+          "yen": 1380
+        },
+        "屋代|軽井沢": {
+          "fromStationName": "屋代",
+          "toStationName": "軽井沢",
+          "yen": 1340
+        },
+        "千曲|軽井沢": {
+          "fromStationName": "千曲",
+          "toStationName": "軽井沢",
+          "yen": 1290
+        },
+        "戸倉|軽井沢": {
+          "fromStationName": "戸倉",
+          "toStationName": "軽井沢",
+          "yen": 1230
+        },
+        "坂城|軽井沢": {
+          "fromStationName": "坂城",
+          "toStationName": "軽井沢",
+          "yen": 1140
+        },
+        "テクノさかき|軽井沢": {
+          "fromStationName": "テクノさかき",
+          "toStationName": "軽井沢",
+          "yen": 1070
+        },
+        "西上田|軽井沢": {
+          "fromStationName": "西上田",
+          "toStationName": "軽井沢",
+          "yen": 1010
+        },
+        "上田|軽井沢": {
+          "fromStationName": "上田",
+          "toStationName": "軽井沢",
+          "yen": 900
+        },
+        "信濃国分寺|軽井沢": {
+          "fromStationName": "信濃国分寺",
+          "toStationName": "軽井沢",
+          "yen": 850
+        },
+        "大屋|軽井沢": {
+          "fromStationName": "大屋",
+          "toStationName": "軽井沢",
+          "yen": 790
+        },
+        "田中|軽井沢": {
+          "fromStationName": "田中",
+          "toStationName": "軽井沢",
+          "yen": 720
+        },
+        "滋野|軽井沢": {
+          "fromStationName": "滋野",
+          "toStationName": "軽井沢",
+          "yen": 630
+        },
+        "小諸|軽井沢": {
+          "fromStationName": "小諸",
+          "toStationName": "軽井沢",
+          "yen": 500
+        },
+        "平原|軽井沢": {
+          "fromStationName": "平原",
+          "toStationName": "軽井沢",
+          "yen": 430
+        },
+        "御代田|軽井沢": {
+          "fromStationName": "御代田",
+          "toStationName": "軽井沢",
+          "yen": 320
+        },
+        "信濃追分|軽井沢": {
+          "fromStationName": "信濃追分",
+          "toStationName": "軽井沢",
+          "yen": 250
+        },
+        "中軽井沢|軽井沢": {
+          "fromStationName": "中軽井沢",
+          "toStationName": "軽井沢",
+          "yen": 240
+        },
+        "妙高高原|黒姫": {
+          "fromStationName": "妙高高原",
+          "toStationName": "黒姫",
+          "yen": 250
+        },
+        "妙高高原|古間": {
+          "fromStationName": "妙高高原",
+          "toStationName": "古間",
+          "yen": 300
+        },
+        "黒姫|古間": {
+          "fromStationName": "黒姫",
+          "toStationName": "古間",
+          "yen": 240
+        },
+        "妙高高原|牟礼": {
+          "fromStationName": "妙高高原",
+          "toStationName": "牟礼",
+          "yen": 430
+        },
+        "黒姫|牟礼": {
+          "fromStationName": "黒姫",
+          "toStationName": "牟礼",
+          "yen": 260
+        },
+        "古間|牟礼": {
+          "fromStationName": "古間",
+          "toStationName": "牟礼",
+          "yen": 250
+        },
+        "妙高高原|豊野": {
+          "fromStationName": "妙高高原",
+          "toStationName": "豊野",
+          "yen": 610
+        },
+        "黒姫|豊野": {
+          "fromStationName": "黒姫",
+          "toStationName": "豊野",
+          "yen": 430
+        },
+        "古間|豊野": {
+          "fromStationName": "古間",
+          "toStationName": "豊野",
+          "yen": 350
+        },
+        "牟礼|豊野": {
+          "fromStationName": "牟礼",
+          "toStationName": "豊野",
+          "yen": 250
+        },
+        "妙高高原|三才": {
+          "fromStationName": "妙高高原",
+          "toStationName": "三才",
+          "yen": 700
+        },
+        "黒姫|三才": {
+          "fromStationName": "黒姫",
+          "toStationName": "三才",
+          "yen": 520
+        },
+        "古間|三才": {
+          "fromStationName": "古間",
+          "toStationName": "三才",
+          "yen": 430
+        },
+        "牟礼|三才": {
+          "fromStationName": "牟礼",
+          "toStationName": "三才",
+          "yen": 280
+        },
+        "豊野|三才": {
+          "fromStationName": "豊野",
+          "toStationName": "三才",
+          "yen": 240
+        },
+        "妙高高原|北長野": {
+          "fromStationName": "妙高高原",
+          "toStationName": "北長野",
+          "yen": 760
+        },
+        "黒姫|北長野": {
+          "fromStationName": "黒姫",
+          "toStationName": "北長野",
+          "yen": 570
+        },
+        "古間|北長野": {
+          "fromStationName": "古間",
+          "toStationName": "北長野",
+          "yen": 500
+        },
+        "牟礼|北長野": {
+          "fromStationName": "牟礼",
+          "toStationName": "北長野",
+          "yen": 350
+        },
+        "豊野|北長野": {
+          "fromStationName": "豊野",
+          "toStationName": "北長野",
+          "yen": 250
+        },
+        "三才|北長野": {
+          "fromStationName": "三才",
+          "toStationName": "北長野",
+          "yen": 190
+        },
+        "妙高高原|長野": {
+          "fromStationName": "妙高高原",
+          "toStationName": "長野",
+          "yen": 850
+        },
+        "黒姫|長野": {
+          "fromStationName": "黒姫",
+          "toStationName": "長野",
+          "yen": 650
+        },
+        "古間|長野": {
+          "fromStationName": "古間",
+          "toStationName": "長野",
+          "yen": 590
+        },
+        "牟礼|長野": {
+          "fromStationName": "牟礼",
+          "toStationName": "長野",
+          "yen": 430
+        },
+        "豊野|長野": {
+          "fromStationName": "豊野",
+          "toStationName": "長野",
+          "yen": 260
+        },
+        "三才|長野": {
+          "fromStationName": "三才",
+          "toStationName": "長野",
+          "yen": 250
+        },
+        "北長野|長野": {
+          "fromStationName": "北長野",
+          "toStationName": "長野",
+          "yen": 240
+        }
+      }
+    },
+    "keihan_keishin_station_pairs_202510": {
+      "operatorIds": [
+        "京阪電気鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_1CF5E8D0817EE3"
+      ],
+      "sourceKey": "keihan_keishin_station_pairs_202510",
+      "operatorName": "京阪電気鉄道",
+      "notes": [
+        "京阪公式の各駅普通運賃・定期券運賃PDF（2025年10月1日改定）から、京津線内の御陵-びわ湖浜大津間大人普通運賃だけを収録。京都市営地下鉄線内（三条京阪-御陵）を含む連絡運賃、石山坂本線内運賃、定期券、小児運賃は別体系のため未収録。"
+      ],
+      "pairs": {
+        "御陵|京阪山科": {
+          "fromStationName": "御陵",
+          "toStationName": "京阪山科",
+          "yen": 200
+        },
+        "御陵|四宮": {
+          "fromStationName": "御陵",
+          "toStationName": "四宮",
+          "yen": 200
+        },
+        "御陵|追分": {
+          "fromStationName": "御陵",
+          "toStationName": "追分",
+          "yen": 200
+        },
+        "御陵|大谷": {
+          "fromStationName": "御陵",
+          "toStationName": "大谷",
+          "yen": 200
+        },
+        "御陵|上栄町": {
+          "fromStationName": "御陵",
+          "toStationName": "上栄町",
+          "yen": 280
+        },
+        "御陵|びわ湖浜大津": {
+          "fromStationName": "御陵",
+          "toStationName": "びわ湖浜大津",
+          "yen": 280
+        },
+        "京阪山科|四宮": {
+          "fromStationName": "京阪山科",
+          "toStationName": "四宮",
+          "yen": 200
+        },
+        "京阪山科|追分": {
+          "fromStationName": "京阪山科",
+          "toStationName": "追分",
+          "yen": 200
+        },
+        "京阪山科|大谷": {
+          "fromStationName": "京阪山科",
+          "toStationName": "大谷",
+          "yen": 200
+        },
+        "京阪山科|上栄町": {
+          "fromStationName": "京阪山科",
+          "toStationName": "上栄町",
+          "yen": 280
+        },
+        "京阪山科|びわ湖浜大津": {
+          "fromStationName": "京阪山科",
+          "toStationName": "びわ湖浜大津",
+          "yen": 280
+        },
+        "四宮|追分": {
+          "fromStationName": "四宮",
+          "toStationName": "追分",
+          "yen": 200
+        },
+        "四宮|大谷": {
+          "fromStationName": "四宮",
+          "toStationName": "大谷",
+          "yen": 200
+        },
+        "四宮|上栄町": {
+          "fromStationName": "四宮",
+          "toStationName": "上栄町",
+          "yen": 200
+        },
+        "四宮|びわ湖浜大津": {
+          "fromStationName": "四宮",
+          "toStationName": "びわ湖浜大津",
+          "yen": 280
+        },
+        "追分|大谷": {
+          "fromStationName": "追分",
+          "toStationName": "大谷",
+          "yen": 200
+        },
+        "追分|上栄町": {
+          "fromStationName": "追分",
+          "toStationName": "上栄町",
+          "yen": 200
+        },
+        "追分|びわ湖浜大津": {
+          "fromStationName": "追分",
+          "toStationName": "びわ湖浜大津",
+          "yen": 200
+        },
+        "大谷|上栄町": {
+          "fromStationName": "大谷",
+          "toStationName": "上栄町",
+          "yen": 200
+        },
+        "大谷|びわ湖浜大津": {
+          "fromStationName": "大谷",
+          "toStationName": "びわ湖浜大津",
+          "yen": 200
+        },
+        "上栄町|びわ湖浜大津": {
+          "fromStationName": "上栄町",
+          "toStationName": "びわ湖浜大津",
+          "yen": 200
+        }
+      }
+    },
     "izukyu_station_pairs_202603": {
       "operatorIds": [
         "伊豆急行"
