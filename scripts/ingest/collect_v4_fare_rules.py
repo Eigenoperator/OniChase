@@ -249,6 +249,21 @@ LINIMO_STATION_PAIR_SOURCE = {
     ],
 }
 
+UEDA_DENTETSU_STATION_PAIR_SOURCE = {
+    "key": "ueda_dentetsu_station_pairs_201910",
+    "operatorIds": ["上田電鉄"],
+    "operatorName": "上田電鉄",
+    "url": "https://www.uedadentetsu.com/fare/index.html",
+    "routeIds": ["V4_ROUTE_A9966DAEF9105D"],
+    "stationOrder": [
+        "上田", "城下", "三好町", "赤坂上", "上田原", "寺下", "神畑", "大学前",
+        "下之郷", "中塩田", "塩田町", "中野", "舞田", "八木沢", "別所温泉",
+    ],
+    "notes": [
+        "上田電鉄公式の別所線普通券運賃表から大人普通運賃の三角表を抽出。",
+    ],
+}
+
 # Real adult ordinary fare tables from official operator fare pages/PDFs.
 # Values use the ticket / 10-yen unit fare where operators publish both IC and ticket fares,
 # because gameplay fares are displayed as a simple yen total and should avoid 1-yen IC rounding details.
@@ -1716,6 +1731,28 @@ def parse_linimo_page(origin_name: str, html: str) -> dict[str, dict[str, Any]]:
     return pairs
 
 
+def parse_ueda_dentetsu_pairs(lines: list[str], station_order: list[str]) -> dict[str, dict[str, Any]]:
+    pairs: dict[str, dict[str, Any]] = {}
+    try:
+        index = lines.index("上田電鉄 ［普通券］ 運賃表") + 2
+    except ValueError:
+        return pairs
+    for origin_index, origin_name in enumerate(station_order[:-1]):
+        while index < len(lines) and lines[index] != origin_name:
+            if origin_name == "別所温泉" and lines[index:index + 2] == ["別所", "温泉"]:
+                break
+            index += 1
+        if index >= len(lines):
+            return pairs
+        index += 2 if lines[index:index + 2] == ["別所", "温泉"] else 1
+        for dest_name in station_order[origin_index + 1:]:
+            if index >= len(lines) or not lines[index].isdigit():
+                return pairs
+            add_station_pair(pairs, origin_name, dest_name, int(lines[index]))
+            index += 1
+    return pairs
+
+
 class TextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -2225,6 +2262,31 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": linimo["operatorName"],
         "notes": linimo["notes"],
         "pairs": linimo_pairs,
+    }
+
+    ueda_dentetsu = UEDA_DENTETSU_STATION_PAIR_SOURCE
+    cache_path, lines = fetch_text(ueda_dentetsu["url"], cache_dir)
+    ueda_dentetsu_pairs = parse_ueda_dentetsu_pairs(
+        lines,
+        ueda_dentetsu["stationOrder"],
+    )
+    sources.append({
+        "key": ueda_dentetsu["key"],
+        "url": ueda_dentetsu["url"],
+        "cachePath": cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": ueda_dentetsu["operatorIds"],
+        "operatorName": ueda_dentetsu["operatorName"],
+        "extraction": "parsed_station_pair_triangle_from_official_html",
+        "pairCount": len(ueda_dentetsu_pairs),
+    })
+    station_pair_tables[ueda_dentetsu["key"]] = {
+        "operatorIds": ueda_dentetsu["operatorIds"],
+        "routeIds": ueda_dentetsu["routeIds"],
+        "sourceKey": ueda_dentetsu["key"],
+        "operatorName": ueda_dentetsu["operatorName"],
+        "notes": ueda_dentetsu["notes"],
+        "pairs": ueda_dentetsu_pairs,
     }
 
     return {
