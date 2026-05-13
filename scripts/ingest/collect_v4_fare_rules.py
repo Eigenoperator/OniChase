@@ -288,6 +288,43 @@ NAGARAGAWA_RAILWAY_STATION_PAIR_SOURCE = {
     ],
 }
 
+ECHIZEN_KATSUYAMA_STATION_PAIR_SOURCE = {
+    "key": "echizen_katsuyama_station_pairs_202403",
+    "operatorIds": ["えちぜん鉄道"],
+    "operatorName": "えちぜん鉄道",
+    "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf",
+    "routeIds": ["V4_ROUTE_B926BEF5FF2C42"],
+    "stationOrder": [
+        "福井",
+        "新福井",
+        "福井口",
+        "越前開発",
+        "越前新保",
+        "追分口",
+        "東藤島",
+        "越前島橋",
+        "観音町",
+        "松岡",
+        "志比堺",
+        "永平寺口",
+        "下志比",
+        "光明寺",
+        "轟",
+        "越前野中",
+        "山王",
+        "越前竹原",
+        "小舟渡",
+        "保田",
+        "発坂",
+        "比島",
+        "勝山",
+    ],
+    "notes": [
+        "えちぜん鉄道公式の2024年3月16日改正・旅客運賃表PDFから、勝山永平寺線の大人普通運賃三角表だけを抽出。ゲーム側の三国芦原線 route は福井鉄道直通区間を含むため、この表では勝山永平寺線 route だけを覆う。",
+        "回数券、通勤定期、通学定期、障害者割引、福井鉄道連絡運賃は別体系のため未収録。",
+    ],
+}
+
 SANRIKU_STATION_PAIR_SOURCE = {
     "key": "sanriku_station_pairs_202603",
     "operatorIds": ["三陸鉄道"],
@@ -4290,6 +4327,36 @@ def parse_single_pdf_triangle_pairs(
     return pairs
 
 
+def parse_echizen_katsuyama_pairs(raw_text: str, station_order: list[str]) -> dict[str, dict[str, Any]]:
+    fare_rows: list[tuple[str, list[int]]] = []
+    lines = raw_text.splitlines()
+    for station_index, station_name in enumerate(station_order[1:], start=1):
+        row_number = station_index + 2
+        normalized_station = re.sub(r"\s+", "", station_name)
+        matches: list[list[int]] = []
+        for line in lines:
+            for match in re.finditer(rf"(?<!\d){row_number}(?!\d)", line):
+                if match.start() < 120:
+                    continue
+                tail = line[match.end():]
+                if normalized_station not in re.sub(r"\s+", "", tail):
+                    continue
+                values = [
+                    int(value.replace(",", ""))
+                    for value in re.findall(r"\d[\d,]*", tail)
+                ]
+                if len(values) == station_index:
+                    matches.append(values)
+        if len(matches) != 1:
+            raise ValueError(f"Echizen Katsuyama row {row_number} {station_name} matched {len(matches)} rows")
+        fare_rows.append((station_name, list(reversed(matches[0]))))
+    pairs = manual_station_pairs(station_pair_triangle_rows(station_order, fare_rows))
+    expected_pair_count = len(station_order) * (len(station_order) - 1) // 2
+    if len(pairs) != expected_pair_count:
+        raise ValueError(f"Echizen Katsuyama pair count {len(pairs)} != {expected_pair_count}")
+    return pairs
+
+
 def parse_keihan_otsu_station_pdf_pairs(
     origin_name: str,
     lines: list[str],
@@ -4672,6 +4739,31 @@ def build_rules(cache_dir: Path) -> dict[str, Any]:
         "operatorName": nagaragawa["operatorName"],
         "notes": nagaragawa["notes"],
         "pairs": nagaragawa_pairs,
+    }
+
+    echizen_katsuyama = ECHIZEN_KATSUYAMA_STATION_PAIR_SOURCE
+    echizen_cache_path, echizen_raw_text = fetch_pdf_raw_text(echizen_katsuyama["url"], cache_dir)
+    echizen_pairs = parse_echizen_katsuyama_pairs(
+        echizen_raw_text,
+        echizen_katsuyama["stationOrder"],
+    )
+    sources.append({
+        "key": echizen_katsuyama["key"],
+        "url": echizen_katsuyama["url"],
+        "cachePath": echizen_cache_path,
+        "kind": "station_pair_fare_table",
+        "operatorIds": echizen_katsuyama["operatorIds"],
+        "operatorName": echizen_katsuyama["operatorName"],
+        "extraction": "parsed_station_pair_matrix_from_official_pdf",
+        "pairCount": len(echizen_pairs),
+    })
+    station_pair_tables[echizen_katsuyama["key"]] = {
+        "operatorIds": echizen_katsuyama["operatorIds"],
+        "routeIds": echizen_katsuyama["routeIds"],
+        "sourceKey": echizen_katsuyama["key"],
+        "operatorName": echizen_katsuyama["operatorName"],
+        "notes": echizen_katsuyama["notes"],
+        "pairs": echizen_pairs,
     }
 
     kitakyushu = KITAKYUSHU_MONORAIL_STATION_PAIR_SOURCE
