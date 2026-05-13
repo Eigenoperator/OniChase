@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T03:22:17.879140+00:00",
+  "generatedAt": "2026-05-13T03:29:13.096371+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -898,6 +898,28 @@
       "operatorName": "西日本鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.nishitetsu.jp_train_2026_unchin-kaitei-ninka.html"
+    },
+    {
+      "key": "hitachinaka_seaside_station_pairs_202110",
+      "url": "https://www.hitachinaka-rail.co.jp/timetable/fare_2021.pdf",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "ひたちなか海浜鉄道"
+      ],
+      "operatorName": "ひたちなか海浜鉄道",
+      "extraction": "manual_from_official_source",
+      "fetchError": "HTTPSConnectionPool(host='www.hitachinaka-rail.co.jp', port=443): Max retries exceeded with url: /timetable/fare_2021.pdf (Caused by SSLError(SSLCertVerificationError(1, \"[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'www.hitachinaka-rail.co.jp'. (_ssl.c:1032)\")))"
+    },
+    {
+      "key": "isumi_railway_station_pairs_202403",
+      "url": "https://isumirail.co.jp/wp-content/uploads/2024/03/v4_2024timetable_weekdays.pdf",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "いすみ鉄道"
+      ],
+      "operatorName": "いすみ鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_isumirail.co.jp_wp-content_uploads_2024_03_v4_2024timetable_weekdays.pdf.html"
     },
     {
       "key": "kita_osaka_kyuko_station_pairs",
@@ -7828,6 +7850,766 @@
     }
   },
   "stationPairFareTables": {
+    "hitachinaka_seaside_station_pairs_202110": {
+      "operatorIds": [
+        "ひたちなか海浜鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_F074EB68F3A583"
+      ],
+      "sourceKey": "hitachinaka_seaside_station_pairs_202110",
+      "operatorName": "ひたちなか海浜鉄道",
+      "notes": [
+        "湊線公式の普通旅客運賃表（2021年10月時点）から大人普通運賃の三角表を転記。公式サイトは証明書ホスト名不一致のため、自動取得ではfetchErrorが残る場合がある。"
+      ],
+      "pairs": {
+        "勝田|工機前": {
+          "fromStationName": "勝田",
+          "toStationName": "工機前",
+          "yen": 150
+        },
+        "勝田|金上": {
+          "fromStationName": "勝田",
+          "toStationName": "金上",
+          "yen": 150
+        },
+        "工機前|金上": {
+          "fromStationName": "工機前",
+          "toStationName": "金上",
+          "yen": 150
+        },
+        "勝田|中根": {
+          "fromStationName": "勝田",
+          "toStationName": "中根",
+          "yen": 150
+        },
+        "工機前|中根": {
+          "fromStationName": "工機前",
+          "toStationName": "中根",
+          "yen": 190
+        },
+        "金上|中根": {
+          "fromStationName": "金上",
+          "toStationName": "中根",
+          "yen": 190
+        },
+        "勝田|高田の鉄橋": {
+          "fromStationName": "勝田",
+          "toStationName": "高田の鉄橋",
+          "yen": 150
+        },
+        "工機前|高田の鉄橋": {
+          "fromStationName": "工機前",
+          "toStationName": "高田の鉄橋",
+          "yen": 230
+        },
+        "金上|高田の鉄橋": {
+          "fromStationName": "金上",
+          "toStationName": "高田の鉄橋",
+          "yen": 260
+        },
+        "中根|高田の鉄橋": {
+          "fromStationName": "中根",
+          "toStationName": "高田の鉄橋",
+          "yen": 310
+        },
+        "勝田|那珂湊": {
+          "fromStationName": "勝田",
+          "toStationName": "那珂湊",
+          "yen": 150
+        },
+        "工機前|那珂湊": {
+          "fromStationName": "工機前",
+          "toStationName": "那珂湊",
+          "yen": 150
+        },
+        "金上|那珂湊": {
+          "fromStationName": "金上",
+          "toStationName": "那珂湊",
+          "yen": 260
+        },
+        "中根|那珂湊": {
+          "fromStationName": "中根",
+          "toStationName": "那珂湊",
+          "yen": 310
+        },
+        "高田の鉄橋|那珂湊": {
+          "fromStationName": "高田の鉄橋",
+          "toStationName": "那珂湊",
+          "yen": 350
+        },
+        "勝田|殿山": {
+          "fromStationName": "勝田",
+          "toStationName": "殿山",
+          "yen": 150
+        },
+        "工機前|殿山": {
+          "fromStationName": "工機前",
+          "toStationName": "殿山",
+          "yen": 150
+        },
+        "金上|殿山": {
+          "fromStationName": "金上",
+          "toStationName": "殿山",
+          "yen": 190
+        },
+        "中根|殿山": {
+          "fromStationName": "中根",
+          "toStationName": "殿山",
+          "yen": 310
+        },
+        "高田の鉄橋|殿山": {
+          "fromStationName": "高田の鉄橋",
+          "toStationName": "殿山",
+          "yen": 350
+        },
+        "那珂湊|殿山": {
+          "fromStationName": "那珂湊",
+          "toStationName": "殿山",
+          "yen": 380
+        },
+        "勝田|平磯": {
+          "fromStationName": "勝田",
+          "toStationName": "平磯",
+          "yen": 150
+        },
+        "工機前|平磯": {
+          "fromStationName": "工機前",
+          "toStationName": "平磯",
+          "yen": 150
+        },
+        "金上|平磯": {
+          "fromStationName": "金上",
+          "toStationName": "平磯",
+          "yen": 150
+        },
+        "中根|平磯": {
+          "fromStationName": "中根",
+          "toStationName": "平磯",
+          "yen": 230
+        },
+        "高田の鉄橋|平磯": {
+          "fromStationName": "高田の鉄橋",
+          "toStationName": "平磯",
+          "yen": 350
+        },
+        "那珂湊|平磯": {
+          "fromStationName": "那珂湊",
+          "toStationName": "平磯",
+          "yen": 420
+        },
+        "殿山|平磯": {
+          "fromStationName": "殿山",
+          "toStationName": "平磯",
+          "yen": 420
+        },
+        "勝田|美乃浜学園": {
+          "fromStationName": "勝田",
+          "toStationName": "美乃浜学園",
+          "yen": 150
+        },
+        "工機前|美乃浜学園": {
+          "fromStationName": "工機前",
+          "toStationName": "美乃浜学園",
+          "yen": 150
+        },
+        "金上|美乃浜学園": {
+          "fromStationName": "金上",
+          "toStationName": "美乃浜学園",
+          "yen": 190
+        },
+        "中根|美乃浜学園": {
+          "fromStationName": "中根",
+          "toStationName": "美乃浜学園",
+          "yen": 230
+        },
+        "高田の鉄橋|美乃浜学園": {
+          "fromStationName": "高田の鉄橋",
+          "toStationName": "美乃浜学園",
+          "yen": 310
+        },
+        "那珂湊|美乃浜学園": {
+          "fromStationName": "那珂湊",
+          "toStationName": "美乃浜学園",
+          "yen": 420
+        },
+        "殿山|美乃浜学園": {
+          "fromStationName": "殿山",
+          "toStationName": "美乃浜学園",
+          "yen": 460
+        },
+        "平磯|美乃浜学園": {
+          "fromStationName": "平磯",
+          "toStationName": "美乃浜学園",
+          "yen": 490
+        },
+        "勝田|磯崎": {
+          "fromStationName": "勝田",
+          "toStationName": "磯崎",
+          "yen": 150
+        },
+        "工機前|磯崎": {
+          "fromStationName": "工機前",
+          "toStationName": "磯崎",
+          "yen": 150
+        },
+        "金上|磯崎": {
+          "fromStationName": "金上",
+          "toStationName": "磯崎",
+          "yen": 150
+        },
+        "中根|磯崎": {
+          "fromStationName": "中根",
+          "toStationName": "磯崎",
+          "yen": 230
+        },
+        "高田の鉄橋|磯崎": {
+          "fromStationName": "高田の鉄橋",
+          "toStationName": "磯崎",
+          "yen": 260
+        },
+        "那珂湊|磯崎": {
+          "fromStationName": "那珂湊",
+          "toStationName": "磯崎",
+          "yen": 350
+        },
+        "殿山|磯崎": {
+          "fromStationName": "殿山",
+          "toStationName": "磯崎",
+          "yen": 460
+        },
+        "平磯|磯崎": {
+          "fromStationName": "平磯",
+          "toStationName": "磯崎",
+          "yen": 490
+        },
+        "美乃浜学園|磯崎": {
+          "fromStationName": "美乃浜学園",
+          "toStationName": "磯崎",
+          "yen": 530
+        },
+        "勝田|阿字ヶ浦": {
+          "fromStationName": "勝田",
+          "toStationName": "阿字ヶ浦",
+          "yen": 150
+        },
+        "工機前|阿字ヶ浦": {
+          "fromStationName": "工機前",
+          "toStationName": "阿字ヶ浦",
+          "yen": 150
+        },
+        "金上|阿字ヶ浦": {
+          "fromStationName": "金上",
+          "toStationName": "阿字ヶ浦",
+          "yen": 150
+        },
+        "中根|阿字ヶ浦": {
+          "fromStationName": "中根",
+          "toStationName": "阿字ヶ浦",
+          "yen": 190
+        },
+        "高田の鉄橋|阿字ヶ浦": {
+          "fromStationName": "高田の鉄橋",
+          "toStationName": "阿字ヶ浦",
+          "yen": 260
+        },
+        "那珂湊|阿字ヶ浦": {
+          "fromStationName": "那珂湊",
+          "toStationName": "阿字ヶ浦",
+          "yen": 310
+        },
+        "殿山|阿字ヶ浦": {
+          "fromStationName": "殿山",
+          "toStationName": "阿字ヶ浦",
+          "yen": 380
+        },
+        "平磯|阿字ヶ浦": {
+          "fromStationName": "平磯",
+          "toStationName": "阿字ヶ浦",
+          "yen": 490
+        },
+        "美乃浜学園|阿字ヶ浦": {
+          "fromStationName": "美乃浜学園",
+          "toStationName": "阿字ヶ浦",
+          "yen": 530
+        },
+        "磯崎|阿字ヶ浦": {
+          "fromStationName": "磯崎",
+          "toStationName": "阿字ヶ浦",
+          "yen": 570
+        }
+      }
+    },
+    "isumi_railway_station_pairs_202403": {
+      "operatorIds": [
+        "いすみ鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_EE9C2D1EA2F7E1"
+      ],
+      "sourceKey": "isumi_railway_station_pairs_202403",
+      "operatorName": "いすみ鉄道",
+      "notes": [
+        "いすみ鉄道公式時刻表PDF内の普通旅客運賃表（2024年3月16日改正、2019年10月1日運賃改定）から大人普通運賃の三角表を転記。"
+      ],
+      "pairs": {
+        "大原|西大原": {
+          "fromStationName": "大原",
+          "toStationName": "西大原",
+          "yen": 190
+        },
+        "大原|上総東": {
+          "fromStationName": "大原",
+          "toStationName": "上総東",
+          "yen": 260
+        },
+        "西大原|上総東": {
+          "fromStationName": "西大原",
+          "toStationName": "上総東",
+          "yen": 260
+        },
+        "大原|新田野": {
+          "fromStationName": "大原",
+          "toStationName": "新田野",
+          "yen": 330
+        },
+        "西大原|新田野": {
+          "fromStationName": "西大原",
+          "toStationName": "新田野",
+          "yen": 260
+        },
+        "上総東|新田野": {
+          "fromStationName": "上総東",
+          "toStationName": "新田野",
+          "yen": 190
+        },
+        "大原|国吉": {
+          "fromStationName": "大原",
+          "toStationName": "国吉",
+          "yen": 330
+        },
+        "西大原|国吉": {
+          "fromStationName": "西大原",
+          "toStationName": "国吉",
+          "yen": 330
+        },
+        "上総東|国吉": {
+          "fromStationName": "上総東",
+          "toStationName": "国吉",
+          "yen": 260
+        },
+        "新田野|国吉": {
+          "fromStationName": "新田野",
+          "toStationName": "国吉",
+          "yen": 190
+        },
+        "大原|上総中川": {
+          "fromStationName": "大原",
+          "toStationName": "上総中川",
+          "yen": 410
+        },
+        "西大原|上総中川": {
+          "fromStationName": "西大原",
+          "toStationName": "上総中川",
+          "yen": 410
+        },
+        "上総東|上総中川": {
+          "fromStationName": "上総東",
+          "toStationName": "上総中川",
+          "yen": 330
+        },
+        "新田野|上総中川": {
+          "fromStationName": "新田野",
+          "toStationName": "上総中川",
+          "yen": 260
+        },
+        "国吉|上総中川": {
+          "fromStationName": "国吉",
+          "toStationName": "上総中川",
+          "yen": 260
+        },
+        "大原|城見ヶ丘": {
+          "fromStationName": "大原",
+          "toStationName": "城見ヶ丘",
+          "yen": 480
+        },
+        "西大原|城見ヶ丘": {
+          "fromStationName": "西大原",
+          "toStationName": "城見ヶ丘",
+          "yen": 480
+        },
+        "上総東|城見ヶ丘": {
+          "fromStationName": "上総東",
+          "toStationName": "城見ヶ丘",
+          "yen": 410
+        },
+        "新田野|城見ヶ丘": {
+          "fromStationName": "新田野",
+          "toStationName": "城見ヶ丘",
+          "yen": 330
+        },
+        "国吉|城見ヶ丘": {
+          "fromStationName": "国吉",
+          "toStationName": "城見ヶ丘",
+          "yen": 260
+        },
+        "上総中川|城見ヶ丘": {
+          "fromStationName": "上総中川",
+          "toStationName": "城見ヶ丘",
+          "yen": 190
+        },
+        "大原|大多喜": {
+          "fromStationName": "大原",
+          "toStationName": "大多喜",
+          "yen": 550
+        },
+        "西大原|大多喜": {
+          "fromStationName": "西大原",
+          "toStationName": "大多喜",
+          "yen": 480
+        },
+        "上総東|大多喜": {
+          "fromStationName": "上総東",
+          "toStationName": "大多喜",
+          "yen": 410
+        },
+        "新田野|大多喜": {
+          "fromStationName": "新田野",
+          "toStationName": "大多喜",
+          "yen": 330
+        },
+        "国吉|大多喜": {
+          "fromStationName": "国吉",
+          "toStationName": "大多喜",
+          "yen": 330
+        },
+        "上総中川|大多喜": {
+          "fromStationName": "上総中川",
+          "toStationName": "大多喜",
+          "yen": 260
+        },
+        "城見ヶ丘|大多喜": {
+          "fromStationName": "城見ヶ丘",
+          "toStationName": "大多喜",
+          "yen": 190
+        },
+        "大原|小谷松": {
+          "fromStationName": "大原",
+          "toStationName": "小谷松",
+          "yen": 610
+        },
+        "西大原|小谷松": {
+          "fromStationName": "西大原",
+          "toStationName": "小谷松",
+          "yen": 550
+        },
+        "上総東|小谷松": {
+          "fromStationName": "上総東",
+          "toStationName": "小谷松",
+          "yen": 480
+        },
+        "新田野|小谷松": {
+          "fromStationName": "新田野",
+          "toStationName": "小谷松",
+          "yen": 410
+        },
+        "国吉|小谷松": {
+          "fromStationName": "国吉",
+          "toStationName": "小谷松",
+          "yen": 410
+        },
+        "上総中川|小谷松": {
+          "fromStationName": "上総中川",
+          "toStationName": "小谷松",
+          "yen": 330
+        },
+        "城見ヶ丘|小谷松": {
+          "fromStationName": "城見ヶ丘",
+          "toStationName": "小谷松",
+          "yen": 260
+        },
+        "大多喜|小谷松": {
+          "fromStationName": "大多喜",
+          "toStationName": "小谷松",
+          "yen": 190
+        },
+        "大原|東総元": {
+          "fromStationName": "大原",
+          "toStationName": "東総元",
+          "yen": 610
+        },
+        "西大原|東総元": {
+          "fromStationName": "西大原",
+          "toStationName": "東総元",
+          "yen": 550
+        },
+        "上総東|東総元": {
+          "fromStationName": "上総東",
+          "toStationName": "東総元",
+          "yen": 480
+        },
+        "新田野|東総元": {
+          "fromStationName": "新田野",
+          "toStationName": "東総元",
+          "yen": 480
+        },
+        "国吉|東総元": {
+          "fromStationName": "国吉",
+          "toStationName": "東総元",
+          "yen": 410
+        },
+        "上総中川|東総元": {
+          "fromStationName": "上総中川",
+          "toStationName": "東総元",
+          "yen": 330
+        },
+        "城見ヶ丘|東総元": {
+          "fromStationName": "城見ヶ丘",
+          "toStationName": "東総元",
+          "yen": 260
+        },
+        "大多喜|東総元": {
+          "fromStationName": "大多喜",
+          "toStationName": "東総元",
+          "yen": 260
+        },
+        "小谷松|東総元": {
+          "fromStationName": "小谷松",
+          "toStationName": "東総元",
+          "yen": 190
+        },
+        "大原|久我原": {
+          "fromStationName": "大原",
+          "toStationName": "久我原",
+          "yen": 610
+        },
+        "西大原|久我原": {
+          "fromStationName": "西大原",
+          "toStationName": "久我原",
+          "yen": 610
+        },
+        "上総東|久我原": {
+          "fromStationName": "上総東",
+          "toStationName": "久我原",
+          "yen": 550
+        },
+        "新田野|久我原": {
+          "fromStationName": "新田野",
+          "toStationName": "久我原",
+          "yen": 480
+        },
+        "国吉|久我原": {
+          "fromStationName": "国吉",
+          "toStationName": "久我原",
+          "yen": 410
+        },
+        "上総中川|久我原": {
+          "fromStationName": "上総中川",
+          "toStationName": "久我原",
+          "yen": 330
+        },
+        "城見ヶ丘|久我原": {
+          "fromStationName": "城見ヶ丘",
+          "toStationName": "久我原",
+          "yen": 260
+        },
+        "大多喜|久我原": {
+          "fromStationName": "大多喜",
+          "toStationName": "久我原",
+          "yen": 260
+        },
+        "小谷松|久我原": {
+          "fromStationName": "小谷松",
+          "toStationName": "久我原",
+          "yen": 190
+        },
+        "東総元|久我原": {
+          "fromStationName": "東総元",
+          "toStationName": "久我原",
+          "yen": 190
+        },
+        "大原|総元": {
+          "fromStationName": "大原",
+          "toStationName": "総元",
+          "yen": 670
+        },
+        "西大原|総元": {
+          "fromStationName": "西大原",
+          "toStationName": "総元",
+          "yen": 610
+        },
+        "上総東|総元": {
+          "fromStationName": "上総東",
+          "toStationName": "総元",
+          "yen": 550
+        },
+        "新田野|総元": {
+          "fromStationName": "新田野",
+          "toStationName": "総元",
+          "yen": 480
+        },
+        "国吉|総元": {
+          "fromStationName": "国吉",
+          "toStationName": "総元",
+          "yen": 480
+        },
+        "上総中川|総元": {
+          "fromStationName": "上総中川",
+          "toStationName": "総元",
+          "yen": 410
+        },
+        "城見ヶ丘|総元": {
+          "fromStationName": "城見ヶ丘",
+          "toStationName": "総元",
+          "yen": 330
+        },
+        "大多喜|総元": {
+          "fromStationName": "大多喜",
+          "toStationName": "総元",
+          "yen": 330
+        },
+        "小谷松|総元": {
+          "fromStationName": "小谷松",
+          "toStationName": "総元",
+          "yen": 260
+        },
+        "東総元|総元": {
+          "fromStationName": "東総元",
+          "toStationName": "総元",
+          "yen": 190
+        },
+        "久我原|総元": {
+          "fromStationName": "久我原",
+          "toStationName": "総元",
+          "yen": 190
+        },
+        "大原|西畑": {
+          "fromStationName": "大原",
+          "toStationName": "西畑",
+          "yen": 730
+        },
+        "西大原|西畑": {
+          "fromStationName": "西大原",
+          "toStationName": "西畑",
+          "yen": 670
+        },
+        "上総東|西畑": {
+          "fromStationName": "上総東",
+          "toStationName": "西畑",
+          "yen": 610
+        },
+        "新田野|西畑": {
+          "fromStationName": "新田野",
+          "toStationName": "西畑",
+          "yen": 550
+        },
+        "国吉|西畑": {
+          "fromStationName": "国吉",
+          "toStationName": "西畑",
+          "yen": 550
+        },
+        "上総中川|西畑": {
+          "fromStationName": "上総中川",
+          "toStationName": "西畑",
+          "yen": 480
+        },
+        "城見ヶ丘|西畑": {
+          "fromStationName": "城見ヶ丘",
+          "toStationName": "西畑",
+          "yen": 410
+        },
+        "大多喜|西畑": {
+          "fromStationName": "大多喜",
+          "toStationName": "西畑",
+          "yen": 410
+        },
+        "小谷松|西畑": {
+          "fromStationName": "小谷松",
+          "toStationName": "西畑",
+          "yen": 330
+        },
+        "東総元|西畑": {
+          "fromStationName": "東総元",
+          "toStationName": "西畑",
+          "yen": 260
+        },
+        "久我原|西畑": {
+          "fromStationName": "久我原",
+          "toStationName": "西畑",
+          "yen": 260
+        },
+        "総元|西畑": {
+          "fromStationName": "総元",
+          "toStationName": "西畑",
+          "yen": 190
+        },
+        "大原|上総中野": {
+          "fromStationName": "大原",
+          "toStationName": "上総中野",
+          "yen": 730
+        },
+        "西大原|上総中野": {
+          "fromStationName": "西大原",
+          "toStationName": "上総中野",
+          "yen": 730
+        },
+        "上総東|上総中野": {
+          "fromStationName": "上総東",
+          "toStationName": "上総中野",
+          "yen": 670
+        },
+        "新田野|上総中野": {
+          "fromStationName": "新田野",
+          "toStationName": "上総中野",
+          "yen": 610
+        },
+        "国吉|上総中野": {
+          "fromStationName": "国吉",
+          "toStationName": "上総中野",
+          "yen": 550
+        },
+        "上総中川|上総中野": {
+          "fromStationName": "上総中川",
+          "toStationName": "上総中野",
+          "yen": 480
+        },
+        "城見ヶ丘|上総中野": {
+          "fromStationName": "城見ヶ丘",
+          "toStationName": "上総中野",
+          "yen": 410
+        },
+        "大多喜|上総中野": {
+          "fromStationName": "大多喜",
+          "toStationName": "上総中野",
+          "yen": 410
+        },
+        "小谷松|上総中野": {
+          "fromStationName": "小谷松",
+          "toStationName": "上総中野",
+          "yen": 330
+        },
+        "東総元|上総中野": {
+          "fromStationName": "東総元",
+          "toStationName": "上総中野",
+          "yen": 330
+        },
+        "久我原|上総中野": {
+          "fromStationName": "久我原",
+          "toStationName": "上総中野",
+          "yen": 260
+        },
+        "総元|上総中野": {
+          "fromStationName": "総元",
+          "toStationName": "上総中野",
+          "yen": 260
+        },
+        "西畑|上総中野": {
+          "fromStationName": "西畑",
+          "toStationName": "上総中野",
+          "yen": 190
+        }
+      }
+    },
     "kita_osaka_kyuko_station_pairs": {
       "operatorIds": [
         "北大阪急行電鉄"

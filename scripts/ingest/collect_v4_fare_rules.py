@@ -1255,7 +1255,74 @@ MANUAL_OPERATOR_FARE_TABLES = [
     },
 ]
 
+def station_pair_triangle_rows(
+    station_order: list[str],
+    fare_rows: list[tuple[str, list[int]]],
+) -> list[tuple[str, str, int]]:
+    pairs: list[tuple[str, str, int]] = []
+    for row_station, fares in fare_rows:
+        row_index = station_order.index(row_station)
+        if len(fares) != row_index:
+            raise ValueError(f"{row_station} fare row has {len(fares)} fares, expected {row_index}")
+        for previous_station, yen in zip(station_order[:row_index], fares, strict=True):
+            pairs.append((previous_station, row_station, yen))
+    return pairs
+
+
 MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
+    {
+        "key": "hitachinaka_seaside_station_pairs_202110",
+        "operatorIds": ["ひたちなか海浜鉄道"],
+        "operatorName": "ひたちなか海浜鉄道",
+        "url": "https://www.hitachinaka-rail.co.jp/timetable/fare_2021.pdf",
+        "notes": [
+            "湊線公式の普通旅客運賃表（2021年10月時点）から大人普通運賃の三角表を転記。公式サイトは証明書ホスト名不一致のため、自動取得ではfetchErrorが残る場合がある。",
+        ],
+        "routeIds": ["V4_ROUTE_F074EB68F3A583"],
+        "pairs": station_pair_triangle_rows(
+            ["勝田", "工機前", "金上", "中根", "高田の鉄橋", "那珂湊", "殿山", "平磯", "美乃浜学園", "磯崎", "阿字ヶ浦"],
+            [
+                ("工機前", [150]),
+                ("金上", [150, 150]),
+                ("中根", [150, 190, 190]),
+                ("高田の鉄橋", [150, 230, 260, 310]),
+                ("那珂湊", [150, 150, 260, 310, 350]),
+                ("殿山", [150, 150, 190, 310, 350, 380]),
+                ("平磯", [150, 150, 150, 230, 350, 420, 420]),
+                ("美乃浜学園", [150, 150, 190, 230, 310, 420, 460, 490]),
+                ("磯崎", [150, 150, 150, 230, 260, 350, 460, 490, 530]),
+                ("阿字ヶ浦", [150, 150, 150, 190, 260, 310, 380, 490, 530, 570]),
+            ],
+        ),
+    },
+    {
+        "key": "isumi_railway_station_pairs_202403",
+        "operatorIds": ["いすみ鉄道"],
+        "operatorName": "いすみ鉄道",
+        "url": "https://isumirail.co.jp/wp-content/uploads/2024/03/v4_2024timetable_weekdays.pdf",
+        "notes": [
+            "いすみ鉄道公式時刻表PDF内の普通旅客運賃表（2024年3月16日改正、2019年10月1日運賃改定）から大人普通運賃の三角表を転記。",
+        ],
+        "routeIds": ["V4_ROUTE_EE9C2D1EA2F7E1"],
+        "pairs": station_pair_triangle_rows(
+            ["大原", "西大原", "上総東", "新田野", "国吉", "上総中川", "城見ヶ丘", "大多喜", "小谷松", "東総元", "久我原", "総元", "西畑", "上総中野"],
+            [
+                ("西大原", [190]),
+                ("上総東", [260, 260]),
+                ("新田野", [330, 260, 190]),
+                ("国吉", [330, 330, 260, 190]),
+                ("上総中川", [410, 410, 330, 260, 260]),
+                ("城見ヶ丘", [480, 480, 410, 330, 260, 190]),
+                ("大多喜", [550, 480, 410, 330, 330, 260, 190]),
+                ("小谷松", [610, 550, 480, 410, 410, 330, 260, 190]),
+                ("東総元", [610, 550, 480, 480, 410, 330, 260, 260, 190]),
+                ("久我原", [610, 610, 550, 480, 410, 330, 260, 260, 190, 190]),
+                ("総元", [670, 610, 550, 480, 480, 410, 330, 330, 260, 190, 190]),
+                ("西畑", [730, 670, 610, 550, 550, 480, 410, 410, 330, 260, 260, 190]),
+                ("上総中野", [730, 730, 670, 610, 550, 480, 410, 410, 330, 330, 260, 260, 190]),
+            ],
+        ),
+    },
     {
         "key": "kita_osaka_kyuko_station_pairs",
         "operatorIds": ["北大阪急行電鉄"],
