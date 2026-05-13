@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T01:49:32.653047+00:00",
+  "generatedAt": "2026-05-13T01:53:52.640015+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -337,6 +337,17 @@
       "operatorName": "千葉都市モノレール",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_chiba-monorail.co.jp_index.php_ryoukin.html"
+    },
+    {
+      "key": "ryutetsu_202404",
+      "url": "https://www.ryutetsu.jp/info/wp-content/uploads/2024/02/2024%E5%B9%B44%E6%9C%881%E6%97%A5%E6%94%B9%E6%AD%A3%E9%81%8B%E8%B3%83%E8%A1%A8.pdf",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "流鉄"
+      ],
+      "operatorName": "流鉄",
+      "extraction": "manual_from_official_source",
+      "fetchError": "HTTPSConnectionPool(host='www.ryutetsu.jp', port=443): Max retries exceeded with url: /info/wp-content/uploads/2024/02/2024%E5%B9%B44%E6%9C%881%E6%97%A5%E6%94%B9%E6%AD%A3%E9%81%8B%E8%B3%83%E8%A1%A8.pdf (Caused by SSLError(SSLCertVerificationError(1, \"[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'www.ryutetsu.jp'. (_ssl.c:1032)\")))"
     },
     {
       "key": "sotetsu",
@@ -820,7 +831,7 @@
       ],
       "operatorName": "東葉高速鉄道",
       "extraction": "manual_from_official_source",
-      "fetchError": "503 Server Error: Service Unavailable for url: https://www.toyokosoku.co.jp/ticket/regular"
+      "cachePath": "data/v4_fare_source_cache/https_www.toyokosoku.co.jp_ticket_regular.html"
     },
     {
       "key": "minatomirai_station_pairs_202303",
@@ -832,6 +843,17 @@
       "operatorName": "横浜高速鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.mm21railway.co.jp_info_ticket.html_mode_pc.html"
+    },
+    {
+      "key": "mizuma_railway_station_pairs_202404",
+      "url": "https://www.suitetsu.com/train/fares/index.html",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "水間鉄道"
+      ],
+      "operatorName": "水間鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.suitetsu.com_train_fares_index.html.html"
     },
     {
       "key": "kitakyushu_monorail_station_pairs",
@@ -4783,6 +4805,51 @@
         }
       }
     },
+    "ryutetsu_202404": {
+      "operatorIds": [
+        "流鉄"
+      ],
+      "routeIds": [
+        "V4_ROUTE_BC12B87F3168A6"
+      ],
+      "sourceKey": "ryutetsu_202404",
+      "operatorName": "流鉄",
+      "notes": [
+        "2024年4月1日改正の流鉄流山線キロ別普通旅客運賃表。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 2,
+              "yen": 140
+            },
+            {
+              "fromKm": 3,
+              "toKm": 3,
+              "yen": 150
+            },
+            {
+              "fromKm": 4,
+              "toKm": 4,
+              "yen": 190
+            },
+            {
+              "fromKm": 5,
+              "toKm": 5,
+              "yen": 200
+            },
+            {
+              "fromKm": 6,
+              "toKm": 6,
+              "yen": 220
+            }
+          ]
+        }
+      }
+    },
     "sotetsu": {
       "operatorIds": [
         "sotetsu"
@@ -7675,6 +7742,246 @@
         "日本大通り|元町・中華街": {
           "fromStationName": "日本大通り",
           "toStationName": "元町・中華街",
+          "yen": 200
+        }
+      }
+    },
+    "mizuma_railway_station_pairs_202404": {
+      "operatorIds": [
+        "水間鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_6F87DA574270ED"
+      ],
+      "sourceKey": "mizuma_railway_station_pairs_202404",
+      "operatorName": "水間鉄道",
+      "notes": [
+        "2024年4月1日改定の水間鉄道公式普通旅客運賃表。"
+      ],
+      "pairs": {
+        "貝塚|貝塚市役所前": {
+          "fromStationName": "貝塚",
+          "toStationName": "貝塚市役所前",
+          "yen": 200
+        },
+        "貝塚|近義の里": {
+          "fromStationName": "貝塚",
+          "toStationName": "近義の里",
+          "yen": 200
+        },
+        "貝塚|石才": {
+          "fromStationName": "貝塚",
+          "toStationName": "石才",
+          "yen": 250
+        },
+        "貝塚|清児": {
+          "fromStationName": "貝塚",
+          "toStationName": "清児",
+          "yen": 250
+        },
+        "貝塚|名越": {
+          "fromStationName": "貝塚",
+          "toStationName": "名越",
+          "yen": 300
+        },
+        "貝塚|森": {
+          "fromStationName": "貝塚",
+          "toStationName": "森",
+          "yen": 300
+        },
+        "貝塚|三ツ松": {
+          "fromStationName": "貝塚",
+          "toStationName": "三ツ松",
+          "yen": 330
+        },
+        "貝塚|三ヶ山口": {
+          "fromStationName": "貝塚",
+          "toStationName": "三ヶ山口",
+          "yen": 330
+        },
+        "貝塚|水間観音": {
+          "fromStationName": "貝塚",
+          "toStationName": "水間観音",
+          "yen": 330
+        },
+        "貝塚市役所前|近義の里": {
+          "fromStationName": "貝塚市役所前",
+          "toStationName": "近義の里",
+          "yen": 200
+        },
+        "貝塚市役所前|石才": {
+          "fromStationName": "貝塚市役所前",
+          "toStationName": "石才",
+          "yen": 250
+        },
+        "貝塚市役所前|清児": {
+          "fromStationName": "貝塚市役所前",
+          "toStationName": "清児",
+          "yen": 250
+        },
+        "貝塚市役所前|名越": {
+          "fromStationName": "貝塚市役所前",
+          "toStationName": "名越",
+          "yen": 300
+        },
+        "貝塚市役所前|森": {
+          "fromStationName": "貝塚市役所前",
+          "toStationName": "森",
+          "yen": 300
+        },
+        "貝塚市役所前|三ツ松": {
+          "fromStationName": "貝塚市役所前",
+          "toStationName": "三ツ松",
+          "yen": 300
+        },
+        "貝塚市役所前|三ヶ山口": {
+          "fromStationName": "貝塚市役所前",
+          "toStationName": "三ヶ山口",
+          "yen": 300
+        },
+        "貝塚市役所前|水間観音": {
+          "fromStationName": "貝塚市役所前",
+          "toStationName": "水間観音",
+          "yen": 330
+        },
+        "近義の里|石才": {
+          "fromStationName": "近義の里",
+          "toStationName": "石才",
+          "yen": 200
+        },
+        "近義の里|清児": {
+          "fromStationName": "近義の里",
+          "toStationName": "清児",
+          "yen": 250
+        },
+        "近義の里|名越": {
+          "fromStationName": "近義の里",
+          "toStationName": "名越",
+          "yen": 250
+        },
+        "近義の里|森": {
+          "fromStationName": "近義の里",
+          "toStationName": "森",
+          "yen": 300
+        },
+        "近義の里|三ツ松": {
+          "fromStationName": "近義の里",
+          "toStationName": "三ツ松",
+          "yen": 300
+        },
+        "近義の里|三ヶ山口": {
+          "fromStationName": "近義の里",
+          "toStationName": "三ヶ山口",
+          "yen": 300
+        },
+        "近義の里|水間観音": {
+          "fromStationName": "近義の里",
+          "toStationName": "水間観音",
+          "yen": 300
+        },
+        "石才|清児": {
+          "fromStationName": "石才",
+          "toStationName": "清児",
+          "yen": 200
+        },
+        "石才|名越": {
+          "fromStationName": "石才",
+          "toStationName": "名越",
+          "yen": 200
+        },
+        "石才|森": {
+          "fromStationName": "石才",
+          "toStationName": "森",
+          "yen": 250
+        },
+        "石才|三ツ松": {
+          "fromStationName": "石才",
+          "toStationName": "三ツ松",
+          "yen": 250
+        },
+        "石才|三ヶ山口": {
+          "fromStationName": "石才",
+          "toStationName": "三ヶ山口",
+          "yen": 300
+        },
+        "石才|水間観音": {
+          "fromStationName": "石才",
+          "toStationName": "水間観音",
+          "yen": 300
+        },
+        "清児|名越": {
+          "fromStationName": "清児",
+          "toStationName": "名越",
+          "yen": 200
+        },
+        "清児|森": {
+          "fromStationName": "清児",
+          "toStationName": "森",
+          "yen": 200
+        },
+        "清児|三ツ松": {
+          "fromStationName": "清児",
+          "toStationName": "三ツ松",
+          "yen": 250
+        },
+        "清児|三ヶ山口": {
+          "fromStationName": "清児",
+          "toStationName": "三ヶ山口",
+          "yen": 250
+        },
+        "清児|水間観音": {
+          "fromStationName": "清児",
+          "toStationName": "水間観音",
+          "yen": 250
+        },
+        "名越|森": {
+          "fromStationName": "名越",
+          "toStationName": "森",
+          "yen": 200
+        },
+        "名越|三ツ松": {
+          "fromStationName": "名越",
+          "toStationName": "三ツ松",
+          "yen": 200
+        },
+        "名越|三ヶ山口": {
+          "fromStationName": "名越",
+          "toStationName": "三ヶ山口",
+          "yen": 250
+        },
+        "名越|水間観音": {
+          "fromStationName": "名越",
+          "toStationName": "水間観音",
+          "yen": 250
+        },
+        "森|三ツ松": {
+          "fromStationName": "森",
+          "toStationName": "三ツ松",
+          "yen": 200
+        },
+        "森|三ヶ山口": {
+          "fromStationName": "森",
+          "toStationName": "三ヶ山口",
+          "yen": 200
+        },
+        "森|水間観音": {
+          "fromStationName": "森",
+          "toStationName": "水間観音",
+          "yen": 200
+        },
+        "三ツ松|三ヶ山口": {
+          "fromStationName": "三ツ松",
+          "toStationName": "三ヶ山口",
+          "yen": 200
+        },
+        "三ツ松|水間観音": {
+          "fromStationName": "三ツ松",
+          "toStationName": "水間観音",
+          "yen": 200
+        },
+        "三ヶ山口|水間観音": {
+          "fromStationName": "三ヶ山口",
+          "toStationName": "水間観音",
           "yen": 200
         }
       }
