@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-13T01:35:08.957878+00:00",
+  "generatedAt": "2026-05-13T01:49:32.653047+00:00",
   "modelVersion": "v4_collected_fare_rules_2026_05",
   "currency": "JPY",
   "sources": [
@@ -317,6 +317,28 @@
       "cachePath": "data/v4_fare_source_cache/https_www.shintetsu.co.jp_railway_info_01_ryoki.pdf.html"
     },
     {
+      "key": "hanshin_main_202603",
+      "url": "https://www.hanshin.co.jp/ticket/yakkan/pdf/hanshin-passenger.pdf",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "阪神電気鉄道"
+      ],
+      "operatorName": "阪神電気鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.hanshin.co.jp_ticket_yakkan_pdf_hanshin-passenger.pdf.html"
+    },
+    {
+      "key": "chiba_urban_monorail_201910",
+      "url": "https://chiba-monorail.co.jp/index.php/ryoukin/",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "千葉都市モノレル"
+      ],
+      "operatorName": "千葉都市モノレール",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_chiba-monorail.co.jp_index.php_ryoukin.html"
+    },
+    {
       "key": "sotetsu",
       "url": "https://www.sotetsu.co.jp/media/2019/trans/train/search/pdf/kiro_fares.pdf",
       "kind": "ordinary_fare_table",
@@ -326,6 +348,17 @@
       "operatorName": "相模鉄道",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.sotetsu.co.jp_media_2019_trans_train_search_pdf_kiro_fares.pdf.html"
+    },
+    {
+      "key": "yokohama_seaside_line_202504",
+      "url": "https://www.seasideline.co.jp/fare_ticket/document/pass_rule.pdf",
+      "kind": "ordinary_fare_table",
+      "operatorIds": [
+        "横浜シサイドライン"
+      ],
+      "operatorName": "横浜シーサイドライン",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.seasideline.co.jp_fare_ticket_document_pass_rule.pdf.html"
     },
     {
       "key": "odakyu",
@@ -766,6 +799,39 @@
       "operatorName": "湘南モノレール",
       "extraction": "manual_from_official_source",
       "cachePath": "data/v4_fare_source_cache/https_www.shonan-monorail.co.jp_ticket.html"
+    },
+    {
+      "key": "hanshin_kobe_kosoku_station_pairs_202603",
+      "url": "https://www.hanshin.co.jp/ticket/yakkan/pdf/kousoku-passenger.pdf",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "阪神電気鉄道"
+      ],
+      "operatorName": "阪神電気鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.hanshin.co.jp_ticket_yakkan_pdf_kousoku-passenger.pdf.html"
+    },
+    {
+      "key": "toyo_rapid_station_pairs_201910",
+      "url": "https://www.toyokosoku.co.jp/ticket/regular",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "東葉高速鉄道"
+      ],
+      "operatorName": "東葉高速鉄道",
+      "extraction": "manual_from_official_source",
+      "fetchError": "503 Server Error: Service Unavailable for url: https://www.toyokosoku.co.jp/ticket/regular"
+    },
+    {
+      "key": "minatomirai_station_pairs_202303",
+      "url": "https://www.mm21railway.co.jp/info/ticket.html?mode=pc",
+      "kind": "station_pair_fare_table",
+      "operatorIds": [
+        "横浜高速鉄道"
+      ],
+      "operatorName": "横浜高速鉄道",
+      "extraction": "manual_from_official_source",
+      "cachePath": "data/v4_fare_source_cache/https_www.mm21railway.co.jp_info_ticket.html_mode_pc.html"
     },
     {
       "key": "kitakyushu_monorail_station_pairs",
@@ -4600,6 +4666,123 @@
         }
       }
     },
+    "hanshin_main_202603": {
+      "operatorIds": [
+        "阪神電気鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_590D4A0AC01454",
+        "V4_ROUTE_1D3A859BEF7F27"
+      ],
+      "sourceKey": "hanshin_main_202603",
+      "operatorName": "阪神電気鉄道",
+      "notes": [
+        "2026年3月14日現在の阪神線旅客営業規則別表2号・第58条の大人普通旅客運賃。阪神なんば線の大阪難波-西九条加算運賃は別体系のためこの表では覆わない。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 4,
+              "yen": 160
+            },
+            {
+              "fromKm": 5,
+              "toKm": 8,
+              "yen": 200
+            },
+            {
+              "fromKm": 9,
+              "toKm": 13,
+              "yen": 250
+            },
+            {
+              "fromKm": 14,
+              "toKm": 18,
+              "yen": 280
+            },
+            {
+              "fromKm": 19,
+              "toKm": 24,
+              "yen": 300
+            },
+            {
+              "fromKm": 25,
+              "toKm": 30,
+              "yen": 320
+            },
+            {
+              "fromKm": 31,
+              "toKm": 34,
+              "yen": 330
+            }
+          ]
+        }
+      }
+    },
+    "chiba_urban_monorail_201910": {
+      "operatorIds": [
+        "千葉都市モノレル"
+      ],
+      "routeIds": [
+        "V4_ROUTE_09504CFAFABF58",
+        "V4_ROUTE_9CAFC1BEFCAEB2"
+      ],
+      "sourceKey": "chiba_urban_monorail_201910",
+      "operatorName": "千葉都市モノレール",
+      "notes": [
+        "2019年10月1日改定の千葉都市モノレール公式普通旅客運賃表・きっぷ運賃。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 2,
+              "yen": 200
+            },
+            {
+              "fromKm": 3,
+              "toKm": 3,
+              "yen": 220
+            },
+            {
+              "fromKm": 4,
+              "toKm": 6,
+              "yen": 290
+            },
+            {
+              "fromKm": 7,
+              "toKm": 7,
+              "yen": 340
+            },
+            {
+              "fromKm": 8,
+              "toKm": 9,
+              "yen": 390
+            },
+            {
+              "fromKm": 10,
+              "toKm": 11,
+              "yen": 430
+            },
+            {
+              "fromKm": 12,
+              "toKm": 13,
+              "yen": 480
+            },
+            {
+              "fromKm": 14,
+              "toKm": 14,
+              "yen": 520
+            }
+          ]
+        }
+      }
+    },
     "sotetsu": {
       "operatorIds": [
         "sotetsu"
@@ -4647,6 +4830,46 @@
               "fromKm": 24,
               "toKm": 26,
               "yen": 310
+            }
+          ]
+        }
+      }
+    },
+    "yokohama_seaside_line_202504": {
+      "operatorIds": [
+        "横浜シサイドライン"
+      ],
+      "routeIds": [
+        "V4_ROUTE_F66185DED59EAF"
+      ],
+      "sourceKey": "yokohama_seaside_line_202504",
+      "operatorName": "横浜シーサイドライン",
+      "notes": [
+        "2025年4月1日最終改正の旅客営業規則第49条・大人片道普通旅客運賃。"
+      ],
+      "tables": {
+        "main": {
+          "marker": "adult ordinary fare table",
+          "rows": [
+            {
+              "fromKm": 1,
+              "toKm": 2,
+              "yen": 240
+            },
+            {
+              "fromKm": 3,
+              "toKm": 4,
+              "yen": 270
+            },
+            {
+              "fromKm": 5,
+              "toKm": 7,
+              "yen": 300
+            },
+            {
+              "fromKm": 8,
+              "toKm": 11,
+              "yen": 320
             }
           ]
         }
@@ -6928,6 +7151,531 @@
           "fromStationName": "目白山下",
           "toStationName": "湘南江の島",
           "yen": 220
+        }
+      }
+    },
+    "hanshin_kobe_kosoku_station_pairs_202603": {
+      "operatorIds": [
+        "阪神電気鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_024EE571AAF472"
+      ],
+      "sourceKey": "hanshin_kobe_kosoku_station_pairs_202603",
+      "operatorName": "阪神電気鉄道",
+      "notes": [
+        "2026年3月18日現在の高速線旅客営業規則別表第1号・駅間普通旅客運賃表。"
+      ],
+      "pairs": {
+        "西代|高速長田": {
+          "fromStationName": "西代",
+          "toStationName": "高速長田",
+          "yen": 140
+        },
+        "西代|大開": {
+          "fromStationName": "西代",
+          "toStationName": "大開",
+          "yen": 140
+        },
+        "西代|新開地": {
+          "fromStationName": "西代",
+          "toStationName": "新開地",
+          "yen": 140
+        },
+        "西代|高速神戸": {
+          "fromStationName": "西代",
+          "toStationName": "高速神戸",
+          "yen": 160
+        },
+        "西代|花隈": {
+          "fromStationName": "西代",
+          "toStationName": "花隈",
+          "yen": 160
+        },
+        "西代|神戸三宮": {
+          "fromStationName": "西代",
+          "toStationName": "神戸三宮",
+          "yen": 160
+        },
+        "西代|西元町": {
+          "fromStationName": "西代",
+          "toStationName": "西元町",
+          "yen": 160
+        },
+        "西代|元町": {
+          "fromStationName": "西代",
+          "toStationName": "元町",
+          "yen": 160
+        },
+        "西代|湊川": {
+          "fromStationName": "西代",
+          "toStationName": "湊川",
+          "yen": 160
+        },
+        "高速長田|大開": {
+          "fromStationName": "高速長田",
+          "toStationName": "大開",
+          "yen": 140
+        },
+        "高速長田|新開地": {
+          "fromStationName": "高速長田",
+          "toStationName": "新開地",
+          "yen": 140
+        },
+        "高速長田|高速神戸": {
+          "fromStationName": "高速長田",
+          "toStationName": "高速神戸",
+          "yen": 140
+        },
+        "高速長田|花隈": {
+          "fromStationName": "高速長田",
+          "toStationName": "花隈",
+          "yen": 160
+        },
+        "高速長田|神戸三宮": {
+          "fromStationName": "高速長田",
+          "toStationName": "神戸三宮",
+          "yen": 160
+        },
+        "高速長田|西元町": {
+          "fromStationName": "高速長田",
+          "toStationName": "西元町",
+          "yen": 160
+        },
+        "高速長田|元町": {
+          "fromStationName": "高速長田",
+          "toStationName": "元町",
+          "yen": 160
+        },
+        "高速長田|湊川": {
+          "fromStationName": "高速長田",
+          "toStationName": "湊川",
+          "yen": 140
+        },
+        "大開|新開地": {
+          "fromStationName": "大開",
+          "toStationName": "新開地",
+          "yen": 140
+        },
+        "大開|高速神戸": {
+          "fromStationName": "大開",
+          "toStationName": "高速神戸",
+          "yen": 140
+        },
+        "大開|花隈": {
+          "fromStationName": "大開",
+          "toStationName": "花隈",
+          "yen": 140
+        },
+        "大開|神戸三宮": {
+          "fromStationName": "大開",
+          "toStationName": "神戸三宮",
+          "yen": 160
+        },
+        "大開|西元町": {
+          "fromStationName": "大開",
+          "toStationName": "西元町",
+          "yen": 140
+        },
+        "大開|元町": {
+          "fromStationName": "大開",
+          "toStationName": "元町",
+          "yen": 160
+        },
+        "大開|湊川": {
+          "fromStationName": "大開",
+          "toStationName": "湊川",
+          "yen": 140
+        },
+        "新開地|高速神戸": {
+          "fromStationName": "新開地",
+          "toStationName": "高速神戸",
+          "yen": 140
+        },
+        "新開地|花隈": {
+          "fromStationName": "新開地",
+          "toStationName": "花隈",
+          "yen": 140
+        },
+        "新開地|神戸三宮": {
+          "fromStationName": "新開地",
+          "toStationName": "神戸三宮",
+          "yen": 140
+        },
+        "新開地|西元町": {
+          "fromStationName": "新開地",
+          "toStationName": "西元町",
+          "yen": 140
+        },
+        "新開地|元町": {
+          "fromStationName": "新開地",
+          "toStationName": "元町",
+          "yen": 140
+        },
+        "新開地|湊川": {
+          "fromStationName": "新開地",
+          "toStationName": "湊川",
+          "yen": 140
+        },
+        "高速神戸|花隈": {
+          "fromStationName": "高速神戸",
+          "toStationName": "花隈",
+          "yen": 140
+        },
+        "高速神戸|神戸三宮": {
+          "fromStationName": "高速神戸",
+          "toStationName": "神戸三宮",
+          "yen": 140
+        },
+        "高速神戸|西元町": {
+          "fromStationName": "高速神戸",
+          "toStationName": "西元町",
+          "yen": 140
+        },
+        "高速神戸|元町": {
+          "fromStationName": "高速神戸",
+          "toStationName": "元町",
+          "yen": 140
+        },
+        "高速神戸|湊川": {
+          "fromStationName": "高速神戸",
+          "toStationName": "湊川",
+          "yen": 140
+        },
+        "花隈|神戸三宮": {
+          "fromStationName": "花隈",
+          "toStationName": "神戸三宮",
+          "yen": 140
+        },
+        "花隈|西元町": {
+          "fromStationName": "花隈",
+          "toStationName": "西元町",
+          "yen": 140
+        },
+        "花隈|元町": {
+          "fromStationName": "花隈",
+          "toStationName": "元町",
+          "yen": 140
+        },
+        "花隈|湊川": {
+          "fromStationName": "花隈",
+          "toStationName": "湊川",
+          "yen": 140
+        },
+        "神戸三宮|西元町": {
+          "fromStationName": "神戸三宮",
+          "toStationName": "西元町",
+          "yen": 140
+        },
+        "神戸三宮|元町": {
+          "fromStationName": "神戸三宮",
+          "toStationName": "元町",
+          "yen": 160
+        },
+        "神戸三宮|湊川": {
+          "fromStationName": "神戸三宮",
+          "toStationName": "湊川",
+          "yen": 160
+        },
+        "西元町|元町": {
+          "fromStationName": "西元町",
+          "toStationName": "元町",
+          "yen": 140
+        },
+        "西元町|湊川": {
+          "fromStationName": "西元町",
+          "toStationName": "湊川",
+          "yen": 140
+        },
+        "元町|湊川": {
+          "fromStationName": "元町",
+          "toStationName": "湊川",
+          "yen": 140
+        }
+      }
+    },
+    "toyo_rapid_station_pairs_201910": {
+      "operatorIds": [
+        "東葉高速鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_64CF7E42A3196B"
+      ],
+      "sourceKey": "toyo_rapid_station_pairs_201910",
+      "operatorName": "東葉高速鉄道",
+      "notes": [
+        "東葉高速鉄道公式きっぷ案内の2019年10月1日改定・普通旅客運賃表。"
+      ],
+      "pairs": {
+        "西船橋|東海神": {
+          "fromStationName": "西船橋",
+          "toStationName": "東海神",
+          "yen": 210
+        },
+        "西船橋|飯山満": {
+          "fromStationName": "西船橋",
+          "toStationName": "飯山満",
+          "yen": 370
+        },
+        "西船橋|北習志野": {
+          "fromStationName": "西船橋",
+          "toStationName": "北習志野",
+          "yen": 440
+        },
+        "西船橋|船橋日大前": {
+          "fromStationName": "西船橋",
+          "toStationName": "船橋日大前",
+          "yen": 520
+        },
+        "西船橋|八千代緑が丘": {
+          "fromStationName": "西船橋",
+          "toStationName": "八千代緑が丘",
+          "yen": 520
+        },
+        "西船橋|八千代中央": {
+          "fromStationName": "西船橋",
+          "toStationName": "八千代中央",
+          "yen": 580
+        },
+        "西船橋|村上": {
+          "fromStationName": "西船橋",
+          "toStationName": "村上",
+          "yen": 640
+        },
+        "西船橋|東葉勝田台": {
+          "fromStationName": "西船橋",
+          "toStationName": "東葉勝田台",
+          "yen": 640
+        },
+        "東海神|飯山満": {
+          "fromStationName": "東海神",
+          "toStationName": "飯山満",
+          "yen": 300
+        },
+        "東海神|北習志野": {
+          "fromStationName": "東海神",
+          "toStationName": "北習志野",
+          "yen": 370
+        },
+        "東海神|船橋日大前": {
+          "fromStationName": "東海神",
+          "toStationName": "船橋日大前",
+          "yen": 440
+        },
+        "東海神|八千代緑が丘": {
+          "fromStationName": "東海神",
+          "toStationName": "八千代緑が丘",
+          "yen": 440
+        },
+        "東海神|八千代中央": {
+          "fromStationName": "東海神",
+          "toStationName": "八千代中央",
+          "yen": 580
+        },
+        "東海神|村上": {
+          "fromStationName": "東海神",
+          "toStationName": "村上",
+          "yen": 580
+        },
+        "東海神|東葉勝田台": {
+          "fromStationName": "東海神",
+          "toStationName": "東葉勝田台",
+          "yen": 640
+        },
+        "飯山満|北習志野": {
+          "fromStationName": "飯山満",
+          "toStationName": "北習志野",
+          "yen": 210
+        },
+        "飯山満|船橋日大前": {
+          "fromStationName": "飯山満",
+          "toStationName": "船橋日大前",
+          "yen": 300
+        },
+        "飯山満|八千代緑が丘": {
+          "fromStationName": "飯山満",
+          "toStationName": "八千代緑が丘",
+          "yen": 300
+        },
+        "飯山満|八千代中央": {
+          "fromStationName": "飯山満",
+          "toStationName": "八千代中央",
+          "yen": 440
+        },
+        "飯山満|村上": {
+          "fromStationName": "飯山満",
+          "toStationName": "村上",
+          "yen": 520
+        },
+        "飯山満|東葉勝田台": {
+          "fromStationName": "飯山満",
+          "toStationName": "東葉勝田台",
+          "yen": 520
+        },
+        "北習志野|船橋日大前": {
+          "fromStationName": "北習志野",
+          "toStationName": "船橋日大前",
+          "yen": 210
+        },
+        "北習志野|八千代緑が丘": {
+          "fromStationName": "北習志野",
+          "toStationName": "八千代緑が丘",
+          "yen": 210
+        },
+        "北習志野|八千代中央": {
+          "fromStationName": "北習志野",
+          "toStationName": "八千代中央",
+          "yen": 370
+        },
+        "北習志野|村上": {
+          "fromStationName": "北習志野",
+          "toStationName": "村上",
+          "yen": 440
+        },
+        "北習志野|東葉勝田台": {
+          "fromStationName": "北習志野",
+          "toStationName": "東葉勝田台",
+          "yen": 440
+        },
+        "船橋日大前|八千代緑が丘": {
+          "fromStationName": "船橋日大前",
+          "toStationName": "八千代緑が丘",
+          "yen": 210
+        },
+        "船橋日大前|八千代中央": {
+          "fromStationName": "船橋日大前",
+          "toStationName": "八千代中央",
+          "yen": 300
+        },
+        "船橋日大前|村上": {
+          "fromStationName": "船橋日大前",
+          "toStationName": "村上",
+          "yen": 370
+        },
+        "船橋日大前|東葉勝田台": {
+          "fromStationName": "船橋日大前",
+          "toStationName": "東葉勝田台",
+          "yen": 370
+        },
+        "八千代緑が丘|八千代中央": {
+          "fromStationName": "八千代緑が丘",
+          "toStationName": "八千代中央",
+          "yen": 210
+        },
+        "八千代緑が丘|村上": {
+          "fromStationName": "八千代緑が丘",
+          "toStationName": "村上",
+          "yen": 300
+        },
+        "八千代緑が丘|東葉勝田台": {
+          "fromStationName": "八千代緑が丘",
+          "toStationName": "東葉勝田台",
+          "yen": 370
+        },
+        "八千代中央|村上": {
+          "fromStationName": "八千代中央",
+          "toStationName": "村上",
+          "yen": 210
+        },
+        "八千代中央|東葉勝田台": {
+          "fromStationName": "八千代中央",
+          "toStationName": "東葉勝田台",
+          "yen": 210
+        },
+        "村上|東葉勝田台": {
+          "fromStationName": "村上",
+          "toStationName": "東葉勝田台",
+          "yen": 210
+        }
+      }
+    },
+    "minatomirai_station_pairs_202303": {
+      "operatorIds": [
+        "横浜高速鉄道"
+      ],
+      "routeIds": [
+        "V4_ROUTE_848E30149914C1"
+      ],
+      "sourceKey": "minatomirai_station_pairs_202303",
+      "operatorName": "横浜高速鉄道",
+      "notes": [
+        "2023年3月18日改定のみなとみらい線公式普通旅客運賃（きっぷ利用、大人）。"
+      ],
+      "pairs": {
+        "横浜|新高島": {
+          "fromStationName": "横浜",
+          "toStationName": "新高島",
+          "yen": 200
+        },
+        "横浜|みなとみらい": {
+          "fromStationName": "横浜",
+          "toStationName": "みなとみらい",
+          "yen": 200
+        },
+        "横浜|馬車道": {
+          "fromStationName": "横浜",
+          "toStationName": "馬車道",
+          "yen": 200
+        },
+        "横浜|日本大通り": {
+          "fromStationName": "横浜",
+          "toStationName": "日本大通り",
+          "yen": 230
+        },
+        "横浜|元町・中華街": {
+          "fromStationName": "横浜",
+          "toStationName": "元町・中華街",
+          "yen": 230
+        },
+        "新高島|みなとみらい": {
+          "fromStationName": "新高島",
+          "toStationName": "みなとみらい",
+          "yen": 200
+        },
+        "新高島|馬車道": {
+          "fromStationName": "新高島",
+          "toStationName": "馬車道",
+          "yen": 200
+        },
+        "新高島|日本大通り": {
+          "fromStationName": "新高島",
+          "toStationName": "日本大通り",
+          "yen": 200
+        },
+        "新高島|元町・中華街": {
+          "fromStationName": "新高島",
+          "toStationName": "元町・中華街",
+          "yen": 230
+        },
+        "みなとみらい|馬車道": {
+          "fromStationName": "みなとみらい",
+          "toStationName": "馬車道",
+          "yen": 200
+        },
+        "みなとみらい|日本大通り": {
+          "fromStationName": "みなとみらい",
+          "toStationName": "日本大通り",
+          "yen": 200
+        },
+        "みなとみらい|元町・中華街": {
+          "fromStationName": "みなとみらい",
+          "toStationName": "元町・中華街",
+          "yen": 200
+        },
+        "馬車道|日本大通り": {
+          "fromStationName": "馬車道",
+          "toStationName": "日本大通り",
+          "yen": 200
+        },
+        "馬車道|元町・中華街": {
+          "fromStationName": "馬車道",
+          "toStationName": "元町・中華街",
+          "yen": 200
+        },
+        "日本大通り|元町・中華街": {
+          "fromStationName": "日本大通り",
+          "toStationName": "元町・中華街",
+          "yen": 200
         }
       }
     },
