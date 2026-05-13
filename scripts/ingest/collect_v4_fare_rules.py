@@ -2175,6 +2175,23 @@ MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
         ),
     },
     {
+        "key": "fujisanroku_kawaguchiko_station_pairs_201404",
+        "operatorIds": ["富士山麓電気鉄道"],
+        "operatorName": "富士山麓電気鉄道",
+        "url": "https://www.fujikyu-railway.jp/common/images/tickets/pdf/260401teikigai.pdf",
+        "notes": [
+            "富士山麓電気鉄道公式の富士急行線電車旅客運賃表（平成26年4月1日改正）から、ゲーム側で社線内だけになっている河口湖線3駅の上段大人普通運賃だけを転記。大月線側は現在のゲーム route にJR中央線・総武線が混在しているため未収録。小児運賃、特急料金、富士回遊のJR連絡運賃、企画券は別体系のため未収録。",
+        ],
+        "routeIds": ["V4_ROUTE_83E0CFBC2D3044"],
+        "pairs": station_pair_triangle_rows(
+            ["富士山", "富士急ハイランド", "河口湖"],
+            [
+                ("富士急ハイランド", [170]),
+                ("河口湖", [220, 170]),
+            ],
+        ),
+    },
+    {
         "key": "nankai_airport_line_station_pairs_202504",
         "operatorIds": ["南海電気鉄道"],
         "operatorName": "南海電気鉄道",
