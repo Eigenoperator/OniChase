@@ -1444,6 +1444,26 @@ MANUAL_STATION_PAIR_FARE_TABLES: list[dict[str, Any]] = [
         ),
     },
     {
+        "key": "shigaraki_kogen_station_pairs",
+        "operatorIds": ["信楽高原鐵道"],
+        "operatorName": "信楽高原鐵道",
+        "url": "https://skr.mi-ktt.ne.jp/fare/",
+        "notes": [
+            "信楽高原鐵道公式サイトの普通運賃表から大人普通運賃の三角表を転記。",
+        ],
+        "routeIds": ["V4_ROUTE_0E1E07593BCF5F"],
+        "pairs": station_pair_triangle_rows(
+            ["貴生川", "紫香楽宮跡", "雲井", "勅旨", "玉桂寺前", "信楽"],
+            [
+                ("紫香楽宮跡", [410]),
+                ("雲井", [410, 210]),
+                ("勅旨", [470, 210, 210]),
+                ("玉桂寺前", [470, 290, 290, 210]),
+                ("信楽", [470, 290, 290, 210, 210]),
+            ],
+        ),
+    },
+    {
         "key": "kita_osaka_kyuko_station_pairs",
         "operatorIds": ["北大阪急行電鉄"],
         "operatorName": "北大阪急行電鉄",
