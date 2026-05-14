@@ -774,6 +774,49 @@
       min-height: 42px;
     }
 
+    .mode-picker {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      border-bottom: 1px solid rgba(213, 221, 232, 0.72);
+      overflow-x: auto;
+    }
+
+    .mode-circle {
+      width: 46px;
+      height: 46px;
+      border: 1px solid rgba(136, 151, 170, 0.36);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.86);
+      color: var(--muted);
+      box-shadow: 0 8px 18px rgba(31, 42, 55, 0.08);
+      display: inline-grid;
+      place-items: center;
+      font-size: 21px;
+      cursor: pointer;
+      flex: 0 0 auto;
+      transition: transform 120ms ease, border-color 120ms ease, background-color 120ms ease, color 120ms ease;
+    }
+
+    .mode-circle:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(21, 101, 192, 0.42);
+      color: var(--accent);
+    }
+
+    .mode-circle.active {
+      border-color: rgba(21, 101, 192, 0.42);
+      background: rgba(21, 101, 192, 0.12);
+      color: var(--accent);
+    }
+
+    .mode-circle:disabled {
+      opacity: 0.34;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
     .planner-page-nav {
       display: flex;
       align-items: center;
@@ -5506,6 +5549,7 @@
       selectedTripStopIds: [],
       selectedTripStopFeatureIds: [],
       walkingMapActive: false,
+      planningModes: { runner: 'rail', hunter: 'rail' },
       activeMode: 'runner',
       players: {},
       pendingTripIds: { runner: null, hunter: null },
@@ -9787,7 +9831,15 @@
     }
 
     function toggleWalkingMap() {
-      setWalkingMapActive(!state.walkingMapActive, { focus: true });
+      const nextActive = !state.walkingMapActive;
+      if (nextActive) {
+        state.planningModes[state.activeMode] = 'walk';
+        state.planningRouteIds[state.activeMode] = null;
+        clearPendingTrip();
+        setSelectedRoute(null);
+      }
+      setWalkingMapActive(nextActive, { focus: true });
+      renderGame();
     }
 
     function walkingTransferLinkBetween(fromStationGroupId, toStationGroupId) {
@@ -12269,6 +12321,7 @@
       const floor = protectedPlanLength();
       activePlayer().steps = activePlayer().steps.slice(0, floor);
       state.planningRouteIds[state.activeMode] = null;
+      state.planningModes[state.activeMode] = 'rail';
       clearPendingTrip();
       invalidateSimulation();
       updateSelectedTripPath();
@@ -12302,6 +12355,7 @@
       activePlayer().start_station_id = state.selectedStationGroupId;
       activePlayer().steps = [];
       state.planningRouteIds[state.activeMode] = null;
+      state.planningModes[state.activeMode] = 'rail';
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
@@ -12314,6 +12368,7 @@
       const targetMinute = Math.min(preview.currentMinute + 5, hhmmToMinutes(state.endTime));
       activePlayer().steps.push({ type: 'WAIT_UNTIL', until_hhmm: minutesToHhmm(targetMinute) });
       state.planningRouteIds[state.activeMode] = null;
+      state.planningModes[state.activeMode] = 'rail';
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
@@ -12510,6 +12565,7 @@
       state.clockRunning = false;
       state.pendingTripIds = { runner: null, hunter: null };
       state.planningRouteIds = { runner: null, hunter: null };
+      state.planningModes = { runner: 'rail', hunter: 'rail' };
       state.pendingCoupledChoices = { runner: null, hunter: null };
       state.selectedTripId = null;
       state.selectedTripStopIds = [];
@@ -12827,6 +12883,36 @@
       `;
     }
 
+    const PLANNING_MODE_DEFS = Object.freeze([
+      { id: 'rail', label: 'Rail', icon: '🚆', enabled: true },
+      { id: 'walk', label: 'Walk', icon: '👣', enabled: true },
+      { id: 'flight', label: 'Flight', icon: '✈', enabled: false },
+      { id: 'ship', label: 'Ship', icon: '⛴', enabled: false },
+      { id: 'bus', label: 'Bus', icon: '🚌', enabled: false },
+    ]);
+
+    function activePlanningMode(playerId = state.activeMode) {
+      return state.planningModes[playerId] || 'rail';
+    }
+
+    function planningModePickerHtml(activeMode) {
+      return `
+        <div class="mode-picker" data-row-key="mode-picker">
+          ${PLANNING_MODE_DEFS.map((mode) => `
+            <button
+              class="mode-circle ${activeMode === mode.id ? 'active' : ''}"
+              type="button"
+              title="${mode.label}"
+              aria-label="${mode.label}"
+              data-action="choose-mode"
+              data-mode="${mode.id}"
+              ${mode.enabled ? '' : 'disabled'}
+            >${mode.icon}</button>
+          `).join('')}
+        </div>
+      `;
+    }
+
     function syncElementAttributes(current, next) {
       [...current.attributes].forEach((attribute) => {
         if (!next.hasAttribute(attribute.name)) current.removeAttribute(attribute.name);
@@ -12932,6 +13018,7 @@
           const action = button.dataset.action;
           if (action === 'choose-route') choosePlanningRoute(button.dataset.routeId);
           else if (action === 'walk-to-station') addWalkingStep(button.dataset.stationGroupId);
+          else if (action === 'choose-mode') choosePlanningMode(button.dataset.mode);
           else if (action === 'choose-coupled') chooseCoupledTrain(button.dataset.coupledKey);
           else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
           else if (action === 'back-routes') backToPlanningRoutes();
@@ -12940,6 +13027,18 @@
           else if (action === 'ride-direct') addRideToStation(button.dataset.stationGroupId);
         };
       });
+    }
+
+    function choosePlanningMode(mode) {
+      const definition = PLANNING_MODE_DEFS.find((item) => item.id === mode);
+      if (!definition?.enabled) return;
+      state.planningModes[state.activeMode] = mode;
+      state.planningRouteIds[state.activeMode] = null;
+      clearPendingTrip();
+      setSelectedRoute(null);
+      if (mode === 'walk') setWalkingMapActive(true, { focus: true });
+      else setWalkingMapActive(false);
+      renderGame();
     }
 
     function backToPlanningRoutes() {
@@ -13041,6 +13140,7 @@
         } else if (!selectedRouteId) {
           const departures = availableDepartures(preview);
           routeChoices = routeChoicesFromDepartures(departures);
+          const planningMode = activePlanningMode();
           const walkingRows = walkingDestinationsFrom(preview.currentState.stationGroupId).map((edge) => `
             <button class="route-row" type="button" data-row-key="${escapeHtml(`walk:${edge.toNodeId}`)}" data-action="walk-to-station" data-station-group-id="${edge.toNodeId}">
               <span class="route-swatch" style="background:#7c3aed"></span>
@@ -13053,10 +13153,17 @@
           `);
           html += plannerStep(
             '1/3',
-            `Lines at ${currentLabel}`,
-            `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))} · walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km`,
-            (routeChoices.length || walkingRows.length)
-              ? routeChoices.map((choice) => `
+            `${planningMode === 'walk' ? 'Walking from' : 'Lines at'} ${currentLabel}`,
+            planningMode === 'walk'
+              ? `Walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km`
+              : `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))}`,
+            planningModePickerHtml(planningMode) + (
+              planningMode === 'walk'
+                ? (walkingRows.length
+                  ? walkingRows.join('')
+                  : `<div class="empty" data-row-key="empty:walk">No walkable stations within ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km.</div>`)
+                : (routeChoices.length
+                  ? routeChoices.map((choice) => `
                   <button class="route-row" type="button" data-row-key="${escapeHtml(`route:${choice.routeId}`)}" data-action="choose-route" data-route-id="${choice.routeId}">
                     <span class="route-swatch" style="background:${routeColor(choice.routeId)}"></span>
                     <span>
@@ -13065,8 +13172,9 @@
                     </span>
                     <span class="row-meta">${choice.firstDepartureHhmm}</span>
                   </button>
-                `).join('') + walkingRows.join('')
-              : `<div class="empty" data-row-key="empty:routes">No available lines from this station.</div>`,
+                `).join('')
+                  : `<div class="empty" data-row-key="empty:routes">No available lines from this station.</div>`)
+            ),
           );
         } else {
           html += plannerStep(
