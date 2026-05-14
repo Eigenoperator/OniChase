@@ -11950,16 +11950,29 @@
         'station-hub': dimmed ? 0.28 : 1,
         'station-major': dimmed ? 0.22 : 1,
         'station-local': dimmed ? 0.16 : 1,
-        'label-hub': dimmed ? 0.22 : 1,
-        'label-major': dimmed ? 0.20 : 1,
-        'label-local': dimmed ? 0.16 : 1,
-        'label-dense-all': dimmed ? 0.14 : 1,
       };
       Object.entries(opacityByLayer).forEach(([layerId, opacity]) => {
         if (!state.map.getLayer(layerId)) return;
-        const property = layerId.startsWith('label-') ? 'text-opacity' : layerId.includes('track') ? 'line-opacity' : 'circle-opacity';
+        const property = layerId.includes('track') ? 'line-opacity' : 'circle-opacity';
         state.map.setPaintProperty(layerId, property, opacity);
       });
+      [
+        'label-hub',
+        'label-major',
+        'label-local',
+        'label-local-dense',
+        'label-all-dense',
+        'label-all-final',
+        'selected-station-label',
+      ].forEach((layerId) => {
+        if (state.map.getLayer(layerId)) {
+          state.map.setLayoutProperty(layerId, 'visibility', dimmed ? 'none' : 'visible');
+        }
+      });
+      if (dimmed) {
+        state.stationLabelOverlayEl?.classList.add('hidden');
+        state.stationLabelOverlayEl?.replaceChildren();
+      }
     }
 
     function denseStationLabelFontSize(zoom) {
@@ -11998,7 +12011,7 @@
       const overlay = state.stationLabelOverlayEl;
       if (!map || !overlay) return;
       const zoom = map.getZoom();
-      if (zoom < 12) {
+      if (state.walkingMapActive || zoom < 12) {
         overlay.classList.add('hidden');
         overlay.replaceChildren();
         return;
