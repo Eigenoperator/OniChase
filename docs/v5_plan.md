@@ -30,7 +30,7 @@ V5 rail work should focus on integration with the multimodal graph, not rewritin
 Walking becomes a real movement mode:
 
 - Any station can connect by walking to nearby stations in configurable layers: `0.5 km`, `1 km`, `2 km`, `3 km`, and `5 km`.
-- Walking speed is a mutable gameplay parameter. The current default is slower, `1.0 m/s`, because the v1 walking model uses straight-line distance rather than actual pedestrian paths.
+- Walking speed is a mutable gameplay parameter for future stamina/fatigue rules. The current default is `5 km/h` (`1.389 m/s`), while the UI does not expose this setting directly.
 - Walking edges are generated from station/node coordinates, not manually enumerated transfer pairs.
 - The walking artifact stores all edges within `5 km` once; gameplay and UI choose the active layer by filtering distance.
 - Walking time is mandatory in planning and live simulation.

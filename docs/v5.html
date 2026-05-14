@@ -1265,16 +1265,6 @@
 
           <section>
             <div class="section-label">Planning</div>
-            <div class="setup-field" style="margin:0 0 10px;">
-              <label for="walking-speed-select">Walking Speed</label>
-              <select id="walking-speed-select" class="room-input">
-                <option value="0.8">Slow · 0.8 m/s</option>
-                <option value="1.0" selected>Default · 1.0 m/s</option>
-                <option value="1.2">Fresh · 1.2 m/s</option>
-                <option value="1.4">Fast · 1.4 m/s</option>
-                <option value="1.6">Sprint · 1.6 m/s</option>
-              </select>
-            </div>
             <div class="info-box" id="train-summary" hidden></div>
             <div class="outlook-list" id="train-outlook">
               <div class="empty">Timetable will load after the map is ready.</div>
@@ -1320,7 +1310,7 @@
     const COUPLED_SERVICE_REGISTRY_URL = './data/v4_coupled_service_registry.json';
     const WALKING_EDGES_URL = './data/v5_walking_edges.json.gz';
     const V5_ACTIVE_WALKING_THRESHOLD_METERS = 3000;
-    const V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND = 1.0;
+    const V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND = 5 / 3.6;
     const V3_REPLAY_SCHEMA_VERSION = 'v5.replay.1';
     const V3_REPLAY_COLLECTION_SCHEMA_VERSION = 'v5.replay.collection.1';
     const V3_DATASET_NAME = 'v5-from-v4-nationwide';
@@ -5660,7 +5650,6 @@
     const currentStatusEl = document.getElementById('current-status');
     const trainSummaryEl = document.getElementById('train-summary');
     const trainOutlookEl = document.getElementById('train-outlook');
-    const walkingSpeedSelectEl = document.getElementById('walking-speed-select');
     const planBoardEl = document.getElementById('plan-board');
     const tutorialGuideSectionEl = document.getElementById('tutorial-guide-section');
     const tutorialGuideEl = document.getElementById('tutorial-guide');
@@ -15225,7 +15214,6 @@
         window.open('./global-replay.html', '_blank', 'noopener');
       });
       document.getElementById('walking-map-button').addEventListener('click', toggleWalkingMap);
-      walkingSpeedSelectEl?.addEventListener('change', () => setWalkingSpeed(walkingSpeedSelectEl.value));
       document.getElementById('replay-run-button').addEventListener('click', runSimulation);
       document.getElementById('replay-copy-link-button').addEventListener('click', copyReplayLink);
       document.getElementById('replay-copy-json-button').addEventListener('click', copyReplayJson);
