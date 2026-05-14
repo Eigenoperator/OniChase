@@ -8208,25 +8208,40 @@
       return (state.physicalStationsByGroupId.get(stop.stationGroupId) || [])[0] || null;
     }
 
+    function sameStationGroupMinimumTransferMinutes(context = {}) {
+      const fromTripIsShinkansen = isShinkansenTrip(context.fromTrip);
+      const boardTripIsShinkansen = isShinkansenTrip(context.boardTrip);
+      return fromTripIsShinkansen !== boardTripIsShinkansen ? 5 : 0;
+    }
+
     function sameStationGroupTransferLink(stationGroupId, playerId = state.activeMode, context = {}) {
       const fromPhysicalStationId = context.fromPhysicalStationId || null;
       const boardPhysicalStationId = context.boardPhysicalStationId ||
         physicalStationForTripStop(context.boardTrip, context.boardStop, 'board')?.id ||
         null;
+      const minimumMinutes = sameStationGroupMinimumTransferMinutes(context);
       const fromCoordinate = physicalStationCoordinateById(fromPhysicalStationId);
       const boardCoordinate = physicalStationCoordinateById(boardPhysicalStationId);
       if (!fromCoordinate || !boardCoordinate) {
-        return { transferMinutes: 0, distanceMeters: 0, reason: 'same_station_group' };
+        return {
+          transferMinutes: minimumMinutes,
+          distanceMeters: 0,
+          reason: minimumMinutes ? 'same_station_group_shinkansen_minimum' : 'same_station_group',
+        };
       }
       const distanceMeters = coordinateDistanceMeters(fromCoordinate, boardCoordinate);
       const walkTimeSec = walkingTimeSecForDistance(distanceMeters, walkingSpeedMetersPerSecondFor(playerId, context));
+      const walkMinutes = Math.max(0, Math.ceil(walkTimeSec / 60));
       return {
-        transferMinutes: Math.max(0, Math.ceil(walkTimeSec / 60)),
+        transferMinutes: Math.max(minimumMinutes, walkMinutes),
         distanceMeters: Math.round(distanceMeters),
-        reason: fromPhysicalStationId === boardPhysicalStationId ? 'same_physical_station' : 'same_station_group_physical_walk',
+        reason: minimumMinutes && minimumMinutes > walkMinutes
+          ? 'same_station_group_shinkansen_minimum'
+          : fromPhysicalStationId === boardPhysicalStationId ? 'same_physical_station' : 'same_station_group_physical_walk',
         fromPhysicalStationId,
         boardPhysicalStationId,
         walkTimeSec,
+        minimumTransferMinutes: minimumMinutes,
       };
     }
 
@@ -10209,7 +10224,10 @@
           routeId: options.routeId || null,
           includeTransferEquivalents: true,
           playerId,
-          walkingContext: { fromPhysicalStationId: preview.currentState.physicalStationId || null },
+          walkingContext: {
+            fromPhysicalStationId: preview.currentState.physicalStationId || null,
+            fromTrip: state.tripById.get(preview.currentState.alightTripId) || null,
+          },
         },
       )
         .map((row) => ({
@@ -10360,7 +10378,10 @@
         {
           includeTransferEquivalents: true,
           playerId,
-          walkingContext: { fromPhysicalStationId: preview.currentState.physicalStationId || null },
+          walkingContext: {
+            fromPhysicalStationId: preview.currentState.physicalStationId || null,
+            fromTrip: state.tripById.get(preview.currentState.alightTripId) || null,
+          },
         },
       );
       const match = departures.find((row) => row.trip.id === tripId && hasDownstreamStop(row.trip, row.stop));
@@ -11911,7 +11932,7 @@
       const player = state.players[playerId];
       if (!player) return null;
       let currentMinute = hhmmToMinutes(state.startTime);
-      let currentState = { kind: 'NODE', stationGroupId: player.start_station_id, physicalStationId: null };
+      let currentState = { kind: 'NODE', stationGroupId: player.start_station_id, physicalStationId: null, alightTripId: null };
       let currentTrip = null;
       let currentBoardStop = null;
       let currentBoardPhysicalStationId = null;
@@ -11957,7 +11978,7 @@
             };
           }
           currentMinute = arrivalMinute;
-          currentState = { kind: 'NODE', stationGroupId: edge.toNodeId, physicalStationId: null };
+          currentState = { kind: 'NODE', stationGroupId: edge.toNodeId, physicalStationId: null, alightTripId: null };
           resolvedSteps.push({ ...step, distance_meters: edge.distanceMeters, walk_time_sec: walkTimeSec, walking_speed_mps: walkingSpeed });
           currentBoardPhysicalStationId = null;
           continue;
@@ -12002,7 +12023,7 @@
             };
           }
           currentMinute = arrivalMinute;
-          currentState = { kind: 'NODE', stationGroupId: alightStop.stationGroupId, physicalStationId: alightPhysicalStation?.id || null };
+          currentState = { kind: 'NODE', stationGroupId: alightStop.stationGroupId, physicalStationId: alightPhysicalStation?.id || null, alightTripId: currentTrip.id };
           currentTrip = null;
           currentBoardStop = null;
           currentBoardPhysicalStationId = null;
@@ -13786,6 +13807,7 @@
       let currentMinute = hhmmToMinutes(scenario.start_time_hhmm);
       let currentStationId = playerData.start_station_id;
       let currentStationPhysicalId = null;
+      let currentStationTrip = null;
       let currentTrip = null;
       let currentBoardStop = null;
       let currentBoardPhysicalStationId = null;
@@ -13845,6 +13867,7 @@
           currentMinute = arrivalMinute;
           currentStationId = edge.toNodeId;
           currentStationPhysicalId = null;
+          currentStationTrip = null;
           currentTrip = null;
           currentBoardStop = null;
           currentBoardPhysicalStationId = null;
@@ -13854,7 +13877,7 @@
         if (action.type === 'BOARD_TRAIN') {
           const trip = state.tripById.get(action.trip_id);
           if (!trip) throw new Error(`Unknown trip ${action.trip_id}`);
-          const walkingContext = { fromPhysicalStationId: currentStationPhysicalId };
+          const walkingContext = { fromPhysicalStationId: currentStationPhysicalId, fromTrip: currentStationTrip };
           const boardStop = findBoardingStop(trip, currentStationId, currentMinute, { playerId, walkingContext });
           if (!boardStop) throw new Error(`Trip ${action.trip_id} not catchable from ${currentStationId}`);
           const boardPhysicalStation = physicalStationForTripStop(trip, boardStop, 'board');
@@ -13883,6 +13906,7 @@
           currentBoardPhysicalStationId = boardPhysicalStation?.id || null;
           currentStationId = null;
           currentStationPhysicalId = null;
+          currentStationTrip = null;
           resolvedActions.push({ step_index: i + 1, ...action, transfer: transferLink, board_physical_station_id: currentBoardPhysicalStationId });
           continue;
         }
@@ -13921,6 +13945,7 @@
           currentMinute = arrivalMinute;
           currentStationId = alightStop.stationGroupId;
           currentStationPhysicalId = alightPhysicalStation?.id || null;
+          currentStationTrip = currentTrip;
           currentTrip = null;
           currentBoardStop = null;
           currentBoardPhysicalStationId = null;
