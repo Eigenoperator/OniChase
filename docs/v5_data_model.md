@@ -92,7 +92,7 @@ Fields:
 
 ## Walking Model
 
-Walking edges are generated between nodes within `2 km`.
+Walking edges are generated between nodes within the maximum `5 km` walking layer and then filtered at runtime by the active layer.
 
 Fields:
 
@@ -100,12 +100,16 @@ Fields:
 - `toNodeId`
 - `distanceMeters`
 - `walkTimeSec`
-- `speedMetersPerSec`
+- `speedMetersPerSecond`
+- `directed`
 - `source`
 
 Rules:
 
-- Walking can connect any station to any other station within the distance limit.
+- Walking can connect any station to any other station within the selected layer.
+- Supported initial layers are `500`, `1000`, `2000`, `3000`, and `5000` meters.
+- The first generated artifact is `data/v5_walking_edges.json.gz`; its audit summary is `data/v5_walking_edge_audit.json`.
+- The v1 distance model is station-group centroid Haversine distance, not road-network walking geometry.
 - Walking can later connect stations, airports, ports, and bus stops if node geometry supports it.
 - Walking fare is always `0`.
 - Walking speed is a gameplay rule, not a real-world claim.

@@ -29,9 +29,10 @@ V5 rail work should focus on integration with the multimodal graph, not rewritin
 
 Walking becomes a real movement mode:
 
-- Any station can connect by walking to any other station within `2 km`.
+- Any station can connect by walking to nearby stations in configurable layers: `0.5 km`, `1 km`, `2 km`, `3 km`, and `5 km`.
 - Walking speed is fixed and may be faster than ordinary human walking for gameplay pacing.
 - Walking edges are generated from station/node coordinates, not manually enumerated transfer pairs.
+- The walking artifact stores all edges within `5 km` once; gameplay and UI choose the active layer by filtering distance.
 - Walking time is mandatory in planning and live simulation.
 - Walking fare is `0`.
 
@@ -126,7 +127,7 @@ Policy C is only for gameplay rules, not real transit facts:
 Recommended order:
 
 1. Multimodal node model.
-2. Walking edges between all station nodes within `2 km`.
+2. Walking edges between all station nodes within `0.5/1/2/3/5 km` layers.
 3. Planner support for walking and transfer time.
 4. Airport nodes and flight data model.
 5. Plane ticket purchase rule with 1-hour advance purchase and opponent reveal.
