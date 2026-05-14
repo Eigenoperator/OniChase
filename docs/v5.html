@@ -8211,7 +8211,14 @@
     function sameStationGroupMinimumTransferMinutes(context = {}) {
       const fromTripIsShinkansen = isShinkansenTrip(context.fromTrip);
       const boardTripIsShinkansen = isShinkansenTrip(context.boardTrip);
-      return fromTripIsShinkansen !== boardTripIsShinkansen ? 5 : 0;
+      if (fromTripIsShinkansen !== boardTripIsShinkansen) return 5;
+      return context.fromPhysicalStationId || context.fromTrip ? 1 : 0;
+    }
+
+    function sameStationGroupMinimumReason(minimumMinutes) {
+      if (minimumMinutes >= 5) return 'same_station_group_shinkansen_minimum';
+      if (minimumMinutes > 0) return 'same_station_group_minimum';
+      return 'same_station_group';
     }
 
     function sameStationGroupTransferLink(stationGroupId, playerId = state.activeMode, context = {}) {
@@ -8226,7 +8233,7 @@
         return {
           transferMinutes: minimumMinutes,
           distanceMeters: 0,
-          reason: minimumMinutes ? 'same_station_group_shinkansen_minimum' : 'same_station_group',
+          reason: sameStationGroupMinimumReason(minimumMinutes),
         };
       }
       const distanceMeters = coordinateDistanceMeters(fromCoordinate, boardCoordinate);
@@ -8236,7 +8243,7 @@
         transferMinutes: Math.max(minimumMinutes, walkMinutes),
         distanceMeters: Math.round(distanceMeters),
         reason: minimumMinutes && minimumMinutes > walkMinutes
-          ? 'same_station_group_shinkansen_minimum'
+          ? sameStationGroupMinimumReason(minimumMinutes)
           : fromPhysicalStationId === boardPhysicalStationId ? 'same_physical_station' : 'same_station_group_physical_walk',
         fromPhysicalStationId,
         boardPhysicalStationId,
