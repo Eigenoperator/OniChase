@@ -9872,6 +9872,123 @@
       if (state.walkingMapActive && focus) focusWalkingMap();
     }
 
+    function validCoordinate(coordinate) {
+      return Array.isArray(coordinate) &&
+        coordinate.length >= 2 &&
+        Number.isFinite(coordinate[0]) &&
+        Number.isFinite(coordinate[1]);
+    }
+
+    function coordinatesFromGeometry(geometry) {
+      const coordinates = [];
+      if (!geometry) return coordinates;
+      if (geometry.type === 'Point' && validCoordinate(geometry.coordinates)) {
+        coordinates.push(geometry.coordinates);
+      } else if (geometry.type === 'LineString') {
+        (geometry.coordinates || []).forEach((coordinate) => {
+          if (validCoordinate(coordinate)) coordinates.push(coordinate);
+        });
+      } else if (geometry.type === 'MultiLineString') {
+        (geometry.coordinates || []).forEach((line) => {
+          (line || []).forEach((coordinate) => {
+            if (validCoordinate(coordinate)) coordinates.push(coordinate);
+          });
+        });
+      }
+      return coordinates;
+    }
+
+    function coordinatesFromFeatureCollection(collection) {
+      return (collection?.features || []).flatMap((feature) => coordinatesFromGeometry(feature.geometry));
+    }
+
+    function fitMapToCoordinates(coordinates, options = {}) {
+      const map = state.map;
+      const valid = (coordinates || []).filter(validCoordinate);
+      if (!map || !valid.length) return;
+      if (valid.length === 1) {
+        map.easeTo({
+          center: valid[0],
+          zoom: Math.max(map.getZoom(), options.pointZoom || 13.2),
+          duration: options.duration ?? 650,
+        });
+        return;
+      }
+      const lons = valid.map((coordinate) => coordinate[0]);
+      const lats = valid.map((coordinate) => coordinate[1]);
+      const minLon = Math.min(...lons);
+      const maxLon = Math.max(...lons);
+      const minLat = Math.min(...lats);
+      const maxLat = Math.max(...lats);
+      if (minLon === maxLon && minLat === maxLat) {
+        map.easeTo({
+          center: valid[0],
+          zoom: Math.max(map.getZoom(), options.pointZoom || 13.2),
+          duration: options.duration ?? 650,
+        });
+        return;
+      }
+      map.fitBounds([[minLon, minLat], [maxLon, maxLat]], {
+        padding: options.padding ?? { top: 86, right: 86, bottom: 86, left: 86 },
+        duration: options.duration ?? 650,
+        maxZoom: options.maxZoom ?? 13.0,
+      });
+    }
+
+    function currentRailFocusCoordinate() {
+      const preview = planCursorPreview(state.activeMode);
+      if (validCoordinate(preview?.mapPosition)) return preview.mapPosition;
+      if (preview?.currentState?.kind === 'NODE') return stationLonLat(preview.currentState.stationGroupId);
+      if (preview?.mapStationGroupId) return stationLonLat(preview.mapStationGroupId);
+      return null;
+    }
+
+    function localCoordinatesNearAnchor(coordinates, anchor, thresholds = [18000, 45000, 90000]) {
+      if (!anchor) return coordinates;
+      for (const threshold of thresholds) {
+        const local = coordinates.filter((coordinate) => coordinateDistanceMeters(coordinate, anchor) <= threshold);
+        if (local.length >= 2) return local;
+      }
+      return coordinates;
+    }
+
+    function focusSelectedRouteOnMap(routeId) {
+      if (!routeId || state.walkingMapActive) return;
+      const routeCoordinates = coordinatesFromFeatureCollection(selectedRouteFeatureCollection(routeId));
+      if (!routeCoordinates.length) return;
+      const anchor = currentRailFocusCoordinate();
+      const focusCoordinates = localCoordinatesNearAnchor(routeCoordinates, anchor);
+      if (anchor) focusCoordinates.push(anchor);
+      fitMapToCoordinates(focusCoordinates, { maxZoom: 12.6, pointZoom: 12.8 });
+    }
+
+    function futureTripStopsForFocus(trip, limit = 8) {
+      const startSequence = selectedTripStartSequence(trip);
+      return (trip?.stopTimes || [])
+        .filter((stop) => stop.sequence >= startSequence)
+        .sort((left, right) => left.sequence - right.sequence)
+        .slice(0, limit);
+    }
+
+    function focusSelectedTripOnMap(trip) {
+      if (!trip || state.walkingMapActive) return;
+      const stops = futureTripStopsForFocus(trip);
+      const coordinates = [];
+      stops.forEach((stop, index) => {
+        const coordinate = stationLonLat(stop.stationGroupId);
+        if (coordinate) coordinates.push(coordinate);
+        const nextStop = stops[index + 1];
+        if (!nextStop) return;
+        const routeId = routeIdForTripSegment(trip, stop, nextStop);
+        const segment = coordinatesForTripSegment(routeId, stop, nextStop, {
+          allowPhysicalGraphFallback: false,
+          allowStationPairFallback: !tripPathRequiresReviewedGeometry(trip),
+        });
+        appendCoordinates(coordinates, segment.length >= 2 ? segment : stationPairCoordinates(stop, nextStop));
+      });
+      fitMapToCoordinates(coordinates, { maxZoom: 13.4, pointZoom: 13.4 });
+    }
+
     function toggleWalkingMap() {
       const nextActive = !state.walkingMapActive;
       if (nextActive) {
@@ -11956,6 +12073,7 @@
       state.selectedRouteId = routeId || null;
       if (!options.preservePendingCoupled) state.pendingCoupledChoices[state.activeMode] = null;
       updateSelectedRouteHighlights();
+      if (!options.skipAutoFocus) focusSelectedRouteOnMap(state.selectedRouteId);
       renderRouteCard();
       renderRouteList();
       renderGame();
@@ -11969,10 +12087,11 @@
       state.selectedTripStopIds = trip ? selectedTripStopIds(trip) : [];
       state.selectedTripStopFeatureIds = trip ? tripStopFeatureIds(trip, state.selectedTripStopIds) : [];
       setMapFilterIfLayer('selected-trip-stops', trip ? tripStopsFilter(trip, state.selectedTripStopIds) : NONE_STATION_FILTER);
-      if (routeId) setSelectedRoute(routeId);
-      else if (trip?.routeId) setSelectedRoute(trip.routeId);
+      if (routeId) setSelectedRoute(routeId, { skipAutoFocus: true });
+      else if (trip?.routeId) setSelectedRoute(trip.routeId, { skipAutoFocus: true });
       updateSelectedTripPath();
       updateSelectedRouteHighlights();
+      focusSelectedTripOnMap(trip);
       renderRouteCard();
       renderGame();
     }
