@@ -1264,6 +1264,8 @@
     const FARE_RULES_URL = './data/v4_fare_rules.json';
     const TRANSFER_REVIEW_URL = './data/v4_transfer_equivalence_review.json';
     const COUPLED_SERVICE_REGISTRY_URL = './data/v4_coupled_service_registry.json';
+    const WALKING_EDGES_URL = './data/v5_walking_edges.json.gz';
+    const V5_ACTIVE_WALKING_THRESHOLD_METERS = 3000;
     const V3_REPLAY_SCHEMA_VERSION = 'v5.replay.1';
     const V3_REPLAY_COLLECTION_SCHEMA_VERSION = 'v5.replay.collection.1';
     const V3_DATASET_NAME = 'v5-from-v4-nationwide';
@@ -5556,6 +5558,8 @@
       stationTripsByGroupId: new Map(),
       stationRouteDepartureCache: new Map(),
       coupledServiceRegistry: null,
+      walkingGraph: null,
+      walkingEdgesByFromGroupId: new Map(),
       fareRules: null,
       coupledServiceEntries: [],
       coupledChoiceRowsByKey: new Map(),
@@ -7976,6 +7980,51 @@
       state.fareRules = payload;
     }
 
+    function indexWalkingGraph(payload) {
+      const byFrom = new Map();
+      (payload?.edges || [])
+        .filter((edge) => Number(edge.distanceMeters) <= V5_ACTIVE_WALKING_THRESHOLD_METERS)
+        .forEach((edge) => {
+          const forward = {
+            fromNodeId: edge.fromNodeId,
+            toNodeId: edge.toNodeId,
+            fromName: edge.fromName,
+            toName: edge.toName,
+            distanceMeters: Number(edge.distanceMeters) || 0,
+            walkTimeSec: Number(edge.walkTimeSec) || 0,
+          };
+          const reverse = {
+            ...forward,
+            fromNodeId: edge.toNodeId,
+            toNodeId: edge.fromNodeId,
+            fromName: edge.toName,
+            toName: edge.fromName,
+          };
+          [forward, reverse].forEach((item) => {
+            if (!byFrom.has(item.fromNodeId)) byFrom.set(item.fromNodeId, []);
+            byFrom.get(item.fromNodeId).push(item);
+          });
+        });
+      byFrom.forEach((edges) => {
+        edges.sort((a, b) =>
+          a.distanceMeters - b.distanceMeters ||
+          displayNameForGroup(a.toNodeId).localeCompare(displayNameForGroup(b.toNodeId))
+        );
+      });
+      state.walkingGraph = payload || null;
+      state.walkingEdgesByFromGroupId = byFrom;
+    }
+
+    async function loadWalkingGraph() {
+      try {
+        const payload = await fetchJsonMaybeGz(WALKING_EDGES_URL);
+        indexWalkingGraph(payload);
+      } catch (error) {
+        console.warn('Failed to load v5 walking graph', error);
+        indexWalkingGraph(null);
+      }
+    }
+
     function buildStationTransferIndex() {
       state.stationGroupIdsByTransferKey = new Map();
       state.transferEquivalentGroupIdsByGroupId = new Map();
@@ -9476,6 +9525,27 @@
 
     function activePlayer() {
       return state.players[state.activeMode];
+    }
+
+    function walkingEdgeBetween(fromStationGroupId, toStationGroupId) {
+      return (state.walkingEdgesByFromGroupId.get(fromStationGroupId) || [])
+        .find((edge) => edge.toNodeId === toStationGroupId) || null;
+    }
+
+    function walkingDestinationsFrom(stationGroupId, limit = 36) {
+      return (state.walkingEdgesByFromGroupId.get(stationGroupId) || [])
+        .filter((edge) => state.stationGroupById.has(edge.toNodeId))
+        .slice(0, limit);
+    }
+
+    function walkingTimeLabel(seconds) {
+      const minutes = Math.max(0, Math.ceil((Number(seconds) || 0) / 60));
+      return `${minutes}m`;
+    }
+
+    function walkingDistanceLabel(meters) {
+      const value = Number(meters) || 0;
+      return value >= 1000 ? `${(value / 1000).toFixed(1)}km` : `${Math.round(value)}m`;
     }
 
     function pendingTripId(playerId = state.activeMode) {
@@ -11283,6 +11353,40 @@
           resolvedSteps.push(step);
           continue;
         }
+        if (step.type === 'WALK_TO_STATION') {
+          if (currentState.kind !== 'NODE') break;
+          const fromStationGroupId = currentState.stationGroupId;
+          const edge = walkingEdgeBetween(fromStationGroupId, step.station_id);
+          if (!edge) break;
+          const departMinute = currentMinute;
+          const walkMinutes = Math.max(0, Math.ceil((Number(edge.walkTimeSec) || 0) / 60));
+          const arrivalMinute = currentMinute + walkMinutes;
+          if (timeCapMinute !== null && timeCapMinute < arrivalMinute) {
+            const ratio = walkMinutes <= 0 ? 1 : clamp((timeCapMinute - departMinute) / walkMinutes, 0, 1);
+            const fromPosition = stationLonLat(fromStationGroupId);
+            const toPosition = stationLonLat(edge.toNodeId);
+            const mapPosition = fromPosition && toPosition
+              ? [
+                  fromPosition[0] + (toPosition[0] - fromPosition[0]) * ratio,
+                  fromPosition[1] + (toPosition[1] - fromPosition[1]) * ratio,
+                ]
+              : fromPosition || toPosition || null;
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'WALK', fromStationGroupId, toStationGroupId: edge.toNodeId },
+              currentTrip: null,
+              currentBoardStop: null,
+              resolvedSteps,
+              mapPosition,
+              mapStationGroupId: null,
+            };
+          }
+          currentMinute = arrivalMinute;
+          currentState = { kind: 'NODE', stationGroupId: edge.toNodeId };
+          resolvedSteps.push({ ...step, distance_meters: edge.distanceMeters, walk_time_sec: edge.walkTimeSec });
+          continue;
+        }
         if (step.type === 'BOARD_TRAIN') {
           if (currentState.kind !== 'NODE') break;
           const trip = state.tripById.get(step.trip_id);
@@ -11332,6 +11436,9 @@
         const loc = tripLocationOnMap(currentState.tripId, timeCapMinute ?? currentMinute);
         mapPosition = loc?.position || null;
         mapStationGroupId = loc?.anchorStationGroupId || null;
+      } else if (currentState.kind === 'WALK') {
+        mapPosition = stationLonLat(currentState.toStationGroupId) || stationLonLat(currentState.fromStationGroupId);
+        mapStationGroupId = null;
       }
       return { currentMinute, currentTime: minutesToHhmm(currentMinute), currentState, currentTrip, currentBoardStop, resolvedSteps, mapPosition, mapStationGroupId };
     }
@@ -11396,6 +11503,9 @@
       if (preview.visibility === 'hidden' || preview.currentState.kind === 'HIDDEN') return 'hidden during LIVE';
       if (preview.displayLabel && preview.currentState.kind === 'NODE') return `at ${preview.displayLabel} ${preview.currentTime}`;
       if (preview.displayLabel && preview.currentState.kind === 'TRAIN') return `on ${preview.displayLabel} ${preview.currentTime}`;
+      if (preview.currentState.kind === 'WALK') {
+        return `walking ${displayNameForGroup(preview.currentState.fromStationGroupId)} -> ${displayNameForGroup(preview.currentState.toStationGroupId)} ${preview.currentTime}`;
+      }
       return preview.currentState.kind === 'NODE'
         ? `at ${displayNameForGroup(preview.currentState.stationGroupId)} ${preview.currentTime}`
         : `on ${formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })} ${preview.currentTime}`;
@@ -11641,7 +11751,9 @@
         if (point.x < -40 || point.x > width + 160 || point.y < -40 || point.y > height + 80) continue;
         const tripLabel = preview.currentState.kind === 'TRAIN'
           ? formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })
-          : displayNameForGroup(preview.currentState.stationGroupId);
+          : preview.currentState.kind === 'WALK'
+            ? `Walk to ${displayNameForGroup(preview.currentState.toStationGroupId)}`
+            : displayNameForGroup(preview.currentState.stationGroupId);
         const node = document.createElement('div');
         node.className = `player-html-marker ${playerId}`;
         node.style.setProperty('--player-color', playerId === 'runner' ? '#dc4d62' : '#2d6cdf');
@@ -11771,7 +11883,9 @@
         if (!preview?.mapPosition) continue;
         const tripLabel = preview.currentState.kind === 'TRAIN'
           ? formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })
-          : displayNameForGroup(preview.currentState.stationGroupId);
+          : preview.currentState.kind === 'WALK'
+            ? `Walk to ${displayNameForGroup(preview.currentState.toStationGroupId)}`
+            : displayNameForGroup(preview.currentState.stationGroupId);
         features.push({
           type: 'Feature',
           geometry: { type: 'Point', coordinates: preview.mapPosition },
@@ -11886,6 +12000,24 @@
       if (preview.currentState.kind !== 'NODE') return;
       const targetMinute = Math.min(preview.currentMinute + 5, hhmmToMinutes(state.endTime));
       activePlayer().steps.push({ type: 'WAIT_UNTIL', until_hhmm: minutesToHhmm(targetMinute) });
+      state.planningRouteIds[state.activeMode] = null;
+      clearPendingTrip();
+      invalidateSimulation();
+      renderGame();
+      syncPlanIfOnline();
+    }
+
+    function addWalkingStep(stationGroupId) {
+      const preview = truncateFuturePlan();
+      if (preview.currentState.kind !== 'NODE') return;
+      const edge = walkingEdgeBetween(preview.currentState.stationGroupId, stationGroupId);
+      if (!edge) return;
+      activePlayer().steps.push({
+        type: 'WALK_TO_STATION',
+        station_id: edge.toNodeId,
+        distance_meters: edge.distanceMeters,
+        walk_time_sec: edge.walkTimeSec,
+      });
       state.planningRouteIds[state.activeMode] = null;
       clearPendingTrip();
       invalidateSimulation();
@@ -12481,6 +12613,7 @@
         button.onclick = () => {
           const action = button.dataset.action;
           if (action === 'choose-route') choosePlanningRoute(button.dataset.routeId);
+          else if (action === 'walk-to-station') addWalkingStep(button.dataset.stationGroupId);
           else if (action === 'choose-coupled') chooseCoupledTrain(button.dataset.coupledKey);
           else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
           else if (action === 'back-routes') backToPlanningRoutes();
@@ -12524,6 +12657,8 @@
       const isOnboard = preview.currentState.kind === 'TRAIN';
       const currentLabel = isOnboard
         ? formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })
+        : preview.currentState.kind === 'WALK'
+          ? `${displayNameForGroup(preview.currentState.fromStationGroupId)} -> ${displayNameForGroup(preview.currentState.toStationGroupId)}`
         : displayNameForGroup(preview.currentState.stationGroupId);
 
       let html = '';
@@ -12565,6 +12700,13 @@
               `).join('')
             : `<div class="empty" data-row-key="empty:onboard-destinations">No downstream stops available.</div>`,
         );
+      } else if (preview.currentState.kind === 'WALK') {
+        html += plannerStep(
+          '1/3',
+          'Walking',
+          currentLabel,
+          `<div class="empty" data-row-key="empty:walking-now">Arrive at the next station before planning another leg.</div>`,
+        );
       } else {
         const planningRouteId = state.planningRouteIds[state.activeMode] || null;
         let routeChoices = [];
@@ -12581,11 +12723,21 @@
         } else if (!selectedRouteId) {
           const departures = availableDepartures(preview);
           routeChoices = routeChoicesFromDepartures(departures);
+          const walkingRows = walkingDestinationsFrom(preview.currentState.stationGroupId).map((edge) => `
+            <button class="route-row" type="button" data-row-key="${escapeHtml(`walk:${edge.toNodeId}`)}" data-action="walk-to-station" data-station-group-id="${edge.toNodeId}">
+              <span class="route-swatch" style="background:#7c3aed"></span>
+              <span>
+                <span class="row-title">Walk to ${displayNameForGroup(edge.toNodeId)}</span>
+                <span class="row-sub">${walkingDistanceLabel(edge.distanceMeters)} · ${walkingTimeLabel(edge.walkTimeSec)} · fare ¥0</span>
+              </span>
+              <span class="row-meta">walk</span>
+            </button>
+          `);
           html += plannerStep(
             '1/3',
             `Lines at ${currentLabel}`,
-            `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))}`,
-            routeChoices.length
+            `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))} · walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km`,
+            (routeChoices.length || walkingRows.length)
               ? routeChoices.map((choice) => `
                   <button class="route-row" type="button" data-row-key="${escapeHtml(`route:${choice.routeId}`)}" data-action="choose-route" data-route-id="${choice.routeId}">
                     <span class="route-swatch" style="background:${routeColor(choice.routeId)}"></span>
@@ -12595,7 +12747,7 @@
                     </span>
                     <span class="row-meta">${choice.firstDepartureHhmm}</span>
                   </button>
-                `).join('')
+                `).join('') + walkingRows.join('')
               : `<div class="empty" data-row-key="empty:routes">No available lines from this station.</div>`,
           );
         } else {
@@ -12643,6 +12795,24 @@
         if (step.type === 'WAIT_UNTIL') {
           rows.push({ time: step.until_hhmm, title: `Wait until ${step.until_hhmm}`, sub: `Hold at ${displayNameForGroup(chainStation)}`, editable: false });
           currentMinute = hhmmToMinutes(step.until_hhmm);
+        } else if (step.type === 'WALK_TO_STATION') {
+          const edge = walkingEdgeBetween(chainStation, step.station_id) || step;
+          const from = displayNameForGroup(chainStation);
+          const to = displayNameForGroup(step.station_id);
+          const departHhmm = minutesToHhmm(currentMinute);
+          const walkMinutes = Math.max(0, Math.ceil((Number(edge.walkTimeSec ?? step.walk_time_sec) || 0) / 60));
+          currentMinute += walkMinutes;
+          rows.push({
+            time: `LEG ${legIndex}`,
+            title: `Walk: ${from} -> ${to}`,
+            sub: `${departHhmm} -> ${minutesToHhmm(currentMinute)} · ${walkingDistanceLabel(edge.distanceMeters ?? step.distance_meters)} · ¥0`,
+            routeId: null,
+            editable: false,
+          });
+          chainStation = step.station_id;
+          pendingTrip = null;
+          pendingBoardStop = null;
+          legIndex += 1;
         } else if (step.type === 'BOARD_TRAIN') {
           pendingTrip = state.tripById.get(step.trip_id);
           pendingBoardStop = pendingTrip ? findBoardingStop(pendingTrip, chainStation, currentMinute) : null;
@@ -12859,7 +13029,7 @@
       if (['SCENARIO_START', 'SCENARIO_END'].includes(eventType)) return 'LIFECYCLE';
       if (eventType === 'CAPTURE') return 'RESOLUTION';
       if (['START_AT_STATION', 'WAIT_UNTIL'].includes(eventType)) return 'POSITION';
-      if (['BOARD_TRAIN', 'ALIGHT_TRAIN'].includes(eventType)) return 'MOVEMENT';
+      if (['BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION'].includes(eventType)) return 'MOVEMENT';
       return 'GENERIC';
     }
 
@@ -12877,7 +13047,7 @@
     }
 
     function eventPriority(eventType) {
-      return { SCENARIO_START: 0, START_AT_STATION: 1, WAIT_UNTIL: 2, BOARD_TRAIN: 4, ALIGHT_TRAIN: 5, CAPTURE: 6, SCENARIO_END: 7 }[eventType] ?? 99;
+      return { SCENARIO_START: 0, START_AT_STATION: 1, WAIT_UNTIL: 2, WALK_TO_STATION: 3, BOARD_TRAIN: 4, ALIGHT_TRAIN: 5, CAPTURE: 6, SCENARIO_END: 7 }[eventType] ?? 99;
     }
 
     function expandPlayerPlan(playerId, playerData, scenario) {
@@ -12902,6 +13072,43 @@
           events.push(formatEvent(targetMinute, 'WAIT_UNTIL', playerId, { station_group_id: currentStationId }));
           currentMinute = targetMinute;
           resolvedActions.push({ step_index: i + 1, ...action });
+          continue;
+        }
+        if (action.type === 'WALK_TO_STATION') {
+          if (!currentStationId) throw new Error(`${playerId} cannot walk while not at a station`);
+          const edge = walkingEdgeBetween(currentStationId, action.station_id);
+          if (!edge) throw new Error(`${playerId} cannot walk from ${currentStationId} to ${action.station_id}`);
+          const walkMinutes = Math.max(0, Math.ceil((Number(edge.walkTimeSec) || 0) / 60));
+          const arrivalMinute = currentMinute + walkMinutes;
+          const leg = {
+            leg_index: legs.length + 1,
+            step_index: i + 1,
+            mode: 'walking',
+            from_station_id: currentStationId,
+            from_label: displayNameForGroup(currentStationId),
+            to_station_id: edge.toNodeId,
+            to_label: displayNameForGroup(edge.toNodeId),
+            depart_hhmm: minutesToHhmm(currentMinute),
+            arrive_hhmm: minutesToHhmm(arrivalMinute),
+            distance_meters: edge.distanceMeters,
+            walk_time_sec: edge.walkTimeSec,
+            fare: { total_yen: 0, fare_known: true, components: [{ type: 'walking', total_yen: 0 }] },
+          };
+          legs.push(leg);
+          events.push(formatEvent(arrivalMinute, 'WALK_TO_STATION', playerId, {
+            station_group_id: edge.toNodeId,
+            from_station_group_id: currentStationId,
+            distance_meters: edge.distanceMeters,
+            walk_time_sec: edge.walkTimeSec,
+            fare: leg.fare,
+            fare_total_yen: 0,
+            carrier_after: { kind: 'NODE', stationGroupId: edge.toNodeId },
+          }));
+          currentMinute = arrivalMinute;
+          currentStationId = edge.toNodeId;
+          currentTrip = null;
+          currentBoardStop = null;
+          resolvedActions.push({ step_index: i + 1, ...action, distance_meters: edge.distanceMeters, walk_time_sec: edge.walkTimeSec, fare: leg.fare });
           continue;
         }
         if (action.type === 'BOARD_TRAIN') {
@@ -12974,7 +13181,7 @@
 
     function applyEventToCarrierState(carrierState, event) {
       if (!event.player_id) return;
-      if (event.type === 'START_AT_STATION' || event.type === 'ALIGHT_TRAIN') carrierState[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
+      if (event.type === 'START_AT_STATION' || event.type === 'ALIGHT_TRAIN' || event.type === 'WALK_TO_STATION') carrierState[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
       else if (event.type === 'BOARD_TRAIN') carrierState[event.player_id] = { kind: 'TRAIN', tripId: event.trip_id };
     }
 
@@ -12982,12 +13189,12 @@
       const playerEvents = minuteEvents.filter((item) => item.player_id);
       const involvedPlayers = new Set(playerEvents.map((item) => item.player_id));
       if (involvedPlayers.size < 2) return true;
-      const nodeEnteringTypes = new Set(['START_AT_STATION', 'ALIGHT_TRAIN']);
+      const nodeEnteringTypes = new Set(['START_AT_STATION', 'ALIGHT_TRAIN', 'WALK_TO_STATION']);
       return playerEvents.every((item) => nodeEnteringTypes.has(item.type));
     }
 
     function detectCaptureAfterEvent(event, carrierState, minuteEvents) {
-      if (!['SCENARIO_START', 'START_AT_STATION', 'BOARD_TRAIN', 'ALIGHT_TRAIN'].includes(event.type)) return null;
+      if (!['SCENARIO_START', 'START_AT_STATION', 'BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION'].includes(event.type)) return null;
       const runnerState = carrierState.runner;
       const hunterState = carrierState.hunter;
       if (
@@ -14475,6 +14682,7 @@
       const bundle = await fetchJsonMaybeGz(MAP_DATA_URL);
       state.bundle = bundle;
       buildIndexes(bundle);
+      await loadWalkingGraph();
       const runnerStart = bundle.metadata?.defaultRunnerStartStationId || 'SG_TOKYO';
       const hunterStart = bundle.metadata?.defaultHunterStartStationId || 'SG_SHINJUKU';
       state.players = {
