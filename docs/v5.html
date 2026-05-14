@@ -12329,16 +12329,51 @@
       schedulePlayerMarkerOverlayRender();
     }
 
+    function selectedTripStopGroupIdsForCurrentContext(preview = planCursorPreview(state.activeMode)) {
+      const pending = preview ? pendingDepartureContext(preview) : null;
+      if (pending) return pending.destinations.map((item) => item.stationGroupId).filter(Boolean);
+      if (preview?.currentState.kind === 'TRAIN') return availableDestinations(preview).map((item) => item.stationGroupId).filter(Boolean);
+      return state.selectedTripStopIds || [];
+    }
+
+    function handleSelectedTripStopMapClick(feature) {
+      const stationGroupId = feature?.properties?.station_group_id;
+      const preview = planCursorPreview(state.activeMode);
+      if (!stationGroupId || !selectedTripStopGroupIdsForCurrentContext(preview).includes(stationGroupId)) return false;
+      if (!preview) return false;
+      if (preview.currentState.kind === 'TRAIN') {
+        addRideToStation(stationGroupId);
+        return true;
+      }
+      const pending = pendingDepartureContext(preview);
+      if (pending?.trip?.id) {
+        const destination = (pending.destinations || []).find((item) => item.stationGroupId === stationGroupId);
+        addBoardAndRide(destination?.tripId || pending.trip.id, stationGroupId);
+        return true;
+      }
+      return false;
+    }
+
     function bindMapInteractions(map) {
       ['station-hub', 'station-major', 'station-local'].forEach((layerId) => {
         map.on('click', layerId, (event) => {
           const feature = event.features?.[0];
           if (!feature) return;
+          if (handleSelectedTripStopMapClick(feature)) return;
           setSelectedStation(feature.properties.station_group_id, feature.properties.id);
         });
         map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
         map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
       });
+
+      map.on('click', 'selected-trip-stops', (event) => {
+        const feature = event.features?.[0];
+        if (feature && handleSelectedTripStopMapClick(feature)) {
+          event.originalEvent.stopPropagation();
+        }
+      });
+      map.on('mouseenter', 'selected-trip-stops', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'selected-trip-stops', () => { map.getCanvas().style.cursor = ''; });
 
       map.on('zoom', () => {
         zoomPill.textContent = `Zoom ${map.getZoom().toFixed(2)}`;
@@ -13632,11 +13667,7 @@
       if (state.map?.getLayer('selected-trip-stops')) {
         const preview = planCursorPreview(state.activeMode);
         const pending = preview ? pendingDepartureContext(preview) : null;
-        const futureStops = pending
-          ? pending.destinations.map((item) => item.stationGroupId)
-          : preview?.currentState.kind === 'TRAIN'
-            ? availableDestinations(preview).map((item) => item.stationGroupId)
-            : state.selectedTripStopIds;
+        const futureStops = selectedTripStopGroupIdsForCurrentContext(preview);
         const highlightTrip = pending?.trip || preview?.currentTrip || state.tripById.get(state.selectedTripId);
         state.map.setFilter('selected-trip-stops', highlightTrip ? tripStopsFilter(highlightTrip, futureStops) : NONE_STATION_FILTER);
       }
