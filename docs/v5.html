@@ -9962,21 +9962,24 @@
       fitMapToCoordinates(focusCoordinates, { maxZoom: 12.6, pointZoom: 12.8 });
     }
 
-    function futureTripStopsForFocus(trip, limit = 8) {
+    function futureTripStopsForFocus(trip) {
       const startSequence = selectedTripStartSequence(trip);
       return (trip?.stopTimes || [])
         .filter((stop) => stop.sequence >= startSequence)
-        .sort((left, right) => left.sequence - right.sequence)
-        .slice(0, limit);
+        .sort((left, right) => left.sequence - right.sequence);
     }
 
     function focusSelectedTripOnMap(trip) {
       if (!trip || state.walkingMapActive) return;
       const stops = futureTripStopsForFocus(trip);
       const coordinates = [];
+      tripPathSegments(trip).forEach((segment) => {
+        appendCoordinates(coordinates, segment.coordinates);
+      });
       stops.forEach((stop, index) => {
         const coordinate = stationLonLat(stop.stationGroupId);
         if (coordinate) coordinates.push(coordinate);
+        if (coordinates.length) return;
         const nextStop = stops[index + 1];
         if (!nextStop) return;
         const routeId = routeIdForTripSegment(trip, stop, nextStop);
@@ -9986,7 +9989,7 @@
         });
         appendCoordinates(coordinates, segment.length >= 2 ? segment : stationPairCoordinates(stop, nextStop));
       });
-      fitMapToCoordinates(coordinates, { maxZoom: 13.4, pointZoom: 13.4 });
+      fitMapToCoordinates(coordinates, { maxZoom: 13.0, pointZoom: 13.4 });
     }
 
     function toggleWalkingMap() {
