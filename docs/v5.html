@@ -7921,15 +7921,29 @@
       const leftName = displayNameForGroup(leftGroupId);
       const rightName = displayNameForGroup(rightGroupId);
       if (!leftKey || leftKey !== rightKey) return null;
+      const walkingLink = walkingTransferLinkBetween(leftGroupId, rightGroupId);
       const pairKey = transferNamePairKey(leftName, rightName);
       const reviewedDirect = state.reviewedDirectTransferNameSets.has(pairKey);
       const reviewedNotDirect = state.reviewedNotDirectTransferNameSets.has(pairKey);
       if (reviewedNotDirect) return null;
       const distance = coordinateDistanceMeters(stationGroupCoordinate(leftGroupId), stationGroupCoordinate(rightGroupId));
+      if (leftName === rightName && walkingLink) {
+        return {
+          ...walkingLink,
+          reason: 'same_name_walking_transfer',
+        };
+      }
+      if (walkingLink && reviewedDirect) {
+        return {
+          ...walkingLink,
+          reason: 'reviewed_direct_walking_transfer',
+        };
+      }
       if (reviewedDirect && distance > REVIEWED_DIRECT_TRANSFER_MAX_DISTANCE_M) return null;
       if (!reviewedDirect && distance > TRANSFER_EQUIVALENCE_RADIUS_M) return null;
+      const fallbackMinutes = Math.max(DEFAULT_INTERCHANGE_TRANSFER_MINUTES, Math.ceil(distance / 120));
       return {
-        transferMinutes: DEFAULT_INTERCHANGE_TRANSFER_MINUTES,
+        transferMinutes: fallbackMinutes,
         distanceMeters: Math.round(distance),
         reason: reviewedDirect ? 'reviewed_direct_interchange' : 'normalized_nearby_station_name',
       };
@@ -8079,6 +8093,37 @@
       }
       const ids = [...seen];
       return [stationGroupId, ...ids.filter((id) => id !== stationGroupId).sort()];
+    }
+
+    function transferLinkForBoardingCandidate(fromStationGroupId, boardStationGroupId) {
+      if (!fromStationGroupId || !boardStationGroupId) return null;
+      if (fromStationGroupId === boardStationGroupId) {
+        return { transferMinutes: 0, distanceMeters: 0, reason: 'same_station_group' };
+      }
+      const directLink = state.transferEquivalentLinksByGroupId.get(fromStationGroupId)?.get(boardStationGroupId);
+      if (directLink) return directLink;
+      if (!stationGroupsTransferEquivalent(fromStationGroupId, boardStationGroupId)) return null;
+      const directWalkingLink = walkingTransferLinkBetween(fromStationGroupId, boardStationGroupId);
+      if (directWalkingLink) return directWalkingLink;
+      const queue = [{ groupId: fromStationGroupId, transferMinutes: 0, distanceMeters: 0, reason: 'transfer_equivalent_chain' }];
+      const seen = new Set([fromStationGroupId]);
+      for (let index = 0; index < queue.length; index += 1) {
+        const current = queue[index];
+        const links = state.transferEquivalentLinksByGroupId.get(current.groupId) || new Map();
+        for (const [nextGroupId, link] of links) {
+          if (seen.has(nextGroupId)) continue;
+          const next = {
+            groupId: nextGroupId,
+            transferMinutes: current.transferMinutes + (link.transferMinutes || 0),
+            distanceMeters: current.distanceMeters + (link.distanceMeters || 0),
+            reason: current.reason,
+          };
+          if (nextGroupId === boardStationGroupId) return next;
+          seen.add(nextGroupId);
+          queue.push(next);
+        }
+      }
+      return null;
     }
 
     function stationGroupsTransferEquivalent(leftGroupId, rightGroupId) {
@@ -9548,6 +9593,19 @@
       return value >= 1000 ? `${(value / 1000).toFixed(1)}km` : `${Math.round(value)}m`;
     }
 
+    function walkingTransferLinkBetween(fromStationGroupId, toStationGroupId) {
+      if (!fromStationGroupId || !toStationGroupId || fromStationGroupId === toStationGroupId) {
+        return { transferMinutes: 0, distanceMeters: 0, reason: 'same_station_group' };
+      }
+      const edge = walkingEdgeBetween(fromStationGroupId, toStationGroupId);
+      if (!edge || edge.distanceMeters > V5_ACTIVE_WALKING_THRESHOLD_METERS) return null;
+      return {
+        transferMinutes: Math.max(0, Math.ceil((Number(edge.walkTimeSec) || 0) / 60)),
+        distanceMeters: Math.round(Number(edge.distanceMeters) || 0),
+        reason: 'walking_transfer',
+      };
+    }
+
     function pendingTripId(playerId = state.activeMode) {
       return state.pendingTripIds[playerId];
     }
@@ -9567,7 +9625,12 @@
     function findBoardingStop(trip, stationGroupId, earliestMinute) {
       const boardableGroups = new Set(equivalentStationGroupIds(stationGroupId));
       return (trip?.stopTimes || [])
-        .filter((stop) => boardableGroups.has(stop.stationGroupId) && stopDepartureMinutes(stop) >= earliestMinute)
+        .filter((stop) => {
+          if (!boardableGroups.has(stop.stationGroupId)) return false;
+          const transferLink = transferLinkForBoardingCandidate(stationGroupId, stop.stationGroupId);
+          if (!transferLink) return false;
+          return stopDepartureMinutes(stop) >= earliestMinute + transferLink.transferMinutes;
+        })
         .sort((a, b) => stopDepartureMinutes(a) - stopDepartureMinutes(b))[0] || null;
     }
 
@@ -9594,6 +9657,11 @@
       const seenRows = new Set();
       const searchGroupIds = includeTransferEquivalents ? equivalentStationGroupIds(stationGroupId) : [stationGroupId];
       for (const searchGroupId of searchGroupIds) {
+        const transferLink = includeTransferEquivalents
+          ? transferLinkForBoardingCandidate(stationGroupId, searchGroupId)
+          : { transferMinutes: 0, distanceMeters: 0, reason: 'exact_station' };
+        if (!transferLink) continue;
+        const earliestBoardMinute = currentMinute + transferLink.transferMinutes;
         const candidates = routeId
           ? stationRouteDepartureCandidates(searchGroupId, routeId)
           : (state.stationTripsByGroupId.get(searchGroupId) || []).map((trip) => ({
@@ -9606,9 +9674,19 @@
           const { trip, stop } = candidate;
           if (!trip || !stop) continue;
           const departureMinute = stopDepartureMinutes(stop);
-          if (departureMinute < currentMinute) continue;
+          if (departureMinute < earliestBoardMinute) continue;
           const routeIds = candidate.routeIds || boardableRouteIdsForStop(trip, stop);
-          const row = { departureMinute, trip, stop, routeIds, queryStationGroupId: stationGroupId };
+          const row = {
+            departureMinute,
+            trip,
+            stop,
+            routeIds,
+            queryStationGroupId: stationGroupId,
+            boardStationGroupId: searchGroupId,
+            transferMinutes: transferLink.transferMinutes,
+            transferDistanceMeters: transferLink.distanceMeters,
+            transferReason: transferLink.reason,
+          };
           if (!departureMatchesRoute(row, routeId)) continue;
           const key = `${trip.id}|${stop.sequence}|${departureMinute}`;
           if (!seenRows.has(key)) {
@@ -9656,6 +9734,10 @@
           departureHhmm: minutesToHhmm(row.departureMinute),
           routeIds: row.routeIds || boardableRouteIdsForStop(row.trip, row.stop),
           queryStationGroupId: row.queryStationGroupId,
+          boardStationGroupId: row.boardStationGroupId,
+          transferMinutes: row.transferMinutes || 0,
+          transferDistanceMeters: row.transferDistanceMeters || 0,
+          transferReason: row.transferReason || '',
         }))
         .filter((entry) => (entry.routeIds.length || routeChoiceIdsForDeparture(entry).length) && hasDownstreamStop(entry.trip, entry.boardStop));
       const deduped = dedupeBoardableDepartures(entries);
@@ -13116,9 +13198,15 @@
           if (!trip) throw new Error(`Unknown trip ${action.trip_id}`);
           const boardStop = findBoardingStop(trip, currentStationId, currentMinute);
           if (!boardStop) throw new Error(`Trip ${action.trip_id} not catchable from ${currentStationId}`);
+          const transferLink = transferLinkForBoardingCandidate(currentStationId, boardStop.stationGroupId);
+          if (!transferLink) throw new Error(`Trip ${action.trip_id} requires an invalid transfer from ${currentStationId}`);
           const boardMinute = stopDepartureMinutes(boardStop);
           events.push(formatEvent(boardMinute, 'BOARD_TRAIN', playerId, {
-            station_group_id: currentStationId,
+            station_group_id: boardStop.stationGroupId,
+            transfer_from_station_group_id: currentStationId === boardStop.stationGroupId ? null : currentStationId,
+            transfer_minutes: transferLink.transferMinutes,
+            transfer_distance_meters: transferLink.distanceMeters,
+            transfer_reason: transferLink.reason,
             trip_id: trip.id,
             carrier_after: { kind: 'TRAIN', tripId: trip.id },
           }));
@@ -13126,7 +13214,7 @@
           currentTrip = trip;
           currentBoardStop = boardStop;
           currentStationId = null;
-          resolvedActions.push({ step_index: i + 1, ...action });
+          resolvedActions.push({ step_index: i + 1, ...action, transfer: transferLink });
           continue;
         }
         if (action.type === 'RIDE_TO_STATION') {
@@ -14683,6 +14771,7 @@
       state.bundle = bundle;
       buildIndexes(bundle);
       await loadWalkingGraph();
+      buildStationTransferIndex();
       const runnerStart = bundle.metadata?.defaultRunnerStartStationId || 'SG_TOKYO';
       const hunterStart = bundle.metadata?.defaultHunterStartStationId || 'SG_SHINJUKU';
       state.players = {
