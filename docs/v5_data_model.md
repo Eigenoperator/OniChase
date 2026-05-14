@@ -110,8 +110,9 @@ Rules:
 - Supported initial layers are `500`, `1000`, `2000`, `3000`, and `5000` meters.
 - The first generated artifact is `data/v5_walking_edges.json.gz`; its audit summary is `data/v5_walking_edge_audit.json`.
 - The v1 distance model is station-group centroid Haversine distance, not road-network walking geometry.
-- Gameplay walking time is calculated at runtime from `distanceMeters / currentWalkingSpeedMetersPerSecond`; the current v5 default is `5 km/h` (`1.389 m/s`).
-- Walking speed is mutable because later stamina/fatigue systems may reduce a player's current speed.
+- Gameplay walking time is calculated at runtime from `distanceMeters / walkingSpeedMetersPerSecondFor(playerId, context)`.
+- The current default returned by the speed function is `5 km/h` (`1.389 m/s`).
+- Walking speed is a continuous function, not a fixed option set, because later stamina/fatigue systems may reduce a player's current speed.
 - Walking can later connect stations, airports, ports, and bus stops if node geometry supports it.
 - Walking fare is always `0`.
 - Walking speed is a gameplay rule, not a real-world claim.

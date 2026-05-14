@@ -1311,6 +1311,8 @@
     const WALKING_EDGES_URL = './data/v5_walking_edges.json.gz';
     const V5_ACTIVE_WALKING_THRESHOLD_METERS = 3000;
     const V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND = 5 / 3.6;
+    const V5_MIN_WALKING_SPEED_MULTIPLIER = 0.35;
+    const V5_MAX_WALKING_SPEED_MULTIPLIER = 1.35;
     const V3_REPLAY_SCHEMA_VERSION = 'v5.replay.1';
     const V3_REPLAY_COLLECTION_SCHEMA_VERSION = 'v5.replay.collection.1';
     const V3_DATASET_NAME = 'v5-from-v4-nationwide';
@@ -5550,7 +5552,6 @@
       selectedTripStopIds: [],
       selectedTripStopFeatureIds: [],
       walkingMapActive: false,
-      walkingSpeedMetersPerSecond: V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND,
       planningModes: { runner: 'rail', hunter: 'rail' },
       activeMode: 'runner',
       players: {},
@@ -7556,18 +7557,6 @@
       return { planningGapSeconds: 60, planningGapIntervalMinutes: 60 };
     }
 
-    function setWalkingSpeed(speedMetersPerSecond) {
-      const speed = Number(speedMetersPerSecond);
-      state.walkingSpeedMetersPerSecond = Number.isFinite(speed) && speed > 0
-        ? speed
-        : V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND;
-      state.departureQueryCache.clear();
-      state.routeChoicesByDeparturesCache = new WeakMap();
-      updateWalkingMapLayers();
-      invalidateSimulation();
-      renderGame();
-    }
-
     function nextPlanningMinuteFrom(currentMinute, endMinute) {
       return Math.min(currentMinute + state.planningGapIntervalMinutes, endMinute);
     }
@@ -8155,7 +8144,7 @@
       return [stationGroupId, ...ids.filter((id) => id !== stationGroupId).sort()];
     }
 
-    function transferLinkForBoardingCandidate(fromStationGroupId, boardStationGroupId) {
+    function transferLinkForBoardingCandidate(fromStationGroupId, boardStationGroupId, playerId = state.activeMode, context = {}) {
       if (!fromStationGroupId || !boardStationGroupId) return null;
       if (fromStationGroupId === boardStationGroupId) {
         return { transferMinutes: 0, distanceMeters: 0, reason: 'same_station_group' };
@@ -8163,7 +8152,7 @@
       const directLink = state.transferEquivalentLinksByGroupId.get(fromStationGroupId)?.get(boardStationGroupId);
       if (directLink) return directLink;
       if (!stationGroupsTransferEquivalent(fromStationGroupId, boardStationGroupId)) return null;
-      const directWalkingLink = walkingTransferLinkBetween(fromStationGroupId, boardStationGroupId);
+      const directWalkingLink = walkingTransferLinkBetween(fromStationGroupId, boardStationGroupId, playerId, context);
       if (directWalkingLink) return directWalkingLink;
       const queue = [{ groupId: fromStationGroupId, transferMinutes: 0, distanceMeters: 0, reason: 'transfer_equivalent_chain' }];
       const seen = new Set([fromStationGroupId]);
@@ -9732,9 +9721,25 @@
       return `${minutes}m`;
     }
 
-    function activeWalkingSpeedMetersPerSecond() {
-      const speed = Number(state.walkingSpeedMetersPerSecond);
-      return Number.isFinite(speed) && speed > 0 ? speed : V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND;
+    function walkingSpeedMetersPerSecondFor(playerId = state.activeMode, context = {}) {
+      const player = state.players?.[playerId] || {};
+      const explicitSpeed = Number(context.speedMetersPerSecond);
+      if (Number.isFinite(explicitSpeed) && explicitSpeed > 0) return explicitSpeed;
+      const staminaRatio = Number(context.staminaRatio ?? player.walkingStaminaRatio ?? 1);
+      const carriedLoadRatio = Number(context.carriedLoadRatio ?? player.walkingLoadRatio ?? 0);
+      const surfaceMultiplier = Number(context.surfaceMultiplier ?? 1);
+      const weatherMultiplier = Number(context.weatherMultiplier ?? 1);
+      const staminaMultiplier = Number.isFinite(staminaRatio) ? staminaRatio : 1;
+      const loadMultiplier = Number.isFinite(carriedLoadRatio) ? 1 / (1 + Math.max(0, carriedLoadRatio)) : 1;
+      const rawMultiplier = staminaMultiplier * loadMultiplier *
+        (Number.isFinite(surfaceMultiplier) ? surfaceMultiplier : 1) *
+        (Number.isFinite(weatherMultiplier) ? weatherMultiplier : 1);
+      return V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND *
+        clamp(rawMultiplier, V5_MIN_WALKING_SPEED_MULTIPLIER, V5_MAX_WALKING_SPEED_MULTIPLIER);
+    }
+
+    function activeWalkingSpeedMetersPerSecond(context = {}) {
+      return walkingSpeedMetersPerSecondFor(state.activeMode, context);
     }
 
     function walkingTimeSecForDistance(distanceMeters, speedMetersPerSecond = activeWalkingSpeedMetersPerSecond()) {
@@ -9747,6 +9752,10 @@
 
     function walkingTimeSecForEdge(edge) {
       return walkingTimeSecForDistance(edge?.distanceMeters);
+    }
+
+    function walkingTimeSecForEdgeForPlayer(edge, playerId = state.activeMode, context = {}) {
+      return walkingTimeSecForDistance(edge?.distanceMeters, walkingSpeedMetersPerSecondFor(playerId, context));
     }
 
     function walkingDistanceLabel(meters) {
@@ -9805,7 +9814,7 @@
               stationGroupId: edge.toNodeId,
               distanceMeters: edge.distanceMeters,
               walkTimeSec: walkingTimeSecForEdge(edge),
-              walkingSpeedMetersPerSecond: activeWalkingSpeedMetersPerSecond(),
+            walkingSpeedMetersPerSecond: walkingSpeedMetersPerSecondFor(state.activeMode),
               sort: index + 1,
             },
           });
@@ -9819,7 +9828,7 @@
               name: displayNameForGroup(edge.toNodeId),
               distanceMeters: edge.distanceMeters,
               walkTimeSec: walkingTimeSecForEdge(edge),
-              walkingSpeedMetersPerSecond: activeWalkingSpeedMetersPerSecond(),
+              walkingSpeedMetersPerSecond: walkingSpeedMetersPerSecondFor(state.activeMode),
               sort: index + 1,
             },
           });
@@ -9875,14 +9884,14 @@
       renderGame();
     }
 
-    function walkingTransferLinkBetween(fromStationGroupId, toStationGroupId) {
+    function walkingTransferLinkBetween(fromStationGroupId, toStationGroupId, playerId = state.activeMode, context = {}) {
       if (!fromStationGroupId || !toStationGroupId || fromStationGroupId === toStationGroupId) {
         return { transferMinutes: 0, distanceMeters: 0, reason: 'same_station_group' };
       }
       const edge = walkingEdgeBetween(fromStationGroupId, toStationGroupId);
       if (!edge || edge.distanceMeters > V5_ACTIVE_WALKING_THRESHOLD_METERS) return null;
       return {
-        transferMinutes: Math.max(0, Math.ceil(walkingTimeSecForEdge(edge) / 60)),
+        transferMinutes: Math.max(0, Math.ceil(walkingTimeSecForEdgeForPlayer(edge, playerId, context) / 60)),
         distanceMeters: Math.round(Number(edge.distanceMeters) || 0),
         reason: 'walking_transfer',
       };
@@ -9904,12 +9913,13 @@
       }
     }
 
-    function findBoardingStop(trip, stationGroupId, earliestMinute) {
+    function findBoardingStop(trip, stationGroupId, earliestMinute, options = {}) {
+      const playerId = options.playerId || state.activeMode;
       const boardableGroups = new Set(equivalentStationGroupIds(stationGroupId));
       return (trip?.stopTimes || [])
         .filter((stop) => {
           if (!boardableGroups.has(stop.stationGroupId)) return false;
-          const transferLink = transferLinkForBoardingCandidate(stationGroupId, stop.stationGroupId);
+          const transferLink = transferLinkForBoardingCandidate(stationGroupId, stop.stationGroupId, playerId, options.walkingContext || {});
           if (!transferLink) return false;
           return stopDepartureMinutes(stop) >= earliestMinute + transferLink.transferMinutes;
         })
@@ -9930,7 +9940,8 @@
       if (state.timetableStatus !== 'ready') return [];
       const routeId = options.routeId || null;
       const includeTransferEquivalents = Boolean(options.includeTransferEquivalents);
-      const walkingSpeedKey = activeWalkingSpeedMetersPerSecond().toFixed(2);
+      const playerId = options.playerId || state.activeMode;
+      const walkingSpeedKey = walkingSpeedMetersPerSecondFor(playerId, options.walkingContext || {}).toFixed(2);
       const cacheKey = `${stationGroupId || ''}|${currentMinute}|${routeId || '*'}|${includeTransferEquivalents ? 'xfer' : 'exact'}|walk:${walkingSpeedKey}`;
       if (state.departureQueryCache.has(cacheKey)) {
         const cached = state.departureQueryCache.get(cacheKey);
@@ -9941,7 +9952,7 @@
       const searchGroupIds = includeTransferEquivalents ? equivalentStationGroupIds(stationGroupId) : [stationGroupId];
       for (const searchGroupId of searchGroupIds) {
         const transferLink = includeTransferEquivalents
-          ? transferLinkForBoardingCandidate(stationGroupId, searchGroupId)
+          ? transferLinkForBoardingCandidate(stationGroupId, searchGroupId, playerId, options.walkingContext || {})
           : { transferMinutes: 0, distanceMeters: 0, reason: 'exact_station' };
         if (!transferLink) continue;
         const earliestBoardMinute = currentMinute + transferLink.transferMinutes;
@@ -10008,7 +10019,7 @@
       const entries = departuresForStationGroup(
         preview.currentState.stationGroupId,
         effectiveDepartureMinute(playerId, preview.currentMinute),
-        { routeId: options.routeId || null, includeTransferEquivalents: true },
+        { routeId: options.routeId || null, includeTransferEquivalents: true, playerId },
       )
         .map((row) => ({
           trip: row.trip,
@@ -10155,7 +10166,7 @@
       const departures = departuresForStationGroup(
         preview.currentState.stationGroupId,
         effectiveDepartureMinute(playerId, preview.currentMinute),
-        { includeTransferEquivalents: true },
+        { includeTransferEquivalents: true, playerId },
       );
       const match = departures.find((row) => row.trip.id === tripId && hasDownstreamStop(row.trip, row.stop));
       if (!match) return null;
@@ -11724,7 +11735,8 @@
           const edge = walkingEdgeBetween(fromStationGroupId, step.station_id);
           if (!edge) break;
           const departMinute = currentMinute;
-          const walkTimeSec = walkingTimeSecForEdge(edge);
+          const walkingSpeed = walkingSpeedMetersPerSecondFor(playerId);
+          const walkTimeSec = walkingTimeSecForEdgeForPlayer(edge, playerId);
           const walkMinutes = Math.max(0, Math.ceil(walkTimeSec / 60));
           const arrivalMinute = currentMinute + walkMinutes;
           if (timeCapMinute !== null && timeCapMinute < arrivalMinute) {
@@ -11750,14 +11762,14 @@
           }
           currentMinute = arrivalMinute;
           currentState = { kind: 'NODE', stationGroupId: edge.toNodeId };
-          resolvedSteps.push({ ...step, distance_meters: edge.distanceMeters, walk_time_sec: walkTimeSec, walking_speed_mps: activeWalkingSpeedMetersPerSecond() });
+          resolvedSteps.push({ ...step, distance_meters: edge.distanceMeters, walk_time_sec: walkTimeSec, walking_speed_mps: walkingSpeed });
           continue;
         }
         if (step.type === 'BOARD_TRAIN') {
           if (currentState.kind !== 'NODE') break;
           const trip = state.tripById.get(step.trip_id);
           if (!trip) break;
-          const boardStop = findBoardingStop(trip, currentState.stationGroupId, currentMinute);
+          const boardStop = findBoardingStop(trip, currentState.stationGroupId, currentMinute, { playerId });
           if (!boardStop) break;
           const boardMinute = stopDepartureMinutes(boardStop);
           if (timeCapMinute !== null && boardMinute > timeCapMinute) break;
@@ -13561,7 +13573,8 @@
           if (!currentStationId) throw new Error(`${playerId} cannot walk while not at a station`);
           const edge = walkingEdgeBetween(currentStationId, action.station_id);
           if (!edge) throw new Error(`${playerId} cannot walk from ${currentStationId} to ${action.station_id}`);
-          const walkTimeSec = walkingTimeSecForEdge(edge);
+          const walkingSpeed = walkingSpeedMetersPerSecondFor(playerId);
+          const walkTimeSec = walkingTimeSecForEdgeForPlayer(edge, playerId);
           const walkMinutes = Math.max(0, Math.ceil(walkTimeSec / 60));
           const arrivalMinute = currentMinute + walkMinutes;
           const leg = {
@@ -13576,7 +13589,7 @@
             arrive_hhmm: minutesToHhmm(arrivalMinute),
             distance_meters: edge.distanceMeters,
             walk_time_sec: walkTimeSec,
-            walking_speed_mps: activeWalkingSpeedMetersPerSecond(),
+            walking_speed_mps: walkingSpeed,
             fare: { total_yen: 0, fare_known: true, components: [{ type: 'walking', total_yen: 0 }] },
           };
           legs.push(leg);
@@ -13585,7 +13598,7 @@
             from_station_group_id: currentStationId,
             distance_meters: edge.distanceMeters,
             walk_time_sec: walkTimeSec,
-            walking_speed_mps: activeWalkingSpeedMetersPerSecond(),
+            walking_speed_mps: walkingSpeed,
             fare: leg.fare,
             fare_total_yen: 0,
             carrier_after: { kind: 'NODE', stationGroupId: edge.toNodeId },
@@ -13594,15 +13607,15 @@
           currentStationId = edge.toNodeId;
           currentTrip = null;
           currentBoardStop = null;
-          resolvedActions.push({ step_index: i + 1, ...action, distance_meters: edge.distanceMeters, walk_time_sec: walkTimeSec, walking_speed_mps: activeWalkingSpeedMetersPerSecond(), fare: leg.fare });
+          resolvedActions.push({ step_index: i + 1, ...action, distance_meters: edge.distanceMeters, walk_time_sec: walkTimeSec, walking_speed_mps: walkingSpeed, fare: leg.fare });
           continue;
         }
         if (action.type === 'BOARD_TRAIN') {
           const trip = state.tripById.get(action.trip_id);
           if (!trip) throw new Error(`Unknown trip ${action.trip_id}`);
-          const boardStop = findBoardingStop(trip, currentStationId, currentMinute);
+          const boardStop = findBoardingStop(trip, currentStationId, currentMinute, { playerId });
           if (!boardStop) throw new Error(`Trip ${action.trip_id} not catchable from ${currentStationId}`);
-          const transferLink = transferLinkForBoardingCandidate(currentStationId, boardStop.stationGroupId);
+          const transferLink = transferLinkForBoardingCandidate(currentStationId, boardStop.stationGroupId, playerId);
           if (!transferLink) throw new Error(`Trip ${action.trip_id} requires an invalid transfer from ${currentStationId}`);
           const boardMinute = stopDepartureMinutes(boardStop);
           events.push(formatEvent(boardMinute, 'BOARD_TRAIN', playerId, {
