@@ -17,6 +17,7 @@
       --v2: #cc8b2c;
       --v3: #1565c0;
       --v4: #0f766e;
+      --v5: #7c3aed;
     }
     * { box-sizing: border-box; }
     body {
@@ -61,7 +62,7 @@
     }
     .cards {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 22px;
     }
     .card {
@@ -83,6 +84,7 @@
     .card.v2 .eyebrow { color: var(--v2); }
     .card.v3 .eyebrow { color: var(--v3); }
     .card.v4 .eyebrow { color: var(--v4); }
+    .card.v5 .eyebrow { color: var(--v5); }
     .card h2 {
       margin: 0;
       font-size: 30px;
@@ -120,6 +122,7 @@
     .card.v2 a.button { background: #f6dfba; }
     .card.v3 a.button { background: #d8e7fb; }
     .card.v4 a.button { background: #cdece7; }
+    .card.v5 a.button { background: #e9ddff; }
     @media (max-width: 900px) {
       .cards { grid-template-columns: 1fr; }
       .hero h1 { font-size: 38px; }
@@ -131,7 +134,7 @@
     <div class="shell">
       <section class="hero">
         <h1>OniChase</h1>
-        <p>Choose a version. <strong>V1</strong> is the archived Yamanote prototype. <strong>V2</strong> is the current playable nationwide Shinkansen build. <strong>V3</strong> is the official Tokyo MapLibre gameplay release candidate. <strong>V4</strong> brings the same gameplay shell to the nationwide real railway map.</p>
+        <p>Choose a version. <strong>V1</strong> is the archived Yamanote prototype. <strong>V2</strong> is the current playable nationwide Shinkansen build. <strong>V3</strong> is the official Tokyo MapLibre gameplay release candidate. <strong>V4</strong> is the locked nationwide railway release. <strong>V5</strong> continues directly from the v4 shell and data toward multimodal gameplay.</p>
       </section>
       <section class="cards">
         <article class="card v1">
@@ -184,6 +187,19 @@
           </div>
           <div class="actions">
             <a class="button" href="./v4.html">Open V4</a>
+          </div>
+        </article>
+        <article class="card v5">
+          <div class="eyebrow">V5</div>
+          <h2>Multimodal Japan</h2>
+          <p>Direct continuation of the v4 nationwide gameplay shell. Walking graph data is staged first, with aircraft, ferry, and bus systems planned on top of the same railway base.</p>
+          <div class="meta">
+            <div>Map: v4 nationwide railway base</div>
+            <div>Scope: v4 data plus v5 walking layers</div>
+            <div>Use: active v5 development entry</div>
+          </div>
+          <div class="actions">
+            <a class="button" href="./v5.html">Open V5</a>
           </div>
         </article>
       </section>
