@@ -1165,6 +1165,7 @@
         <button id="pause-button" type="button">Pause</button>
         <button id="simulate-button" type="button">Replay</button>
         <button id="global-replay-button" type="button">Global Replay</button>
+        <button id="walking-map-button" type="button">Walking Map</button>
         <button id="corridor-button" class="debug-only active" type="button" hidden>Corridor</button>
         <button id="service-button" class="debug-only" type="button" hidden>Service</button>
         <button id="fit-button" type="button">Fit</button>
@@ -5504,6 +5505,7 @@
       selectedTripId: null,
       selectedTripStopIds: [],
       selectedTripStopFeatureIds: [],
+      walkingMapActive: false,
       activeMode: 'runner',
       players: {},
       pendingTripIds: { runner: null, hunter: null },
@@ -8835,6 +8837,14 @@
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
       });
+      map.addSource('walking-focus', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+      map.addSource('walking-options', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
 
       map.addLayer({
         id: 'track-casing',
@@ -8904,9 +8914,85 @@
         },
       });
 
+      addWalkingLayers(map);
       addStationLayers(map);
       addLabelLayers(map);
       addPlayerLayers(map);
+    }
+
+    function addWalkingLayers(map) {
+      map.addLayer({
+        id: 'walking-radius-fill',
+        type: 'fill',
+        source: 'walking-focus',
+        filter: ['==', ['get', 'kind'], 'radius'],
+        paint: {
+          'fill-color': '#7c3aed',
+          'fill-opacity': 0.075,
+        },
+      });
+      map.addLayer({
+        id: 'walking-radius-line',
+        type: 'line',
+        source: 'walking-focus',
+        filter: ['==', ['get', 'kind'], 'radius'],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#7c3aed',
+          'line-opacity': 0.9,
+          'line-width': ['interpolate', ['linear'], ['zoom'], 9, 1.4, 13, 2.2, 16, 3.0],
+          'line-dasharray': [2, 1.2],
+        },
+      });
+      map.addLayer({
+        id: 'walking-edge-lines',
+        type: 'line',
+        source: 'walking-options',
+        filter: ['==', ['get', 'kind'], 'edge'],
+        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' },
+        paint: {
+          'line-color': '#7c3aed',
+          'line-opacity': 0.42,
+          'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1.0, 14, 2.1, 16, 3.0],
+        },
+      });
+      map.addLayer({
+        id: 'walking-option-points',
+        type: 'circle',
+        source: 'walking-options',
+        filter: ['==', ['get', 'kind'], 'station'],
+        layout: { visibility: 'none' },
+        paint: {
+          'circle-color': ['case', ['==', ['get', 'role'], 'origin'], '#111827', '#7c3aed'],
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 4.5, 14, 7.5, 16, 10],
+          'circle-opacity': 0.96,
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 2,
+        },
+      });
+      map.addLayer({
+        id: 'walking-option-labels',
+        type: 'symbol',
+        source: 'walking-options',
+        filter: ['==', ['get', 'kind'], 'station'],
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Regular'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 10, 11.5, 14, 13.5, 16, 15],
+          'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+          'text-radial-offset': 0.72,
+          'text-justify': 'auto',
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
+          'symbol-sort-key': ['get', 'sort'],
+        },
+        paint: {
+          'text-color': '#1f2937',
+          'text-halo-color': 'rgba(255,255,255,0.86)',
+          'text-halo-width': 1.15,
+        },
+      });
     }
 
     function ensureServiceLayers() {
@@ -9591,6 +9677,117 @@
     function walkingDistanceLabel(meters) {
       const value = Number(meters) || 0;
       return value >= 1000 ? `${(value / 1000).toFixed(1)}km` : `${Math.round(value)}m`;
+    }
+
+    function walkingMapOriginPreview() {
+      const preview = planCursorPreview(state.activeMode);
+      return preview?.currentState?.kind === 'NODE' ? preview : null;
+    }
+
+    function circlePolygonFeature(center, radiusMeters, steps = 96) {
+      if (!center) return null;
+      const [lon, lat] = center;
+      const latRadius = radiusMeters / 111_320;
+      const lonRadius = radiusMeters / (111_320 * Math.max(0.2, Math.cos(lat * Math.PI / 180)));
+      const coordinates = [];
+      for (let index = 0; index <= steps; index += 1) {
+        const angle = (index / steps) * Math.PI * 2;
+        coordinates.push([lon + Math.cos(angle) * lonRadius, lat + Math.sin(angle) * latRadius]);
+      }
+      return {
+        type: 'Feature',
+        geometry: { type: 'Polygon', coordinates: [coordinates] },
+        properties: { kind: 'radius', radiusMeters },
+      };
+    }
+
+    function walkingMapFeatureCollections() {
+      const preview = walkingMapOriginPreview();
+      const originStationGroupId = preview?.currentState?.stationGroupId;
+      const originCoordinate = stationLonLat(originStationGroupId);
+      const radiusFeature = circlePolygonFeature(originCoordinate, V5_ACTIVE_WALKING_THRESHOLD_METERS);
+      const optionFeatures = [];
+      if (originStationGroupId && originCoordinate) {
+        optionFeatures.push({
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: originCoordinate },
+          properties: {
+            kind: 'station',
+            role: 'origin',
+            stationGroupId: originStationGroupId,
+            name: displayNameForGroup(originStationGroupId),
+            sort: 0,
+          },
+        });
+        walkingDestinationsFrom(originStationGroupId, 160).forEach((edge, index) => {
+          const targetCoordinate = stationLonLat(edge.toNodeId);
+          if (!targetCoordinate) return;
+          optionFeatures.push({
+            type: 'Feature',
+            geometry: { type: 'LineString', coordinates: [originCoordinate, targetCoordinate] },
+            properties: {
+              kind: 'edge',
+              stationGroupId: edge.toNodeId,
+              distanceMeters: edge.distanceMeters,
+              walkTimeSec: edge.walkTimeSec,
+              sort: index + 1,
+            },
+          });
+          optionFeatures.push({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: targetCoordinate },
+            properties: {
+              kind: 'station',
+              role: 'destination',
+              stationGroupId: edge.toNodeId,
+              name: displayNameForGroup(edge.toNodeId),
+              distanceMeters: edge.distanceMeters,
+              walkTimeSec: edge.walkTimeSec,
+              sort: index + 1,
+            },
+          });
+        });
+      }
+      return {
+        focus: { type: 'FeatureCollection', features: radiusFeature && state.walkingMapActive ? [radiusFeature] : [] },
+        options: { type: 'FeatureCollection', features: state.walkingMapActive ? optionFeatures : [] },
+      };
+    }
+
+    function updateWalkingMapLayers() {
+      if (!state.map?.getSource('walking-focus') || !state.map?.getSource('walking-options')) return;
+      const collections = walkingMapFeatureCollections();
+      state.map.getSource('walking-focus').setData(collections.focus);
+      state.map.getSource('walking-options').setData(collections.options);
+      const walkingVisibility = state.walkingMapActive ? 'visible' : 'none';
+      ['walking-edge-lines', 'walking-option-points', 'walking-option-labels'].forEach((layerId) => {
+        if (state.map.getLayer(layerId)) state.map.setLayoutProperty(layerId, 'visibility', walkingVisibility);
+      });
+      if (state.map.getLayer('walking-radius-fill')) state.map.setLayoutProperty('walking-radius-fill', 'visibility', walkingVisibility);
+      if (state.map.getLayer('walking-radius-line')) state.map.setLayoutProperty('walking-radius-line', 'visibility', walkingVisibility);
+      document.getElementById('walking-map-button')?.classList.toggle('active', state.walkingMapActive);
+    }
+
+    function focusWalkingMap() {
+      const preview = walkingMapOriginPreview();
+      const origin = stationLonLat(preview?.currentState?.stationGroupId);
+      if (!origin || !state.map) return;
+      state.map.easeTo({
+        center: origin,
+        zoom: Math.max(state.map.getZoom(), 13.2),
+        duration: 650,
+      });
+    }
+
+    function setWalkingMapActive(active, { focus = false } = {}) {
+      state.walkingMapActive = Boolean(active && walkingMapOriginPreview());
+      updateRailDimForWalkingMap();
+      updateWalkingMapLayers();
+      if (state.walkingMapActive && focus) focusWalkingMap();
+    }
+
+    function toggleWalkingMap() {
+      setWalkingMapActive(!state.walkingMapActive, { focus: true });
     }
 
     function walkingTransferLinkBetween(fromStationGroupId, toStationGroupId) {
@@ -11692,6 +11889,27 @@
       }
     }
 
+    function updateRailDimForWalkingMap() {
+      if (!state.map) return;
+      const dimmed = state.walkingMapActive;
+      const opacityByLayer = {
+        'track-casing': dimmed ? 0.18 : ['interpolate', ['linear'], ['zoom'], 5, 0.45, 8, 0.72, 12, 0.82],
+        'track-lines': dimmed ? 0.18 : ['interpolate', ['linear'], ['zoom'], 5, 0.42, 8, 0.62, 12, 0.82],
+        'station-hub': dimmed ? 0.28 : 1,
+        'station-major': dimmed ? 0.22 : 1,
+        'station-local': dimmed ? 0.16 : 1,
+        'label-hub': dimmed ? 0.22 : 1,
+        'label-major': dimmed ? 0.20 : 1,
+        'label-local': dimmed ? 0.16 : 1,
+        'label-dense-all': dimmed ? 0.14 : 1,
+      };
+      Object.entries(opacityByLayer).forEach(([layerId, opacity]) => {
+        if (!state.map.getLayer(layerId)) return;
+        const property = layerId.startsWith('label-') ? 'text-opacity' : layerId.includes('track') ? 'line-opacity' : 'circle-opacity';
+        state.map.setPaintProperty(layerId, property, opacity);
+      });
+    }
+
     function denseStationLabelFontSize(zoom) {
       if (zoom < 12) return 0;
       if (zoom < 12.6) return 7.8 + ((zoom - 12) / 0.6) * 0.7;
@@ -11888,6 +12106,19 @@
       map.on('zoom', () => {
         zoomPill.textContent = `Zoom ${map.getZoom().toFixed(2)}`;
       });
+
+      map.on('click', 'walking-option-points', (event) => {
+        const feature = event.features?.[0];
+        const stationGroupId = feature?.properties?.stationGroupId;
+        if (!stationGroupId || feature.properties.role === 'origin') return;
+        addWalkingStep(stationGroupId);
+        setWalkingMapActive(false);
+      });
+      map.on('mouseenter', 'walking-option-points', (event) => {
+        const feature = event.features?.[0];
+        if (feature?.properties?.role !== 'origin') map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'walking-option-points', () => { map.getCanvas().style.cursor = ''; });
     }
 
     function bindServiceInteractions(map) {
@@ -12315,6 +12546,7 @@
       const startButton = document.getElementById('start-button');
       const pauseButton = document.getElementById('pause-button');
       const replayButton = document.getElementById('simulate-button');
+      const walkingMapButton = document.getElementById('walking-map-button');
       startButton.textContent = onlineActive() ? 'Ready / Start' : 'Start Game';
       startButton.disabled =
         state.phase !== 'PLANNING' ||
@@ -12323,6 +12555,10 @@
       pauseButton.textContent = state.clockRunning ? 'Pause' : 'Resume';
       pauseButton.disabled = onlineActive();
       replayButton.disabled = onlineActive() || state.timetableStatus !== 'ready';
+      if (walkingMapButton) {
+        walkingMapButton.disabled = !walkingMapOriginPreview();
+        walkingMapButton.classList.toggle('active', state.walkingMapActive);
+      }
     }
 
     function routeTitle(routeId) {
@@ -13085,6 +13321,7 @@
 
     function renderGame() {
       if (!state.bundle) return;
+      if (state.walkingMapActive && !walkingMapOriginPreview()) state.walkingMapActive = false;
       renderCurrentStatus();
       renderTrainOutlook();
       renderPlanBoard();
@@ -13092,6 +13329,7 @@
       renderRoomPanel();
       renderResult();
       updatePlayerMarkers();
+      updateWalkingMapLayers();
       updateSelectedTripPath();
       updateSelectedRouteHighlights();
       if (state.map?.getLayer('selected-trip-stops')) {
@@ -14809,6 +15047,7 @@
       document.getElementById('global-replay-button').addEventListener('click', () => {
         window.open('./global-replay.html', '_blank', 'noopener');
       });
+      document.getElementById('walking-map-button').addEventListener('click', toggleWalkingMap);
       document.getElementById('replay-run-button').addEventListener('click', runSimulation);
       document.getElementById('replay-copy-link-button').addEventListener('click', copyReplayLink);
       document.getElementById('replay-copy-json-button').addEventListener('click', copyReplayJson);
