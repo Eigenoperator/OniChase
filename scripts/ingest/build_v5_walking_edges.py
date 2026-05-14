@@ -17,7 +17,7 @@ DEFAULT_MAP_BUNDLE = ROOT / "data" / "v4_gameplay_map_bundle.json.gz"
 DEFAULT_OUTPUT = ROOT / "data" / "v5_walking_edges.json.gz"
 DEFAULT_AUDIT_OUTPUT = ROOT / "data" / "v5_walking_edge_audit.json"
 DEFAULT_THRESHOLDS = [500, 1000, 2000, 3000, 5000]
-DEFAULT_SPEED_METERS_PER_SECOND = 2.0
+DEFAULT_SPEED_METERS_PER_SECOND = 1.0
 EARTH_RADIUS_METERS = 6_371_008.8
 
 
