@@ -5591,6 +5591,7 @@
       routeGraphPathCache: new Map(),
       physicalStationRouteIdsByStationId: new Map(),
       physicalStationIdsByRouteGroupKey: new Map(),
+      physicalStationById: new Map(),
       stationLabelFeatures: [],
       stationLabelOverlayEl: null,
       stationLabelOverlayFrame: 0,
@@ -8147,7 +8148,7 @@
     function transferLinkForBoardingCandidate(fromStationGroupId, boardStationGroupId, playerId = state.activeMode, context = {}) {
       if (!fromStationGroupId || !boardStationGroupId) return null;
       if (fromStationGroupId === boardStationGroupId) {
-        return { transferMinutes: 0, distanceMeters: 0, reason: 'same_station_group' };
+        return sameStationGroupTransferLink(fromStationGroupId, playerId, context);
       }
       const directLink = state.transferEquivalentLinksByGroupId.get(fromStationGroupId)?.get(boardStationGroupId);
       if (directLink) return directLink;
@@ -8173,6 +8174,60 @@
         }
       }
       return null;
+    }
+
+    function physicalStationCoordinateById(physicalStationId) {
+      const station = state.physicalStationById.get(physicalStationId);
+      return station && Number.isFinite(station.lon) && Number.isFinite(station.lat)
+        ? [station.lon, station.lat]
+        : null;
+    }
+
+    function routeIdForTripStopPhysicalStation(trip, stop, role) {
+      if (!trip || !stop) return null;
+      if (role === 'board') {
+        if (stop.outgoingRouteId) return stop.outgoingRouteId;
+        if (stop.displayRouteId) return stop.displayRouteId;
+        const nextStop = (trip.stopTimes || []).find((item) => item.sequence > stop.sequence);
+        return nextStop ? routeIdForTripSegment(trip, stop, nextStop) : trip.routeId;
+      }
+      if (stop.incomingRouteId) return stop.incomingRouteId;
+      if (stop.displayRouteId) return stop.displayRouteId;
+      const previousStops = (trip.stopTimes || []).filter((item) => item.sequence < stop.sequence);
+      const previousStop = previousStops[previousStops.length - 1] || null;
+      return previousStop ? routeIdForTripSegment(trip, previousStop, stop) : trip.routeId;
+    }
+
+    function physicalStationForTripStop(trip, stop, role = 'board') {
+      if (!stop?.stationGroupId) return null;
+      const routeId = routeIdForTripStopPhysicalStation(trip, stop, role);
+      const routePhysicalId = routeId ? routeStationPhysicalIds(routeId, [stop.stationGroupId])[0] : null;
+      if (routePhysicalId && state.physicalStationById.has(routePhysicalId)) {
+        return state.physicalStationById.get(routePhysicalId);
+      }
+      return (state.physicalStationsByGroupId.get(stop.stationGroupId) || [])[0] || null;
+    }
+
+    function sameStationGroupTransferLink(stationGroupId, playerId = state.activeMode, context = {}) {
+      const fromPhysicalStationId = context.fromPhysicalStationId || null;
+      const boardPhysicalStationId = context.boardPhysicalStationId ||
+        physicalStationForTripStop(context.boardTrip, context.boardStop, 'board')?.id ||
+        null;
+      const fromCoordinate = physicalStationCoordinateById(fromPhysicalStationId);
+      const boardCoordinate = physicalStationCoordinateById(boardPhysicalStationId);
+      if (!fromCoordinate || !boardCoordinate) {
+        return { transferMinutes: 0, distanceMeters: 0, reason: 'same_station_group' };
+      }
+      const distanceMeters = coordinateDistanceMeters(fromCoordinate, boardCoordinate);
+      const walkTimeSec = walkingTimeSecForDistance(distanceMeters, walkingSpeedMetersPerSecondFor(playerId, context));
+      return {
+        transferMinutes: Math.max(0, Math.ceil(walkTimeSec / 60)),
+        distanceMeters: Math.round(distanceMeters),
+        reason: fromPhysicalStationId === boardPhysicalStationId ? 'same_physical_station' : 'same_station_group_physical_walk',
+        fromPhysicalStationId,
+        boardPhysicalStationId,
+        walkTimeSec,
+      };
     }
 
     function stationGroupsTransferEquivalent(leftGroupId, rightGroupId) {
@@ -8587,6 +8642,7 @@
       Object.values(VIRTUAL_CORRIDOR_ROUTES).forEach((route) => state.routeById.set(route.id, route));
       state.stationByGroupId = new Map();
       state.physicalStationsByGroupId = new Map();
+      state.physicalStationById = new Map();
       state.routeDistanceSqCache = new Map();
       state.routePhysicalServeCache = new Map();
       state.routeCanRepresentCache = new Map();
@@ -8594,6 +8650,7 @@
       state.tracedSegmentRouteCache = new Map();
       state.reviewedTraceRouteIdCache = new Map();
       (bundle.physicalStations || []).forEach((station) => {
+        if (station?.id) state.physicalStationById.set(station.id, station);
         if (!state.stationByGroupId.has(station.stationGroupId)) state.stationByGroupId.set(station.stationGroupId, station);
         if (!state.physicalStationsByGroupId.has(station.stationGroupId)) state.physicalStationsByGroupId.set(station.stationGroupId, []);
         state.physicalStationsByGroupId.get(station.stationGroupId).push(station);
@@ -10039,7 +10096,11 @@
       return (trip?.stopTimes || [])
         .filter((stop) => {
           if (!boardableGroups.has(stop.stationGroupId)) return false;
-          const transferLink = transferLinkForBoardingCandidate(stationGroupId, stop.stationGroupId, playerId, options.walkingContext || {});
+          const transferLink = transferLinkForBoardingCandidate(stationGroupId, stop.stationGroupId, playerId, {
+            ...(options.walkingContext || {}),
+            boardTrip: trip,
+            boardStop: stop,
+          });
           if (!transferLink) return false;
           return stopDepartureMinutes(stop) >= earliestMinute + transferLink.transferMinutes;
         })
@@ -10062,7 +10123,8 @@
       const includeTransferEquivalents = Boolean(options.includeTransferEquivalents);
       const playerId = options.playerId || state.activeMode;
       const walkingSpeedKey = walkingSpeedMetersPerSecondFor(playerId, options.walkingContext || {}).toFixed(2);
-      const cacheKey = `${stationGroupId || ''}|${currentMinute}|${routeId || '*'}|${includeTransferEquivalents ? 'xfer' : 'exact'}|walk:${walkingSpeedKey}`;
+      const fromPhysicalKey = options.walkingContext?.fromPhysicalStationId || '';
+      const cacheKey = `${stationGroupId || ''}|${currentMinute}|${routeId || '*'}|${includeTransferEquivalents ? 'xfer' : 'exact'}|walk:${walkingSpeedKey}|fromphys:${fromPhysicalKey}`;
       if (state.departureQueryCache.has(cacheKey)) {
         const cached = state.departureQueryCache.get(cacheKey);
         return Number.isFinite(options.limit) ? cached.slice(0, options.limit) : cached;
@@ -10071,11 +10133,6 @@
       const seenRows = new Set();
       const searchGroupIds = includeTransferEquivalents ? equivalentStationGroupIds(stationGroupId) : [stationGroupId];
       for (const searchGroupId of searchGroupIds) {
-        const transferLink = includeTransferEquivalents
-          ? transferLinkForBoardingCandidate(stationGroupId, searchGroupId, playerId, options.walkingContext || {})
-          : { transferMinutes: 0, distanceMeters: 0, reason: 'exact_station' };
-        if (!transferLink) continue;
-        const earliestBoardMinute = currentMinute + transferLink.transferMinutes;
         const candidates = routeId
           ? stationRouteDepartureCandidates(searchGroupId, routeId)
           : (state.stationTripsByGroupId.get(searchGroupId) || []).map((trip) => ({
@@ -10087,6 +10144,15 @@
         for (const candidate of candidates) {
           const { trip, stop } = candidate;
           if (!trip || !stop) continue;
+          const transferLink = includeTransferEquivalents
+            ? transferLinkForBoardingCandidate(stationGroupId, searchGroupId, playerId, {
+              ...(options.walkingContext || {}),
+              boardTrip: trip,
+              boardStop: stop,
+            })
+            : { transferMinutes: 0, distanceMeters: 0, reason: 'exact_station' };
+          if (!transferLink) continue;
+          const earliestBoardMinute = currentMinute + transferLink.transferMinutes;
           const departureMinute = stopDepartureMinutes(stop);
           if (departureMinute < earliestBoardMinute) continue;
           const routeIds = candidate.routeIds || boardableRouteIdsForStop(trip, stop);
@@ -10139,7 +10205,12 @@
       const entries = departuresForStationGroup(
         preview.currentState.stationGroupId,
         effectiveDepartureMinute(playerId, preview.currentMinute),
-        { routeId: options.routeId || null, includeTransferEquivalents: true, playerId },
+        {
+          routeId: options.routeId || null,
+          includeTransferEquivalents: true,
+          playerId,
+          walkingContext: { fromPhysicalStationId: preview.currentState.physicalStationId || null },
+        },
       )
         .map((row) => ({
           trip: row.trip,
@@ -10286,7 +10357,11 @@
       const departures = departuresForStationGroup(
         preview.currentState.stationGroupId,
         effectiveDepartureMinute(playerId, preview.currentMinute),
-        { includeTransferEquivalents: true, playerId },
+        {
+          includeTransferEquivalents: true,
+          playerId,
+          walkingContext: { fromPhysicalStationId: preview.currentState.physicalStationId || null },
+        },
       );
       const match = departures.find((row) => row.trip.id === tripId && hasDownstreamStop(row.trip, row.stop));
       if (!match) return null;
@@ -11836,9 +11911,10 @@
       const player = state.players[playerId];
       if (!player) return null;
       let currentMinute = hhmmToMinutes(state.startTime);
-      let currentState = { kind: 'NODE', stationGroupId: player.start_station_id };
+      let currentState = { kind: 'NODE', stationGroupId: player.start_station_id, physicalStationId: null };
       let currentTrip = null;
       let currentBoardStop = null;
+      let currentBoardPhysicalStationId = null;
       const resolvedSteps = [];
 
       for (const step of player.steps || []) {
@@ -11881,23 +11957,29 @@
             };
           }
           currentMinute = arrivalMinute;
-          currentState = { kind: 'NODE', stationGroupId: edge.toNodeId };
+          currentState = { kind: 'NODE', stationGroupId: edge.toNodeId, physicalStationId: null };
           resolvedSteps.push({ ...step, distance_meters: edge.distanceMeters, walk_time_sec: walkTimeSec, walking_speed_mps: walkingSpeed });
+          currentBoardPhysicalStationId = null;
           continue;
         }
         if (step.type === 'BOARD_TRAIN') {
           if (currentState.kind !== 'NODE') break;
           const trip = state.tripById.get(step.trip_id);
           if (!trip) break;
-          const boardStop = findBoardingStop(trip, currentState.stationGroupId, currentMinute, { playerId });
+          const boardStop = findBoardingStop(trip, currentState.stationGroupId, currentMinute, {
+            playerId,
+            walkingContext: { fromPhysicalStationId: currentState.physicalStationId || null },
+          });
           if (!boardStop) break;
           const boardMinute = stopDepartureMinutes(boardStop);
           if (timeCapMinute !== null && boardMinute > timeCapMinute) break;
+          const boardPhysicalStation = physicalStationForTripStop(trip, boardStop, 'board');
           currentMinute = boardMinute;
-          currentState = { kind: 'TRAIN', tripId: trip.id };
+          currentState = { kind: 'TRAIN', tripId: trip.id, boardPhysicalStationId: boardPhysicalStation?.id || null };
           currentTrip = trip;
           currentBoardStop = boardStop;
-          resolvedSteps.push(step);
+          currentBoardPhysicalStationId = boardPhysicalStation?.id || null;
+          resolvedSteps.push({ ...step, board_physical_station_id: currentBoardPhysicalStationId });
           continue;
         }
         if (step.type === 'RIDE_TO_STATION') {
@@ -11905,12 +11987,13 @@
           const alightStop = findAlightStop(currentTrip, currentBoardStop.sequence, step.station_id);
           if (!alightStop) break;
           const arrivalMinute = stopArrivalMinutes(alightStop);
+          const alightPhysicalStation = physicalStationForTripStop(currentTrip, alightStop, 'alight');
           if (timeCapMinute !== null && arrivalMinute > timeCapMinute) {
             const loc = tripLocationOnMap(currentTrip.id, timeCapMinute);
             return {
               currentMinute: timeCapMinute,
               currentTime: minutesToHhmm(timeCapMinute),
-              currentState: { kind: 'TRAIN', tripId: currentTrip.id },
+              currentState: { kind: 'TRAIN', tripId: currentTrip.id, boardPhysicalStationId: currentBoardPhysicalStationId },
               currentTrip,
               currentBoardStop,
               resolvedSteps,
@@ -11919,10 +12002,11 @@
             };
           }
           currentMinute = arrivalMinute;
-          currentState = { kind: 'NODE', stationGroupId: alightStop.stationGroupId };
+          currentState = { kind: 'NODE', stationGroupId: alightStop.stationGroupId, physicalStationId: alightPhysicalStation?.id || null };
           currentTrip = null;
           currentBoardStop = null;
-          resolvedSteps.push(step);
+          currentBoardPhysicalStationId = null;
+          resolvedSteps.push({ ...step, alight_physical_station_id: alightPhysicalStation?.id || null });
         }
       }
 
@@ -13701,12 +13785,14 @@
     function expandPlayerPlan(playerId, playerData, scenario) {
       let currentMinute = hhmmToMinutes(scenario.start_time_hhmm);
       let currentStationId = playerData.start_station_id;
+      let currentStationPhysicalId = null;
       let currentTrip = null;
       let currentBoardStop = null;
+      let currentBoardPhysicalStationId = null;
       const events = [
         formatEvent(currentMinute, 'START_AT_STATION', playerId, {
           station_group_id: currentStationId,
-          carrier_after: { kind: 'NODE', stationGroupId: currentStationId },
+          carrier_after: { kind: 'NODE', stationGroupId: currentStationId, physicalStationId: currentStationPhysicalId },
         }),
       ];
       const steps = playerData.plan ? playerData.plan.steps : (playerData.actions || []);
@@ -13754,21 +13840,30 @@
             walking_speed_mps: walkingSpeed,
             fare: leg.fare,
             fare_total_yen: 0,
-            carrier_after: { kind: 'NODE', stationGroupId: edge.toNodeId },
+            carrier_after: { kind: 'NODE', stationGroupId: edge.toNodeId, physicalStationId: null },
           }));
           currentMinute = arrivalMinute;
           currentStationId = edge.toNodeId;
+          currentStationPhysicalId = null;
           currentTrip = null;
           currentBoardStop = null;
+          currentBoardPhysicalStationId = null;
           resolvedActions.push({ step_index: i + 1, ...action, distance_meters: edge.distanceMeters, walk_time_sec: walkTimeSec, walking_speed_mps: walkingSpeed, fare: leg.fare });
           continue;
         }
         if (action.type === 'BOARD_TRAIN') {
           const trip = state.tripById.get(action.trip_id);
           if (!trip) throw new Error(`Unknown trip ${action.trip_id}`);
-          const boardStop = findBoardingStop(trip, currentStationId, currentMinute, { playerId });
+          const walkingContext = { fromPhysicalStationId: currentStationPhysicalId };
+          const boardStop = findBoardingStop(trip, currentStationId, currentMinute, { playerId, walkingContext });
           if (!boardStop) throw new Error(`Trip ${action.trip_id} not catchable from ${currentStationId}`);
-          const transferLink = transferLinkForBoardingCandidate(currentStationId, boardStop.stationGroupId, playerId);
+          const boardPhysicalStation = physicalStationForTripStop(trip, boardStop, 'board');
+          const transferLink = transferLinkForBoardingCandidate(currentStationId, boardStop.stationGroupId, playerId, {
+            ...walkingContext,
+            boardTrip: trip,
+            boardStop,
+            boardPhysicalStationId: boardPhysicalStation?.id || null,
+          });
           if (!transferLink) throw new Error(`Trip ${action.trip_id} requires an invalid transfer from ${currentStationId}`);
           const boardMinute = stopDepartureMinutes(boardStop);
           events.push(formatEvent(boardMinute, 'BOARD_TRAIN', playerId, {
@@ -13777,14 +13872,18 @@
             transfer_minutes: transferLink.transferMinutes,
             transfer_distance_meters: transferLink.distanceMeters,
             transfer_reason: transferLink.reason,
+            transfer_from_physical_station_id: transferLink.fromPhysicalStationId || currentStationPhysicalId || null,
+            board_physical_station_id: boardPhysicalStation?.id || null,
             trip_id: trip.id,
-            carrier_after: { kind: 'TRAIN', tripId: trip.id },
+            carrier_after: { kind: 'TRAIN', tripId: trip.id, boardPhysicalStationId: boardPhysicalStation?.id || null },
           }));
           currentMinute = boardMinute;
           currentTrip = trip;
           currentBoardStop = boardStop;
+          currentBoardPhysicalStationId = boardPhysicalStation?.id || null;
           currentStationId = null;
-          resolvedActions.push({ step_index: i + 1, ...action, transfer: transferLink });
+          currentStationPhysicalId = null;
+          resolvedActions.push({ step_index: i + 1, ...action, transfer: transferLink, board_physical_station_id: currentBoardPhysicalStationId });
           continue;
         }
         if (action.type === 'RIDE_TO_STATION') {
@@ -13792,6 +13891,7 @@
           const alightStop = findAlightStop(currentTrip, currentBoardStop.sequence, action.station_id);
           if (!alightStop) throw new Error(`${currentTrip.id} does not reach ${action.station_id}`);
           const arrivalMinute = stopArrivalMinutes(alightStop);
+          const alightPhysicalStation = physicalStationForTripStop(currentTrip, alightStop, 'alight');
           const fare = resolveTripLegFare(currentTrip, currentBoardStop, alightStop);
           const leg = {
             leg_index: legs.length + 1,
@@ -13800,8 +13900,10 @@
             trip_id: currentTrip.id,
             trip_label: formatTripLabel(currentTrip),
             from_station_id: currentBoardStop.stationGroupId,
+            from_physical_station_id: currentBoardPhysicalStationId,
             from_label: displayNameForGroup(currentBoardStop.stationGroupId),
             to_station_id: alightStop.stationGroupId,
+            to_physical_station_id: alightPhysicalStation?.id || null,
             to_label: displayNameForGroup(alightStop.stationGroupId),
             board_hhmm: minutesToHhmm(stopDepartureMinutes(currentBoardStop)),
             alight_hhmm: minutesToHhmm(arrivalMinute),
@@ -13810,16 +13912,19 @@
           legs.push(leg);
           events.push(formatEvent(arrivalMinute, 'ALIGHT_TRAIN', playerId, {
             station_group_id: alightStop.stationGroupId,
+            physical_station_id: alightPhysicalStation?.id || null,
             trip_id: currentTrip.id,
             fare,
             fare_total_yen: fare.total_yen,
-            carrier_after: { kind: 'NODE', stationGroupId: alightStop.stationGroupId },
+            carrier_after: { kind: 'NODE', stationGroupId: alightStop.stationGroupId, physicalStationId: alightPhysicalStation?.id || null },
           }));
           currentMinute = arrivalMinute;
           currentStationId = alightStop.stationGroupId;
+          currentStationPhysicalId = alightPhysicalStation?.id || null;
           currentTrip = null;
           currentBoardStop = null;
-          resolvedActions.push({ step_index: i + 1, ...action, fare });
+          currentBoardPhysicalStationId = null;
+          resolvedActions.push({ step_index: i + 1, ...action, fare, alight_physical_station_id: alightPhysicalStation?.id || null });
         }
       }
       return {
