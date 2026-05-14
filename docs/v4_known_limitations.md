@@ -18,15 +18,17 @@ V4 is a nationwide railway gameplay release. It is not a full Japanese mobility 
 
 ## Fare Limits
 
-- V4 has a real fare ledger, not an estimated one. If a leg lacks a collected real fare rule, the fare is reported as unknown/null.
-- Current collected fare coverage is `383 / 604` service routes. The coverage audit is `data/v4_fare_rule_coverage_audit.json`.
-- Remaining private/local railway fares often require exact station-pair matrices, special-section fares, or airport/add-on fares. Station-pair fare tables are supported, but they must not be forced into distance bands unless the official rule can be represented exactly.
+- V4 has a real fare ledger, not an estimated one. Current release coverage is `604 / 604` service routes with `failureCount: 0` in `data/v4_fare_rule_coverage_audit.json`.
+- Route-level fare coverage does not mean every operator publishes the same kind of fare. Some sources are ordinary distance tables, some are exact station-pair tables, and a few are official product or boundary-chart fares.
+- とさでん交通 is represented from the official numbered-ticket boundary chart and city uniform zone, not a full stop-by-stop OD matrix.
+- 別府ラクテンチ and 黒部峡谷鉄道 are represented from current official product fares because their public pages do not publish a normal complete one-way railway matrix for the in-game route shape.
 - Limited express fare is modeled as ordinary base fare plus a collected limited express surcharge. JR conventional limited express uses the published reserved ordinary-car normal-season surcharge as the current default.
+- Shinkansen premium fare now uses collected normal-season ordinary-car reserved-seat surcharge tables by area. Nozomi/Mizuho/Hayabusa/Komachi train-specific add-ons, seasonality, Green/GranClass, special short sections, and complex through-Shinkansen exceptions are not fully modeled in v4.
 
 ## Trace And Highlight Limits
 
 - Selected-train highlighting now trusts the train's real physical path. If source stop traces are incomplete, the highlight can only be as good as the trace.
-- The release gate covers all eligible trips for future-stop path coverage and continuous selected paths, but it does not prove every real-world train name is semantically perfect.
+- The latest selected-train release gate checked `111805` selected trips and found `6` endpoint coverage failures. These are currently limited to start/end station coverage on a few Joetsu/Musashino/Echigo-Tokimeki-through cases, not a broad path continuity regression.
 - Traditional limited express traces have been improved, but remaining suspects should be treated as source limitations unless a specific route is promoted into the release gate.
 - Some virtual/synthetic Shinkansen or source-bridge traces are skipped by focused trace audits when they are not meaningful physical rail paths.
 

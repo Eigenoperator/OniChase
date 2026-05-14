@@ -11,7 +11,7 @@ The static website reads these files from `docs/data/`:
 - `v4_gameplay_manifest.json`: generated counts, source file names, defaults, and train normalization stats.
 - `v4_coupled_service_registry.json`: reviewed coupled-service rules used by v4 gameplay.
 - `v4_transfer_equivalence_review.json`: same-name transfer review data. Different-name walking transfers are intentionally not enabled in v4.
-- `v4_fare_rules.json`: collected real fare rules used by the gameplay fare ledger. Missing operators are marked unknown instead of estimated.
+- `v4_fare_rules.json`: collected real fare rules used by the gameplay fare ledger. Release coverage is complete at the service-route level; product fares and special cases are documented in table notes rather than estimated.
 - `v4_online_config.json`: optional room-server endpoint. Empty `server_url` means public multiplayer is not configured.
 
 The canonical working copies live in `data/` with the same names. `docs/data/` is the GitHub Pages deployment copy.
@@ -62,18 +62,20 @@ Current manifest baseline:
 - physical stations: `10239`
 - track centerlines: `21932`
 - service routes: `604`
-- compact trips: `111969`
+- compact trips: `112577`
 - skipped trains: `309`
 
 Fare rule baseline:
 
-- ordinary fare tables: `40`
-- station-pair fare tables: `1`
-- limited express surcharge tables: `4`
-- covered routes: `383 / 604`
-- unresolved routes: `221 / 604`
+- ordinary fare tables: `94`
+- station-pair fare tables: `109`
+- limited express surcharge tables: `9`
+- source records: `206`
+- covered routes: `604 / 604`
+- unresolved routes: `0 / 604`
+- coverage audit failureCount: `0`
 
-The unresolved routes are not estimated. Many remaining private/local railways publish station-pair matrices, special section fares, or add-on fares. V4 now supports station-pair fare tables, but routes without collected exact tables must stay unknown until their official matrix/add-on data is added.
+The fare ledger is still conservative: when an operator publishes a special product or boundary chart rather than a clean ordinary one-way station-pair matrix, v4 records that source type in notes instead of pretending it is a full ordinary OD table. Shinkansen premium support uses collected normal-season ordinary-car reserved-seat surcharge tables; train-specific add-ons and special exceptions remain listed in known limitations.
 
 ## Release Audit Artifacts
 
