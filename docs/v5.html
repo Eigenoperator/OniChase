@@ -13668,12 +13668,15 @@
       return { ok: reasons.length === 0, reasons, accessibleAirport, destinationStation, times };
     }
 
-    function availableFlightsFromAirport(iata, preview, limit = 48) {
-      return (state.flightsByOriginAirport.get(iata) || [])
+    function availableFlightsFromAirport(iata, preview, limit = 48, options = {}) {
+      const rows = (state.flightsByOriginAirport.get(iata) || [])
         .filter(flightOperatesForGameDay)
         .filter((flight) => flightDepartureMinute(flight) >= preview.currentMinute)
-        .sort((a, b) => flightDepartureMinute(a) - flightDepartureMinute(b))
-        .slice(0, limit);
+        .sort((a, b) => flightDepartureMinute(a) - flightDepartureMinute(b));
+      const filtered = options.buyableOnly
+        ? rows.filter((flight) => flightCatchability(flight, preview).ok)
+        : rows;
+      return filtered.slice(0, limit);
     }
 
     function nearestAirportsFromStation(stationGroupId, limit = 10) {
@@ -13724,7 +13727,12 @@
     function flightRowsFromPreview(preview) {
       const accessible = accessibleAirportFromStation(preview?.currentState?.stationGroupId);
       if (!accessible?.iata) return [];
-      return availableFlightsFromAirport(accessible.iata, preview, 60).map((flight) => {
+      const buyableFlights = availableFlightsFromAirport(accessible.iata, preview, 72, { buyableOnly: true });
+      const fallbackFlights = buyableFlights.length
+        ? []
+        : availableFlightsFromAirport(accessible.iata, preview, 24);
+      const rows = buyableFlights.length ? buyableFlights : fallbackFlights;
+      return rows.map((flight) => {
         const catchability = flightCatchability(flight, preview);
         const fare = resolveFlightFare(flight);
         const disabled = catchability.ok ? '' : 'disabled';
