@@ -1209,6 +1209,7 @@
         <button id="simulate-button" type="button">Replay</button>
         <button id="global-replay-button" type="button">Global Replay</button>
         <button id="walking-map-button" type="button">Walking Map</button>
+        <button id="flight-map-button" type="button">Plane Map</button>
         <button id="corridor-button" class="debug-only active" type="button" hidden>Corridor</button>
         <button id="service-button" class="debug-only" type="button" hidden>Service</button>
         <button id="fit-button" type="button">Fit</button>
@@ -1309,6 +1310,7 @@
     const TRANSFER_REVIEW_URL = './data/v4_transfer_equivalence_review.json';
     const COUPLED_SERVICE_REGISTRY_URL = './data/v4_coupled_service_registry.json';
     const WALKING_EDGES_URL = './data/v5_walking_edges.json.gz';
+    const FLIGHT_MAP_URL = './data/v5_flight_map.geojson';
     const V5_ACTIVE_WALKING_THRESHOLD_METERS = 2000;
     const V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND = 5 / 3.6;
     const V5_MIN_WALKING_SPEED_MULTIPLIER = 0.35;
@@ -5552,6 +5554,7 @@
       selectedTripStopIds: [],
       selectedTripStopFeatureIds: [],
       walkingMapActive: false,
+      flightMapActive: false,
       planningModes: { runner: 'rail', hunter: 'rail' },
       activeMode: 'runner',
       players: {},
@@ -5610,6 +5613,8 @@
       coupledServiceRegistry: null,
       walkingGraph: null,
       walkingEdgesByFromGroupId: new Map(),
+      flightMap: null,
+      airportByIata: new Map(),
       fareRules: null,
       coupledServiceEntries: [],
       coupledChoiceRowsByKey: new Map(),
@@ -8089,6 +8094,27 @@
       }
     }
 
+    function indexFlightMap(payload) {
+      state.flightMap = payload || { type: 'FeatureCollection', features: [] };
+      state.airportByIata = new Map();
+      (state.flightMap.features || [])
+        .filter((feature) => feature?.properties?.kind === 'airport')
+        .forEach((feature) => {
+          const iata = feature.properties?.iata;
+          if (iata) state.airportByIata.set(iata, feature);
+        });
+    }
+
+    async function loadFlightMap() {
+      try {
+        const payload = await fetchJsonMaybeGz(FLIGHT_MAP_URL);
+        indexFlightMap(payload);
+      } catch (error) {
+        console.warn('Failed to load v5 flight map', error);
+        indexFlightMap(null);
+      }
+    }
+
     function buildStationTransferIndex() {
       state.stationGroupIdsByTransferKey = new Map();
       state.transferEquivalentGroupIdsByGroupId = new Map();
@@ -8971,6 +8997,12 @@
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
       });
+      map.addSource('flight-map', {
+        type: 'geojson',
+        data: state.flightMap || { type: 'FeatureCollection', features: [] },
+        promoteId: 'id',
+        tolerance: 0.45,
+      });
 
       map.addLayer({
         id: 'track-casing',
@@ -9041,6 +9073,7 @@
       });
 
       addWalkingLayers(map);
+      addFlightLayers(map);
       addStationLayers(map);
       addLabelLayers(map);
       addPlayerLayers(map);
@@ -9117,6 +9150,71 @@
           'text-color': '#1f2937',
           'text-halo-color': 'rgba(255,255,255,0.86)',
           'text-halo-width': 1.15,
+        },
+      });
+    }
+
+    function addFlightLayers(map) {
+      map.addLayer({
+        id: 'flight-route-lines',
+        type: 'line',
+        source: 'flight-map',
+        filter: ['==', ['get', 'kind'], 'flight-route'],
+        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' },
+        paint: {
+          'line-color': '#0f766e',
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 4, 0.18, 7, 0.34, 10, 0.48],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 4, 0.55, 7, 1.15, 10, 2.0],
+        },
+      });
+      map.addLayer({
+        id: 'flight-airport-halo',
+        type: 'circle',
+        source: 'flight-map',
+        filter: ['==', ['get', 'kind'], 'airport'],
+        layout: { visibility: 'none' },
+        paint: {
+          'circle-color': 'rgba(15,118,110,0.18)',
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 4, 8, ['+', 5, ['get', 'rank']], 12, ['+', 8, ['*', ['get', 'rank'], 1.4]]],
+          'circle-stroke-color': 'rgba(15,118,110,0.28)',
+          'circle-stroke-width': 1,
+        },
+      });
+      map.addLayer({
+        id: 'flight-airport-points',
+        type: 'circle',
+        source: 'flight-map',
+        filter: ['==', ['get', 'kind'], 'airport'],
+        layout: { visibility: 'none' },
+        paint: {
+          'circle-color': '#0f766e',
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.4, 8, ['+', 2.8, ['*', ['get', 'rank'], 0.45]], 12, ['+', 3.5, ['*', ['get', 'rank'], 0.65]]],
+          'circle-opacity': 0.96,
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 1.7,
+        },
+      });
+      map.addLayer({
+        id: 'flight-airport-labels',
+        type: 'symbol',
+        source: 'flight-map',
+        filter: ['==', ['get', 'kind'], 'airport'],
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'iata'],
+          'text-font': ['Open Sans Regular'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 4, 10, 8, 12.5, 12, 15],
+          'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+          'text-radial-offset': 0.78,
+          'text-justify': 'auto',
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
+          'symbol-sort-key': ['-', 20, ['get', 'rank']],
+        },
+        paint: {
+          'text-color': '#134e4a',
+          'text-halo-color': 'rgba(255,255,255,0.72)',
+          'text-halo-width': 0.8,
         },
       });
     }
@@ -9933,6 +10031,16 @@
       document.getElementById('walking-map-button')?.classList.toggle('active', state.walkingMapActive);
     }
 
+    function updateFlightMapLayers() {
+      if (!state.map?.getSource('flight-map')) return;
+      state.map.getSource('flight-map').setData(state.flightMap || { type: 'FeatureCollection', features: [] });
+      const visibility = state.flightMapActive ? 'visible' : 'none';
+      ['flight-route-lines', 'flight-airport-halo', 'flight-airport-points', 'flight-airport-labels'].forEach((layerId) => {
+        if (state.map.getLayer(layerId)) state.map.setLayoutProperty(layerId, 'visibility', visibility);
+      });
+      document.getElementById('flight-map-button')?.classList.toggle('active', state.flightMapActive);
+    }
+
     function focusWalkingMap() {
       const preview = walkingMapOriginPreview();
       const origin = stationLonLat(preview?.currentState?.stationGroupId);
@@ -9946,9 +10054,51 @@
 
     function setWalkingMapActive(active, { focus = false } = {}) {
       state.walkingMapActive = Boolean(active && walkingMapOriginPreview());
+      if (state.walkingMapActive) state.flightMapActive = false;
       updateRailDimForWalkingMap();
       updateWalkingMapLayers();
+      updateFlightMapLayers();
       if (state.walkingMapActive && focus) focusWalkingMap();
+    }
+
+    function flightMapBounds() {
+      const coordinates = (state.flightMap?.features || [])
+        .filter((feature) => feature?.properties?.kind === 'airport')
+        .map((feature) => feature.geometry?.coordinates)
+        .filter(validCoordinate);
+      if (!coordinates.length) return null;
+      return [
+        [Math.min(...coordinates.map((coord) => coord[0])), Math.min(...coordinates.map((coord) => coord[1]))],
+        [Math.max(...coordinates.map((coord) => coord[0])), Math.max(...coordinates.map((coord) => coord[1]))],
+      ];
+    }
+
+    function focusFlightMap() {
+      const bounds = flightMapBounds();
+      if (!bounds || !state.map) return;
+      state.map.fitBounds(bounds, { padding: 72, duration: 650, maxZoom: 6.2 });
+    }
+
+    function setFlightMapActive(active, { focus = false } = {}) {
+      state.flightMapActive = Boolean(active && state.airportByIata?.size);
+      if (state.flightMapActive) state.walkingMapActive = false;
+      updateRailDimForWalkingMap();
+      updateWalkingMapLayers();
+      updateFlightMapLayers();
+      if (state.flightMapActive && focus) focusFlightMap();
+    }
+
+    function toggleFlightMap() {
+      setFlightMapActive(!state.flightMapActive, { focus: true });
+      if (state.flightMapActive) {
+        state.planningModes[state.activeMode] = 'flight';
+        state.planningRouteIds[state.activeMode] = null;
+        clearPendingTrip();
+        setSelectedRoute(null);
+      } else if (activePlanningMode() === 'flight') {
+        state.planningModes[state.activeMode] = 'rail';
+      }
+      renderGame();
     }
 
     function validCoordinate(coordinate) {
@@ -12224,7 +12374,7 @@
 
     function updateRailDimForWalkingMap() {
       if (!state.map) return;
-      const dimmed = state.walkingMapActive;
+      const dimmed = state.walkingMapActive || state.flightMapActive;
       const opacityByLayer = {
         'track-casing': dimmed ? 0.18 : ['interpolate', ['linear'], ['zoom'], 5, 0.45, 8, 0.72, 12, 0.82],
         'track-lines': dimmed ? 0.18 : ['interpolate', ['linear'], ['zoom'], 5, 0.42, 8, 0.62, 12, 0.82],
@@ -12245,12 +12395,14 @@
         'label-all-dense',
         'label-all-final',
         'selected-station-label',
-        'player-marker-halo',
-        'player-marker-dot',
-        'player-marker-label',
       ].forEach((layerId) => {
         if (state.map.getLayer(layerId)) {
           state.map.setLayoutProperty(layerId, 'visibility', dimmed ? 'none' : 'visible');
+        }
+      });
+      ['player-marker-halo', 'player-marker-dot', 'player-marker-label'].forEach((layerId) => {
+        if (state.map.getLayer(layerId)) {
+          state.map.setLayoutProperty(layerId, 'visibility', state.walkingMapActive ? 'none' : 'visible');
         }
       });
       if (dimmed) {
@@ -12295,7 +12447,7 @@
       const overlay = state.stationLabelOverlayEl;
       if (!map || !overlay) return;
       const zoom = map.getZoom();
-      if (state.walkingMapActive || zoom < 12) {
+      if (state.walkingMapActive || state.flightMapActive || zoom < 12) {
         overlay.classList.add('hidden');
         overlay.replaceChildren();
         return;
@@ -12503,6 +12655,14 @@
         if (feature?.properties?.role !== 'origin') map.getCanvas().style.cursor = 'pointer';
       });
       map.on('mouseleave', 'walking-option-points', () => { map.getCanvas().style.cursor = ''; });
+
+      map.on('click', 'flight-airport-points', (event) => {
+        const feature = event.features?.[0];
+        const iata = feature?.properties?.iata;
+        if (iata) focusAirportOnMap(iata);
+      });
+      map.on('mouseenter', 'flight-airport-points', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'flight-airport-points', () => { map.getCanvas().style.cursor = ''; });
     }
 
     function bindServiceInteractions(map) {
@@ -12936,6 +13096,7 @@
       const pauseButton = document.getElementById('pause-button');
       const replayButton = document.getElementById('simulate-button');
       const walkingMapButton = document.getElementById('walking-map-button');
+      const flightMapButton = document.getElementById('flight-map-button');
       startButton.textContent = onlineActive() ? 'Ready / Start' : 'Start Game';
       startButton.disabled =
         state.phase !== 'PLANNING' ||
@@ -12947,6 +13108,10 @@
       if (walkingMapButton) {
         walkingMapButton.disabled = !walkingMapOriginPreview();
         walkingMapButton.classList.toggle('active', state.walkingMapActive);
+      }
+      if (flightMapButton) {
+        flightMapButton.disabled = !state.airportByIata?.size;
+        flightMapButton.classList.toggle('active', state.flightMapActive);
       }
     }
 
@@ -13193,6 +13358,61 @@
         .sort((a, b) => routeTitle(a).localeCompare(routeTitle(b)));
     }
 
+    function airportCoordinate(iata) {
+      const feature = state.airportByIata?.get(iata);
+      return feature?.geometry?.coordinates || null;
+    }
+
+    function airportDisplayName(feature) {
+      const props = feature?.properties || {};
+      const name = props.municipality || props.name || props.iata || 'Airport';
+      return `${props.iata} · ${name}`;
+    }
+
+    function nearestAirportsFromStation(stationGroupId, limit = 10) {
+      const origin = stationLonLat(stationGroupId);
+      if (!origin || !state.airportByIata?.size) return [];
+      return [...state.airportByIata.values()]
+        .map((feature) => ({
+          feature,
+          distanceMeters: coordinateDistanceMeters(origin, feature.geometry?.coordinates),
+        }))
+        .filter((item) => Number.isFinite(item.distanceMeters))
+        .sort((a, b) =>
+          a.distanceMeters - b.distanceMeters ||
+          String(a.feature.properties?.iata || '').localeCompare(String(b.feature.properties?.iata || ''))
+        )
+        .slice(0, limit);
+    }
+
+    function focusAirportOnMap(iata) {
+      const coordinate = airportCoordinate(iata);
+      if (!coordinate || !state.map) return;
+      setFlightMapActive(true);
+      state.map.easeTo({
+        center: coordinate,
+        zoom: Math.max(state.map.getZoom(), 8.8),
+        duration: 520,
+      });
+    }
+
+    function flightAirportRowsFromPreview(preview) {
+      const stationGroupId = preview?.currentState?.stationGroupId;
+      return nearestAirportsFromStation(stationGroupId, 12).map(({ feature, distanceMeters }) => {
+        const props = feature.properties || {};
+        return `
+          <button class="route-row" type="button" data-row-key="${escapeHtml(`airport:${props.iata}`)}" data-action="focus-airport" data-iata="${escapeHtml(props.iata)}">
+            <span class="route-swatch" style="background:#0f766e"></span>
+            <span>
+              <span class="row-title">${escapeHtml(airportDisplayName(feature))}</span>
+              <span class="row-sub">${walkingDistanceLabel(distanceMeters)} from current station · ${props.flightCount || 0} flight endpoints</span>
+            </span>
+            <span class="row-meta">air</span>
+          </button>
+        `;
+      });
+    }
+
     function plannerStep(index, title, sub, body) {
       return `
         <div class="planner-step">
@@ -13219,7 +13439,7 @@
     const PLANNING_MODE_DEFS = Object.freeze([
       { id: 'rail', label: 'Rail', icon: '🚆', enabled: true },
       { id: 'walk', label: 'Walk', icon: '👣', enabled: true },
-      { id: 'flight', label: 'Flight', icon: '✈', enabled: false },
+      { id: 'flight', label: 'Flight', icon: '✈', enabled: true },
       { id: 'ship', label: 'Ship', icon: '⛴', enabled: false },
       { id: 'bus', label: 'Bus', icon: '🚌', enabled: false },
     ]);
@@ -13351,6 +13571,7 @@
           const action = button.dataset.action;
           if (action === 'choose-route') choosePlanningRoute(button.dataset.routeId);
           else if (action === 'walk-to-station') addWalkingStep(button.dataset.stationGroupId);
+          else if (action === 'focus-airport') focusAirportOnMap(button.dataset.iata);
           else if (action === 'choose-mode') choosePlanningMode(button.dataset.mode);
           else if (action === 'choose-coupled') chooseCoupledTrain(button.dataset.coupledKey);
           else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
@@ -13370,7 +13591,9 @@
       clearPendingTrip();
       setSelectedRoute(null);
       if (mode === 'walk') setWalkingMapActive(true, { focus: true });
+      else if (mode === 'flight') setFlightMapActive(true, { focus: true });
       else setWalkingMapActive(false);
+      if (mode !== 'flight') setFlightMapActive(false);
       renderGame();
     }
 
@@ -13484,17 +13707,30 @@
               <span class="row-meta">walk</span>
             </button>
           `);
+          const flightRows = flightAirportRowsFromPreview(preview);
+          const stepTitle = planningMode === 'walk'
+            ? `Walking from ${currentLabel}`
+            : planningMode === 'flight'
+              ? `Airports near ${currentLabel}`
+              : `Lines at ${currentLabel}`;
+          const stepSub = planningMode === 'walk'
+            ? `Walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km`
+            : planningMode === 'flight'
+              ? 'Domestic flight map · ticket rules next'
+              : `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))}`;
           html += plannerStep(
             '1/3',
-            `${planningMode === 'walk' ? 'Walking from' : 'Lines at'} ${currentLabel}`,
-            planningMode === 'walk'
-              ? `Walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km`
-              : `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))}`,
+            stepTitle,
+            stepSub,
             planningModePickerHtml(planningMode) + (
               planningMode === 'walk'
                 ? (walkingRows.length
                   ? walkingRows.join('')
                   : `<div class="empty" data-row-key="empty:walk">No walkable stations within ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km.</div>`)
+                : planningMode === 'flight'
+                  ? (flightRows.length
+                    ? flightRows.join('')
+                    : `<div class="empty" data-row-key="empty:flight">No airport coordinates available near this station.</div>`)
                 : (routeChoices.length
                   ? routeChoices.map((choice) => `
                   <button class="route-row" type="button" data-row-key="${escapeHtml(`route:${choice.routeId}`)}" data-action="choose-route" data-route-id="${choice.routeId}">
@@ -13766,6 +14002,8 @@
     function renderGame() {
       if (!state.bundle) return;
       if (state.walkingMapActive && !walkingMapOriginPreview()) state.walkingMapActive = false;
+      if (state.flightMapActive && !state.airportByIata?.size) state.flightMapActive = false;
+      updateRailDimForWalkingMap();
       renderCurrentStatus();
       renderTrainOutlook();
       renderPlanBoard();
@@ -13774,6 +14012,7 @@
       renderResult();
       updatePlayerMarkers();
       updateWalkingMapLayers();
+      updateFlightMapLayers();
       updateSelectedTripPath();
       updateSelectedRouteHighlights();
       if (state.map?.getLayer('selected-trip-stops')) {
@@ -15478,6 +15717,7 @@
       state.bundle = bundle;
       buildIndexes(bundle);
       await loadWalkingGraph();
+      await loadFlightMap();
       buildStationTransferIndex();
       const runnerStart = bundle.metadata?.defaultRunnerStartStationId || 'SG_TOKYO';
       const hunterStart = bundle.metadata?.defaultHunterStartStationId || 'SG_SHINJUKU';
@@ -15517,6 +15757,7 @@
         window.open('./global-replay.html', '_blank', 'noopener');
       });
       document.getElementById('walking-map-button').addEventListener('click', toggleWalkingMap);
+      document.getElementById('flight-map-button').addEventListener('click', toggleFlightMap);
       document.getElementById('replay-run-button').addEventListener('click', runSimulation);
       document.getElementById('replay-copy-link-button').addEventListener('click', copyReplayLink);
       document.getElementById('replay-copy-json-button').addEventListener('click', copyReplayJson);
