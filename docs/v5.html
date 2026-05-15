@@ -925,6 +925,28 @@
       border-radius: 999px;
     }
 
+    .route-row.flight-row {
+      grid-template-columns: 42px minmax(0, 1fr) auto;
+    }
+
+    .airline-logo {
+      width: 38px;
+      height: 28px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      background: var(--airline-color, #2563eb);
+      border: 1px solid rgba(20, 32, 50, 0.08);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.48) inset;
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
     .row-title {
       display: block;
       min-width: 0;
@@ -8138,6 +8160,54 @@
       return `${flightOperatingNumber(flight)} ${flight?.originAirport || '---'} -> ${flight?.destinationAirport || '---'}`;
     }
 
+    function airlineBrandCode(flight) {
+      const number = String(flightOperatingNumber(flight)).toUpperCase();
+      const carrier = String(flight?.operatingCarrier || '').toUpperCase();
+      if (number.startsWith('NH')) return 'ANA';
+      if (number.startsWith('JL')) return 'JAL';
+      if (number.startsWith('BC')) return 'SKY';
+      if (number.startsWith('MM')) return 'APJ';
+      if (number.startsWith('GK')) return 'JJP';
+      if (number.startsWith('7G')) return 'SFJ';
+      if (number.startsWith('6J')) return 'SNA';
+      if (number.startsWith('HD')) return 'ADO';
+      if (number.startsWith('JH')) return 'FDA';
+      if (number.startsWith('FW')) return 'IBX';
+      if (number.startsWith('IJ')) return 'SJO';
+      return carrier || 'AIR';
+    }
+
+    function airlineBrandStyle(code) {
+      const palette = {
+        ANA: '#194f9d',
+        AKX: '#194f9d',
+        JAL: '#c8102e',
+        JTA: '#c8102e',
+        JAC: '#c8102e',
+        RAC: '#c8102e',
+        SKY: '#1296d4',
+        ADO: '#00a3ad',
+        APJ: '#7b2cbf',
+        JJP: '#f97316',
+        SFJ: '#111827',
+        SNA: '#22a06b',
+        FDA: '#e11d48',
+        IBX: '#2563eb',
+        ORC: '#0f766e',
+        AMX: '#0891b2',
+        SJO: '#ef4444',
+        TOK: '#64748b',
+      };
+      return palette[code] || '#2563eb';
+    }
+
+    function airlineLogoHtml(flight) {
+      const code = airlineBrandCode(flight);
+      const color = airlineBrandStyle(code);
+      const label = code.length > 4 ? code.slice(0, 4) : code;
+      return `<span class="airline-logo" style="--airline-color:${escapeHtml(color)}" title="${escapeHtml(flight?.operatingCarrierName || code)}">${escapeHtml(label)}</span>`;
+    }
+
     function indexFlightTimetable(payload) {
       const flights = (payload?.flights || []).filter((flight) =>
         flight?.physicalFlightId &&
@@ -13845,18 +13915,14 @@
       const rows = buyableFlights.length ? buyableFlights : fallbackFlights;
       return rows.map((flight) => {
         const purchase = flightPurchaseStatus(flight, preview);
-        const board = flightCatchability(flight, preview);
         const fare = resolveFlightFare(flight);
         const disabled = purchase.ok ? '' : 'disabled';
-        const reason = purchase.ok
-          ? `arrive ${flight.destinationAirport} ${flight.arrivalTimeLocal} · airport by ${minutesToHhmm(board.times.airportDeadlineMinute)}`
-          : purchase.reasons.join(' · ');
         return `
-          <button class="route-row" type="button" data-row-key="${escapeHtml(`flight:${flight.physicalFlightId}`)}" data-action="buy-flight-ticket" data-flight-id="${escapeHtml(flight.physicalFlightId)}" ${disabled}>
-            <span class="route-swatch" style="background:#2563eb"></span>
+          <button class="route-row flight-row" type="button" data-row-key="${escapeHtml(`flight:${flight.physicalFlightId}`)}" data-action="buy-flight-ticket" data-flight-id="${escapeHtml(flight.physicalFlightId)}" ${disabled}>
+            ${airlineLogoHtml(flight)}
             <span>
               <span class="row-title">${escapeHtml(flightDisplayLabel(flight))}</span>
-              <span class="row-sub">${escapeHtml(flight.operatingCarrierName || flight.operatingCarrier || '')} · buy by ${minutesToHhmm(purchase.times.purchaseDeadlineMinute)} · ${reason}</span>
+              <span class="row-sub">${escapeHtml(flight.departureTimeLocal)} -> ${escapeHtml(flight.arrivalTimeLocal)}</span>
             </span>
             <span class="row-meta">¥${fare.total_yen.toLocaleString('ja-JP')}</span>
           </button>
