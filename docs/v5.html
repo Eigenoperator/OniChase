@@ -13796,21 +13796,38 @@
     }
 
     function flightAirportRowsFromPreview(preview) {
+      const anchor = validCoordinate(preview?.mapPosition)
+        ? preview.mapPosition
+        : (preview?.currentState?.kind === 'NODE'
+          ? stationLonLat(preview.currentState.stationGroupId)
+          : null);
       return [...state.airportByIata.values()]
         .filter((feature) => state.flightsByOriginAirport.has(feature.properties?.iata))
-        .sort((a, b) => String(a.properties?.iata || '').localeCompare(String(b.properties?.iata || '')))
+        .map((feature) => ({
+          feature,
+          distanceMeters: coordinateDistanceMeters(anchor, feature.geometry?.coordinates),
+        }))
+        .sort((a, b) => {
+          const leftDistance = Number.isFinite(a.distanceMeters) ? a.distanceMeters : Number.POSITIVE_INFINITY;
+          const rightDistance = Number.isFinite(b.distanceMeters) ? b.distanceMeters : Number.POSITIVE_INFINITY;
+          return leftDistance - rightDistance ||
+            String(a.feature.properties?.iata || '').localeCompare(String(b.feature.properties?.iata || ''));
+        })
         .slice(0, 120)
-        .map((feature) => {
+        .map(({ feature, distanceMeters }) => {
         const props = feature.properties || {};
         const flightCount = (state.flightsByOriginAirport.get(props.iata) || []).length;
+        const distanceText = Number.isFinite(distanceMeters)
+          ? `${walkingDistanceLabel(distanceMeters)} from plan end`
+          : 'distance unknown';
         return `
           <button class="route-row" type="button" data-row-key="${escapeHtml(`airport:${props.iata}`)}" data-action="choose-flight-origin" data-iata="${escapeHtml(props.iata)}">
             <span class="route-swatch" style="background:#0f766e"></span>
             <span>
               <span class="row-title">${escapeHtml(airportDisplayName(feature))}</span>
-              <span class="row-sub">${flightCount} scheduled departures · buy ticket from anywhere</span>
+              <span class="row-sub">${distanceText} · ${flightCount} scheduled departures · buy ticket from anywhere</span>
             </span>
-            <span class="row-meta">from</span>
+            <span class="row-meta">${Number.isFinite(distanceMeters) ? walkingDistanceLabel(distanceMeters) : 'from'}</span>
           </button>
         `;
       });
