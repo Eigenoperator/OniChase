@@ -27,6 +27,12 @@ SKYMARK_SOURCE = ROOT / "data/v5_flight_source_cache/skymark_timetable_2026summe
 SKYMARK_OUTPUT = ROOT / "data/v5_domestic_flights_skymark_20260601_20261024.json"
 AIRDO_SOURCE = ROOT / "data/v5_flight_source_cache/airdo_timetable_20260329_20261024.html"
 AIRDO_OUTPUT = ROOT / "data/v5_domestic_flights_airdo_20260329_20261024.json"
+STARFLYER_SOURCE_DIR = ROOT / "data/v5_flight_source_cache/starflyer"
+STARFLYER_OUTPUT = ROOT / "data/v5_domestic_flights_starflyer_20260329_20261024.json"
+IBEX_SOURCE = ROOT / "data/v5_flight_source_cache/ibex_timetable_20260329_20261024.html"
+IBEX_OUTPUT = ROOT / "data/v5_domestic_flights_ibex_20260329_20261024.json"
+TOKI_SOURCE = ROOT / "data/v5_flight_source_cache/toki_schedules_20260329_20260831.html"
+TOKI_OUTPUT = ROOT / "data/v5_domestic_flights_toki_20260329_20260831.json"
 
 ANA_SOURCE_REF = {
     "id": "ana-domestic-timetable-pdf-20260701-20261024",
@@ -54,6 +60,31 @@ AIRDO_SOURCE_REF = {
 }
 AIRDO_SERVICE_START = date(2026, 3, 29)
 AIRDO_SERVICE_END = date(2026, 10, 24)
+
+STARFLYER_SOURCE_REF = {
+    "id": "starflyer-timetable-web-20260329-20261024",
+    "url": "https://www.starflyer.jp/en/timetable/",
+    "period": "2026-03-29/2026-10-24",
+    "sourceDate": None,
+}
+STARFLYER_SERVICE_START = date(2026, 3, 29)
+STARFLYER_SERVICE_END = date(2026, 10, 24)
+
+IBEX_SOURCE_REF = {
+    "id": "ibex-timetable-web-20260329-20261024",
+    "url": "https://www.ibexair.co.jp/timetable/",
+    "period": "2026-03-29/2026-10-24",
+    "sourceDate": None,
+}
+IBEX_SERVICE_START = date(2026, 3, 29)
+IBEX_SERVICE_END = date(2026, 10, 24)
+
+TOKI_SOURCE_REF = {
+    "id": "toki-air-schedules-web-20260329-20260831",
+    "url": "https://tokiair.com/schedules/",
+    "period": "2026-03-29/2026-08-31",
+    "sourceDate": None,
+}
 
 OPERATOR_NAMES = {
     "ANA": "All Nippon Airways",
@@ -165,6 +196,7 @@ AIRPORT_IATA = {
     "奥尻": "OIR",
     "名古屋": "NGO",
     "Haneda": "HND",
+    "Haneda (Tokyo)": "HND",
     "Sapporo(New Chitose)": "CTS",
     "Kobe": "UKB",
     "Fukuoka": "FUK",
@@ -175,7 +207,21 @@ AIRPORT_IATA = {
     "Miyako(Shimojishima)": "SHI",
     "Ibaraki": "IBR",
     "Nagoya(Chubu)": "NGO",
+    "Chubu (Nagoya)": "NGO",
     "Sendai": "SDJ",
+    "Kitakyushu": "KKJ",
+    "Kansai (Osaka)": "KIX",
+    "Yamaguchi Ube": "UBJ",
+    "新千歳空港": "CTS",
+    "仙台空港": "SDJ",
+    "福島空港": "FKS",
+    "新潟空港": "KIJ",
+    "名古屋（中部国際空港）": "NGO",
+    "大阪（伊丹空港）": "ITM",
+    "広島空港": "HIJ",
+    "松山空港": "MYJ",
+    "福岡空港": "FUK",
+    "大分空港": "OIT",
 }
 
 ROUTE_RE = re.compile(r"(?P<origin>[^\s　]+（[^）]+）|[一-龥ぁ-んァ-ヶー・]+)→(?P<dest>[^\s　]+（[^）]+）|[一-龥ぁ-んァ-ヶー・]+)")
@@ -496,6 +542,37 @@ def calendar_for_period(start: date, end: date, status: str = "default_all_perio
         "operatingDates": [day.isoformat() for day in dates],
         "operatingWeekdays": weekdays,
         "operatingWeekdayNames": [weekday_names[index - 1] for index in weekdays],
+        "calendarParseStatus": status,
+        "calendarParseError": None,
+    }
+    if extra:
+        payload.update(extra)
+    return payload
+
+
+def calendar_for_weekdays(
+    start: date,
+    end: date,
+    weekdays: set[int],
+    extra_dates: set[date] | None = None,
+    status: str = "parsed_weekday_note",
+    extra: dict | None = None,
+) -> dict:
+    dates = [day for day in daterange(start, end) if day.isoweekday() in weekdays]
+    if extra_dates:
+        dates = sorted(set(dates) | {day for day in extra_dates if start <= day <= end})
+    else:
+        dates = sorted(dates)
+    weekday_values = sorted({day.isoweekday() for day in dates})
+    weekday_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    payload = {
+        "servicePeriod": {
+            "start": start.isoformat(),
+            "end": end.isoformat(),
+        },
+        "operatingDates": [day.isoformat() for day in dates],
+        "operatingWeekdays": weekday_values,
+        "operatingWeekdayNames": [weekday_names[index - 1] for index in weekday_values],
         "calendarParseStatus": status,
         "calendarParseError": None,
     }
@@ -891,6 +968,411 @@ def collect_airdo(html_path: Path) -> dict:
     }
 
 
+STARFLYER_DIRECTION_RE = re.compile(
+    r'<h3 class="m-hdg">(?P<origin>[^<]+?)\s*&rarr;\s*(?P<dest>[^<]+?)</h3>(?P<body>.*?)(?=<h3 class="m-hdg">|<div class="m-list-notes|</body>)',
+    re.S,
+)
+STARFLYER_ROW_RE = re.compile(
+    r"<tr>\s*<th>(?P<flight>SFJ\s+\d+)(?P<th_extra>.*?)</th>\s*<td>(?P<dep>.*?)</td>\s*<td>(?P<arr>.*?)</td>\s*</tr>",
+    re.S,
+)
+
+
+def clean_html_text(text: str) -> str:
+    text = re.sub(r"<br\s*/?>", " ", text)
+    text = re.sub(r"<.*?>", " ", text)
+    return " ".join(text.split())
+
+
+def collect_starflyer(source_dir: Path) -> dict:
+    rows: list[dict] = []
+    unknown_airports: set[str] = set()
+    skipped_embedded_route_rows = 0
+    for html_path in sorted(source_dir.glob("*.html")):
+        html = html_path.read_text(encoding="utf-8")
+        for direction in STARFLYER_DIRECTION_RE.finditer(html):
+            origin_name = clean_html_text(direction.group("origin"))
+            dest_name = clean_html_text(direction.group("dest"))
+            origin = AIRPORT_IATA.get(origin_name)
+            dest = AIRPORT_IATA.get(dest_name)
+            if not origin:
+                unknown_airports.add(origin_name)
+            if not dest:
+                unknown_airports.add(dest_name)
+            if not origin or not dest:
+                continue
+            for row in STARFLYER_ROW_RE.finditer(direction.group("body")):
+                th_extra = row.group("th_extra")
+                if "<span" in th_extra:
+                    skipped_embedded_route_rows += 1
+                    continue
+                dep = clean_html_text(row.group("dep"))
+                arr = clean_html_text(row.group("arr"))
+                dep_match = re.search(r"\d{2}:\d{2}", dep)
+                arr_match = re.search(r"\d{2}:\d{2}", arr)
+                if not dep_match or not arr_match:
+                    continue
+                flight = row.group("flight").replace(" ", "")
+                rows.append(
+                    {
+                        "flight": flight,
+                        "originAirport": origin,
+                        "destinationAirport": dest,
+                        "departureTimeLocal": dep_match.group(0),
+                        "arrivalTimeLocal": arr_match.group(0),
+                        "sourceFile": html_path.name,
+                    }
+                )
+
+    merged: dict[tuple[str, str, str, str, str], dict] = {}
+    for row in rows:
+        key = (
+            row["flight"],
+            row["originAirport"],
+            row["destinationAirport"],
+            row["departureTimeLocal"],
+            row["arrivalTimeLocal"],
+        )
+        merged[key] = row
+
+    flights = []
+    for row in sorted(
+        merged.values(),
+        key=lambda item: (item["originAirport"], item["destinationAirport"], item["departureTimeLocal"], item["flight"]),
+    ):
+        raw = "|".join(
+            [
+                "SFJ",
+                row["flight"],
+                row["originAirport"],
+                row["destinationAirport"],
+                row["departureTimeLocal"],
+                row["arrivalTimeLocal"],
+            ]
+        )
+        flights.append(
+            {
+                "physicalFlightId": "flight.jp.dom." + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16],
+                "mode": "flight",
+                "operatingCarrier": "SFJ",
+                "operatingCarrierName": OPERATOR_NAMES["SFJ"],
+                "operatingFlightNumber": row["flight"],
+                "marketingFlights": [row["flight"]],
+                "originAirport": row["originAirport"],
+                "destinationAirport": row["destinationAirport"],
+                "departureTimeLocal": row["departureTimeLocal"],
+                "arrivalTimeLocal": row["arrivalTimeLocal"],
+                "calendarNote": None,
+                "serviceCalendar": calendar_for_period(STARFLYER_SERVICE_START, STARFLYER_SERVICE_END),
+                "sourceRefs": [STARFLYER_SOURCE_REF["id"]],
+                "dedupeConfidence": "high",
+            }
+        )
+
+    return {
+        "schemaVersion": 1,
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "source": STARFLYER_SOURCE_REF,
+        "rules": {
+            "dedupeCodeshares": True,
+            "airportIdFormat": "IATA",
+            "calendarPolicy": "StarFlyer route pages are expanded as all days in the published period unless future route-specific notes are parsed.",
+            "skippedEmbeddedRouteRows": True,
+            "canonicalKey": [
+                "operatingCarrier",
+                "operatingFlightNumber",
+                "originAirport",
+                "destinationAirport",
+                "departureTimeLocal",
+                "arrivalTimeLocal",
+            ],
+        },
+        "summary": {
+            "parsedRows": len(rows),
+            "physicalFlightCount": len(flights),
+            "duplicateRowsRemoved": len(rows) - len(flights),
+            "skippedEmbeddedRouteRows": skipped_embedded_route_rows,
+            "unknownAirportNames": sorted(unknown_airports),
+            "calendarStatusCounts": {"default_all_period": len(flights)},
+        },
+        "flights": flights,
+    }
+
+
+IBEX_TABLE_RE = re.compile(r'<div class="timetable__table">(?P<body>.*?)</div>', re.S)
+IBEX_ROW_RE = re.compile(
+    r"<tr>\s*<td>(?P<flight>\d+)</td>\s*<td>(?P<dep>\d{2}:\d{2})</td>\s*<td>(?P<arr>\d{2}:\d{2})</td>\s*</tr>",
+    re.S,
+)
+
+
+def collect_ibex(html_path: Path) -> dict:
+    html = html_path.read_text(encoding="utf-8")
+    rows: list[dict] = []
+    unknown_airports: set[str] = set()
+    for table in IBEX_TABLE_RE.finditer(html):
+        body = table.group("body")
+        header_spans = re.findall(r"<span>(.*?)</span>", body, flags=re.S)
+        if len(header_spans) < 2:
+            continue
+        origin_name = clean_html_text(header_spans[0])
+        dest_name = clean_html_text(header_spans[1])
+        origin = AIRPORT_IATA.get(origin_name)
+        dest = AIRPORT_IATA.get(dest_name)
+        if not origin:
+            unknown_airports.add(origin_name)
+        if not dest:
+            unknown_airports.add(dest_name)
+        if not origin or not dest:
+            continue
+        for match in IBEX_ROW_RE.finditer(body):
+            flight = f"IBX{int(match.group('flight')):04d}"
+            rows.append(
+                {
+                    "flight": flight,
+                    "originAirport": origin,
+                    "destinationAirport": dest,
+                    "departureTimeLocal": match.group("dep"),
+                    "arrivalTimeLocal": match.group("arr"),
+                }
+            )
+
+    merged: dict[tuple[str, str, str, str, str], dict] = {}
+    for row in rows:
+        key = (
+            row["flight"],
+            row["originAirport"],
+            row["destinationAirport"],
+            row["departureTimeLocal"],
+            row["arrivalTimeLocal"],
+        )
+        merged[key] = row
+
+    flights = []
+    for row in sorted(
+        merged.values(),
+        key=lambda item: (item["originAirport"], item["destinationAirport"], item["departureTimeLocal"], item["flight"]),
+    ):
+        raw = "|".join(
+            [
+                "IBX",
+                row["flight"],
+                row["originAirport"],
+                row["destinationAirport"],
+                row["departureTimeLocal"],
+                row["arrivalTimeLocal"],
+            ]
+        )
+        flights.append(
+            {
+                "physicalFlightId": "flight.jp.dom." + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16],
+                "mode": "flight",
+                "operatingCarrier": "IBX",
+                "operatingCarrierName": OPERATOR_NAMES["IBX"],
+                "operatingFlightNumber": row["flight"],
+                "marketingFlights": [row["flight"]],
+                "originAirport": row["originAirport"],
+                "destinationAirport": row["destinationAirport"],
+                "departureTimeLocal": row["departureTimeLocal"],
+                "arrivalTimeLocal": row["arrivalTimeLocal"],
+                "calendarNote": None,
+                "serviceCalendar": calendar_for_period(IBEX_SERVICE_START, IBEX_SERVICE_END),
+                "sourceRefs": [IBEX_SOURCE_REF["id"]],
+                "dedupeConfidence": "high",
+            }
+        )
+
+    return {
+        "schemaVersion": 1,
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "source": IBEX_SOURCE_REF,
+        "rules": {
+            "dedupeCodeshares": True,
+            "airportIdFormat": "IATA",
+            "calendarPolicy": "IBEX route tables are expanded as all days in the published period unless future route-specific notes are parsed.",
+            "canonicalKey": [
+                "operatingCarrier",
+                "operatingFlightNumber",
+                "originAirport",
+                "destinationAirport",
+                "departureTimeLocal",
+                "arrivalTimeLocal",
+            ],
+        },
+        "summary": {
+            "parsedRows": len(rows),
+            "physicalFlightCount": len(flights),
+            "duplicateRowsRemoved": len(rows) - len(flights),
+            "unknownAirportNames": sorted(unknown_airports),
+            "calendarStatusCounts": {"default_all_period": len(flights)},
+        },
+        "flights": flights,
+    }
+
+
+TOKI_PERIOD_RE = re.compile(
+    r"<summary[^>]*>\s*(?P<start>\d{4})年(?P<sm>\d{1,2})月(?P<sd>\d{1,2})日~(?P<end>\d{4})年(?P<em>\d{1,2})月(?P<ed>\d{1,2})日\s*</summary>(?P<body>.*?)(?=<summary[^>]*>\s*\d{4}年|\Z)",
+    re.S,
+)
+TOKI_ROUTE_RE = re.compile(r'<h3 class="c-head02"[^>]*>(?P<title>.*?)</h3>(?P<body>.*?)(?=<h3 class="c-head02"|\Z)', re.S)
+TOKI_TABLE_RE = re.compile(r"<table>(?P<body>.*?)</table>", re.S)
+TOKI_FLIGHT_RE = re.compile(
+    r"<td>\s*(?P<flight>TOK/BV\d+)\s*</td>\s*<td>\s*(?P<dep>\d{1,2}:\d{2})\s*</td>\s*<td>\s*(?P<arr>\d{1,2}:\d{2})\s*</td>",
+    re.S,
+)
+TOKI_WEEKDAY_MAP = {"月": 1, "火": 2, "水": 3, "木": 4, "金": 5, "土": 6, "日": 7}
+
+
+def normalize_time(value: str) -> str:
+    hour, minute = value.strip().split(":", 1)
+    return f"{int(hour):02d}:{int(minute):02d}"
+
+
+def parse_toki_extra_dates(route_body: str, year: int) -> set[date]:
+    extra: set[date] = set()
+    prefix = route_body.split("運航曜日", 1)[0]
+    for match in re.finditer(r"(?P<month>\d{1,2})月(?P<day>\d{1,2})日", prefix):
+        extra.add(date(year, int(match.group("month")), int(match.group("day"))))
+    return extra
+
+
+def collect_toki(html_path: Path) -> dict:
+    html = html_path.read_text(encoding="utf-8")
+    rows: list[dict] = []
+    unknown_airports: set[str] = set()
+    for period in TOKI_PERIOD_RE.finditer(html):
+        start = date(int(period.group("start")), int(period.group("sm")), int(period.group("sd")))
+        end = date(int(period.group("end")), int(period.group("em")), int(period.group("ed")))
+        for route in TOKI_ROUTE_RE.finditer(period.group("body")):
+            route_body = route.group("body")
+            weekday_match = re.search(r"運航曜日：([月火水木金土日・]+)", route_body)
+            weekdays = {1, 2, 3, 4, 5, 6, 7}
+            weekday_note = None
+            if weekday_match:
+                weekday_note = weekday_match.group(1)
+                weekdays = {TOKI_WEEKDAY_MAP[ch] for ch in weekday_note if ch in TOKI_WEEKDAY_MAP}
+            extra_dates = parse_toki_extra_dates(route_body, start.year)
+
+            for table in TOKI_TABLE_RE.finditer(route_body):
+                table_body = table.group("body")
+                direction_match = re.search(r"<strong>\s*(?P<origin>.*?)\s*✈\s*(?P<dest>.*?)\s*</strong>", table_body, re.S)
+                if not direction_match:
+                    continue
+                origin_name = clean_html_text(direction_match.group("origin"))
+                dest_name = clean_html_text(direction_match.group("dest"))
+                origin = AIRPORT_IATA.get(origin_name)
+                dest = AIRPORT_IATA.get(dest_name)
+                if not origin:
+                    unknown_airports.add(origin_name)
+                if not dest:
+                    unknown_airports.add(dest_name)
+                if not origin or not dest:
+                    continue
+                for flight in TOKI_FLIGHT_RE.finditer(table_body):
+                    flight_no = flight.group("flight").replace("TOK/", "")
+                    rows.append(
+                        {
+                            "flight": flight_no,
+                            "originAirport": origin,
+                            "destinationAirport": dest,
+                            "departureTimeLocal": normalize_time(flight.group("dep")),
+                            "arrivalTimeLocal": normalize_time(flight.group("arr")),
+                            "periodStart": start,
+                            "periodEnd": end,
+                            "weekdays": weekdays,
+                            "weekdayNote": weekday_note,
+                            "extraDates": extra_dates,
+                        }
+                    )
+
+    merged: dict[tuple[str, str, str, str, str, str, str, tuple[int, ...]], dict] = {}
+    for row in rows:
+        key = (
+            row["flight"],
+            row["originAirport"],
+            row["destinationAirport"],
+            row["departureTimeLocal"],
+            row["arrivalTimeLocal"],
+            row["periodStart"].isoformat(),
+            row["periodEnd"].isoformat(),
+            tuple(sorted(row["weekdays"])),
+        )
+        merged[key] = row
+
+    flights = []
+    for row in sorted(
+        merged.values(),
+        key=lambda item: (item["originAirport"], item["destinationAirport"], item["departureTimeLocal"], item["flight"]),
+    ):
+        raw = "|".join(
+            [
+                "TOK",
+                row["flight"],
+                row["originAirport"],
+                row["destinationAirport"],
+                row["departureTimeLocal"],
+                row["arrivalTimeLocal"],
+                row["periodStart"].isoformat(),
+                row["periodEnd"].isoformat(),
+            ]
+        )
+        flights.append(
+            {
+                "physicalFlightId": "flight.jp.dom." + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16],
+                "mode": "flight",
+                "operatingCarrier": "TOK",
+                "operatingCarrierName": "Toki Air",
+                "operatingFlightNumber": row["flight"],
+                "marketingFlights": [row["flight"]],
+                "originAirport": row["originAirport"],
+                "destinationAirport": row["destinationAirport"],
+                "departureTimeLocal": row["departureTimeLocal"],
+                "arrivalTimeLocal": row["arrivalTimeLocal"],
+                "calendarNote": row["weekdayNote"],
+                "serviceCalendar": calendar_for_weekdays(
+                    row["periodStart"],
+                    row["periodEnd"],
+                    row["weekdays"],
+                    row["extraDates"],
+                    extra={
+                        "sourceWeekdayNote": row["weekdayNote"],
+                        "sourceExtraDates": sorted(day.isoformat() for day in row["extraDates"]),
+                    },
+                ),
+                "sourceRefs": [TOKI_SOURCE_REF["id"]],
+                "dedupeConfidence": "high",
+            }
+        )
+
+    return {
+        "schemaVersion": 1,
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "source": TOKI_SOURCE_REF,
+        "rules": {
+            "dedupeCodeshares": True,
+            "airportIdFormat": "IATA",
+            "calendarPolicy": "Toki Air periods are expanded by parsed Japanese weekday notes and explicit extra dates listed before the weekday note.",
+            "canonicalKey": [
+                "operatingCarrier",
+                "operatingFlightNumber",
+                "originAirport",
+                "destinationAirport",
+                "departureTimeLocal",
+                "arrivalTimeLocal",
+                "servicePeriod",
+            ],
+        },
+        "summary": {
+            "parsedRows": len(rows),
+            "physicalFlightCount": len(flights),
+            "duplicateRowsRemoved": len(rows) - len(flights),
+            "unknownAirportNames": sorted(unknown_airports),
+            "calendarStatusCounts": {"parsed_weekday_note": len(flights)},
+        },
+        "flights": flights,
+    }
+
+
 def collect_ana(pdf_path: Path) -> dict:
     text = run_pdftotext(pdf_path)
     parsed_rows, unknown_airports = parse_ana_layout_text(text)
@@ -930,7 +1412,7 @@ def collect_ana(pdf_path: Path) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", choices=["ana", "skymark", "airdo"], default="ana")
+    parser.add_argument("--source", choices=["ana", "skymark", "airdo", "starflyer", "ibex", "toki"], default="ana")
     parser.add_argument("--source-pdf", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
@@ -946,9 +1428,44 @@ def main() -> None:
         output = output or SKYMARK_OUTPUT
         collector = collect_skymark
     else:
+        if args.source == "starflyer":
+            source_pdf = source_pdf or STARFLYER_SOURCE_DIR
+            output = output or STARFLYER_OUTPUT
+            collector = collect_starflyer
+        elif args.source == "airdo":
+            source_pdf = source_pdf or AIRDO_SOURCE
+            output = output or AIRDO_OUTPUT
+            collector = collect_airdo
+        elif args.source == "ibex":
+            source_pdf = source_pdf or IBEX_SOURCE
+            output = output or IBEX_OUTPUT
+            collector = collect_ibex
+        else:
+            source_pdf = source_pdf or TOKI_SOURCE
+            output = output or TOKI_OUTPUT
+            collector = collect_toki
+
+    if args.source == "starflyer":
+        if not source_pdf.exists():
+            raise SystemExit(f"source directory not found: {source_pdf}")
+        payload = collector(source_pdf)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps(payload["summary"], ensure_ascii=False, indent=2))
+        return
+    elif args.source not in {"ana", "skymark"}:
         source_pdf = source_pdf or AIRDO_SOURCE
         output = output or AIRDO_OUTPUT
-        collector = collect_airdo
+        if args.source == "ibex":
+            source_pdf = IBEX_SOURCE
+            output = IBEX_OUTPUT
+            collector = collect_ibex
+        elif args.source == "toki":
+            source_pdf = TOKI_SOURCE
+            output = TOKI_OUTPUT
+            collector = collect_toki
+        else:
+            collector = collect_airdo
 
     if not source_pdf.exists():
         raise SystemExit(f"source PDF not found: {source_pdf}")
