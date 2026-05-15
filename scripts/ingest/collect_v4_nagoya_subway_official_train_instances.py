@@ -10,6 +10,7 @@ adjacency, similar to the Osaka Metro collector.
 from __future__ import annotations
 
 import argparse
+import copy
 import gzip
 import hashlib
 import json
@@ -123,8 +124,12 @@ def parse_destination_legend(diagram: dict[str, Any], prefix: str, direction: st
     line_def = LINE_DEFS.get(prefix, {})
     default = str(line_def.get("terminal_down" if direction == "0" else "terminal_up") or "")
     default = destination_from_railway(str(diagram.get("RAILWAY") or default), direction, prefix) or default
+    if prefix == "M" and "名城線" in str(diagram.get("RAILWAY") or ""):
+        default = ""
     legend = {"": clean_station_name(default)}
     for note in diagram.get("NOTES", {}).get(WEEKDAY_KEY, []) or []:
+        if prefix == "M" and re.search(r"無印…名城線[左右]回り", str(note)):
+            legend[""] = ""
         for code, destination in re.findall(r"([^\s　]+?)…([^…\s　]+?)行", str(note)):
             key = "" if code == "無印" else code.strip()
             legend[key] = clean_station_name(destination)
@@ -297,9 +302,12 @@ def stitch_trains(
 ) -> list[list[dict[str, Any]]]:
     oriented = direction_station_order(prefix, direction, station_order)
     order_index = {station["code"]: index for index, station in enumerate(oriented)}
+    station_passes = [(station, True) for station in oriented]
+    if prefix == "M":
+        station_passes.extend((station, False) for station in oriented)
     active: list[list[dict[str, Any]]] = []
     finished: list[list[dict[str, Any]]] = []
-    for station in oriented:
+    for station, allow_new_trains in station_passes:
         departures = departures_by_station.get((station["code"], direction), [])
         used_active: set[int] = set()
         next_active: list[list[dict[str, Any]]] = []
@@ -319,7 +327,8 @@ def stitch_trains(
                     best_index = index
                     best_delta = delta
             if best_index is None:
-                next_active.append([dep])
+                if allow_new_trains:
+                    next_active.append([dep])
             else:
                 used_active.add(best_index)
                 next_active.append([*active[best_index], dep])
@@ -447,6 +456,182 @@ def build_train(
     return train, methods, unmatched
 
 
+def stop_minutes(stop: dict[str, Any], *keys: str) -> int | None:
+    for key in keys:
+        value = stop.get(key)
+        if value:
+            return hhmm_to_minutes(str(value))
+    return None
+
+
+def train_first_departure_minutes(train: dict[str, Any]) -> int | None:
+    stops = train.get("stop_times") or []
+    if not stops:
+        return None
+    return stop_minutes(stops[0], "departure_hhmm", "arrival_hhmm")
+
+
+def train_last_arrival_minutes(train: dict[str, Any]) -> int | None:
+    stops = train.get("stop_times") or []
+    if not stops:
+        return None
+    return stop_minutes(stops[-1], "arrival_hhmm", "departure_hhmm")
+
+
+def first_station_name(train: dict[str, Any]) -> str:
+    stops = train.get("stop_times") or []
+    return str(stops[0].get("station_name_raw") or "") if stops else ""
+
+
+def last_station_name(train: dict[str, Any]) -> str:
+    stops = train.get("stop_times") or []
+    return str(stops[-1].get("station_name_raw") or "") if stops else ""
+
+
+def service_prefix(train: dict[str, Any]) -> str:
+    service_number = str(train.get("service_number") or "")
+    return service_number.split("-", 1)[0]
+
+
+def merge_train_segments(
+    primary: dict[str, Any],
+    secondary: dict[str, Any],
+    *,
+    destination: str,
+    trim_at_station: str | None = None,
+) -> dict[str, Any]:
+    merged = copy.deepcopy(primary)
+    primary_stops = merged.get("stop_times") or []
+    secondary_stops = copy.deepcopy(secondary.get("stop_times") or [])
+    if not primary_stops or not secondary_stops:
+        return merged
+    junction_departure = secondary_stops[0].get("departure_hhmm") or secondary_stops[0].get("arrival_hhmm")
+    if junction_departure:
+        primary_stops[-1]["departure_hhmm"] = junction_departure
+    appended: list[dict[str, Any]] = []
+    for stop in secondary_stops[1:]:
+        appended.append(stop)
+        if trim_at_station and stop.get("station_name_raw") == trim_at_station:
+            break
+    for stop in appended:
+        stop["sequence"] = len(primary_stops) + 1
+        primary_stops.append(stop)
+    merged["stop_times"] = primary_stops
+    merged["headsign"] = destination
+    merged["destination"] = destination
+    merged["service_number"] = f"{primary.get('service_number')}+{secondary.get('service_number')}"
+    merged["train_number"] = f"{primary.get('train_number')}+{secondary.get('train_number')}"
+    merged["source_trip_id"] = f"{primary.get('source_trip_id')}+{secondary.get('source_trip_id')}"
+    merged["reconstruction_method"] = (
+        f"{primary.get('reconstruction_method')}_with_meijo_meiko_through_merge"
+    )
+    return merged
+
+
+def find_next_train(
+    candidates: list[tuple[int, dict[str, Any]]],
+    used: set[int],
+    after_minutes: int,
+    *,
+    max_gap_minutes: int,
+    destination: str | None = None,
+) -> tuple[int, dict[str, Any]] | None:
+    best: tuple[int, dict[str, Any]] | None = None
+    best_gap: int | None = None
+    for index, candidate in candidates:
+        if index in used:
+            continue
+        candidate_departure = train_first_departure_minutes(candidate)
+        if candidate_departure is None:
+            continue
+        gap = candidate_departure - after_minutes
+        if gap < 0 or gap > max_gap_minutes:
+            continue
+        if destination and str(candidate.get("destination") or candidate.get("headsign") or "") != destination:
+            continue
+        if best_gap is None or gap < best_gap:
+            best = (index, candidate)
+            best_gap = gap
+    return best
+
+
+def stitch_meijo_meiko_through_services(trains: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], Counter[str]]:
+    """Merge Nagoya Meijo/Meiko through services at Kanayama.
+
+    The official station JSON exposes Meijo and Meiko station diagrams
+    separately at Kanayama. Without this post-pass, through trains bound for
+    Nagoya-ko or coming from Nagoya-ko are split into two candidate trains even
+    though passengers remain on the same physical train.
+    """
+
+    indexed = list(enumerate(trains))
+    e0_candidates = [
+        item for item in indexed
+        if service_prefix(item[1]) == "E0"
+        and first_station_name(item[1]) == "金山"
+        and str(item[1].get("destination") or item[1].get("headsign") or "") == "名古屋港"
+    ]
+    m1_candidates = [
+        item for item in indexed
+        if service_prefix(item[1]) == "M1"
+        and first_station_name(item[1]) == "金山"
+    ]
+    used: set[int] = set()
+    merged_by_primary: dict[int, dict[str, Any]] = {}
+    stats: Counter[str] = Counter()
+
+    for index, train in indexed:
+        if service_prefix(train) != "M0":
+            continue
+        if last_station_name(train) != "金山":
+            continue
+        if str(train.get("destination") or train.get("headsign") or "") != "名古屋港":
+            continue
+        arrival = train_last_arrival_minutes(train)
+        if arrival is None:
+            continue
+        match = find_next_train(e0_candidates, used, arrival, max_gap_minutes=8, destination="名古屋港")
+        if not match:
+            continue
+        secondary_index, secondary = match
+        used.add(secondary_index)
+        merged_by_primary[index] = merge_train_segments(train, secondary, destination="名古屋港")
+        stats["M0_to_E0"] += 1
+
+    for index, train in indexed:
+        if service_prefix(train) != "E1":
+            continue
+        destination = str(train.get("destination") or train.get("headsign") or "")
+        if not destination or destination == "金山":
+            continue
+        if last_station_name(train) != "金山":
+            continue
+        arrival = train_last_arrival_minutes(train)
+        if arrival is None:
+            continue
+        match = find_next_train(m1_candidates, used, arrival, max_gap_minutes=8)
+        if not match:
+            continue
+        secondary_index, secondary = match
+        used.add(secondary_index)
+        merged_by_primary[index] = merge_train_segments(
+            train,
+            secondary,
+            destination=destination,
+            trim_at_station=destination,
+        )
+        stats["E1_to_M1"] += 1
+
+    output: list[dict[str, Any]] = []
+    for index, train in indexed:
+        if index in used:
+            continue
+        output.append(merged_by_primary.get(index, train))
+    stats["removed_secondary_segments"] = len(used)
+    stats["merged_train_count"] = len(merged_by_primary)
+    return output, stats
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--physical-map", type=Path, default=DEFAULT_PHYSICAL_MAP)
@@ -516,7 +701,10 @@ def main() -> int:
                 if not train:
                     continue
                 trains.append(train)
-                line_counts[f"{train['operator_name']}::{train['line_name']}"] += 1
+
+    trains, through_merge_counts = stitch_meijo_meiko_through_services(trains)
+    for train in trains:
+        line_counts[f"{train['operator_name']}::{train['line_name']}"] += 1
 
     output = {
         "id": "v4_nagoya_subway_official_weekday_train_instances_v0_1",
@@ -544,6 +732,7 @@ def main() -> int:
         "trainInstanceCount": len(trains),
         "stopTimeCount": sum(len(train.get("stop_times") or []) for train in trains),
         "lineTrainCounts": dict(sorted(line_counts.items())),
+        "meijoMeikoThroughMergeCounts": dict(sorted(through_merge_counts.items())),
         "stationOrderCounts": {prefix: len(rows) for prefix, rows in sorted(orders.items())},
         "departureDirectionCounts": dict(sorted(direction_counts.items())),
         "reconstructedDirectionCounts": dict(sorted(reconstructed_counts.items())),
