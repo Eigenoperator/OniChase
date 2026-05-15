@@ -15,6 +15,7 @@ import re
 import subprocess
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Iterable
 
@@ -24,6 +25,8 @@ DEFAULT_SOURCE = ROOT / "data/v5_flight_source_cache/ana_timetable_all_20260701_
 DEFAULT_OUTPUT = ROOT / "data/v5_domestic_flights_ana_20260701_20261024.json"
 SKYMARK_SOURCE = ROOT / "data/v5_flight_source_cache/skymark_timetable_2026summerEngUpdate.pdf"
 SKYMARK_OUTPUT = ROOT / "data/v5_domestic_flights_skymark_20260601_20261024.json"
+AIRDO_SOURCE = ROOT / "data/v5_flight_source_cache/airdo_timetable_20260329_20261024.html"
+AIRDO_OUTPUT = ROOT / "data/v5_domestic_flights_airdo_20260329_20261024.json"
 
 ANA_SOURCE_REF = {
     "id": "ana-domestic-timetable-pdf-20260701-20261024",
@@ -42,6 +45,15 @@ SKYMARK_SOURCE_REF = {
 }
 SKYMARK_SERVICE_START = date(2026, 6, 1)
 SKYMARK_SERVICE_END = date(2026, 10, 24)
+
+AIRDO_SOURCE_REF = {
+    "id": "airdo-timetable-web-20260329-20261024",
+    "url": "https://www.airdo.jp/plan/timetable/",
+    "period": "2026-03-29/2026-10-24",
+    "sourceDate": None,
+}
+AIRDO_SERVICE_START = date(2026, 3, 29)
+AIRDO_SERVICE_END = date(2026, 10, 24)
 
 OPERATOR_NAMES = {
     "ANA": "All Nippon Airways",
@@ -151,6 +163,7 @@ AIRPORT_IATA = {
     "帯広": "OBO",
     "函館": "HKD",
     "奥尻": "OIR",
+    "名古屋": "NGO",
     "Haneda": "HND",
     "Sapporo(New Chitose)": "CTS",
     "Kobe": "UKB",
@@ -471,6 +484,26 @@ def skymark_all_service_dates() -> list[date]:
     return list(daterange(SKYMARK_SERVICE_START, SKYMARK_SERVICE_END))
 
 
+def calendar_for_period(start: date, end: date, status: str = "default_all_period", extra: dict | None = None) -> dict:
+    dates = list(daterange(start, end))
+    weekdays = sorted({day.isoweekday() for day in dates})
+    weekday_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    payload = {
+        "servicePeriod": {
+            "start": start.isoformat(),
+            "end": end.isoformat(),
+        },
+        "operatingDates": [day.isoformat() for day in dates],
+        "operatingWeekdays": weekdays,
+        "operatingWeekdayNames": [weekday_names[index - 1] for index in weekdays],
+        "calendarParseStatus": status,
+        "calendarParseError": None,
+    }
+    if extra:
+        payload.update(extra)
+    return payload
+
+
 def split_marker_string(markers: str | None) -> list[str]:
     if not markers:
         return []
@@ -695,6 +728,169 @@ def collect_skymark(pdf_path: Path) -> dict:
     }
 
 
+class AirdoTimetableParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.in_direction = False
+        self.direction_text_parts: list[str] = []
+        self.current_direction: tuple[str, str] | None = None
+        self.in_tr = False
+        self.in_td = False
+        self.current_td_parts: list[str] = []
+        self.current_row: list[str] = []
+        self.rows: list[dict] = []
+        self.unknown_airports: set[str] = set()
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attr_map = dict(attrs)
+        classes = set((attr_map.get("class") or "").split())
+        if tag == "p" and {"fw-bold", "mb-xs"}.issubset(classes):
+            self.in_direction = True
+            self.direction_text_parts = []
+        elif tag == "tr":
+            self.in_tr = True
+            self.current_row = []
+        elif tag == "td" and self.in_tr:
+            self.in_td = True
+            self.current_td_parts = []
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "p" and self.in_direction:
+            text = " ".join("".join(self.direction_text_parts).split())
+            self.current_direction = parse_airdo_direction(text)
+            self.in_direction = False
+        elif tag == "td" and self.in_td:
+            text = " ".join("".join(self.current_td_parts).split())
+            self.current_row.append(text)
+            self.in_td = False
+        elif tag == "tr" and self.in_tr:
+            self.consume_row()
+            self.in_tr = False
+
+    def handle_data(self, data: str) -> None:
+        if self.in_direction:
+            self.direction_text_parts.append(data)
+        if self.in_td:
+            self.current_td_parts.append(data)
+
+    def consume_row(self) -> None:
+        if not self.current_direction or len(self.current_row) != 5:
+            return
+        flight_raw, _aircraft, departure, _arrow, arrival = self.current_row
+        flight_match = re.search(r"\d+", flight_raw)
+        if not flight_match or not re.fullmatch(r"\d{2}:\d{2}", departure) or not re.fullmatch(r"\d{2}:\d{2}", arrival):
+            return
+        origin_name, dest_name = self.current_direction
+        origin = AIRPORT_IATA.get(origin_name)
+        dest = AIRPORT_IATA.get(dest_name)
+        if not origin:
+            self.unknown_airports.add(origin_name)
+        if not dest:
+            self.unknown_airports.add(dest_name)
+        if not origin or not dest:
+            return
+        markers = re.findall(r"※\d+", flight_raw)
+        flight_number = f"ADO{int(flight_match.group(0)):04d}"
+        self.rows.append(
+            {
+                "flight": flight_number,
+                "originAirport": origin,
+                "destinationAirport": dest,
+                "departureTimeLocal": departure,
+                "arrivalTimeLocal": arrival,
+                "markers": markers,
+            }
+        )
+
+
+def parse_airdo_direction(text: str) -> tuple[str, str] | None:
+    if "⇒" not in text:
+        return None
+    origin, dest = [part.strip() for part in text.split("⇒", 1)]
+    return origin, dest
+
+
+def collect_airdo(html_path: Path) -> dict:
+    parser = AirdoTimetableParser()
+    parser.feed(html_path.read_text(encoding="utf-8"))
+    merged: dict[tuple[str, str, str, str, str], dict] = {}
+    for row in parser.rows:
+        key = (
+            row["flight"],
+            row["originAirport"],
+            row["destinationAirport"],
+            row["departureTimeLocal"],
+            row["arrivalTimeLocal"],
+        )
+        if key not in merged:
+            merged[key] = row
+
+    flights = []
+    for row in sorted(
+        merged.values(),
+        key=lambda item: (item["originAirport"], item["destinationAirport"], item["departureTimeLocal"], item["flight"]),
+    ):
+        raw = "|".join(
+            [
+                "ADO",
+                row["flight"],
+                row["originAirport"],
+                row["destinationAirport"],
+                row["departureTimeLocal"],
+                row["arrivalTimeLocal"],
+            ]
+        )
+        flights.append(
+            {
+                "physicalFlightId": "flight.jp.dom." + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16],
+                "mode": "flight",
+                "operatingCarrier": "ADO",
+                "operatingCarrierName": OPERATOR_NAMES["ADO"],
+                "operatingFlightNumber": row["flight"],
+                "marketingFlights": [row["flight"]],
+                "originAirport": row["originAirport"],
+                "destinationAirport": row["destinationAirport"],
+                "departureTimeLocal": row["departureTimeLocal"],
+                "arrivalTimeLocal": row["arrivalTimeLocal"],
+                "calendarNote": ",".join(row["markers"]) or None,
+                "serviceCalendar": calendar_for_period(
+                    AIRDO_SERVICE_START,
+                    AIRDO_SERVICE_END,
+                    extra={"sourceCalendarMarkers": row["markers"]},
+                ),
+                "sourceRefs": [AIRDO_SOURCE_REF["id"]],
+                "dedupeConfidence": "high",
+            }
+        )
+
+    return {
+        "schemaVersion": 1,
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "source": AIRDO_SOURCE_REF,
+        "rules": {
+            "dedupeCodeshares": True,
+            "airportIdFormat": "IATA",
+            "calendarPolicy": "AIRDO route tables are expanded as all days in the published period; current parsed notes are time-adjustment/customer notices, not weekly operation restrictions.",
+            "canonicalKey": [
+                "operatingCarrier",
+                "operatingFlightNumber",
+                "originAirport",
+                "destinationAirport",
+                "departureTimeLocal",
+                "arrivalTimeLocal",
+            ],
+        },
+        "summary": {
+            "parsedRows": len(parser.rows),
+            "physicalFlightCount": len(flights),
+            "duplicateRowsRemoved": len(parser.rows) - len(flights),
+            "unknownAirportNames": sorted(parser.unknown_airports),
+            "calendarStatusCounts": {"default_all_period": len(flights)},
+        },
+        "flights": flights,
+    }
+
+
 def collect_ana(pdf_path: Path) -> dict:
     text = run_pdftotext(pdf_path)
     parsed_rows, unknown_airports = parse_ana_layout_text(text)
@@ -734,7 +930,7 @@ def collect_ana(pdf_path: Path) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", choices=["ana", "skymark"], default="ana")
+    parser.add_argument("--source", choices=["ana", "skymark", "airdo"], default="ana")
     parser.add_argument("--source-pdf", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
@@ -745,10 +941,14 @@ def main() -> None:
         source_pdf = source_pdf or DEFAULT_SOURCE
         output = output or DEFAULT_OUTPUT
         collector = collect_ana
-    else:
+    elif args.source == "skymark":
         source_pdf = source_pdf or SKYMARK_SOURCE
         output = output or SKYMARK_OUTPUT
         collector = collect_skymark
+    else:
+        source_pdf = source_pdf or AIRDO_SOURCE
+        output = output or AIRDO_OUTPUT
+        collector = collect_airdo
 
     if not source_pdf.exists():
         raise SystemExit(f"source PDF not found: {source_pdf}")
