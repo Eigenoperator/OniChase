@@ -10092,12 +10092,34 @@
 
     function updateFlightMapLayers() {
       if (!state.map?.getSource('flight-map')) return;
-      state.map.getSource('flight-map').setData(state.flightMap || { type: 'FeatureCollection', features: [] });
+      state.map.getSource('flight-map').setData(activeFlightMapFeatureCollection());
       const visibility = state.flightMapActive ? 'visible' : 'none';
       ['flight-route-lines', 'flight-airport-halo', 'flight-airport-points', 'flight-airport-labels'].forEach((layerId) => {
         if (state.map.getLayer(layerId)) state.map.setLayoutProperty(layerId, 'visibility', visibility);
       });
       document.getElementById('flight-map-button')?.classList.toggle('active', state.flightMapActive);
+    }
+
+    function activeFlightMapFeatureCollection() {
+      const features = state.flightMap?.features || [];
+      const selected = state.flightPlanning[state.activeMode] || {};
+      const origin = selected.origin || null;
+      const destination = selected.destination || null;
+      if (!state.flightMapActive || !origin) return state.flightMap || { type: 'FeatureCollection', features: [] };
+      const visibleAirports = new Set([origin]);
+      const visibleRoutes = features.filter((feature) => {
+        const props = feature?.properties || {};
+        if (props.kind !== 'flight-route') return false;
+        if (props.origin !== origin) return false;
+        if (destination && props.destination !== destination) return false;
+        visibleAirports.add(props.destination);
+        return true;
+      });
+      const visibleAirportFeatures = features.filter((feature) =>
+        feature?.properties?.kind === 'airport' &&
+        visibleAirports.has(feature.properties.iata)
+      );
+      return { type: 'FeatureCollection', features: [...visibleAirportFeatures, ...visibleRoutes] };
     }
 
     function focusWalkingMap() {
@@ -10121,7 +10143,7 @@
     }
 
     function flightMapBounds() {
-      const coordinates = (state.flightMap?.features || [])
+      const coordinates = (activeFlightMapFeatureCollection().features || [])
         .filter((feature) => feature?.properties?.kind === 'airport')
         .map((feature) => feature.geometry?.coordinates)
         .filter(validCoordinate);
@@ -14049,14 +14071,18 @@
 
     function chooseFlightOrigin(iata) {
       state.flightPlanning[state.activeMode] = { origin: iata || null, destination: null };
-      focusAirportOnMap(iata);
+      setFlightMapActive(true);
+      updateFlightMapLayers();
+      focusFlightMap();
       renderGame();
     }
 
     function chooseFlightDestination(iata) {
       const current = state.flightPlanning[state.activeMode] || {};
       state.flightPlanning[state.activeMode] = { ...current, destination: iata || null };
-      focusAirportOnMap(iata);
+      setFlightMapActive(true);
+      updateFlightMapLayers();
+      focusFlightMap();
       renderGame();
     }
 
