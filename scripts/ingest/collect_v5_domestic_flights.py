@@ -22,6 +22,8 @@ from typing import Iterable
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SOURCE = ROOT / "data/v5_flight_source_cache/ana_timetable_all_20260701_20261024.pdf"
 DEFAULT_OUTPUT = ROOT / "data/v5_domestic_flights_ana_20260701_20261024.json"
+SKYMARK_SOURCE = ROOT / "data/v5_flight_source_cache/skymark_timetable_2026summerEngUpdate.pdf"
+SKYMARK_OUTPUT = ROOT / "data/v5_domestic_flights_skymark_20260601_20261024.json"
 
 ANA_SOURCE_REF = {
     "id": "ana-domestic-timetable-pdf-20260701-20261024",
@@ -31,6 +33,15 @@ ANA_SOURCE_REF = {
 }
 ANA_SERVICE_START = date(2026, 7, 1)
 ANA_SERVICE_END = date(2026, 10, 24)
+
+SKYMARK_SOURCE_REF = {
+    "id": "skymark-timetable-pdf-20260601-20261024",
+    "url": "https://smart.skymark.co.jp/en/news/detail/__icsFiles/afieldfile/2026/03/09/timetable_2026summerEngUpdate.pdf",
+    "period": "2026-06-01/2026-10-24",
+    "sourceDate": "2026-03-09",
+}
+SKYMARK_SERVICE_START = date(2026, 6, 1)
+SKYMARK_SERVICE_END = date(2026, 10, 24)
 
 OPERATOR_NAMES = {
     "ANA": "All Nippon Airways",
@@ -43,6 +54,7 @@ OPERATOR_NAMES = {
     "ORC": "Oriental Air Bridge",
     "JAC": "Japan Air Commuter",
     "AMX": "Amakusa Airlines",
+    "SKY": "Skymark Airlines",
 }
 
 MARKETING_PREFIX_TO_OPERATOR = {
@@ -139,6 +151,18 @@ AIRPORT_IATA = {
     "帯広": "OBO",
     "函館": "HKD",
     "奥尻": "OIR",
+    "Haneda": "HND",
+    "Sapporo(New Chitose)": "CTS",
+    "Kobe": "UKB",
+    "Fukuoka": "FUK",
+    "Nagasaki": "NGS",
+    "Kagoshima": "KOJ",
+    "Amamioshima": "ASJ",
+    "Naha": "OKA",
+    "Miyako(Shimojishima)": "SHI",
+    "Ibaraki": "IBR",
+    "Nagoya(Chubu)": "NGO",
+    "Sendai": "SDJ",
 }
 
 ROUTE_RE = re.compile(r"(?P<origin>[^\s　]+（[^）]+）|[一-龥ぁ-んァ-ヶー・]+)→(?P<dest>[^\s　]+（[^）]+）|[一-龥ぁ-んァ-ヶー・]+)")
@@ -421,6 +445,256 @@ def service_calendar_for_note(note: str) -> dict:
     }
 
 
+SKYMARK_ROUTE_RE = re.compile(
+    r"(?P<origin>[A-Za-z][A-Za-z() ]+?)→(?P<dest>[A-Za-z][A-Za-z() ]+?)(?=\s{2,}|$)"
+)
+SKYMARK_FLIGHT_RE = re.compile(
+    r"(?P<flight>SKY\d{3})(?:\s*(?P<markers>(?:※\d)+))?\s+(?P<dep>\d{2}:\d{2})\s+(?P<arr>\d{2}:\d{2})"
+)
+SKYMARK_WEEKDAY_MARKERS = {
+    "※1": {3, 5},
+    "※2": {1, 2, 4, 6, 7},
+}
+SKYMARK_MONTHS = {
+    "March": 3,
+    "April": 4,
+    "May": 5,
+    "June": 6,
+    "July": 7,
+    "August": 8,
+    "September": 9,
+    "October": 10,
+}
+
+
+def skymark_all_service_dates() -> list[date]:
+    return list(daterange(SKYMARK_SERVICE_START, SKYMARK_SERVICE_END))
+
+
+def split_marker_string(markers: str | None) -> list[str]:
+    if not markers:
+        return []
+    return re.findall(r"※\d", markers)
+
+
+def date_range_for_month_days(month_name: str, start_day: int, end_month_name: str, end_day: int) -> set[date]:
+    start = date(2026, SKYMARK_MONTHS[month_name], start_day)
+    end = date(2026, SKYMARK_MONTHS[end_month_name], end_day)
+    return {day for day in daterange(start, end) if SKYMARK_SERVICE_START <= day <= SKYMARK_SERVICE_END}
+
+
+def skymark_service_calendar(markers: list[str]) -> dict:
+    dates = set(skymark_all_service_dates())
+    notes: list[str] = []
+    parse_errors: list[str] = []
+
+    for marker in markers:
+        if marker in SKYMARK_WEEKDAY_MARKERS:
+            weekdays = SKYMARK_WEEKDAY_MARKERS[marker]
+            dates &= {day for day in skymark_all_service_dates() if day.isoweekday() in weekdays}
+            notes.append(marker)
+        elif marker == "※3":
+            dates &= date_range_for_month_days("March", 29, "June", 18)
+            notes.append(marker)
+        elif marker == "※4":
+            dates &= date_range_for_month_days("June", 19, "October", 24)
+            notes.append(marker)
+        elif marker == "※5":
+            excluded = {
+                date(2026, 6, day) for day in [2, 3, 9, 10, 16, 17, 23, 24, 30]
+            } | {
+                date(2026, 7, day) for day in [1, 7, 8, 14, 15]
+            } | {
+                date(2026, 9, 30),
+                date(2026, 10, 6),
+                date(2026, 10, 7),
+                date(2026, 10, 13),
+                date(2026, 10, 14),
+                date(2026, 10, 18),
+                date(2026, 10, 20),
+                date(2026, 10, 21),
+                date(2026, 10, 24),
+            }
+            dates -= excluded
+            notes.append(marker)
+        elif marker == "※6":
+            excluded = {
+                date(2026, 6, day) for day in [3, 4, 10, 11, 17, 18, 24, 25]
+            } | {
+                date(2026, 7, day) for day in [1, 2, 8, 9, 15, 16]
+            } | {
+                date(2026, 10, 1),
+                date(2026, 10, 7),
+                date(2026, 10, 8),
+                date(2026, 10, 14),
+                date(2026, 10, 15),
+                date(2026, 10, 19),
+                date(2026, 10, 21),
+                date(2026, 10, 22),
+            }
+            dates -= excluded
+            notes.append(marker)
+        else:
+            parse_errors.append(f"unknown Skymark marker {marker}")
+
+    weekdays = sorted({day.isoweekday() for day in dates})
+    weekday_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    return {
+        "servicePeriod": {
+            "start": SKYMARK_SERVICE_START.isoformat(),
+            "end": SKYMARK_SERVICE_END.isoformat(),
+        },
+        "operatingDates": [day.isoformat() for day in sorted(dates)],
+        "operatingWeekdays": weekdays,
+        "operatingWeekdayNames": [weekday_names[index - 1] for index in weekdays],
+        "calendarParseStatus": "parsed_marker_note" if markers else "default_all_period",
+        "calendarParseError": "; ".join(parse_errors) if parse_errors else None,
+        "sourceCalendarMarkers": markers,
+        "sourceCalendarNotes": notes,
+    }
+
+
+def parse_skymark_pdf_text(text: str) -> tuple[list[dict], set[str], int]:
+    routes: list[tuple[int, str, str, bool]] = []
+    split_at: int | None = None
+    records: list[dict] = []
+    unknown_airports: set[str] = set()
+    skipped_via_sections = 0
+
+    for raw_line in text.splitlines():
+        line = raw_line.rstrip()
+        headers: list[tuple[int, str, str, bool]] = []
+        for match in SKYMARK_ROUTE_RE.finditer(line):
+            origin = match.group("origin").strip()
+            dest = match.group("dest").strip()
+            lookahead = line[match.end() : match.end() + 24]
+            is_via = "Via" in lookahead
+            headers.append((match.start(), origin, dest, is_via))
+        if headers:
+            routes = headers[:2]
+            split_at = max(1, routes[1][0] - 4) if len(routes) > 1 else None
+            continue
+        if "→" in line:
+            if "Via" in line:
+                skipped_via_sections += 1
+            routes = []
+            split_at = None
+            continue
+
+        if not routes:
+            continue
+        parts = [line] if split_at is None else [line[:split_at], line[split_at:]]
+        for column_index, part in enumerate(parts[: len(routes)]):
+            _, origin, dest, is_via = routes[column_index]
+            if is_via:
+                continue
+            for match in SKYMARK_FLIGHT_RE.finditer(part):
+                origin_iata = AIRPORT_IATA.get(origin)
+                dest_iata = AIRPORT_IATA.get(dest)
+                if not origin_iata:
+                    unknown_airports.add(origin)
+                if not dest_iata:
+                    unknown_airports.add(dest)
+                if not origin_iata or not dest_iata:
+                    continue
+                markers = split_marker_string(match.group("markers"))
+                records.append(
+                    {
+                        "flight": match.group("flight"),
+                        "originAirport": origin_iata,
+                        "destinationAirport": dest_iata,
+                        "departureTimeLocal": match.group("dep"),
+                        "arrivalTimeLocal": match.group("arr"),
+                        "markers": markers,
+                    }
+                )
+    return records, unknown_airports, skipped_via_sections
+
+
+def collect_skymark(pdf_path: Path) -> dict:
+    text = run_pdftotext(pdf_path)
+    parsed_rows, unknown_airports, skipped_via_sections = parse_skymark_pdf_text(text)
+    merged: dict[tuple[str, str, str, str, str, tuple[str, ...]], dict] = {}
+    for row in parsed_rows:
+        key = (
+            row["flight"],
+            row["originAirport"],
+            row["destinationAirport"],
+            row["departureTimeLocal"],
+            row["arrivalTimeLocal"],
+            tuple(row["markers"]),
+        )
+        merged[key] = row
+
+    flights = []
+    for row in sorted(
+        merged.values(),
+        key=lambda item: (item["originAirport"], item["destinationAirport"], item["departureTimeLocal"], item["flight"]),
+    ):
+        raw = "|".join(
+            [
+                "SKY",
+                row["flight"],
+                row["originAirport"],
+                row["destinationAirport"],
+                row["departureTimeLocal"],
+                row["arrivalTimeLocal"],
+                ",".join(row["markers"]),
+            ]
+        )
+        calendar = skymark_service_calendar(row["markers"])
+        flights.append(
+            {
+                "physicalFlightId": "flight.jp.dom." + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16],
+                "mode": "flight",
+                "operatingCarrier": "SKY",
+                "operatingCarrierName": OPERATOR_NAMES["SKY"],
+                "operatingFlightNumber": row["flight"],
+                "marketingFlights": [row["flight"]],
+                "originAirport": row["originAirport"],
+                "destinationAirport": row["destinationAirport"],
+                "departureTimeLocal": row["departureTimeLocal"],
+                "arrivalTimeLocal": row["arrivalTimeLocal"],
+                "calendarNote": ",".join(row["markers"]) or None,
+                "serviceCalendar": calendar,
+                "sourceRefs": [SKYMARK_SOURCE_REF["id"]],
+                "dedupeConfidence": "high",
+            }
+        )
+
+    calendar_status_counts: dict[str, int] = {}
+    for flight in flights:
+        status = flight["serviceCalendar"]["calendarParseStatus"]
+        calendar_status_counts[status] = calendar_status_counts.get(status, 0) + 1
+    return {
+        "schemaVersion": 1,
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "source": SKYMARK_SOURCE_REF,
+        "rules": {
+            "dedupeCodeshares": True,
+            "airportIdFormat": "IATA",
+            "skippedCompositeViaRoutes": True,
+            "canonicalKey": [
+                "operatingCarrier",
+                "operatingFlightNumber",
+                "originAirport",
+                "destinationAirport",
+                "departureTimeLocal",
+                "arrivalTimeLocal",
+                "sourceCalendarMarkers",
+            ],
+        },
+        "summary": {
+            "parsedRows": len(parsed_rows),
+            "physicalFlightCount": len(flights),
+            "skippedViaSections": skipped_via_sections,
+            "unknownAirportNames": sorted(unknown_airports),
+            "calendarStatusCounts": dict(sorted(calendar_status_counts.items())),
+        },
+        "flights": flights,
+    }
+
+
 def collect_ana(pdf_path: Path) -> dict:
     text = run_pdftotext(pdf_path)
     parsed_rows, unknown_airports = parse_ana_layout_text(text)
@@ -460,16 +734,28 @@ def collect_ana(pdf_path: Path) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source-pdf", type=Path, default=DEFAULT_SOURCE)
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--source", choices=["ana", "skymark"], default="ana")
+    parser.add_argument("--source-pdf", type=Path)
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args()
 
-    if not args.source_pdf.exists():
-        raise SystemExit(f"source PDF not found: {args.source_pdf}")
+    source_pdf = args.source_pdf
+    output = args.output
+    if args.source == "ana":
+        source_pdf = source_pdf or DEFAULT_SOURCE
+        output = output or DEFAULT_OUTPUT
+        collector = collect_ana
+    else:
+        source_pdf = source_pdf or SKYMARK_SOURCE
+        output = output or SKYMARK_OUTPUT
+        collector = collect_skymark
 
-    payload = collect_ana(args.source_pdf)
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if not source_pdf.exists():
+        raise SystemExit(f"source PDF not found: {source_pdf}")
+
+    payload = collector(source_pdf)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(payload["summary"], ensure_ascii=False, indent=2))
 
 
