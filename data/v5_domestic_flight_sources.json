@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-05-15T10:07:19-07:00",
+  "updatedAt": "2026-05-15T10:38:03-07:00",
   "policy": {
     "preferOfficialSources": true,
     "dedupeCodeshares": true,
@@ -35,8 +35,8 @@
       "url": "https://www.ana.co.jp/guide/plan/airinfo/dom-timetable/pdf/timetable_all_20260701_20261024.pdf",
       "period": "2026-07-01/2026-10-24",
       "sourceDate": "2026-03-30",
-      "status": "fallback_implemented_from_ana",
-      "notes": "Japan Air Commuter physical flights that appear in ANA's official all-area timetable are split by operatingCarrier. This is not a full JAL/JAC group timetable."
+      "status": "retired_fallback_not_in_current_bundle",
+      "notes": "ANA-derived JAC split artifact is kept as a cache only and is not used in the current bundle. Current JAL group flights come from official JAL timetable XML; standalone JAC summer labeling remains a source gap until JAL exposes that period/operator split."
     },
     {
       "id": "skymark-timetable-pdf-20260601-20261024",
@@ -65,8 +65,8 @@
       "url": "https://www.solaseedair.jp/timetable/assets/mediafile/time_20260329-20261024.pdf",
       "period": "2026-03-29/2026-10-24",
       "sourceDate": "2026-01-23",
-      "status": "fallback_implemented_from_ana",
-      "notes": "Official Solaseed Air PDF is cached but currently image/table extraction yields no text. Release bundle temporarily derives SNA physical flights from ANA's official all-area timetable by operatingCarrier."
+      "status": "implemented_official_image_table",
+      "notes": "Official Solaseed Air PDF is cached and its image timetable rows are transcribed into an operator artifact. The current bundle uses this official source instead of ANA operatingCarrier fallback."
     },
     {
       "id": "starflyer-timetable-web-20260329-20261024",
@@ -99,14 +99,14 @@
       "notes": "Official IBEX timetable page. The page repeats flights by airport section, so collector dedupes repeated physical rows. All current IBX records overlap ANA-marketed IBX records."
     },
     {
-      "id": "orc-timetable-web",
+      "id": "orc-official-pdf-timetable-20260329-20261024",
       "operatorGroup": "ORC",
       "type": "official_web",
-      "url": "https://www.orc-air.co.jp/",
-      "period": "current",
+      "url": "https://www.orc-air.co.jp/fare/",
+      "period": "2026-03-29/2026-10-24",
       "sourceDate": null,
-      "status": "fallback_implemented_from_ana",
-      "notes": "ORC fare page lists official 2026 summer route PDFs, but direct PDF fetch currently returns 403 in automation. Release bundle temporarily derives ORC physical flights from ANA's official all-area timetable by operatingCarrier."
+      "status": "implemented",
+      "notes": "Official ORC route PDFs are cached and parsed directly. The current bundle uses ORC official rows instead of ANA operatingCarrier fallback; overlapping ANA official calendars are retained only when they provide route/date notes for the same physical row."
     },
     {
       "id": "amakusa-timetable-web",
@@ -115,8 +115,8 @@
       "url": "https://www.amx.co.jp/",
       "period": "current",
       "sourceDate": null,
-      "status": "fallback_implemented_from_ana",
-      "notes": "Official AMX public timetable is image-based. Release bundle temporarily derives AMX physical flights from ANA's official all-area timetable by operatingCarrier."
+      "status": "implemented_official_image_table",
+      "notes": "Official AMX public timetable images are cached and transcribed into an operator artifact, including the Kumamoto-Itami route that was absent from ANA fallback. The current bundle uses this official source."
     },
     {
       "id": "toki-air-schedules-web-20260329-20260831",
@@ -145,8 +145,8 @@
       "url": "https://files.jetstar.com/api/public/content/gk_timetable_26nsdom",
       "period": "2026-03-29/2026-10-24",
       "sourceDate": "2026-03-26",
-      "status": "implemented_partial_calendar",
-      "notes": "Official Jetstar Japan domestic PDF. Physical rows are parsed by PDF column; explicit operation/suspension date notes are expanded, while complex Japanese weekday notes remain flagged."
+      "status": "implemented",
+      "notes": "Official Jetstar Japan domestic PDF. Physical rows are parsed by PDF column; explicit dates, Japanese weekday operation/suspension notes, full-month notes, relative weekday notes, and complement rows are expanded with zero unresolved calendar notes."
     },
     {
       "id": "spring-japan-domestic-timetable-pdf-20260329-20261024",
@@ -155,8 +155,8 @@
       "url": "https://jp.ch.com/time-table",
       "period": "2026-03-29/2026-10-24",
       "sourceDate": "2026-05-13",
-      "status": "implemented_partial_calendar",
-      "notes": "Official Spring Japan domestic PDF is cached. Physical rows are parsed; several multi-line period/weekday calendars are flagged for a dedicated layout parser."
+      "status": "implemented",
+      "notes": "Official Spring Japan domestic PDF is cached. Physical rows and multi-line period/weekday calendars are parsed with zero unresolved calendar notes."
     }
   ]
 }

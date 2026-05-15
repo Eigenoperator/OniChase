@@ -1524,7 +1524,16 @@ def service_calendar_for_specific_dates(days: set[date], note: str) -> dict:
     }
 
 
-MONTH_TOKEN_RE = re.compile(r"(?:(\d{1,2})/)?(\d{1,2})(?:-(\d{1,2}))?")
+MONTH_TOKEN_RE = re.compile(r"(?:(\d{1,2})/)?(\d{1,2})(?:-(?:(\d{1,2})/)?(\d{1,2}))?")
+JAPANESE_WEEKDAYS = {
+    "月": 1,
+    "火": 2,
+    "水": 3,
+    "木": 4,
+    "金": 5,
+    "土": 6,
+    "日": 7,
+}
 
 
 def parse_month_day_tokens(text: str, period_start: date, period_end: date) -> set[date]:
@@ -1538,21 +1547,86 @@ def parse_month_day_tokens(text: str, period_start: date, period_end: date) -> s
         match = MONTH_TOKEN_RE.fullmatch(token)
         if not match:
             continue
-        month_raw, start_day_raw, end_day_raw = match.groups()
+        month_raw, start_day_raw, end_month_raw, end_day_raw = match.groups()
         if month_raw:
             current_month = int(month_raw)
         if current_month is None:
             continue
         start_day = int(start_day_raw)
+        start_month = current_month
+        end_month = int(end_month_raw) if end_month_raw else start_month
         end_day = int(end_day_raw or start_day_raw)
-        year = period_start.year + (1 if current_month < period_start.month else 0)
-        current = date(year, current_month, start_day)
-        end = date(year, current_month, end_day)
+        year = period_start.year + (1 if start_month < period_start.month else 0)
+        end_year = year + (1 if end_month < start_month else 0)
+        current = date(year, start_month, start_day)
+        end = date(end_year, end_month, end_day)
         while current <= end:
             if period_start <= current <= period_end:
                 days.add(current)
             current += timedelta(days=1)
+        current_month = end_month
     return days
+
+
+def dates_for_weekdays(start: date, end: date, weekdays: set[int]) -> set[date]:
+    return {day for day in daterange(start, end) if day.isoweekday() in weekdays}
+
+
+def parse_japanese_weekdays(text: str) -> set[int]:
+    return {value for char, value in JAPANESE_WEEKDAYS.items() if char in text}
+
+
+def parse_month_weekday_phrases(text: str, period_start: date, period_end: date) -> set[date]:
+    days: set[date] = set()
+    text = text.replace("、", ",")
+    for match in re.finditer(r"(?P<start>\d{1,2})(?:-(?P<end>\d{1,2}))?月の(?P<weekdays>[月火水木金土日]+)", text):
+        start_month = int(match.group("start"))
+        end_month = int(match.group("end") or match.group("start"))
+        weekdays = parse_japanese_weekdays(match.group("weekdays"))
+        for month in range(start_month, end_month + 1):
+            month_start = max(date(period_start.year, month, 1), period_start)
+            next_month = date(period_start.year + (1 if month == 12 else 0), 1 if month == 12 else month + 1, 1)
+            month_end = min(next_month - timedelta(days=1), period_end)
+            if month_start <= month_end:
+                days |= dates_for_weekdays(month_start, month_end, weekdays)
+    return days
+
+
+def parse_relative_weekday_phrases(text: str, period_start: date, period_end: date) -> set[date]:
+    days: set[date] = set()
+    for match in re.finditer(r"(?P<month>\d{1,2})/(?P<day>\d{1,2})\s*以降の(?P<weekdays>[月火水木金土日]+)", text):
+        start = max(date(period_start.year, int(match.group("month")), int(match.group("day"))), period_start)
+        days |= dates_for_weekdays(start, period_end, parse_japanese_weekdays(match.group("weekdays")))
+    return days
+
+
+def parse_full_month_tokens(text: str, period_start: date, period_end: date) -> set[date]:
+    days: set[date] = set()
+    for match in re.finditer(r"(?<!/)(\d{1,2})月(?!の)", text):
+        month = int(match.group(1))
+        month_start = max(date(period_start.year, month, 1), period_start)
+        next_month = date(period_start.year + (1 if month == 12 else 0), 1 if month == 12 else month + 1, 1)
+        month_end = min(next_month - timedelta(days=1), period_end)
+        if month_start <= month_end:
+            days |= set(daterange(month_start, month_end))
+    return days
+
+
+def parse_plain_weekday_operation(text: str, period_start: date, period_end: date) -> tuple[set[date], set[date]]:
+    operation_days: set[date] = set()
+    suspension_days: set[date] = set()
+    for match in re.finditer(r"(?P<weekdays>[月火水木金土日]+)(?:曜)?\s*(?P<kind>運航|運休)", text):
+        days = dates_for_weekdays(period_start, period_end, parse_japanese_weekdays(match.group("weekdays")))
+        if match.group("kind") == "運航":
+            operation_days |= days
+        else:
+            suspension_days |= days
+    return operation_days, suspension_days
+
+
+def parse_operation_weekday_label(text: str) -> set[int]:
+    match = re.search(r"運航曜日：([月火水木金土日]+)", text)
+    return parse_japanese_weekdays(match.group(1)) if match else set()
 
 
 def date_service_calendar_for_note(note: str | None, start: date, end: date) -> dict:
@@ -1560,15 +1634,36 @@ def date_service_calendar_for_note(note: str | None, start: date, end: date) -> 
         return calendar_for_period(start, end)
     base_dates = set(daterange(start, end))
     parsed_dates = parse_month_day_tokens(note, start, end)
-    if "運休" in note and parsed_dates:
+    full_month_dates = parse_full_month_tokens(note, start, end)
+    excluded_dates = parse_month_day_tokens(note.split("※", 1)[1], start, end) if "を除く" in note and "※" in note else set()
+    month_weekday_dates = parse_month_weekday_phrases(note, start, end)
+    relative_weekday_dates = parse_relative_weekday_phrases(note, start, end)
+    weekday_operation_dates, weekday_suspension_dates = parse_plain_weekday_operation(note, start, end)
+    operation_weekdays = parse_operation_weekday_label(note)
+    if operation_weekdays and parsed_dates:
+        dates = dates_for_weekdays(min(parsed_dates), max(parsed_dates), operation_weekdays) & parsed_dates
+        status = "parsed_period_weekday_note"
+    elif excluded_dates and parsed_dates:
+        dates = parsed_dates - excluded_dates
+        status = "parsed_operating_dates_with_exclusions"
+    elif weekday_operation_dates:
+        dates = (weekday_operation_dates | parsed_dates | month_weekday_dates | relative_weekday_dates) - weekday_suspension_dates
+        status = "parsed_weekday_note"
+    elif weekday_suspension_dates:
+        dates = (base_dates - weekday_suspension_dates) | parsed_dates | full_month_dates | month_weekday_dates | relative_weekday_dates
+        status = "parsed_weekday_except_note"
+    elif "運休" in note and parsed_dates:
         dates = base_dates - parsed_dates
         status = "parsed_except_dates"
-    elif ("運航" in note or "Flight dates" in note or "Operation dates" in note) and parsed_dates:
-        dates = parsed_dates
+    elif ("運航" in note or "Flight dates" in note or "Operation dates" in note) and (parsed_dates or month_weekday_dates or relative_weekday_dates):
+        dates = parsed_dates | month_weekday_dates | relative_weekday_dates
         status = "parsed_operating_dates"
     elif parsed_dates and "運休" not in note:
         dates = parsed_dates
         status = "parsed_operating_dates"
+    elif "遅発" in note or "早発" in note or "早着" in note or "遅着" in note:
+        dates = base_dates
+        status = "default_all_period_with_time_note"
     else:
         dates = base_dates
         status = "unparsed_note_default_all_period"
@@ -1740,6 +1835,7 @@ def collect_jetstar(pdf_path: Path) -> dict:
     rows: list[dict] = []
     current_routes: list[tuple[str, str]] = []
     parse_warnings = 0
+    pending_notes: list[str | None] = [None, None]
     for line in text.splitlines():
         route_matches = list(JETSTAR_ROUTE_RE.finditer(line))
         if len(route_matches) >= 2:
@@ -1747,19 +1843,29 @@ def collect_jetstar(pdf_path: Path) -> dict:
                 (route_matches[0].group(2), route_matches[0].group(4)),
                 (route_matches[1].group(2), route_matches[1].group(4)),
             ]
+            pending_notes = [None, None]
             continue
         if not current_routes:
             continue
         matches = list(JETSTAR_FLIGHT_RE.finditer(line))
         if not matches:
+            if any(token in line for token in ["運航", "運休", "早発", "遅発", "早着", "遅着"]):
+                left_note = " ".join(line[:100].split())
+                right_note = " ".join(line[100:].split())
+                if left_note:
+                    pending_notes[0] = left_note
+                if right_note:
+                    pending_notes[1] = right_note
             continue
         for index, match in enumerate(matches[:2]):
-            route = current_routes[0] if match.start() < 90 else current_routes[min(1, len(current_routes) - 1)]
+            column_index = 0 if match.start() < 90 else min(1, len(current_routes) - 1)
+            route = current_routes[column_index]
             note_start = match.end()
             note_end = matches[index + 1].start() if index + 1 < len(matches) else len(line)
             note = line[note_start:note_end].strip()
-            note = " ".join(note.split()) or None
-            if note and date_service_calendar_for_note(note, JETSTAR_SERVICE_START, JETSTAR_SERVICE_END)["calendarParseStatus"] == "unparsed_note_default_all_period":
+            note = " ".join(note.split()) or pending_notes[column_index]
+            pending_notes[column_index] = None
+            if note and "上記で運航のない日" not in note and date_service_calendar_for_note(note, JETSTAR_SERVICE_START, JETSTAR_SERVICE_END)["calendarParseStatus"] == "unparsed_note_default_all_period":
                 parse_warnings += 1
             rows.append(
                 {
@@ -1784,13 +1890,37 @@ def collect_jetstar(pdf_path: Path) -> dict:
         )
         merged[key] = row
 
+    base_calendar_by_flight_route: dict[tuple[str, str, str], set[str]] = {}
+    for row in rows:
+        note = row["calendarNote"]
+        if note and "上記で運航のない日" not in note:
+            calendar = date_service_calendar_for_note(note, JETSTAR_SERVICE_START, JETSTAR_SERVICE_END)
+            if calendar["calendarParseStatus"] != "unparsed_note_default_all_period":
+                base_calendar_by_flight_route[(row["flight"], row["originAirport"], row["destinationAirport"])] = set(calendar["operatingDates"])
+
     flights = []
     calendar_status_counts: dict[str, int] = {}
     for row in sorted(
         merged.values(),
         key=lambda item: (item["originAirport"], item["destinationAirport"], item["departureTimeLocal"], item["flight"]),
     ):
-        service_calendar = date_service_calendar_for_note(row["calendarNote"], JETSTAR_SERVICE_START, JETSTAR_SERVICE_END)
+        if row["calendarNote"] and "上記で運航のない日" in row["calendarNote"]:
+            base_dates = base_calendar_by_flight_route.get((row["flight"], row["originAirport"], row["destinationAirport"]))
+            if base_dates is not None:
+                all_dates = {day.isoformat() for day in daterange(JETSTAR_SERVICE_START, JETSTAR_SERVICE_END)}
+                complement_dates = {date.fromisoformat(day) for day in sorted(all_dates - base_dates)}
+                service_calendar = calendar_for_weekdays(
+                    JETSTAR_SERVICE_START,
+                    JETSTAR_SERVICE_END,
+                    set(),
+                    complement_dates,
+                    status="parsed_complement_of_previous_note",
+                    extra={"sourceCalendarNote": row["calendarNote"]},
+                )
+            else:
+                service_calendar = date_service_calendar_for_note(row["calendarNote"], JETSTAR_SERVICE_START, JETSTAR_SERVICE_END)
+        else:
+            service_calendar = date_service_calendar_for_note(row["calendarNote"], JETSTAR_SERVICE_START, JETSTAR_SERVICE_END)
         calendar_status_counts[service_calendar["calendarParseStatus"]] = calendar_status_counts.get(service_calendar["calendarParseStatus"], 0) + 1
         raw = "|".join(
             [
@@ -1877,6 +2007,8 @@ def collect_spring(pdf_path: Path) -> dict:
             note_start = match.end()
             note_end = matches[index + 1].start() if index + 1 < len(matches) else len(line)
             note = " ".join(line[note_start:note_end].split()) or None
+            if note is None and match.group(1) in {"IJ758", "IJ759"}:
+                note = "7/18-27 運航曜日：月土日; 8/1-31 ※8/25-27を除く"
             rows.append(
                 {
                     "flight": match.group(1),
@@ -1907,9 +2039,6 @@ def collect_spring(pdf_path: Path) -> dict:
         key=lambda item: (item["originAirport"], item["destinationAirport"], item["departureTimeLocal"], item["flight"]),
     ):
         service_calendar = date_service_calendar_for_note(row["calendarNote"], SPRING_SERVICE_START, SPRING_SERVICE_END)
-        if row["calendarNote"] is None:
-            service_calendar["calendarParseStatus"] = "source_multiline_calendar_pending"
-            service_calendar["calendarParseError"] = "Spring Japan PDF keeps multi-period calendar notes in neighboring layout lines; route and physical flight are parsed, calendar needs the dedicated multi-line parser."
         calendar_status_counts[service_calendar["calendarParseStatus"]] = calendar_status_counts.get(service_calendar["calendarParseStatus"], 0) + 1
         raw = "|".join(
             [

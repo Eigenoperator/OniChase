@@ -29,10 +29,9 @@ INPUTS = [
     ("spring", ROOT / "data/v5_domestic_flights_spring_20260329_20261024.json"),
     ("peach", ROOT / "data/v5_domestic_flights_peach_20260329_20261024.json"),
     ("jal", ROOT / "data/v5_domestic_flights_jal_20260329_20260531.json"),
-    ("solaseed_from_ana", ROOT / "data/v5_domestic_flights_solaseed_from_ana_20260701_20261024.json"),
-    ("orc_from_ana", ROOT / "data/v5_domestic_flights_orc_from_ana_20260701_20261024.json"),
-    ("amx_from_ana", ROOT / "data/v5_domestic_flights_amx_from_ana_20260701_20261024.json"),
-    ("jac_from_ana", ROOT / "data/v5_domestic_flights_jac_from_ana_20260701_20261024.json"),
+    ("solaseed", ROOT / "data/v5_domestic_flights_solaseed_official_20260329_20261024.json"),
+    ("orc", ROOT / "data/v5_domestic_flights_orc_official_20260329_20261024.json"),
+    ("amx", ROOT / "data/v5_domestic_flights_amx_official_20260329_20261024.json"),
 ]
 
 ANA_DIRECT_CARRIERS = {"ANA", "AKX"}
@@ -148,8 +147,8 @@ def main() -> None:
         },
         "rules": {
             "oneRecordPerPhysicalFlight": True,
-            "anaCodesharePolicy": "ANA all-area timetable is used for ANA/AKX direct records and as fallback split artifacts for SNA/ORC/AMX/JAC; independent operator sources override ANA-marketed ADO/SFJ/IBX where available.",
-            "dedupeKeys": ["carrier+flight+airports+times+calendarNote", "carrier+airports+times fallback"],
+            "anaCodesharePolicy": "ANA all-area timetable is used for ANA/AKX direct records only. Codeshare-operated carriers are represented by their own operator artifacts where available; JAL group current-period XML covers the current JAL/JTA/RAC official window without extrapolation.",
+            "dedupeKeys": ["carrier+flight+airports+times+calendarNote", "carrier+airports+times"],
         },
         "inputs": loaded_files,
         "summary": {
@@ -159,11 +158,8 @@ def main() -> None:
             "skippedAnaCodeshareRows": skipped_from_ana_codeshare,
             "duplicateRowsMerged": duplicate_rows_merged,
             "missingRequiredFieldCount": len(missing_required),
-            "remainingMajorSourceGaps": ["JAL/JTA/RAC official July-August timetable"],
-            "knownCalendarParserGaps": {
-                "Jetstar": 7,
-                "SpringJapan": 4,
-            },
+            "remainingMajorSourceGaps": ["JAL/JTA/RAC official July-August timetable", "JAC standalone summer operator labeling if not exposed by JAL XML"],
+            "knownCalendarParserGaps": {},
         },
         "missingRequiredFields": missing_required[:50],
         "flights": flights,
