@@ -86,7 +86,7 @@ Official or operator-published sources are preferred.
 - ANA domestic timetable PDF: includes ANA marketed services and operating-company codes such as `AKX`, `ADO`, `IBEX`, `SNA`, `SFJ`, `ORC`, `JAC`, and `AMX`.
 - Skymark, AIRDO, StarFlyer, IBEX, Toki Air, FDA, Peach, Jetstar Japan, and Spring Japan now have operator-published v5 artifacts.
 - Solaseed, ORC, AMX, and JAC currently have fallback artifacts split from ANA's official all-area timetable by `operatingCarrier`; they are marked as derived sources and should be replaced when their own machine-readable/current route timetables are parsed.
-- JAL/JTA/RAC remain the largest missing official group source. JAL publishes operation notices and route-query pages, but a full static 2026 summer machine-readable domestic timetable has not yet been confirmed.
+- JAL/JTA/RAC are included for the currently available official spring period (`2026-03-29/2026-05-31`) from JAL timetable XML route files. The July-August official timetable remains pending.
 - Peach's official route/schedule page links a domestic 2026 summer PDF, now cached and parsed.
 - Jetstar and Spring are marked `implemented_partial_calendar` where PDF row parsing succeeds but some complex Japanese notes still need a dedicated parser.
 
@@ -102,4 +102,4 @@ Bundle policy:
 - Prefer independent official operator artifacts for AIRDO, StarFlyer, and IBEX instead of ANA-marketed overlaps.
 - Include fallback split artifacts for Solaseed, ORC, AMX, and JAC until their own machine-readable/current sources are fully parsed.
 - Include LCC/operator artifacts for Skymark, Peach, Jetstar Japan, Spring Japan, FDA, and Toki Air.
-- Do not include JAL/JTA/RAC yet as complete official 2026 summer timetable data is still pending on the JAL timetable page.
+- Include JAL/JTA/RAC current-period XML data, but keep the period explicit and do not extrapolate it into July-August.
