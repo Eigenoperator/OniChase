@@ -936,10 +936,22 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: #ffffff;
-      background: var(--airline-color, #2563eb);
-      border: 1px solid rgba(20, 32, 50, 0.08);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.48) inset;
+      background: #ffffff;
+      border: 1px solid rgba(136, 151, 170, 0.28);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.72) inset;
+      padding: 3px;
+      overflow: hidden;
+    }
+
+    .airline-logo img {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .airline-logo-fallback {
+      color: #394960;
       font-size: 9px;
       font-weight: 900;
       line-height: 1;
@@ -8177,35 +8189,23 @@
       return carrier || 'AIR';
     }
 
-    function airlineBrandStyle(code) {
-      const palette = {
-        ANA: '#194f9d',
-        AKX: '#194f9d',
-        JAL: '#c8102e',
-        JTA: '#c8102e',
-        JAC: '#c8102e',
-        RAC: '#c8102e',
-        SKY: '#1296d4',
-        ADO: '#00a3ad',
-        APJ: '#7b2cbf',
-        JJP: '#f97316',
-        SFJ: '#111827',
-        SNA: '#22a06b',
-        FDA: '#e11d48',
-        IBX: '#2563eb',
-        ORC: '#0f766e',
-        AMX: '#0891b2',
-        SJO: '#ef4444',
-        TOK: '#64748b',
-      };
-      return palette[code] || '#2563eb';
-    }
-
     function airlineLogoHtml(flight) {
       const code = airlineBrandCode(flight);
-      const color = airlineBrandStyle(code);
       const label = code.length > 4 ? code.slice(0, 4) : code;
-      return `<span class="airline-logo" style="--airline-color:${escapeHtml(color)}" title="${escapeHtml(flight?.operatingCarrierName || code)}">${escapeHtml(label)}</span>`;
+      const logoByCode = {
+        ANA: './assets/airlines/ana.svg',
+        AKX: './assets/airlines/akx.svg',
+        JAL: './assets/airlines/jal.svg',
+        JTA: './assets/airlines/jta.svg',
+        JAC: './assets/airlines/jac.svg',
+        SKY: './assets/airlines/sky.png',
+      };
+      const src = logoByCode[code];
+      const title = escapeHtml(flight?.operatingCarrierName || code);
+      if (src) {
+        return `<span class="airline-logo" title="${title}"><img src="${escapeHtml(src)}" alt="${escapeHtml(label)} logo" loading="lazy" decoding="async"></span>`;
+      }
+      return `<span class="airline-logo airline-logo-fallback" title="${title}">${escapeHtml(label)}</span>`;
     }
 
     function indexFlightTimetable(payload) {
