@@ -1311,10 +1311,20 @@
     const COUPLED_SERVICE_REGISTRY_URL = './data/v4_coupled_service_registry.json';
     const WALKING_EDGES_URL = './data/v5_walking_edges.json.gz';
     const FLIGHT_MAP_URL = './data/v5_flight_map.geojson';
+    const FLIGHT_TIMETABLE_URL = './data/v5_domestic_flights_current_bundle.json';
     const V5_ACTIVE_WALKING_THRESHOLD_METERS = 2000;
     const V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND = 5 / 3.6;
     const V5_MIN_WALKING_SPEED_MULTIPLIER = 0.35;
     const V5_MAX_WALKING_SPEED_MULTIPLIER = 1.35;
+    const V5_FLIGHT_SERVICE_WEEKDAY = 5;
+    const V5_FLIGHT_PURCHASE_ADVANCE_MINUTES = 60;
+    const V5_FLIGHT_AIRPORT_ARRIVAL_ADVANCE_MINUTES = 30;
+    const V5_FLIGHT_BOARDING_ADVANCE_MINUTES = 15;
+    const V5_FLIGHT_ARRIVAL_COOLDOWN_MINUTES = 10;
+    const V5_AIRPORT_ACCESS_RADIUS_METERS = 5000;
+    const V5_FLIGHT_BASE_FARE_YEN = 6500;
+    const V5_FLIGHT_DISTANCE_FARE_YEN_PER_KM = 18;
+    const V5_FLIGHT_PEAK_SURCHARGE_YEN = 2500;
     const V3_REPLAY_SCHEMA_VERSION = 'v5.replay.1';
     const V3_REPLAY_COLLECTION_SCHEMA_VERSION = 'v5.replay.collection.1';
     const V3_DATASET_NAME = 'v5-from-v4-nationwide';
@@ -5615,6 +5625,10 @@
       walkingEdgesByFromGroupId: new Map(),
       flightMap: null,
       airportByIata: new Map(),
+      flightTimetable: null,
+      flightById: new Map(),
+      flightsByOriginAirport: new Map(),
+      nearestAirportStationCache: new Map(),
       fareRules: null,
       coupledServiceEntries: [],
       coupledChoiceRowsByKey: new Map(),
@@ -8112,6 +8126,50 @@
       } catch (error) {
         console.warn('Failed to load v5 flight map', error);
         indexFlightMap(null);
+      }
+    }
+
+    function flightOperatingNumber(flight) {
+      return flight?.operatingFlightNumber || flight?.marketingFlights?.[0] || flight?.physicalFlightId || 'FLIGHT';
+    }
+
+    function flightDisplayLabel(flight) {
+      return `${flightOperatingNumber(flight)} ${flight?.originAirport || '---'} -> ${flight?.destinationAirport || '---'}`;
+    }
+
+    function indexFlightTimetable(payload) {
+      const flights = (payload?.flights || []).filter((flight) =>
+        flight?.physicalFlightId &&
+        flight.originAirport &&
+        flight.destinationAirport &&
+        flight.departureTimeLocal &&
+        flight.arrivalTimeLocal
+      );
+      state.flightTimetable = payload || null;
+      state.flightById = new Map();
+      state.flightsByOriginAirport = new Map();
+      flights.forEach((flight) => {
+        state.flightById.set(flight.physicalFlightId, flight);
+        if (!state.flightsByOriginAirport.has(flight.originAirport)) {
+          state.flightsByOriginAirport.set(flight.originAirport, []);
+        }
+        state.flightsByOriginAirport.get(flight.originAirport).push(flight);
+      });
+      state.flightsByOriginAirport.forEach((rows) => {
+        rows.sort((a, b) =>
+          flightDepartureMinute(a) - flightDepartureMinute(b) ||
+          flightOperatingNumber(a).localeCompare(flightOperatingNumber(b))
+        );
+      });
+    }
+
+    async function loadFlightTimetable() {
+      try {
+        const payload = await fetchJsonMaybeGz(FLIGHT_TIMETABLE_URL);
+        indexFlightTimetable(payload);
+      } catch (error) {
+        console.warn('Failed to load v5 flight timetable', error);
+        indexFlightTimetable(null);
       }
     }
 
@@ -12140,6 +12198,87 @@
           currentBoardPhysicalStationId = null;
           continue;
         }
+        if (step.type === 'TAKE_FLIGHT') {
+          if (currentState.kind !== 'NODE') break;
+          const flight = state.flightById.get(step.flight_id);
+          if (!flight) break;
+          const catchability = flightCatchability(flight, { currentState, currentMinute });
+          if (!catchability.ok) break;
+          const times = catchability.times;
+          const originCoordinate = airportCoordinate(flight.originAirport);
+          const destinationCoordinate = airportCoordinate(flight.destinationAirport);
+          const destinationStationGroupId = catchability.destinationStation?.stationGroupId;
+          if (timeCapMinute !== null && timeCapMinute < times.boardingStartMinute) {
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'AIRPORT_WAIT', airportIata: flight.originAirport, flightId: flight.physicalFlightId },
+              currentTrip: null,
+              currentBoardStop: null,
+              resolvedSteps,
+              mapPosition: originCoordinate,
+              mapStationGroupId: null,
+            };
+          }
+          if (timeCapMinute !== null && timeCapMinute < times.departureMinute) {
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'BOARDING', airportIata: flight.originAirport, flightId: flight.physicalFlightId },
+              currentTrip: null,
+              currentBoardStop: null,
+              resolvedSteps,
+              mapPosition: originCoordinate,
+              mapStationGroupId: null,
+            };
+          }
+          if (timeCapMinute !== null && timeCapMinute < times.arrivalMinute) {
+            const ratio = clamp((timeCapMinute - times.departureMinute) / Math.max(1, times.arrivalMinute - times.departureMinute), 0, 1);
+            const mapPosition = originCoordinate && destinationCoordinate
+              ? [
+                  originCoordinate[0] + (destinationCoordinate[0] - originCoordinate[0]) * ratio,
+                  originCoordinate[1] + (destinationCoordinate[1] - originCoordinate[1]) * ratio,
+                ]
+              : originCoordinate || destinationCoordinate || null;
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'FLIGHT', flightId: flight.physicalFlightId, originAirport: flight.originAirport, destinationAirport: flight.destinationAirport },
+              currentTrip: null,
+              currentBoardStop: null,
+              resolvedSteps,
+              mapPosition,
+              mapStationGroupId: null,
+            };
+          }
+          if (timeCapMinute !== null && timeCapMinute < times.cooldownEndMinute) {
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'ARRIVAL_COOLDOWN', airportIata: flight.destinationAirport, flightId: flight.physicalFlightId },
+              currentTrip: null,
+              currentBoardStop: null,
+              resolvedSteps,
+              mapPosition: destinationCoordinate,
+              mapStationGroupId: null,
+            };
+          }
+          currentMinute = times.cooldownEndMinute;
+          currentState = { kind: 'NODE', stationGroupId: destinationStationGroupId, physicalStationId: null, alightTripId: null };
+          resolvedSteps.push({
+            ...step,
+            purchase_hhmm: minutesToHhmm(catchability.times.purchaseDeadlineMinute + V5_FLIGHT_PURCHASE_ADVANCE_MINUTES),
+            departure_hhmm: minutesToHhmm(times.departureMinute),
+            arrival_hhmm: minutesToHhmm(times.arrivalMinute),
+            cooldown_end_hhmm: minutesToHhmm(times.cooldownEndMinute),
+            arrival_station_id: destinationStationGroupId,
+            fare: step.fare || resolveFlightFare(flight),
+          });
+          currentTrip = null;
+          currentBoardStop = null;
+          currentBoardPhysicalStationId = null;
+          continue;
+        }
         if (step.type === 'BOARD_TRAIN') {
           if (currentState.kind !== 'NODE') break;
           const trip = state.tripById.get(step.trip_id);
@@ -12199,6 +12338,9 @@
       } else if (currentState.kind === 'WALK') {
         mapPosition = stationLonLat(currentState.toStationGroupId) || stationLonLat(currentState.fromStationGroupId);
         mapStationGroupId = null;
+      } else if (currentState.kind === 'AIRPORT_WAIT' || currentState.kind === 'BOARDING' || currentState.kind === 'ARRIVAL_COOLDOWN') {
+        mapPosition = airportCoordinate(currentState.airportIata);
+        mapStationGroupId = null;
       }
       return { currentMinute, currentTime: minutesToHhmm(currentMinute), currentState, currentTrip, currentBoardStop, resolvedSteps, mapPosition, mapStationGroupId };
     }
@@ -12235,6 +12377,19 @@
         const loc = tripLocationOnMap(currentState.tripId, event.time_minute);
         mapPosition = loc?.position || null;
         mapStationGroupId = loc?.anchorStationGroupId || null;
+      } else if (currentState.kind === 'AIRPORT_WAIT' || currentState.kind === 'BOARDING' || currentState.kind === 'ARRIVAL_COOLDOWN') {
+        mapPosition = airportCoordinate(currentState.airportIata);
+        mapStationGroupId = null;
+      } else if (currentState.kind === 'FLIGHT') {
+        const flight = state.flightById.get(currentState.flightId);
+        const times = flight ? flightRuleTimes(flight) : null;
+        const origin = airportCoordinate(flight?.originAirport);
+        const destination = airportCoordinate(flight?.destinationAirport);
+        const ratio = times ? clamp((event.time_minute - times.departureMinute) / Math.max(1, times.arrivalMinute - times.departureMinute), 0, 1) : 0;
+        mapPosition = origin && destination
+          ? [origin[0] + (destination[0] - origin[0]) * ratio, origin[1] + (destination[1] - origin[1]) * ratio]
+          : origin || destination || null;
+        mapStationGroupId = null;
       }
       return {
         currentMinute: event.time_minute,
@@ -12263,6 +12418,10 @@
       if (preview.visibility === 'hidden' || preview.currentState.kind === 'HIDDEN') return 'hidden during LIVE';
       if (preview.displayLabel && preview.currentState.kind === 'NODE') return `at ${preview.displayLabel} ${preview.currentTime}`;
       if (preview.displayLabel && preview.currentState.kind === 'TRAIN') return `on ${preview.displayLabel} ${preview.currentTime}`;
+      if (preview.currentState.kind === 'AIRPORT_WAIT') return `waiting at ${airportName(preview.currentState.airportIata)} ${preview.currentTime}`;
+      if (preview.currentState.kind === 'BOARDING') return `boarding at ${airportName(preview.currentState.airportIata)} ${preview.currentTime}`;
+      if (preview.currentState.kind === 'FLIGHT') return `on ${flightDisplayLabel(state.flightById.get(preview.currentState.flightId))} ${preview.currentTime}`;
+      if (preview.currentState.kind === 'ARRIVAL_COOLDOWN') return `arrived at ${airportName(preview.currentState.airportIata)} ${preview.currentTime}`;
       if (preview.currentState.kind === 'WALK') {
         return `walking ${displayNameForGroup(preview.currentState.fromStationGroupId)} -> ${displayNameForGroup(preview.currentState.toStationGroupId)} ${preview.currentTime}`;
       }
@@ -12554,7 +12713,9 @@
           ? formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })
           : preview.currentState.kind === 'WALK'
             ? `Walk to ${displayNameForGroup(preview.currentState.toStationGroupId)}`
-            : displayNameForGroup(preview.currentState.stationGroupId);
+            : preview.currentState.kind === 'FLIGHT'
+              ? flightDisplayLabel(state.flightById.get(preview.currentState.flightId))
+              : (preview.currentState.airportIata ? airportName(preview.currentState.airportIata) : displayNameForGroup(preview.currentState.stationGroupId));
         const node = document.createElement('div');
         node.className = `player-html-marker ${playerId}`;
         node.style.setProperty('--player-color', playerId === 'runner' ? '#dc4d62' : '#2d6cdf');
@@ -12742,7 +12903,9 @@
           ? formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })
           : preview.currentState.kind === 'WALK'
             ? `Walk to ${displayNameForGroup(preview.currentState.toStationGroupId)}`
-            : displayNameForGroup(preview.currentState.stationGroupId);
+            : preview.currentState.kind === 'FLIGHT'
+              ? flightDisplayLabel(state.flightById.get(preview.currentState.flightId))
+              : (preview.currentState.airportIata ? airportName(preview.currentState.airportIata) : displayNameForGroup(preview.currentState.stationGroupId));
         features.push({
           type: 'Feature',
           geometry: { type: 'Point', coordinates: preview.mapPosition },
@@ -12886,6 +13049,32 @@
       syncPlanIfOnline();
     }
 
+    function addFlightStep(flightId) {
+      const preview = truncateFuturePlan();
+      if (preview.currentState.kind !== 'NODE') return;
+      const flight = state.flightById.get(flightId);
+      if (!flight) return;
+      const catchability = flightCatchability(flight, preview);
+      if (!catchability.ok) return;
+      const fare = resolveFlightFare(flight);
+      activePlayer().steps.push({
+        type: 'TAKE_FLIGHT',
+        flight_id: flight.physicalFlightId,
+        flight_number: flightOperatingNumber(flight),
+        origin_airport: flight.originAirport,
+        destination_airport: flight.destinationAirport,
+        purchase_hhmm: minutesToHhmm(preview.currentMinute),
+        departure_hhmm: flight.departureTimeLocal,
+        arrival_hhmm: flight.arrivalTimeLocal,
+        fare,
+      });
+      state.planningRouteIds[state.activeMode] = null;
+      clearPendingTrip();
+      invalidateSimulation();
+      renderGame();
+      syncPlanIfOnline();
+    }
+
     function undoLastStep() {
       const steps = activePlayer().steps;
       const floor = protectedPlanLength();
@@ -12956,6 +13145,15 @@
       }
       if (runnerState?.kind === 'NODE' && hunterState?.kind === 'NODE' && runnerState.stationGroupId === hunterState.stationGroupId) {
         return { type: 'same_node', time_hhmm: minutesToHhmm(state.currentGameMinute), station_group_id: runnerState.stationGroupId };
+      }
+      if (
+        runnerState?.airportIata &&
+        hunterState?.airportIata &&
+        runnerState.airportIata === hunterState.airportIata &&
+        runnerState.kind !== 'FLIGHT' &&
+        hunterState.kind !== 'FLIGHT'
+      ) {
+        return { type: 'same_airport', time_hhmm: minutesToHhmm(state.currentGameMinute), airport_iata: runnerState.airportIata };
       }
       return null;
     }
@@ -13369,6 +13567,115 @@
       return `${props.iata} · ${name}`;
     }
 
+    function airportName(iata) {
+      return airportDisplayName(state.airportByIata?.get(iata));
+    }
+
+    function nearestStationGroupForAirport(iata) {
+      if (!iata) return null;
+      if (state.nearestAirportStationCache.has(iata)) return state.nearestAirportStationCache.get(iata);
+      const airport = airportCoordinate(iata);
+      let best = null;
+      state.stationGroupById.forEach((_group, stationGroupId) => {
+        const stationCoordinate = stationLonLat(stationGroupId);
+        const distanceMeters = coordinateDistanceMeters(airport, stationCoordinate);
+        if (!Number.isFinite(distanceMeters)) return;
+        if (!best || distanceMeters < best.distanceMeters) {
+          best = { stationGroupId, distanceMeters };
+        }
+      });
+      state.nearestAirportStationCache.set(iata, best);
+      return best;
+    }
+
+    function accessibleAirportFromStation(stationGroupId) {
+      if (!stationGroupId || !state.airportByIata?.size) return null;
+      const nearest = nearestAirportsFromStation(stationGroupId, 1)[0] || null;
+      if (!nearest || nearest.distanceMeters > V5_AIRPORT_ACCESS_RADIUS_METERS) return null;
+      return {
+        iata: nearest.feature.properties?.iata,
+        feature: nearest.feature,
+        distanceMeters: nearest.distanceMeters,
+      };
+    }
+
+    function flightDepartureMinute(flight) {
+      return hhmmToMinutes(flight?.departureTimeLocal || '00:00');
+    }
+
+    function flightArrivalMinute(flight) {
+      const departure = flightDepartureMinute(flight);
+      let arrival = hhmmToMinutes(flight?.arrivalTimeLocal || '00:00');
+      if (arrival < departure) arrival += 24 * 60;
+      return arrival;
+    }
+
+    function flightOperatesForGameDay(flight) {
+      const weekdays = flight?.serviceCalendar?.operatingWeekdays || [];
+      return !weekdays.length || weekdays.includes(V5_FLIGHT_SERVICE_WEEKDAY);
+    }
+
+    function flightDistanceKm(flight) {
+      const origin = airportCoordinate(flight?.originAirport);
+      const destination = airportCoordinate(flight?.destinationAirport);
+      const meters = coordinateDistanceMeters(origin, destination);
+      return Number.isFinite(meters) ? meters / 1000 : 0;
+    }
+
+    function resolveFlightFare(flight) {
+      const distanceKm = flightDistanceKm(flight);
+      const departureMinute = flightDepartureMinute(flight);
+      const hour = Math.floor((departureMinute % (24 * 60)) / 60);
+      const peak = (hour >= 7 && hour <= 9) || (hour >= 17 && hour <= 20);
+      const total = Math.ceil((V5_FLIGHT_BASE_FARE_YEN + distanceKm * V5_FLIGHT_DISTANCE_FARE_YEN_PER_KM + (peak ? V5_FLIGHT_PEAK_SURCHARGE_YEN : 0)) / 100) * 100;
+      return {
+        model_version: 'v5_flight_distance_time_formula_v1',
+        source: 'flight_distance_departure_time_formula',
+        currency: 'JPY',
+        distance_km: Number(distanceKm.toFixed(1)),
+        base_yen: V5_FLIGHT_BASE_FARE_YEN,
+        distance_yen: Math.ceil(distanceKm * V5_FLIGHT_DISTANCE_FARE_YEN_PER_KM / 100) * 100,
+        peak_surcharge_yen: peak ? V5_FLIGHT_PEAK_SURCHARGE_YEN : 0,
+        total_yen: total,
+        fare_known: true,
+      };
+    }
+
+    function flightRuleTimes(flight) {
+      const departureMinute = flightDepartureMinute(flight);
+      const arrivalMinute = flightArrivalMinute(flight);
+      return {
+        purchaseDeadlineMinute: departureMinute - V5_FLIGHT_PURCHASE_ADVANCE_MINUTES,
+        airportDeadlineMinute: departureMinute - V5_FLIGHT_AIRPORT_ARRIVAL_ADVANCE_MINUTES,
+        boardingStartMinute: departureMinute - V5_FLIGHT_BOARDING_ADVANCE_MINUTES,
+        departureMinute,
+        arrivalMinute,
+        cooldownEndMinute: arrivalMinute + V5_FLIGHT_ARRIVAL_COOLDOWN_MINUTES,
+      };
+    }
+
+    function flightCatchability(flight, preview) {
+      const currentStationGroupId = preview?.currentState?.stationGroupId;
+      const accessibleAirport = accessibleAirportFromStation(currentStationGroupId);
+      const times = flightRuleTimes(flight);
+      const reasons = [];
+      if (!flightOperatesForGameDay(flight)) reasons.push('not operating on game weekday');
+      if (!accessibleAirport || accessibleAirport.iata !== flight.originAirport) reasons.push(`must be at ${flight.originAirport}`);
+      if (preview.currentMinute > times.purchaseDeadlineMinute) reasons.push(`buy by ${minutesToHhmm(times.purchaseDeadlineMinute)}`);
+      if (preview.currentMinute > times.airportDeadlineMinute) reasons.push(`arrive airport by ${minutesToHhmm(times.airportDeadlineMinute)}`);
+      const destinationStation = nearestStationGroupForAirport(flight.destinationAirport);
+      if (!destinationStation?.stationGroupId) reasons.push(`no station near ${flight.destinationAirport}`);
+      return { ok: reasons.length === 0, reasons, accessibleAirport, destinationStation, times };
+    }
+
+    function availableFlightsFromAirport(iata, preview, limit = 48) {
+      return (state.flightsByOriginAirport.get(iata) || [])
+        .filter(flightOperatesForGameDay)
+        .filter((flight) => flightDepartureMinute(flight) >= preview.currentMinute)
+        .sort((a, b) => flightDepartureMinute(a) - flightDepartureMinute(b))
+        .slice(0, limit);
+    }
+
     function nearestAirportsFromStation(stationGroupId, limit = 10) {
       const origin = stationLonLat(stationGroupId);
       if (!origin || !state.airportByIata?.size) return [];
@@ -13400,14 +13707,38 @@
       const stationGroupId = preview?.currentState?.stationGroupId;
       return nearestAirportsFromStation(stationGroupId, 12).map(({ feature, distanceMeters }) => {
         const props = feature.properties || {};
+        const accessible = distanceMeters <= V5_AIRPORT_ACCESS_RADIUS_METERS;
         return `
           <button class="route-row" type="button" data-row-key="${escapeHtml(`airport:${props.iata}`)}" data-action="focus-airport" data-iata="${escapeHtml(props.iata)}">
             <span class="route-swatch" style="background:#0f766e"></span>
             <span>
               <span class="row-title">${escapeHtml(airportDisplayName(feature))}</span>
-              <span class="row-sub">${walkingDistanceLabel(distanceMeters)} from current station · ${props.flightCount || 0} flight endpoints</span>
+              <span class="row-sub">${walkingDistanceLabel(distanceMeters)} from current station · ${accessible ? 'airport usable now' : `need airport station within ${(V5_AIRPORT_ACCESS_RADIUS_METERS / 1000).toFixed(0)}km`} · ${props.flightCount || 0} endpoints</span>
             </span>
             <span class="row-meta">air</span>
+          </button>
+        `;
+      });
+    }
+
+    function flightRowsFromPreview(preview) {
+      const accessible = accessibleAirportFromStation(preview?.currentState?.stationGroupId);
+      if (!accessible?.iata) return [];
+      return availableFlightsFromAirport(accessible.iata, preview, 60).map((flight) => {
+        const catchability = flightCatchability(flight, preview);
+        const fare = resolveFlightFare(flight);
+        const disabled = catchability.ok ? '' : 'disabled';
+        const reason = catchability.ok
+          ? `arrive ${flight.destinationAirport} ${flight.arrivalTimeLocal} · cooldown to ${minutesToHhmm(catchability.times.cooldownEndMinute)}`
+          : catchability.reasons.join(' · ');
+        return `
+          <button class="route-row" type="button" data-row-key="${escapeHtml(`flight:${flight.physicalFlightId}`)}" data-action="choose-flight" data-flight-id="${escapeHtml(flight.physicalFlightId)}" ${disabled}>
+            <span class="route-swatch" style="background:#2563eb"></span>
+            <span>
+              <span class="row-title">${escapeHtml(flightDisplayLabel(flight))}</span>
+              <span class="row-sub">${escapeHtml(flight.operatingCarrierName || flight.operatingCarrier || '')} · buy by ${minutesToHhmm(catchability.times.purchaseDeadlineMinute)} · airport by ${minutesToHhmm(catchability.times.airportDeadlineMinute)} · ${reason}</span>
+            </span>
+            <span class="row-meta">¥${fare.total_yen.toLocaleString('ja-JP')}</span>
           </button>
         `;
       });
@@ -13572,6 +13903,7 @@
           if (action === 'choose-route') choosePlanningRoute(button.dataset.routeId);
           else if (action === 'walk-to-station') addWalkingStep(button.dataset.stationGroupId);
           else if (action === 'focus-airport') focusAirportOnMap(button.dataset.iata);
+          else if (action === 'choose-flight') addFlightStep(button.dataset.flightId);
           else if (action === 'choose-mode') choosePlanningMode(button.dataset.mode);
           else if (action === 'choose-coupled') chooseCoupledTrain(button.dataset.coupledKey);
           else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
@@ -13632,6 +13964,10 @@
         ? formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })
         : preview.currentState.kind === 'WALK'
           ? `${displayNameForGroup(preview.currentState.fromStationGroupId)} -> ${displayNameForGroup(preview.currentState.toStationGroupId)}`
+        : preview.currentState.kind === 'FLIGHT'
+          ? flightDisplayLabel(state.flightById.get(preview.currentState.flightId))
+        : preview.currentState.airportIata
+          ? airportName(preview.currentState.airportIata)
         : displayNameForGroup(preview.currentState.stationGroupId);
 
       let html = '';
@@ -13680,6 +14016,13 @@
           currentLabel,
           `<div class="empty" data-row-key="empty:walking-now">Arrive at the next station before planning another leg.</div>`,
         );
+      } else if (['AIRPORT_WAIT', 'BOARDING', 'FLIGHT', 'ARRIVAL_COOLDOWN'].includes(preview.currentState.kind)) {
+        html += plannerStep(
+          '1/3',
+          preview.currentState.kind === 'FLIGHT' ? 'In flight' : 'Airport state',
+          currentLabel,
+          `<div class="empty" data-row-key="empty:flight-now">Finish this flight state before planning another leg.</div>`,
+        );
       } else {
         const planningRouteId = state.planningRouteIds[state.activeMode] || null;
         let routeChoices = [];
@@ -13707,16 +14050,18 @@
               <span class="row-meta">walk</span>
             </button>
           `);
-          const flightRows = flightAirportRowsFromPreview(preview);
+          const flightRows = flightRowsFromPreview(preview);
+          const airportRows = flightAirportRowsFromPreview(preview);
+          const accessibleAirport = accessibleAirportFromStation(preview.currentState.stationGroupId);
           const stepTitle = planningMode === 'walk'
             ? `Walking from ${currentLabel}`
             : planningMode === 'flight'
-              ? `Airports near ${currentLabel}`
+              ? (accessibleAirport ? `Flights from ${accessibleAirport.iata}` : `Airports near ${currentLabel}`)
               : `Lines at ${currentLabel}`;
           const stepSub = planningMode === 'walk'
             ? `Walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km`
             : planningMode === 'flight'
-              ? 'Domestic flight map · ticket rules next'
+              ? `buy ${V5_FLIGHT_PURCHASE_ADVANCE_MINUTES}m ahead · airport ${V5_FLIGHT_AIRPORT_ARRIVAL_ADVANCE_MINUTES}m ahead · boarding ${V5_FLIGHT_BOARDING_ADVANCE_MINUTES}m ahead`
               : `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))}`;
           html += plannerStep(
             '1/3',
@@ -13730,7 +14075,9 @@
                 : planningMode === 'flight'
                   ? (flightRows.length
                     ? flightRows.join('')
-                    : `<div class="empty" data-row-key="empty:flight">No airport coordinates available near this station.</div>`)
+                    : (airportRows.length
+                      ? airportRows.join('')
+                      : `<div class="empty" data-row-key="empty:flight">No airport coordinates available near this station.</div>`))
                 : (routeChoices.length
                   ? routeChoices.map((choice) => `
                   <button class="route-row" type="button" data-row-key="${escapeHtml(`route:${choice.routeId}`)}" data-action="choose-route" data-route-id="${choice.routeId}">
@@ -13808,6 +14155,25 @@
             editable: false,
           });
           chainStation = step.station_id;
+          pendingTrip = null;
+          pendingBoardStop = null;
+          legIndex += 1;
+        } else if (step.type === 'TAKE_FLIGHT') {
+          const flight = state.flightById.get(step.flight_id);
+          const times = flight ? flightRuleTimes(flight) : null;
+          const fare = step.fare || (flight ? resolveFlightFare(flight) : null);
+          const destinationStation = flight ? nearestStationGroupForAirport(flight.destinationAirport) : null;
+          rows.push({
+            time: `LEG ${legIndex}`,
+            title: `${flight ? flightDisplayLabel(flight) : step.flight_number || 'Flight'}: ${flight?.originAirport || step.origin_airport} -> ${flight?.destinationAirport || step.destination_airport}`,
+            sub: times
+              ? `buy ${minutesToHhmm(currentMinute)} · depart ${minutesToHhmm(times.departureMinute)} · arrive ${minutesToHhmm(times.arrivalMinute)} · cooldown ${minutesToHhmm(times.cooldownEndMinute)} · ¥${(fare?.total_yen ?? 0).toLocaleString('ja-JP')}`
+              : `${step.departure_hhmm || '--:--'} -> ${step.arrival_hhmm || '--:--'}`,
+            routeId: null,
+            editable: false,
+          });
+          if (times) currentMinute = times.cooldownEndMinute;
+          if (destinationStation?.stationGroupId) chainStation = destinationStation.stationGroupId;
           pendingTrip = null;
           pendingBoardStop = null;
           legIndex += 1;
@@ -13992,7 +14358,9 @@
       if (state.liveCapture) {
         resultCardEl.textContent = state.liveCapture.type === 'same_node'
           ? `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_node\nStation: ${displayNameForGroup(state.liveCapture.station_group_id)}`
-          : `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_train\nTrip: ${formatTripLabel(state.tripById.get(state.liveCapture.trip_id) || { serviceName: state.liveCapture.trip_id })}`;
+          : state.liveCapture.type === 'same_airport'
+            ? `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_airport\nAirport: ${airportName(state.liveCapture.airport_iata)}`
+            : `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_train\nTrip: ${formatTripLabel(state.tripById.get(state.liveCapture.trip_id) || { serviceName: state.liveCapture.trip_id })}`;
       } else if (!state.latestResult) {
         resultCardEl.textContent = '';
       }
@@ -14028,7 +14396,7 @@
       if (['SCENARIO_START', 'SCENARIO_END'].includes(eventType)) return 'LIFECYCLE';
       if (eventType === 'CAPTURE') return 'RESOLUTION';
       if (['START_AT_STATION', 'WAIT_UNTIL'].includes(eventType)) return 'POSITION';
-      if (['BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION'].includes(eventType)) return 'MOVEMENT';
+      if (['BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'BUY_FLIGHT_TICKET', 'BOARD_FLIGHT', 'DEPART_FLIGHT', 'ARRIVE_FLIGHT', 'EXIT_AIRPORT'].includes(eventType)) return 'MOVEMENT';
       return 'GENERIC';
     }
 
@@ -14046,7 +14414,21 @@
     }
 
     function eventPriority(eventType) {
-      return { SCENARIO_START: 0, START_AT_STATION: 1, WAIT_UNTIL: 2, WALK_TO_STATION: 3, BOARD_TRAIN: 4, ALIGHT_TRAIN: 5, CAPTURE: 6, SCENARIO_END: 7 }[eventType] ?? 99;
+      return {
+        SCENARIO_START: 0,
+        START_AT_STATION: 1,
+        WAIT_UNTIL: 2,
+        WALK_TO_STATION: 3,
+        BUY_FLIGHT_TICKET: 4,
+        BOARD_TRAIN: 5,
+        BOARD_FLIGHT: 6,
+        DEPART_FLIGHT: 7,
+        ALIGHT_TRAIN: 8,
+        ARRIVE_FLIGHT: 9,
+        EXIT_AIRPORT: 10,
+        CAPTURE: 11,
+        SCENARIO_END: 12,
+      }[eventType] ?? 99;
     }
 
     function expandPlayerPlan(playerId, playerData, scenario) {
@@ -14118,6 +14500,82 @@
           currentBoardStop = null;
           currentBoardPhysicalStationId = null;
           resolvedActions.push({ step_index: i + 1, ...action, distance_meters: edge.distanceMeters, walk_time_sec: walkTimeSec, walking_speed_mps: walkingSpeed, fare: leg.fare });
+          continue;
+        }
+        if (action.type === 'TAKE_FLIGHT') {
+          if (!currentStationId) throw new Error(`${playerId} cannot buy a flight while not at a station`);
+          const flight = state.flightById.get(action.flight_id);
+          if (!flight) throw new Error(`Unknown flight ${action.flight_id}`);
+          const preview = { currentState: { kind: 'NODE', stationGroupId: currentStationId }, currentMinute };
+          const catchability = flightCatchability(flight, preview);
+          if (!catchability.ok) throw new Error(`${playerId} cannot take ${flightDisplayLabel(flight)}: ${catchability.reasons.join(', ')}`);
+          const times = catchability.times;
+          const fare = action.fare || resolveFlightFare(flight);
+          const arrivalStationId = catchability.destinationStation.stationGroupId;
+          const leg = {
+            leg_index: legs.length + 1,
+            step_index: i + 1,
+            mode: 'flight',
+            flight_id: flight.physicalFlightId,
+            flight_number: flightOperatingNumber(flight),
+            carrier: flight.operatingCarrierName || flight.operatingCarrier || null,
+            origin_airport: flight.originAirport,
+            destination_airport: flight.destinationAirport,
+            from_station_id: currentStationId,
+            from_label: displayNameForGroup(currentStationId),
+            to_station_id: arrivalStationId,
+            to_label: displayNameForGroup(arrivalStationId),
+            purchase_hhmm: minutesToHhmm(currentMinute),
+            airport_deadline_hhmm: minutesToHhmm(times.airportDeadlineMinute),
+            boarding_hhmm: minutesToHhmm(times.boardingStartMinute),
+            depart_hhmm: minutesToHhmm(times.departureMinute),
+            arrive_hhmm: minutesToHhmm(times.arrivalMinute),
+            cooldown_end_hhmm: minutesToHhmm(times.cooldownEndMinute),
+            fare,
+          };
+          legs.push(leg);
+          events.push(formatEvent(currentMinute, 'BUY_FLIGHT_TICKET', playerId, {
+            flight_id: flight.physicalFlightId,
+            flight_number: flightOperatingNumber(flight),
+            origin_airport: flight.originAirport,
+            destination_airport: flight.destinationAirport,
+            departure_hhmm: minutesToHhmm(times.departureMinute),
+            arrival_hhmm: minutesToHhmm(times.arrivalMinute),
+            revealed_to_opponent: true,
+            carrier_after: { kind: 'AIRPORT_WAIT', airportIata: flight.originAirport, flightId: flight.physicalFlightId },
+          }));
+          events.push(formatEvent(times.boardingStartMinute, 'BOARD_FLIGHT', playerId, {
+            flight_id: flight.physicalFlightId,
+            airport_iata: flight.originAirport,
+            carrier_after: { kind: 'BOARDING', airportIata: flight.originAirport, flightId: flight.physicalFlightId },
+          }));
+          events.push(formatEvent(times.departureMinute, 'DEPART_FLIGHT', playerId, {
+            flight_id: flight.physicalFlightId,
+            origin_airport: flight.originAirport,
+            destination_airport: flight.destinationAirport,
+            carrier_after: { kind: 'FLIGHT', flightId: flight.physicalFlightId, originAirport: flight.originAirport, destinationAirport: flight.destinationAirport },
+          }));
+          events.push(formatEvent(times.arrivalMinute, 'ARRIVE_FLIGHT', playerId, {
+            flight_id: flight.physicalFlightId,
+            airport_iata: flight.destinationAirport,
+            fare,
+            fare_total_yen: fare.total_yen,
+            carrier_after: { kind: 'ARRIVAL_COOLDOWN', airportIata: flight.destinationAirport, flightId: flight.physicalFlightId },
+          }));
+          events.push(formatEvent(times.cooldownEndMinute, 'EXIT_AIRPORT', playerId, {
+            flight_id: flight.physicalFlightId,
+            station_group_id: arrivalStationId,
+            airport_iata: flight.destinationAirport,
+            carrier_after: { kind: 'NODE', stationGroupId: arrivalStationId, physicalStationId: null },
+          }));
+          currentMinute = times.cooldownEndMinute;
+          currentStationId = arrivalStationId;
+          currentStationPhysicalId = null;
+          currentStationTrip = null;
+          currentTrip = null;
+          currentBoardStop = null;
+          currentBoardPhysicalStationId = null;
+          resolvedActions.push({ step_index: i + 1, ...action, fare, arrival_station_id: arrivalStationId });
           continue;
         }
         if (action.type === 'BOARD_TRAIN') {
@@ -14217,6 +14675,11 @@
       if (!event.player_id) return;
       if (event.type === 'START_AT_STATION' || event.type === 'ALIGHT_TRAIN' || event.type === 'WALK_TO_STATION') carrierState[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
       else if (event.type === 'BOARD_TRAIN') carrierState[event.player_id] = { kind: 'TRAIN', tripId: event.trip_id };
+      else if (event.type === 'BUY_FLIGHT_TICKET') carrierState[event.player_id] = { kind: 'AIRPORT_WAIT', airportIata: event.origin_airport, flightId: event.flight_id };
+      else if (event.type === 'BOARD_FLIGHT') carrierState[event.player_id] = { kind: 'BOARDING', airportIata: event.airport_iata, flightId: event.flight_id };
+      else if (event.type === 'DEPART_FLIGHT') carrierState[event.player_id] = { kind: 'FLIGHT', flightId: event.flight_id, originAirport: event.origin_airport, destinationAirport: event.destination_airport };
+      else if (event.type === 'ARRIVE_FLIGHT') carrierState[event.player_id] = { kind: 'ARRIVAL_COOLDOWN', airportIata: event.airport_iata, flightId: event.flight_id };
+      else if (event.type === 'EXIT_AIRPORT') carrierState[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
     }
 
     function allowsSameNodeCapture(event, minuteEvents) {
@@ -14228,7 +14691,7 @@
     }
 
     function detectCaptureAfterEvent(event, carrierState, minuteEvents) {
-      if (!['SCENARIO_START', 'START_AT_STATION', 'BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION'].includes(event.type)) return null;
+      if (!['SCENARIO_START', 'START_AT_STATION', 'BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'BUY_FLIGHT_TICKET', 'BOARD_FLIGHT', 'ARRIVE_FLIGHT', 'EXIT_AIRPORT'].includes(event.type)) return null;
       const runnerState = carrierState.runner;
       const hunterState = carrierState.hunter;
       if (
@@ -14241,6 +14704,15 @@
       if (runnerState.kind === 'NODE' && hunterState.kind === 'NODE' && runnerState.stationGroupId === hunterState.stationGroupId) {
         if (!allowsSameNodeCapture(event, minuteEvents || [event])) return null;
         return { type: 'same_node', station_group_id: runnerState.stationGroupId };
+      }
+      if (
+        runnerState.airportIata &&
+        hunterState.airportIata &&
+        runnerState.airportIata === hunterState.airportIata &&
+        runnerState.kind !== 'FLIGHT' &&
+        hunterState.kind !== 'FLIGHT'
+      ) {
+        return { type: 'same_airport', airport_iata: runnerState.airportIata };
       }
       return null;
     }
@@ -14355,6 +14827,8 @@
       if (!carrier) return 'unknown';
       if (carrier.kind === 'NODE') return displayNameForGroup(carrier.stationGroupId);
       if (carrier.kind === 'TRAIN') return formatTripLabel(state.tripById.get(carrier.tripId) || { serviceName: carrier.tripId });
+      if (carrier.kind === 'FLIGHT') return flightDisplayLabel(state.flightById.get(carrier.flightId));
+      if (carrier.airportIata) return airportName(carrier.airportIata);
       return carrier.kind || 'unknown';
     }
 
@@ -14410,6 +14884,8 @@
           trigger_player_id: event.trigger_player_id,
           station_group_id: event.station_group_id,
           station_label: event.station_group_id ? displayNameForGroup(event.station_group_id) : null,
+          airport_iata: event.airport_iata,
+          airport_label: event.airport_iata ? airportName(event.airport_iata) : null,
           trip_id: event.trip_id,
           trip_label: event.trip_id ? formatTripLabel(state.tripById.get(event.trip_id) || { serviceName: event.trip_id }) : null,
           state_snapshot: cloneJson(event.state_snapshot || event.state_after || {}, {}),
@@ -14422,6 +14898,8 @@
           capture_type: capture.type,
           station_group_id: capture.station_group_id,
           station_label: capture.station_group_id ? displayNameForGroup(capture.station_group_id) : null,
+          airport_iata: capture.airport_iata,
+          airport_label: capture.airport_iata ? airportName(capture.airport_iata) : null,
           trip_id: capture.trip_id,
           trip_label: capture.trip_id ? formatTripLabel(state.tripById.get(capture.trip_id) || { serviceName: capture.trip_id }) : null,
           state_snapshot: {},
@@ -14632,6 +15110,7 @@
       if (!capture) return 'No capture.';
       if (capture.type === 'same_node') return `same_node at ${displayNameForGroup(capture.station_group_id)} ${capture.time_hhmm}`;
       if (capture.type === 'same_train') return `same_train on ${formatTripLabel(state.tripById.get(capture.trip_id) || { serviceName: capture.trip_id })} ${capture.time_hhmm}`;
+      if (capture.type === 'same_airport') return `same_airport at ${airportName(capture.airport_iata)} ${capture.time_hhmm}`;
       return `${capture.type || 'capture'} ${capture.time_hhmm || ''}`.trim();
     }
 
@@ -14710,6 +15189,9 @@
       const parts = [event.time_hhmm, event.type];
       if (event.player_id) parts.push(event.player_id);
       if (event.station_group_id) parts.push(displayNameForGroup(event.station_group_id));
+      if (event.airport_iata) parts.push(airportName(event.airport_iata));
+      if (event.origin_airport && event.destination_airport) parts.push(`${event.origin_airport}->${event.destination_airport}`);
+      if (event.flight_id) parts.push(flightDisplayLabel(state.flightById.get(event.flight_id)));
       if (event.trip_id) parts.push(formatTripLabel(state.tripById.get(event.trip_id) || { serviceName: event.trip_id }));
       if (event.capture_type) parts.push(event.capture_type);
       return parts.join('  ');
@@ -14740,11 +15222,14 @@
       const lines = [`Time: ${event.time_hhmm}`, `Type: ${event.type}`];
       if (event.player_id) lines.push(`Player: ${event.player_id}`);
       if (event.station_group_id) lines.push(`Station: ${displayNameForGroup(event.station_group_id)}`);
+      if (event.airport_iata) lines.push(`Airport: ${airportName(event.airport_iata)}`);
+      if (event.origin_airport && event.destination_airport) lines.push(`Flight route: ${event.origin_airport} -> ${event.destination_airport}`);
+      if (event.flight_id) lines.push(`Flight: ${flightDisplayLabel(state.flightById.get(event.flight_id))}`);
       if (event.trip_id) lines.push(`Trip: ${formatTripLabel(state.tripById.get(event.trip_id) || { serviceName: event.trip_id })}`);
       if (event.capture_type) lines.push(`Capture: ${event.capture_type}`);
       if (event.state_after) {
-        lines.push('', `Runner after: ${event.state_after.runner.kind === 'NODE' ? displayNameForGroup(event.state_after.runner.stationGroupId) : event.state_after.runner.tripId}`);
-        lines.push(`Hunter after: ${event.state_after.hunter.kind === 'NODE' ? displayNameForGroup(event.state_after.hunter.stationGroupId) : event.state_after.hunter.tripId}`);
+        lines.push('', `Runner after: ${carrierReplayLabel(event.state_after.runner)}`);
+        lines.push(`Hunter after: ${carrierReplayLabel(event.state_after.hunter)}`);
       }
       resultCardEl.innerHTML = `<pre>${lines.join('\n')}</pre>`;
     }
@@ -14760,6 +15245,7 @@
         lines.push(`Hunter fare: ${formatFareYen(result.players?.hunter?.fare_summary?.total_yen)}`);
         if (!capture) lines.push('Capture: none');
         else if (capture.type === 'same_node') lines.push(`Capture: same_node at ${displayNameForGroup(capture.station_group_id)} ${capture.time_hhmm}`);
+        else if (capture.type === 'same_airport') lines.push(`Capture: same_airport at ${airportName(capture.airport_iata)} ${capture.time_hhmm}`);
         else lines.push(`Capture: same_train on ${formatTripLabel(state.tripById.get(capture.trip_id) || { serviceName: capture.trip_id })} ${capture.time_hhmm}`);
         resultCardEl.innerHTML = `<pre>SIMULATION\n\n${lines.join('\n')}</pre>`;
       } catch (error) {
@@ -15718,6 +16204,7 @@
       buildIndexes(bundle);
       await loadWalkingGraph();
       await loadFlightMap();
+      await loadFlightTimetable();
       buildStationTransferIndex();
       const runnerStart = bundle.metadata?.defaultRunnerStartStationId || 'SG_TOKYO';
       const hunterStart = bundle.metadata?.defaultHunterStartStationId || 'SG_SHINJUKU';
