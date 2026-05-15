@@ -14,7 +14,7 @@ import json
 import re
 import subprocess
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable
 
@@ -29,6 +29,8 @@ ANA_SOURCE_REF = {
     "period": "2026-07-01/2026-10-24",
     "sourceDate": "2026-03-30",
 }
+ANA_SERVICE_START = date(2026, 7, 1)
+ANA_SERVICE_END = date(2026, 10, 24)
 
 OPERATOR_NAMES = {
     "ANA": "All Nippon Airways",
@@ -200,6 +202,7 @@ class PhysicalFlight:
         return "flight.jp.dom." + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16]
 
     def to_json(self) -> dict:
+        service_calendar = service_calendar_for_note(self.calendar_note)
         return {
             "physicalFlightId": self.physical_id(),
             "mode": "flight",
@@ -212,6 +215,7 @@ class PhysicalFlight:
             "departureTimeLocal": self.departure_time_local,
             "arrivalTimeLocal": self.arrival_time_local,
             "calendarNote": self.calendar_note or None,
+            "serviceCalendar": service_calendar,
             "sourceRefs": [ANA_SOURCE_REF["id"]],
             "dedupeConfidence": self.dedupe_confidence,
         }
@@ -291,6 +295,9 @@ def parse_ana_layout_text(text: str) -> tuple[list[ParsedRow], set[str]]:
             # pdftotext can leak the right-column flight into the note capture.
             # Keep true calendar notes, but discard adjacent-column flight text.
             note = re.split(r"\s+[A-Z]{2}\d{3,4}\s+", f" {note} ", maxsplit=1)[0].strip()
+            note = note.split("。", 1)[0] + ("。" if "。" in note else "")
+            if note and "運航" not in note and "運休" not in note:
+                note = ""
             row = ParsedRow(
                 marketing_flight=flight,
                 origin_name=origin,
@@ -342,11 +349,88 @@ def merge_physical_flights(rows: Iterable[ParsedRow]) -> list[PhysicalFlight]:
     )
 
 
+def daterange(start: date, end: date) -> Iterable[date]:
+    current = start
+    while current <= end:
+        yield current
+        current += timedelta(days=1)
+
+
+def all_service_dates() -> list[date]:
+    return list(daterange(ANA_SERVICE_START, ANA_SERVICE_END))
+
+
+def parse_month_day_calendar(note: str) -> tuple[list[date], str, str | None]:
+    """Parse ANA date notes such as `7/1-31,8/7-16運航。`."""
+
+    clean = (note or "").strip()
+    if not clean:
+        return all_service_dates(), "default_all_period", None
+    if "運休" in clean:
+        return all_service_dates(), "unparsed", f"unsupported suspension note: {clean}"
+    if "運航" not in clean:
+        return all_service_dates(), "unparsed", f"unsupported note: {clean}"
+
+    body = clean.split("運航", 1)[0].rstrip("。")
+    dates: set[date] = set()
+    current_month: int | None = None
+    for token in [piece.strip() for piece in body.split(",") if piece.strip()]:
+        month_match = re.fullmatch(r"(?P<month>\d{1,2})/(?P<rest>\d{1,2}(?:-\d{1,2})?)", token)
+        day_match = re.fullmatch(r"(?P<rest>\d{1,2}(?:-\d{1,2})?)", token)
+        if month_match:
+            current_month = int(month_match.group("month"))
+            rest = month_match.group("rest")
+        elif day_match and current_month is not None:
+            rest = day_match.group("rest")
+        else:
+            return all_service_dates(), "unparsed", f"unsupported date token `{token}` in `{clean}`"
+
+        if "-" in rest:
+            start_day, end_day = [int(value) for value in rest.split("-", 1)]
+        else:
+            start_day = end_day = int(rest)
+        if current_month is None:
+            return all_service_dates(), "unparsed", f"missing month in `{clean}`"
+        for day in range(start_day, end_day + 1):
+            try:
+                service_date = date(ANA_SERVICE_START.year, current_month, day)
+            except ValueError as exc:
+                return all_service_dates(), "unparsed", f"invalid date in `{clean}`: {exc}"
+            if ANA_SERVICE_START <= service_date <= ANA_SERVICE_END:
+                dates.add(service_date)
+
+    if not dates:
+        return all_service_dates(), "unparsed", f"empty parsed date set for `{clean}`"
+    return sorted(dates), "parsed_date_note", None
+
+
+def service_calendar_for_note(note: str) -> dict:
+    dates, status, error = parse_month_day_calendar(note)
+    weekdays = sorted({day.isoweekday() for day in dates})
+    weekday_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    return {
+        "servicePeriod": {
+            "start": ANA_SERVICE_START.isoformat(),
+            "end": ANA_SERVICE_END.isoformat(),
+        },
+        "operatingDates": [day.isoformat() for day in dates],
+        "operatingWeekdays": weekdays,
+        "operatingWeekdayNames": [weekday_names[index - 1] for index in weekdays],
+        "calendarParseStatus": status,
+        "calendarParseError": error,
+    }
+
+
 def collect_ana(pdf_path: Path) -> dict:
     text = run_pdftotext(pdf_path)
     parsed_rows, unknown_airports = parse_ana_layout_text(text)
     physical_flights = merge_physical_flights(parsed_rows)
     codeshare_candidates = sum(1 for row in parsed_rows if row.is_codeshare_candidate)
+    flights = [flight.to_json() for flight in physical_flights]
+    calendar_status_counts: dict[str, int] = {}
+    for flight in flights:
+        status = flight["serviceCalendar"]["calendarParseStatus"]
+        calendar_status_counts[status] = calendar_status_counts.get(status, 0) + 1
     return {
         "schemaVersion": 1,
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -368,8 +452,9 @@ def collect_ana(pdf_path: Path) -> dict:
             "physicalFlightCount": len(physical_flights),
             "codeshareCandidateRows": codeshare_candidates,
             "unknownAirportNames": sorted(unknown_airports),
+            "calendarStatusCounts": dict(sorted(calendar_status_counts.items())),
         },
-        "flights": [flight.to_json() for flight in physical_flights],
+        "flights": flights,
     }
 
 

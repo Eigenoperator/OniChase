@@ -43,10 +43,29 @@ Fields:
 - `departureTimeLocal`
 - `arrivalTimeLocal`
 - `calendarNote`
+- `serviceCalendar`
 - `sourceRefs`
 - `dedupeConfidence`
 
 `marketingFlights` is an array because one physical flight may be sold under multiple airline codes.
+
+## Service Calendar
+
+Every flight record must carry an explicit machine-readable service calendar.
+
+Fields:
+
+- `servicePeriod.start`
+- `servicePeriod.end`
+- `operatingDates`
+- `operatingWeekdays`
+- `operatingWeekdayNames`
+- `calendarParseStatus`
+- `calendarParseError`
+
+`operatingWeekdays` uses ISO weekday numbers: Monday is `1`, Sunday is `7`.
+
+If an official timetable gives date ranges such as `7/1-31,8/7-16運航`, the collector expands them into exact operating dates and derives weekdays from those dates. If a collector cannot parse a source calendar note, it must mark the record as `unparsed`; it must not silently guess weekday service.
 
 ## Codeshare Rule
 
@@ -69,4 +88,3 @@ Official or operator-published sources are preferred.
 - Independent carriers and airport official timetables are source candidates when their own flight numbers are needed for dedupe.
 
 Aggregator-derived data must not overwrite official data without an overlap audit.
-
