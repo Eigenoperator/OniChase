@@ -13810,6 +13810,13 @@
       return ticket?.flight_id && state.flightById.has(ticket.flight_id) ? ticket : null;
     }
 
+    function isFlightTicketPlanned(ticket, playerId = state.activeMode, stepsOverride = null) {
+      if (!ticket?.flight_id) return false;
+      return (stepsOverride || state.players?.[playerId]?.steps || []).some((step) =>
+        step.type === 'TAKE_FLIGHT' && step.flight_id === ticket.flight_id
+      );
+    }
+
     function flightDestinationAirportsFromOrigin(originIata, preview, limit = 80) {
       const byDestination = new Map();
       (state.flightsByOriginAirport.get(originIata) || [])
@@ -13947,7 +13954,9 @@
 
     function flightTicketRowsFromPreview(preview) {
       const ticket = activeFlightTicket();
-      if (!ticket) return [];
+      const plannedSteps = state.players?.[state.activeMode]?.steps || [];
+      const previewSteps = preview?.resolvedSteps || [];
+      if (!ticket || isFlightTicketPlanned(ticket, state.activeMode, plannedSteps) || isFlightTicketPlanned(ticket, state.activeMode, previewSteps)) return [];
       const flight = state.flightById.get(ticket.flight_id);
       const board = flightCatchability(flight, preview);
       const disabled = board.ok ? '' : 'disabled';
@@ -14401,7 +14410,7 @@
       let pendingBoardStop = null;
       let legIndex = 1;
       const rows = [];
-      if (ticket) {
+      if (ticket && !isFlightTicketPlanned(ticket)) {
         const flight = state.flightById.get(ticket.flight_id);
         rows.push({
           time: 'TICKET',
