@@ -7,6 +7,7 @@ Current focus:
 - keep `v2` nationwide Shinkansen online playtest healthy
 - stabilize `v3` Tokyo MapLibre gameplay on real physical geometry and real timetable bundles
 - bring `v4` nationwide real physical railway data into the shared MapLibre gameplay shell
+- grow `v5` from the v4 shell into multimodal gameplay with walking transfers and domestic flight layers
 - audit planner-facing departure correctness, through-running boundaries, and data identity
 - keep single-player and multiplayer on the same gameplay loop
 
@@ -19,6 +20,12 @@ The GitHub Pages site currently exposes only the active public playtest pages:
 - `v2` GIS Shinkansen client: `https://eigenoperator.github.io/OniChase/v2.html`
 - `v3` Tokyo network map: `https://eigenoperator.github.io/OniChase/v3.html`
 - `v4` Japan nationwide gameplay: `https://eigenoperator.github.io/OniChase/v4.html`
+- `v5` multimodal Japan gameplay shell: `https://eigenoperator.github.io/OniChase/v5.html`
+
+Version focus:
+
+- `v4` is the stable nationwide railway gameplay build.
+- `v5` is the active multimodal build based on v4. It currently keeps the railway gameplay shell, adds walking-transfer planning, and adds a domestic plane map layer with airport nodes and aggregated flight routes.
 
 Browser source pages:
 
@@ -27,6 +34,7 @@ Browser source pages:
 - `v3` local mirror: [ui/v3_maplibre.html](/home/xincheng/toy/Chase/ui/v3_maplibre.html)
 - `v3` public/source-of-truth page: [docs/v3.html](/home/xincheng/toy/Chase/docs/v3.html)
 - `v4` public nationwide gameplay page: [docs/v4.html](/home/xincheng/toy/Chase/docs/v4.html)
+- `v5` public multimodal gameplay page: [docs/v5.html](/home/xincheng/toy/Chase/docs/v5.html)
 - landing page output: [docs/index.html](/home/xincheng/toy/Chase/docs/index.html)
 - Pages workflow: [.github/workflows/deploy-pages.yml](/home/xincheng/toy/Chase/.github/workflows/deploy-pages.yml)
 
@@ -71,6 +79,7 @@ Key entry points:
 - `docs/v2.html`
 - `docs/v3.html`
 - `docs/v4.html`
+- `docs/v5.html`
 
 Workspace layout:
 
