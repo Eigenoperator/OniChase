@@ -33,6 +33,12 @@ IBEX_SOURCE = ROOT / "data/v5_flight_source_cache/ibex_timetable_20260329_202610
 IBEX_OUTPUT = ROOT / "data/v5_domestic_flights_ibex_20260329_20261024.json"
 TOKI_SOURCE = ROOT / "data/v5_flight_source_cache/toki_schedules_20260329_20260831.html"
 TOKI_OUTPUT = ROOT / "data/v5_domestic_flights_toki_20260329_20260831.json"
+FDA_SOURCE_DIR = ROOT / "data/v5_flight_source_cache/fda_routes"
+FDA_OUTPUT = ROOT / "data/v5_domestic_flights_fda_20260329_20261024.json"
+JETSTAR_SOURCE = ROOT / "data/v5_flight_source_cache/jetstar_gk_timetable_26nsdom.pdf"
+JETSTAR_OUTPUT = ROOT / "data/v5_domestic_flights_jetstar_20260329_20261024.json"
+SPRING_SOURCE = ROOT / "data/v5_flight_source_cache/spring_ij_domestic_20260329_20261024.pdf"
+SPRING_OUTPUT = ROOT / "data/v5_domestic_flights_spring_20260329_20261024.json"
 
 ANA_SOURCE_REF = {
     "id": "ana-domestic-timetable-pdf-20260701-20261024",
@@ -86,6 +92,33 @@ TOKI_SOURCE_REF = {
     "sourceDate": None,
 }
 
+FDA_SOURCE_REF = {
+    "id": "fda-timetable-web-20260329-20261024",
+    "url": "https://www.fujidream.co.jp/en/timetable/",
+    "period": "2026-03-29/2026-10-24",
+    "sourceDate": None,
+}
+FDA_SERVICE_START = date(2026, 3, 29)
+FDA_SERVICE_END = date(2026, 10, 24)
+
+JETSTAR_SOURCE_REF = {
+    "id": "jetstar-japan-domestic-timetable-pdf-20260329-20261024",
+    "url": "https://files.jetstar.com/api/public/content/gk_timetable_26nsdom",
+    "period": "2026-03-29/2026-10-24",
+    "sourceDate": "2026-03-26",
+}
+JETSTAR_SERVICE_START = date(2026, 3, 29)
+JETSTAR_SERVICE_END = date(2026, 10, 24)
+
+SPRING_SOURCE_REF = {
+    "id": "spring-japan-domestic-timetable-pdf-20260329-20261024",
+    "url": "https://ajax.springairlines.com/style/site/img/home/0513UP_%E3%82%B9%E3%83%97%E3%83%AA%E3%83%B3%E3%82%B0%E3%83%BB%E3%82%B8%E3%83%A3%E3%83%91%E3%83%B3%202026%E5%B9%B4%E5%A4%8F%E3%83%80%E3%82%A4%E3%83%A4%20%E5%9B%BD%E5%86%85%E7%B7%9A%E3%83%95%E3%83%A9%E3%82%A4%E3%83%88%E3%82%B9%E3%82%B1%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB%EF%BC%8820260329-20261024%EF%BC%89%20(1).pdf",
+    "period": "2026-03-29/2026-10-24",
+    "sourceDate": "2026-05-13",
+}
+SPRING_SERVICE_START = date(2026, 3, 29)
+SPRING_SERVICE_END = date(2026, 10, 24)
+
 OPERATOR_NAMES = {
     "ANA": "All Nippon Airways",
     "AKX": "ANA Wings",
@@ -98,6 +131,10 @@ OPERATOR_NAMES = {
     "JAC": "Japan Air Commuter",
     "AMX": "Amakusa Airlines",
     "SKY": "Skymark Airlines",
+    "FDA": "Fuji Dream Airlines",
+    "TOK": "Toki Air",
+    "JJP": "Jetstar Japan",
+    "SJO": "Spring Japan",
 }
 
 MARKETING_PREFIX_TO_OPERATOR = {
@@ -109,21 +146,31 @@ AIRPORT_IATA = {
     "東京(羽田)": "HND",
     "羽田": "HND",
     "東京（成田）": "NRT",
+    "東京／成田": "NRT",
+    "東京/成田": "NRT",
     "成田": "NRT",
     "大阪（伊丹）": "ITM",
     "大阪（関西）": "KIX",
+    "大阪／関西": "KIX",
     "大阪（神戸）": "UKB",
     "神戸": "UKB",
     "札幌（新千歳）": "CTS",
+    "札幌(新千歳)": "CTS",
+    "札幌／新千歳": "CTS",
     "新千歳": "CTS",
     "札幌（丘珠）": "OKD",
+    "札幌(丘珠)": "OKD",
     "丘珠": "OKD",
     "名古屋（中部）": "NGO",
+    "名古屋(中部)": "NGO",
+    "名古屋／中部": "NGO",
     "中部": "NGO",
     "名古屋（小牧）": "NKM",
+    "名古屋(小牧)": "NKM",
     "小牧": "NKM",
     "福岡": "FUK",
     "沖縄（那覇）": "OKA",
+    "沖縄／那覇": "OKA",
     "那覇": "OKA",
     "青森": "AOJ",
     "三沢": "MSJ",
@@ -222,6 +269,19 @@ AIRPORT_IATA = {
     "松山空港": "MYJ",
     "福岡空港": "FUK",
     "大分空港": "OIT",
+    "Mt. Fuji Shizuoka": "FSZ",
+    "Shizuoka": "FSZ",
+    "Sapporo (Okadama)": "OKD",
+    "Nagoya (Komaki)": "NKM",
+    "Aomori": "AOJ",
+    "Iwate Hanamaki": "HNA",
+    "Yamagata": "GAJ",
+    "Niigata": "KIJ",
+    "Matsumoto": "MMJ",
+    "Izumo": "IZO",
+    "Kochi": "KCZ",
+    "Kumamoto": "KMJ",
+    "Kagoshima": "KOJ",
 }
 
 ROUTE_RE = re.compile(r"(?P<origin>[^\s　]+（[^）]+）|[一-龥ぁ-んァ-ヶー・]+)→(?P<dest>[^\s　]+（[^）]+）|[一-龥ぁ-んァ-ヶー・]+)")
@@ -1373,6 +1433,516 @@ def collect_toki(html_path: Path) -> dict:
     }
 
 
+FDA_PANEL_RE = re.compile(
+    r'<div id="timetable-cts_tab_01"(?P<body>.*?)(?=<div id="timetable-cts_tab_02"|<div class="timetable-cts_table_noteWrapper")',
+    re.S,
+)
+FDA_TABLE_RE = re.compile(r'<table class="table timetable-cts_table">(?P<body>.*?)</table>', re.S)
+FDA_TR_RE = re.compile(r"<tr>(?P<body>.*?)</tr>", re.S)
+FDA_CELL_RE = re.compile(r"<t[dh][^>]*>(?P<body>.*?)</t[dh]>", re.S)
+
+
+def clean_fda_airport_name(value: str) -> str:
+    value = clean_html_text(value)
+    value = value.replace("　", " ").strip()
+    value = re.sub(r"\s*Airport\s*$", "", value)
+    value = value.replace("空港", "")
+    return value.strip()
+
+
+def fda_header_text(cell_html: str) -> str:
+    source = re.search(r"<!--wovn-src:(.*?)-->", cell_html, re.S)
+    if source:
+        return clean_html_text(source.group(1))
+    return clean_html_text(cell_html)
+
+
+def parse_fda_operating_dates(note: str) -> set[date]:
+    note = note.replace("〜", "～").replace("-", "～")
+    ranges = re.findall(r"(\d{1,2})/(\d{1,2})(?:\s*～\s*(\d{1,2})/(\d{1,2}))?", note)
+    days: set[date] = set()
+    for start_month_raw, start_day_raw, end_month_raw, end_day_raw in ranges:
+        start_month = int(start_month_raw)
+        start_day = int(start_day_raw)
+        end_month = int(end_month_raw or start_month_raw)
+        end_day = int(end_day_raw or start_day_raw)
+        start_year = FDA_SERVICE_START.year
+        end_year = FDA_SERVICE_START.year
+        if start_month < FDA_SERVICE_START.month:
+            start_year += 1
+        if end_month < start_month:
+            end_year = start_year + 1
+        else:
+            end_year = start_year
+        start = date(start_year, start_month, start_day)
+        end = date(end_year, end_month, end_day)
+        current = max(start, FDA_SERVICE_START)
+        last = min(end, FDA_SERVICE_END)
+        while current <= last:
+            days.add(current)
+            current += timedelta(days=1)
+    return days
+
+
+def service_calendar_for_specific_dates(days: set[date], note: str) -> dict:
+    weekdays = sorted({day.isoweekday() for day in days})
+    weekday_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    return {
+        "servicePeriod": {
+            "start": FDA_SERVICE_START.isoformat(),
+            "end": FDA_SERVICE_END.isoformat(),
+        },
+        "operatingDates": [day.isoformat() for day in sorted(days)],
+        "operatingWeekdays": weekdays,
+        "operatingWeekdayNames": [weekday_names[index - 1] for index in weekdays],
+        "calendarParseStatus": "parsed_operating_dates" if days else "unparsed_empty_operating_dates",
+        "calendarParseError": None if days else f"Could not parse FDA operating-date note: {note}",
+        "sourceCalendarNote": note,
+    }
+
+
+MONTH_TOKEN_RE = re.compile(r"(?:(\d{1,2})/)?(\d{1,2})(?:-(\d{1,2}))?")
+
+
+def parse_month_day_tokens(text: str, period_start: date, period_end: date) -> set[date]:
+    text = text.replace("、", ",").replace("，", ",").replace("～", "-")
+    days: set[date] = set()
+    current_month: int | None = None
+    for raw_token in re.split(r"[,，\s]+", text):
+        token = raw_token.strip()
+        if not token:
+            continue
+        match = MONTH_TOKEN_RE.fullmatch(token)
+        if not match:
+            continue
+        month_raw, start_day_raw, end_day_raw = match.groups()
+        if month_raw:
+            current_month = int(month_raw)
+        if current_month is None:
+            continue
+        start_day = int(start_day_raw)
+        end_day = int(end_day_raw or start_day_raw)
+        year = period_start.year + (1 if current_month < period_start.month else 0)
+        current = date(year, current_month, start_day)
+        end = date(year, current_month, end_day)
+        while current <= end:
+            if period_start <= current <= period_end:
+                days.add(current)
+            current += timedelta(days=1)
+    return days
+
+
+def date_service_calendar_for_note(note: str | None, start: date, end: date) -> dict:
+    if not note:
+        return calendar_for_period(start, end)
+    base_dates = set(daterange(start, end))
+    parsed_dates = parse_month_day_tokens(note, start, end)
+    if "運休" in note and parsed_dates:
+        dates = base_dates - parsed_dates
+        status = "parsed_except_dates"
+    elif ("運航" in note or "Flight dates" in note or "Operation dates" in note) and parsed_dates:
+        dates = parsed_dates
+        status = "parsed_operating_dates"
+    else:
+        dates = base_dates
+        status = "unparsed_note_default_all_period"
+    weekday_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    weekdays = sorted({day.isoweekday() for day in dates})
+    return {
+        "servicePeriod": {
+            "start": start.isoformat(),
+            "end": end.isoformat(),
+        },
+        "operatingDates": [day.isoformat() for day in sorted(dates)],
+        "operatingWeekdays": weekdays,
+        "operatingWeekdayNames": [weekday_names[index - 1] for index in weekdays],
+        "calendarParseStatus": status,
+        "calendarParseError": None if status != "unparsed_note_default_all_period" else f"Unparsed note kept as all-period: {note}",
+        "sourceCalendarNote": note,
+    }
+
+
+def collect_fda(source_dir: Path) -> dict:
+    rows: list[dict] = []
+    unknown_airports: set[str] = set()
+    skipped_tables = 0
+    for html_path in sorted(source_dir.glob("*.html")):
+        html = html_path.read_text(encoding="utf-8")
+        panel_match = FDA_PANEL_RE.search(html)
+        if not panel_match:
+            skipped_tables += 1
+            continue
+        for table_match in FDA_TABLE_RE.finditer(panel_match.group("body")):
+            table_html = table_match.group("body")
+            row_matches = list(FDA_TR_RE.finditer(table_html))
+            if len(row_matches) < 3:
+                skipped_tables += 1
+                continue
+            header_cells = FDA_CELL_RE.findall(row_matches[0].group("body"))
+            if not header_cells:
+                skipped_tables += 1
+                continue
+            header = fda_header_text(header_cells[0])
+            if "→" not in header:
+                skipped_tables += 1
+                continue
+            origin_name, dest_name = [clean_fda_airport_name(part) for part in header.split("→", 1)]
+            origin = AIRPORT_IATA.get(origin_name)
+            dest = AIRPORT_IATA.get(dest_name)
+            if not origin:
+                unknown_airports.add(origin_name)
+            if not dest:
+                unknown_airports.add(dest_name)
+            if not origin or not dest:
+                continue
+
+            pending_marker_row: dict | None = None
+            for tr in row_matches[2:]:
+                cells = FDA_CELL_RE.findall(tr.group("body"))
+                texts = [clean_html_text(cell) for cell in cells]
+                if len(texts) == 3 and re.search(r"\d+", texts[0]) and re.search(r"\d{2}:\d{2}", texts[1]) and re.search(r"\d{2}:\d{2}", texts[2]):
+                    flight_digits = re.search(r"\d+", texts[0]).group(0)
+                    row = {
+                        "flight": f"FDA{int(flight_digits):04d}",
+                        "originAirport": origin,
+                        "destinationAirport": dest,
+                        "departureTimeLocal": re.search(r"\d{2}:\d{2}", texts[1]).group(0),
+                        "arrivalTimeLocal": re.search(r"\d{2}:\d{2}", texts[2]).group(0),
+                        "calendarNote": None,
+                        "sourceFile": html_path.name,
+                    }
+                    rows.append(row)
+                    pending_marker_row = row if "※" in texts[0] else None
+                elif pending_marker_row and texts:
+                    note_text = " ".join(texts)
+                    if "運航日" in note_text or "Operation" in note_text or "Flight dates" in note_text:
+                        pending_marker_row["calendarNote"] = note_text
+                        pending_marker_row = None
+
+    merged: dict[tuple[str, str, str, str, str, str | None], dict] = {}
+    for row in rows:
+        key = (
+            row["flight"],
+            row["originAirport"],
+            row["destinationAirport"],
+            row["departureTimeLocal"],
+            row["arrivalTimeLocal"],
+            row["calendarNote"],
+        )
+        merged[key] = row
+
+    flights = []
+    calendar_status_counts: dict[str, int] = {}
+    for row in sorted(
+        merged.values(),
+        key=lambda item: (item["originAirport"], item["destinationAirport"], item["departureTimeLocal"], item["flight"]),
+    ):
+        note = row["calendarNote"]
+        if note:
+            specific_dates = parse_fda_operating_dates(note)
+            service_calendar = service_calendar_for_specific_dates(specific_dates, note)
+        else:
+            service_calendar = calendar_for_period(FDA_SERVICE_START, FDA_SERVICE_END)
+        calendar_status_counts[service_calendar["calendarParseStatus"]] = calendar_status_counts.get(service_calendar["calendarParseStatus"], 0) + 1
+        raw = "|".join(
+            [
+                "FDA",
+                row["flight"],
+                row["originAirport"],
+                row["destinationAirport"],
+                row["departureTimeLocal"],
+                row["arrivalTimeLocal"],
+                note or "",
+            ]
+        )
+        flights.append(
+            {
+                "physicalFlightId": "flight.jp.dom." + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16],
+                "mode": "flight",
+                "operatingCarrier": "FDA",
+                "operatingCarrierName": OPERATOR_NAMES["FDA"],
+                "operatingFlightNumber": row["flight"],
+                "marketingFlights": [row["flight"]],
+                "originAirport": row["originAirport"],
+                "destinationAirport": row["destinationAirport"],
+                "departureTimeLocal": row["departureTimeLocal"],
+                "arrivalTimeLocal": row["arrivalTimeLocal"],
+                "calendarNote": note,
+                "serviceCalendar": service_calendar,
+                "sourceRefs": [FDA_SOURCE_REF["id"]],
+                "dedupeConfidence": "high",
+            }
+        )
+
+    return {
+        "schemaVersion": 1,
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "source": FDA_SOURCE_REF,
+        "rules": {
+            "dedupeCodeshares": True,
+            "airportIdFormat": "IATA",
+            "calendarPolicy": "FDA route pages are parsed from the 2026-03-29/2026-10-24 tab. Marked flights use the route-table operating-date note; unmarked flights are expanded across the full period.",
+            "skippedConnectionTables": True,
+            "canonicalKey": [
+                "operatingCarrier",
+                "operatingFlightNumber",
+                "originAirport",
+                "destinationAirport",
+                "departureTimeLocal",
+                "arrivalTimeLocal",
+                "calendarNote",
+            ],
+        },
+        "summary": {
+            "parsedRows": len(rows),
+            "physicalFlightCount": len(flights),
+            "duplicateRowsRemoved": len(rows) - len(flights),
+            "skippedTables": skipped_tables,
+            "unknownAirportNames": sorted(unknown_airports),
+            "calendarStatusCounts": dict(sorted(calendar_status_counts.items())),
+        },
+        "flights": flights,
+    }
+
+
+JETSTAR_ROUTE_RE = re.compile(r"([一-龥ぁ-んァ-ヶー・／/]+)（([A-Z]{3})）\s*✈+✈*\s*([一-龥ぁ-んァ-ヶー・／/]+)（([A-Z]{3})）")
+JETSTAR_FLIGHT_RE = re.compile(r"(GK\d{3})\s+(\d{2}:\d{2})\s+(\d{2}:\d{2})")
+
+
+def collect_jetstar(pdf_path: Path) -> dict:
+    text = run_pdftotext(pdf_path)
+    rows: list[dict] = []
+    current_routes: list[tuple[str, str]] = []
+    parse_warnings = 0
+    for line in text.splitlines():
+        route_matches = list(JETSTAR_ROUTE_RE.finditer(line))
+        if len(route_matches) >= 2:
+            current_routes = [
+                (route_matches[0].group(2), route_matches[0].group(4)),
+                (route_matches[1].group(2), route_matches[1].group(4)),
+            ]
+            continue
+        if not current_routes:
+            continue
+        matches = list(JETSTAR_FLIGHT_RE.finditer(line))
+        if not matches:
+            continue
+        for index, match in enumerate(matches[:2]):
+            route = current_routes[0] if match.start() < 90 else current_routes[min(1, len(current_routes) - 1)]
+            note_start = match.end()
+            note_end = matches[index + 1].start() if index + 1 < len(matches) else len(line)
+            note = line[note_start:note_end].strip()
+            note = " ".join(note.split()) or None
+            if note and date_service_calendar_for_note(note, JETSTAR_SERVICE_START, JETSTAR_SERVICE_END)["calendarParseStatus"] == "unparsed_note_default_all_period":
+                parse_warnings += 1
+            rows.append(
+                {
+                    "flight": match.group(1),
+                    "originAirport": route[0],
+                    "destinationAirport": route[1],
+                    "departureTimeLocal": match.group(2),
+                    "arrivalTimeLocal": match.group(3),
+                    "calendarNote": note,
+                }
+            )
+
+    merged: dict[tuple[str, str, str, str, str, str | None], dict] = {}
+    for row in rows:
+        key = (
+            row["flight"],
+            row["originAirport"],
+            row["destinationAirport"],
+            row["departureTimeLocal"],
+            row["arrivalTimeLocal"],
+            row["calendarNote"],
+        )
+        merged[key] = row
+
+    flights = []
+    calendar_status_counts: dict[str, int] = {}
+    for row in sorted(
+        merged.values(),
+        key=lambda item: (item["originAirport"], item["destinationAirport"], item["departureTimeLocal"], item["flight"]),
+    ):
+        service_calendar = date_service_calendar_for_note(row["calendarNote"], JETSTAR_SERVICE_START, JETSTAR_SERVICE_END)
+        calendar_status_counts[service_calendar["calendarParseStatus"]] = calendar_status_counts.get(service_calendar["calendarParseStatus"], 0) + 1
+        raw = "|".join(
+            [
+                "JJP",
+                row["flight"],
+                row["originAirport"],
+                row["destinationAirport"],
+                row["departureTimeLocal"],
+                row["arrivalTimeLocal"],
+                row["calendarNote"] or "",
+            ]
+        )
+        flights.append(
+            {
+                "physicalFlightId": "flight.jp.dom." + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16],
+                "mode": "flight",
+                "operatingCarrier": "JJP",
+                "operatingCarrierName": OPERATOR_NAMES["JJP"],
+                "operatingFlightNumber": row["flight"],
+                "marketingFlights": [row["flight"]],
+                "originAirport": row["originAirport"],
+                "destinationAirport": row["destinationAirport"],
+                "departureTimeLocal": row["departureTimeLocal"],
+                "arrivalTimeLocal": row["arrivalTimeLocal"],
+                "calendarNote": row["calendarNote"],
+                "serviceCalendar": service_calendar,
+                "sourceRefs": [JETSTAR_SOURCE_REF["id"]],
+                "dedupeConfidence": "high" if service_calendar["calendarParseStatus"] != "unparsed_note_default_all_period" else "medium",
+            }
+        )
+
+    return {
+        "schemaVersion": 1,
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "source": JETSTAR_SOURCE_REF,
+        "rules": {
+            "dedupeCodeshares": True,
+            "airportIdFormat": "IATA",
+            "calendarPolicy": "Jetstar PDF route-table rows are assigned by PDF column. Notes containing explicit operation/suspension date tokens are expanded; unresolved text is retained and treated as all-period until a finer parser is added.",
+            "canonicalKey": [
+                "operatingCarrier",
+                "operatingFlightNumber",
+                "originAirport",
+                "destinationAirport",
+                "departureTimeLocal",
+                "arrivalTimeLocal",
+                "calendarNote",
+            ],
+        },
+        "summary": {
+            "parsedRows": len(rows),
+            "physicalFlightCount": len(flights),
+            "duplicateRowsRemoved": len(rows) - len(flights),
+            "unparsedCalendarNoteRows": parse_warnings,
+            "calendarStatusCounts": dict(sorted(calendar_status_counts.items())),
+        },
+        "flights": flights,
+    }
+
+
+SPRING_ROUTE_RE = re.compile(r"([一-龥ぁ-んァ-ヶー・／/]+)（([A-Z]{3})）\s*✈\s*([一-龥ぁ-んァ-ヶー・／/]+)（([A-Z]{3})）")
+SPRING_FLIGHT_RE = re.compile(r"(IJ\d{3})\s+(\d{2}:\d{2})\s+(\d{2}:\d{2})")
+
+
+def collect_spring(pdf_path: Path) -> dict:
+    text = run_pdftotext(pdf_path)
+    rows: list[dict] = []
+    current_routes: list[tuple[str, str]] = []
+    for line in text.splitlines():
+        route_matches = list(SPRING_ROUTE_RE.finditer(line))
+        if len(route_matches) >= 2:
+            current_routes = [
+                (route_matches[0].group(2), route_matches[0].group(4)),
+                (route_matches[1].group(2), route_matches[1].group(4)),
+            ]
+            continue
+        if not current_routes:
+            continue
+        matches = list(SPRING_FLIGHT_RE.finditer(line))
+        if not matches:
+            continue
+        for index, match in enumerate(matches[:2]):
+            route = current_routes[0] if match.start() < 85 else current_routes[min(1, len(current_routes) - 1)]
+            note_start = match.end()
+            note_end = matches[index + 1].start() if index + 1 < len(matches) else len(line)
+            note = " ".join(line[note_start:note_end].split()) or None
+            rows.append(
+                {
+                    "flight": match.group(1),
+                    "originAirport": route[0],
+                    "destinationAirport": route[1],
+                    "departureTimeLocal": match.group(2),
+                    "arrivalTimeLocal": match.group(3),
+                    "calendarNote": note,
+                }
+            )
+
+    merged: dict[tuple[str, str, str, str, str, str | None], dict] = {}
+    for row in rows:
+        key = (
+            row["flight"],
+            row["originAirport"],
+            row["destinationAirport"],
+            row["departureTimeLocal"],
+            row["arrivalTimeLocal"],
+            row["calendarNote"],
+        )
+        merged[key] = row
+
+    flights = []
+    calendar_status_counts: dict[str, int] = {}
+    for row in sorted(
+        merged.values(),
+        key=lambda item: (item["originAirport"], item["destinationAirport"], item["departureTimeLocal"], item["flight"]),
+    ):
+        service_calendar = date_service_calendar_for_note(row["calendarNote"], SPRING_SERVICE_START, SPRING_SERVICE_END)
+        if row["calendarNote"] is None:
+            service_calendar["calendarParseStatus"] = "source_multiline_calendar_pending"
+            service_calendar["calendarParseError"] = "Spring Japan PDF keeps multi-period calendar notes in neighboring layout lines; route and physical flight are parsed, calendar needs the dedicated multi-line parser."
+        calendar_status_counts[service_calendar["calendarParseStatus"]] = calendar_status_counts.get(service_calendar["calendarParseStatus"], 0) + 1
+        raw = "|".join(
+            [
+                "SJO",
+                row["flight"],
+                row["originAirport"],
+                row["destinationAirport"],
+                row["departureTimeLocal"],
+                row["arrivalTimeLocal"],
+                row["calendarNote"] or "",
+            ]
+        )
+        flights.append(
+            {
+                "physicalFlightId": "flight.jp.dom." + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16],
+                "mode": "flight",
+                "operatingCarrier": "SJO",
+                "operatingCarrierName": OPERATOR_NAMES["SJO"],
+                "operatingFlightNumber": row["flight"],
+                "marketingFlights": [row["flight"]],
+                "originAirport": row["originAirport"],
+                "destinationAirport": row["destinationAirport"],
+                "departureTimeLocal": row["departureTimeLocal"],
+                "arrivalTimeLocal": row["arrivalTimeLocal"],
+                "calendarNote": row["calendarNote"],
+                "serviceCalendar": service_calendar,
+                "sourceRefs": [SPRING_SOURCE_REF["id"]],
+                "dedupeConfidence": "medium",
+            }
+        )
+
+    return {
+        "schemaVersion": 1,
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "source": SPRING_SOURCE_REF,
+        "rules": {
+            "dedupeCodeshares": True,
+            "airportIdFormat": "IATA",
+            "calendarPolicy": "Spring Japan physical flights are parsed from the official PDF. Multi-line period/weekday calendars are retained as pending because the PDF layout separates a single flight's calendar across adjacent rows.",
+            "canonicalKey": [
+                "operatingCarrier",
+                "operatingFlightNumber",
+                "originAirport",
+                "destinationAirport",
+                "departureTimeLocal",
+                "arrivalTimeLocal",
+                "calendarNote",
+            ],
+        },
+        "summary": {
+            "parsedRows": len(rows),
+            "physicalFlightCount": len(flights),
+            "duplicateRowsRemoved": len(rows) - len(flights),
+            "calendarStatusCounts": dict(sorted(calendar_status_counts.items())),
+        },
+        "flights": flights,
+    }
+
+
 def collect_ana(pdf_path: Path) -> dict:
     text = run_pdftotext(pdf_path)
     parsed_rows, unknown_airports = parse_ana_layout_text(text)
@@ -1412,7 +1982,7 @@ def collect_ana(pdf_path: Path) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", choices=["ana", "skymark", "airdo", "starflyer", "ibex", "toki"], default="ana")
+    parser.add_argument("--source", choices=["ana", "skymark", "airdo", "starflyer", "ibex", "toki", "fda", "jetstar", "spring"], default="ana")
     parser.add_argument("--source-pdf", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
@@ -1432,6 +2002,18 @@ def main() -> None:
             source_pdf = source_pdf or STARFLYER_SOURCE_DIR
             output = output or STARFLYER_OUTPUT
             collector = collect_starflyer
+        elif args.source == "fda":
+            source_pdf = source_pdf or FDA_SOURCE_DIR
+            output = output or FDA_OUTPUT
+            collector = collect_fda
+        elif args.source == "jetstar":
+            source_pdf = source_pdf or JETSTAR_SOURCE
+            output = output or JETSTAR_OUTPUT
+            collector = collect_jetstar
+        elif args.source == "spring":
+            source_pdf = source_pdf or SPRING_SOURCE
+            output = output or SPRING_OUTPUT
+            collector = collect_spring
         elif args.source == "airdo":
             source_pdf = source_pdf or AIRDO_SOURCE
             output = output or AIRDO_OUTPUT
@@ -1445,7 +2027,7 @@ def main() -> None:
             output = output or TOKI_OUTPUT
             collector = collect_toki
 
-    if args.source == "starflyer":
+    if args.source in {"starflyer", "fda"}:
         if not source_pdf.exists():
             raise SystemExit(f"source directory not found: {source_pdf}")
         payload = collector(source_pdf)
@@ -1453,9 +2035,7 @@ def main() -> None:
         output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(json.dumps(payload["summary"], ensure_ascii=False, indent=2))
         return
-    elif args.source not in {"ana", "skymark"}:
-        source_pdf = source_pdf or AIRDO_SOURCE
-        output = output or AIRDO_OUTPUT
+    elif args.source in {"airdo", "ibex", "toki"}:
         if args.source == "ibex":
             source_pdf = IBEX_SOURCE
             output = IBEX_OUTPUT

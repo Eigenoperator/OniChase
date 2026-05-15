@@ -84,7 +84,10 @@ When two sources describe the same physical flight, merge their `marketingFlight
 Official or operator-published sources are preferred.
 
 - ANA domestic timetable PDF: includes ANA marketed services and operating-company codes such as `AKX`, `ADO`, `IBEX`, `SNA`, `SFJ`, `ORC`, `JAC`, and `AMX`.
-- JAL domestic timetable: covers JAL, JTA, RAC and lists domestic airport pairs and JAL group/codeshare notices.
-- Independent carriers and airport official timetables are source candidates when their own flight numbers are needed for dedupe.
+- Skymark, AIRDO, StarFlyer, IBEX, Toki Air, FDA, Jetstar Japan, and Spring Japan now have operator-published v5 artifacts.
+- Solaseed, ORC, AMX, and JAC currently have fallback artifacts split from ANA's official all-area timetable by `operatingCarrier`; they are marked as derived sources and should be replaced when their own machine-readable/current route timetables are parsed.
+- JAL/JTA/RAC remain the largest missing official group source. JAL publishes operation notices and route-query pages, but a full static 2026 summer machine-readable domestic timetable has not yet been confirmed.
+- Peach's official 2026 summer page lists domestic routes and directs users to flight search for details; no full static timetable source has been confirmed yet.
+- Jetstar and Spring are marked `implemented_partial_calendar` where PDF row parsing succeeds but some complex Japanese notes still need a dedicated parser.
 
 Aggregator-derived data must not overwrite official data without an overlap audit.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-05-14T19:13:25-07:00",
+  "updatedAt": "2026-05-14T23:20:06-07:00",
   "policy": {
     "preferOfficialSources": true,
     "dedupeCodeshares": true,
@@ -29,6 +29,16 @@
       "notes": "Official JAL domestic timetable for JAL/JTA/RAC; needs a route-query collector."
     },
     {
+      "id": "jac-from-ana-operating-carrier-20260701-20261024",
+      "operatorGroup": "JAC",
+      "type": "official_pdf_derived",
+      "url": "https://www.ana.co.jp/guide/plan/airinfo/dom-timetable/pdf/timetable_all_20260701_20261024.pdf",
+      "period": "2026-07-01/2026-10-24",
+      "sourceDate": "2026-03-30",
+      "status": "fallback_implemented_from_ana",
+      "notes": "Japan Air Commuter physical flights that appear in ANA's official all-area timetable are split by operatingCarrier. This is not a full JAL/JAC group timetable."
+    },
+    {
       "id": "skymark-timetable-pdf-20260601-20261024",
       "operatorGroup": "SKY",
       "type": "official_pdf",
@@ -55,8 +65,8 @@
       "url": "https://www.solaseedair.jp/timetable/assets/mediafile/time_20260329-20261024.pdf",
       "period": "2026-03-29/2026-10-24",
       "sourceDate": "2026-01-23",
-      "status": "candidate",
-      "notes": "Official Solaseed Air PDF; text extraction needs OCR/table handling."
+      "status": "fallback_implemented_from_ana",
+      "notes": "Official Solaseed Air PDF is cached but currently image/table extraction yields no text. Release bundle temporarily derives SNA physical flights from ANA's official all-area timetable by operatingCarrier."
     },
     {
       "id": "starflyer-timetable-web-20260329-20261024",
@@ -69,14 +79,14 @@
       "notes": "Official StarFlyer route timetable pages. Embedded route rows inside another route page are skipped; many records overlap ANA-marketed SFJ flights."
     },
     {
-      "id": "fda-timetable-web",
+      "id": "fda-timetable-web-20260329-20261024",
       "operatorGroup": "FDA",
       "type": "official_web",
-      "url": "https://www.fujidream.co.jp/en/sp/timetable/",
-      "period": "current",
+      "url": "https://www.fujidream.co.jp/en/timetable/",
+      "period": "2026-03-29/2026-10-24",
       "sourceDate": null,
-      "status": "candidate",
-      "notes": "Official Fuji Dream Airlines timetable. FDA also codeshares with JAL."
+      "status": "implemented",
+      "notes": "Official Fuji Dream Airlines route pages. Collector parses 2026 summer tab route tables, skips connection-guide content, and expands marked operating-date notes."
     },
     {
       "id": "ibex-timetable-web-20260329-20261024",
@@ -95,8 +105,8 @@
       "url": "https://www.orc-air.co.jp/",
       "period": "current",
       "sourceDate": null,
-      "status": "candidate",
-      "notes": "Official Oriental Air Bridge source candidate; cross-source merge required with ANA/JAL-marketed records."
+      "status": "fallback_implemented_from_ana",
+      "notes": "ORC fare page lists official 2026 summer route PDFs, but direct PDF fetch currently returns 403 in automation. Release bundle temporarily derives ORC physical flights from ANA's official all-area timetable by operatingCarrier."
     },
     {
       "id": "amakusa-timetable-web",
@@ -105,8 +115,8 @@
       "url": "https://www.amx.co.jp/",
       "period": "current",
       "sourceDate": null,
-      "status": "candidate",
-      "notes": "Official Amakusa Airlines source candidate."
+      "status": "fallback_implemented_from_ana",
+      "notes": "Official AMX public timetable is image-based. Release bundle temporarily derives AMX physical flights from ANA's official all-area timetable by operatingCarrier."
     },
     {
       "id": "toki-air-schedules-web-20260329-20260831",
@@ -122,31 +132,31 @@
       "id": "peach-timetable-web",
       "operatorGroup": "APJ",
       "type": "official_web",
-      "url": "https://www.flypeach.com/",
-      "period": "current",
+      "url": "https://www.flypeach.com/en/lm/st/s_schedule",
+      "period": "2026-03-29/2026-10-24",
       "sourceDate": null,
       "status": "candidate",
-      "notes": "Official Peach Aviation source candidate."
+      "notes": "Official Peach summer page lists domestic routes and says to check flight search for details; no static full timetable source has been confirmed yet."
     },
     {
-      "id": "jetstar-japan-timetable-web",
+      "id": "jetstar-japan-domestic-timetable-pdf-20260329-20261024",
       "operatorGroup": "JJP",
       "type": "official_web",
-      "url": "https://www.jetstar.com/jp/en/",
-      "period": "current",
-      "sourceDate": null,
-      "status": "candidate",
-      "notes": "Official Jetstar Japan source candidate."
+      "url": "https://files.jetstar.com/api/public/content/gk_timetable_26nsdom",
+      "period": "2026-03-29/2026-10-24",
+      "sourceDate": "2026-03-26",
+      "status": "implemented_partial_calendar",
+      "notes": "Official Jetstar Japan domestic PDF. Physical rows are parsed by PDF column; explicit operation/suspension date notes are expanded, while complex Japanese weekday notes remain flagged."
     },
     {
-      "id": "spring-japan-timetable-web",
+      "id": "spring-japan-domestic-timetable-pdf-20260329-20261024",
       "operatorGroup": "SJO",
       "type": "official_web",
-      "url": "https://jp.ch.com/",
-      "period": "current",
-      "sourceDate": null,
-      "status": "candidate",
-      "notes": "Official Spring Japan source candidate."
+      "url": "https://jp.ch.com/time-table",
+      "period": "2026-03-29/2026-10-24",
+      "sourceDate": "2026-05-13",
+      "status": "implemented_partial_calendar",
+      "notes": "Official Spring Japan domestic PDF is cached. Physical rows are parsed; several multi-line period/weekday calendars are flagged for a dedicated layout parser."
     }
   ]
 }
