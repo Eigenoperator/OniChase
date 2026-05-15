@@ -39,6 +39,8 @@ JETSTAR_SOURCE = ROOT / "data/v5_flight_source_cache/jetstar_gk_timetable_26nsdo
 JETSTAR_OUTPUT = ROOT / "data/v5_domestic_flights_jetstar_20260329_20261024.json"
 SPRING_SOURCE = ROOT / "data/v5_flight_source_cache/spring_ij_domestic_20260329_20261024.pdf"
 SPRING_OUTPUT = ROOT / "data/v5_domestic_flights_spring_20260329_20261024.json"
+PEACH_SOURCE = ROOT / "data/v5_flight_source_cache/peach_domestic_20260329_20261024.pdf"
+PEACH_OUTPUT = ROOT / "data/v5_domestic_flights_peach_20260329_20261024.json"
 
 ANA_SOURCE_REF = {
     "id": "ana-domestic-timetable-pdf-20260701-20261024",
@@ -119,6 +121,15 @@ SPRING_SOURCE_REF = {
 SPRING_SERVICE_START = date(2026, 3, 29)
 SPRING_SERVICE_END = date(2026, 10, 24)
 
+PEACH_SOURCE_REF = {
+    "id": "peach-domestic-timetable-pdf-20260329-20261024",
+    "url": "https://www.flypeach.com/application/files/6117/7854/7644/20260514_S26_20260329-20261024_dom_EN.pdf",
+    "period": "2026-03-29/2026-10-24",
+    "sourceDate": "2026-05-14",
+}
+PEACH_SERVICE_START = date(2026, 3, 29)
+PEACH_SERVICE_END = date(2026, 10, 24)
+
 OPERATOR_NAMES = {
     "ANA": "All Nippon Airways",
     "AKX": "ANA Wings",
@@ -135,6 +146,7 @@ OPERATOR_NAMES = {
     "TOK": "Toki Air",
     "JJP": "Jetstar Japan",
     "SJO": "Spring Japan",
+    "APJ": "Peach Aviation",
 }
 
 MARKETING_PREFIX_TO_OPERATOR = {
@@ -254,6 +266,7 @@ AIRPORT_IATA = {
     "Miyako(Shimojishima)": "SHI",
     "Ibaraki": "IBR",
     "Nagoya(Chubu)": "NGO",
+    "Nagoya (Chubu)": "NGO",
     "Chubu (Nagoya)": "NGO",
     "Sendai": "SDJ",
     "Kitakyushu": "KKJ",
@@ -282,6 +295,16 @@ AIRPORT_IATA = {
     "Kochi": "KCZ",
     "Kumamoto": "KMJ",
     "Kagoshima": "KOJ",
+    "Tokyo (Narita)": "NRT",
+    "Tokyo (Haneda)": "HND",
+    "Osaka (Kansai)": "KIX",
+    "Sapporo (New Chitose)": "CTS",
+    "Memanbetsu": "MMB",
+    "Kushiro": "KUH",
+    "Miyazaki": "KMI",
+    "Amami": "ASJ",
+    "Okinawa (Naha)": "OKA",
+    "Ishigaki": "ISG",
 }
 
 ROUTE_RE = re.compile(r"(?P<origin>[^\s　]+（[^）]+）|[一-龥ぁ-んァ-ヶー・]+)→(?P<dest>[^\s　]+（[^）]+）|[一-龥ぁ-んァ-ヶー・]+)")
@@ -1543,6 +1566,9 @@ def date_service_calendar_for_note(note: str | None, start: date, end: date) -> 
     elif ("運航" in note or "Flight dates" in note or "Operation dates" in note) and parsed_dates:
         dates = parsed_dates
         status = "parsed_operating_dates"
+    elif parsed_dates and "運休" not in note:
+        dates = parsed_dates
+        status = "parsed_operating_dates"
     else:
         dates = base_dates
         status = "unparsed_note_default_all_period"
@@ -1943,6 +1969,136 @@ def collect_spring(pdf_path: Path) -> dict:
     }
 
 
+PEACH_ROUTE_RE = re.compile(r"([A-Za-z ]+(?:\([A-Za-z ]+\))?)\s*→\s*([A-Za-z ]+(?:\([A-Za-z ]+\))?)")
+PEACH_FLIGHT_RE = re.compile(r"(MM\d{3,4})\s*(\d{1,2}:\d{2})\s*▶\s*(\d{1,2}:\d{2})")
+
+
+def collect_peach(pdf_path: Path) -> dict:
+    text = run_pdftotext(pdf_path)
+    rows: list[dict] = []
+    current_routes: list[tuple[str, str]] = []
+    unknown_airports: set[str] = set()
+    unparsed_calendar_rows = 0
+    for line in text.splitlines():
+        route_matches = list(PEACH_ROUTE_RE.finditer(line))
+        if len(route_matches) >= 2 and "Flight" not in line:
+            current_routes = []
+            for match in route_matches[:2]:
+                origin_name = clean_html_text(match.group(1))
+                dest_name = clean_html_text(match.group(2))
+                origin = AIRPORT_IATA.get(origin_name)
+                dest = AIRPORT_IATA.get(dest_name)
+                if not origin:
+                    unknown_airports.add(origin_name)
+                if not dest:
+                    unknown_airports.add(dest_name)
+                if origin and dest:
+                    current_routes.append((origin, dest))
+            continue
+        if not current_routes:
+            continue
+        matches = list(PEACH_FLIGHT_RE.finditer(line))
+        if not matches:
+            continue
+        for index, match in enumerate(matches):
+            route = current_routes[0] if match.start() < 80 else current_routes[min(1, len(current_routes) - 1)]
+            note_start = match.end()
+            note_end = matches[index + 1].start() if index + 1 < len(matches) else len(line)
+            note = " ".join(line[note_start:note_end].split()) or None
+            status = date_service_calendar_for_note(note, PEACH_SERVICE_START, PEACH_SERVICE_END)["calendarParseStatus"]
+            if status == "unparsed_note_default_all_period":
+                unparsed_calendar_rows += 1
+            rows.append(
+                {
+                    "flight": match.group(1),
+                    "originAirport": route[0],
+                    "destinationAirport": route[1],
+                    "departureTimeLocal": normalize_time(match.group(2)),
+                    "arrivalTimeLocal": normalize_time(match.group(3)),
+                    "calendarNote": note,
+                }
+            )
+
+    merged: dict[tuple[str, str, str, str, str, str | None], dict] = {}
+    for row in rows:
+        key = (
+            row["flight"],
+            row["originAirport"],
+            row["destinationAirport"],
+            row["departureTimeLocal"],
+            row["arrivalTimeLocal"],
+            row["calendarNote"],
+        )
+        merged[key] = row
+
+    flights = []
+    calendar_status_counts: dict[str, int] = {}
+    for row in sorted(
+        merged.values(),
+        key=lambda item: (item["originAirport"], item["destinationAirport"], item["departureTimeLocal"], item["flight"]),
+    ):
+        service_calendar = date_service_calendar_for_note(row["calendarNote"], PEACH_SERVICE_START, PEACH_SERVICE_END)
+        calendar_status_counts[service_calendar["calendarParseStatus"]] = calendar_status_counts.get(service_calendar["calendarParseStatus"], 0) + 1
+        raw = "|".join(
+            [
+                "APJ",
+                row["flight"],
+                row["originAirport"],
+                row["destinationAirport"],
+                row["departureTimeLocal"],
+                row["arrivalTimeLocal"],
+                row["calendarNote"] or "",
+            ]
+        )
+        flights.append(
+            {
+                "physicalFlightId": "flight.jp.dom." + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16],
+                "mode": "flight",
+                "operatingCarrier": "APJ",
+                "operatingCarrierName": OPERATOR_NAMES["APJ"],
+                "operatingFlightNumber": row["flight"],
+                "marketingFlights": [row["flight"]],
+                "originAirport": row["originAirport"],
+                "destinationAirport": row["destinationAirport"],
+                "departureTimeLocal": row["departureTimeLocal"],
+                "arrivalTimeLocal": row["arrivalTimeLocal"],
+                "calendarNote": row["calendarNote"],
+                "serviceCalendar": service_calendar,
+                "sourceRefs": [PEACH_SOURCE_REF["id"]],
+                "dedupeConfidence": "high" if service_calendar["calendarParseStatus"] != "unparsed_note_default_all_period" else "medium",
+            }
+        )
+
+    return {
+        "schemaVersion": 1,
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "source": PEACH_SOURCE_REF,
+        "rules": {
+            "dedupeCodeshares": True,
+            "airportIdFormat": "IATA",
+            "calendarPolicy": "Peach domestic PDF rows are assigned by route column. Explicit operating-date tokens are expanded; rows split across PDF layout lines may need a finer parser.",
+            "canonicalKey": [
+                "operatingCarrier",
+                "operatingFlightNumber",
+                "originAirport",
+                "destinationAirport",
+                "departureTimeLocal",
+                "arrivalTimeLocal",
+                "calendarNote",
+            ],
+        },
+        "summary": {
+            "parsedRows": len(rows),
+            "physicalFlightCount": len(flights),
+            "duplicateRowsRemoved": len(rows) - len(flights),
+            "unknownAirportNames": sorted(unknown_airports),
+            "unparsedCalendarNoteRows": unparsed_calendar_rows,
+            "calendarStatusCounts": dict(sorted(calendar_status_counts.items())),
+        },
+        "flights": flights,
+    }
+
+
 def collect_ana(pdf_path: Path) -> dict:
     text = run_pdftotext(pdf_path)
     parsed_rows, unknown_airports = parse_ana_layout_text(text)
@@ -1982,7 +2138,7 @@ def collect_ana(pdf_path: Path) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", choices=["ana", "skymark", "airdo", "starflyer", "ibex", "toki", "fda", "jetstar", "spring"], default="ana")
+    parser.add_argument("--source", choices=["ana", "skymark", "airdo", "starflyer", "ibex", "toki", "fda", "jetstar", "spring", "peach"], default="ana")
     parser.add_argument("--source-pdf", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
@@ -2014,6 +2170,10 @@ def main() -> None:
             source_pdf = source_pdf or SPRING_SOURCE
             output = output or SPRING_OUTPUT
             collector = collect_spring
+        elif args.source == "peach":
+            source_pdf = source_pdf or PEACH_SOURCE
+            output = output or PEACH_OUTPUT
+            collector = collect_peach
         elif args.source == "airdo":
             source_pdf = source_pdf or AIRDO_SOURCE
             output = output or AIRDO_OUTPUT
