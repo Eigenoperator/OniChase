@@ -12844,7 +12844,8 @@
         const feature = event.features?.[0];
         const iata = feature?.properties?.iata;
         if (!iata) return;
-        if (activePlanningMode() === 'flight') {
+        if (state.flightMapActive || activePlanningMode() === 'flight') {
+          state.planningModes[state.activeMode] = 'flight';
           const current = state.flightPlanning[state.activeMode] || {};
           if (!current.origin) chooseFlightOrigin(iata);
           else if (!current.destination && iata !== current.origin) chooseFlightDestination(iata);
