@@ -1399,6 +1399,7 @@
     const FLIGHT_MAP_URL = './data/v5_flight_map.geojson';
     const FLIGHT_TIMETABLE_URL = './data/v5_domestic_flights_current_bundle.json';
     const BUS_MAP_URL = './data/v5_bus_map.geojson.gz';
+    const BUS_MAP_AROUND_FALLBACK_RADII_METERS = [25000, 60000, 120000];
     const V5_ACTIVE_WALKING_THRESHOLD_METERS = 2000;
     const V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND = 5 / 3.6;
     const V5_MIN_WALKING_SPEED_MULTIPLIER = 0.35;
@@ -5738,6 +5739,9 @@
       flightsByOriginAirport: new Map(),
       busMap: null,
       busMapLoadStatus: 'idle',
+      lastBusMapSourceKey: '',
+      busMapActiveFeatureCacheKey: '',
+      busMapActiveFeatureCache: null,
       nearestAirportStationCache: new Map(),
       fareRules: null,
       coupledServiceEntries: [],
@@ -8248,6 +8252,9 @@
 
     function indexBusMap(payload) {
       state.busMap = payload || { type: 'FeatureCollection', features: [] };
+      state.lastBusMapSourceKey = '';
+      state.busMapActiveFeatureCacheKey = '';
+      state.busMapActiveFeatureCache = null;
     }
 
     async function loadBusMap() {
@@ -10373,7 +10380,14 @@
 
     function updateBusMapLayers() {
       if (!state.map?.getSource('bus-map')) return;
-      state.map.getSource('bus-map').setData(state.busMap || { type: 'FeatureCollection', features: [] });
+      const sourcePayload = state.busMapActive ? activeBusMapFeatureCollection() : { type: 'FeatureCollection', features: [] };
+      const sourceKey = state.busMapActive
+        ? `${sourcePayload.metadata?.cacheKey || 'bus'}:${sourcePayload.features?.length || 0}`
+        : 'inactive';
+      if (state.lastBusMapSourceKey !== sourceKey) {
+        state.map.getSource('bus-map').setData(sourcePayload);
+        state.lastBusMapSourceKey = sourceKey;
+      }
       const visibility = state.busMapActive ? 'visible' : 'none';
       [
         'bus-airport-route-lines',
@@ -10388,6 +10402,80 @@
       ].forEach((layerId) => {
         if (state.map.getLayer(layerId)) state.map.setLayoutProperty(layerId, 'visibility', visibility);
       });
+    }
+
+    function busMapAnchorCoordinate() {
+      const preview = planCursorPreview(state.activeMode);
+      if (validCoordinate(preview?.mapPosition)) return preview.mapPosition;
+      if (preview?.currentState?.kind === 'NODE') return stationLonLat(preview.currentState.stationGroupId);
+      if (preview?.currentState?.stationGroupId) return stationLonLat(preview.currentState.stationGroupId);
+      if (preview?.mapStationGroupId) return stationLonLat(preview.mapStationGroupId);
+      return null;
+    }
+
+    function featureNearCoordinate(feature, anchor, radiusMeters) {
+      if (!feature || !anchor) return false;
+      const geometry = feature.geometry;
+      if (!geometry) return false;
+      if (geometry.type === 'Point') return coordinateDistanceMeters(geometry.coordinates, anchor) <= radiusMeters;
+      const coordinates = geometry.type === 'LineString' ? geometry.coordinates : [];
+      return coordinates.some((coordinate) => coordinateDistanceMeters(coordinate, anchor) <= radiusMeters);
+    }
+
+    function activeBusMapFeatureCollection() {
+      const features = state.busMap?.features || [];
+      const anchor = busMapAnchorCoordinate();
+      if (!state.busMapActive || !features.length) {
+        return { type: 'FeatureCollection', features: [] };
+      }
+      if (!anchor) {
+        if (state.busMapActiveFeatureCacheKey === 'bus:no-anchor:priority' && state.busMapActiveFeatureCache) {
+          return state.busMapActiveFeatureCache;
+        }
+        const highPriority = features.filter((feature) => {
+          const props = feature?.properties || {};
+          return props.serviceClass === 'bus_airport' || props.serviceClass === 'bus_long_distance';
+        });
+        const payload = {
+          type: 'FeatureCollection',
+          metadata: { cacheKey: 'bus:no-anchor:priority' },
+          features: highPriority,
+        };
+        state.busMapActiveFeatureCacheKey = 'bus:no-anchor:priority';
+        state.busMapActiveFeatureCache = payload;
+        return payload;
+      }
+      const anchorKey = `bus:${Math.round(anchor[0] * 1000)}:${Math.round(anchor[1] * 1000)}`;
+      if (state.busMapActiveFeatureCacheKey.startsWith(`${anchorKey}:`) && state.busMapActiveFeatureCache) {
+        return state.busMapActiveFeatureCache;
+      }
+      for (const radiusMeters of BUS_MAP_AROUND_FALLBACK_RADII_METERS) {
+        const localFeatures = features.filter((feature) => featureNearCoordinate(feature, anchor, radiusMeters));
+        const stopCount = localFeatures.filter((feature) => feature?.properties?.kind === 'bus-stop').length;
+        if (stopCount >= 24 || radiusMeters === BUS_MAP_AROUND_FALLBACK_RADII_METERS[BUS_MAP_AROUND_FALLBACK_RADII_METERS.length - 1]) {
+          const cacheKey = `${anchorKey}:${radiusMeters}`;
+          const payload = {
+            type: 'FeatureCollection',
+            metadata: {
+              cacheKey,
+              radiusMeters,
+              anchor,
+            },
+            features: localFeatures,
+          };
+          state.busMapActiveFeatureCacheKey = cacheKey;
+          state.busMapActiveFeatureCache = payload;
+          return payload;
+        }
+      }
+      const payload = {
+        type: 'FeatureCollection',
+        metadata: { cacheKey: 'bus:empty' },
+        features: [],
+      };
+      state.busMapActiveFeatureCacheKey = 'bus:empty';
+      state.busMapActiveFeatureCache = payload;
+      return payload;
     }
 
     function activeFlightMapFeatureCollection() {
