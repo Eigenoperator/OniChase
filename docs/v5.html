@@ -929,6 +929,27 @@
       grid-template-columns: 42px minmax(0, 1fr) auto;
     }
 
+    .route-row.flight-ticket-row {
+      grid-template-columns: 42px minmax(0, 1fr) auto;
+      background: rgba(37, 99, 235, 0.055);
+    }
+
+    .route-row:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+    }
+
+    .flight-status-line {
+      display: block;
+      margin-top: 3px;
+      color: #334155;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .airline-logo {
       width: 40px;
       height: 34px;
@@ -13879,6 +13900,49 @@
       return filtered.slice(0, limit);
     }
 
+    function flightBlockedReasonText(reasons) {
+      if (!reasons?.length) return '';
+      return reasons.map((reason) => {
+        const text = String(reason || '');
+        const airportMatch = text.match(/^must be at ([A-Z]{3})$/);
+        if (airportMatch) return `Need to reach ${airportMatch[1]} first`;
+        return text;
+      }).join(' · ');
+    }
+
+    function flightTicketStatus(ticket, flight, preview) {
+      const board = flightCatchability(flight, preview);
+      const times = board.times;
+      const currentMinute = preview?.currentMinute ?? state.currentGameMinute;
+      const currentAirport = board.accessibleAirport?.iata || preview?.currentState?.airportIata || null;
+      if (!board.ok) {
+        return {
+          board,
+          label: currentAirport === flight.originAirport ? 'wait' : 'go',
+          text: flightBlockedReasonText(board.reasons),
+        };
+      }
+      if (currentMinute < times.boardingStartMinute) {
+        return {
+          board,
+          label: 'wait',
+          text: `At ${flight.originAirport} · boarding starts ${minutesToHhmm(times.boardingStartMinute)} · depart ${flight.departureTimeLocal}`,
+        };
+      }
+      if (currentMinute < times.departureMinute) {
+        return {
+          board,
+          label: 'board',
+          text: `Boarding now at ${flight.originAirport} · depart ${flight.departureTimeLocal}`,
+        };
+      }
+      return {
+        board,
+        label: 'fly',
+        text: `Ready to fly · arrive ${flight.destinationAirport} ${flight.arrivalTimeLocal}`,
+      };
+    }
+
     function nearestAirportsFromStation(stationGroupId, limit = 10) {
       const origin = stationLonLat(stationGroupId);
       if (!origin || !state.airportByIata?.size) return [];
@@ -13949,21 +14013,21 @@
       const originIata = selected.origin;
       const destinationIata = selected.destination;
       if (!originIata || !destinationIata) return [];
-      const buyableFlights = availableFlightsFromAirport(originIata, preview, 72, { buyableOnly: true, destinationIata });
-      const fallbackFlights = buyableFlights.length
-        ? []
-        : availableFlightsFromAirport(originIata, preview, 24, { destinationIata });
-      const rows = buyableFlights.length ? buyableFlights : fallbackFlights;
+      const rows = availableFlightsFromAirport(originIata, preview, 72, { destinationIata });
       return rows.map((flight) => {
         const purchase = flightPurchaseStatus(flight, preview);
         const fare = resolveFlightFare(flight);
         const disabled = purchase.ok ? '' : 'disabled';
+        const statusText = purchase.ok
+          ? `buy by ${minutesToHhmm(purchase.times.purchaseDeadlineMinute)} · airport by ${minutesToHhmm(purchase.times.airportDeadlineMinute)}`
+          : flightBlockedReasonText(purchase.reasons);
         return `
           <button class="route-row flight-row" type="button" data-row-key="${escapeHtml(`flight:${flight.physicalFlightId}`)}" data-action="buy-flight-ticket" data-flight-id="${escapeHtml(flight.physicalFlightId)}" ${disabled}>
             ${airlineLogoHtml(flight)}
             <span>
               <span class="row-title">${escapeHtml(flightDisplayLabel(flight))}</span>
               <span class="row-sub">${escapeHtml(flight.departureTimeLocal)} -> ${escapeHtml(flight.arrivalTimeLocal)}</span>
+              <span class="flight-status-line">${escapeHtml(statusText)}</span>
             </span>
             <span class="row-meta">¥${fare.total_yen.toLocaleString('ja-JP')}</span>
           </button>
@@ -13992,16 +14056,19 @@
       const previewSteps = preview?.resolvedSteps || [];
       if (!ticket || isFlightTicketPlanned(ticket, state.activeMode, plannedSteps) || isFlightTicketPlanned(ticket, state.activeMode, previewSteps)) return [];
       const flight = state.flightById.get(ticket.flight_id);
-      const board = flightCatchability(flight, preview);
+      const status = flightTicketStatus(ticket, flight, preview);
+      const board = status.board;
       const disabled = board.ok ? '' : 'disabled';
+      const fare = ticket.fare || resolveFlightFare(flight);
       return [`
-        <button class="route-row" type="button" data-row-key="${escapeHtml(`flight-ticket:${ticket.flight_id}`)}" data-action="take-flight" data-flight-id="${escapeHtml(ticket.flight_id)}" ${disabled}>
-          <span class="route-swatch" style="background:#1d4ed8"></span>
+        <button class="route-row flight-ticket-row" type="button" data-row-key="${escapeHtml(`flight-ticket:${ticket.flight_id}`)}" data-action="take-flight" data-flight-id="${escapeHtml(ticket.flight_id)}" ${disabled}>
+          ${airlineLogoHtml(flight)}
           <span>
             <span class="row-title">Ticket: ${escapeHtml(flightDisplayLabel(flight))}</span>
-            <span class="row-sub">bought ${ticket.purchase_hhmm} · ${board.ok ? `board after ${minutesToHhmm(board.times.boardingStartMinute)}` : board.reasons.join(' · ')}</span>
+            <span class="row-sub">bought ${ticket.purchase_hhmm} · ¥${Number(fare.total_yen || 0).toLocaleString('ja-JP')} · ${escapeHtml(flight.departureTimeLocal)} -> ${escapeHtml(flight.arrivalTimeLocal)}</span>
+            <span class="flight-status-line">${escapeHtml(status.text)}</span>
           </span>
-          <span class="row-meta">${board.ok ? 'take' : 'wait'}</span>
+          <span class="row-meta">${escapeHtml(status.label)}</span>
         </button>
       `];
     }
