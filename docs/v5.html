@@ -13204,6 +13204,7 @@
         fare,
       });
       state.planningRouteIds[state.activeMode] = null;
+      state.flightPlanning[state.activeMode] = { origin: null, destination: null };
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
@@ -13228,6 +13229,8 @@
         arrival_hhmm: flight.arrivalTimeLocal,
         fare,
       };
+      state.flightPlanning[state.activeMode] = { origin: null, destination: null };
+      updateFlightMapLayers();
       invalidateSimulation();
       renderGame();
       syncPlanIfOnline();
