@@ -1399,7 +1399,9 @@
     const FLIGHT_MAP_URL = './data/v5_flight_map.geojson';
     const FLIGHT_TIMETABLE_URL = './data/v5_domestic_flights_current_bundle.json';
     const BUS_MAP_MANIFEST_URL = './data/v5_bus_map_tiles/manifest.json';
+    const BUS_PLANNER_MANIFEST_URL = './data/v5_bus_planner_tiles/manifest.json';
     const BUS_MAP_AROUND_FALLBACK_RADII_METERS = [25000, 60000, 120000];
+    const BUS_PLANNER_AROUND_FALLBACK_RADII_METERS = [4000, 12000, 30000, 60000];
     const V5_ACTIVE_WALKING_THRESHOLD_METERS = 2000;
     const V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND = 5 / 3.6;
     const V5_MIN_WALKING_SPEED_MULTIPLIER = 0.35;
@@ -5745,6 +5747,20 @@
       lastBusMapSourceKey: '',
       busMapActiveFeatureCacheKey: '',
       busMapActiveFeatureCache: null,
+      busPlannerManifest: null,
+      busPlannerTileCache: new Map(),
+      busPlannerTileInflight: new Map(),
+      busPlannerStopsById: new Map(),
+      busPlannerRoutesById: new Map(),
+      busPlannerTripsById: new Map(),
+      busPlannerDeparturesByStopId: new Map(),
+      busPlannerConnectors: [],
+      busPlannerLoadStatus: 'idle',
+      lastBusPlannerAnchorKey: '',
+      busPlanning: {
+        runner: { stopId: null, routeKey: null, tripId: null },
+        hunter: { stopId: null, routeKey: null, tripId: null },
+      },
       nearestAirportStationCache: new Map(),
       fareRules: null,
       coupledServiceEntries: [],
@@ -8278,11 +8294,46 @@
       renderGame();
     }
 
+    function indexBusPlannerManifest(payload) {
+      state.busPlannerManifest = payload || null;
+      state.busPlannerTileCache = new Map();
+      state.busPlannerTileInflight = new Map();
+      state.busPlannerStopsById = new Map();
+      state.busPlannerRoutesById = new Map();
+      state.busPlannerTripsById = new Map();
+      state.busPlannerDeparturesByStopId = new Map();
+      state.busPlannerConnectors = [];
+      state.lastBusPlannerAnchorKey = '';
+    }
+
+    async function loadBusPlanner() {
+      state.busPlannerLoadStatus = 'loading';
+      try {
+        const payload = await fetchJsonMaybeGz(BUS_PLANNER_MANIFEST_URL);
+        indexBusPlannerManifest(payload);
+        state.busPlannerLoadStatus = 'ready';
+      } catch (error) {
+        console.warn('Failed to load v5 bus planner tiles', error);
+        indexBusPlannerManifest(null);
+        state.busPlannerLoadStatus = 'failed';
+      }
+      await refreshBusPlannerVisibleData();
+      renderGame();
+    }
+
     function ensureBusMapLoaded() {
       if (state.busMapLoadStatus === 'idle') {
         return loadBusMap();
       }
       if (state.busMapLoadStatus === 'loading') return null;
+      return Promise.resolve();
+    }
+
+    function ensureBusPlannerLoaded() {
+      if (state.busPlannerLoadStatus === 'idle') {
+        return loadBusPlanner();
+      }
+      if (state.busPlannerLoadStatus === 'loading') return null;
       return Promise.resolve();
     }
 
@@ -10533,6 +10584,120 @@
       return state.busMapVisibleFeatures || { type: 'FeatureCollection', features: [] };
     }
 
+    function busPlannerTileEntriesNear(anchor, radiusMeters) {
+      const manifest = state.busPlannerManifest;
+      if (!manifest?.tiles || !validCoordinate(anchor)) return [];
+      const tileSize = Number(manifest.tileSizeDegrees) || 0.25;
+      const lat = anchor[1];
+      const latDelta = radiusMeters / 111320;
+      const lonDelta = radiusMeters / Math.max(35000, 111320 * Math.cos(lat * Math.PI / 180));
+      const minIx = Math.floor((anchor[0] - lonDelta) / tileSize);
+      const maxIx = Math.floor((anchor[0] + lonDelta) / tileSize);
+      const minIy = Math.floor((anchor[1] - latDelta) / tileSize);
+      const maxIy = Math.floor((anchor[1] + latDelta) / tileSize);
+      const entries = [];
+      for (let ix = minIx; ix <= maxIx; ix += 1) {
+        for (let iy = minIy; iy <= maxIy; iy += 1) {
+          const key = busMapTileKey(ix, iy);
+          const meta = manifest.tiles[key];
+          if (meta) entries.push({ key, meta });
+        }
+      }
+      entries.sort((a, b) => (a.meta.departureCount || 0) - (b.meta.departureCount || 0));
+      return entries;
+    }
+
+    async function loadBusPlannerTile(entry) {
+      if (!entry?.key || !entry?.meta?.url) return null;
+      if (state.busPlannerTileCache.has(entry.key)) return state.busPlannerTileCache.get(entry.key);
+      if (state.busPlannerTileInflight.has(entry.key)) return state.busPlannerTileInflight.get(entry.key);
+      const promise = fetchJsonMaybeGz(entry.meta.url)
+        .then((payload) => {
+          state.busPlannerTileCache.set(entry.key, payload || null);
+          state.busPlannerTileInflight.delete(entry.key);
+          return payload || null;
+        })
+        .catch((error) => {
+          state.busPlannerTileInflight.delete(entry.key);
+          console.warn('Failed to load v5 bus planner tile', entry.key, error);
+          return null;
+        });
+      state.busPlannerTileInflight.set(entry.key, promise);
+      return promise;
+    }
+
+    function mergeBusPlannerTiles(tiles) {
+      const stopsById = new Map();
+      const routesById = new Map();
+      const tripsById = new Map();
+      const departuresByStopId = new Map();
+      const connectorByKey = new Map();
+      (tiles || []).forEach((tile) => {
+        (tile?.stops || []).forEach((stop) => {
+          if (stop?.id && !stopsById.has(stop.id)) stopsById.set(stop.id, stop);
+        });
+        (tile?.routes || []).forEach((route) => {
+          if (route?.id && !routesById.has(route.id)) routesById.set(route.id, route);
+        });
+        (tile?.trips || []).forEach((trip) => {
+          if (trip?.id && !tripsById.has(trip.id)) tripsById.set(trip.id, trip);
+        });
+        Object.entries(tile?.departuresByStop || {}).forEach(([stopId, rows]) => {
+          const existing = departuresByStopId.get(stopId) || [];
+          existing.push(...(rows || []));
+          departuresByStopId.set(stopId, existing);
+        });
+        (tile?.connectors || []).forEach((connector) => {
+          if (!connector?.fromStopId || !connector?.toNodeId) return;
+          const key = `${connector.fromStopId}:${connector.toMode}:${connector.toNodeId}`;
+          const previous = connectorByKey.get(key);
+          if (!previous || Number(connector.distanceMeters || Infinity) < Number(previous.distanceMeters || Infinity)) {
+            connectorByKey.set(key, connector);
+          }
+        });
+      });
+      departuresByStopId.forEach((rows, stopId) => {
+        const byKey = new Map();
+        rows.forEach((row) => {
+          const key = `${row.tripId}:${row.stopSequence}`;
+          if (!byKey.has(key)) byKey.set(key, row);
+        });
+        departuresByStopId.set(stopId, [...byKey.values()].sort((a, b) =>
+          Number(a.departureMinute ?? 99999) - Number(b.departureMinute ?? 99999) ||
+          String(a.routeId || '').localeCompare(String(b.routeId || '')) ||
+          String(a.tripId || '').localeCompare(String(b.tripId || ''))
+        ));
+      });
+      state.busPlannerStopsById = stopsById;
+      state.busPlannerRoutesById = routesById;
+      state.busPlannerTripsById = tripsById;
+      state.busPlannerDeparturesByStopId = departuresByStopId;
+      state.busPlannerConnectors = [...connectorByKey.values()];
+    }
+
+    async function refreshBusPlannerVisibleData() {
+      if (!state.busMapActive && activePlanningMode() !== 'bus') return;
+      if (state.busPlannerLoadStatus === 'idle') {
+        await ensureBusPlannerLoaded();
+        return;
+      }
+      if (state.busPlannerLoadStatus !== 'ready') return;
+      const anchor = busMapAnchorCoordinate();
+      if (!anchor) return;
+      const anchorKey = `bus-planner:${Math.round(anchor[0] * 1000)}:${Math.round(anchor[1] * 1000)}`;
+      if (state.lastBusPlannerAnchorKey.startsWith(`${anchorKey}:`) && state.busPlannerStopsById.size) return;
+      for (const radiusMeters of BUS_PLANNER_AROUND_FALLBACK_RADII_METERS) {
+        const entries = busPlannerTileEntriesNear(anchor, radiusMeters);
+        const tiles = await Promise.all(entries.map(loadBusPlannerTile));
+        mergeBusPlannerTiles(tiles.filter(Boolean));
+        const reachableCount = busReachableStopChoices(planCursorPreview(state.activeMode)).length;
+        if (reachableCount > 0 || radiusMeters === BUS_PLANNER_AROUND_FALLBACK_RADII_METERS[BUS_PLANNER_AROUND_FALLBACK_RADII_METERS.length - 1]) {
+          state.lastBusPlannerAnchorKey = `${anchorKey}:${radiusMeters}:${entries.length}`;
+          return;
+        }
+      }
+    }
+
     function activeFlightMapFeatureCollection() {
       const features = state.flightMap?.features || [];
       const selected = state.flightPlanning[state.activeMode] || {};
@@ -10655,12 +10820,16 @@
         state.walkingMapActive = false;
         state.flightMapActive = false;
         ensureBusMapLoaded();
+        ensureBusPlannerLoaded();
       }
       updateRailDimForWalkingMap();
       updateWalkingMapLayers();
       updateFlightMapLayers();
       updateBusMapLayers();
-      if (state.busMapActive) refreshBusMapVisibleFeatures();
+      if (state.busMapActive) {
+        refreshBusMapVisibleFeatures();
+        refreshBusPlannerVisibleData();
+      }
       if (state.busMapActive && focus) focusBusMap();
     }
 
@@ -12741,6 +12910,76 @@
           currentBoardPhysicalStationId = null;
           continue;
         }
+        if (step.type === 'WALK_TO_BUS_STOP') {
+          if (currentState.kind !== 'NODE') break;
+          const fromStationGroupId = currentState.stationGroupId;
+          const stopId = step.bus_stop_id;
+          const fromPosition = stationLonLat(fromStationGroupId);
+          const toPosition = busStopCoordinate(stopId);
+          if (!toPosition) break;
+          const departMinute = currentMinute;
+          const walkTimeSec = Number(step.walk_time_sec) || walkingTimeSecForDistance(Number(step.distance_meters) || coordinateDistanceMeters(fromPosition, toPosition) || 0, walkingSpeedMetersPerSecondFor(playerId));
+          const walkMinutes = Math.max(0, Math.ceil(walkTimeSec / 60));
+          const arrivalMinute = currentMinute + walkMinutes;
+          if (timeCapMinute !== null && timeCapMinute < arrivalMinute) {
+            const ratio = walkMinutes <= 0 ? 1 : clamp((timeCapMinute - departMinute) / walkMinutes, 0, 1);
+            const mapPosition = fromPosition && toPosition
+              ? [fromPosition[0] + (toPosition[0] - fromPosition[0]) * ratio, fromPosition[1] + (toPosition[1] - fromPosition[1]) * ratio]
+              : fromPosition || toPosition || null;
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'WALK_TO_BUS_STOP', fromStationGroupId, toBusStopId: stopId },
+              currentTrip: null,
+              currentBoardStop: null,
+              resolvedSteps,
+              mapPosition,
+              mapStationGroupId: null,
+            };
+          }
+          currentMinute = arrivalMinute;
+          currentState = { kind: 'BUS_STOP', busStopId: stopId };
+          resolvedSteps.push({ ...step, walk_time_sec: walkTimeSec });
+          currentTrip = null;
+          currentBoardStop = null;
+          currentBoardPhysicalStationId = null;
+          continue;
+        }
+        if (step.type === 'WALK_FROM_BUS_TO_STATION') {
+          if (currentState.kind !== 'BUS_STOP') break;
+          const fromStopId = currentState.busStopId;
+          const toStationGroupId = step.station_id;
+          const fromPosition = busStopCoordinate(fromStopId);
+          const toPosition = stationLonLat(toStationGroupId);
+          if (!toPosition) break;
+          const departMinute = currentMinute;
+          const walkTimeSec = Number(step.walk_time_sec) || walkingTimeSecForDistance(Number(step.distance_meters) || coordinateDistanceMeters(fromPosition, toPosition) || 0, walkingSpeedMetersPerSecondFor(playerId));
+          const walkMinutes = Math.max(0, Math.ceil(walkTimeSec / 60));
+          const arrivalMinute = currentMinute + walkMinutes;
+          if (timeCapMinute !== null && timeCapMinute < arrivalMinute) {
+            const ratio = walkMinutes <= 0 ? 1 : clamp((timeCapMinute - departMinute) / walkMinutes, 0, 1);
+            const mapPosition = fromPosition && toPosition
+              ? [fromPosition[0] + (toPosition[0] - fromPosition[0]) * ratio, fromPosition[1] + (toPosition[1] - fromPosition[1]) * ratio]
+              : fromPosition || toPosition || null;
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'WALK_FROM_BUS_TO_STATION', fromBusStopId: fromStopId, toStationGroupId },
+              currentTrip: null,
+              currentBoardStop: null,
+              resolvedSteps,
+              mapPosition,
+              mapStationGroupId: null,
+            };
+          }
+          currentMinute = arrivalMinute;
+          currentState = { kind: 'NODE', stationGroupId: toStationGroupId, physicalStationId: null, alightTripId: null };
+          resolvedSteps.push({ ...step, walk_time_sec: walkTimeSec });
+          currentTrip = null;
+          currentBoardStop = null;
+          currentBoardPhysicalStationId = null;
+          continue;
+        }
         if (step.type === 'TAKE_FLIGHT') {
           if (currentState.kind !== 'NODE') break;
           const flight = state.flightById.get(step.flight_id);
@@ -12867,6 +13106,49 @@
           currentBoardStop = null;
           currentBoardPhysicalStationId = null;
           resolvedSteps.push({ ...step, alight_physical_station_id: alightPhysicalStation?.id || null });
+          continue;
+        }
+        if (step.type === 'BOARD_BUS') {
+          if (currentState.kind !== 'BUS_STOP' || currentState.busStopId !== step.bus_stop_id) break;
+          const trip = state.busPlannerTripsById.get(step.trip_id);
+          if (!trip) break;
+          const boardStop = (trip.stops || []).find((stop) => stop.stopId === step.bus_stop_id);
+          if (!boardStop) break;
+          const boardMinute = Number(boardStop.dep ?? boardStop.arr);
+          if (!Number.isFinite(boardMinute) || boardMinute < currentMinute) break;
+          if (timeCapMinute !== null && boardMinute > timeCapMinute) break;
+          currentMinute = boardMinute;
+          currentState = { kind: 'BUS', tripId: trip.id, boardStopId: step.bus_stop_id };
+          currentTrip = null;
+          currentBoardStop = boardStop;
+          resolvedSteps.push(step);
+          continue;
+        }
+        if (step.type === 'RIDE_TO_BUS_STOP') {
+          if (currentState.kind !== 'BUS') break;
+          const trip = state.busPlannerTripsById.get(currentState.tripId);
+          const alightStop = (trip?.stops || []).find((stop) => stop.stopId === step.bus_stop_id);
+          if (!trip || !alightStop || Number(alightStop.seq) <= Number(currentBoardStop?.seq ?? -1)) break;
+          const arrivalMinute = Number(alightStop.arr ?? alightStop.dep);
+          if (!Number.isFinite(arrivalMinute)) break;
+          if (timeCapMinute !== null && arrivalMinute > timeCapMinute) {
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'BUS', tripId: trip.id, boardStopId: currentState.boardStopId },
+              currentTrip: null,
+              currentBoardStop,
+              resolvedSteps,
+              mapPosition: busTripLocationOnMap(trip.id, timeCapMinute),
+              mapStationGroupId: null,
+            };
+          }
+          currentMinute = arrivalMinute;
+          currentState = { kind: 'BUS_STOP', busStopId: alightStop.stopId };
+          currentTrip = null;
+          currentBoardStop = null;
+          currentBoardPhysicalStationId = null;
+          resolvedSteps.push({ ...step, alight_stop_name: alightStop.name });
         }
       }
 
@@ -12880,6 +13162,18 @@
         mapStationGroupId = loc?.anchorStationGroupId || null;
       } else if (currentState.kind === 'WALK') {
         mapPosition = stationLonLat(currentState.toStationGroupId) || stationLonLat(currentState.fromStationGroupId);
+        mapStationGroupId = null;
+      } else if (currentState.kind === 'WALK_TO_BUS_STOP') {
+        mapPosition = busStopCoordinate(currentState.toBusStopId) || stationLonLat(currentState.fromStationGroupId);
+        mapStationGroupId = null;
+      } else if (currentState.kind === 'WALK_FROM_BUS_TO_STATION') {
+        mapPosition = stationLonLat(currentState.toStationGroupId) || busStopCoordinate(currentState.fromBusStopId);
+        mapStationGroupId = null;
+      } else if (currentState.kind === 'BUS_STOP') {
+        mapPosition = busStopCoordinate(currentState.busStopId);
+        mapStationGroupId = null;
+      } else if (currentState.kind === 'BUS') {
+        mapPosition = busTripLocationOnMap(currentState.tripId, timeCapMinute ?? currentMinute);
         mapStationGroupId = null;
       } else if (currentState.kind === 'AIRPORT_WAIT' || currentState.kind === 'BOARDING' || currentState.kind === 'ARRIVAL_COOLDOWN') {
         mapPosition = airportCoordinate(currentState.airportIata);
@@ -12924,6 +13218,12 @@
         const loc = tripLocationOnMap(currentState.tripId, event.time_minute);
         mapPosition = loc?.position || null;
         mapStationGroupId = loc?.anchorStationGroupId || null;
+      } else if (currentState.kind === 'BUS') {
+        mapPosition = busTripLocationOnMap(currentState.tripId, event.time_minute);
+        mapStationGroupId = null;
+      } else if (currentState.kind === 'BUS_STOP') {
+        mapPosition = busStopCoordinate(currentState.busStopId);
+        mapStationGroupId = null;
       } else if (currentState.kind === 'AIRPORT_WAIT' || currentState.kind === 'BOARDING' || currentState.kind === 'ARRIVAL_COOLDOWN') {
         mapPosition = airportCoordinate(currentState.airportIata);
         mapStationGroupId = null;
@@ -12968,6 +13268,8 @@
       if (preview.currentState.kind === 'AIRPORT_WAIT') return `waiting at ${airportName(preview.currentState.airportIata)} ${preview.currentTime}`;
       if (preview.currentState.kind === 'BOARDING') return `boarding at ${airportName(preview.currentState.airportIata)} ${preview.currentTime}`;
       if (preview.currentState.kind === 'FLIGHT') return `on ${flightDisplayLabel(state.flightById.get(preview.currentState.flightId))} ${preview.currentTime}`;
+      if (preview.currentState.kind === 'BUS') return `on ${busRouteName(state.busPlannerTripsById.get(preview.currentState.tripId)?.routeId)} ${preview.currentTime}`;
+      if (preview.currentState.kind === 'BUS_STOP') return `at ${busStopName(preview.currentState.busStopId)} ${preview.currentTime}`;
       if (preview.currentState.kind === 'ARRIVAL_COOLDOWN') return `arrived at ${airportName(preview.currentState.airportIata)} ${preview.currentTime}`;
       if (preview.currentState.kind === 'WALK') {
         return `walking ${displayNameForGroup(preview.currentState.fromStationGroupId)} -> ${displayNameForGroup(preview.currentState.toStationGroupId)} ${preview.currentTime}`;
@@ -13634,6 +13936,63 @@
       syncPlanIfOnline();
     }
 
+    function addBusWalkToStation(stationGroupId) {
+      const preview = truncateFuturePlan();
+      if (preview.currentState.kind !== 'BUS_STOP') return;
+      const connector = busRailAccessChoices(preview).find((item) => item.toNodeId === stationGroupId);
+      if (!connector) return;
+      activePlayer().steps.push({
+        type: 'WALK_FROM_BUS_TO_STATION',
+        bus_stop_id: preview.currentState.busStopId,
+        station_id: connector.toNodeId,
+        distance_meters: connector.distanceMeters,
+        walk_time_sec: walkingTimeSecForDistance(connector.distanceMeters),
+        walking_speed_mps: activeWalkingSpeedMetersPerSecond(),
+      });
+      clearBusPlanning();
+      state.planningRouteIds[state.activeMode] = null;
+      clearPendingTrip();
+      invalidateSimulation();
+      renderGame();
+      syncPlanIfOnline();
+    }
+
+    function addBusRideToStop(destinationStopId) {
+      const preview = truncateFuturePlan();
+      const planning = busPlanningState();
+      const boardStopId = planning.stopId;
+      const tripId = planning.tripId;
+      const trip = state.busPlannerTripsById.get(tripId);
+      if (!boardStopId || !destinationStopId || !trip) return;
+      const boardStop = (trip.stops || []).find((stop) => stop.stopId === boardStopId);
+      const destinationStop = (trip.stops || []).find((stop) => stop.stopId === destinationStopId);
+      if (!boardStop || !destinationStop || Number(destinationStop.seq) <= Number(boardStop.seq)) return;
+      if (preview.currentState.kind === 'NODE') {
+        const connector = busReachableStopChoices(preview).find((item) => item.stopId === boardStopId);
+        if (!connector) return;
+        if (Number(connector.distanceMeters || 0) > 0) {
+          activePlayer().steps.push({
+            type: 'WALK_TO_BUS_STOP',
+            station_id: preview.currentState.stationGroupId,
+            bus_stop_id: boardStopId,
+            distance_meters: connector.distanceMeters,
+            walk_time_sec: walkingTimeSecForDistance(connector.distanceMeters),
+            walking_speed_mps: activeWalkingSpeedMetersPerSecond(),
+          });
+        }
+      } else if (preview.currentState.kind !== 'BUS_STOP' || preview.currentState.busStopId !== boardStopId) {
+        return;
+      }
+      activePlayer().steps.push({ type: 'BOARD_BUS', trip_id: tripId, bus_stop_id: boardStopId });
+      activePlayer().steps.push({ type: 'RIDE_TO_BUS_STOP', bus_stop_id: destinationStopId });
+      clearBusPlanning();
+      state.planningRouteIds[state.activeMode] = null;
+      clearPendingTrip();
+      invalidateSimulation();
+      renderGame();
+      syncPlanIfOnline();
+    }
+
     function buyFlightTicket(flightId) {
       const preview = previewPlayer(state.activeMode, state.currentGameMinute);
       const flight = state.flightById.get(flightId);
@@ -13678,6 +14037,14 @@
         steps[removeFrom - 1]?.type === 'BOARD_TRAIN'
       ) {
         removeFrom -= 1;
+      }
+      if (
+        steps[removeFrom]?.type === 'RIDE_TO_BUS_STOP' &&
+        removeFrom - 1 >= floor &&
+        steps[removeFrom - 1]?.type === 'BOARD_BUS'
+      ) {
+        removeFrom -= 1;
+        if (removeFrom - 1 >= floor && steps[removeFrom - 1]?.type === 'WALK_TO_BUS_STOP') removeFrom -= 1;
       }
       steps.splice(removeFrom);
       state.planningRouteIds[state.activeMode] = null;
@@ -13729,6 +14096,12 @@
       }
       if (runnerState?.kind === 'NODE' && hunterState?.kind === 'NODE' && runnerState.stationGroupId === hunterState.stationGroupId) {
         return { type: 'same_node', time_hhmm: minutesToHhmm(state.currentGameMinute), station_group_id: runnerState.stationGroupId };
+      }
+      if (runnerState?.kind === 'BUS' && hunterState?.kind === 'BUS' && runnerState.tripId === hunterState.tripId) {
+        return { type: 'same_bus', time_hhmm: minutesToHhmm(state.currentGameMinute), trip_id: runnerState.tripId };
+      }
+      if (runnerState?.kind === 'BUS_STOP' && hunterState?.kind === 'BUS_STOP' && runnerState.busStopId === hunterState.busStopId) {
+        return { type: 'same_bus_stop', time_hhmm: minutesToHhmm(state.currentGameMinute), bus_stop_id: runnerState.busStopId };
       }
       if (
         runnerState?.airportIata &&
@@ -14477,6 +14850,237 @@
       `];
     }
 
+    function busStopName(stopId) {
+      return state.busPlannerStopsById.get(stopId)?.name || stopId || 'Bus stop';
+    }
+
+    function busStopCoordinate(stopId) {
+      const stop = state.busPlannerStopsById.get(stopId);
+      return stop && Number.isFinite(stop.lon) && Number.isFinite(stop.lat) ? [stop.lon, stop.lat] : null;
+    }
+
+    function busRouteName(routeId) {
+      const route = state.busPlannerRoutesById.get(routeId);
+      return route?.name || route?.shortName || routeId || 'Bus route';
+    }
+
+    function busRouteColor(routeId) {
+      const route = state.busPlannerRoutesById.get(routeId);
+      if (route?.color) return route.color;
+      if (route?.serviceClass === 'bus_airport') return '#0f766e';
+      if (route?.serviceClass === 'bus_long_distance') return '#b45309';
+      return '#64748b';
+    }
+
+    function busRouteFare(routeId) {
+      const route = state.busPlannerRoutesById.get(routeId);
+      if (route?.fare?.fareKnown) {
+        return {
+          total_yen: Number(route.fare.fareYen),
+          fare_known: true,
+          source: route.fare.fareType || 'gtfs_fare_rules',
+          components: [{ type: 'bus', total_yen: Number(route.fare.fareYen), source: route.fare.fareType || 'gtfs_fare_rules' }],
+        };
+      }
+      return { total_yen: null, fare_known: false, source: 'missing_real_bus_fare_rule', components: [{ type: 'bus', total_yen: null, source: 'missing_real_bus_fare_rule' }] };
+    }
+
+    function busPlanningState(playerId = state.activeMode) {
+      if (!state.busPlanning[playerId]) state.busPlanning[playerId] = { stopId: null, routeKey: null, tripId: null };
+      return state.busPlanning[playerId];
+    }
+
+    function clearBusPlanning(playerId = state.activeMode) {
+      state.busPlanning[playerId] = { stopId: null, routeKey: null, tripId: null };
+    }
+
+    function busReachableStopChoices(preview) {
+      if (!preview?.currentState) return [];
+      if (preview.currentState.kind === 'BUS_STOP') {
+        const stop = state.busPlannerStopsById.get(preview.currentState.busStopId);
+        return stop ? [{ stopId: stop.id, stop, distanceMeters: 0, walkTimeSec: 0, from: 'current' }] : [];
+      }
+      if (preview.currentState.kind !== 'NODE') return [];
+      const stationGroupId = preview.currentState.stationGroupId;
+      const byStop = new Map();
+      state.busPlannerConnectors.forEach((connector) => {
+        if (connector.toMode !== 'rail_station_group' || connector.toNodeId !== stationGroupId) return;
+        const distance = Number(connector.distanceMeters);
+        if (!Number.isFinite(distance) || distance > V5_ACTIVE_WALKING_THRESHOLD_METERS) return;
+        const stop = state.busPlannerStopsById.get(connector.fromStopId);
+        if (!stop) return;
+        const previous = byStop.get(connector.fromStopId);
+        if (!previous || distance < previous.distanceMeters) {
+          byStop.set(connector.fromStopId, {
+            stopId: connector.fromStopId,
+            stop,
+            connector,
+            distanceMeters: distance,
+            walkTimeSec: walkingTimeSecForDistance(distance, walkingSpeedMetersPerSecondFor(state.activeMode)),
+            from: 'station',
+          });
+        }
+      });
+      return [...byStop.values()].sort((a, b) =>
+        a.distanceMeters - b.distanceMeters ||
+        String(a.stop.name || '').localeCompare(String(b.stop.name || ''), 'ja')
+      ).slice(0, 60);
+    }
+
+    function busRailAccessChoices(preview) {
+      if (preview?.currentState?.kind !== 'BUS_STOP') return [];
+      const stopId = preview.currentState.busStopId;
+      return state.busPlannerConnectors
+        .filter((connector) => connector.fromStopId === stopId && connector.toMode === 'rail_station_group')
+        .filter((connector) => Number(connector.distanceMeters) <= V5_ACTIVE_WALKING_THRESHOLD_METERS)
+        .sort((a, b) => Number(a.distanceMeters || 0) - Number(b.distanceMeters || 0))
+        .slice(0, 40);
+    }
+
+    function busDeparturesFromStop(stopId, currentMinute) {
+      return (state.busPlannerDeparturesByStopId.get(stopId) || [])
+        .filter((row) => Number(row.departureMinute) >= currentMinute)
+        .filter((row) => state.busPlannerTripsById.has(row.tripId))
+        .sort((a, b) => Number(a.departureMinute) - Number(b.departureMinute));
+    }
+
+    function busRouteKey(routeId, headsign = '') {
+      return `${routeId}::${headsign || ''}`;
+    }
+
+    function parseBusRouteKey(key) {
+      const [routeId, ...rest] = String(key || '').split('::');
+      return { routeId, headsign: rest.join('::') };
+    }
+
+    function busRouteChoicesFromStop(stopId, preview) {
+      const rows = busDeparturesFromStop(stopId, effectiveDepartureMinute(state.activeMode, preview.currentMinute));
+      const grouped = new Map();
+      rows.forEach((row) => {
+        const key = busRouteKey(row.routeId, row.headsign || state.busPlannerTripsById.get(row.tripId)?.headsign || '');
+        const group = grouped.get(key) || { key, routeId: row.routeId, headsign: row.headsign || '', firstDepartureMinute: row.departureMinute, tripCount: 0 };
+        group.firstDepartureMinute = Math.min(group.firstDepartureMinute, row.departureMinute);
+        group.tripCount += 1;
+        grouped.set(key, group);
+      });
+      return [...grouped.values()].sort((a, b) =>
+        a.firstDepartureMinute - b.firstDepartureMinute ||
+        busRouteName(a.routeId).localeCompare(busRouteName(b.routeId), 'ja') ||
+        String(a.headsign || '').localeCompare(String(b.headsign || ''), 'ja')
+      ).slice(0, 80);
+    }
+
+    function busTripChoicesFromRoute(stopId, routeKey, preview) {
+      const parsed = parseBusRouteKey(routeKey);
+      const currentMinute = effectiveDepartureMinute(state.activeMode, preview.currentMinute);
+      return busDeparturesFromStop(stopId, currentMinute)
+        .filter((row) => row.routeId === parsed.routeId)
+        .filter((row) => !parsed.headsign || (row.headsign || state.busPlannerTripsById.get(row.tripId)?.headsign || '') === parsed.headsign)
+        .map((row) => ({ row, trip: state.busPlannerTripsById.get(row.tripId) }))
+        .filter((item) => item.trip)
+        .sort((a, b) => Number(a.row.departureMinute) - Number(b.row.departureMinute))
+        .slice(0, 80);
+    }
+
+    function busDownstreamStops(tripId, boardStopId) {
+      const trip = state.busPlannerTripsById.get(tripId);
+      if (!trip) return [];
+      const board = (trip.stops || []).find((stop) => stop.stopId === boardStopId);
+      if (!board) return [];
+      return (trip.stops || [])
+        .filter((stop) => Number(stop.seq) > Number(board.seq))
+        .filter((stop) => Number.isFinite(Number(stop.arr ?? stop.dep)))
+        .map((stop) => ({ ...stop, arrivalMinute: Number(stop.arr ?? stop.dep) }))
+        .slice(0, 80);
+    }
+
+    function busTripLocationOnMap(tripId, minute) {
+      const trip = state.busPlannerTripsById.get(tripId);
+      const stops = (trip?.stops || []).filter((stop) => validCoordinate([stop.lon, stop.lat]));
+      if (!stops.length) return null;
+      for (let index = 0; index < stops.length - 1; index += 1) {
+        const current = stops[index];
+        const next = stops[index + 1];
+        const currentMinute = Number(current.dep ?? current.arr);
+        const nextMinute = Number(next.arr ?? next.dep);
+        if (!Number.isFinite(currentMinute) || !Number.isFinite(nextMinute)) continue;
+        if (minute >= currentMinute && minute <= nextMinute) {
+          const ratio = clamp((minute - currentMinute) / Math.max(1, nextMinute - currentMinute), 0, 1);
+          return [
+            current.lon + (next.lon - current.lon) * ratio,
+            current.lat + (next.lat - current.lat) * ratio,
+          ];
+        }
+      }
+      const last = stops[stops.length - 1];
+      return [last.lon, last.lat];
+    }
+
+    function busStopRowsHtml(preview) {
+      const rows = busReachableStopChoices(preview);
+      return rows.map((item) => `
+        <button class="route-row" type="button" data-row-key="${escapeHtml(`bus-stop:${item.stopId}`)}" data-action="choose-bus-stop" data-bus-stop-id="${escapeHtml(item.stopId)}">
+          <span class="route-swatch" style="background:#0f766e"></span>
+          <span>
+            <span class="row-title">${escapeHtml(item.stop.name || item.stopId)}</span>
+            <span class="row-sub">${item.distanceMeters ? `${walkingDistanceLabel(item.distanceMeters)} · ${walkingTimeLabel(item.walkTimeSec)} walk` : 'current bus stop'}</span>
+          </span>
+          <span class="row-meta">stop</span>
+        </button>
+      `);
+    }
+
+    function busRouteRowsHtml(stopId, preview) {
+      return busRouteChoicesFromStop(stopId, preview).map((choice) => `
+        <button class="route-row" type="button" data-row-key="${escapeHtml(`bus-route:${choice.key}`)}" data-action="choose-bus-route" data-bus-route-key="${escapeHtml(choice.key)}">
+          <span class="route-swatch" style="background:${busRouteColor(choice.routeId)}"></span>
+          <span>
+            <span class="row-title">${escapeHtml(busRouteName(choice.routeId))}</span>
+            <span class="row-sub">${escapeHtml(choice.headsign || 'direction unknown')} · ${choice.tripCount} buses</span>
+          </span>
+          <span class="row-meta">${minutesToHhmm(choice.firstDepartureMinute)}</span>
+        </button>
+      `);
+    }
+
+    function busTripRowsHtml(stopId, routeKey, preview) {
+      return busTripChoicesFromRoute(stopId, routeKey, preview).map(({ row, trip }) => `
+        <button class="outlook-row" type="button" data-row-key="${escapeHtml(`bus-trip:${trip.id}:${row.stopSequence}`)}" data-action="choose-bus-trip" data-bus-trip-id="${escapeHtml(trip.id)}">
+          <span class="row-meta">${minutesToHhmm(row.departureMinute)}</span>
+          <span>
+            <span class="row-title">${escapeHtml(busRouteName(row.routeId))}</span>
+            <span class="row-sub">終点 ${escapeHtml((trip.stops || [])[trip.stops.length - 1]?.name || trip.headsign || 'unknown')}</span>
+          </span>
+        </button>
+      `);
+    }
+
+    function busDestinationRowsHtml(stopId, tripId) {
+      const trip = state.busPlannerTripsById.get(tripId);
+      return busDownstreamStops(tripId, stopId).map((stop) => `
+        <button class="outlook-row destination-row" type="button" data-row-key="${escapeHtml(`bus-dest:${tripId}:${stop.stopId}:${stop.seq}`)}" data-action="ride-bus-here" data-bus-stop-id="${escapeHtml(stop.stopId)}">
+          <span class="row-meta">${minutesToHhmm(stop.arrivalMinute)}</span>
+          <span>
+            <span class="row-title">${escapeHtml(stop.name || stop.stopId)}</span>
+            <span class="row-sub">${escapeHtml(busRouteName(trip?.routeId))}</span>
+          </span>
+        </button>
+      `);
+    }
+
+    function busRailAccessRowsHtml(preview) {
+      return busRailAccessChoices(preview).map((connector) => `
+        <button class="route-row" type="button" data-row-key="${escapeHtml(`bus-rail:${connector.toNodeId}`)}" data-action="walk-bus-to-station" data-station-group-id="${escapeHtml(connector.toNodeId)}">
+          <span class="route-swatch" style="background:#7c3aed"></span>
+          <span>
+            <span class="row-title">Walk to ${escapeHtml(displayNameForGroup(connector.toNodeId))}</span>
+            <span class="row-sub">${walkingDistanceLabel(connector.distanceMeters)} · ${walkingTimeLabel(walkingTimeSecForDistance(connector.distanceMeters))} · fare ¥0</span>
+          </span>
+          <span class="row-meta">walk</span>
+        </button>
+      `);
+    }
+
     function plannerStep(index, title, sub, body) {
       return `
         <div class="planner-step">
@@ -14643,6 +15247,14 @@
           else if (action === 'buy-flight-ticket') buyFlightTicket(button.dataset.flightId);
           else if (action === 'take-flight') addFlightStep(button.dataset.flightId);
           else if (action === 'choose-mode') choosePlanningMode(button.dataset.mode);
+          else if (action === 'choose-bus-stop') chooseBusStop(button.dataset.busStopId);
+          else if (action === 'choose-bus-route') chooseBusRoute(button.dataset.busRouteKey);
+          else if (action === 'choose-bus-trip') chooseBusTrip(button.dataset.busTripId);
+          else if (action === 'back-bus-stops') backToBusStops();
+          else if (action === 'back-bus-routes') backToBusRoutes();
+          else if (action === 'back-bus-trips') backToBusTrips();
+          else if (action === 'ride-bus-here') addBusRideToStop(button.dataset.busStopId);
+          else if (action === 'walk-bus-to-station') addBusWalkToStation(button.dataset.stationGroupId);
           else if (action === 'choose-coupled') chooseCoupledTrain(button.dataset.coupledKey);
           else if (action === 'choose-trip') chooseTrip(button.dataset.tripId);
           else if (action === 'back-routes') backToPlanningRoutes();
@@ -14666,6 +15278,7 @@
       else setWalkingMapActive(false);
       if (mode !== 'flight') setFlightMapActive(false);
       if (mode !== 'bus') setBusMapActive(false);
+      if (mode !== 'bus') clearBusPlanning();
       renderGame();
     }
 
@@ -14694,6 +15307,41 @@
     function backToFlightDestinations() {
       const current = state.flightPlanning[state.activeMode] || {};
       state.flightPlanning[state.activeMode] = { origin: current.origin || null, destination: null };
+      renderGame();
+    }
+
+    function chooseBusStop(stopId) {
+      state.busPlanning[state.activeMode] = { stopId: stopId || null, routeKey: null, tripId: null };
+      setBusMapActive(true);
+      renderGame();
+    }
+
+    function chooseBusRoute(routeKey) {
+      const current = busPlanningState();
+      state.busPlanning[state.activeMode] = { stopId: current.stopId || null, routeKey: routeKey || null, tripId: null };
+      renderGame();
+    }
+
+    function chooseBusTrip(tripId) {
+      const current = busPlanningState();
+      state.busPlanning[state.activeMode] = { stopId: current.stopId || null, routeKey: current.routeKey || null, tripId: tripId || null };
+      renderGame();
+    }
+
+    function backToBusStops() {
+      clearBusPlanning();
+      renderGame();
+    }
+
+    function backToBusRoutes() {
+      const current = busPlanningState();
+      state.busPlanning[state.activeMode] = { stopId: current.stopId || null, routeKey: null, tripId: null };
+      renderGame();
+    }
+
+    function backToBusTrips() {
+      const current = busPlanningState();
+      state.busPlanning[state.activeMode] = { stopId: current.stopId || null, routeKey: current.routeKey || null, tripId: null };
       renderGame();
     }
 
@@ -14734,6 +15382,10 @@
           ? `${displayNameForGroup(preview.currentState.fromStationGroupId)} -> ${displayNameForGroup(preview.currentState.toStationGroupId)}`
         : preview.currentState.kind === 'FLIGHT'
           ? flightDisplayLabel(state.flightById.get(preview.currentState.flightId))
+        : preview.currentState.kind === 'BUS_STOP'
+          ? busStopName(preview.currentState.busStopId)
+        : preview.currentState.kind === 'BUS'
+          ? busRouteName(state.busPlannerTripsById.get(preview.currentState.tripId)?.routeId)
         : preview.currentState.airportIata
           ? airportName(preview.currentState.airportIata)
         : displayNameForGroup(preview.currentState.stationGroupId);
@@ -14791,6 +15443,13 @@
           currentLabel,
           `<div class="empty" data-row-key="empty:flight-now">Finish this flight state before planning another leg.</div>`,
         );
+      } else if (['WALK_TO_BUS_STOP', 'WALK_FROM_BUS_TO_STATION', 'BUS'].includes(preview.currentState.kind)) {
+        html += plannerStep(
+          '1/3',
+          preview.currentState.kind === 'BUS' ? 'On bus' : 'Walking',
+          currentLabel,
+          `<div class="empty" data-row-key="empty:bus-transit-now">Arrive before planning another leg.</div>`,
+        );
       } else {
         const planningRouteId = state.planningRouteIds[state.activeMode] || null;
         let routeChoices = [];
@@ -14805,7 +15464,7 @@
             renderCoupledPortionRows(coupledChoice, selectedRouteId),
           );
         } else if (!selectedRouteId) {
-          const departures = availableDepartures(preview);
+          const departures = preview.currentState.kind === 'NODE' ? availableDepartures(preview) : [];
           routeChoices = routeChoicesFromDepartures(departures);
           const planningMode = activePlanningMode();
           const flightPreview = planningMode === 'flight' ? planTailPreview(state.activeMode) : preview;
@@ -14825,6 +15484,12 @@
           const flightTicketRows = flightTicketRowsFromPreview(flightPreview);
           const airportRows = flightAirportRowsFromPreview(flightPreview);
           const selectedFlightPlan = state.flightPlanning[state.activeMode] || {};
+          const selectedBusPlan = busPlanningState();
+          const busStopRows = planningMode === 'bus' ? busStopRowsHtml(preview) : [];
+          const busRouteRows = planningMode === 'bus' && selectedBusPlan.stopId ? busRouteRowsHtml(selectedBusPlan.stopId, preview) : [];
+          const busTripRows = planningMode === 'bus' && selectedBusPlan.stopId && selectedBusPlan.routeKey ? busTripRowsHtml(selectedBusPlan.stopId, selectedBusPlan.routeKey, preview) : [];
+          const busDestinationRows = planningMode === 'bus' && selectedBusPlan.stopId && selectedBusPlan.tripId ? busDestinationRowsHtml(selectedBusPlan.stopId, selectedBusPlan.tripId) : [];
+          const railAccessRows = preview.currentState.kind === 'BUS_STOP' ? busRailAccessRowsHtml(preview) : [];
           const stepTitle = planningMode === 'walk'
             ? `Walking from ${currentLabel}`
             : planningMode === 'flight'
@@ -14834,21 +15499,27 @@
                   ? `Destinations from ${selectedFlightPlan.origin}`
                   : 'Choose departure airport')
               : planningMode === 'bus'
-                ? `Bus map near ${currentLabel}`
+                ? (selectedBusPlan.tripId
+                  ? `Stops after ${busRouteName(state.busPlannerTripsById.get(selectedBusPlan.tripId)?.routeId)}`
+                  : selectedBusPlan.routeKey
+                    ? `Buses on ${busRouteName(parseBusRouteKey(selectedBusPlan.routeKey).routeId)}`
+                    : selectedBusPlan.stopId
+                      ? `Routes at ${busStopName(selectedBusPlan.stopId)}`
+                      : `Bus stops near ${currentLabel}`)
               : `Lines at ${currentLabel}`;
           const stepSub = planningMode === 'walk'
             ? `Walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km`
             : planningMode === 'flight'
               ? `buy ${V5_FLIGHT_PURCHASE_ADVANCE_MINUTES}m ahead · airport ${V5_FLIGHT_AIRPORT_ARRIVAL_ADVANCE_MINUTES}m ahead · boarding ${V5_FLIGHT_BOARDING_ADVANCE_MINUTES}m ahead`
               : planningMode === 'bus'
-                ? state.busMapLoadStatus === 'ready'
-                  ? 'Real GTFS bus map layer · ride planning not enabled yet'
-                  : state.busMapLoadStatus === 'failed'
-                    ? 'Bus map failed to load'
-                    : 'Loading real GTFS bus map layer'
+                ? state.busPlannerLoadStatus === 'ready'
+                  ? `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))} · walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km`
+                  : state.busPlannerLoadStatus === 'failed'
+                    ? 'Bus planner data failed to load'
+                    : 'Loading real GTFS bus planner data'
               : `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))}`;
           html += plannerStep(
-            '1/3',
+            planningMode === 'bus' && selectedBusPlan.tripId ? '4/4' : planningMode === 'bus' && selectedBusPlan.routeKey ? '3/4' : planningMode === 'bus' && selectedBusPlan.stopId ? '2/4' : '1/3',
             stepTitle,
             stepSub,
             planningModePickerHtml(planningMode) + (
@@ -14872,7 +15543,27 @@
                       : `<div class="empty" data-row-key="empty:flight">No airport coordinates available.</div>`))
                   )
                 : planningMode === 'bus'
-                  ? `<div class="empty" data-row-key="empty:bus-map">Bus routes and stops are shown on the map. Riding buses will be enabled after route filtering and airport-access rules are audited.</div>`
+                  ? (state.busPlannerLoadStatus === 'ready'
+                    ? (selectedBusPlan.tripId
+                      ? plannerBackNav('back-bus-trips', 'Back to buses') + (busDestinationRows.length
+                        ? busDestinationRows.join('')
+                        : `<div class="empty" data-row-key="empty:bus-destinations">No downstream bus stops available.</div>`)
+                      : selectedBusPlan.routeKey
+                        ? plannerBackNav('back-bus-routes', 'Back to routes') + (busTripRows.length
+                          ? busTripRows.join('')
+                          : `<div class="empty" data-row-key="empty:bus-trips">No future buses on this route.</div>`)
+                        : selectedBusPlan.stopId
+                          ? plannerBackNav('back-bus-stops', 'Back to bus stops') + (busRouteRows.length
+                            ? busRouteRows.join('')
+                            : `<div class="empty" data-row-key="empty:bus-routes">No future buses at this stop.</div>`)
+                          : (busStopRows.length
+                            ? busStopRows.join('')
+                            : `<div class="empty" data-row-key="empty:bus-stops">No reachable bus stops within ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km.</div>`))
+                    : `<div class="empty" data-row-key="empty:bus-loading">${state.busPlannerLoadStatus === 'failed' ? 'Bus planner data failed to load.' : 'Loading bus planner data...'}</div>`)
+                : preview.currentState.kind === 'BUS_STOP'
+                  ? (railAccessRows.length
+                    ? railAccessRows.join('')
+                    : `<div class="empty" data-row-key="empty:bus-rail-access">No rail station within ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km from this bus stop.</div>`)
                 : (routeChoices.length
                   ? routeChoices.map((choice) => `
                   <button class="route-row" type="button" data-row-key="${escapeHtml(`route:${choice.routeId}`)}" data-action="choose-route" data-route-id="${choice.routeId}">
@@ -14924,9 +15615,12 @@
       const editableRideIndex = currentEditableRideIndex(executedPreview);
       const floor = protectedPlanLength();
       let chainStation = activePlayer().start_station_id;
+      let chainBusStop = null;
       let currentMinute = hhmmToMinutes(state.startTime);
       let pendingTrip = null;
       let pendingBoardStop = null;
+      let pendingBusTrip = null;
+      let pendingBusBoardStop = null;
       let legIndex = 1;
       const rows = [];
       if (ticket && !isFlightTicketPlanned(ticket)) {
@@ -14965,8 +15659,11 @@
             editable: false,
           });
           chainStation = step.station_id;
+          chainBusStop = null;
           pendingTrip = null;
           pendingBoardStop = null;
+          pendingBusTrip = null;
+          pendingBusBoardStop = null;
           legIndex += 1;
         } else if (step.type === 'TAKE_FLIGHT') {
           const flight = state.flightById.get(step.flight_id);
@@ -14985,8 +15682,51 @@
           });
           if (times) currentMinute = times.cooldownEndMinute;
           if (destinationStation?.stationGroupId) chainStation = destinationStation.stationGroupId;
+          chainBusStop = null;
           pendingTrip = null;
           pendingBoardStop = null;
+          pendingBusTrip = null;
+          pendingBusBoardStop = null;
+          legIndex += 1;
+        } else if (step.type === 'WALK_TO_BUS_STOP') {
+          const from = displayNameForGroup(chainStation);
+          const to = busStopName(step.bus_stop_id);
+          const departHhmm = minutesToHhmm(currentMinute);
+          const walkTimeSec = Number(step.walk_time_sec) || walkingTimeSecForDistance(step.distance_meters);
+          currentMinute += Math.max(0, Math.ceil(walkTimeSec / 60));
+          rows.push({
+            time: `LEG ${legIndex}`,
+            title: `Walk: ${from} -> ${to}`,
+            sub: `${departHhmm} -> ${minutesToHhmm(currentMinute)} · ${walkingDistanceLabel(step.distance_meters)} · ¥0`,
+            markerHtml: '<span class="route-swatch" style="background:#7c3aed"></span>',
+            editable: false,
+          });
+          chainBusStop = step.bus_stop_id;
+          chainStation = null;
+          pendingTrip = null;
+          pendingBoardStop = null;
+          pendingBusTrip = null;
+          pendingBusBoardStop = null;
+          legIndex += 1;
+        } else if (step.type === 'WALK_FROM_BUS_TO_STATION') {
+          const from = busStopName(chainBusStop || step.bus_stop_id);
+          const to = displayNameForGroup(step.station_id);
+          const departHhmm = minutesToHhmm(currentMinute);
+          const walkTimeSec = Number(step.walk_time_sec) || walkingTimeSecForDistance(step.distance_meters);
+          currentMinute += Math.max(0, Math.ceil(walkTimeSec / 60));
+          rows.push({
+            time: `LEG ${legIndex}`,
+            title: `Walk: ${from} -> ${to}`,
+            sub: `${departHhmm} -> ${minutesToHhmm(currentMinute)} · ${walkingDistanceLabel(step.distance_meters)} · ¥0`,
+            markerHtml: '<span class="route-swatch" style="background:#7c3aed"></span>',
+            editable: false,
+          });
+          chainStation = step.station_id;
+          chainBusStop = null;
+          pendingTrip = null;
+          pendingBoardStop = null;
+          pendingBusTrip = null;
+          pendingBusBoardStop = null;
           legIndex += 1;
         } else if (step.type === 'BOARD_TRAIN') {
           pendingTrip = state.tripById.get(step.trip_id);
@@ -15009,8 +15749,37 @@
           });
           if (alightStop) currentMinute = stopArrivalMinutes(alightStop);
           chainStation = step.station_id;
+          chainBusStop = null;
           pendingTrip = null;
           pendingBoardStop = null;
+          pendingBusTrip = null;
+          pendingBusBoardStop = null;
+          legIndex += 1;
+        } else if (step.type === 'BOARD_BUS') {
+          pendingBusTrip = state.busPlannerTripsById.get(step.trip_id);
+          pendingBusBoardStop = (pendingBusTrip?.stops || []).find((stop) => stop.stopId === step.bus_stop_id) || null;
+          if (pendingBusBoardStop) currentMinute = Number(pendingBusBoardStop.dep ?? pendingBusBoardStop.arr);
+        } else if (step.type === 'RIDE_TO_BUS_STOP') {
+          const alightStop = (pendingBusTrip?.stops || []).find((stop) => stop.stopId === step.bus_stop_id);
+          const from = busStopName(chainBusStop || pendingBusBoardStop?.stopId);
+          const to = busStopName(step.bus_stop_id);
+          const boardHhmm = pendingBusBoardStop ? minutesToHhmm(Number(pendingBusBoardStop.dep ?? pendingBusBoardStop.arr)) : '--:--';
+          const alightMinute = Number(alightStop?.arr ?? alightStop?.dep);
+          const alightHhmm = Number.isFinite(alightMinute) ? minutesToHhmm(alightMinute) : '--:--';
+          rows.push({
+            time: `LEG ${legIndex}`,
+            title: `${busRouteName(pendingBusTrip?.routeId)}: ${from} -> ${to}`,
+            sub: `${boardHhmm} -> ${alightHhmm}`,
+            markerHtml: `<span class="route-swatch" style="background:${busRouteColor(pendingBusTrip?.routeId)}"></span>`,
+            editable: false,
+          });
+          if (Number.isFinite(alightMinute)) currentMinute = alightMinute;
+          chainBusStop = step.bus_stop_id;
+          chainStation = null;
+          pendingTrip = null;
+          pendingBoardStop = null;
+          pendingBusTrip = null;
+          pendingBusBoardStop = null;
           legIndex += 1;
         }
       });
@@ -15182,6 +15951,7 @@
       if (!state.bundle) return;
       if (state.walkingMapActive && !walkingMapOriginPreview()) state.walkingMapActive = false;
       if (state.flightMapActive && !state.airportByIata?.size) state.flightMapActive = false;
+      if (state.busMapActive || activePlanningMode() === 'bus') refreshBusPlannerVisibleData();
       updateRailDimForWalkingMap();
       updateBusMapLayers();
       renderCurrentStatus();
@@ -15208,7 +15978,7 @@
       if (['SCENARIO_START', 'SCENARIO_END'].includes(eventType)) return 'LIFECYCLE';
       if (eventType === 'CAPTURE') return 'RESOLUTION';
       if (['START_AT_STATION', 'WAIT_UNTIL'].includes(eventType)) return 'POSITION';
-      if (['BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'BUY_FLIGHT_TICKET', 'BOARD_FLIGHT', 'DEPART_FLIGHT', 'ARRIVE_FLIGHT', 'EXIT_AIRPORT'].includes(eventType)) return 'MOVEMENT';
+      if (['BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'WALK_TO_BUS_STOP', 'WALK_FROM_BUS_TO_STATION', 'BOARD_BUS', 'ALIGHT_BUS', 'BUY_FLIGHT_TICKET', 'BOARD_FLIGHT', 'DEPART_FLIGHT', 'ARRIVE_FLIGHT', 'EXIT_AIRPORT'].includes(eventType)) return 'MOVEMENT';
       return 'GENERIC';
     }
 
@@ -15233,24 +16003,31 @@
         WALK_TO_STATION: 3,
         BUY_FLIGHT_TICKET: 4,
         BOARD_TRAIN: 5,
-        BOARD_FLIGHT: 6,
-        DEPART_FLIGHT: 7,
-        ALIGHT_TRAIN: 8,
-        ARRIVE_FLIGHT: 9,
-        EXIT_AIRPORT: 10,
-        CAPTURE: 11,
-        SCENARIO_END: 12,
+        WALK_TO_BUS_STOP: 6,
+        BOARD_BUS: 7,
+        ALIGHT_BUS: 8,
+        WALK_FROM_BUS_TO_STATION: 9,
+        BOARD_FLIGHT: 10,
+        DEPART_FLIGHT: 11,
+        ALIGHT_TRAIN: 12,
+        ARRIVE_FLIGHT: 13,
+        EXIT_AIRPORT: 14,
+        CAPTURE: 15,
+        SCENARIO_END: 16,
       }[eventType] ?? 99;
     }
 
     function expandPlayerPlan(playerId, playerData, scenario) {
       let currentMinute = hhmmToMinutes(scenario.start_time_hhmm);
       let currentStationId = playerData.start_station_id;
+      let currentBusStopId = null;
       let currentStationPhysicalId = null;
       let currentStationTrip = null;
       let currentTrip = null;
       let currentBoardStop = null;
       let currentBoardPhysicalStationId = null;
+      let currentBusTrip = null;
+      let currentBusBoardStop = null;
       const events = [
         formatEvent(currentMinute, 'START_AT_STATION', playerId, {
           station_group_id: currentStationId,
@@ -15325,12 +16102,104 @@
           }));
           currentMinute = arrivalMinute;
           currentStationId = edge.toNodeId;
+          currentBusStopId = null;
           currentStationPhysicalId = null;
           currentStationTrip = null;
           currentTrip = null;
           currentBoardStop = null;
           currentBoardPhysicalStationId = null;
+          currentBusTrip = null;
+          currentBusBoardStop = null;
           resolvedActions.push({ step_index: i + 1, ...action, distance_meters: edge.distanceMeters, walk_time_sec: walkTimeSec, walking_speed_mps: walkingSpeed, fare: leg.fare });
+          continue;
+        }
+        if (action.type === 'WALK_TO_BUS_STOP') {
+          if (!currentStationId) throw new Error(`${playerId} cannot walk to a bus stop while not at a station`);
+          const stop = state.busPlannerStopsById.get(action.bus_stop_id);
+          if (!stop) throw new Error(`Unknown bus stop ${action.bus_stop_id}`);
+          const walkingSpeed = walkingSpeedMetersPerSecondFor(playerId);
+          const walkTimeSec = Number(action.walk_time_sec) || walkingTimeSecForDistance(Number(action.distance_meters) || coordinateDistanceMeters(stationLonLat(currentStationId), busStopCoordinate(action.bus_stop_id)) || 0, walkingSpeed);
+          const walkMinutes = Math.max(0, Math.ceil(walkTimeSec / 60));
+          const arrivalMinute = currentMinute + walkMinutes;
+          const leg = {
+            leg_index: legs.length + 1,
+            step_index: i + 1,
+            mode: 'walking',
+            from_station_id: currentStationId,
+            from_label: displayNameForGroup(currentStationId),
+            to_bus_stop_id: action.bus_stop_id,
+            to_label: busStopName(action.bus_stop_id),
+            depart_hhmm: minutesToHhmm(currentMinute),
+            arrive_hhmm: minutesToHhmm(arrivalMinute),
+            distance_meters: action.distance_meters,
+            walk_time_sec: walkTimeSec,
+            walking_speed_mps: walkingSpeed,
+            fare: { total_yen: 0, fare_known: true, components: [{ type: 'walking', total_yen: 0 }] },
+          };
+          legs.push(leg);
+          events.push(formatEvent(arrivalMinute, 'WALK_TO_BUS_STOP', playerId, {
+            bus_stop_id: action.bus_stop_id,
+            from_station_group_id: currentStationId,
+            distance_meters: action.distance_meters,
+            walk_time_sec: walkTimeSec,
+            walking_speed_mps: walkingSpeed,
+            fare: leg.fare,
+            fare_total_yen: 0,
+            carrier_after: { kind: 'BUS_STOP', busStopId: action.bus_stop_id },
+          }));
+          currentMinute = arrivalMinute;
+          currentBusStopId = action.bus_stop_id;
+          currentStationId = null;
+          currentStationPhysicalId = null;
+          currentStationTrip = null;
+          currentTrip = null;
+          currentBoardStop = null;
+          currentBoardPhysicalStationId = null;
+          currentBusTrip = null;
+          currentBusBoardStop = null;
+          resolvedActions.push({ step_index: i + 1, ...action, walk_time_sec: walkTimeSec, walking_speed_mps: walkingSpeed, fare: leg.fare });
+          continue;
+        }
+        if (action.type === 'WALK_FROM_BUS_TO_STATION') {
+          if (!currentBusStopId) throw new Error(`${playerId} cannot walk to rail while not at a bus stop`);
+          const walkingSpeed = walkingSpeedMetersPerSecondFor(playerId);
+          const walkTimeSec = Number(action.walk_time_sec) || walkingTimeSecForDistance(Number(action.distance_meters) || coordinateDistanceMeters(busStopCoordinate(currentBusStopId), stationLonLat(action.station_id)) || 0, walkingSpeed);
+          const walkMinutes = Math.max(0, Math.ceil(walkTimeSec / 60));
+          const arrivalMinute = currentMinute + walkMinutes;
+          const leg = {
+            leg_index: legs.length + 1,
+            step_index: i + 1,
+            mode: 'walking',
+            from_bus_stop_id: currentBusStopId,
+            from_label: busStopName(currentBusStopId),
+            to_station_id: action.station_id,
+            to_label: displayNameForGroup(action.station_id),
+            depart_hhmm: minutesToHhmm(currentMinute),
+            arrive_hhmm: minutesToHhmm(arrivalMinute),
+            distance_meters: action.distance_meters,
+            walk_time_sec: walkTimeSec,
+            walking_speed_mps: walkingSpeed,
+            fare: { total_yen: 0, fare_known: true, components: [{ type: 'walking', total_yen: 0 }] },
+          };
+          legs.push(leg);
+          events.push(formatEvent(arrivalMinute, 'WALK_FROM_BUS_TO_STATION', playerId, {
+            bus_stop_id: currentBusStopId,
+            station_group_id: action.station_id,
+            distance_meters: action.distance_meters,
+            walk_time_sec: walkTimeSec,
+            walking_speed_mps: walkingSpeed,
+            fare: leg.fare,
+            fare_total_yen: 0,
+            carrier_after: { kind: 'NODE', stationGroupId: action.station_id, physicalStationId: null },
+          }));
+          currentMinute = arrivalMinute;
+          currentStationId = action.station_id;
+          currentBusStopId = null;
+          currentStationPhysicalId = null;
+          currentStationTrip = null;
+          currentBusTrip = null;
+          currentBusBoardStop = null;
+          resolvedActions.push({ step_index: i + 1, ...action, walk_time_sec: walkTimeSec, walking_speed_mps: walkingSpeed, fare: leg.fare });
           continue;
         }
         if (action.type === 'TAKE_FLIGHT') {
@@ -15391,6 +16260,7 @@
           }));
           currentMinute = times.cooldownEndMinute;
           currentStationId = arrivalStationId;
+          currentBusStopId = null;
           currentStationPhysicalId = null;
           currentStationTrip = null;
           currentTrip = null;
@@ -15430,6 +16300,7 @@
           currentBoardStop = boardStop;
           currentBoardPhysicalStationId = boardPhysicalStation?.id || null;
           currentStationId = null;
+          currentBusStopId = null;
           currentStationPhysicalId = null;
           currentStationTrip = null;
           resolvedActions.push({ step_index: i + 1, ...action, transfer: transferLink, board_physical_station_id: currentBoardPhysicalStationId });
@@ -15469,12 +16340,74 @@
           }));
           currentMinute = arrivalMinute;
           currentStationId = alightStop.stationGroupId;
+          currentBusStopId = null;
           currentStationPhysicalId = alightPhysicalStation?.id || null;
           currentStationTrip = currentTrip;
           currentTrip = null;
           currentBoardStop = null;
           currentBoardPhysicalStationId = null;
           resolvedActions.push({ step_index: i + 1, ...action, fare, alight_physical_station_id: alightPhysicalStation?.id || null });
+          continue;
+        }
+        if (action.type === 'BOARD_BUS') {
+          if (!currentBusStopId || currentBusStopId !== action.bus_stop_id) throw new Error(`${playerId} cannot board bus away from ${action.bus_stop_id}`);
+          const trip = state.busPlannerTripsById.get(action.trip_id);
+          if (!trip) throw new Error(`Unknown bus trip ${action.trip_id}`);
+          const boardStop = (trip.stops || []).find((stop) => stop.stopId === action.bus_stop_id);
+          if (!boardStop) throw new Error(`${trip.id} does not stop at ${action.bus_stop_id}`);
+          const boardMinute = Number(boardStop.dep ?? boardStop.arr);
+          if (!Number.isFinite(boardMinute) || boardMinute < currentMinute) throw new Error(`${playerId} cannot catch bus ${trip.id}`);
+          events.push(formatEvent(boardMinute, 'BOARD_BUS', playerId, {
+            bus_stop_id: action.bus_stop_id,
+            trip_id: trip.id,
+            route_id: trip.routeId,
+            carrier_after: { kind: 'BUS', tripId: trip.id, boardStopId: action.bus_stop_id },
+          }));
+          currentMinute = boardMinute;
+          currentBusTrip = trip;
+          currentBusBoardStop = boardStop;
+          currentStationId = null;
+          currentBusStopId = null;
+          resolvedActions.push({ step_index: i + 1, ...action });
+          continue;
+        }
+        if (action.type === 'RIDE_TO_BUS_STOP') {
+          if (!currentBusTrip || !currentBusBoardStop) throw new Error(`${playerId} cannot ride bus while not on a bus`);
+          const alightStop = (currentBusTrip.stops || []).find((stop) => stop.stopId === action.bus_stop_id);
+          if (!alightStop || Number(alightStop.seq) <= Number(currentBusBoardStop.seq)) throw new Error(`${currentBusTrip.id} does not reach ${action.bus_stop_id}`);
+          const arrivalMinute = Number(alightStop.arr ?? alightStop.dep);
+          const fare = busRouteFare(currentBusTrip.routeId);
+          const leg = {
+            leg_index: legs.length + 1,
+            board_step_index: i,
+            ride_step_index: i + 1,
+            mode: 'bus',
+            trip_id: currentBusTrip.id,
+            route_id: currentBusTrip.routeId,
+            route_label: busRouteName(currentBusTrip.routeId),
+            from_bus_stop_id: currentBusBoardStop.stopId,
+            from_label: busStopName(currentBusBoardStop.stopId),
+            to_bus_stop_id: alightStop.stopId,
+            to_label: busStopName(alightStop.stopId),
+            board_hhmm: minutesToHhmm(Number(currentBusBoardStop.dep ?? currentBusBoardStop.arr)),
+            alight_hhmm: minutesToHhmm(arrivalMinute),
+            fare,
+          };
+          legs.push(leg);
+          events.push(formatEvent(arrivalMinute, 'ALIGHT_BUS', playerId, {
+            bus_stop_id: alightStop.stopId,
+            trip_id: currentBusTrip.id,
+            route_id: currentBusTrip.routeId,
+            fare,
+            fare_total_yen: fare.total_yen,
+            carrier_after: { kind: 'BUS_STOP', busStopId: alightStop.stopId },
+          }));
+          currentMinute = arrivalMinute;
+          currentBusStopId = alightStop.stopId;
+          currentBusTrip = null;
+          currentBusBoardStop = null;
+          currentStationId = null;
+          resolvedActions.push({ step_index: i + 1, ...action, fare });
         }
       }
       return {
@@ -15485,6 +16418,7 @@
         fare_summary: fareSummaryForLegs(legs),
         events,
         final_station_id: currentStationId,
+        final_bus_stop_id: currentBusStopId,
       };
     }
 
@@ -15495,6 +16429,9 @@
     function applyEventToCarrierState(carrierState, event) {
       if (!event.player_id) return;
       if (event.type === 'START_AT_STATION' || event.type === 'ALIGHT_TRAIN' || event.type === 'WALK_TO_STATION') carrierState[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
+      else if (event.type === 'WALK_TO_BUS_STOP' || event.type === 'ALIGHT_BUS') carrierState[event.player_id] = { kind: 'BUS_STOP', busStopId: event.bus_stop_id };
+      else if (event.type === 'BOARD_BUS') carrierState[event.player_id] = { kind: 'BUS', tripId: event.trip_id, boardStopId: event.bus_stop_id };
+      else if (event.type === 'WALK_FROM_BUS_TO_STATION') carrierState[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
       else if (event.type === 'BOARD_TRAIN') carrierState[event.player_id] = { kind: 'TRAIN', tripId: event.trip_id };
       else if (event.type === 'BUY_FLIGHT_TICKET') return;
       else if (event.type === 'BOARD_FLIGHT') carrierState[event.player_id] = { kind: 'BOARDING', airportIata: event.airport_iata, flightId: event.flight_id };
@@ -15507,12 +16444,12 @@
       const playerEvents = minuteEvents.filter((item) => item.player_id);
       const involvedPlayers = new Set(playerEvents.map((item) => item.player_id));
       if (involvedPlayers.size < 2) return true;
-      const nodeEnteringTypes = new Set(['START_AT_STATION', 'ALIGHT_TRAIN', 'WALK_TO_STATION']);
+      const nodeEnteringTypes = new Set(['START_AT_STATION', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'WALK_FROM_BUS_TO_STATION']);
       return playerEvents.every((item) => nodeEnteringTypes.has(item.type));
     }
 
     function detectCaptureAfterEvent(event, carrierState, minuteEvents) {
-      if (!['SCENARIO_START', 'START_AT_STATION', 'BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'BUY_FLIGHT_TICKET', 'BOARD_FLIGHT', 'ARRIVE_FLIGHT', 'EXIT_AIRPORT'].includes(event.type)) return null;
+      if (!['SCENARIO_START', 'START_AT_STATION', 'BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'WALK_TO_BUS_STOP', 'BOARD_BUS', 'ALIGHT_BUS', 'WALK_FROM_BUS_TO_STATION', 'BUY_FLIGHT_TICKET', 'BOARD_FLIGHT', 'ARRIVE_FLIGHT', 'EXIT_AIRPORT'].includes(event.type)) return null;
       const runnerState = carrierState.runner;
       const hunterState = carrierState.hunter;
       if (
@@ -15525,6 +16462,12 @@
       if (runnerState.kind === 'NODE' && hunterState.kind === 'NODE' && runnerState.stationGroupId === hunterState.stationGroupId) {
         if (!allowsSameNodeCapture(event, minuteEvents || [event])) return null;
         return { type: 'same_node', station_group_id: runnerState.stationGroupId };
+      }
+      if (runnerState.kind === 'BUS' && hunterState.kind === 'BUS' && runnerState.tripId === hunterState.tripId) {
+        return { type: 'same_bus', trip_id: runnerState.tripId };
+      }
+      if (runnerState.kind === 'BUS_STOP' && hunterState.kind === 'BUS_STOP' && runnerState.busStopId === hunterState.busStopId) {
+        return { type: 'same_bus_stop', bus_stop_id: runnerState.busStopId };
       }
       if (
         runnerState.airportIata &&
@@ -15648,6 +16591,8 @@
       if (!carrier) return 'unknown';
       if (carrier.kind === 'NODE') return displayNameForGroup(carrier.stationGroupId);
       if (carrier.kind === 'TRAIN') return formatTripLabel(state.tripById.get(carrier.tripId) || { serviceName: carrier.tripId });
+      if (carrier.kind === 'BUS') return busRouteName(state.busPlannerTripsById.get(carrier.tripId)?.routeId);
+      if (carrier.kind === 'BUS_STOP') return busStopName(carrier.busStopId);
       if (carrier.kind === 'FLIGHT') return flightDisplayLabel(state.flightById.get(carrier.flightId));
       if (carrier.airportIata) return airportName(carrier.airportIata);
       return carrier.kind || 'unknown';

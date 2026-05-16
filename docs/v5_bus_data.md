@@ -71,6 +71,9 @@ Release output:
 - `data/v5_airport_bus_access_audit.json`
 - `data/v5_bus_map.geojson.gz`
 - `data/v5_bus_map_audit.json`
+- `data/v5_bus_map_tiles/manifest.json`
+- `data/v5_bus_planner_tiles/manifest.json`
+- `data/v5_bus_planner_tiles_audit.json`
 
 The builder caches source zip files under `data/v5_bus_gtfs_cache/` so the
 release bundle can be rebuilt even if a feed changes later. The cache should be
@@ -216,6 +219,38 @@ files around the current player position or plan tail. Dense local bus stops and
 labels are still zoom-gated so the railway/flight map does not become unreadable
 or slow.
 
+## Bus Planner Layer
+
+The playable bus planner uses a second tiled dataset. It is intentionally
+separate from the visual map layer because planning needs departures, downstream
+stops, walking connectors, and fare hints, while map drawing only needs lines
+and stop points.
+
+Builder:
+
+```bash
+python scripts/ingest/build_v5_bus_planner_tiles.py
+```
+
+Current output on `2026-05-16`:
+
+- Service date: `2026-05-16` Saturday.
+- 374 planner tiles at `0.25` degree resolution.
+- 23,580 active bus trips for the service date.
+- 683,004 indexed stop-time rows.
+- 107,349 walking connectors.
+- 4,536 routes with GTFS fare-rule coverage.
+
+Runtime flow:
+
+- Choose reachable bus stop within the active walking threshold.
+- Choose route/direction.
+- Choose a real future bus departure.
+- Choose a downstream bus stop.
+- The plan stores walking to the bus stop, bus boarding, bus riding, and walking
+  back from a bus stop to rail as separate actions.
+- Same-bus and same-bus-stop capture are part of the event simulation.
+
 ## Known First-Layer Limits
 
 - GTFS repository coverage is broad but not all Japanese buses.
@@ -223,5 +258,7 @@ or slow.
   official operator parsers.
 - Reservation rules are not guaranteed by GTFS and need route/operator audits.
 - Port connectors wait for the ferry node dataset.
-- The bus map layer is connected, but bus riding is still blocked until route
-  filtering, stop selection, and airport/highway-bus rules are audited.
+- Bus fares use GTFS fare rules when available. Missing fare rules remain
+  unknown rather than estimated.
+- The first playable bus layer is service-date based. More weekday switching
+  and operator-specific missing-source parsers are still needed.
