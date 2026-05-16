@@ -199,6 +199,9 @@ Current output on `2026-05-16`:
 - 96,797 GeoJSON features.
 - 8,584 bus route line features.
 - 88,213 bus stop point features.
+- 424 spatial bus-map tiles at `0.25` degree resolution.
+- 158 KB tile manifest.
+- Largest gzipped tile is about 489 KB; median tile feature count is about 107.
 - Route lines by class:
   - 143 airport-bus lines.
   - 126 long-distance/highway/night-bus lines.
@@ -208,10 +211,12 @@ Current output on `2026-05-16`:
   - 1,052 long-distance/highway/night-bus stops.
   - 85,649 local-bus stops.
 
-The V5 web page loads `docs/data/v5_bus_map.geojson.gz` only when bus mode is
-opened. Airport and long-distance bus geometry is visible earlier; dense local
-bus stops and labels are deliberately zoom-gated so the railway/flight map does
-not become unreadable or slow.
+The V5 web page does not load `docs/data/v5_bus_map.geojson.gz` at runtime.
+That full file remains a rebuild/debug artifact. Runtime bus-map display loads
+`docs/data/v5_bus_map_tiles/manifest.json` first, then only the nearby tile
+files around the current player position or plan tail. Dense local bus stops and
+labels are still zoom-gated so the railway/flight map does not become unreadable
+or slow.
 
 ## Known First-Layer Limits
 

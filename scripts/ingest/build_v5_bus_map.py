@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
+import math
+import shutil
 from collections import Counter, defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -18,6 +20,9 @@ DEFAULT_OUTPUT = ROOT / "data" / "v5_bus_map.geojson.gz"
 DEFAULT_DOCS_OUTPUT = ROOT / "docs" / "data" / "v5_bus_map.geojson.gz"
 DEFAULT_AUDIT_OUTPUT = ROOT / "data" / "v5_bus_map_audit.json"
 DEFAULT_DOCS_AUDIT_OUTPUT = ROOT / "docs" / "data" / "v5_bus_map_audit.json"
+DEFAULT_TILE_DIR = ROOT / "data" / "v5_bus_map_tiles"
+DEFAULT_DOCS_TILE_DIR = ROOT / "docs" / "data" / "v5_bus_map_tiles"
+DEFAULT_TILE_SIZE_DEGREES = 0.25
 
 CLASS_RANK = {
     "bus_airport": 0,
@@ -41,6 +46,126 @@ def write_json(path: Path, payload: Any) -> None:
             handle.write("\n")
         return
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def feature_coordinates(feature: dict[str, Any]) -> list[list[float]]:
+    geometry = feature.get("geometry") or {}
+    if geometry.get("type") == "Point":
+        coordinates = geometry.get("coordinates")
+        return [coordinates] if valid_coordinate(coordinates) else []
+    if geometry.get("type") == "LineString":
+        return [coord for coord in geometry.get("coordinates") or [] if valid_coordinate(coord)]
+    return []
+
+
+def valid_coordinate(coordinate: Any) -> bool:
+    return (
+        isinstance(coordinate, list)
+        and len(coordinate) >= 2
+        and isinstance(coordinate[0], (int, float))
+        and isinstance(coordinate[1], (int, float))
+    )
+
+
+def tile_key(ix: int, iy: int) -> str:
+    return f"z0_x{ix}_y{iy}"
+
+
+def tile_indices_for_coordinate(coordinate: list[float], tile_size_degrees: float) -> tuple[int, int]:
+    return math.floor(coordinate[0] / tile_size_degrees), math.floor(coordinate[1] / tile_size_degrees)
+
+
+def tile_keys_for_feature(feature: dict[str, Any], tile_size_degrees: float) -> set[str]:
+    coordinates = feature_coordinates(feature)
+    if not coordinates:
+        return set()
+    xs = [coord[0] for coord in coordinates]
+    ys = [coord[1] for coord in coordinates]
+    min_ix = math.floor(min(xs) / tile_size_degrees)
+    max_ix = math.floor(max(xs) / tile_size_degrees)
+    min_iy = math.floor(min(ys) / tile_size_degrees)
+    max_iy = math.floor(max(ys) / tile_size_degrees)
+    # Long-distance bus routes can cross many cells; keep them discoverable
+    # without exploding tile references by indexing only touched vertices plus
+    # bbox corners. Dense local routes have many vertices and naturally cover
+    # their cells.
+    keys = {tile_key(*tile_indices_for_coordinate(coord, tile_size_degrees)) for coord in coordinates}
+    keys.add(tile_key(min_ix, min_iy))
+    keys.add(tile_key(max_ix, max_iy))
+    return keys
+
+
+def feature_bounds(features: list[dict[str, Any]]) -> list[float] | None:
+    coordinates: list[list[float]] = []
+    for feature in features:
+        coordinates.extend(feature_coordinates(feature))
+    if not coordinates:
+        return None
+    return [
+        min(coord[0] for coord in coordinates),
+        min(coord[1] for coord in coordinates),
+        max(coord[0] for coord in coordinates),
+        max(coord[1] for coord in coordinates),
+    ]
+
+
+def write_bus_tiles(
+    feature_collection: dict[str, Any],
+    *,
+    tile_dir: Path,
+    tile_size_degrees: float,
+    generated_at: str,
+) -> dict[str, Any]:
+    if tile_dir.exists():
+        shutil.rmtree(tile_dir)
+    tile_dir.mkdir(parents=True, exist_ok=True)
+
+    by_tile: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    seen_by_tile: dict[str, set[str]] = defaultdict(set)
+    for feature in feature_collection.get("features") or []:
+        feature_id = str(feature.get("id") or "")
+        for key in tile_keys_for_feature(feature, tile_size_degrees):
+            if feature_id and feature_id in seen_by_tile[key]:
+                continue
+            by_tile[key].append(feature)
+            if feature_id:
+                seen_by_tile[key].add(feature_id)
+
+    manifest_tiles: dict[str, Any] = {}
+    feature_count_total = 0
+    for key, features in sorted(by_tile.items()):
+        tile_payload = {
+            "type": "FeatureCollection",
+            "metadata": {
+                "schemaVersion": "v5_bus_map_tile_geojson_v1",
+                "generatedAt": generated_at,
+                "tileKey": key,
+            },
+            "features": features,
+        }
+        path = tile_dir / f"{key}.geojson.gz"
+        write_json(path, tile_payload)
+        bounds = feature_bounds(features)
+        class_counts = Counter(feature.get("properties", {}).get("serviceClass") or "unknown" for feature in features)
+        kind_counts = Counter(feature.get("properties", {}).get("kind") or "unknown" for feature in features)
+        manifest_tiles[key] = {
+            "url": f"./data/v5_bus_map_tiles/{key}.geojson.gz",
+            "featureCount": len(features),
+            "bounds": bounds,
+            "serviceClassCounts": dict(sorted(class_counts.items())),
+            "kindCounts": dict(sorted(kind_counts.items())),
+        }
+        feature_count_total += len(features)
+
+    return {
+        "schemaVersion": "v5_bus_map_tile_manifest_v1",
+        "generatedAt": generated_at,
+        "tileSizeDegrees": tile_size_degrees,
+        "tileCount": len(manifest_tiles),
+        "tileFeatureReferenceCount": feature_count_total,
+        "sourceFeatureCount": len(feature_collection.get("features") or []),
+        "tiles": manifest_tiles,
+    }
 
 
 def color_for_class(service_class: str) -> str:
@@ -278,12 +403,36 @@ def main() -> None:
     parser.add_argument("--docs-output", type=Path, default=DEFAULT_DOCS_OUTPUT)
     parser.add_argument("--audit-output", type=Path, default=DEFAULT_AUDIT_OUTPUT)
     parser.add_argument("--docs-audit-output", type=Path, default=DEFAULT_DOCS_AUDIT_OUTPUT)
+    parser.add_argument("--tile-dir", type=Path, default=DEFAULT_TILE_DIR)
+    parser.add_argument("--docs-tile-dir", type=Path, default=DEFAULT_DOCS_TILE_DIR)
+    parser.add_argument("--tile-size-degrees", type=float, default=DEFAULT_TILE_SIZE_DEGREES)
     parser.add_argument("--max-shape-points", type=int, default=180)
     parser.add_argument("--max-fallback-points", type=int, default=80)
     args = parser.parse_args()
 
     bundle = read_json(args.bus_bundle)
     feature_collection, audit = build_map(bundle, args.max_shape_points, args.max_fallback_points)
+    generated_at = feature_collection["metadata"]["generatedAt"]
+    tile_manifest = write_bus_tiles(
+        feature_collection,
+        tile_dir=args.tile_dir,
+        tile_size_degrees=args.tile_size_degrees,
+        generated_at=generated_at,
+    )
+    if args.docs_tile_dir:
+        docs_manifest = write_bus_tiles(
+            feature_collection,
+            tile_dir=args.docs_tile_dir,
+            tile_size_degrees=args.tile_size_degrees,
+            generated_at=generated_at,
+        )
+        write_json(args.docs_tile_dir / "manifest.json", docs_manifest)
+    write_json(args.tile_dir / "manifest.json", tile_manifest)
+    audit["tileManifest"] = {
+        "tileSizeDegrees": args.tile_size_degrees,
+        "tileCount": tile_manifest["tileCount"],
+        "tileFeatureReferenceCount": tile_manifest["tileFeatureReferenceCount"],
+    }
     write_json(args.output, feature_collection)
     if args.docs_output:
         write_json(args.docs_output, feature_collection)

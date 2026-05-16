@@ -1398,7 +1398,7 @@
     const WALKING_EDGES_URL = './data/v5_walking_edges.json.gz';
     const FLIGHT_MAP_URL = './data/v5_flight_map.geojson';
     const FLIGHT_TIMETABLE_URL = './data/v5_domestic_flights_current_bundle.json';
-    const BUS_MAP_URL = './data/v5_bus_map.geojson.gz';
+    const BUS_MAP_MANIFEST_URL = './data/v5_bus_map_tiles/manifest.json';
     const BUS_MAP_AROUND_FALLBACK_RADII_METERS = [25000, 60000, 120000];
     const V5_ACTIVE_WALKING_THRESHOLD_METERS = 2000;
     const V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND = 5 / 3.6;
@@ -5737,7 +5737,10 @@
       flightTimetable: null,
       flightById: new Map(),
       flightsByOriginAirport: new Map(),
-      busMap: null,
+      busMapManifest: null,
+      busMapTileCache: new Map(),
+      busMapTileInflight: new Map(),
+      busMapVisibleFeatures: { type: 'FeatureCollection', features: [] },
       busMapLoadStatus: 'idle',
       lastBusMapSourceKey: '',
       busMapActiveFeatureCacheKey: '',
@@ -8250,8 +8253,11 @@
       }
     }
 
-    function indexBusMap(payload) {
-      state.busMap = payload || { type: 'FeatureCollection', features: [] };
+    function indexBusMapManifest(payload) {
+      state.busMapManifest = payload || null;
+      state.busMapTileCache = new Map();
+      state.busMapTileInflight = new Map();
+      state.busMapVisibleFeatures = { type: 'FeatureCollection', features: [] };
       state.lastBusMapSourceKey = '';
       state.busMapActiveFeatureCacheKey = '';
       state.busMapActiveFeatureCache = null;
@@ -8260,22 +8266,24 @@
     async function loadBusMap() {
       state.busMapLoadStatus = 'loading';
       try {
-        const payload = await fetchJsonMaybeGz(BUS_MAP_URL);
-        indexBusMap(payload);
+        const payload = await fetchJsonMaybeGz(BUS_MAP_MANIFEST_URL);
+        indexBusMapManifest(payload);
         state.busMapLoadStatus = 'ready';
       } catch (error) {
         console.warn('Failed to load v5 bus map', error);
-        indexBusMap(null);
+        indexBusMapManifest(null);
         state.busMapLoadStatus = 'failed';
       }
-      updateBusMapLayers();
+      await refreshBusMapVisibleFeatures();
       renderGame();
     }
 
     function ensureBusMapLoaded() {
       if (state.busMapLoadStatus === 'idle') {
-        loadBusMap();
+        return loadBusMap();
       }
+      if (state.busMapLoadStatus === 'loading') return null;
+      return Promise.resolve();
     }
 
     function flightOperatingNumber(flight) {
@@ -10380,6 +10388,7 @@
 
     function updateBusMapLayers() {
       if (!state.map?.getSource('bus-map')) return;
+      if (state.busMapActive && state.busMapLoadStatus === 'idle') ensureBusMapLoaded();
       const sourcePayload = state.busMapActive ? activeBusMapFeatureCollection() : { type: 'FeatureCollection', features: [] };
       const sourceKey = state.busMapActive
         ? `${sourcePayload.metadata?.cacheKey || 'bus'}:${sourcePayload.features?.length || 0}`
@@ -10413,69 +10422,115 @@
       return null;
     }
 
-    function featureNearCoordinate(feature, anchor, radiusMeters) {
-      if (!feature || !anchor) return false;
-      const geometry = feature.geometry;
-      if (!geometry) return false;
-      if (geometry.type === 'Point') return coordinateDistanceMeters(geometry.coordinates, anchor) <= radiusMeters;
-      const coordinates = geometry.type === 'LineString' ? geometry.coordinates : [];
-      return coordinates.some((coordinate) => coordinateDistanceMeters(coordinate, anchor) <= radiusMeters);
+    function busMapTileKey(ix, iy) {
+      return `z0_x${ix}_y${iy}`;
     }
 
-    function activeBusMapFeatureCollection() {
-      const features = state.busMap?.features || [];
-      const anchor = busMapAnchorCoordinate();
-      if (!state.busMapActive || !features.length) {
-        return { type: 'FeatureCollection', features: [] };
-      }
-      if (!anchor) {
-        if (state.busMapActiveFeatureCacheKey === 'bus:no-anchor:priority' && state.busMapActiveFeatureCache) {
-          return state.busMapActiveFeatureCache;
+    function busMapTileEntriesNear(anchor, radiusMeters) {
+      const manifest = state.busMapManifest;
+      if (!manifest?.tiles || !validCoordinate(anchor)) return [];
+      const tileSize = Number(manifest.tileSizeDegrees) || 0.25;
+      const lat = anchor[1];
+      const latDelta = radiusMeters / 111320;
+      const lonDelta = radiusMeters / Math.max(35000, 111320 * Math.cos(lat * Math.PI / 180));
+      const minIx = Math.floor((anchor[0] - lonDelta) / tileSize);
+      const maxIx = Math.floor((anchor[0] + lonDelta) / tileSize);
+      const minIy = Math.floor((anchor[1] - latDelta) / tileSize);
+      const maxIy = Math.floor((anchor[1] + latDelta) / tileSize);
+      const entries = [];
+      for (let ix = minIx; ix <= maxIx; ix += 1) {
+        for (let iy = minIy; iy <= maxIy; iy += 1) {
+          const key = busMapTileKey(ix, iy);
+          const meta = manifest.tiles[key];
+          if (meta) entries.push({ key, meta });
         }
-        const highPriority = features.filter((feature) => {
-          const props = feature?.properties || {};
-          return props.serviceClass === 'bus_airport' || props.serviceClass === 'bus_long_distance';
+      }
+      entries.sort((a, b) => (a.meta.featureCount || 0) - (b.meta.featureCount || 0));
+      return entries;
+    }
+
+    async function loadBusMapTile(entry) {
+      if (!entry?.key || !entry?.meta?.url) return null;
+      if (state.busMapTileCache.has(entry.key)) return state.busMapTileCache.get(entry.key);
+      if (state.busMapTileInflight.has(entry.key)) return state.busMapTileInflight.get(entry.key);
+      const promise = fetchJsonMaybeGz(entry.meta.url)
+        .then((payload) => {
+          const features = payload?.features || [];
+          state.busMapTileCache.set(entry.key, features);
+          state.busMapTileInflight.delete(entry.key);
+          return features;
+        })
+        .catch((error) => {
+          state.busMapTileInflight.delete(entry.key);
+          console.warn('Failed to load v5 bus map tile', entry.key, error);
+          return [];
         });
-        const payload = {
+      state.busMapTileInflight.set(entry.key, promise);
+      return promise;
+    }
+
+    async function refreshBusMapVisibleFeatures() {
+      if (!state.busMapActive) {
+        state.busMapVisibleFeatures = { type: 'FeatureCollection', features: [] };
+        state.busMapActiveFeatureCacheKey = 'inactive';
+        state.busMapActiveFeatureCache = state.busMapVisibleFeatures;
+        updateBusMapLayers();
+        return;
+      }
+      if (state.busMapLoadStatus === 'idle') {
+        await ensureBusMapLoaded();
+        return;
+      }
+      if (state.busMapLoadStatus !== 'ready') return;
+      const anchor = busMapAnchorCoordinate();
+      if (!anchor) {
+        state.busMapVisibleFeatures = {
           type: 'FeatureCollection',
-          metadata: { cacheKey: 'bus:no-anchor:priority' },
-          features: highPriority,
+          metadata: { cacheKey: 'bus:no-anchor' },
+          features: [],
         };
-        state.busMapActiveFeatureCacheKey = 'bus:no-anchor:priority';
-        state.busMapActiveFeatureCache = payload;
-        return payload;
+        updateBusMapLayers();
+        return;
       }
       const anchorKey = `bus:${Math.round(anchor[0] * 1000)}:${Math.round(anchor[1] * 1000)}`;
       if (state.busMapActiveFeatureCacheKey.startsWith(`${anchorKey}:`) && state.busMapActiveFeatureCache) {
-        return state.busMapActiveFeatureCache;
+        state.busMapVisibleFeatures = state.busMapActiveFeatureCache;
+        updateBusMapLayers();
+        return;
       }
       for (const radiusMeters of BUS_MAP_AROUND_FALLBACK_RADII_METERS) {
-        const localFeatures = features.filter((feature) => featureNearCoordinate(feature, anchor, radiusMeters));
-        const stopCount = localFeatures.filter((feature) => feature?.properties?.kind === 'bus-stop').length;
+        const entries = busMapTileEntriesNear(anchor, radiusMeters);
+        const tileFeatureLists = await Promise.all(entries.map(loadBusMapTile));
+        const byId = new Map();
+        tileFeatureLists.flat().forEach((feature) => {
+          const id = feature?.id || JSON.stringify(feature?.geometry || {});
+          if (!byId.has(id)) byId.set(id, feature);
+        });
+        const features = [...byId.values()];
+        const stopCount = features.filter((feature) => feature?.properties?.kind === 'bus-stop').length;
         if (stopCount >= 24 || radiusMeters === BUS_MAP_AROUND_FALLBACK_RADII_METERS[BUS_MAP_AROUND_FALLBACK_RADII_METERS.length - 1]) {
-          const cacheKey = `${anchorKey}:${radiusMeters}`;
           const payload = {
             type: 'FeatureCollection',
             metadata: {
-              cacheKey,
+              cacheKey: `${anchorKey}:${radiusMeters}:${entries.length}`,
               radiusMeters,
+              tileCount: entries.length,
               anchor,
             },
-            features: localFeatures,
+            features,
           };
-          state.busMapActiveFeatureCacheKey = cacheKey;
+          state.busMapVisibleFeatures = payload;
+          state.busMapActiveFeatureCacheKey = payload.metadata.cacheKey;
           state.busMapActiveFeatureCache = payload;
-          return payload;
+          updateBusMapLayers();
+          return;
         }
       }
-      const payload = {
-        type: 'FeatureCollection',
-        metadata: { cacheKey: 'bus:empty' },
-        features: [],
-      };
-      state.busMapActiveFeatureCacheKey = 'bus:empty';
-      state.busMapActiveFeatureCache = payload;
-      return payload;
+    }
+
+    function activeBusMapFeatureCollection() {
+      if (!state.busMapActive) return { type: 'FeatureCollection', features: [] };
+      return state.busMapVisibleFeatures || { type: 'FeatureCollection', features: [] };
     }
 
     function activeFlightMapFeatureCollection() {
@@ -10605,6 +10660,7 @@
       updateWalkingMapLayers();
       updateFlightMapLayers();
       updateBusMapLayers();
+      if (state.busMapActive) refreshBusMapVisibleFeatures();
       if (state.busMapActive && focus) focusBusMap();
     }
 
