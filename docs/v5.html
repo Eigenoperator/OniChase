@@ -9190,9 +9190,9 @@
         source: 'selected-route-path',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': '#ffffff',
-          'line-opacity': 0,
-          'line-width': 0,
+          'line-color': '#f8fafc',
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.72, 9, 0.84, 13, 0.9],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 3.2, 9, 5.0, 13, 7.2, 16, 9.0],
         },
       });
       map.addLayer({
@@ -9203,7 +9203,7 @@
         paint: {
           'line-color': ['coalesce', ['get', 'line_color'], ['get', 'route_color'], '#9fb0c6'],
           'line-opacity': 1,
-          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.45, 9, 0.9, 13, 1.55, 16, 2.1],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.6, 9, 2.7, 13, 4.2, 16, 5.6],
         },
       });
       map.addLayer({
@@ -9212,9 +9212,9 @@
         source: 'selected-trip-path',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': '#ffffff',
-          'line-opacity': 0,
-          'line-width': 0,
+          'line-color': '#f8fafc',
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.72, 9, 0.84, 13, 0.9],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 3.2, 9, 5.0, 13, 7.2, 16, 9.0],
         },
       });
       map.addLayer({
@@ -9225,7 +9225,7 @@
         paint: {
           'line-color': ['coalesce', ['get', 'line_color'], ['get', 'color'], '#9fb0c6'],
           'line-opacity': 1,
-          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.45, 9, 0.9, 13, 1.55, 16, 2.1],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.6, 9, 2.7, 13, 4.2, 16, 5.6],
         },
       });
 
