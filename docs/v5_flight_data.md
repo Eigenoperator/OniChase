@@ -88,7 +88,7 @@ Official or operator-published sources are preferred.
 - Solaseed and AMX publish image/table timetables, so their rows are transcribed from cached official source files. ORC route PDFs are parsed directly.
 - The old ANA-derived JAC split artifact is retired from the current bundle. JAL group current-period rows come from official JAL timetable XML; standalone JAC summer operator labeling remains a source gap until that official period/operator split is available.
 - JAL/JTA/RAC are included for the currently available official spring period (`2026-03-29/2026-05-31`) from JAL timetable XML route files. The July-August official timetable remains pending.
-- The JAL TAK→HND source cache includes a Takamatsu Airport official May 2026 timetable supplement because the cached JAL route XML set contained HND→TAK but was missing the reverse direction.
+- The JAL XML cache is now regenerated from the official static route XML path (`/en/dom/time/xml/{period}/{FROM}_{TO}.xml`). A May 2026 reverse-direction audit added 66 missing official XML route files; the only remaining JAL-group one-way route is `ASJ→RNJ`, which is confirmed as one-way by both the JAL XML endpoint (`RNJ_ASJ.xml` returns 404) and FlightStats (`RNJ→ASJ` has no JL result while `ASJ→RNJ` has JL3861).
 - Peach's official route/schedule page links a domestic 2026 summer PDF, now cached and parsed.
 - Jetstar and Spring calendar notes are parsed, including the previously unresolved complex Japanese weekday/month notes.
 
