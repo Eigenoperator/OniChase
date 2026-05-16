@@ -1445,6 +1445,7 @@
       tokyu: '東急',
       tsukuba_express: '首都圏新都市鉄道',
       yurikamome: 'ゆりかもめ',
+      近畿日本鉄道: '近鉄',
     });
     const PHYSICAL_ALIAS_OPERATOR_LABELS = Object.freeze({
       みなとみらい21線: '横浜高速鉄道',
@@ -6424,12 +6425,19 @@
       return JAPANESE_TEXT_RE.test(String(value || ''));
     }
 
+    function shortenOperatorDisplayLabel(label) {
+      return String(label || '')
+        .replace(/近畿日本鉄道/gu, '近鉄')
+        .replace(/近畿日本鐵道/gu, '近鉄')
+        .replace(/近畿日本铁道/gu, '近铁');
+    }
+
     function operatorJaLabel(operatorId) {
-      return OPERATOR_JA_LABELS[operatorId] || operatorId || '';
+      return shortenOperatorDisplayLabel(OPERATOR_JA_LABELS[operatorId] || operatorId || '');
     }
 
     function routeOperatorLabel(route) {
-      return OPERATOR_JA_LABELS[route?.operatorId] || route?.operatorName || route?.operatorId || '';
+      return shortenOperatorDisplayLabel(OPERATOR_JA_LABELS[route?.operatorId] || route?.operatorName || route?.operatorId || '');
     }
 
     function isJrRoute(route) {
@@ -6480,11 +6488,11 @@
       if (label === 'みなとみらい21線') label = 'みなとみらい線';
       if (route?.operatorId === 'toei') label = label.replace(/^都営/u, '');
       if (route?.operatorId === 'tokyo_metro') label = label.replace(/^東京メトロ/u, '');
-      return label;
+      return shortenOperatorDisplayLabel(label);
     }
 
     function removeDisplayParentheses(label) {
-      return String(label || '')
+      return shortenOperatorDisplayLabel(label)
         .replace(/[（(]([^）)]+)[）)]/gu, ' $1')
         .replace(/\s+/gu, ' ')
         .trim();
