@@ -66,13 +66,41 @@ Completed first official-source collection pass:
 
 Current next parser order:
 
-1. HND: split Haneda official route directory by operator, then target Airport
-   Transport Service and Keikyu Bus timetable pages first.
-2. CTS: parse Hokuto Kotsu and Hokkaido Chuo Bus airport timetable pages.
-3. ITM: parse Hankyu Kanko Bus translated timetable pages and city bus local
-   links.
+1. HND: collect Airport Transport Service / Limousine Bus pages. The site is
+   more protected than Keikyu and may require a browser-backed collector or
+   official PDF fallback.
+2. CTS: add Hokuto Kotsu after the Hokkaido Chuo Bus parser.
+3. ITM: promote the linked-page source pass into operator-specific parsers for
+   Hankyu Kanko Bus, Hankyu Bus, Itami City Bus, and the long-distance
+   operators.
 4. KIX: convert collected KATE source data into normalized bus bundle rows and
    run duplicate checks against the existing GTFS layer.
+5. Next airports: KOJ, KMI, UKB, ISG, NGS, KIJ.
+
+Completed second official-source collection pass:
+
+- HND / Keikyu Bus official airport timetable fragments.
+  - Script: `scripts/ingest/collect_v5_keikyu_haneda_bus.py`
+  - Source output: `data/v5_keikyu_haneda_official_bus_source.json`
+  - Docs copy: `docs/data/v5_keikyu_haneda_official_bus_source.json`
+  - Audit: `data/v5_keikyu_haneda_official_bus_audit.json`
+  - Result: 56 Haneda route entries collected; 53 have parseable timetable
+    rows; 1,852 official bus trips extracted.
+- CTS / Hokkaido Chuo Bus official New Chitose Airport timetable pages.
+  - Script: `scripts/ingest/collect_v5_chuo_cts_bus.py`
+  - Source output: `data/v5_chuo_cts_official_bus_source.json`
+  - Docs copy: `docs/data/v5_chuo_cts_official_bus_source.json`
+  - Audit: `data/v5_chuo_cts_official_bus_audit.json`
+  - Result: 14 official route-direction pages collected; all 14 parse; 281
+    official bus trips extracted.
+- ITM / Osaka Itami official airport bus linked pages.
+  - Script: `scripts/ingest/collect_v5_itm_airport_bus_pages.py`
+  - Source output: `data/v5_itm_official_bus_pages.json`
+  - Docs copy: `docs/data/v5_itm_official_bus_pages.json`
+  - Audit: `data/v5_itm_official_bus_pages_audit.json`
+  - Result: 35 linked operator/source pages collected or attempted; 23 pages
+    contain parseable timetable time text and should be promoted to dedicated
+    operator parsers.
 
 ## Official Source Seeds
 
