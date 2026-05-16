@@ -20,13 +20,14 @@ import urllib.error
 import urllib.request
 import zipfile
 from collections import Counter, defaultdict
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_GTFS_INDEX = ROOT / "data" / "v4_gtfs_repository_route_index.json"
+DEFAULT_RAIL_GTFS_OVERRIDES = ROOT / "data" / "v4_manual_gtfs_feed_overrides.json"
 DEFAULT_MAP_BUNDLE = ROOT / "data" / "v4_gameplay_map_bundle.json.gz"
 DEFAULT_AIRPORT_MAP = ROOT / "docs" / "data" / "v5_flight_map.geojson"
 DEFAULT_CACHE_DIR = ROOT / "data" / "v5_bus_gtfs_cache"
@@ -99,6 +100,26 @@ def parse_int(value: str | None) -> int | None:
         return int(text)
     except ValueError:
         return None
+
+
+def parse_iso_date(value: str | None) -> date | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def feed_active_status(feed: dict[str, Any], service_date: date) -> tuple[bool, str]:
+    from_date = parse_iso_date(feed.get("fileFromDate"))
+    to_date = parse_iso_date(feed.get("fileToDate"))
+    if from_date and service_date < from_date:
+        return False, "future_feed"
+    if to_date and service_date > to_date:
+        return False, "expired_feed"
+    return True, "active_or_unknown_date"
 
 
 def csv_rows(archive: zipfile.ZipFile, name: str) -> list[dict[str, str]]:
@@ -648,9 +669,31 @@ def build_connectors(
     }
 
 
-def selected_bus_feeds(index_path: Path, max_feeds: int, feed_keys: set[str]) -> list[dict[str, Any]]:
+def rail_override_file_urls(path: Path) -> set[str]:
+    if not path.exists():
+        return set()
+    data = read_json(path)
+    urls = set()
+    for section in ("feeds", "deferredFeeds"):
+        for feed in data.get(section) or []:
+            if feed.get("fileUrl"):
+                urls.add(str(feed["fileUrl"]))
+    return urls
+
+
+def selected_bus_feeds(
+    index_path: Path,
+    rail_overrides_path: Path,
+    max_feeds: int,
+    feed_keys: set[str],
+    *,
+    service_date: date,
+    include_inactive: bool,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     data = read_json(index_path)
+    rail_override_urls = rail_override_file_urls(rail_overrides_path)
     feeds = []
+    skipped = []
     for feed in data.get("feeds") or []:
         if feed.get("status") != "ok" or not feed.get("isBusOnly"):
             continue
@@ -659,16 +702,45 @@ def selected_bus_feeds(index_path: Path, max_feeds: int, feed_keys: set[str]) ->
         enriched["feedKey"] = feed_key
         if feed_keys and feed_key not in feed_keys:
             continue
+        if str(feed.get("fileUrl") or "") in rail_override_urls:
+            skipped.append(
+                {
+                    "feedKey": feed_key,
+                    "organizationName": feed.get("organizationName"),
+                    "feedName": feed.get("feedName"),
+                    "fileFromDate": feed.get("fileFromDate"),
+                    "fileToDate": feed.get("fileToDate"),
+                    "activeStatus": "rail_override_feed",
+                    "reason": "excluded from bus because this GTFS feed is already handled by the rail pipeline",
+                }
+            )
+            continue
+        active, status = feed_active_status(enriched, service_date)
+        enriched["activeStatus"] = status
+        if not active and not include_inactive:
+            skipped.append(
+                {
+                    "feedKey": feed_key,
+                    "organizationName": feed.get("organizationName"),
+                    "feedName": feed.get("feedName"),
+                    "fileFromDate": feed.get("fileFromDate"),
+                    "fileToDate": feed.get("fileToDate"),
+                    "activeStatus": status,
+                    "reason": f"not active on {service_date.isoformat()}",
+                }
+            )
+            continue
         feeds.append(enriched)
     feeds.sort(key=lambda item: (str(item.get("feedPrefId")), str(item.get("organizationName")), str(item.get("feedName"))))
     if max_feeds:
         feeds = feeds[:max_feeds]
-    return feeds
+    return feeds, skipped
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gtfs-index", type=Path, default=DEFAULT_GTFS_INDEX)
+    parser.add_argument("--rail-gtfs-overrides", type=Path, default=DEFAULT_RAIL_GTFS_OVERRIDES)
     parser.add_argument("--map-bundle", type=Path, default=DEFAULT_MAP_BUNDLE)
     parser.add_argument("--airport-map", type=Path, default=DEFAULT_AIRPORT_MAP)
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
@@ -676,6 +748,8 @@ def main() -> int:
     parser.add_argument("--audit-output", type=Path, default=DEFAULT_AUDIT_OUTPUT)
     parser.add_argument("--max-feeds", type=int, default=0)
     parser.add_argument("--feed-key", action="append", default=[])
+    parser.add_argument("--service-date", default=date.today().isoformat())
+    parser.add_argument("--include-inactive", action="store_true")
     parser.add_argument("--timeout", type=int, default=60)
     parser.add_argument("--refresh-cache", action="store_true")
     parser.add_argument("--skip-shapes", action="store_true")
@@ -684,7 +758,17 @@ def main() -> int:
     parser.add_argument("--max-airport-connectors-per-stop", type=int, default=4)
     args = parser.parse_args()
 
-    feeds = selected_bus_feeds(args.gtfs_index, args.max_feeds, set(args.feed_key))
+    service_date = parse_iso_date(args.service_date)
+    if not service_date:
+        raise ValueError("--service-date must be YYYY-MM-DD")
+    feeds, skipped_feeds = selected_bus_feeds(
+        args.gtfs_index,
+        args.rail_gtfs_overrides,
+        args.max_feeds,
+        set(args.feed_key),
+        service_date=service_date,
+        include_inactive=args.include_inactive,
+    )
     generated_at = datetime.now(UTC).isoformat(timespec="seconds")
     all_agencies: list[dict[str, Any]] = []
     all_stops: list[dict[str, Any]] = []
@@ -738,12 +822,17 @@ def main() -> int:
         "rules": {
             "sourcePolicy": "Only real GTFS/GTFS-JP bus feeds are ingested. No bus timetable, fare, or stop is fabricated.",
             "sourceClass": "GTFS route_type=3 bus feeds from the public GTFS data repository index.",
+            "serviceDate": service_date.isoformat(),
+            "inactiveFeedPolicy": "Feeds whose file date range does not include serviceDate are skipped unless --include-inactive is set.",
+            "railOverlapPolicy": "GTFS feeds listed in the rail manual override registry are excluded from the bus bundle to prevent duplicate rail/tram services.",
             "serviceClassHeuristic": "airport text -> bus_airport; highway/night text -> bus_long_distance; otherwise bus_local. This is gameplay metadata only; source route data is unchanged.",
             "connectorPolicy": "Walking connectors are generated from coordinates and can be regenerated when rail, airport, port, or bus stop nodes change.",
             "portConnectorStatus": "Ports are reserved in the connector schema and will be added when ferry/port nodes exist.",
         },
         "summary": {
             "sourceFeedCount": len(source_feeds),
+            "selectedFeedCount": len(feeds),
+            "skippedFeedCount": len(skipped_feeds),
             "agencyCount": len(all_agencies),
             "stopCount": len(all_stops),
             "routeCount": len(all_routes),
@@ -759,6 +848,7 @@ def main() -> int:
             "connectorSummary": connector_summary,
         },
         "sourceFeeds": source_feeds,
+        "skippedFeeds": skipped_feeds,
         "agencies": all_agencies,
         "stops": all_stops,
         "routes": all_routes,
@@ -779,7 +869,9 @@ def main() -> int:
         "modelVersion": payload["modelVersion"],
         "sourceIndex": payload["sourceIndex"],
         "selectedFeedCount": len(feeds),
+        "skippedFeedCount": len(skipped_feeds),
         "summary": payload["summary"],
+        "skippedFeeds": skipped_feeds,
         "feedAudits": feed_audits,
         "notes": [
             "This audit verifies ingestion shape and connector generation, not every operator's service completeness.",
