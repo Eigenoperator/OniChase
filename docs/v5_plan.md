@@ -79,7 +79,31 @@ V5 should include both long-distance and short-distance buses:
 - Bus stop to rail/airport/port access is generated from coordinates, not from
   preset hand edges. Port connectors activate when ferry/port nodes are added.
 
-Bus planning UI may need a different workflow from trains because bus stops are denser, route names are less stable, and stop-direction matters more.
+Bus gameplay rules now fixed:
+
+- Local buses are usable nationwide and work like rail: if the player can reach
+  the bus stop before departure, they can wait and board the next real service.
+- Bus stop access always uses walking time from coordinates. Rail stations,
+  airports, ports, and bus stops are not silently treated as the same node.
+- Highway and night buses require advance purchase at least `15 minutes` before
+  departure.
+- Buying a highway or night bus ticket is immediately revealed to the opponent.
+- Local bus riding is not revealed on purchase because there is no purchase
+  commitment step.
+- Players on the same bus are capturable by the same-vehicle rule.
+- Players at the same bus stop/capture node are capturable by the same-node
+  rule.
+- Cross-day night buses are allowed.
+- Airport buses and rail airport access are both freely selectable when both
+  exist.
+- Bus fares should use real source fares when available. Missing fare data is a
+  data-collection gap to improve from operator/official sources, not a reason to
+  fabricate a fare.
+- Bus planning UI should focus around the player's current position or the plan
+  tail. The player should not start from a nationwide unsorted bus list.
+
+Bus planning UI needs a different workflow from trains because bus stops are
+denser, route names are less stable, and stop-direction matters more.
 
 ## Planning UX
 
@@ -94,7 +118,8 @@ Other modes can diverge:
 - Walking: choose reachable destination node, show time and distance.
 - Aircraft: choose airport, choose flight, confirm ticket purchase and reveal.
 - Ferry: choose port/route, choose sailing, choose destination port.
-- Bus: likely choose stop/route/direction, then choose departure.
+- Bus: choose nearby reachable bus stop, choose route/direction, choose
+  departure, then choose alighting stop.
 
 The planner should present mode choice as part of the current location context, not as a separate disconnected page.
 
@@ -106,7 +131,9 @@ V5 uses real transfer time rather than instant switching:
 - Rail-to-rail transfers keep station-change time.
 - Airport access and boarding buffer are mandatory.
 - Ferry boarding buffer is mandatory.
-- Bus boarding is usually shorter but still nonzero.
+- Local bus boarding uses the same wait-and-board model as rail once the player
+  reaches the stop. Highway/night bus tickets must be bought at least
+  `15 minutes` before departure.
 
 Exact default transfer times are not fixed yet and should be tuned after the first multimodal graph exists.
 

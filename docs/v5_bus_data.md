@@ -130,6 +130,27 @@ This is only a display/planning hint. It must not modify the real route,
 timetable, fare, or stop data. Misclassified classes should be fixed by audit or
 operator-specific rules, not by changing source facts.
 
+## Gameplay Rules
+
+The current V5 bus gameplay contract is:
+
+- All real bus services are in scope nationwide.
+- Local buses are boarded like rail once the player can walk to the bus stop in
+  time.
+- Highway and night buses require a ticket at least `15 minutes` before
+  departure.
+- Buying a highway/night bus ticket is immediately revealed to the opponent.
+- Local bus boarding does not create a purchase reveal.
+- Players on the same bus are caught by the same-vehicle capture rule.
+- Players at the same bus stop are caught by the same-node capture rule.
+- Bus stop transfers always use walking time from coordinates.
+- Cross-day night buses are allowed.
+- Airport rail access and airport buses are both valid choices when both exist.
+- Missing fare data should be collected from real sources. Do not fabricate bus
+  fares as release facts.
+- Bus planning is local-context first: show reachable stops/routes around the
+  current player position or plan tail, not an unsorted nationwide bus list.
+
 ## Walking Connectors
 
 Bus stop connectors are generated from coordinates:
