@@ -69,6 +69,8 @@ Release output:
 - `data/v5_bus_gtfs_current_bundle.json.gz`
 - `data/v5_bus_gtfs_audit.json`
 - `data/v5_airport_bus_access_audit.json`
+- `data/v5_bus_map.geojson.gz`
+- `data/v5_bus_map_audit.json`
 
 The builder caches source zip files under `data/v5_bus_gtfs_cache/` so the
 release bundle can be rebuilt even if a feed changes later. The cache should be
@@ -159,6 +161,37 @@ Current airport access audit on `2026-05-16`:
 - 4 airports have bus stops only within the wider 5 km review radius.
 - 53 airports have no GTFS bus stop within 5 km in this first source layer.
 
+## Bus Map Layer
+
+The browser does not load the full GTFS bundle for map display. The full bundle
+contains the timetable and fare source tables, including more than two million
+stop-time rows, so it is too heavy for an interactive map layer.
+
+The map-facing layer is generated separately:
+
+```bash
+python scripts/ingest/build_v5_bus_map.py
+```
+
+Current output on `2026-05-16`:
+
+- 96,797 GeoJSON features.
+- 8,584 bus route line features.
+- 88,213 bus stop point features.
+- Route lines by class:
+  - 143 airport-bus lines.
+  - 126 long-distance/highway/night-bus lines.
+  - 8,315 local-bus lines.
+- Stop points by class:
+  - 1,512 airport-bus stops.
+  - 1,052 long-distance/highway/night-bus stops.
+  - 85,649 local-bus stops.
+
+The V5 web page loads `docs/data/v5_bus_map.geojson.gz` only when bus mode is
+opened. Airport and long-distance bus geometry is visible earlier; dense local
+bus stops and labels are deliberately zoom-gated so the railway/flight map does
+not become unreadable or slow.
+
 ## Known First-Layer Limits
 
 - GTFS repository coverage is broad but not all Japanese buses.
@@ -166,5 +199,5 @@ Current airport access audit on `2026-05-16`:
   official operator parsers.
 - Reservation rules are not guaranteed by GTFS and need route/operator audits.
 - Port connectors wait for the ferry node dataset.
-- The bus UI is not connected yet; this document and builder establish the real
-  data substrate first.
+- The bus map layer is connected, but bus riding is still blocked until route
+  filtering, stop selection, and airport/highway-bus rules are audited.

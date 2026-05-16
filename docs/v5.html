@@ -1398,6 +1398,7 @@
     const WALKING_EDGES_URL = './data/v5_walking_edges.json.gz';
     const FLIGHT_MAP_URL = './data/v5_flight_map.geojson';
     const FLIGHT_TIMETABLE_URL = './data/v5_domestic_flights_current_bundle.json';
+    const BUS_MAP_URL = './data/v5_bus_map.geojson.gz';
     const V5_ACTIVE_WALKING_THRESHOLD_METERS = 2000;
     const V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND = 5 / 3.6;
     const V5_MIN_WALKING_SPEED_MULTIPLIER = 0.35;
@@ -5670,6 +5671,7 @@
       selectedTripStopFeatureIds: [],
       walkingMapActive: false,
       flightMapActive: false,
+      busMapActive: false,
       planningModes: { runner: 'rail', hunter: 'rail' },
       activeMode: 'runner',
       players: {},
@@ -5734,6 +5736,8 @@
       flightTimetable: null,
       flightById: new Map(),
       flightsByOriginAirport: new Map(),
+      busMap: null,
+      busMapLoadStatus: 'idle',
       nearestAirportStationCache: new Map(),
       fareRules: null,
       coupledServiceEntries: [],
@@ -8242,6 +8246,31 @@
       }
     }
 
+    function indexBusMap(payload) {
+      state.busMap = payload || { type: 'FeatureCollection', features: [] };
+    }
+
+    async function loadBusMap() {
+      state.busMapLoadStatus = 'loading';
+      try {
+        const payload = await fetchJsonMaybeGz(BUS_MAP_URL);
+        indexBusMap(payload);
+        state.busMapLoadStatus = 'ready';
+      } catch (error) {
+        console.warn('Failed to load v5 bus map', error);
+        indexBusMap(null);
+        state.busMapLoadStatus = 'failed';
+      }
+      updateBusMapLayers();
+      renderGame();
+    }
+
+    function ensureBusMapLoaded() {
+      if (state.busMapLoadStatus === 'idle') {
+        loadBusMap();
+      }
+    }
+
     function flightOperatingNumber(flight) {
       return flight?.operatingFlightNumber || flight?.marketingFlights?.[0] || flight?.physicalFlightId || 'FLIGHT';
     }
@@ -9222,6 +9251,12 @@
         promoteId: 'id',
         tolerance: 0.45,
       });
+      map.addSource('bus-map', {
+        type: 'geojson',
+        data: state.busMap || { type: 'FeatureCollection', features: [] },
+        promoteId: 'id',
+        tolerance: 0.7,
+      });
 
       map.addLayer({
         id: 'track-casing',
@@ -9293,6 +9328,7 @@
 
       addWalkingLayers(map);
       addFlightLayers(map);
+      addBusLayers(map);
       addStationLayers(map);
       addLabelLayers(map);
       addPlayerLayers(map);
@@ -9435,6 +9471,78 @@
           'text-halo-color': 'rgba(255,255,255,0.72)',
           'text-halo-width': 0.8,
         },
+      });
+    }
+
+    function addBusLayers(map) {
+      [
+        { id: 'bus-airport-route-lines', serviceClass: 'bus_airport', color: '#0f766e', opacity: [5, 0.28, 8, 0.48, 12, 0.68], width: [5, 0.7, 10, 1.8, 14, 3.0] },
+        { id: 'bus-long-route-lines', serviceClass: 'bus_long_distance', color: '#b45309', opacity: [5, 0.22, 8, 0.42, 12, 0.62], width: [5, 0.65, 10, 1.6, 14, 2.6] },
+        { id: 'bus-local-route-lines', serviceClass: 'bus_local', color: '#64748b', opacity: [5, 0.0, 9, 0.0, 11, 0.16, 13, 0.42, 16, 0.58], width: [10, 0.45, 13, 1.05, 16, 1.8] },
+      ].forEach((layer) => {
+        map.addLayer({
+          id: layer.id,
+          type: 'line',
+          source: 'bus-map',
+          filter: ['all', ['==', ['get', 'kind'], 'bus-route'], ['==', ['get', 'serviceClass'], layer.serviceClass]],
+          layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' },
+          paint: {
+            'line-color': layer.color,
+            'line-opacity': ['interpolate', ['linear'], ['zoom'], ...layer.opacity],
+            'line-width': ['interpolate', ['linear'], ['zoom'], ...layer.width],
+          },
+        });
+      });
+      [
+        { id: 'bus-airport-stop-points', serviceClass: 'bus_airport', color: '#0f766e', radius: [10, 2.8, 14, 5.4, 16, 7.0], opacity: [10, 0.72, 14, 0.92] },
+        { id: 'bus-long-stop-points', serviceClass: 'bus_long_distance', color: '#b45309', radius: [10, 2.4, 14, 4.8, 16, 6.4], opacity: [10, 0.68, 14, 0.9] },
+        { id: 'bus-local-stop-points', serviceClass: 'bus_local', color: '#475569', radius: [11, 1.3, 14, 2.8, 16, 4.4], opacity: [10, 0.0, 12, 0.16, 14, 0.72] },
+      ].forEach((layer) => {
+        map.addLayer({
+          id: layer.id,
+          type: 'circle',
+          source: 'bus-map',
+          filter: ['all', ['==', ['get', 'kind'], 'bus-stop'], ['==', ['get', 'serviceClass'], layer.serviceClass]],
+          minzoom: 10,
+          layout: { visibility: 'none' },
+          paint: {
+            'circle-color': layer.color,
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], ...layer.radius],
+            'circle-opacity': ['interpolate', ['linear'], ['zoom'], ...layer.opacity],
+            'circle-stroke-color': 'rgba(255,255,255,0.84)',
+            'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 10, 0.4, 14, 1.1],
+          },
+        });
+      });
+      [
+        { id: 'bus-airport-stop-labels', serviceClass: 'bus_airport', minzoom: 12.2, color: '#134e4a' },
+        { id: 'bus-long-stop-labels', serviceClass: 'bus_long_distance', minzoom: 12.8, color: '#7c2d12' },
+        { id: 'bus-local-stop-labels', serviceClass: 'bus_local', minzoom: 14.1, color: '#1f2937' },
+      ].forEach((layer, index) => {
+        map.addLayer({
+          id: layer.id,
+          type: 'symbol',
+          source: 'bus-map',
+          filter: ['all', ['==', ['get', 'kind'], 'bus-stop'], ['==', ['get', 'serviceClass'], layer.serviceClass]],
+          minzoom: layer.minzoom,
+          layout: {
+            visibility: 'none',
+            'text-field': ['get', 'name'],
+            'text-font': ['Open Sans Regular'],
+            'text-size': ['interpolate', ['linear'], ['zoom'], 13, 9.2, 15, 11.4, 17, 13.2],
+            'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+            'text-radial-offset': 0.58,
+            'text-justify': 'auto',
+            'text-allow-overlap': false,
+            'text-ignore-placement': false,
+            'symbol-sort-key': index,
+          },
+          paint: {
+            'text-color': layer.color,
+            'text-halo-color': 'rgba(255,255,255,0.68)',
+            'text-halo-width': 0.7,
+          },
+        });
       });
     }
 
@@ -10263,6 +10371,25 @@
       document.getElementById('flight-map-button')?.classList.toggle('active', state.flightMapActive);
     }
 
+    function updateBusMapLayers() {
+      if (!state.map?.getSource('bus-map')) return;
+      state.map.getSource('bus-map').setData(state.busMap || { type: 'FeatureCollection', features: [] });
+      const visibility = state.busMapActive ? 'visible' : 'none';
+      [
+        'bus-airport-route-lines',
+        'bus-long-route-lines',
+        'bus-local-route-lines',
+        'bus-airport-stop-points',
+        'bus-long-stop-points',
+        'bus-local-stop-points',
+        'bus-airport-stop-labels',
+        'bus-long-stop-labels',
+        'bus-local-stop-labels',
+      ].forEach((layerId) => {
+        if (state.map.getLayer(layerId)) state.map.setLayoutProperty(layerId, 'visibility', visibility);
+      });
+    }
+
     function activeFlightMapFeatureCollection() {
       const features = state.flightMap?.features || [];
       const selected = state.flightPlanning[state.activeMode] || {};
@@ -10298,10 +10425,14 @@
 
     function setWalkingMapActive(active, { focus = false } = {}) {
       state.walkingMapActive = Boolean(active && walkingMapOriginPreview());
-      if (state.walkingMapActive) state.flightMapActive = false;
+      if (state.walkingMapActive) {
+        state.flightMapActive = false;
+        state.busMapActive = false;
+      }
       updateRailDimForWalkingMap();
       updateWalkingMapLayers();
       updateFlightMapLayers();
+      updateBusMapLayers();
       if (state.walkingMapActive && focus) focusWalkingMap();
     }
 
@@ -10325,10 +10456,14 @@
 
     function setFlightMapActive(active, { focus = false } = {}) {
       state.flightMapActive = Boolean(active && state.airportByIata?.size);
-      if (state.flightMapActive) state.walkingMapActive = false;
+      if (state.flightMapActive) {
+        state.walkingMapActive = false;
+        state.busMapActive = false;
+      }
       updateRailDimForWalkingMap();
       updateWalkingMapLayers();
       updateFlightMapLayers();
+      updateBusMapLayers();
       if (state.flightMapActive && focus) focusFlightMap();
     }
 
@@ -10343,6 +10478,46 @@
         state.planningModes[state.activeMode] = 'rail';
       }
       renderGame();
+    }
+
+    function busMapBounds() {
+      const coordinates = [];
+      (state.busMap?.features || []).forEach((feature) => {
+        if (feature?.properties?.kind !== 'bus-stop') return;
+        const coord = feature.geometry?.coordinates;
+        if (validCoordinate(coord)) coordinates.push(coord);
+      });
+      if (!coordinates.length) return null;
+      return [
+        [Math.min(...coordinates.map((coord) => coord[0])), Math.min(...coordinates.map((coord) => coord[1]))],
+        [Math.max(...coordinates.map((coord) => coord[0])), Math.max(...coordinates.map((coord) => coord[1]))],
+      ];
+    }
+
+    function focusBusMap() {
+      if (!state.map) return;
+      const preview = planCursorPreview(state.activeMode);
+      const coordinate = stationLonLat(preview?.currentState?.stationGroupId) || preview?.mapPosition;
+      if (validCoordinate(coordinate)) {
+        state.map.easeTo({ center: coordinate, zoom: Math.max(state.map.getZoom(), 11.2), duration: 650 });
+        return;
+      }
+      const bounds = busMapBounds();
+      if (bounds) state.map.fitBounds(bounds, { padding: 70, duration: 650, maxZoom: 8.8 });
+    }
+
+    function setBusMapActive(active, { focus = false } = {}) {
+      state.busMapActive = Boolean(active);
+      if (state.busMapActive) {
+        state.walkingMapActive = false;
+        state.flightMapActive = false;
+        ensureBusMapLoaded();
+      }
+      updateRailDimForWalkingMap();
+      updateWalkingMapLayers();
+      updateFlightMapLayers();
+      updateBusMapLayers();
+      if (state.busMapActive && focus) focusBusMap();
     }
 
     function validCoordinate(coordinate) {
@@ -12761,7 +12936,7 @@
 
     function updateRailDimForWalkingMap() {
       if (!state.map) return;
-      const dimmed = state.walkingMapActive || state.flightMapActive;
+      const dimmed = state.walkingMapActive || state.flightMapActive || state.busMapActive;
       const opacityByLayer = {
         'track-casing': dimmed ? 0.18 : ['interpolate', ['linear'], ['zoom'], 5, 0.45, 8, 0.72, 12, 0.82],
         'track-lines': dimmed ? 0.18 : ['interpolate', ['linear'], ['zoom'], 5, 0.42, 8, 0.62, 12, 0.82],
@@ -12834,7 +13009,7 @@
       const overlay = state.stationLabelOverlayEl;
       if (!map || !overlay) return;
       const zoom = map.getZoom();
-      if (state.walkingMapActive || state.flightMapActive || zoom < 12) {
+      if (state.walkingMapActive || state.flightMapActive || state.busMapActive || zoom < 12) {
         overlay.classList.add('hidden');
         overlay.replaceChildren();
         return;
@@ -14186,7 +14361,7 @@
       { id: 'walk', label: 'Walk', icon: '👣', enabled: true },
       { id: 'flight', label: 'Flight', icon: '✈', enabled: true },
       { id: 'ship', label: 'Ship', icon: '⛴', enabled: false },
-      { id: 'bus', label: 'Bus', icon: '🚌', enabled: false },
+      { id: 'bus', label: 'Bus', icon: '🚌', enabled: true },
     ]);
 
     function activePlanningMode(playerId = state.activeMode) {
@@ -14343,8 +14518,10 @@
       setSelectedRoute(null);
       if (mode === 'walk') setWalkingMapActive(true, { focus: true });
       else if (mode === 'flight') setFlightMapActive(true, { focus: true });
+      else if (mode === 'bus') setBusMapActive(true, { focus: true });
       else setWalkingMapActive(false);
       if (mode !== 'flight') setFlightMapActive(false);
+      if (mode !== 'bus') setBusMapActive(false);
       renderGame();
     }
 
@@ -14512,11 +14689,19 @@
                 : selectedFlightPlan.origin
                   ? `Destinations from ${selectedFlightPlan.origin}`
                   : 'Choose departure airport')
+              : planningMode === 'bus'
+                ? `Bus map near ${currentLabel}`
               : `Lines at ${currentLabel}`;
           const stepSub = planningMode === 'walk'
             ? `Walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km`
             : planningMode === 'flight'
               ? `buy ${V5_FLIGHT_PURCHASE_ADVANCE_MINUTES}m ahead · airport ${V5_FLIGHT_AIRPORT_ARRIVAL_ADVANCE_MINUTES}m ahead · boarding ${V5_FLIGHT_BOARDING_ADVANCE_MINUTES}m ahead`
+              : planningMode === 'bus'
+                ? state.busMapLoadStatus === 'ready'
+                  ? 'Real GTFS bus map layer · ride planning not enabled yet'
+                  : state.busMapLoadStatus === 'failed'
+                    ? 'Bus map failed to load'
+                    : 'Loading real GTFS bus map layer'
               : `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))}`;
           html += plannerStep(
             '1/3',
@@ -14539,9 +14724,11 @@
                           ? flightDestinationRows.join('')
                           : `<div class="empty" data-row-key="empty:flight-destinations">No destinations remain from this airport.</div>`)
                         : (airportRows.length
-                          ? airportRows.join('')
-                          : `<div class="empty" data-row-key="empty:flight">No airport coordinates available.</div>`))
+                      ? airportRows.join('')
+                      : `<div class="empty" data-row-key="empty:flight">No airport coordinates available.</div>`))
                   )
+                : planningMode === 'bus'
+                  ? `<div class="empty" data-row-key="empty:bus-map">Bus routes and stops are shown on the map. Riding buses will be enabled after route filtering and airport-access rules are audited.</div>`
                 : (routeChoices.length
                   ? routeChoices.map((choice) => `
                   <button class="route-row" type="button" data-row-key="${escapeHtml(`route:${choice.routeId}`)}" data-action="choose-route" data-route-id="${choice.routeId}">
@@ -14852,6 +15039,7 @@
       if (state.walkingMapActive && !walkingMapOriginPreview()) state.walkingMapActive = false;
       if (state.flightMapActive && !state.airportByIata?.size) state.flightMapActive = false;
       updateRailDimForWalkingMap();
+      updateBusMapLayers();
       renderCurrentStatus();
       renderTrainOutlook();
       renderPlanBoard();
