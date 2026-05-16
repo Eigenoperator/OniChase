@@ -907,12 +907,35 @@
       min-width: 0;
     }
 
-    .plan-title-with-icon {
+    .plan-title-with-marker {
       display: grid;
-      grid-template-columns: 42px minmax(0, 1fr);
+      grid-template-columns: 32px minmax(0, 1fr);
       align-items: center;
       gap: 10px;
       min-width: 0;
+    }
+
+    .plan-marker-slot {
+      width: 32px;
+      min-width: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .plan-marker-slot .route-swatch {
+      height: 30px;
+    }
+
+    .plan-marker-slot .airline-logo {
+      width: 30px;
+      height: 26px;
+      border-radius: 8px;
+      padding: 3px;
+    }
+
+    .plan-marker-slot .airline-logo-fallback {
+      font-size: 8px;
     }
 
     .plan-title-copy {
@@ -14566,9 +14589,11 @@
       const rows = [];
       if (ticket && !isFlightTicketPlanned(ticket)) {
         const flight = state.flightById.get(ticket.flight_id);
+        const ticketOrigin = flight?.originAirport || ticket.origin_airport || '---';
+        const ticketDestination = flight?.destinationAirport || ticket.destination_airport || '---';
         rows.push({
           time: 'TICKET',
-          title: flight ? flightOperatingNumber(flight) : ticket.flight_number || 'Flight',
+          title: `${flight ? flightOperatingNumber(flight) : ticket.flight_number || 'Flight'} · ${ticketOrigin} -> ${ticketDestination}`,
           sub: `${flight?.departureTimeLocal || ticket.departure_hhmm || '--:--'} -> ${flight?.arrivalTimeLocal || ticket.arrival_hhmm || '--:--'}`,
           routeId: null,
           iconHtml: flight ? airlineLogoHtml(flight) : '',
@@ -14594,6 +14619,7 @@
             title: `Walk: ${from} -> ${to}`,
             sub: `${departHhmm} -> ${minutesToHhmm(currentMinute)} · ${walkingDistanceLabel(edge.distanceMeters ?? step.distance_meters)} · ¥0`,
             routeId: null,
+            markerHtml: '<span class="route-swatch" style="background:#7c3aed"></span>',
             editable: false,
           });
           chainStation = step.station_id;
@@ -14605,9 +14631,11 @@
           const times = flight ? flightRuleTimes(flight) : null;
           const fare = step.fare || (flight ? resolveFlightFare(flight) : null);
           const destinationStation = flight ? nearestStationGroupForAirport(flight.destinationAirport) : null;
+          const originAirport = flight?.originAirport || step.origin_airport || '---';
+          const destinationAirport = flight?.destinationAirport || step.destination_airport || '---';
           rows.push({
             time: `LEG ${legIndex}`,
-            title: flight ? flightOperatingNumber(flight) : step.flight_number || 'Flight',
+            title: `${flight ? flightOperatingNumber(flight) : step.flight_number || 'Flight'} · ${originAirport} -> ${destinationAirport}`,
             sub: `${flight?.departureTimeLocal || step.departure_hhmm || '--:--'} -> ${flight?.arrivalTimeLocal || step.arrival_hhmm || '--:--'}`,
             routeId: null,
             iconHtml: flight ? airlineLogoHtml(flight) : '',
@@ -14655,9 +14683,8 @@
       planBoardEl.innerHTML = planActions + rows.map((row) => `
         <button class="plan-row ${row.editable ? 'clickable current' : ''}" type="button" ${row.editable ? 'data-action="edit-current-ride"' : ''}>
           <span class="row-meta">${row.time}</span>
-          <span class="${row.iconHtml ? 'plan-title-with-icon' : row.routeId ? 'plan-title-with-route' : ''}">
-            ${row.routeId ? `<span class="route-swatch" style="background:${routeColor(row.routeId)}"></span>` : ''}
-            ${row.iconHtml || ''}
+          <span class="${row.iconHtml || row.routeId || row.markerHtml ? 'plan-title-with-marker' : ''}">
+            ${row.iconHtml || row.routeId || row.markerHtml ? `<span class="plan-marker-slot">${row.iconHtml || row.markerHtml || `<span class="route-swatch" style="background:${routeColor(row.routeId)}"></span>`}</span>` : ''}
             <span class="plan-title-copy">
               <span class="row-title">${row.title}</span>
               <span class="row-sub">${row.sub}</span>
