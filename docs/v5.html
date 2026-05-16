@@ -12554,6 +12554,10 @@
       return currentPreview;
     }
 
+    function planTailPreview(playerId = state.activeMode) {
+      return previewPlayer(playerId, null);
+    }
+
     function currentReplayEvent() {
       if (!state.latestResult?.match_event_log?.length) return null;
       const index = Math.max(0, Math.min(state.selectedResultEventIndex, state.latestResult.match_event_log.length - 1));
@@ -13281,7 +13285,7 @@
     }
 
     function buyFlightTicket(flightId) {
-      const preview = planCursorPreview(state.activeMode);
+      const preview = planTailPreview(state.activeMode);
       const flight = state.flightById.get(flightId);
       if (!flight || !preview) return;
       const purchase = flightPurchaseStatus(flight, preview);
@@ -14450,6 +14454,7 @@
           const departures = availableDepartures(preview);
           routeChoices = routeChoicesFromDepartures(departures);
           const planningMode = activePlanningMode();
+          const flightPreview = planningMode === 'flight' ? planTailPreview(state.activeMode) : preview;
           const walkingRows = walkingDestinationsFrom(preview.currentState.stationGroupId).map((edge) => `
             <button class="route-row" type="button" data-row-key="${escapeHtml(`walk:${edge.toNodeId}`)}" data-action="walk-to-station" data-station-group-id="${edge.toNodeId}">
               <span class="route-swatch" style="background:#7c3aed"></span>
@@ -14460,10 +14465,10 @@
               <span class="row-meta">walk</span>
             </button>
           `);
-          const flightRows = flightRowsFromPreview(preview);
-          const flightDestinationRows = flightDestinationRowsFromPreview(preview);
-          const flightTicketRows = flightTicketRowsFromPreview(preview);
-          const airportRows = flightAirportRowsFromPreview(preview);
+          const flightRows = flightRowsFromPreview(flightPreview);
+          const flightDestinationRows = flightDestinationRowsFromPreview(flightPreview);
+          const flightTicketRows = flightTicketRowsFromPreview(flightPreview);
+          const airportRows = flightAirportRowsFromPreview(flightPreview);
           const selectedFlightPlan = state.flightPlanning[state.activeMode] || {};
           const stepTitle = planningMode === 'walk'
             ? `Walking from ${currentLabel}`
