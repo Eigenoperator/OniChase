@@ -10622,16 +10622,34 @@
       return availableDepartures(preview, playerId, { routeId, limit });
     }
 
+    function isKeikyuThroughDuplicateCandidate(entry) {
+      const operatorIds = new Set([
+        tripRouteOperatorId(entry?.trip),
+        ...(entry?.routeIds || []).map((routeId) => state.routeById.get(routeId)?.operatorId),
+        ...routeChoiceIdsForDeparture(entry).map((routeId) => state.routeById.get(routeId)?.operatorId),
+      ].filter(Boolean));
+      return [...operatorIds].some((operatorId) =>
+        ['keikyu', 'keisei', '北総鉄道', '東京都'].includes(operatorId)
+      );
+    }
+
+    function downstreamStopCountFromBoard(entry) {
+      const boardSequence = entry?.boardStop?.sequence ?? 0;
+      return (entry?.trip?.stopTimes || []).filter((stop) => stop.sequence >= boardSequence).length;
+    }
+
     function dedupeBoardableDepartures(entries) {
       const seen = new Set();
       const looseLogicalIndexByKey = new Map();
       const exactLogicalIndexByKey = new Map();
+      const keikyuThroughDuplicateIndexByKey = new Map();
       const deduped = [];
       const dedupePreference = (entry) => {
         let score = 0;
         if (entry?.trip?.coupledBranchSynthetic) score += 120;
         if (entry?.trip?.sunriseBranchSynthetic) score += 100;
         if ((entry?.trip?.coupledRouteNames || []).some((name) => String(name || '').includes('サンライズ'))) score += 20;
+        if (isKeikyuThroughDuplicateCandidate(entry)) score += Math.min(60, downstreamStopCountFromBoard(entry));
         if (String(entry?.trip?.id || '').includes('jr_west_official')) score += 5;
         return score;
       };
@@ -10666,6 +10684,22 @@
               nextStop ? displayNameForGroup(nextStop.stationGroupId) : '',
             ].join('|')
           : '');
+        const keikyuThroughDuplicateKey = isKeikyuThroughDuplicateCandidate(entry) && nextStop
+          ? [
+              logicalRouteKey,
+              entry.boardStop.stationGroupId || '',
+              entry.departureMinute,
+              nextStop.stationGroupId || '',
+            ].join('|')
+          : '';
+        if (keikyuThroughDuplicateKey && keikyuThroughDuplicateIndexByKey.has(keikyuThroughDuplicateKey)) {
+          const existingIndex = keikyuThroughDuplicateIndexByKey.get(keikyuThroughDuplicateKey);
+          const existing = deduped[existingIndex];
+          if (dedupePreference(entry) > dedupePreference(existing)) {
+            deduped[existingIndex] = entry;
+          }
+          return;
+        }
         if (looseLogicalKey && looseLogicalIndexByKey.has(looseLogicalKey)) {
           const existingIndex = looseLogicalIndexByKey.get(looseLogicalKey);
           const existing = deduped[existingIndex];
@@ -10702,6 +10736,10 @@
         if (looseLogicalKey) {
           seen.add(looseLogicalKey);
           looseLogicalIndexByKey.set(looseLogicalKey, deduped.length);
+        }
+        if (keikyuThroughDuplicateKey) {
+          seen.add(keikyuThroughDuplicateKey);
+          keikyuThroughDuplicateIndexByKey.set(keikyuThroughDuplicateKey, deduped.length);
         }
         seen.add(key);
         exactLogicalIndexByKey.set(key, deduped.length);
