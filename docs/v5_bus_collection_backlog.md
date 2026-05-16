@@ -45,6 +45,35 @@ before lower-volume airports.
 | 9 | NGS | no GTFS stop within 5 km | Nagasaki Airport access bus operators |
 | 10 | KIJ | no GTFS stop within 5 km | Niigata Airport access bus operators |
 
+## Collection Progress
+
+### 2026-05-16
+
+Completed first official-source collection pass:
+
+- KIX / KATE official timetable pages.
+  - Script: `scripts/ingest/collect_v5_kate_airport_bus.py`
+  - Source output: `data/v5_kate_official_airport_bus_source.json`
+  - Docs copy: `docs/data/v5_kate_official_airport_bus_source.json`
+  - Audit: `data/v5_kate_official_airport_bus_audit.json`
+  - Result: 26 official KATE route pages collected; 17 have active timetable
+    rows; 731 official bus trips extracted.
+- Priority airport official source index for HND / CTS / ITM / KIX.
+  - Script: `scripts/ingest/collect_v5_airport_bus_source_index.py`
+  - Source output: `data/v5_airport_bus_official_source_index.json`
+  - Docs copy: `docs/data/v5_airport_bus_official_source_index.json`
+  - Result: 380 official/source links indexed; 110 route/timetable candidates.
+
+Current next parser order:
+
+1. HND: split Haneda official route directory by operator, then target Airport
+   Transport Service and Keikyu Bus timetable pages first.
+2. CTS: parse Hokuto Kotsu and Hokkaido Chuo Bus airport timetable pages.
+3. ITM: parse Hankyu Kanko Bus translated timetable pages and city bus local
+   links.
+4. KIX: convert collected KATE source data into normalized bus bundle rows and
+   run duplicate checks against the existing GTFS layer.
+
 ## Official Source Seeds
 
 - HND: `https://tokyo-haneda.com/en/access/bus/`
@@ -87,4 +116,3 @@ layer before merging:
   exist.
 - If both sources are valid but represent different seasonal calendars, keep
   both only when service dates do not overlap.
-
