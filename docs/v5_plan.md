@@ -83,13 +83,12 @@ Bus gameplay rules now fixed:
 
 - Local buses are usable nationwide and work like rail: if the player can reach
   the bus stop before departure, they can wait and board the next real service.
+- Highway, night, and airport buses use the same bus boarding rule for now:
+  reach the bus stop in time, then wait and board the real service.
 - Bus stop access always uses walking time from coordinates. Rail stations,
   airports, ports, and bus stops are not silently treated as the same node.
-- Highway and night buses require advance purchase at least `15 minutes` before
-  departure.
-- Buying a highway or night bus ticket is immediately revealed to the opponent.
-- Local bus riding is not revealed on purchase because there is no purchase
-  commitment step.
+- Bus riding does not create a purchase reveal. The opponent is not notified
+  just because a player plans or boards a bus.
 - Players on the same bus are capturable by the same-vehicle rule.
 - Players at the same bus stop/capture node are capturable by the same-node
   rule.
@@ -132,8 +131,8 @@ V5 uses real transfer time rather than instant switching:
 - Airport access and boarding buffer are mandatory.
 - Ferry boarding buffer is mandatory.
 - Local bus boarding uses the same wait-and-board model as rail once the player
-  reaches the stop. Highway/night bus tickets must be bought at least
-  `15 minutes` before departure.
+  reaches the stop. Highway, night, and airport buses currently use this same
+  bus rule.
 
 Exact default transfer times are not fixed yet and should be tuned after the first multimodal graph exists.
 
@@ -168,7 +167,7 @@ Recommended order:
 5. Plane ticket purchase rule with 1-hour advance purchase and opponent reveal.
 6. GTFS-JP bus bundle and bus-stop walking connectors.
 7. Airport-link bus audit for airports without good rail access.
-8. Highway/night bus reservation and reveal model.
+8. Highway/night bus source completeness and fare audit.
 9. Ferry/ship route model, reusing the scheduled-surface-service shape where possible.
 10. Dense city-bus UI and performance strategy.
 

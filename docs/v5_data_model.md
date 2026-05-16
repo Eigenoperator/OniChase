@@ -197,10 +197,10 @@ source route, stop, trip, calendar, fare, or geometry data.
 
 Gameplay fields:
 
-- `advancePurchaseRequiredSec`: `900` for highway/night bus tickets, `0` for
-  local bus and airport bus unless an operator-specific rule says otherwise.
-- `revealOnPurchase`: `true` for highway/night bus tickets, `false` for local
-  bus boarding.
+- `advancePurchaseRequiredSec`: `0` for all bus classes in the current gameplay
+  model.
+- `revealOnPurchase`: `false` for all bus classes in the current gameplay
+  model.
 - `sameVehicleCapture`: `true`.
 - `sameNodeCapture`: `true` at the same bus stop/capture node.
 - `allowCrossDayArrival`: `true`.
@@ -211,13 +211,13 @@ Bus planning is anchored around the current player state or plan tail:
 
 1. Find reachable bus stops around the current node using walking connectors.
 2. Show route/direction candidates from those stops.
-3. Show real departures after the effective current time, applying purchase
-   rules when the bus class requires a ticket.
+3. Show real departures after the effective current time.
 4. Show alighting stops downstream on the selected trip.
 
 The web client must not load the full bus GTFS timetable for map display. The
-map uses `data/v5_bus_map.geojson.gz`; trip planning should use a separate
-planner index so the 2M+ stop-time source table does not block interaction.
+map uses the tiled `data/v5_bus_map_tiles/` layer; trip planning should use a
+separate planner index so the 2M+ stop-time source table does not block
+interaction.
 
 ### Long-Distance And Airport Bus
 
@@ -230,8 +230,8 @@ Use a scheduled-service model close to rail/ferry:
 - Airport buses are especially important because many airports have no rail
   station. They should be audited against every airport node, not only against
   feeds that happen to contain the word "airport".
-- Highway/night buses require a gameplay ticket purchase at least `15 minutes`
-  before departure. That purchase is revealed immediately to the opponent.
+- Highway/night buses do not need a gameplay ticket purchase in the current
+  rule set. They are boarded like other buses after reaching the stop in time.
 - Cross-day highway/night bus arrivals are allowed.
 - Airport buses are freely selectable alongside rail airport access when both
   exist.
@@ -244,8 +244,8 @@ Local buses need denser stop data and direction-sensitive routing:
 - Route variants are common.
 - Timetable volume is much larger.
 - Official data availability varies heavily by operator.
-- Local buses do not need advance purchase. They are boarded like rail after
-  walking to the bus stop in time.
+- Buses do not need advance purchase in the current gameplay model. They are
+  boarded like rail after walking to the bus stop in time.
 - The planner should only show local bus choices around the current player
   state or plan tail, not a nationwide list.
 

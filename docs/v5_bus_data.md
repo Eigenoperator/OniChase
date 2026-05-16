@@ -135,12 +135,10 @@ operator-specific rules, not by changing source facts.
 The current V5 bus gameplay contract is:
 
 - All real bus services are in scope nationwide.
-- Local buses are boarded like rail once the player can walk to the bus stop in
-  time.
-- Highway and night buses require a ticket at least `15 minutes` before
-  departure.
-- Buying a highway/night bus ticket is immediately revealed to the opponent.
-- Local bus boarding does not create a purchase reveal.
+- All bus classes are boarded like rail once the player can walk to the bus stop
+  in time.
+- Bus riding does not need advance purchase in the current gameplay model.
+- Bus riding does not create an opponent reveal.
 - Players on the same bus are caught by the same-vehicle capture rule.
 - Players at the same bus stop are caught by the same-node capture rule.
 - Bus stop transfers always use walking time from coordinates.
