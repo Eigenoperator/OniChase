@@ -1,0 +1,934 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja" xmlns:v="urn:schemas-microsoft-com:vml">
+    <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+    <title>神姫バスＮａｖｉ神戸空港</title>
+    <link rel="stylesheet" href="/static/css/nozomi.css?v=1778975209" media="all" type="text/css">
+    <style>
+        :root {
+            --column-height: 30px;
+        }
+        .timetable-container {
+            color: #424242;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            width: fit-content;
+            font-family: "メイリオ", Meiryo, sans-serif;
+            font-size: 14px;
+            line-height: 14px;
+        }
+        .timetable-title {
+            padding: 14px;
+            display: flex;
+            align-items: center;
+        }
+        .timetable {
+            display: inline-block;
+            border: 1px solid black;
+            margin: 14px;
+        }
+        .timetable-head {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 50px;
+            font-weight: bold;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        .row {
+            display: flex;
+        }
+        .row > .column {
+            border-left: 1px solid black;
+            width: 100%;
+        }
+        .column > div {
+            display: flex;
+            align-items: center;
+            padding-left: 4px;
+            padding-right: 4px;
+            min-width: 120px;
+            height: var(--column-height);
+        }
+        .column > div .cell {
+            width: 40px;
+        }
+        .column-head > div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            width: 50px;
+            height: calc(var(--column-height) * 2);
+        }
+        .column-head > div.destination {
+            height: calc(var(--column-height) * 3);
+        }
+        .column > div.destination {
+            height: var(--column-height);
+            font-weight: bold;
+            justify-content: center;
+            text-align: center;
+        }
+        .comments {
+            display: flex;
+            flex-direction: column;
+            color: #333333;
+            padding: 6px;
+            line-height: 18px;
+            white-space: pre;
+        }
+        .long_destination {
+            font-size: 12px;
+        }
+
+        /* 装飾 */
+        .weekday .highlight {
+            background-color: #d7f5fc;
+        }
+        .saturday .highlight {
+            background-color: #dffade;
+        }
+        .holiday .highlight {
+            background-color: #fce1e1;
+        }
+        .bb {
+            border-bottom: 1px solid black;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .center {
+            justify-content: center;
+            text-align: center;
+        }
+
+
+        /* 下線 */
+        .timetable > div:nth-child(1),
+        .timetable > div:nth-child(2) {
+            border-bottom: 1px solid black;
+        }
+        .column-head > div {
+            border-bottom: 1px solid black;
+        }
+        .column > div:nth-child(odd) {
+            border-bottom: 1px solid black;
+        }
+        .column > div:nth-child(1) {
+            border-bottom: none;
+        }
+
+        @media print {
+            .timetable-title,
+            .footer {
+                display: none;
+            }
+            .timetable-container {
+                padding: 0;
+                font-size: 10px;
+            }
+            .timetable-head {
+                height: 40px;
+            }
+            .timetable {
+                margin: 0;
+            }
+            .column-head > div {
+                height: 32px;
+                width: 40px;
+            }
+            .column > div {
+                height: 16px;
+                min-width: auto;
+            }
+            .column > div .cell {
+                width: 30px;
+                padding: 0;
+            }
+            /* .column > div .cell:not(:empty):not(:last-child)::after {
+                content: ", ";
+            } */
+            .break-point {
+                page-break-after: always;
+            }
+            .comments {
+                white-space: normal;
+                padding: 2px;
+                line-height: 14px;
+            }
+            .long_destination {
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="timetable-container">
+
+    <div class="timetable-title">
+        <div style="font-size: 24px; font-weight: bold;">時刻表 (Timetable)</div>
+        <input type="button" value="印刷" style="width: 100px; height: 30px; margin-left: 50px;" onclick="window.print();" />
+    </div>
+
+    
+    
+    <div class="timetable weekday">
+        <div class="timetable-head highlight">
+            <div>神戸空港&emsp;（Kobe Airport (Terminal1)）</div>
+            <div style="padding-top: 6px;">コウベクウコウ</div>
+        </div>
+        <div class="timetable-head highlight">
+        平日　Weekdays
+        </div>
+        <div class="row">
+            <div class="column-head">
+                <div class="destination">行先</div>
+                <div>4時</div>
+                <div class="highlight">5時</div>
+                <div>6時</div>
+                <div class="highlight">7時</div>
+                <div>8時</div>
+                <div class="highlight">9時</div>
+                <div>10時</div>
+                <div class="highlight">11時</div>
+                <div>12時</div>
+                <div class="highlight">13時</div>
+                <div>14時</div>
+                <div class="highlight">15時</div>
+                <div>16時</div>
+                <div class="highlight">17時</div>
+                <div>18時</div>
+                <div class="highlight">19時</div>
+                <div>20時</div>
+                <div class="highlight">21時</div>
+                <div>22時</div>
+                <div class="highlight">23時</div>
+                <div>24時</div>
+                <div class="highlight">25時</div>
+            </div>
+            
+            <div class="column">
+                <div class="destination">快速</div>
+                <div class="destination ">三宮　宮下１丁目</div>
+                <div class="destination ">Miyashita 1 Via Sannomiya</div>
+                <div></div>
+                <div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">15</div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+            </div>
+            
+            <div class="column">
+                <div class="destination">UKB</div>
+                <div class="destination ">三宮　新神戸駅前</div>
+                <div class="destination ">Shin-Kobe Sta. Via Sannomiya</div>
+                <div></div>
+                <div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell">ア</div></div>
+                <div><div class="cell">57</div></div>
+                <div class="highlight"><div class="cell">ア</div><div class="cell">ア</div></div>
+                <div class="highlight"><div class="cell">27</div><div class="cell">57</div></div>
+                <div><div class="cell">ア</div><div class="cell">ア</div></div>
+                <div><div class="cell">27</div><div class="cell">57</div></div>
+                <div class="highlight"><div class="cell">ア</div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">27</div><div class="cell">57</div></div>
+                <div><div class="cell">ア</div><div class="cell"></div></div>
+                <div><div class="cell">27</div><div class="cell">57</div></div>
+                <div class="highlight"><div class="cell">ア</div><div class="cell">ア</div></div>
+                <div class="highlight"><div class="cell">27</div><div class="cell">57</div></div>
+                <div><div class="cell">ア</div><div class="cell">ア</div></div>
+                <div><div class="cell">27</div><div class="cell">57</div></div>
+                <div class="highlight"><div class="cell">温</div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">27</div><div class="cell">57</div></div>
+                <div><div class="cell"></div><div class="cell">温</div><div class="cell"></div></div>
+                <div><div class="cell">12</div><div class="cell">27</div><div class="cell">[45]</div></div>
+                <div class="highlight"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell">鹿</div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">00</div><div class="cell">10</div><div class="cell">20</div><div class="cell">33</div><div class="cell">[50]</div></div>
+                <div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div>
+                <div><div class="cell">10</div><div class="cell">30</div><div class="cell">50</div></div>
+                <div class="highlight"><div class="cell"></div><div class="cell">鹿</div></div>
+                <div class="highlight"><div class="cell">[20]</div><div class="cell">37</div></div>
+                <div><div class="cell"></div><div class="cell"></div></div>
+                <div><div class="cell">[10]</div><div class="cell">40</div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">40</div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+            </div>
+            
+            <div class="column">
+                <div class="destination">UKB</div>
+                <div class="destination ">空港エアバス前</div>
+                <div class="destination ">Kuko Airbus mae</div>
+                <div></div>
+                <div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">38</div><div class="cell">53</div></div>
+                <div><div class="cell"></div><div class="cell"></div></div>
+                <div><div class="cell">10</div><div class="cell">26</div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+            </div>
+            
+            <div class="column">
+                <div class="destination">ＣＬ</div>
+                <div class="destination long_destination">【CITYLoop】　三宮／北野／新神戸方面</div>
+                <div class="destination ">Sannomiya,Kitano,Shin-Kobe CITYLoop</div>
+                <div></div>
+                <div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell">[24]</div></div>
+                <div class="highlight"><div class="cell"></div><div class="cell"></div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">[01]</div><div class="cell">[16]</div><div class="cell">[52]</div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell">[48]</div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+            </div>
+            
+        </div>
+        <div class="comments">
+            <div>ア … 有馬温泉～神戸三田ｱｳﾄﾚｯﾄ行き
+温 … 有馬温泉～鹿の子台北町５丁目行き
+鹿 … 鹿の子台北町５丁目行き
+【お問い合わせ】三宮駅前案内所 Tel:078-231-5561</div>
+            <div>☆交通事情等により多少遅れることがありますのでご了承願います。</div>
+            <div>※8月13日～15日は日祝日ダイヤで運行します。</div>
+            <div>[]の時刻は車いす対応車両(ノンステップバスまたはワンステップバスで運行します。車両点検等により変更することがあります)</div>
+            <div style="text-align: right;">（74050-5）&emsp;2026-04-01 改正</div>
+        </div>
+    </div>
+    <div class="break-point"></div>
+    
+    <div class="timetable saturday">
+        <div class="timetable-head highlight">
+            <div>神戸空港&emsp;（Kobe Airport (Terminal1)）</div>
+            <div style="padding-top: 6px;">コウベクウコウ</div>
+        </div>
+        <div class="timetable-head highlight">
+        土曜日　Saturday
+        </div>
+        <div class="row">
+            <div class="column-head">
+                <div class="destination">行先</div>
+                <div>4時</div>
+                <div class="highlight">5時</div>
+                <div>6時</div>
+                <div class="highlight">7時</div>
+                <div>8時</div>
+                <div class="highlight">9時</div>
+                <div>10時</div>
+                <div class="highlight">11時</div>
+                <div>12時</div>
+                <div class="highlight">13時</div>
+                <div>14時</div>
+                <div class="highlight">15時</div>
+                <div>16時</div>
+                <div class="highlight">17時</div>
+                <div>18時</div>
+                <div class="highlight">19時</div>
+                <div>20時</div>
+                <div class="highlight">21時</div>
+                <div>22時</div>
+                <div class="highlight">23時</div>
+                <div>24時</div>
+                <div class="highlight">25時</div>
+            </div>
+            
+            <div class="column">
+                <div class="destination">快速</div>
+                <div class="destination ">三宮　宮下１丁目</div>
+                <div class="destination ">Miyashita 1 Via Sannomiya</div>
+                <div></div>
+                <div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">15</div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+            </div>
+            
+            <div class="column">
+                <div class="destination">UKB</div>
+                <div class="destination ">三宮　新神戸駅前</div>
+                <div class="destination ">Shin-Kobe Sta. Via Sannomiya</div>
+                <div></div>
+                <div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell">ア</div></div>
+                <div><div class="cell">57</div></div>
+                <div class="highlight"><div class="cell">ア</div><div class="cell">ア</div></div>
+                <div class="highlight"><div class="cell">27</div><div class="cell">57</div></div>
+                <div><div class="cell">ア</div><div class="cell">ア</div></div>
+                <div><div class="cell">27</div><div class="cell">57</div></div>
+                <div class="highlight"><div class="cell">ア</div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">27</div><div class="cell">57</div></div>
+                <div><div class="cell">ア</div><div class="cell"></div></div>
+                <div><div class="cell">27</div><div class="cell">57</div></div>
+                <div class="highlight"><div class="cell">ア</div><div class="cell">ア</div></div>
+                <div class="highlight"><div class="cell">27</div><div class="cell">57</div></div>
+                <div><div class="cell">ア</div><div class="cell">ア</div></div>
+                <div><div class="cell">27</div><div class="cell">57</div></div>
+                <div class="highlight"><div class="cell">温</div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">27</div><div class="cell">57</div></div>
+                <div><div class="cell"></div><div class="cell">温</div><div class="cell"></div></div>
+                <div><div class="cell">12</div><div class="cell">27</div><div class="cell">45</div></div>
+                <div class="highlight"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell">鹿</div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">00</div><div class="cell">10</div><div class="cell">20</div><div class="cell">33</div><div class="cell">[50]</div></div>
+                <div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div>
+                <div><div class="cell">10</div><div class="cell">30</div><div class="cell">50</div></div>
+                <div class="highlight"><div class="cell"></div><div class="cell">鹿</div></div>
+                <div class="highlight"><div class="cell">20</div><div class="cell">37</div></div>
+                <div><div class="cell"></div><div class="cell"></div></div>
+                <div><div class="cell">10</div><div class="cell">40</div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">40</div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+            </div>
+            
+            <div class="column">
+                <div class="destination">UKB</div>
+                <div class="destination ">空港エアバス前</div>
+                <div class="destination ">Kuko Airbus mae</div>
+                <div></div>
+                <div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">56</div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell">23</div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+            </div>
+            
+            <div class="column">
+                <div class="destination">ＣＬ</div>
+                <div class="destination long_destination">【CITYLoop】　三宮／北野／新神戸方面</div>
+                <div class="destination ">Sannomiya,Kitano,Shin-Kobe CITYLoop</div>
+                <div></div>
+                <div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div><div class="cell"></div></div>
+                <div><div class="cell">[07]</div><div class="cell">[33]</div></div>
+                <div class="highlight"><div class="cell"></div><div class="cell"></div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">[00]</div><div class="cell">[25]</div><div class="cell">[51]</div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+            </div>
+            
+        </div>
+        <div class="comments">
+            <div>ア … 有馬温泉～神戸三田ｱｳﾄﾚｯﾄ行き
+温 … 有馬温泉～鹿の子台北町５丁目行き
+鹿 … 鹿の子台北町５丁目行き
+【お問い合わせ】三宮駅前案内所 Tel:078-231-5561</div>
+            <div>☆交通事情等により多少遅れることがありますのでご了承願います。</div>
+            <div>※8月13日～15日は日祝日ダイヤで運行します。</div>
+            <div>[]の時刻は車いす対応車両(ノンステップバスまたはワンステップバスで運行します。車両点検等により変更することがあります)</div>
+            <div style="text-align: right;">（74050-5）&emsp;2026-04-01 改正</div>
+        </div>
+    </div>
+    <div class="break-point"></div>
+    
+    <div class="timetable holiday">
+        <div class="timetable-head highlight">
+            <div>神戸空港&emsp;（Kobe Airport (Terminal1)）</div>
+            <div style="padding-top: 6px;">コウベクウコウ</div>
+        </div>
+        <div class="timetable-head highlight">
+        日祝日　Sunday/Holiday
+        </div>
+        <div class="row">
+            <div class="column-head">
+                <div class="destination">行先</div>
+                <div>4時</div>
+                <div class="highlight">5時</div>
+                <div>6時</div>
+                <div class="highlight">7時</div>
+                <div>8時</div>
+                <div class="highlight">9時</div>
+                <div>10時</div>
+                <div class="highlight">11時</div>
+                <div>12時</div>
+                <div class="highlight">13時</div>
+                <div>14時</div>
+                <div class="highlight">15時</div>
+                <div>16時</div>
+                <div class="highlight">17時</div>
+                <div>18時</div>
+                <div class="highlight">19時</div>
+                <div>20時</div>
+                <div class="highlight">21時</div>
+                <div>22時</div>
+                <div class="highlight">23時</div>
+                <div>24時</div>
+                <div class="highlight">25時</div>
+            </div>
+            
+            <div class="column">
+                <div class="destination">快速</div>
+                <div class="destination ">三宮　宮下１丁目</div>
+                <div class="destination ">Miyashita 1 Via Sannomiya</div>
+                <div></div>
+                <div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">15</div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+            </div>
+            
+            <div class="column">
+                <div class="destination">UKB</div>
+                <div class="destination ">三宮　新神戸駅前</div>
+                <div class="destination ">Shin-Kobe Sta. Via Sannomiya</div>
+                <div></div>
+                <div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell">ア</div></div>
+                <div><div class="cell">57</div></div>
+                <div class="highlight"><div class="cell">ア</div><div class="cell">ア</div></div>
+                <div class="highlight"><div class="cell">27</div><div class="cell">57</div></div>
+                <div><div class="cell">ア</div><div class="cell">ア</div></div>
+                <div><div class="cell">27</div><div class="cell">57</div></div>
+                <div class="highlight"><div class="cell">ア</div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">27</div><div class="cell">57</div></div>
+                <div><div class="cell">ア</div><div class="cell"></div></div>
+                <div><div class="cell">27</div><div class="cell">57</div></div>
+                <div class="highlight"><div class="cell">ア</div><div class="cell">ア</div></div>
+                <div class="highlight"><div class="cell">27</div><div class="cell">57</div></div>
+                <div><div class="cell">ア</div><div class="cell">ア</div></div>
+                <div><div class="cell">27</div><div class="cell">57</div></div>
+                <div class="highlight"><div class="cell">温</div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">27</div><div class="cell">57</div></div>
+                <div><div class="cell"></div><div class="cell">温</div><div class="cell"></div></div>
+                <div><div class="cell">12</div><div class="cell">27</div><div class="cell">45</div></div>
+                <div class="highlight"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell">鹿</div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">00</div><div class="cell">10</div><div class="cell">20</div><div class="cell">33</div><div class="cell">[50]</div></div>
+                <div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div>
+                <div><div class="cell">10</div><div class="cell">30</div><div class="cell">50</div></div>
+                <div class="highlight"><div class="cell"></div><div class="cell">鹿</div></div>
+                <div class="highlight"><div class="cell">20</div><div class="cell">37</div></div>
+                <div><div class="cell"></div><div class="cell"></div></div>
+                <div><div class="cell">10</div><div class="cell">40</div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">40</div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+            </div>
+            
+            <div class="column">
+                <div class="destination">UKB</div>
+                <div class="destination ">空港エアバス前</div>
+                <div class="destination ">Kuko Airbus mae</div>
+                <div></div>
+                <div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">56</div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell">23</div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+            </div>
+            
+            <div class="column">
+                <div class="destination">ＣＬ</div>
+                <div class="destination long_destination">【CITYLoop】　三宮／北野／新神戸方面</div>
+                <div class="destination ">Sannomiya,Kitano,Shin-Kobe CITYLoop</div>
+                <div></div>
+                <div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div><div class="cell"></div></div>
+                <div><div class="cell">[07]</div><div class="cell">[33]</div></div>
+                <div class="highlight"><div class="cell"></div><div class="cell"></div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell">[00]</div><div class="cell">[25]</div><div class="cell">[51]</div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+                <div class="highlight"><div class="cell"></div></div>
+            </div>
+            
+        </div>
+        <div class="comments">
+            <div>ア … 有馬温泉～神戸三田ｱｳﾄﾚｯﾄ行き
+温 … 有馬温泉～鹿の子台北町５丁目行き
+鹿 … 鹿の子台北町５丁目行き
+【お問い合わせ】三宮駅前案内所 Tel:078-231-5561</div>
+            <div>☆交通事情等により多少遅れることがありますのでご了承願います。</div>
+            <div>※8月13日～15日は日祝日ダイヤで運行します。</div>
+            <div>[]の時刻は車いす対応車両(ノンステップバスまたはワンステップバスで運行します。車両点検等により変更することがあります)</div>
+            <div style="text-align: right;">（74050-5）&emsp;2026-04-01 改正</div>
+        </div>
+    </div>
+    <div class="break-point"></div>
+    
+    <div class="footer">Copyright © 2008-2023 <a href="http://www.shinkibus.co.jp/" target="_blank">SHINKIBUS CO.,LTD.</a> All rights reserved.</div>
+</div>
+
+</html>

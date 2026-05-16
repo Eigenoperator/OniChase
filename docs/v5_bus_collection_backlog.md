@@ -102,6 +102,32 @@ Completed second official-source collection pass:
     contain parseable timetable time text and should be promoted to dedicated
     operator parsers.
 
+Completed third official-source collection pass:
+
+- CTS / Hokuto Kotsu official New Chitose Airport timetable pages.
+  - Script: `scripts/ingest/collect_v5_hokuto_cts_bus.py`
+  - Source output: `data/v5_hokuto_cts_official_bus_source.json`
+  - Docs copy: `docs/data/v5_hokuto_cts_official_bus_source.json`
+  - Audit: `data/v5_hokuto_cts_official_bus_audit.json`
+  - Result: 8 official route pages collected; 7 have parseable timetable rows;
+    319 official bus trips extracted.
+- Official-source overlap audit against the current GTFS bus bundle.
+  - Script: `scripts/ingest/audit_v5_official_bus_source_overlap.py`
+  - Audit: `data/v5_official_bus_source_overlap_audit.json`
+  - Result: 104 official routes checked; 3,183 official trips represented in
+    source files; 91 routes have no likely GTFS overlap; 13 routes have no
+    active official trips. No duplicate GTFS overlap candidates were found by
+    the current name/operator heuristic.
+- Next airport page source pass for KOJ / KMI / UKB / ISG.
+  - Script: `scripts/ingest/collect_v5_next_airport_bus_pages.py`
+  - Source output: `data/v5_next_airport_bus_pages.json`
+  - Docs copy: `docs/data/v5_next_airport_bus_pages.json`
+  - Audit: `data/v5_next_airport_bus_pages_audit.json`
+  - Result: 10 airport/operator pages cached; 4 pages contain parseable
+    timetable time text. KMI can likely become the next full parser; KOJ and
+    UKB need operator-specific parsing; ISG pages appear partly image/embedded
+    and need a separate handling path.
+
 ## Official Source Seeds
 
 - HND: `https://tokyo-haneda.com/en/access/bus/`
