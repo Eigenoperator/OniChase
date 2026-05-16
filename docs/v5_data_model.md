@@ -168,7 +168,32 @@ Urban ferries and long-distance ferries use the same service model, but may have
 
 ## Bus Model
 
-Buses are split into two classes.
+Buses are first-class real scheduled services. V5 bus data must not be
+hand-authored as gameplay shortcuts; it must come from public GTFS/GTFS-JP
+feeds or operator/municipality official sources that can be rebuilt.
+
+Initial release artifact:
+
+- `data/v5_bus_gtfs_current_bundle.json.gz`
+- `data/v5_bus_gtfs_audit.json`
+- Builder: `scripts/ingest/build_v5_bus_gtfs_bundle.py`
+
+Primary source:
+
+- Public GTFS data repository feeds indexed by
+  `data/v4_gtfs_repository_route_index.json`.
+- Only GTFS `route_type=3` bus feeds are ingested by the first builder.
+- Original feed metadata, license id, valid date range, page URL, and file URL
+  are preserved as `sourceRefs`.
+
+Buses are split into three gameplay service classes:
+
+- `bus_airport`
+- `bus_long_distance`
+- `bus_local`
+
+The class is metadata for planner grouping and UI. It must never alter the
+source route, stop, trip, calendar, fare, or geometry data.
 
 ### Long-Distance And Airport Bus
 
@@ -178,6 +203,11 @@ Use a scheduled-service model close to rail/ferry:
 - Fixed departure and arrival times.
 - Seat/reservation policy when available.
 - Route-level fare source.
+- Airport buses are especially important because many airports have no rail
+  station. They should be audited against every airport node, not only against
+  feeds that happen to contain the word "airport".
+- Highway/night buses may need a reservation and reveal policy later. Until
+  that rule is written, source reservation fields are preserved but not guessed.
 
 ### Local Bus
 
@@ -189,6 +219,26 @@ Local buses need denser stop data and direction-sensitive routing:
 - Official data availability varies heavily by operator.
 
 Local bus ingestion must preserve source confidence and should not overwrite better official data.
+
+### Bus Stop Connectors
+
+Bus stops connect to other modes through generated walking connectors:
+
+- bus stop -> rail station group
+- bus stop -> airport
+- bus stop -> port, once ferry/port nodes exist
+
+Connector rules:
+
+- Coordinates are required; stops without coordinates are retained but cannot
+  receive walking connectors.
+- Connector distance is generated from geometry and never hand-prepared.
+- GTFS `transfers.txt`, when present, is preserved as a source transfer table.
+- Runtime walking speed uses the same continuous walking speed function as the
+  walking system.
+- The first connector generator uses Haversine distance, matching the current
+  station walking layer. Road-network walking can replace this later without
+  changing the public bundle schema.
 
 ## Fare Model
 

@@ -70,6 +70,14 @@ V5 should include both long-distance and short-distance buses:
 - Highway buses and airport buses are high-priority.
 - City buses are also in scope, but the data burden is much higher.
 - The data model must distinguish long-distance scheduled bus services from dense local route buses.
+- The bus target is nationwide real public bus data, not a small airport-link
+  patch. Airport limousine buses, highway/night buses, local route buses, and
+  bus-stop walking connectors are all required.
+- The first machine-readable source layer is GTFS/GTFS-JP `route_type=3` feeds
+  from the public GTFS data repository index. Operator pages are used later for
+  missing airport buses, highway buses, reservation rules, and fare gaps.
+- Bus stop to rail/airport/port access is generated from coordinates, not from
+  preset hand edges. Port connectors activate when ferry/port nodes are added.
 
 Bus planning UI may need a different workflow from trains because bus stops are denser, route names are less stable, and stop-direction matters more.
 
@@ -131,9 +139,11 @@ Recommended order:
 3. Planner support for walking and transfer time.
 4. Airport nodes and flight data model.
 5. Plane ticket purchase rule with 1-hour advance purchase and opponent reveal.
-6. Ferry/ship route model.
-7. Highway/airport bus model.
-8. Dense city-bus strategy.
+6. GTFS-JP bus bundle and bus-stop walking connectors.
+7. Airport-link bus audit for airports without good rail access.
+8. Highway/night bus reservation and reveal model.
+9. Ferry/ship route model, reusing the scheduled-surface-service shape where possible.
+10. Dense city-bus UI and performance strategy.
 
 This order makes walking the foundation before adding long-jump modes like aircraft.
 
