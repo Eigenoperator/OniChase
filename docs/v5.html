@@ -907,6 +907,14 @@
       min-width: 0;
     }
 
+    .plan-title-with-icon {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
     .plan-title-copy {
       display: block;
       min-width: 0;
@@ -14515,9 +14523,10 @@
         const flight = state.flightById.get(ticket.flight_id);
         rows.push({
           time: 'TICKET',
-          title: `${flightDisplayLabel(flight)}`,
-          sub: `bought ${ticket.purchase_hhmm} · depart ${flight?.departureTimeLocal || ticket.departure_hhmm} · ¥${(ticket.fare?.total_yen ?? 0).toLocaleString('ja-JP')}`,
+          title: flight ? flightOperatingNumber(flight) : ticket.flight_number || 'Flight',
+          sub: `${flight?.departureTimeLocal || ticket.departure_hhmm || '--:--'} -> ${flight?.arrivalTimeLocal || ticket.arrival_hhmm || '--:--'}`,
           routeId: null,
+          iconHtml: flight ? airlineLogoHtml(flight) : '',
           editable: false,
         });
       }
@@ -14553,11 +14562,10 @@
           const destinationStation = flight ? nearestStationGroupForAirport(flight.destinationAirport) : null;
           rows.push({
             time: `LEG ${legIndex}`,
-            title: `${flight ? flightDisplayLabel(flight) : step.flight_number || 'Flight'}: ${flight?.originAirport || step.origin_airport} -> ${flight?.destinationAirport || step.destination_airport}`,
-            sub: times
-              ? `buy ${minutesToHhmm(currentMinute)} · depart ${minutesToHhmm(times.departureMinute)} · arrive ${minutesToHhmm(times.arrivalMinute)} · cooldown ${minutesToHhmm(times.cooldownEndMinute)} · ¥${(fare?.total_yen ?? 0).toLocaleString('ja-JP')}`
-              : `${step.departure_hhmm || '--:--'} -> ${step.arrival_hhmm || '--:--'}`,
+            title: flight ? flightOperatingNumber(flight) : step.flight_number || 'Flight',
+            sub: `${flight?.departureTimeLocal || step.departure_hhmm || '--:--'} -> ${flight?.arrivalTimeLocal || step.arrival_hhmm || '--:--'}`,
             routeId: null,
+            iconHtml: flight ? airlineLogoHtml(flight) : '',
             editable: false,
           });
           if (times) currentMinute = times.cooldownEndMinute;
@@ -14602,8 +14610,9 @@
       planBoardEl.innerHTML = planActions + rows.map((row) => `
         <button class="plan-row ${row.editable ? 'clickable current' : ''}" type="button" ${row.editable ? 'data-action="edit-current-ride"' : ''}>
           <span class="row-meta">${row.time}</span>
-          <span class="${row.routeId ? 'plan-title-with-route' : ''}">
+          <span class="${row.iconHtml ? 'plan-title-with-icon' : row.routeId ? 'plan-title-with-route' : ''}">
             ${row.routeId ? `<span class="route-swatch" style="background:${routeColor(row.routeId)}"></span>` : ''}
+            ${row.iconHtml || ''}
             <span class="plan-title-copy">
               <span class="row-title">${row.title}</span>
               <span class="row-sub">${row.sub}</span>
