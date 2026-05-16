@@ -13308,7 +13308,7 @@
     }
 
     function buyFlightTicket(flightId) {
-      const preview = planTailPreview(state.activeMode);
+      const preview = previewPlayer(state.activeMode, state.currentGameMinute);
       const flight = state.flightById.get(flightId);
       if (!flight || !preview) return;
       const purchase = flightPurchaseStatus(flight, preview);
@@ -14083,14 +14083,15 @@
       });
     }
 
-    function flightRowsFromPreview(preview) {
+    function flightRowsFromPreview(preview, options = {}) {
       const selected = state.flightPlanning[state.activeMode] || {};
       const originIata = selected.origin;
       const destinationIata = selected.destination;
       if (!originIata || !destinationIata) return [];
-      const rows = availableFlightsFromAirport(originIata, preview, 72, { destinationIata });
+      const purchasePreview = options.purchasePreview || preview;
+      const rows = availableFlightsFromAirport(originIata, purchasePreview, 72, { destinationIata });
       return rows.map((flight) => {
-        const purchase = flightPurchaseStatus(flight, preview);
+        const purchase = flightPurchaseStatus(flight, purchasePreview);
         const fare = resolveFlightFare(flight);
         const disabled = purchase.ok ? '' : 'disabled';
         const statusText = purchase.ok
@@ -14110,10 +14111,11 @@
       });
     }
 
-    function flightDestinationRowsFromPreview(preview) {
+    function flightDestinationRowsFromPreview(preview, options = {}) {
       const originIata = state.flightPlanning[state.activeMode]?.origin;
       if (!originIata) return [];
-      return flightDestinationAirportsFromOrigin(originIata, preview).map((destination) => `
+      const purchasePreview = options.purchasePreview || preview;
+      return flightDestinationAirportsFromOrigin(originIata, purchasePreview).map((destination) => `
         <button class="route-row" type="button" data-row-key="${escapeHtml(`flight-dest:${destination.iata}`)}" data-action="choose-flight-destination" data-iata="${escapeHtml(destination.iata)}">
           <span class="route-swatch" style="background:#38bdf8"></span>
           <span>
@@ -14478,6 +14480,7 @@
           routeChoices = routeChoicesFromDepartures(departures);
           const planningMode = activePlanningMode();
           const flightPreview = planningMode === 'flight' ? planTailPreview(state.activeMode) : preview;
+          const flightPurchasePreview = planningMode === 'flight' ? previewPlayer(state.activeMode, state.currentGameMinute) : preview;
           const walkingRows = walkingDestinationsFrom(preview.currentState.stationGroupId).map((edge) => `
             <button class="route-row" type="button" data-row-key="${escapeHtml(`walk:${edge.toNodeId}`)}" data-action="walk-to-station" data-station-group-id="${edge.toNodeId}">
               <span class="route-swatch" style="background:#7c3aed"></span>
@@ -14488,8 +14491,8 @@
               <span class="row-meta">walk</span>
             </button>
           `);
-          const flightRows = flightRowsFromPreview(flightPreview);
-          const flightDestinationRows = flightDestinationRowsFromPreview(flightPreview);
+          const flightRows = flightRowsFromPreview(flightPreview, { purchasePreview: flightPurchasePreview });
+          const flightDestinationRows = flightDestinationRowsFromPreview(flightPreview, { purchasePreview: flightPurchasePreview });
           const flightTicketRows = flightTicketRowsFromPreview(flightPreview);
           const airportRows = flightAirportRowsFromPreview(flightPreview);
           const selectedFlightPlan = state.flightPlanning[state.activeMode] || {};
