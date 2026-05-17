@@ -149,6 +149,31 @@ Completed fourth official-source collection pass:
   - Result: 8 official PDFs cached; all 8 contain extractable timetable text.
     Next step is a PDF table parser for actual route/stop/trip normalization.
 
+Completed fifth official-source collection pass:
+
+- KOJ / Kagoshima Airport conservative PDF table parser.
+  - Script: `scripts/ingest/parse_v5_kagoshima_airport_bus_pdf_tables.py`
+  - Source output: `data/v5_kagoshima_airport_official_bus_tables.json`
+  - Docs copy: `docs/data/v5_kagoshima_airport_official_bus_tables.json`
+  - Audit: `data/v5_kagoshima_airport_official_bus_tables_audit.json`
+  - Result: 4 PDFs parsed into reliable route tables; 4 routes and 33 complete
+    official trips extracted.
+  - Kept as PDF source only for now: Kagoshima city 10-minute interval table,
+    Ibusuki/Taniyama, Kirishima, and Myoken route bus. These need a more
+    specialized multi-page / dense-table parser.
+- UKB / Nishinihon JR Bus Kobe Airport highway bus.
+  - Script: `scripts/ingest/collect_v5_ukb_nishinihonjr_bus.py`
+  - Source output: `data/v5_ukb_nishinihonjr_official_bus_source.json`
+  - Docs copy: `docs/data/v5_ukb_nishinihonjr_official_bus_source.json`
+  - Audit: `data/v5_ukb_nishinihonjr_official_bus_audit.json`
+  - Result: 2 official direction pages parsed; 26 trips serving Kobe Airport
+    extracted for the Kobe Airport ⇔ Tokushima route.
+- Official-source overlap audit expanded to include KMI, KOJ parsed tables, and
+  UKB Nishinihon JR Bus.
+  - Result: 113 official routes checked; 3,334 official trips represented in
+    source files; no likely GTFS duplicate overlap found by the current
+    heuristic.
+
 ## Official Source Seeds
 
 - HND: `https://tokyo-haneda.com/en/access/bus/`

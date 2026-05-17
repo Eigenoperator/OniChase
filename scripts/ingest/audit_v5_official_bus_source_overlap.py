@@ -22,6 +22,9 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_keikyu_haneda_official_bus_source.json",
     ROOT / "data" / "v5_chuo_cts_official_bus_source.json",
     ROOT / "data" / "v5_hokuto_cts_official_bus_source.json",
+    ROOT / "data" / "v5_miyazaki_airport_official_bus_source.json",
+    ROOT / "data" / "v5_kagoshima_airport_official_bus_tables.json",
+    ROOT / "data" / "v5_ukb_nishinihonjr_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -29,6 +32,9 @@ OPERATOR_HINTS = {
     "Keikyu Bus": ["京急", "Keikyu"],
     "Hokkaido Chuo Bus": ["北海道中央", "中央バス", "Chuo"],
     "Hokuto Kotsu": ["北都", "Hokuto"],
+    "Miyazaki Kotsu": ["宮崎交通", "Miyazaki"],
+    "Kagoshima Kotsu": ["鹿児島交通", "Kagoshima"],
+    "Nishinihon JR Bus": ["西日本JR", "西日本", "Nishinihon"],
 }
 
 
@@ -62,7 +68,9 @@ def official_route_stop_names(route: dict[str, Any]) -> list[str]:
     names: list[str] = []
     for direction in route.get("directions") or []:
         for stop in direction.get("stops") or []:
-            if stop.get("name"):
+            if isinstance(stop, str):
+                names.append(stop)
+            elif stop.get("name"):
                 names.append(stop["name"])
         for trip in direction.get("trips") or []:
             for stop_time in trip.get("stopTimes") or []:
