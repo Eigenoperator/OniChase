@@ -286,6 +286,20 @@ Completed ninth official-source collection pass:
 - Official-source overlap audit expanded to include TAK Yonkoh.
   - Result: 135 official routes checked; 4,151 official trips represented in
     source files; no likely GTFS duplicate overlap found.
+- TAK / Shikoku Chuo, Kanonji, Zentsuji, Marugame official airport PDF parser.
+  - Script: `scripts/ingest/collect_v5_takamatsu_shikokuchuo_bus.py`
+  - Source output: `data/v5_takamatsu_shikokuchuo_official_bus_source.json`
+  - Docs copy: `docs/data/v5_takamatsu_shikokuchuo_official_bus_source.json`
+  - Audit: `data/v5_takamatsu_shikokuchuo_official_bus_audit.json`
+  - Result: 1 official PDF route parsed; 14 trips extracted for
+    四国中央・観音寺・善通寺・丸亀 ⇔ 高松空港.
+- Official-source overlap audit expanded to include TAK Shikoku Chuo / Seisan.
+  - Result: 136 official routes checked; 4,165 official trips represented in
+    source files.
+  - Important overlap: this official PDF route matches an existing
+    `西讃観光` GTFS airport route with full stop overlap. When promoted into
+    the playable bundle, this official parser must replace or suppress the
+    existing GTFS route rather than create duplicate ride choices.
 
 ## Official Source Seeds
 

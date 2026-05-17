@@ -1,6 +1,6 @@
 {
   "schemaVersion": "v5_official_bus_source_overlap_audit.v1",
-  "generatedAt": "2026-05-17T03:32:11Z",
+  "generatedAt": "2026-05-17T03:36:29Z",
   "sourceBusBundle": "data/v5_bus_gtfs_current_bundle.json.gz",
   "sourcePaths": [
     "data/v5_kate_official_airport_bus_source.json",
@@ -15,14 +15,16 @@
     "data/v5_itm_hankyu_kanko_official_bus_source.json",
     "data/v5_takamatsu_kotosan_official_bus_source.json",
     "data/v5_takamatsu_kotoden_official_bus_source.json",
-    "data/v5_takamatsu_yonkoh_official_bus_source.json"
+    "data/v5_takamatsu_yonkoh_official_bus_source.json",
+    "data/v5_takamatsu_shikokuchuo_official_bus_source.json"
   ],
   "summary": {
-    "officialRouteCount": 135,
-    "officialTripCount": 4151,
+    "officialRouteCount": 136,
+    "officialTripCount": 4165,
     "statusCounts": {
       "no_gtfs_overlap_found": 118,
-      "official_no_active_trips": 17
+      "official_no_active_trips": 17,
+      "possible_gtfs_overlap": 1
     }
   },
   "routes": [
@@ -2798,6 +2800,55 @@
       ],
       "status": "no_gtfs_overlap_found",
       "candidateMatches": []
+    },
+    {
+      "sourcePath": "data/v5_takamatsu_shikokuchuo_official_bus_source.json",
+      "operatorName": "琴参バス・西讃観光バス",
+      "airportIata": "TAK",
+      "routeCode": "tak_shikokuchuo_kanonji_marugame",
+      "routeName": "四国中央・観音寺・善通寺・丸亀 ⇔ 高松空港",
+      "sourceUrl": "https://www.takamatsu-airport.com/assets/timeschedule/timetable_bus_05.pdf",
+      "tripCount": 14,
+      "stopNames": [
+        "四国中央停留所",
+        "高速観音寺バス停",
+        "高速善通寺バス停",
+        "高速丸亀バス停",
+        "高松空港"
+      ],
+      "status": "possible_gtfs_overlap",
+      "candidateMatches": [
+        {
+          "busRouteId": "bus:route:seisan-kanko_seisankanko_limousine_https_api_gtfs-data_jp_v2_organizat_7155b67462:11",
+          "label": "西讃観光  高松空港リムジンバス　高松空港～観音寺・四国中央市  11",
+          "serviceClass": "bus_airport",
+          "score": 10,
+          "operatorHit": true,
+          "airportHit": true,
+          "overlapStopCount": 5,
+          "overlapStops": [
+            "四国中央停留所",
+            "高松空港",
+            "高速丸亀バス停",
+            "高速善通寺バス停",
+            "高速観音寺バス停"
+          ]
+        },
+        {
+          "busRouteId": "bus:route:seisan-kanko_seisankanko_limousine_https_api_gtfs-data_jp_v2_organizat_7155b67462:12",
+          "label": "西讃観光  高松空港リムジンバス（予約便）　高松空港～観音寺・四国中央市  12",
+          "serviceClass": "bus_airport",
+          "score": 8,
+          "operatorHit": true,
+          "airportHit": true,
+          "overlapStopCount": 3,
+          "overlapStops": [
+            "四国中央停留所",
+            "高松空港",
+            "高速観音寺バス停"
+          ]
+        }
+      ]
     }
   ]
 }
