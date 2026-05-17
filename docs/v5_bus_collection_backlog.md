@@ -249,6 +249,18 @@ Completed ninth official-source collection pass:
   - Limitation: this is source capture only. Takamatsu city / Kotoden,
     Kotosan, Shikoku Kotsu, and Koto Bus pages still need route-specific
     parsers before TAK airport access becomes fully playable.
+- TAK / Kotosan Bus official Takamatsu Airport limousine parser.
+  - Script: `scripts/ingest/collect_v5_takamatsu_kotosan_bus.py`
+  - Source output: `data/v5_takamatsu_kotosan_official_bus_source.json`
+  - Docs copy: `docs/data/v5_takamatsu_kotosan_official_bus_source.json`
+  - Audit: `data/v5_takamatsu_kotosan_official_bus_audit.json`
+  - Result: 2 active route directions parsed; 16 official trips extracted for
+    the airport ⇔ Marugame / Sakaide / Utazu corridor. Rows explicitly marked
+    運休 are skipped from active trips.
+- Official-source overlap audit expanded to include TAK Kotosan Bus.
+  - Result: 133 official routes checked; 4,104 official trips represented in
+    source files; no likely GTFS duplicate overlap found after requiring an
+    airport stop hit for duplicate candidates.
 
 ## Official Source Seeds
 

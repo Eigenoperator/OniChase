@@ -28,6 +28,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_nagasaki_airport_official_bus_source.json",
     ROOT / "data" / "v5_ishigaki_airport_official_bus_source.json",
     ROOT / "data" / "v5_itm_hankyu_kanko_official_bus_source.json",
+    ROOT / "data" / "v5_takamatsu_kotosan_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -41,6 +42,7 @@ OPERATOR_HINTS = {
     "Nagasaki Airport Bus Operators": ["長崎", "Nagasaki", "県営", "長崎バス"],
     "カリー観光": ["カリー", "Karry"],
     "阪急観光バス": ["阪急観光", "阪急", "Hankyu"],
+    "琴参バス": ["琴参", "Kotosan"],
 }
 
 
@@ -197,7 +199,7 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
             matches: list[dict[str, Any]] = []
         else:
             scored = [score_candidate(route, candidate) for candidate in gtfs]
-            matches = sorted((item for item in scored if item["score"] >= 4), key=lambda item: (-item["score"], item["label"]))[:8]
+            matches = sorted((item for item in scored if item["score"] >= 4 and item["airportHit"]), key=lambda item: (-item["score"], item["label"]))[:8]
             status = "possible_gtfs_overlap" if matches else "no_gtfs_overlap_found"
         status_counts[status] += 1
         rows.append(route | {"status": status, "candidateMatches": matches})
