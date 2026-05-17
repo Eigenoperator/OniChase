@@ -104,6 +104,24 @@ MANUAL_STOP_COORD_ALIASES = {
     "narutokoenguchi": {"aliasRailStation": "鳴門", "source": "rail_station_group_alias:鳴門"},
     "sumotots4": {"lat": 34.34289, "lon": 134.8955, "source": "manual_city_center_alias:洲本高速バスセンター"},
     "rokkoisland(kobebaysheratonhotel)": {"lat": 34.6898, "lon": 135.2698, "source": "manual_hotel_alias:Kobe Bay Sheraton"},
+    # ITM / Hankyu Kanko airport-limousine stops.
+    "大阪マルビル": {"lat": 34.6998856, "lon": 135.4966418, "source": "nominatim_manual_cache:大阪マルビル伊丹空港行きバス停"},
+    "ハービス大阪": {"aliasRailStation": "西梅田", "source": "rail_station_group_alias:西梅田"},
+    "ホテル阪神": {"lat": 34.6968767, "lon": 135.4876655, "source": "nominatim_manual_cache:ホテル阪神大阪"},
+    "なんば": {"aliasRailStation": "大阪難波", "source": "rail_station_group_alias:大阪難波"},
+    "jr難波駅(ocat)": {"aliasRailStation": "JR難波", "source": "rail_station_group_alias:JR難波"},
+    "あべの橋駅(天王寺駅)": {"aliasRailStation": "天王寺", "source": "rail_station_group_alias:天王寺"},
+    "近鉄上本町": {"aliasRailStation": "大阪上本町", "source": "rail_station_group_alias:大阪上本町"},
+    "東大阪長田": {"lat": 34.6789607, "lon": 135.5927402, "source": "nominatim_manual_cache:東大阪長田駅"},
+    "jr奈良": {"aliasRailStation": "奈良", "source": "rail_station_group_alias:奈良"},
+    "奈良県コンベンションセンター": {"lat": 34.6833442, "lon": 135.8050634, "source": "mapfan:奈良県コンベンションセンター"},
+    "大和西大寺駅南口": {"aliasRailStation": "大和西大寺", "source": "rail_station_group_alias:大和西大寺"},
+    "2阪奈生駒": {"lat": 34.7054, "lon": 135.7276, "source": "official_name_alias:第二阪奈生駒"},
+    "四条河原町": {"aliasRailStation": "京都河原町", "source": "rail_station_group_alias:京都河原町"},
+    "久留美": {"lat": 34.8199568, "lon": 135.0052794, "source": "nominatim_manual_cache:久留美バス停"},
+    "淡河": {"lat": 34.8211569, "lon": 135.1060640, "source": "nominatim_manual_cache:淡河バス停"},
+    "阪神甲子園": {"aliasRailStation": "甲子園", "source": "rail_station_group_alias:甲子園"},
+    "ユニバーサルスタジオジャパン": {"lat": 34.6656393, "lon": 135.4324527, "source": "nominatim_manual_cache:ユニバーサル・スタジオ・ジャパン"},
 }
 
 

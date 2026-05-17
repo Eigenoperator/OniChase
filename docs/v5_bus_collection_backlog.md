@@ -314,13 +314,14 @@ Completed ninth official-source collection pass:
   - Script: `scripts/ingest/augment_v5_bus_bundle_with_official_sources.py`
   - Audit: `data/v5_official_bus_bundle_augmentation_audit.json`
   - Docs audit: `docs/data/v5_official_bus_bundle_augmentation_audit.json`
-  - Current promoted routes: 67 routes, 2,255 trips, 11,050 stopTimes, 411 new
+  - Current promoted routes: 77 routes, 2,728 trips, 12,459 stopTimes, 470 new
     official bus stops.
   - Promoted sources: 阪急観光バス ITM ⇔ 大阪空港／蛍池駅, ITM ⇔ 新大阪駅,
     ITM ⇔ 神戸三宮駅, 四国交通 阿波池田バスターミナル ⇔ 高松空港, and
     カリー観光 石垣空港 ⇔ 石垣港離島ターミナル. Later runtime batches added
     長崎空港 bus routes from the official Nagasaki monthly source, 41
-    Keikyu Haneda airport-bus routes, and 17 KATE/KIX official active routes.
+    Keikyu Haneda airport-bus routes, 17 KATE/KIX official active routes, and
+    all 13 ITM/Hankyu Kanko official active airport-limousine routes.
   - Runtime outputs rebuilt: `docs/data/v5_bus_gtfs_current_bundle.json.gz`,
     `docs/data/v5_bus_map_tiles/`, and `docs/data/v5_bus_planner_tiles/`.
   - Safety policy: routes marked as possible GTFS overlap are skipped; routes
@@ -336,13 +337,21 @@ Completed ninth official-source collection pass:
   - KIX/KATE parser support: the KATE collector now attaches `stopName` and
     `stopIndex` to each `stopTime`, preserving Terminal 1/2 ordering even when
     the official page uses duplicate `KIX` stop codes.
-  - Latest tile rebuild: 5,181 bus routes, 76,791 bus trips, 88,624 bus stops,
-    109,435 walking connectors, and 25,835 active trips in Saturday planner
+  - Latest tile rebuild: 5,191 bus routes, 77,264 bus trips, 88,683 bus stops,
+    109,769 walking connectors, and 26,308 active trips in Saturday planner
     tiles.
   - KIX/KATE active coverage: all 17 active KATE airport-bus routes are now
     promoted into the playable runtime bundle. The final Wakayama route was
     unblocked with real coordinates for Wakauraguchi, Nisseki Iryo Center mae,
     Wakayamajo mae, and Mikimachi Shintori.
+  - ITM/Hankyu Kanko active coverage: all 13 parsed active Osaka Itami airport
+    limousine routes are now promoted into the playable runtime bundle. The
+    remaining ten routes were unblocked by normalizing station-adjacent stop
+    names such as JR難波駅（OCAT）, 近鉄上本町駅, 大和西大寺駅南口,
+    四条河原町, 阪神甲子園駅, and by adding real coordinates for hotel,
+    venue, and highway-stop labels such as 大阪マルビル, ホテル阪神,
+    奈良県コンベンションセンター, 久留美, 淡河, and
+    ユニバーサル・スタジオ・ジャパン.
 
 ## Official Source Seeds
 
