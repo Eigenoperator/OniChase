@@ -64,6 +64,19 @@ AIRPORT_STOP_ALIASES = {
     "KIJ": ["新潟空港", "niigata airport"],
     "UKB": ["神戸空港", "kobe airport"],
 }
+MANUAL_STOP_COORD_ALIASES = {
+    # Nagasaki airport-bus city stops.  中央橋 coordinates are from Busmap's
+    # structured BusStop geo data; the station/terminal aliases point at the
+    # nearest rail station-group centroid already present in the gameplay map.
+    "中央橋": {"lat": 32.7446326603, "lon": 129.875337528, "source": "busmap:busstop:227750"},
+    "長崎駅前県営バスターミナル": {"aliasRailStation": "長崎駅前", "source": "rail_station_group_alias:長崎駅前"},
+    "長崎駅県営bt": {"aliasRailStation": "長崎駅前", "source": "rail_station_group_alias:長崎駅前"},
+    "長崎駅前(交通広場)": {"aliasRailStation": "長崎駅前", "source": "rail_station_group_alias:長崎駅前"},
+    "長崎駅(交通広場)": {"aliasRailStation": "長崎駅前", "source": "rail_station_group_alias:長崎駅前"},
+    "銭座町スタジアムシティ": {"aliasRailStation": "銭座町", "source": "rail_station_group_alias:銭座町"},
+    "銭座町ｽﾀｼﾞｱﾑｼﾃｨ": {"aliasRailStation": "銭座町", "source": "rail_station_group_alias:銭座町"},
+    "銭座町長崎スタジアムシティ": {"aliasRailStation": "銭座町", "source": "rail_station_group_alias:銭座町"},
+}
 
 
 def read_json(path: Path) -> Any:
@@ -302,6 +315,11 @@ class StopResolver:
         self.airports = airports
         self.bus_index = build_name_index(bus_stop_reference_nodes(existing_bundle))
         self.rail_index = build_name_index(rail_nodes)
+        self.rail_nodes_by_name = {
+            normalize_stop_name(node.get("name")): node
+            for node in rail_nodes
+            if node.get("name") and isinstance(node.get("lat"), (int, float)) and isinstance(node.get("lon"), (int, float))
+        }
         self.geocode_cache = geocode_cache
         self.geocode_cache_path = geocode_cache_path
         self.geocode_missing = geocode_missing
@@ -313,6 +331,26 @@ class StopResolver:
     def resolve(self, stop_name: str, route_airport_iata: str) -> dict[str, Any] | None:
         name_key = normalize_stop_name(stop_name)
         airport_anchor = self.airports.get(route_airport_iata)
+        manual = MANUAL_STOP_COORD_ALIASES.get(name_key)
+        if manual:
+            if manual.get("aliasRailStation"):
+                rail_node = self.rail_nodes_by_name.get(normalize_stop_name(manual["aliasRailStation"]))
+                if rail_node:
+                    self.audit_counts[manual["source"]] += 1
+                    return {
+                        "name": stop_name,
+                        "lat": float(rail_node["lat"]),
+                        "lon": float(rail_node["lon"]),
+                        "source": manual["source"],
+                    }
+            elif isinstance(manual.get("lat"), (int, float)) and isinstance(manual.get("lon"), (int, float)):
+                self.audit_counts[manual["source"]] += 1
+                return {
+                    "name": stop_name,
+                    "lat": float(manual["lat"]),
+                    "lon": float(manual["lon"]),
+                    "source": manual["source"],
+                }
         airport_match = airport_stop_match(stop_name, route_airport_iata, self.airports)
         if airport_match:
             self.audit_counts[airport_match["source"]] += 1
@@ -352,7 +390,31 @@ def flatten_route_trips(route: dict[str, Any]) -> list[dict[str, Any]]:
             merged.setdefault("serviceStart", direction.get("serviceStart"))
             merged.setdefault("serviceEnd", direction.get("serviceEnd"))
             rows.append(merged)
+    for table_index, timetable in enumerate(route.get("timetables") or [], start=1):
+        for trip in timetable.get("trips") or []:
+            merged = dict(trip)
+            merged.setdefault("sourceTableIndex", table_index)
+            merged.setdefault("sourceTableUrl", timetable.get("tableUrl") or "")
+            rows.append(merged)
     return rows
+
+
+def route_stop_coordinate_index(route: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    index: dict[str, dict[str, Any]] = {}
+    for stop in route.get("busStops") or []:
+        name = str(stop.get("name") or "").strip()
+        lat = stop.get("lat")
+        lon = stop.get("lon")
+        if name and isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
+            index[normalize_stop_name(name)] = {"name": name, "lat": float(lat), "lon": float(lon), "source": "official_route_stop_coordinate"}
+    for timetable in route.get("timetables") or []:
+        for stop in timetable.get("stops") or []:
+            name = str(stop.get("name") or "").strip()
+            lat = stop.get("lat")
+            lon = stop.get("lon")
+            if name and isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
+                index[normalize_stop_name(name)] = {"name": name, "lat": float(lat), "lon": float(lon), "source": "official_timetable_stop_coordinate"}
+    return index
 
 
 def trip_time_bounds(trip: dict[str, Any]) -> tuple[int | None, int | None]:
@@ -392,6 +454,7 @@ def append_official_route(
         }
 
     route_airport = str(route.get("airportIata") or "")
+    source_coords = route_stop_coordinate_index(route)
     all_stop_names = []
     for trip in trips:
         for item in trip.get("stopTimes") or []:
@@ -402,7 +465,7 @@ def append_official_route(
     resolved: dict[str, dict[str, Any]] = {}
     unresolved = []
     for name in all_stop_names:
-        node = resolver.resolve(name, route_airport)
+        node = source_coords.get(normalize_stop_name(name)) or resolver.resolve(name, route_airport)
         if node:
             resolved[name] = node
         else:

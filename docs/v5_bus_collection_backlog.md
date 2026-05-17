@@ -314,11 +314,13 @@ Completed ninth official-source collection pass:
   - Script: `scripts/ingest/augment_v5_bus_bundle_with_official_sources.py`
   - Audit: `data/v5_official_bus_bundle_augmentation_audit.json`
   - Docs audit: `docs/data/v5_official_bus_bundle_augmentation_audit.json`
-  - Current promoted routes: 5 routes, 173 trips, 446 stopTimes, 19 new official
-    bus stops.
+  - Current promoted routes: 50 routes, 1,524 trips, 8,327 stopTimes, 315 new
+    official bus stops.
   - Promoted sources: 阪急観光バス ITM ⇔ 大阪空港／蛍池駅, ITM ⇔ 新大阪駅,
     ITM ⇔ 神戸三宮駅, 四国交通 阿波池田バスターミナル ⇔ 高松空港, and
-    カリー観光 石垣空港 ⇔ 石垣港離島ターミナル.
+    カリー観光 石垣空港 ⇔ 石垣港離島ターミナル. Later runtime batches added
+    長崎空港 bus routes from the official Nagasaki monthly source and 41
+    Keikyu Haneda airport-bus routes.
   - Runtime outputs rebuilt: `docs/data/v5_bus_gtfs_current_bundle.json.gz`,
     `docs/data/v5_bus_map_tiles/`, and `docs/data/v5_bus_planner_tiles/`.
   - Safety policy: routes marked as possible GTFS overlap are skipped; routes
@@ -328,6 +330,12 @@ Completed ninth official-source collection pass:
   - Coordinate policy: unresolved official stops may be promoted only after a
     real geocode source is cached. The first such cache entry is
     石垣港離島ターミナル from OpenStreetMap/Nominatim.
+  - HND/Keikyu parser support: the runtime augmenter now reads
+    `timetables[].trips` and official timetable stop coordinates, not only
+    top-level `trips`/`directions`.
+  - Latest tile rebuild: 5,164 bus routes, 76,060 bus trips, 88,528 bus stops,
+    109,038 walking connectors, and 25,104 active trips in Saturday planner
+    tiles.
 
 ## Official Source Seeds
 
