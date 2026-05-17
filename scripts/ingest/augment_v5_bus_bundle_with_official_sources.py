@@ -1,0 +1,712 @@
+#!/usr/bin/env python3
+"""Append non-overlapping official airport-bus sources to the V5 bus bundle.
+
+Official HTML/PDF parsers often produce real timetables before a GTFS feed is
+available.  This augmenter only promotes a route into gameplay when every stop
+can be resolved to a real coordinate and the overlap audit does not mark it as
+an existing GTFS route.  Unresolved routes stay in the audit instead of being
+invented on the map.
+"""
+
+from __future__ import annotations
+
+import argparse
+import gzip
+import hashlib
+import json
+import math
+import re
+import sys
+import time
+import urllib.parse
+import urllib.request
+from collections import Counter, defaultdict
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from build_v5_bus_gtfs_bundle import (  # noqa: E402
+    airport_reference_nodes,
+    build_connectors,
+    haversine_meters,
+    rail_reference_nodes,
+    stable_slug,
+)
+
+
+DEFAULT_INPUT_BUNDLE = ROOT / "docs" / "data" / "v5_bus_gtfs_current_bundle.json.gz"
+DEFAULT_OUTPUT_BUNDLE = ROOT / "data" / "v5_bus_gtfs_current_bundle.json.gz"
+DEFAULT_DOCS_OUTPUT_BUNDLE = ROOT / "docs" / "data" / "v5_bus_gtfs_current_bundle.json.gz"
+DEFAULT_AUDIT_OUTPUT = ROOT / "data" / "v5_official_bus_bundle_augmentation_audit.json"
+DEFAULT_DOCS_AUDIT_OUTPUT = ROOT / "docs" / "data" / "v5_official_bus_bundle_augmentation_audit.json"
+DEFAULT_OVERLAP_AUDIT = ROOT / "data" / "v5_official_bus_source_overlap_audit.json"
+DEFAULT_MAP_BUNDLE = ROOT / "data" / "v4_gameplay_map_bundle.json.gz"
+DEFAULT_AIRPORT_MAP = ROOT / "docs" / "data" / "v5_flight_map.geojson"
+DEFAULT_GEOCODE_CACHE = ROOT / "data" / "v5_bus_official_cache" / "nominatim_stop_geocode_cache.json"
+
+DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+AIRPORT_STOP_ALIASES = {
+    "HND": ["羽田空港", "東京国際空港", "haneda airport"],
+    "NRT": ["成田空港", "成田国際空港", "narita airport"],
+    "KIX": ["関西空港", "関西国際空港", "kansai airport"],
+    "ITM": ["大阪空港", "伊丹空港", "osaka airport", "itami airport"],
+    "CTS": ["新千歳空港", "new chitose airport"],
+    "TAK": ["高松空港", "takamatsu airport"],
+    "ISG": ["石垣空港", "新石垣空港", "ishigaki airport"],
+    "KOJ": ["鹿児島空港", "kagoshima airport"],
+    "KMI": ["宮崎空港", "miyazaki airport"],
+    "NGS": ["長崎空港", "nagasaki airport"],
+    "KIJ": ["新潟空港", "niigata airport"],
+    "UKB": ["神戸空港", "kobe airport"],
+}
+
+
+def read_json(path: Path) -> Any:
+    if path.suffix == ".gz":
+        with gzip.open(path, "rt", encoding="utf-8") as handle:
+            return json.load(handle)
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def write_json(path: Path, payload: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.suffix == ".gz":
+        with gzip.open(path, "wt", encoding="utf-8", compresslevel=9) as handle:
+            json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
+            handle.write("\n")
+        return
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def parse_time_seconds(value: Any) -> int | None:
+    text = str(value or "").strip().replace("：", ":")
+    match = re.fullmatch(r"(\d{1,2}):(\d{2})", text)
+    if not match:
+        return None
+    return int(match.group(1)) * 3600 + int(match.group(2)) * 60
+
+
+def normalize_stop_name(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    text = text.replace("　", " ")
+    text = re.sub(r"\s+", "", text)
+    text = text.replace("（", "(").replace("）", ")")
+    text = re.sub(r"[・･,，.。/／\\-]", "", text)
+    text = text.replace("バスターミナル", "bt")
+    text = text.replace("ターミナル", "terminal")
+    text = text.replace("第1", "1").replace("第2", "2")
+    text = text.replace("第一", "1").replace("第二", "2")
+    text = text.replace("駅前", "駅")
+    if len(text) > 2 and text.endswith("駅"):
+        text = text[:-1]
+    return text
+
+
+def source_ref(path: Path, route: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "sourceKind": route.get("sourceKind") or "official_airport_bus_source",
+        "sourcePath": str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path),
+        "operatorName": route.get("operatorName") or "",
+        "airportIata": route.get("airportIata") or "",
+        "routeCode": route.get("routeCode") or "",
+        "routeName": route.get("routeName") or "",
+        "sourceUrl": route.get("sourceUrl") or "",
+        "cachePath": route.get("cachePath") or "",
+    }
+
+
+def route_key(path: Path, route: dict[str, Any]) -> tuple[str, str]:
+    rel = str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
+    return rel, str(route.get("routeCode") or route.get("routeName") or "")
+
+
+def load_overlap_status(path: Path) -> dict[tuple[str, str], str]:
+    if not path.exists():
+        return {}
+    data = read_json(path)
+    statuses = {}
+    for row in data.get("routes") or []:
+        statuses[(str(row.get("sourcePath") or ""), str(row.get("routeCode") or row.get("routeName") or ""))] = str(row.get("status") or "")
+    return statuses
+
+
+def load_airport_coords(path: Path) -> dict[str, dict[str, Any]]:
+    coords = {}
+    for node in airport_reference_nodes(path):
+        iata = node["id"].split(":", 1)[-1]
+        coords[iata] = node
+    return coords
+
+
+def build_name_index(nodes: list[dict[str, Any]], *, id_key: str = "id") -> dict[str, list[dict[str, Any]]]:
+    by_name: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for node in nodes:
+        name = node.get("name")
+        lat = node.get("lat")
+        lon = node.get("lon")
+        if not name or not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
+            continue
+        item = {
+            "id": node.get(id_key) or node.get("id"),
+            "name": name,
+            "lat": float(lat),
+            "lon": float(lon),
+            "source": node.get("targetMode") or node.get("source") or "reference_node",
+        }
+        by_name[normalize_stop_name(name)].append(item)
+    return by_name
+
+
+def bus_stop_reference_nodes(bundle: dict[str, Any]) -> list[dict[str, Any]]:
+    nodes = []
+    for stop in bundle.get("stops") or []:
+        lat = stop.get("lat")
+        lon = stop.get("lon")
+        if not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
+            continue
+        nodes.append(
+            {
+                "id": stop.get("busStopId"),
+                "name": stop.get("name") or "",
+                "lat": float(lat),
+                "lon": float(lon),
+                "source": "existing_bus_gtfs_stop",
+            }
+        )
+    return nodes
+
+
+def nearest_to_anchor(candidates: list[dict[str, Any]], anchor: dict[str, Any] | None, max_meters: int) -> dict[str, Any] | None:
+    if not candidates:
+        return None
+    if not anchor:
+        return candidates[0]
+    ranked = sorted(
+        ((haversine_meters(candidate, anchor), candidate) for candidate in candidates),
+        key=lambda item: item[0],
+    )
+    if ranked and ranked[0][0] <= max_meters:
+        return ranked[0][1] | {"resolvedDistanceToAirportMeters": int(round(ranked[0][0]))}
+    return None
+
+
+def airport_stop_match(stop_name: str, route_airport_iata: str, airports: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
+    normalized = normalize_stop_name(stop_name)
+    for iata, aliases in AIRPORT_STOP_ALIASES.items():
+        if any(normalize_stop_name(alias) in normalized or normalized in normalize_stop_name(alias) for alias in aliases):
+            airport = airports.get(iata)
+            if airport:
+                return {
+                    "name": stop_name,
+                    "lat": airport["lat"],
+                    "lon": airport["lon"],
+                    "source": f"airport_iata_alias:{iata}",
+                }
+    if route_airport_iata and "空港" in str(stop_name):
+        airport = airports.get(route_airport_iata)
+        if airport:
+            return {
+                "name": stop_name,
+                "lat": airport["lat"],
+                "lon": airport["lon"],
+                "source": f"route_airport_iata:{route_airport_iata}",
+            }
+    return None
+
+
+def load_geocode_cache(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    return read_json(path)
+
+
+def geocode_stop(
+    stop_name: str,
+    *,
+    cache: dict[str, Any],
+    cache_path: Path,
+    anchor: dict[str, Any] | None,
+    max_meters: int,
+    enabled: bool,
+    sleep_seconds: float,
+) -> dict[str, Any] | None:
+    key = normalize_stop_name(stop_name)
+    cached = cache.get(key)
+    if cached:
+        if cached.get("status") == "ok":
+            candidate = {"name": stop_name, "lat": float(cached["lat"]), "lon": float(cached["lon"]), "source": "nominatim_cache"}
+            if not anchor or haversine_meters(candidate, anchor) <= max_meters:
+                return candidate
+        return None
+    if not enabled:
+        return None
+    params = urllib.parse.urlencode({"q": f"{stop_name}, 日本", "format": "jsonv2", "limit": "5", "countrycodes": "jp"})
+    request = urllib.request.Request(
+        f"https://nominatim.openstreetmap.org/search?{params}",
+        headers={"User-Agent": "OniChase-v5-official-bus-coordinate-resolver/0.1"},
+    )
+    time.sleep(sleep_seconds)
+    try:
+        rows = json.load(urllib.request.urlopen(request, timeout=20))
+    except Exception as exc:  # noqa: BLE001
+        cache[key] = {"status": "error", "error": f"{type(exc).__name__}: {exc}"}
+        write_json(cache_path, cache)
+        return None
+    candidates = []
+    for row in rows:
+        try:
+            candidates.append(
+                {
+                    "name": stop_name,
+                    "lat": float(row["lat"]),
+                    "lon": float(row["lon"]),
+                    "source": "nominatim_openstreetmap",
+                    "displayName": row.get("display_name") or "",
+                }
+            )
+        except (KeyError, ValueError, TypeError):
+            continue
+    selected = nearest_to_anchor(candidates, anchor, max_meters)
+    if selected:
+        cache[key] = {
+            "status": "ok",
+            "lat": selected["lat"],
+            "lon": selected["lon"],
+            "displayName": selected.get("displayName") or "",
+            "resolvedAt": datetime.now(UTC).isoformat(timespec="seconds"),
+        }
+    else:
+        cache[key] = {"status": "not_found_or_out_of_range", "resolvedAt": datetime.now(UTC).isoformat(timespec="seconds")}
+    write_json(cache_path, cache)
+    return selected
+
+
+class StopResolver:
+    def __init__(
+        self,
+        *,
+        existing_bundle: dict[str, Any],
+        rail_nodes: list[dict[str, Any]],
+        airports: dict[str, dict[str, Any]],
+        geocode_cache: dict[str, Any],
+        geocode_cache_path: Path,
+        geocode_missing: bool,
+        geocode_sleep_seconds: float,
+        max_anchor_meters: int,
+    ) -> None:
+        self.airports = airports
+        self.bus_index = build_name_index(bus_stop_reference_nodes(existing_bundle))
+        self.rail_index = build_name_index(rail_nodes)
+        self.geocode_cache = geocode_cache
+        self.geocode_cache_path = geocode_cache_path
+        self.geocode_missing = geocode_missing
+        self.geocode_sleep_seconds = geocode_sleep_seconds
+        self.max_anchor_meters = max_anchor_meters
+        self.created: dict[str, dict[str, Any]] = {}
+        self.audit_counts = Counter()
+
+    def resolve(self, stop_name: str, route_airport_iata: str) -> dict[str, Any] | None:
+        name_key = normalize_stop_name(stop_name)
+        airport_anchor = self.airports.get(route_airport_iata)
+        airport_match = airport_stop_match(stop_name, route_airport_iata, self.airports)
+        if airport_match:
+            self.audit_counts[airport_match["source"]] += 1
+            return airport_match
+        bus_match = nearest_to_anchor(self.bus_index.get(name_key, []), airport_anchor, self.max_anchor_meters)
+        if bus_match:
+            self.audit_counts["existing_bus_gtfs_stop"] += 1
+            return bus_match
+        rail_match = nearest_to_anchor(self.rail_index.get(name_key, []), airport_anchor, self.max_anchor_meters)
+        if rail_match:
+            self.audit_counts["rail_station_group"] += 1
+            return rail_match
+        geocoded = geocode_stop(
+            stop_name,
+            cache=self.geocode_cache,
+            cache_path=self.geocode_cache_path,
+            anchor=airport_anchor,
+            max_meters=self.max_anchor_meters,
+            enabled=self.geocode_missing,
+            sleep_seconds=self.geocode_sleep_seconds,
+        )
+        if geocoded:
+            self.audit_counts[geocoded["source"]] += 1
+            return geocoded
+        self.audit_counts["unresolved"] += 1
+        return None
+
+
+def flatten_route_trips(route: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for trip in route.get("trips") or []:
+        rows.append(trip)
+    for direction in route.get("directions") or []:
+        for trip in direction.get("trips") or []:
+            merged = dict(trip)
+            merged.setdefault("direction", direction.get("direction"))
+            merged.setdefault("serviceStart", direction.get("serviceStart"))
+            merged.setdefault("serviceEnd", direction.get("serviceEnd"))
+            rows.append(merged)
+    return rows
+
+
+def trip_time_bounds(trip: dict[str, Any]) -> tuple[int | None, int | None]:
+    times = [parse_time_seconds(item.get("time")) for item in trip.get("stopTimes") or []]
+    times = [item for item in times if item is not None]
+    if not times:
+        return None, None
+    return min(times), max(times)
+
+
+def make_service_calendar_id(feed_key: str, service_start: str, service_end: str) -> str:
+    return f"bus:calendar:official:{feed_key}:{service_start}:{service_end}"
+
+
+def append_official_route(
+    bundle: dict[str, Any],
+    *,
+    path: Path,
+    route: dict[str, Any],
+    resolver: StopResolver,
+    service_date: str,
+    max_unresolved_stops: int,
+) -> dict[str, Any]:
+    trips = flatten_route_trips(route)
+    if not trips:
+        return {"status": "skipped_no_trips", "tripCount": 0, "routeCode": route.get("routeCode"), "routeName": route.get("routeName")}
+
+    route_airport = str(route.get("airportIata") or "")
+    all_stop_names = []
+    for trip in trips:
+        for item in trip.get("stopTimes") or []:
+            name = str(item.get("stopName") or "").strip()
+            if name and name not in all_stop_names:
+                all_stop_names.append(name)
+
+    resolved: dict[str, dict[str, Any]] = {}
+    unresolved = []
+    for name in all_stop_names:
+        node = resolver.resolve(name, route_airport)
+        if node:
+            resolved[name] = node
+        else:
+            unresolved.append(name)
+
+    if len(all_stop_names) < 2:
+        return {
+            "status": "skipped_no_complete_stop_sequence",
+            "operatorName": route.get("operatorName") or "",
+            "airportIata": route_airport,
+            "routeCode": route.get("routeCode") or "",
+            "routeName": route.get("routeName") or "",
+            "tripCount": len(trips),
+            "stopCount": len(all_stop_names),
+        }
+
+    if len(unresolved) > max_unresolved_stops:
+        return {
+            "status": "skipped_unresolved_stop_coordinates",
+            "operatorName": route.get("operatorName") or "",
+            "airportIata": route_airport,
+            "routeCode": route.get("routeCode") or "",
+            "routeName": route.get("routeName") or "",
+            "tripCount": len(trips),
+            "stopCount": len(all_stop_names),
+            "unresolvedStopNames": unresolved,
+        }
+
+    valid_trips: list[dict[str, Any]] = []
+    skipped_limited = 0
+    skipped_incomplete = 0
+    for trip in trips:
+        if trip.get("limitedOperationMarks"):
+            skipped_limited += 1
+            continue
+        stop_rows = []
+        for item in trip.get("stopTimes") or []:
+            name = str(item.get("stopName") or "").strip()
+            seconds = parse_time_seconds(item.get("time"))
+            if seconds is None or name not in resolved:
+                continue
+            stop_rows.append({"stopName": name, "seconds": seconds})
+        if len(stop_rows) < 2:
+            skipped_incomplete += 1
+            continue
+        valid_trips.append({"trip": trip, "stopRows": stop_rows})
+    if not valid_trips:
+        return {
+            "status": "skipped_no_complete_trip_stop_times",
+            "operatorName": route.get("operatorName") or "",
+            "airportIata": route_airport,
+            "routeCode": route.get("routeCode") or "",
+            "routeName": route.get("routeName") or "",
+            "tripCount": len(trips),
+            "stopCount": len(all_stop_names),
+            "skippedLimitedOperationTripCount": skipped_limited,
+            "skippedIncompleteTripCount": skipped_incomplete,
+        }
+
+    feed_key = stable_slug("official_airport_bus", path.name, route.get("routeCode") or route.get("routeName"))
+    ref = source_ref(path, route)
+    agency_id = f"bus:agency:official:{feed_key}"
+    route_id = f"bus:route:official:{feed_key}"
+    adult_fare = route.get("adultFareYen")
+
+    bundle["agencies"].append(
+        {
+            "busAgencyId": agency_id,
+            "sourceAgencyId": route.get("operatorName") or feed_key,
+            "agencyName": route.get("operatorName") or "",
+            "agencyUrl": route.get("sourceUrl") or "",
+            "agencyTimezone": "Asia/Tokyo",
+            "agencyLang": "ja",
+            "sourceRefs": [ref],
+        }
+    )
+    for name, node in resolved.items():
+        stop_id = f"bus:stop:official:{feed_key}:{hashlib.sha1(name.encode('utf-8')).hexdigest()[:12]}"
+        resolver.created[name] = {
+            "busStopId": stop_id,
+            "sourceStopId": name,
+            "name": name,
+            "lat": node["lat"],
+            "lon": node["lon"],
+            "locationType": 0,
+            "parentBusStopId": None,
+            "platformCode": "",
+            "wheelchairBoarding": None,
+            "sourceRefs": [ref | {"coordinateSource": node.get("source") or ""}],
+        }
+        bundle["stops"].append(resolver.created[name])
+
+    bundle["routes"].append(
+        {
+            "busRouteId": route_id,
+            "sourceRouteId": route.get("routeCode") or route.get("routeName") or feed_key,
+            "busAgencyId": agency_id,
+            "agencyName": route.get("operatorName") or "",
+            "routeShortName": route.get("routeCode") or "",
+            "routeLongName": route.get("routeName") or "",
+            "routeDesc": route.get("sourceUrl") or "",
+            "routeType": 3,
+            "serviceClass": "bus_airport",
+            "routeColor": "2c7be5",
+            "routeTextColor": "ffffff",
+            "sourceRefs": [ref],
+        }
+    )
+
+    calendars_seen = set()
+    appended_trips = 0
+    appended_stop_times = 0
+    for index, valid_trip in enumerate(valid_trips, start=1):
+        trip = valid_trip["trip"]
+        start = str(trip.get("serviceStart") or route.get("serviceStart") or service_date).replace("-", "")
+        end = str(trip.get("serviceEnd") or route.get("serviceEnd") or "20270331").replace("-", "")
+        service_id = make_service_calendar_id(feed_key, start, end)
+        if service_id not in calendars_seen:
+            calendars_seen.add(service_id)
+            bundle["calendars"].append(
+                {
+                    "busServiceCalendarId": service_id,
+                    "rowKind": "calendar",
+                    "sourceServiceId": f"official:{feed_key}:{start}:{end}",
+                    **{day: 1 for day in DAYS},
+                    "startDate": start,
+                    "endDate": end,
+                }
+            )
+        trip_id = f"bus:trip:official:{feed_key}:{index:04d}"
+        stop_rows = valid_trip["stopRows"]
+        seconds_values = [row["seconds"] for row in stop_rows]
+        first, last = min(seconds_values), max(seconds_values)
+        if first is None or last is None:
+            continue
+        bundle["trips"].append(
+            {
+                "busTripId": trip_id,
+                "sourceTripId": trip.get("tripId") or f"{feed_key}:{index}",
+                "busRouteId": route_id,
+                "busServiceCalendarId": service_id,
+                "sourceServiceId": f"official:{feed_key}:{start}:{end}",
+                "tripHeadsign": trip.get("direction") or "",
+                "directionId": 1 if str(trip.get("direction") or "").startswith("from") else 0,
+                "blockId": "",
+                "busShapeId": None,
+                "wheelchairAccessible": None,
+                "bikesAllowed": None,
+                "serviceClass": "bus_airport",
+            }
+        )
+        appended_trips += 1
+        seq = 0
+        for item in stop_rows:
+            name = item["stopName"]
+            seconds = item["seconds"]
+            seq += 1
+            bundle["stopTimes"].append(
+                {
+                    "busTripId": trip_id,
+                    "busStopId": resolver.created[name]["busStopId"],
+                    "arrivalTimeSec": seconds,
+                    "departureTimeSec": seconds,
+                    "stopSequence": seq,
+                    "stopHeadsign": "",
+                    "pickupType": None,
+                    "dropOffType": None,
+                    "shapeDistTraveled": None,
+                    "timepoint": 1,
+                }
+            )
+            appended_stop_times += 1
+
+    if adult_fare:
+        fare_id = f"bus:fare:official:{feed_key}:adult"
+        bundle["fareAttributes"].append(
+            {
+                "busFareId": fare_id,
+                "sourceFareId": "adult",
+                "price": int(adult_fare),
+                "currencyType": "JPY",
+                "paymentMethod": 0,
+                "transfers": 0,
+                "transferDurationSec": None,
+            }
+        )
+        bundle["fareRules"].append({"busFareId": fare_id, "busRouteId": route_id, "originId": "", "destinationId": "", "containsId": ""})
+
+    return {
+        "status": "appended",
+        "operatorName": route.get("operatorName") or "",
+        "airportIata": route_airport,
+        "routeCode": route.get("routeCode") or "",
+        "routeName": route.get("routeName") or "",
+        "sourcePath": str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path),
+        "stopCount": len(resolved),
+        "tripCount": appended_trips,
+        "stopTimeCount": appended_stop_times,
+        "skippedLimitedOperationTripCount": skipped_limited,
+        "skippedIncompleteTripCount": skipped_incomplete,
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--input-bundle", type=Path, default=DEFAULT_INPUT_BUNDLE)
+    parser.add_argument("--output-bundle", type=Path, default=DEFAULT_OUTPUT_BUNDLE)
+    parser.add_argument("--docs-output-bundle", type=Path, default=DEFAULT_DOCS_OUTPUT_BUNDLE)
+    parser.add_argument("--audit-output", type=Path, default=DEFAULT_AUDIT_OUTPUT)
+    parser.add_argument("--docs-audit-output", type=Path, default=DEFAULT_DOCS_AUDIT_OUTPUT)
+    parser.add_argument("--overlap-audit", type=Path, default=DEFAULT_OVERLAP_AUDIT)
+    parser.add_argument("--map-bundle", type=Path, default=DEFAULT_MAP_BUNDLE)
+    parser.add_argument("--airport-map", type=Path, default=DEFAULT_AIRPORT_MAP)
+    parser.add_argument("--geocode-cache", type=Path, default=DEFAULT_GEOCODE_CACHE)
+    parser.add_argument("--source", action="append", type=Path, default=[])
+    parser.add_argument("--service-date", default="20260516")
+    parser.add_argument("--geocode-missing", action="store_true")
+    parser.add_argument("--geocode-sleep-seconds", type=float, default=1.0)
+    parser.add_argument("--max-anchor-meters", type=int, default=250_000)
+    parser.add_argument("--max-unresolved-stops", type=int, default=0)
+    parser.add_argument("--max-connector-meters", type=int, default=2000)
+    parser.add_argument("--max-rail-connectors-per-stop", type=int, default=12)
+    parser.add_argument("--max-airport-connectors-per-stop", type=int, default=4)
+    args = parser.parse_args()
+
+    bundle = read_json(args.input_bundle)
+    before_summary = {key: len(bundle.get(key) or []) for key in ("agencies", "stops", "routes", "trips", "stopTimes", "calendars", "fareAttributes", "fareRules")}
+    existing_connectors = list(bundle.get("walkingConnectors") or [])
+    overlap_status = load_overlap_status(args.overlap_audit)
+    airports = load_airport_coords(args.airport_map)
+    rail_nodes = rail_reference_nodes(args.map_bundle)
+    geocode_cache = load_geocode_cache(args.geocode_cache)
+    resolver = StopResolver(
+        existing_bundle=bundle,
+        rail_nodes=rail_nodes,
+        airports=airports,
+        geocode_cache=geocode_cache,
+        geocode_cache_path=args.geocode_cache,
+        geocode_missing=args.geocode_missing,
+        geocode_sleep_seconds=args.geocode_sleep_seconds,
+        max_anchor_meters=args.max_anchor_meters,
+    )
+
+    source_paths = args.source or sorted(ROOT.glob("data/v5_*official*_bus_source.json")) + sorted(ROOT.glob("data/v5_kagoshima_airport_official_bus_tables.json"))
+    route_audits = []
+    for path in source_paths:
+        if not path.exists():
+            route_audits.append({"sourcePath": str(path), "status": "source_missing"})
+            continue
+        data = read_json(path)
+        for route in data.get("routes") or []:
+            key = route_key(path, route)
+            status = overlap_status.get(key)
+            if status == "possible_gtfs_overlap":
+                route_audits.append(
+                    {
+                        "status": "skipped_possible_gtfs_overlap",
+                        "sourcePath": str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path),
+                        "routeCode": route.get("routeCode") or "",
+                        "routeName": route.get("routeName") or "",
+                    }
+                )
+                continue
+            route_audits.append(
+                append_official_route(
+                    bundle,
+                    path=path,
+                    route=route,
+                    resolver=resolver,
+                    service_date=args.service_date,
+                    max_unresolved_stops=args.max_unresolved_stops,
+                )
+            )
+
+    new_stops = (bundle.get("stops") or [])[before_summary["stops"] :]
+    new_connectors, connector_summary = build_connectors(
+        new_stops,
+        rail_nodes=rail_nodes,
+        airport_nodes=list(airports.values()),
+        max_distance_meters=args.max_connector_meters,
+        max_rail_per_stop=args.max_rail_connectors_per_stop,
+        max_airport_per_stop=args.max_airport_connectors_per_stop,
+    )
+    connector_summary["existingConnectorCountPreserved"] = len(existing_connectors)
+    connector_summary["newOfficialConnectorCount"] = len(new_connectors)
+    bundle["walkingConnectors"] = existing_connectors + new_connectors
+    bundle["generatedAt"] = datetime.now(UTC).isoformat(timespec="seconds")
+    bundle.setdefault("rules", {})["officialSourceAugmentationPolicy"] = (
+        "Non-overlapping official airport-bus HTML/PDF sources are appended only when every stop has a resolved real coordinate. "
+        "Routes flagged as possible GTFS overlap are skipped until replacement is explicit."
+    )
+    bundle.setdefault("summary", {})["officialAugmentation"] = {
+        "routeStatusCounts": dict(sorted(Counter(row.get("status") for row in route_audits).items())),
+        "coordinateResolutionCounts": dict(sorted(resolver.audit_counts.items())),
+        "connectorSummary": connector_summary,
+    }
+
+    after_summary = {key: len(bundle.get(key) or []) for key in ("agencies", "stops", "routes", "trips", "stopTimes", "calendars", "fareAttributes", "fareRules")}
+    audit = {
+        "schemaVersion": "v5_official_bus_bundle_augmentation_audit_v1",
+        "generatedAt": datetime.now(UTC).isoformat(timespec="seconds"),
+        "sourceBundle": str(args.input_bundle),
+        "before": before_summary,
+        "after": after_summary,
+        "delta": {key: after_summary[key] - before_summary[key] for key in before_summary},
+        "summary": bundle["summary"]["officialAugmentation"],
+        "routeAudits": route_audits,
+    }
+    write_json(args.output_bundle, bundle)
+    write_json(args.docs_output_bundle, bundle)
+    write_json(args.audit_output, audit)
+    write_json(args.docs_audit_output, audit)
+    print(json.dumps(audit["summary"] | {"delta": audit["delta"]}, ensure_ascii=False, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
