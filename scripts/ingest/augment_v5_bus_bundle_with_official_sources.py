@@ -379,6 +379,17 @@ def append_official_route(
     trips = flatten_route_trips(route)
     if not trips:
         return {"status": "skipped_no_trips", "tripCount": 0, "routeCode": route.get("routeCode"), "routeName": route.get("routeName")}
+    feed_key = stable_slug("official_airport_bus", path.name, route.get("routeCode") or route.get("routeName"))
+    route_id = f"bus:route:official:{feed_key}"
+    if any(existing.get("busRouteId") == route_id for existing in bundle.get("routes") or []):
+        return {
+            "status": "skipped_existing_official_route",
+            "operatorName": route.get("operatorName") or "",
+            "airportIata": route.get("airportIata") or "",
+            "routeCode": route.get("routeCode") or "",
+            "routeName": route.get("routeName") or "",
+            "tripCount": len(trips),
+        }
 
     route_airport = str(route.get("airportIata") or "")
     all_stop_names = []
@@ -451,10 +462,8 @@ def append_official_route(
             "skippedIncompleteTripCount": skipped_incomplete,
         }
 
-    feed_key = stable_slug("official_airport_bus", path.name, route.get("routeCode") or route.get("routeName"))
     ref = source_ref(path, route)
     agency_id = f"bus:agency:official:{feed_key}"
-    route_id = f"bus:route:official:{feed_key}"
     adult_fare = route.get("adultFareYen")
 
     bundle["agencies"].append(
