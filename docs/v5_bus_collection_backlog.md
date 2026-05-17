@@ -276,6 +276,16 @@ Completed ninth official-source collection pass:
 - Official-source overlap audit expanded to include TAK Kotoden Bus.
   - Result: 134 official routes checked; 4,147 official trips represented in
     source files; no likely GTFS duplicate overlap found.
+- TAK / Yonkoh official Awa-Ikeda airport bus parser.
+  - Script: `scripts/ingest/collect_v5_takamatsu_yonkoh_bus.py`
+  - Source output: `data/v5_takamatsu_yonkoh_official_bus_source.json`
+  - Docs copy: `docs/data/v5_takamatsu_yonkoh_official_bus_source.json`
+  - Audit: `data/v5_takamatsu_yonkoh_official_bus_audit.json`
+  - Result: 1 official route parsed; 4 trips extracted for 阿波池田バス
+    ターミナル ⇔ 高松空港 via 綾川駅.
+- Official-source overlap audit expanded to include TAK Yonkoh.
+  - Result: 135 official routes checked; 4,151 official trips represented in
+    source files; no likely GTFS duplicate overlap found.
 
 ## Official Source Seeds
 

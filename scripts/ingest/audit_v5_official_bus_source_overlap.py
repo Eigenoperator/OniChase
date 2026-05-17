@@ -30,6 +30,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_itm_hankyu_kanko_official_bus_source.json",
     ROOT / "data" / "v5_takamatsu_kotosan_official_bus_source.json",
     ROOT / "data" / "v5_takamatsu_kotoden_official_bus_source.json",
+    ROOT / "data" / "v5_takamatsu_yonkoh_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -45,6 +46,7 @@ OPERATOR_HINTS = {
     "阪急観光バス": ["阪急観光", "阪急", "Hankyu"],
     "琴参バス": ["琴参", "Kotosan"],
     "ことでんバス": ["ことでん", "琴電", "Kotoden"],
+    "四国交通": ["四国交通", "Yonkoh"],
 }
 
 
