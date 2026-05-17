@@ -235,6 +235,21 @@ Completed eighth official-source collection pass:
     source files; no likely GTFS duplicate overlap found by the current
     heuristic.
 
+Completed ninth official-source collection pass:
+
+- TAK / Takamatsu Airport official airport-bus source capture.
+  - Script: `scripts/ingest/collect_v5_takamatsu_airport_bus_sources.py`
+  - Source output: `data/v5_takamatsu_airport_official_bus_sources.json`
+  - Docs copy: `docs/data/v5_takamatsu_airport_official_bus_sources.json`
+  - Audit: `data/v5_takamatsu_airport_official_bus_sources_audit.json`
+  - Result: 10 route/fare summary sections captured from the official airport
+    access page and 17 explicit bus/timetable/fare/operator links cached or
+    classified. Two official PDFs expose extractable timetable text and six
+    linked HTML pages contain time text.
+  - Limitation: this is source capture only. Takamatsu city / Kotoden,
+    Kotosan, Shikoku Kotsu, and Koto Bus pages still need route-specific
+    parsers before TAK airport access becomes fully playable.
+
 ## Official Source Seeds
 
 - HND: `https://tokyo-haneda.com/en/access/bus/`
