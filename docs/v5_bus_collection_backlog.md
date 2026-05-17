@@ -174,6 +174,29 @@ Completed fifth official-source collection pass:
     source files; no likely GTFS duplicate overlap found by the current
     heuristic.
 
+Completed sixth official-source collection pass:
+
+- NGS / Nagasaki Airport official monthly HTML timetables.
+  - Script: `scripts/ingest/collect_v5_nagasaki_airport_bus.py`
+  - Source output: `data/v5_nagasaki_airport_official_bus_source.json`
+  - Docs copy: `docs/data/v5_nagasaki_airport_official_bus_source.json`
+  - Audit: `data/v5_nagasaki_airport_official_bus_audit.json`
+  - Result: 4 route-direction tables parsed; 112 official trips extracted.
+  - Note: the current source pages are monthly validity pages, so this parser
+    should be refreshed for each release service month.
+- KIJ / Niigata Airport official Niigata Kotsu PDF sources.
+  - Script: `scripts/ingest/collect_v5_niigata_airport_bus_pdfs.py`
+  - Source output: `data/v5_niigata_airport_official_bus_pdfs.json`
+  - Docs copy: `docs/data/v5_niigata_airport_official_bus_pdfs.json`
+  - Audit: `data/v5_niigata_airport_official_bus_pdfs_audit.json`
+  - Result: 2 official PDFs cached, but both appear image/vector based and do
+    not expose extractable timetable text through `pdftotext`. They need OCR or
+    a different structured source before route normalization.
+- Official-source overlap audit expanded to include NGS.
+  - Result: 117 official routes checked; 3,446 official trips represented in
+    source files; no likely GTFS duplicate overlap found by the current
+    heuristic.
+
 ## Official Source Seeds
 
 - HND: `https://tokyo-haneda.com/en/access/bus/`
