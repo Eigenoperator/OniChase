@@ -27,6 +27,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_ukb_nishinihonjr_official_bus_source.json",
     ROOT / "data" / "v5_nagasaki_airport_official_bus_source.json",
     ROOT / "data" / "v5_ishigaki_airport_official_bus_source.json",
+    ROOT / "data" / "v5_itm_hankyu_kanko_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -39,6 +40,7 @@ OPERATOR_HINTS = {
     "Nishinihon JR Bus": ["西日本JR", "西日本", "Nishinihon"],
     "Nagasaki Airport Bus Operators": ["長崎", "Nagasaki", "県営", "長崎バス"],
     "カリー観光": ["カリー", "Karry"],
+    "阪急観光バス": ["阪急観光", "阪急", "Hankyu"],
 }
 
 

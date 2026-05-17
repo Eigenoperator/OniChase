@@ -218,6 +218,23 @@ Completed seventh official-source collection pass:
     source files; no likely GTFS duplicate overlap found by the current
     heuristic.
 
+Completed eighth official-source collection pass:
+
+- ITM / Hankyu Kanko Bus official Osaka Itami Airport limousine timetables.
+  - Script: `scripts/ingest/collect_v5_itm_hankyu_kanko_bus.py`
+  - Source output: `data/v5_itm_hankyu_kanko_official_bus_source.json`
+  - Docs copy: `docs/data/v5_itm_hankyu_kanko_official_bus_source.json`
+  - Audit: `data/v5_itm_hankyu_kanko_official_bus_audit.json`
+  - Result: 13 official route pages parsed; all 13 have active timetable rows;
+    602 official bus trips extracted. Parsed routes include the main Itami
+    airport limousine corridors toward Shin-Osaka, Osaka/Umeda, Namba,
+    Tennoji/Abenobashi, Uehommachi, Nara, Kyoto, Himeji, Kobe Sannomiya,
+    Koshien, USJ, and KIX.
+- Official-source overlap audit expanded to include ITM Hankyu Kanko Bus.
+  - Result: 131 official routes checked; 4,088 official trips represented in
+    source files; no likely GTFS duplicate overlap found by the current
+    heuristic.
+
 ## Official Source Seeds
 
 - HND: `https://tokyo-haneda.com/en/access/bus/`
