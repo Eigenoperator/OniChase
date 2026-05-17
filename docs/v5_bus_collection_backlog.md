@@ -261,6 +261,21 @@ Completed ninth official-source collection pass:
   - Result: 133 official routes checked; 4,104 official trips represented in
     source files; no likely GTFS duplicate overlap found after requiring an
     airport stop hit for duplicate candidates.
+- TAK / Kotoden Bus official Takamatsu city airport limousine PDFs.
+  - Script: `scripts/ingest/collect_v5_takamatsu_kotoden_bus.py`
+  - Source output: `data/v5_takamatsu_kotoden_official_bus_source.json`
+  - Docs copy: `docs/data/v5_takamatsu_kotoden_official_bus_source.json`
+  - Audit: `data/v5_takamatsu_kotoden_official_bus_audit.json`
+  - Result: 1 city-airport route parsed from official PDFs; 43 complete
+    stop-coverage trips extracted across the current 2026-03-29 to 2026-05-31
+    service window and the published 2026-06-01 to 2026-06-30 service window.
+  - Note: the PDF table wraps a few dense rows across multiple text lines. The
+    parser intentionally emits only rows where all stops are present on one
+    extracted line, preserving limited-operation symbols for later calendar
+    refinement instead of guessing wrapped rows.
+- Official-source overlap audit expanded to include TAK Kotoden Bus.
+  - Result: 134 official routes checked; 4,147 official trips represented in
+    source files; no likely GTFS duplicate overlap found.
 
 ## Official Source Seeds
 
