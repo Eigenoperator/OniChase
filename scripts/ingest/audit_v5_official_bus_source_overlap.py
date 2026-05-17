@@ -26,6 +26,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_kagoshima_airport_official_bus_tables.json",
     ROOT / "data" / "v5_ukb_nishinihonjr_official_bus_source.json",
     ROOT / "data" / "v5_nagasaki_airport_official_bus_source.json",
+    ROOT / "data" / "v5_ishigaki_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -37,6 +38,7 @@ OPERATOR_HINTS = {
     "Kagoshima Kotsu": ["鹿児島交通", "Kagoshima"],
     "Nishinihon JR Bus": ["西日本JR", "西日本", "Nishinihon"],
     "Nagasaki Airport Bus Operators": ["長崎", "Nagasaki", "県営", "長崎バス"],
+    "カリー観光": ["カリー", "Karry"],
 }
 
 

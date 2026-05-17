@@ -1,0 +1,813 @@
+{
+  "schemaVersion": "v5_official_bus_source.ishigaki_airport.v1",
+  "generatedAt": "2026-05-17T00:41:51Z",
+  "sourcePolicy": "Official Ishigaki Airport bus sources. Karry Kanko direct-bus HTML is normalized into trips; Azuma Bus PDFs are cached as official timetable sources and need a dedicated PDF table parser before full route normalization.",
+  "airportPage": {
+    "sourceUrl": "https://www.ishigaki-airport.co.jp/access/bus-taxi/index.html",
+    "cachePath": "data/v5_bus_official_cache/ishigaki_airport/e0721be2d677cb325e5068b46d03f230179d3432.html",
+    "candidateTimeTextCount": 0
+  },
+  "azumaIndexPage": {
+    "sourceUrl": "https://www.azumabus.co.jp/",
+    "cachePath": "data/v5_bus_official_cache/ishigaki_airport/167353db01b91a7796bde8cb62fc211215c3b531.html",
+    "pdfCount": 10
+  },
+  "azumaPdfSources": [
+    {
+      "label": "広域時刻表【バスターミナル➡各方面】",
+      "sourceUrl": "http://www.azumabus.co.jp/mwbhpwp/wp-content/uploads/826e89bd5eb624c6b71a46580fdebbfc.pdf",
+      "cachePath": "data/v5_bus_official_cache/ishigaki_airport/645a8fd39bb710472b88663c1a000ba2681000a8.pdf",
+      "contentType": "application/pdf",
+      "status": "pdf_time_text_found",
+      "timeTextCount": 486,
+      "sampleTimes": [
+        "10:00",
+        "10:01",
+        "10:02",
+        "10:03",
+        "10:04",
+        "10:06",
+        "10:07",
+        "10:08",
+        "10:09",
+        "10:11",
+        "10:13",
+        "10:15",
+        "10:17",
+        "10:18",
+        "10:19",
+        "10:20",
+        "10:22",
+        "10:24",
+        "10:25",
+        "10:26"
+      ]
+    },
+    {
+      "label": "広域時刻表【各方面➡バスターミナル】",
+      "sourceUrl": "http://www.azumabus.co.jp/mwbhpwp/wp-content/uploads/aa772e3dcc7d69d8767ff987f803f981.pdf",
+      "cachePath": "data/v5_bus_official_cache/ishigaki_airport/d7863ab26a249081a459a53cd1704a6b2e753a2c.pdf",
+      "contentType": "application/pdf",
+      "status": "pdf_time_text_found",
+      "timeTextCount": 487,
+      "sampleTimes": [
+        "10:00",
+        "10:01",
+        "10:02",
+        "10:04",
+        "10:05",
+        "10:08",
+        "10:12",
+        "10:13",
+        "10:17",
+        "10:18",
+        "10:19",
+        "10:20",
+        "10:21",
+        "10:22",
+        "10:23",
+        "10:24",
+        "10:25",
+        "10:31",
+        "10:34",
+        "10:35"
+      ]
+    },
+    {
+      "label": "【詳細版】 系統④平得・大浜・白保経由空港線時刻表",
+      "sourceUrl": "http://www.azumabus.co.jp/mwbhpwp/wp-content/uploads/8b0914b31ee1e3a38334fa0a71c5c980.pdf",
+      "cachePath": "data/v5_bus_official_cache/ishigaki_airport/cb7c09361b8278b5a1edd14479bf0cb1c936ddce.pdf",
+      "contentType": "application/pdf",
+      "status": "pdf_time_text_found",
+      "timeTextCount": 832,
+      "sampleTimes": [
+        "10:00",
+        "10:02",
+        "10:03",
+        "10:05",
+        "10:06",
+        "10:07",
+        "10:08",
+        "10:09",
+        "10:10",
+        "10:11",
+        "10:12",
+        "10:13",
+        "10:14",
+        "10:15",
+        "10:16",
+        "10:17",
+        "10:18",
+        "10:19",
+        "10:20",
+        "10:21"
+      ]
+    },
+    {
+      "label": "【詳細版】 系統⑩アートホテル・ANAインターコンチネンタル経由空港線時刻表",
+      "sourceUrl": "http://www.azumabus.co.jp/mwbhpwp/wp-content/uploads/304ee517825e26f2c4586d9463f9408d.pdf",
+      "cachePath": "data/v5_bus_official_cache/ishigaki_airport/41ff7c8f0f76ddbd1e9ef92dc0b2405a06e0c340.pdf",
+      "contentType": "application/pdf",
+      "status": "pdf_time_text_found",
+      "timeTextCount": 215,
+      "sampleTimes": [
+        "11:15",
+        "11:16",
+        "11:19",
+        "11:20",
+        "11:23",
+        "11:27",
+        "11:28",
+        "11:29",
+        "11:33",
+        "11:34",
+        "11:36",
+        "11:37",
+        "11:38",
+        "11:40",
+        "11:41",
+        "11:42",
+        "11:43",
+        "11:44",
+        "11:45",
+        "11:46"
+      ]
+    },
+    {
+      "label": "東運輸 石垣島内運行路線図",
+      "sourceUrl": "http://www.azumabus.co.jp/mwbhpwp/wp-content/uploads/2e21f7a16061c5181831321abd6b366e.pdf",
+      "cachePath": "data/v5_bus_official_cache/ishigaki_airport/3218514220d948f69bc3c870549f19153ca51622.pdf",
+      "contentType": "application/pdf",
+      "status": "pdf_cached_no_time_text",
+      "timeTextCount": 0,
+      "sampleTimes": []
+    },
+    {
+      "label": "英語路線図（Bus route map)",
+      "sourceUrl": "http://www.azumabus.co.jp/mwbhpwp/wp-content/uploads/7e5747641549eda351bc2f6c5fe244f6.pdf",
+      "cachePath": "data/v5_bus_official_cache/ishigaki_airport/7368eeb39f424251157d445dfffb0a71bed5a1bb.pdf",
+      "contentType": "application/pdf",
+      "status": "pdf_cached_no_time_text",
+      "timeTextCount": 0,
+      "sampleTimes": []
+    },
+    {
+      "label": "route④Airport bus timetable",
+      "sourceUrl": "http://www.azumabus.co.jp/mwbhpwp/wp-content/uploads/350528934a689f760e74be42fc6ccca0.pdf",
+      "cachePath": "data/v5_bus_official_cache/ishigaki_airport/0a5a2de01a2587258532c8d35bab8c7b126d608f.pdf",
+      "contentType": "application/pdf",
+      "status": "pdf_time_text_found",
+      "timeTextCount": 832,
+      "sampleTimes": [
+        "10:00",
+        "10:02",
+        "10:03",
+        "10:05",
+        "10:06",
+        "10:07",
+        "10:08",
+        "10:09",
+        "10:10",
+        "10:11",
+        "10:12",
+        "10:13",
+        "10:14",
+        "10:15",
+        "10:16",
+        "10:17",
+        "10:18",
+        "10:19",
+        "10:20",
+        "10:21"
+      ]
+    },
+    {
+      "label": "route⑩ Airport bus timetable",
+      "sourceUrl": "http://www.azumabus.co.jp/mwbhpwp/wp-content/uploads/18ab563464630d343187a4dedcb43a5f-2.pdf",
+      "cachePath": "data/v5_bus_official_cache/ishigaki_airport/a342c63e097db20ce5a5c867a06aba512bf3e8e7.pdf",
+      "contentType": "application/pdf",
+      "status": "pdf_time_text_found",
+      "timeTextCount": 215,
+      "sampleTimes": [
+        "11:15",
+        "11:16",
+        "11:19",
+        "11:20",
+        "11:23",
+        "11:27",
+        "11:28",
+        "11:29",
+        "11:33",
+        "11:34",
+        "11:36",
+        "11:37",
+        "11:38",
+        "11:40",
+        "11:41",
+        "11:42",
+        "11:43",
+        "11:44",
+        "11:45",
+        "11:46"
+      ]
+    },
+    {
+      "label": "系統４平得・大浜・白保経由空港線",
+      "sourceUrl": "http://www.azumabus.co.jp/mwbhpwp/wp-content/uploads/57d3da8859fd58e62bad969f64958e80-1.pdf",
+      "cachePath": "data/v5_bus_official_cache/ishigaki_airport/7fefa5dc7948ab7f9a11c0b05bc94dbc71d1719a.pdf",
+      "contentType": "application/pdf",
+      "status": "pdf_cached_no_time_text",
+      "timeTextCount": 0,
+      "sampleTimes": []
+    },
+    {
+      "label": "系統１０アートホテル・ＡＮＡ経由空港線",
+      "sourceUrl": "http://www.azumabus.co.jp/mwbhpwp/wp-content/uploads/60effb70ddd7b01bc289f8263c96d806-1.pdf",
+      "cachePath": "data/v5_bus_official_cache/ishigaki_airport/e11e28f6f0d4a3cd5d348ee8f85009fdc011d8b1.pdf",
+      "contentType": "application/pdf",
+      "status": "pdf_cached_no_time_text",
+      "timeTextCount": 0,
+      "sampleTimes": []
+    }
+  ],
+  "routes": [
+    {
+      "sourceKind": "official_karry_html_timetable",
+      "operatorName": "カリー観光",
+      "airportIata": "ISG",
+      "routeCode": "isg_karry_direct",
+      "routeName": "石垣空港 ⇔ 石垣港離島ターミナル直行バス",
+      "sourceUrl": "https://karrykanko.com/ishigaki/",
+      "cachePath": "data/v5_bus_official_cache/ishigaki_airport/cabb16b4de84ffc7bf44f409386d3120ffc01762.html",
+      "adultFareYen": 550,
+      "childFareYen": 280,
+      "routeStopNames": [
+        "石垣空港",
+        "石垣港離島ターミナル"
+      ],
+      "trips": [
+        {
+          "tripId": "isg_karry:from_airport:001",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "09:20"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "09:50"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:002",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "09:50"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "10:20"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:003",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "10:20"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "10:50"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:004",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "10:50"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "11:20"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:005",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "11:20"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "11:50"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:006",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "11:50"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "12:20"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:007",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "12:20"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "12:50"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:008",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "12:50"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "13:20"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:009",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "13:20"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "13:50"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:010",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "13:50"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "14:20"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:011",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "14:20"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "14:50"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:012",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "14:50"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "15:20"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:013",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "15:20"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "15:50"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:014",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "15:50"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "16:20"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:015",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "16:20"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "16:50"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:016",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "16:50"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "17:20"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:017",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "17:20"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "17:50"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:018",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "17:50"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "18:20"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:019",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "18:20"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "18:50"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:from_airport:020",
+          "direction": "from_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣空港",
+              "time": "18:50"
+            },
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "19:20"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:001",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "08:30"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "09:00"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:002",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "09:00"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "09:30"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:003",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "09:30"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "10:00"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:004",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "10:00"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "10:30"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:005",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "10:30"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "11:00"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:006",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "11:00"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "11:30"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:007",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "11:30"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "12:00"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:008",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "12:00"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "12:30"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:009",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "12:30"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "13:00"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:010",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "13:00"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "13:30"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:011",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "13:30"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "14:00"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:012",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "14:00"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "14:30"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:013",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "14:30"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "15:00"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:014",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "15:00"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "15:30"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:015",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "15:30"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "16:00"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:016",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "16:00"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "16:30"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:017",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "16:30"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "17:00"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:018",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "17:00"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "17:30"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:019",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "17:30"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "18:00"
+            }
+          ]
+        },
+        {
+          "tripId": "isg_karry:to_airport:020",
+          "direction": "to_airport",
+          "stopTimes": [
+            {
+              "stopName": "石垣港離島ターミナル",
+              "time": "18:00"
+            },
+            {
+              "stopName": "石垣空港",
+              "time": "18:30"
+            }
+          ]
+        }
+      ],
+      "tripCount": 40
+    }
+  ]
+}

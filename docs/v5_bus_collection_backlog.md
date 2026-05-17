@@ -197,6 +197,27 @@ Completed sixth official-source collection pass:
     source files; no likely GTFS duplicate overlap found by the current
     heuristic.
 
+Completed seventh official-source collection pass:
+
+- ISG / Ishigaki Airport official Karry Kanko direct bus timetable.
+  - Script: `scripts/ingest/collect_v5_ishigaki_airport_bus.py`
+  - Source output: `data/v5_ishigaki_airport_official_bus_source.json`
+  - Docs copy: `docs/data/v5_ishigaki_airport_official_bus_source.json`
+  - Audit: `data/v5_ishigaki_airport_official_bus_audit.json`
+  - Result: 1 official direct-bus route normalized; 40 official trips extracted
+    for 石垣空港 ⇔ 石垣港離島ターミナル. Adult fare is recorded as ¥550.
+- ISG / Azuma Bus official timetable PDFs.
+  - The same script caches the Ishigaki Airport access page, Azuma Bus index
+    page, and 10 official Azuma Bus PDF sources relevant to airport / timetable
+    collection. Six PDFs expose extractable timetable text through
+    `pdftotext`; four need OCR or a more specialized PDF/image path.
+  - Current limitation: Azuma route ④/⑩ and wider island routes are source
+    captured but not yet normalized into playable stop-time tables.
+- Official-source overlap audit expanded to include ISG Karry Kanko.
+  - Result: 118 official routes checked; 3,486 official trips represented in
+    source files; no likely GTFS duplicate overlap found by the current
+    heuristic.
+
 ## Official Source Seeds
 
 - HND: `https://tokyo-haneda.com/en/access/bus/`
