@@ -300,6 +300,16 @@ Completed ninth official-source collection pass:
     `西讃観光` GTFS airport route with full stop overlap. When promoted into
     the playable bundle, this official parser must replace or suppress the
     existing GTFS route rather than create duplicate ride choices.
+- TAK / Kinku Bus official monthly timetable images.
+  - Script: `scripts/ingest/collect_v5_takamatsu_kinku_bus_images.py`
+  - Source output: `data/v5_takamatsu_kinku_official_bus_images.json`
+  - Docs copy: `docs/data/v5_takamatsu_kinku_official_bus_images.json`
+  - Audit: `data/v5_takamatsu_kinku_official_bus_images_audit.json`
+  - Result: 4 official monthly/index pages cached and 6 uploaded timetable
+    images cached.
+  - Limitation: the operator publishes the active timetable as images, not
+    machine-readable tables. These need OCR or a dedicated image-table parser
+    before playable trips can be emitted.
 
 ## Official Source Seeds
 
