@@ -164,7 +164,16 @@ def parse_timetable_table(table: dict[str, Any], route_code: str, direction_inde
             time_text, meta = normalize_time_cell(cell["text"])
             if not time_text:
                 continue
-            stop_times.append({"stopCode": stops[index]["code"], "time": time_text, "raw": meta["raw"], "marks": meta.get("marks", [])})
+            stop_times.append(
+                {
+                    "stopIndex": index,
+                    "stopCode": stops[index]["code"],
+                    "stopName": stops[index]["name"],
+                    "time": time_text,
+                    "raw": meta["raw"],
+                    "marks": meta.get("marks", []),
+                }
+            )
         if len(stop_times) < 2:
             continue
         trips.append(

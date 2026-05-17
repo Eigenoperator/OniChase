@@ -76,6 +76,30 @@ MANUAL_STOP_COORD_ALIASES = {
     "銭座町スタジアムシティ": {"aliasRailStation": "銭座町", "source": "rail_station_group_alias:銭座町"},
     "銭座町ｽﾀｼﾞｱﾑｼﾃｨ": {"aliasRailStation": "銭座町", "source": "rail_station_group_alias:銭座町"},
     "銭座町長崎スタジアムシティ": {"aliasRailStation": "銭座町", "source": "rail_station_group_alias:銭座町"},
+    # KIX / KATE English stop labels, normalized to existing rail station
+    # groups when the official label names a station or station bus terminal.
+    "hankyusanban(osakasta)um1": {"aliasRailStation": "大阪梅田", "source": "rail_station_group_alias:大阪梅田"},
+    "herbisosaka(osakasta)": {"aliasRailStation": "西梅田", "source": "rail_station_group_alias:西梅田"},
+    "todojima(candeohotelsosakathetower)": {"aliasRailStation": "渡辺橋", "source": "rail_station_group_alias:渡辺橋"},
+    "hotelhankyurespire(yodobashiumedatower)um9": {"aliasRailStation": "大阪梅田", "source": "rail_station_group_alias:大阪梅田"},
+    "kintetsuuehommachi(2ndfloorbusterminal)": {"aliasRailStation": "大阪上本町", "source": "rail_station_group_alias:大阪上本町"},
+    "shinsaibashi(hotelnikkoosaka)": {"aliasRailStation": "心斎橋", "source": "rail_station_group_alias:心斎橋"},
+    "hotelentrance(infrontofjrsakurajimastation)nu8": {"aliasRailStation": "桜島", "source": "rail_station_group_alias:桜島"},
+    "universalcitywalkosaka(hotelkintetsuuniversalcity)": {"aliasRailStation": "ユニバーサルシティ", "source": "rail_station_group_alias:ユニバーサルシティ"},
+    "tenpozan(kaiyukan)": {"lat": 34.6549, "lon": 135.4289, "source": "manual_poi_alias:海遊館"},
+    "grandprincehotelosakabayhoshinoresortsrisonareosaka": {"lat": 34.6369052, "lon": 135.4158899, "source": "nominatim_manual_cache:Grand Prince Hotel Osaka Bay"},
+    "shinkobe(crowneplazakobe)kb3": {"aliasRailStation": "新神戸", "source": "rail_station_group_alias:新神戸"},
+    "narastanr4": {"aliasRailStation": "奈良", "source": "rail_station_group_alias:奈良"},
+    "dainihannaikoma": {"lat": 34.7054, "lon": 135.7276, "source": "official_name_alias:第二阪奈生駒"},
+    "namba()oc1": {"aliasRailStation": "大阪難波", "source": "rail_station_group_alias:大阪難波"},
+    "plazaosakaon1": {"aliasRailStation": "日本橋", "source": "rail_station_group_alias:日本橋"},
+    "temmabashista": {"aliasRailStation": "天満橋", "source": "rail_station_group_alias:天満橋"},
+    "hankyunishinomiyakitaguchi": {"aliasRailStation": "西宮北口", "source": "rail_station_group_alias:西宮北口"},
+    "wakayamastawk1": {"aliasRailStation": "和歌山", "source": "rail_station_group_alias:和歌山"},
+    "highwaynaruto": {"aliasRailStation": "鳴門", "source": "rail_station_group_alias:鳴門"},
+    "narutokoenguchi": {"aliasRailStation": "鳴門", "source": "rail_station_group_alias:鳴門"},
+    "sumotots4": {"lat": 34.34289, "lon": 134.8955, "source": "manual_city_center_alias:洲本高速バスセンター"},
+    "rokkoisland(kobebaysheratonhotel)": {"lat": 34.6898, "lon": 135.2698, "source": "manual_hotel_alias:Kobe Bay Sheraton"},
 }
 
 
