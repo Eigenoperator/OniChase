@@ -128,6 +128,27 @@ Completed third official-source collection pass:
     UKB need operator-specific parsing; ISG pages appear partly image/embedded
     and need a separate handling path.
 
+Completed fourth official-source collection pass:
+
+- KMI / Miyazaki Airport official summary timetable.
+  - Script: `scripts/ingest/collect_v5_miyazaki_airport_bus.py`
+  - Source output: `data/v5_miyazaki_airport_official_bus_source.json`
+  - Docs copy: `docs/data/v5_miyazaki_airport_official_bus_source.json`
+  - Audit: `data/v5_miyazaki_airport_official_bus_audit.json`
+  - Result: 4 airport-bus route summaries parsed; 125 real departure times
+    extracted.
+  - Limitation: the official airport page publishes summary departure times but
+    not complete arrival times or intermediate stop sequences. Do not promote
+    this source to full playable bus trips until an operator stop-order source
+    is found, or mark it explicitly as departure-summary-only.
+- KOJ / Kagoshima Kotsu official airport-bus PDFs.
+  - Script: `scripts/ingest/collect_v5_kagoshima_airport_bus_pdfs.py`
+  - Source output: `data/v5_kagoshima_airport_official_bus_pdfs.json`
+  - Docs copy: `docs/data/v5_kagoshima_airport_official_bus_pdfs.json`
+  - Audit: `data/v5_kagoshima_airport_official_bus_pdfs_audit.json`
+  - Result: 8 official PDFs cached; all 8 contain extractable timetable text.
+    Next step is a PDF table parser for actual route/stop/trip normalization.
+
 ## Official Source Seeds
 
 - HND: `https://tokyo-haneda.com/en/access/bus/`
