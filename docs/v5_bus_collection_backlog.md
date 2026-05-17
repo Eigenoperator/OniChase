@@ -314,13 +314,13 @@ Completed ninth official-source collection pass:
   - Script: `scripts/ingest/augment_v5_bus_bundle_with_official_sources.py`
   - Audit: `data/v5_official_bus_bundle_augmentation_audit.json`
   - Docs audit: `docs/data/v5_official_bus_bundle_augmentation_audit.json`
-  - Current promoted routes: 66 routes, 2,242 trips, 10,995 stopTimes, 400 new
+  - Current promoted routes: 67 routes, 2,255 trips, 11,050 stopTimes, 411 new
     official bus stops.
   - Promoted sources: 阪急観光バス ITM ⇔ 大阪空港／蛍池駅, ITM ⇔ 新大阪駅,
     ITM ⇔ 神戸三宮駅, 四国交通 阿波池田バスターミナル ⇔ 高松空港, and
     カリー観光 石垣空港 ⇔ 石垣港離島ターミナル. Later runtime batches added
     長崎空港 bus routes from the official Nagasaki monthly source, 41
-    Keikyu Haneda airport-bus routes, and 16 KATE/KIX official active routes.
+    Keikyu Haneda airport-bus routes, and 17 KATE/KIX official active routes.
   - Runtime outputs rebuilt: `docs/data/v5_bus_gtfs_current_bundle.json.gz`,
     `docs/data/v5_bus_map_tiles/`, and `docs/data/v5_bus_planner_tiles/`.
   - Safety policy: routes marked as possible GTFS overlap are skipped; routes
@@ -336,11 +336,12 @@ Completed ninth official-source collection pass:
   - KIX/KATE parser support: the KATE collector now attaches `stopName` and
     `stopIndex` to each `stopTime`, preserving Terminal 1/2 ordering even when
     the official page uses duplicate `KIX` stop codes.
-  - Latest tile rebuild: 5,180 bus routes, 76,778 bus trips, 88,612 bus stops,
-    109,401 walking connectors, and 25,822 active trips in Saturday planner
+  - Latest tile rebuild: 5,181 bus routes, 76,791 bus trips, 88,624 bus stops,
+    109,435 walking connectors, and 25,835 active trips in Saturday planner
     tiles.
-  - Remaining KATE gap: only the active Wakayama route is still blocked by four
-    unresolved non-rail city bus stops: Wakauraguchi, Nisseki Iryo Center mae,
+  - KIX/KATE active coverage: all 17 active KATE airport-bus routes are now
+    promoted into the playable runtime bundle. The final Wakayama route was
+    unblocked with real coordinates for Wakauraguchi, Nisseki Iryo Center mae,
     Wakayamajo mae, and Mikimachi Shintori.
 
 ## Official Source Seeds
@@ -373,6 +374,25 @@ bundle:
 Do not add airport-bus data as hardcoded map-only geometry. It must be playable:
 departure times, stop order, fares, and airport/rail walking connectors all
 need to exist.
+
+## Playability Requirement
+
+Bus data collection is not considered finished when a source file is created.
+For each collected bus source, the expected endpoint is:
+
+- source parser output with real stop names, stop order, trip times, calendar
+  policy, and fares when available;
+- overlap audit against existing GTFS / official sources;
+- promotion into `v5_bus_gtfs_current_bundle.json.gz` when every trip has at
+  least two real stopTimes and every stop has a real coordinate;
+- rebuilt bus map and planner tiles under `docs/data/`;
+- audit entry explaining any source that remains blocked.
+
+Blocked data should stay visible in audit/backlog, but it should not be counted
+as playable. Current common blockers are missing coordinates, duplicate
+GTFS/official overlap, image-only/OCR-only timetables, stopCode-only rows,
+summary departure times without arrival/stop sequence, and unresolved service
+calendar rules.
 
 ## Data Conflict Axiom
 
