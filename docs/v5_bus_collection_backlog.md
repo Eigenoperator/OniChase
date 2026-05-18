@@ -5,13 +5,13 @@ Generated from the current V5 bus audits on `2026-05-18`.
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,200.
-- Bus routes: 5,237.
-- Bus trips: 78,907.
-- Stop times: 2,269,838.
-- Runtime planner tiles: 409 tiles.
-- Saturday active trips in planner tiles: 27,871.
-- Walking connectors: 111,626.
+- Bus stops: 89,206.
+- Bus routes: 5,240.
+- Bus trips: 78,945.
+- Stop times: 2,269,914.
+- Runtime planner tiles: 411 tiles.
+- Saturday active trips in planner tiles: 27,891.
+- Walking connectors: 111,665.
 - Routes with fare-rule coverage: 4,539.
 
 ## Highest Priority Gap
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 31 airports covered by GTFS/official airport-class bus routes.
+- 32 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 39 airports still have no bus stop within 5 km in this source layer.
+- 38 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -528,6 +528,26 @@ Completed ninth official-source collection pass:
       planner trips, 709,463 indexed planner stopTimes, and 111,626 walking
       connectors. Airport-class coverage increased to 31 airports; no-5km-stop
       airports decreased to 39.
+  - 2026-05-18 16:06:53 PDT HKD / Hakodate Airport continuation:
+    - Script: `scripts/ingest/collect_v5_hakodate_airport_bus.py`
+    - Source output: `data/v5_hakodate_airport_official_bus_source.json`
+    - Docs copy: `docs/data/v5_hakodate_airport_official_bus_source.json`
+    - Audit: `data/v5_hakodate_airport_official_bus_audit.json`
+    - Result: 3 current Hakodate Bus airport-departure routes normalized for
+      5・5A系統, 快速8系統, and 96系統 from 函館空港 to 函館駅前, with 38 trips
+      and 76 stopTimes. Departure times come from the current Hakodate Bus
+      official timetable API generation `20260511`; endpoint arrival times use
+      the official airport/access page runtime estimates because the API page
+      exposes departure timetables by stop, not full intermediate stop-time
+      traces.
+    - Runtime outputs rebuilt: total bus coverage is now 5,240 routes, 78,945
+      trips, 89,206 stops, 97,915 map features, 456 map tiles, 27,891 active
+      planner trips, 709,503 indexed planner stopTimes, and 111,665 walking
+      connectors. Airport-class coverage increased to 32 airports; no-5km-stop
+      airports decreased to 38.
+    - Source limitation: Hakodate Teisan's public current page was not available
+      for the May 2026 planner date, so its older February 2026 PDF was not
+      promoted as current playable service.
 
 ## Official Source Seeds
 

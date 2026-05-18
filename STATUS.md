@@ -4,9 +4,9 @@
 Continue V5 public-transport expansion on top of the stable V4 rail base, with the current active work on nationwide real bus collection and playable promotion.
 
 ## V5 Bus Collection Status
-- As of 2026-05-18 15:46:50 PDT, the V5 bus runtime bundle has 5,237 routes, 78,907 trips, 89,200 stops, 709,463 indexed planner stopTimes, and 111,626 walking connectors.
-- Airport access audit status: 31 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 39 airports still with no bus stop within 5 km.
-- Latest promoted official source: HIJ / Hiroshima Airport official limousine buses, 159 trips and 374 stopTimes for 広島バスセンター・中筋駅 ⇔ 広島空港 and 広島駅新幹線口 ⇔ 広島空港 using the 2026-03-29 to 2026-06-30 release-period official timetable.
+- As of 2026-05-18 16:06:53 PDT, the V5 bus runtime bundle has 5,240 routes, 78,945 trips, 89,206 stops, 709,503 indexed planner stopTimes, and 111,665 walking connectors.
+- Airport access audit status: 32 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 38 airports still with no bus stop within 5 km.
+- Latest promoted official source: HKD / Hakodate Airport Hakodate Bus current API, 38 trips and 76 stopTimes for 5・5A系統, 快速8系統, and 96系統 from 函館空港 to 函館駅前 using the current 2026-05-11 Hakodate Bus timetable generation.
 - Important correction: "finished bus sources" only means the currently collected official source batch was either promoted or blocked; it does not mean nationwide airport liaison, highway/night, or local bus collection is complete.
 
 ## Done

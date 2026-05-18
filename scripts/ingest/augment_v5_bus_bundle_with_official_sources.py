@@ -63,6 +63,7 @@ AIRPORT_STOP_ALIASES = {
     "NGS": ["長崎空港", "nagasaki airport"],
     "KIJ": ["新潟空港", "niigata airport"],
     "UKB": ["神戸空港", "kobe airport"],
+    "HKD": ["函館空港", "hakodate airport"],
 }
 MANUAL_STOP_COORD_ALIASES = {
     # Nagasaki airport-bus city stops.  中央橋 coordinates are from Busmap's

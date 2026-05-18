@@ -35,6 +35,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_oita_airport_official_bus_source.json",
     ROOT / "data" / "v5_matsuyama_airport_official_bus_source.json",
     ROOT / "data" / "v5_hiroshima_airport_official_bus_source.json",
+    ROOT / "data" / "v5_hakodate_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -55,6 +56,7 @@ OPERATOR_HINTS = {
     "大分交通": ["大分交通", "Oita Kotsu"],
     "伊予鉄バス": ["伊予鉄", "Iyotetsu"],
     "広島空港リムジンバス共同運行": ["広島", "Hiroshima", "広電", "広島バス", "JRバス"],
+    "函館バス": ["函館バス", "Hakodate Bus"],
 }
 
 
