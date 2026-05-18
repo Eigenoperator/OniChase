@@ -1,18 +1,18 @@
 # OniChase V5 Bus Collection Backlog
 
-Generated from the current V5 bus audits on `2026-05-16`.
+Generated from the current V5 bus audits on `2026-05-18`.
 
 ## Current Playable Source Layer
 
 - GTFS bundle: 454 successfully parsed feeds.
-- Bus stops: 89,015.
-- Bus routes: 5,219.
-- Bus trips: 78,209.
-- Stop times: 2,265,289.
-- Runtime planner tiles: 394 tiles.
-- Saturday active trips in planner tiles: 27,235.
-- Walking connectors: 111,334.
-- Routes with GTFS fare-rule coverage: 4,536.
+- Bus stops: 89,105.
+- Bus routes: 5,225.
+- Bus trips: 78,269.
+- Stop times: 2,266,062.
+- Runtime planner tiles: 403 tiles.
+- Saturday active trips in planner tiles: 27,295.
+- Walking connectors: 111,469.
+- Routes with GTFS fare-rule coverage: 4,537.
 
 ## Highest Priority Gap
 
@@ -213,10 +213,41 @@ Completed seventh official-source collection pass:
     `pdftotext`; four need OCR or a more specialized PDF/image path.
   - Current limitation: Azuma route ④/⑩ and wider island routes are source
     captured but not yet normalized into playable stop-time tables.
-- Official-source overlap audit expanded to include ISG Karry Kanko.
+  - Official-source overlap audit expanded to include ISG Karry Kanko.
   - Result: 118 official routes checked; 3,486 official trips represented in
     source files; no likely GTFS duplicate overlap found by the current
     heuristic.
+
+### 2026-05-18
+
+Completed eighth official-source runtime promotion pass:
+
+- Promoted the remaining reliable KOJ / Kagoshima Kotsu airport-bus PDF tables
+  into playable V5 bus routes.
+  - Script: `scripts/ingest/augment_v5_bus_bundle_with_official_sources.py`
+  - Added route-scoped/manual stop coordinates from NAVITIME route stop data
+    and Busmap structured stop data for 国分, 垂水, 志布志, and 鹿屋 airport
+    bus corridors.
+  - Result: 4 official KOJ routes, 33 bus trips, 537 stopTimes, and 68 stops
+    promoted into the runtime bundle.
+- Also resolved the previous HND coordinate blockers for 勝沼/甲府 and 君津
+  routes using scoped/manual stop coordinates.
+- Rebuilt the V5 bus map and planner tiles after promotion.
+  - Current total bus bundle: 5,225 routes, 78,269 trips, 89,105 stops.
+  - Current playable official-source coverage: 111 routes, 3,733 trips, 892
+    official stops.
+  - Current map audit: 97,800 features, 448 map tiles.
+  - Current planner audit: 27,295 Saturday active trips, 705,811 indexed
+    stopTimes, 111,469 walking connectors, 403 planner tiles.
+
+Remaining official-source runtime blockers:
+
+- 4 Miyazaki Airport routes remain departure-summary-only because the current
+  official airport page lacks complete stop-time tables.
+- 1 Takamatsu route remains blocked as possible GTFS overlap until we decide
+  whether to replace or suppress the existing GTFS representation.
+- 20 official source routes are empty/no-trip/cancelled and are not playable
+  candidates yet.
 
 Completed eighth official-source collection pass:
 

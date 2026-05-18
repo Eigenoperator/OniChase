@@ -171,9 +171,50 @@ MANUAL_STOP_COORD_ALIASES = {
     "中央道西桂": {"aliasRailStation": "三つ峠", "source": "rail_station_group_alias:三つ峠"},
     "中央道小形山": {"lat": 35.5905243, "lon": 138.9245592, "source": "nominatim_manual_cache:中央道小形山"},
     "木更津羽鳥野バスストップ": {"lat": 35.3474710, "lon": 139.9449330, "source": "nominatim_manual_cache:木更津羽鳥野"},
+    "富津浅間山バスストップ": {"lat": 35.23610934594869, "lon": 139.88811409090593, "source": "busmap:busstop:1081795"},
     # KMI / Miyazaki Kotsu airport-bus terminal labels.
     "飫肥(日南)": {"aliasRailStation": "飫肥", "source": "rail_station_group_alias:飫肥"},
     "シーガイア": {"lat": 31.9603050, "lon": 131.4702795, "source": "nominatim_manual_cache:シーガイアコンベンションセンター"},
+    # KOJ / Kagoshima Kotsu airport-bus stops. Coordinates are from NAVITIME
+    # route pages or Busmap structured stop data for the same route corridors.
+    "国分ａコープ前": {"lat": 31.73218, "lon": 130.773544, "source": "navitime_route:00077774:国分Ａコープ前"},
+    "中馬場": {"lat": 31.735156, "lon": 130.768418, "source": "navitime_route:00077774:中馬場"},
+    "福島団地入口": {"lat": 31.735975, "lon": 130.766869, "source": "navitime_route:00077774:福島団地入口"},
+    "国分山形屋前": {"lat": 31.739516, "lon": 130.766388, "source": "navitime_route:00077774:国分山形屋前"},
+    "国分駅②": {"lat": 31.743508, "lon": 130.763612, "source": "navitime_route:00077774:国分駅前"},
+    "国分駅③": {"lat": 31.743508, "lon": 130.763612, "source": "navitime_route:00077774:国分駅前"},
+    "国分中央高校前": {"lat": 31.74449, "lon": 130.76545, "source": "navitime_route:00077774:国分中央高校前"},
+    "向花公会堂前": {"lat": 31.747153502155065, "lon": 130.76330147783673, "source": "busmap:busstop:247449"},
+    "阿多石": {"lat": 31.755972, "lon": 130.762024, "source": "navitime_route:00077774:阿多石"},
+    "中ノ城": {"lat": 31.759382, "lon": 130.759921, "source": "navitime_route:00077774:中ノ城"},
+    "姫城温泉": {"lat": 31.761345079443924, "lon": 130.75754979092224, "source": "busmap:busstop:251638"},
+    "隼人温泉病院前": {"lat": 31.765799, "lon": 130.757231, "source": "navitime_route:00077774:隼人温泉病院前"},
+    "姫城ａコープ前": {"lat": 31.767667, "lon": 130.757064, "source": "navitime_route:00077774:姫城Ａコープ前"},
+    "日当山小前": {"lat": 31.772077, "lon": 130.758008, "source": "navitime_route:00077774:日当山小前"},
+    "日当山小北": {"lat": 31.77329, "lon": 130.758403, "source": "navitime_route:00077774:日当山小北"},
+    "西光寺": {"lat": 31.774293, "lon": 130.749662, "source": "navitime_route:00077774:西光寺"},
+    "西光寺③": {"lat": 31.774293, "lon": 130.749662, "source": "navitime_route:00077774:西光寺"},
+    "西光寺④": {"lat": 31.774293, "lon": 130.749662, "source": "navitime_route:00077774:西光寺"},
+    "鉄橋下": {"lat": 31.774082, "lon": 130.743948, "source": "navitime_route:00077774:鉄橋下"},
+    "中西光寺": {"lat": 31.771794, "lon": 130.731897, "source": "navitime_route:00077774:中西光寺"},
+    "垂水港": {"lat": 31.484314, "lon": 130.691872, "source": "navitime_route:00082773:垂水港"},
+    "小中野": {"lat": 31.560719, "lon": 130.762596, "source": "navitime_route:00082773:小中野"},
+    "宮浦宮": {"lat": 31.671403, "lon": 130.818446, "source": "navitime_route:00082773:宮浦宮"},
+    "敷根": {"lat": 31.703833, "lon": 130.792074, "source": "navitime_route:00082773:敷根"},
+    "八合原": {"lat": 31.571611, "lon": 131.011559, "source": "navitime_route:00083126:八合原"},
+    "県改良研究所": {"lat": 31.582848, "lon": 131.005906, "source": "navitime_route:00083126:県改良研究所前"},
+    "岩川": {"lat": 31.594186, "lon": 130.997661, "source": "navitime_route:00083126:岩川"},
+    "笠木小前": {"lat": 31.630284879757358, "lon": 130.96644151791008, "source": "busmap:busstop:246600"},
+    "飛佐入口": {"lat": 31.634734, "lon": 130.91584, "source": "navitime_route:00083126:飛佐入口"},
+    "二重堀": {"lat": 31.648444, "lon": 130.897182, "source": "navitime_route:00083126:二重堀"},
+    "福山高校前": {"lat": 31.666972008637476, "lon": 130.85721452931338, "source": "busmap:busstop:251739"},
+    "牧之原十文字": {"lat": 31.670466, "lon": 130.848946, "source": "navitime_route:00083126:牧之原十文字"},
+    "霧島市役所": {"lat": 31.740082, "lon": 130.763156, "source": "navitime_route:00083126:霧島市役所"},
+    "東団地前": {"lat": 31.387724, "lon": 130.880631, "source": "navitime_route:00083098:東団地前"},
+    "寿中央": {"lat": 31.386852, "lon": 130.866453, "source": "navitime_route:00083098:寿中央"},
+    "鹿屋市役所前": {"lat": 31.378201, "lon": 130.853507, "source": "navitime_route:00083098:市役所前"},
+    "旭原": {"lat": 31.408976, "lon": 130.881217, "source": "navitime_route:00083098:旭原"},
+    "道の駅あらさの": {"lat": 31.500198, "lon": 130.924133, "source": "navitime_route:00083098:道の駅あらさの"},
     # TAK / Kotoden and Kotosan airport-bus city stops.
     "jrホテルクレメント高松": {"lat": 34.3521595, "lon": 134.0479138, "source": "nominatim_manual_cache:JRホテルクレメント高松バス停"},
     "フェリー乗り場": {"lat": 34.350014, "lon": 134.050172, "source": "manual_poi_alias:高松港フェリーのりば"},
@@ -194,6 +235,16 @@ MANUAL_STOP_COORD_ALIASES = {
     "高速鳴門highwaynaruto": {"aliasRailStation": "鳴門", "source": "rail_station_group_alias:鳴門"},
     "徳島大学前tokushimauniv": {"lat": 34.0779745, "lon": 134.5590655, "source": "nominatim_manual_cache:徳島大学前"},
     "徳島駅tokushimasta": {"aliasRailStation": "徳島", "source": "rail_station_group_alias:徳島"},
+}
+SCOPED_MANUAL_STOP_COORD_ALIASES = {
+    # Route-scoped because "一宮" is highly ambiguous nationwide.  On the
+    # HND/Katsunuma official source it is the Yamanashi expressway stop between
+    # 石和 and 勝沼, matching 中央道甲斐一宮.
+    ("HND", "airport_h-katsunuma", "一宮"): {
+        "lat": 35.636703,
+        "lon": 138.690811,
+        "source": "bustein_manual_cache:中央道甲斐一宮",
+    },
 }
 
 
@@ -491,9 +542,18 @@ class StopResolver:
         self.created: dict[str, dict[str, Any]] = {}
         self.audit_counts = Counter()
 
-    def resolve(self, stop_name: str, route_airport_iata: str) -> dict[str, Any] | None:
+    def resolve(self, stop_name: str, route_airport_iata: str, route_code: str = "") -> dict[str, Any] | None:
         name_key = normalize_stop_name(stop_name)
         airport_anchor = self.airports.get(route_airport_iata)
+        scoped = SCOPED_MANUAL_STOP_COORD_ALIASES.get((route_airport_iata, route_code, name_key))
+        if scoped and isinstance(scoped.get("lat"), (int, float)) and isinstance(scoped.get("lon"), (int, float)):
+            self.audit_counts[scoped["source"]] += 1
+            return {
+                "name": stop_name,
+                "lat": float(scoped["lat"]),
+                "lon": float(scoped["lon"]),
+                "source": scoped["source"],
+            }
         manual = MANUAL_STOP_COORD_ALIASES.get(name_key)
         if manual:
             if manual.get("aliasRailStation"):
@@ -629,7 +689,7 @@ def append_official_route(
     resolved: dict[str, dict[str, Any]] = {}
     unresolved = []
     for name in all_stop_names:
-        node = source_coords.get(normalize_stop_name(name)) or resolver.resolve(name, route_airport)
+        node = source_coords.get(normalize_stop_name(name)) or resolver.resolve(name, route_airport, route_code)
         if node:
             resolved[name] = node
         else:
