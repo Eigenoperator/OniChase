@@ -314,15 +314,15 @@ Completed ninth official-source collection pass:
   - Script: `scripts/ingest/augment_v5_bus_bundle_with_official_sources.py`
   - Audit: `data/v5_official_bus_bundle_augmentation_audit.json`
   - Docs audit: `docs/data/v5_official_bus_bundle_augmentation_audit.json`
-  - Current promoted routes: 80 routes, 2,755 trips, 12,610 stopTimes, 493 new
+  - Current promoted routes: 95 routes, 3,200 trips, 19,369 stopTimes, 697 new
     official bus stops.
   - Promoted sources: 阪急観光バス ITM ⇔ 大阪空港／蛍池駅, ITM ⇔ 新大阪駅,
     ITM ⇔ 神戸三宮駅, 四国交通 阿波池田バスターミナル ⇔ 高松空港, and
     カリー観光 石垣空港 ⇔ 石垣港離島ターミナル. Later runtime batches added
-    長崎空港 bus routes from the official Nagasaki monthly source, 41
+    長崎空港 bus routes from the official Nagasaki monthly source, 45
     Keikyu Haneda airport-bus routes, 17 KATE/KIX official active routes, and
-    all 13 ITM/Hankyu Kanko official active airport-limousine routes, and the
-    first 3 CTS/Hokkaido Chuo official New Chitose Airport bus directions.
+    all 13 ITM/Hankyu Kanko official active airport-limousine routes, and all
+    14 CTS/Hokkaido Chuo official New Chitose Airport bus directions.
   - Runtime outputs rebuilt: `docs/data/v5_bus_gtfs_current_bundle.json.gz`,
     `docs/data/v5_bus_map_tiles/`, and `docs/data/v5_bus_planner_tiles/`.
   - Safety policy: routes marked as possible GTFS overlap are skipped; routes
@@ -338,8 +338,8 @@ Completed ninth official-source collection pass:
   - KIX/KATE parser support: the KATE collector now attaches `stopName` and
     `stopIndex` to each `stopTime`, preserving Terminal 1/2 ordering even when
     the official page uses duplicate `KIX` stop codes.
-  - Latest tile rebuild: 5,194 bus routes, 77,291 bus trips, 88,706 bus stops,
-    109,882 walking connectors, and 26,335 active trips in Saturday planner
+  - Latest tile rebuild: 5,209 bus routes, 77,736 bus trips, 88,910 bus stops,
+    110,749 walking connectors, and 26,780 active trips in Saturday planner
     tiles.
   - KIX/KATE active coverage: all 17 active KATE airport-bus routes are now
     promoted into the playable runtime bundle. The final Wakayama route was
@@ -356,10 +356,14 @@ Completed ninth official-source collection pass:
   - CTS/Hokkaido Chuo parser support: the official bus augmenter now inherits
     top-level `operatorName` and `airportIata` fields from source files and
     generates stable fallback route codes from `routeNumber + direction` when
-    official route entries have no explicit code. This unblocked 3 Chuo Bus
-    New Chitose directions immediately. The remaining Chuo routes are still
-    blocked by many hotel, road-junction, shopping-center, and Otaru stop
-    coordinates that need high-confidence geocoding before promotion.
+    official route entries have no explicit code. All 14 Chuo Bus New Chitose
+    directions are now playable after adding high-confidence coordinates for
+    Sapporo hotel, road-junction, shopping-center, subway-adjacent, and Otaru
+    stops from OSM/Nominatim and existing rail station-group aliases.
+  - HND/Keikyu active coverage: 45 Haneda/Keikyu official airport-bus routes
+    are now playable. The latest unblock added explicit aliases for clear
+    station-terminal labels such as 蘇我駅東口, 渋谷駅（渋谷フクラス）,
+    横浜駅（YCAT）, and JR千葉駅（西口）.
 
 ## Official Source Seeds
 

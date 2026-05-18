@@ -138,6 +138,30 @@ MANUAL_STOP_COORD_ALIASES = {
     "sapporostationsapporosta": {"aliasRailStation": "札幌", "source": "rail_station_group_alias:札幌"},
     "nakajimaparknakajimapark": {"aliasRailStation": "中島公園", "source": "rail_station_group_alias:中島公園"},
     "susukinosusukino": {"aliasRailStation": "すすきの", "source": "rail_station_group_alias:すすきの"},
+    "toyohira3jo10toyohira310": {"lat": 43.0473328, "lon": 141.3781287, "source": "nominatim_manual_cache:豊平3条10丁目"},
+    "tsukisamuhigashi1jo19tsukisamuhigashi119": {"lat": 43.0112703, "lon": 141.420384, "source": "nominatim_manual_cache:月寒東1条19丁目"},
+    "kiyotadanchiiriguchikiyotadanchiiriguchi": {"lat": 43.0019286, "lon": 141.4366259, "source": "nominatim_manual_cache:清田団地入口"},
+    "mitsuioutletparkiriguchimitsuioutletpark_iriguchi": {"lat": 42.9764757, "lon": 141.4714105, "source": "nominatim_manual_cache:三井アウトレットパーク入口"},
+    "miyanosawa1jo1miyanosawa11": {"aliasRailStation": "宮の沢", "source": "rail_station_group_alias:宮の沢"},
+    "hassamu10jo2hassamu102": {"lat": 43.0905623, "lon": 141.2992136, "source": "nominatim_manual_cache:発寒10条2丁目"},
+    "kita19johigashi20kita19higashi20": {"lat": 43.0874133, "lon": 141.3807361, "source": "nominatim_manual_cache:北19条東20丁目"},
+    "kita24johigashi21kita24higashi21": {"lat": 43.0949833, "lon": 141.3835759, "source": "nominatim_manual_cache:北24条東21丁目"},
+    "kita34johigashi26kita34higashi26": {"lat": 43.1002265, "lon": 141.3872554, "source": "nominatim_manual_cache:北34条東26丁目"},
+    "hoteltorifitootarucanalomo5otaruhoteltorifitootarucanalomo5otaru": {"lat": 43.1987048, "lon": 141.0007839, "source": "nominatim_manual_cache:ホテル・トリフィート小樽運河"},
+    "otarucanalterminalotaruungaterminal": {"lat": 43.1970566, "lon": 141.002288, "source": "nominatim_manual_cache:小樽運河ターミナル"},
+    "authenthotelotaruauthenthotelotaru": {"lat": 43.19575, "lon": 140.9975954, "source": "nominatim_manual_cache:オーセントホテル小樽"},
+    "sumiyoshijinjamaesumiyoshijinjashrine": {"lat": 43.1846128, "lon": 141.0040832, "source": "nominatim_manual_cache:住吉神社前"},
+    "okusawaguchiokusawaguchi": {"lat": 43.1820019, "lon": 141.0075534, "source": "nominatim_manual_cache:奥沢口"},
+    "minani3josusukinominami3josusukino": {"aliasRailStation": "すすきの", "source": "rail_station_group_alias:すすきの"},
+    "hotelmontereyedelhofsapporohotelmontereyedelhof": {"lat": 43.0644021, "lon": 141.3555708, "source": "nominatim_manual_cache:ホテルモントレエーデルホフ札幌"},
+    "kita35jonishi5kita35nishi5": {"lat": 43.102811, "lon": 141.3396759, "source": "nominatim_manual_cache:北35条西5丁目"},
+    "shiyakushodorishiyakushodori": {"lat": 43.1923, "lon": 140.9975612, "source": "nominatim_manual_cache:市役所通"},
+    # HND / Keikyu airport-bus terminal labels.
+    "蘇我駅東口": {"aliasRailStation": "蘇我", "source": "rail_station_group_alias:蘇我"},
+    "軽井沢駅前(北口)": {"aliasRailStation": "軽井沢", "source": "rail_station_group_alias:軽井沢"},
+    "横浜駅(ycat)": {"aliasRailStation": "横浜", "source": "rail_station_group_alias:横浜"},
+    "渋谷駅(渋谷フクラス)": {"aliasRailStation": "渋谷", "source": "rail_station_group_alias:渋谷"},
+    "ｊｒ千葉駅(西口)": {"aliasRailStation": "千葉", "source": "rail_station_group_alias:千葉"},
 }
 
 
@@ -180,6 +204,25 @@ def normalize_stop_name(value: Any) -> str:
     if len(text) > 2 and text.endswith("駅"):
         text = text[:-1]
     return text
+
+
+def compact_latin_label(value: str) -> str:
+    text = value.lower().replace("sta.", "station").replace("sta", "station")
+    return re.sub(r"[^a-z0-9]", "", text)
+
+
+def simplified_stop_queries(stop_name: str) -> list[str]:
+    queries = [stop_name]
+    tokens = stop_name.split()
+    for index in range(1, len(tokens)):
+        prefix = " ".join(tokens[:index])
+        suffix = " ".join(tokens[index:])
+        prefix_key = compact_latin_label(prefix)
+        suffix_key = compact_latin_label(suffix)
+        if len(prefix_key) >= 6 and len(suffix_key) >= 6 and (prefix_key == suffix_key or suffix_key.startswith(prefix_key)):
+            queries.append(prefix)
+            break
+    return list(dict.fromkeys(query for query in queries if query.strip()))
 
 
 def fallback_route_code(route: dict[str, Any]) -> str:
@@ -334,46 +377,55 @@ def geocode_stop(
             candidate = {"name": stop_name, "lat": float(cached["lat"]), "lon": float(cached["lon"]), "source": "nominatim_cache"}
             if not anchor or haversine_meters(candidate, anchor) <= max_meters:
                 return candidate
-        return None
+        if not enabled:
+            return None
     if not enabled:
         return None
-    params = urllib.parse.urlencode({"q": f"{stop_name}, 日本", "format": "jsonv2", "limit": "5", "countrycodes": "jp"})
-    request = urllib.request.Request(
-        f"https://nominatim.openstreetmap.org/search?{params}",
-        headers={"User-Agent": "OniChase-v5-official-bus-coordinate-resolver/0.1"},
-    )
-    time.sleep(sleep_seconds)
-    try:
-        rows = json.load(urllib.request.urlopen(request, timeout=20))
-    except Exception as exc:  # noqa: BLE001
-        cache[key] = {"status": "error", "error": f"{type(exc).__name__}: {exc}"}
-        write_json(cache_path, cache)
-        return None
-    candidates = []
-    for row in rows:
+    selected = None
+    attempted_queries = []
+    for query in simplified_stop_queries(stop_name):
+        attempted_queries.append(query)
+        params = urllib.parse.urlencode({"q": f"{query}, 日本", "format": "jsonv2", "limit": "5", "countrycodes": "jp"})
+        request = urllib.request.Request(
+            f"https://nominatim.openstreetmap.org/search?{params}",
+            headers={"User-Agent": "OniChase-v5-official-bus-coordinate-resolver/0.1"},
+        )
+        time.sleep(sleep_seconds)
         try:
-            candidates.append(
-                {
-                    "name": stop_name,
-                    "lat": float(row["lat"]),
-                    "lon": float(row["lon"]),
-                    "source": "nominatim_openstreetmap",
-                    "displayName": row.get("display_name") or "",
-                }
-            )
-        except (KeyError, ValueError, TypeError):
-            continue
-    selected = nearest_to_anchor(candidates, anchor, max_meters)
+            rows = json.load(urllib.request.urlopen(request, timeout=20))
+        except Exception as exc:  # noqa: BLE001
+            cache[key] = {"status": "error", "error": f"{type(exc).__name__}: {exc}", "queries": attempted_queries}
+            write_json(cache_path, cache)
+            return None
+        candidates = []
+        for row in rows:
+            try:
+                candidates.append(
+                    {
+                        "name": stop_name,
+                        "lat": float(row["lat"]),
+                        "lon": float(row["lon"]),
+                        "source": "nominatim_openstreetmap",
+                        "displayName": row.get("display_name") or "",
+                        "query": query,
+                    }
+                )
+            except (KeyError, ValueError, TypeError):
+                continue
+        selected = nearest_to_anchor(candidates, anchor, max_meters)
+        if selected:
+            break
     if selected:
         cache[key] = {
             "status": "ok",
             "lat": selected["lat"],
             "lon": selected["lon"],
             "displayName": selected.get("displayName") or "",
+            "query": selected.get("query") or "",
             "resolvedAt": datetime.now(UTC).isoformat(timespec="seconds"),
         }
     else:
-        cache[key] = {"status": "not_found_or_out_of_range", "resolvedAt": datetime.now(UTC).isoformat(timespec="seconds")}
+        cache[key] = {"status": "not_found_or_out_of_range", "queries": attempted_queries, "resolvedAt": datetime.now(UTC).isoformat(timespec="seconds")}
     write_json(cache_path, cache)
     return selected
 
