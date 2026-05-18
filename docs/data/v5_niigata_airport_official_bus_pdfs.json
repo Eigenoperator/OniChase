@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "v5_official_bus_source.niigata_airport_pdfs.v1",
-  "generatedAt": "2026-05-17T00:32:52Z",
-  "sourcePolicy": "Official Niigata Kotsu airport-bus PDF timetable sources. This pass caches PDFs and extracts text; route normalization is separate.",
+  "schemaVersion": "v5_official_bus_source.niigata_airport_pdfs.v2",
+  "generatedAt": "2026-05-18T20:09:37Z",
+  "sourcePolicy": "Official Niigata Kotsu airport-bus PDF timetable sources. Direct airport-bus endpoint times are normalized into playable route data; local buses via 万代シテイ remain cached but not promoted.",
   "airportIata": "KIJ",
   "operatorName": "Niigata Kotsu",
   "pdfs": [
@@ -26,6 +26,1248 @@
       "timeTextCount": 0,
       "sampleTimes": [],
       "textSample": "新潟駅方面 行 バス時刻表 Departure time Buses for Niigata sta. 2026.3.29 改正 〈直行〉 リムジンバス 〈各停〉 万代シテイ経由 新潟駅 行 新潟駅 行 for Niigata Sta. by Direct Bus for Niigata Sta. by Local Bus 運賃前払い 新潟駅まで約25分 運賃後払い 新潟駅まで約35分 平休日 月～金曜日 土･日曜日,祝日 Weekdays Saturday & Holidays 7 7 8 40 8 25 20 9 10 9 00 35 15 10 05 45 10 40 15 11 25 40 11 05 35 50 05 35 12 00 20 35 50 12 25 55 05 30 13 20 40 13 10 30 00 14 30 14 20 45 20 15 25 40 50 15 20 20 16 30 16 05 35 40 17 00 25 17 20 35 45 15 18 40 18 20 25 19 00 25 19 05 15 15 20 20 ● 20 25 35 25 40 21 05 20 21 ●印…航空機の到着に合わせて、発車が遅れる場合がございます。予めご了承ください。 新潟駅までの運賃：大人 470円 小人 240円 Fare to Niigata Sta. / Adult ￥470 Child ￥240 現金のほか、SuicaやPASMO、ICOCAなど交通系ICカードがご利用いただけます。 ※バス車内で2,000円・5,000円・10,000円紙幣の両替はできません。 Please note that the coin changer machine don't accept 2,000 yen, 5,000 yen and "
+    }
+  ],
+  "routes": [
+    {
+      "sourceKind": "official_niigata_kotsu_airport_pdf_direct_bus",
+      "operatorName": "Niigata Kotsu",
+      "airportIata": "KIJ",
+      "routeCode": "niigata_station_airport_direct",
+      "routeName": "新潟駅 ⇔ 新潟空港 直行リムジンバス",
+      "sourceUrl": "https://www.niigata-kotsu.co.jp/~noriai/route-bus/timetable/access/airport/files/260329_niigatasta-tt.pdf",
+      "sourcePolicy": "Official Niigata Kotsu PDF endpoint timetable. Direct buses are promoted with published departure times and the official about-25-minute runtime. Local airport buses via 万代シテイ are intentionally excluded until complete intermediate stop-times are normalized.",
+      "adultFareYen": 470,
+      "serviceStart": "20260329",
+      "serviceEnd": "20270331",
+      "trips": [
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:001",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "06:10",
+              "raw": "06:10"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "06:35",
+              "raw": "06:10+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:002",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "06:35",
+              "raw": "06:35"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "07:00",
+              "raw": "06:35+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:003",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "07:20",
+              "raw": "07:20"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "07:45",
+              "raw": "07:20+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:004",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "07:50",
+              "raw": "07:50"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "08:15",
+              "raw": "07:50+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:005",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "08:25",
+              "raw": "08:25"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "08:50",
+              "raw": "08:25+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:006",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "08:50",
+              "raw": "08:50"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "09:15",
+              "raw": "08:50+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:007",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "09:25",
+              "raw": "09:25"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "09:50",
+              "raw": "09:25+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:008",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "10:05",
+              "raw": "10:05"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "10:30",
+              "raw": "10:05+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:009",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "10:30",
+              "raw": "10:30"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "10:55",
+              "raw": "10:30+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:010",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "10:50",
+              "raw": "10:50"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "11:15",
+              "raw": "10:50+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:011",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "11:20",
+              "raw": "11:20"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "11:45",
+              "raw": "11:20+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:012",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "12:10",
+              "raw": "12:10"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "12:35",
+              "raw": "12:10+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:013",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "13:05",
+              "raw": "13:05"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "13:30",
+              "raw": "13:05+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:014",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "13:40",
+              "raw": "13:40"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "14:05",
+              "raw": "13:40+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:015",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "14:00",
+              "raw": "14:00"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "14:25",
+              "raw": "14:00+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:016",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "14:30",
+              "raw": "14:30"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "14:55",
+              "raw": "14:30+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:017",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "14:50",
+              "raw": "14:50"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "15:15",
+              "raw": "14:50+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:018",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "15:40",
+              "raw": "15:40"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "16:05",
+              "raw": "15:40+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:019",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "16:05",
+              "raw": "16:05"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "16:30",
+              "raw": "16:05+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:020",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "16:40",
+              "raw": "16:40"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "17:05",
+              "raw": "16:40+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:021",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "17:20",
+              "raw": "17:20"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "17:45",
+              "raw": "17:20+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:022",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "17:40",
+              "raw": "17:40"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "18:05",
+              "raw": "17:40+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:023",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "17:55",
+              "raw": "17:55"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "18:20",
+              "raw": "17:55+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:to_airport:024",
+          "direction": "to_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟駅",
+              "time": "18:15",
+              "raw": "18:15"
+            },
+            {
+              "stopName": "新潟空港",
+              "time": "18:40",
+              "raw": "18:15+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:001",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "08:40",
+              "raw": "08:40"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "09:05",
+              "raw": "08:40+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:002",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "09:10",
+              "raw": "09:10"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "09:35",
+              "raw": "09:10+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:003",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "10:05",
+              "raw": "10:05"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "10:30",
+              "raw": "10:05+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:004",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "10:45",
+              "raw": "10:45"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "11:10",
+              "raw": "10:45+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:005",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "11:25",
+              "raw": "11:25"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "11:50",
+              "raw": "11:25+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:006",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "11:40",
+              "raw": "11:40"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "12:05",
+              "raw": "11:40+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:007",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "12:00",
+              "raw": "12:00"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "12:25",
+              "raw": "12:00+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:008",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "12:20",
+              "raw": "12:20"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "12:45",
+              "raw": "12:20+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:009",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "12:35",
+              "raw": "12:35"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "13:00",
+              "raw": "12:35+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:010",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "12:50",
+              "raw": "12:50"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "13:15",
+              "raw": "12:50+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:011",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "13:20",
+              "raw": "13:20"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "13:45",
+              "raw": "13:20+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:012",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "13:40",
+              "raw": "13:40"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "14:05",
+              "raw": "13:40+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:013",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "14:30",
+              "raw": "14:30"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "14:55",
+              "raw": "14:30+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:014",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "15:25",
+              "raw": "15:25"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "15:50",
+              "raw": "15:25+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:015",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "15:40",
+              "raw": "15:40"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "16:05",
+              "raw": "15:40+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:016",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "15:50",
+              "raw": "15:50"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "16:15",
+              "raw": "15:50+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:017",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "16:30",
+              "raw": "16:30"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "16:55",
+              "raw": "16:30+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:018",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "17:00",
+              "raw": "17:00"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "17:25",
+              "raw": "17:00+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:019",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "17:25",
+              "raw": "17:25"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "17:50",
+              "raw": "17:25+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:020",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "18:40",
+              "raw": "18:40"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "19:05",
+              "raw": "18:40+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:021",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "19:00",
+              "raw": "19:00"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "19:25",
+              "raw": "19:00+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:022",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "19:25",
+              "raw": "19:25"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "19:50",
+              "raw": "19:25+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:023",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "20:20",
+              "raw": "20:20"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "20:45",
+              "raw": "20:20+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:024",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "21:05",
+              "raw": "21:05"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "21:30",
+              "raw": "21:05+25min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_station_airport_direct:from_airport:025",
+          "direction": "from_airport",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "21:20",
+              "raw": "21:20"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "21:45",
+              "raw": "21:20+25min"
+            }
+          ]
+        }
+      ],
+      "tripCount": 49
     }
   ]
 }

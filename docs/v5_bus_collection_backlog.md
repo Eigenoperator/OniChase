@@ -5,14 +5,14 @@ Generated from the current V5 bus audits on `2026-05-18`.
 ## Current Playable Source Layer
 
 - GTFS bundle: 454 successfully parsed feeds.
-- Bus stops: 89,114.
-- Bus routes: 5,229.
-- Bus trips: 78,416.
-- Stop times: 2,266,406.
+- Bus stops: 89,116.
+- Bus routes: 5,230.
+- Bus trips: 78,465.
+- Stop times: 2,266,504.
 - Runtime planner tiles: 405 tiles.
-- Saturday active trips in planner tiles: 27,404.
-- Walking connectors: 111,490.
-- Routes with GTFS fare-rule coverage: 4,537.
+- Saturday active trips in planner tiles: 27,453.
+- Walking connectors: 111,493.
+- Routes with GTFS fare-rule coverage: 4,538.
 
 ## Highest Priority Gap
 
@@ -43,7 +43,7 @@ before lower-volume airports.
 | 7 | UKB | no GTFS stop within 5 km | Kobe Airport access bus operators |
 | 8 | ISG | no GTFS stop within 5 km | Ishigaki Airport bus operators |
 | 9 | NGS | no GTFS stop within 5 km | Nagasaki Airport access bus operators |
-| 10 | KIJ | no GTFS stop within 5 km | Niigata Airport access bus operators |
+| 10 | KIJ | official direct bus playable | Niigata Airport access bus operators |
 
 ## Collection Progress
 
@@ -189,9 +189,10 @@ Completed sixth official-source collection pass:
   - Source output: `data/v5_niigata_airport_official_bus_pdfs.json`
   - Docs copy: `docs/data/v5_niigata_airport_official_bus_pdfs.json`
   - Audit: `data/v5_niigata_airport_official_bus_pdfs_audit.json`
-  - Result: 2 official PDFs cached, but both appear image/vector based and do
-    not expose extractable timetable text through `pdftotext`. They need OCR or
-    a different structured source before route normalization.
+  - Result: 2 official PDFs cached. The first pass recorded them as
+    image/vector-like because `pdftotext` did not expose `HH:MM` tokens, but
+    the visible official rows were later normalized into a playable direct
+    新潟駅 ⇔ 新潟空港 airport-bus source.
 - Official-source overlap audit expanded to include NGS.
   - Result: 117 official routes checked; 3,446 official trips represented in
     source files; no likely GTFS duplicate overlap found by the current
@@ -272,6 +273,28 @@ Completed ninth official-source runtime promotion pass:
   - Current map audit: 97,812 features, 450 map tiles.
   - Current planner audit: 27,404 Saturday active trips, 706,039 indexed
     stopTimes, 111,490 walking connectors, 405 planner tiles.
+
+Completed tenth official-source runtime promotion pass:
+
+- KIJ / Niigata Kotsu official airport PDF parser upgrade.
+  - Script: `scripts/ingest/collect_v5_niigata_airport_bus_pdfs.py`
+  - Source output: `data/v5_niigata_airport_official_bus_pdfs.json`
+  - Docs copy: `docs/data/v5_niigata_airport_official_bus_pdfs.json`
+  - Audit: `data/v5_niigata_airport_official_bus_pdfs_audit.json`
+  - Result: promoted the official 新潟駅 ⇔ 新潟空港 direct limousine bus
+    endpoint timetable into runtime.
+  - Playable output: 1 KIJ route, 49 trips, 98 stopTimes, and ¥470 adult fare.
+  - Safety note: airport -> station local buses via 万代シテイ remain cached
+    but are not promoted yet because complete intermediate stop-time rows are
+    not normalized.
+- Airport stop matching was tightened so a city station name like 新潟駅
+  cannot be reverse-matched to 新潟空港 just because the normalized station
+  name is a substring of the airport name.
+- Rebuilt the V5 bus map and planner tiles after KIJ promotion.
+  - Current total bus bundle: 5,230 routes, 78,465 trips, 89,116 stops.
+  - Current map audit: 97,815 features, 450 map tiles.
+  - Current planner audit: 27,453 Saturday active trips, 706,137 indexed
+    stopTimes, 111,493 walking connectors, 405 planner tiles.
 
 Completed eighth official-source collection pass:
 
@@ -393,8 +416,8 @@ Completed ninth official-source collection pass:
   - KIX/KATE parser support: the KATE collector now attaches `stopName` and
     `stopIndex` to each `stopTime`, preserving Terminal 1/2 ordering even when
     the official page uses duplicate `KIX` stop codes.
-  - Latest tile rebuild: 5,229 bus routes, 78,416 bus trips, 89,114 bus stops,
-    111,490 walking connectors, and 27,404 active trips in Saturday planner
+  - Latest tile rebuild: 5,230 bus routes, 78,465 bus trips, 89,116 bus stops,
+    111,493 walking connectors, and 27,453 active trips in Saturday planner
     tiles.
   - KIX/KATE active coverage: all 17 active KATE airport-bus routes are now
     promoted into the playable runtime bundle. The final Wakayama route was
@@ -430,6 +453,11 @@ Completed ninth official-source collection pass:
     playable with complete endpoint/airport stopTimes. Remaining blockers are
     now 1 intentional GTFS-overlap Takamatsu route and 20 no-trip/cancelled
     source routes.
+  - 2026-05-18 KIJ unblock: the Niigata Airport source was upgraded from
+    cached PDFs to a playable official direct-bus route. 新潟駅 ⇔ 新潟空港 is
+    now playable with 49 direct limousine-bus trips and ¥470 adult fare. Local
+    airport buses via 万代シテイ remain source-cached until complete
+    intermediate stop-times are normalized.
 
 ## Official Source Seeds
 

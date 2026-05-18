@@ -181,6 +181,8 @@ MANUAL_STOP_COORD_ALIASES = {
     "飫肥(日南)": {"aliasRailStation": "飫肥", "source": "rail_station_group_alias:飫肥"},
     "シーガイア": {"lat": 31.9603050, "lon": 131.4702795, "source": "nominatim_manual_cache:シーガイアコンベンションセンター"},
     "シーガイアｏｔ": {"lat": 31.9603050, "lon": 131.4702795, "source": "nominatim_manual_cache:シーガイアコンベンションセンター"},
+    # KIJ / Niigata Kotsu airport-bus terminal labels.
+    "新潟駅": {"aliasRailStation": "新潟", "source": "rail_station_group_alias:新潟"},
     # KOJ / Kagoshima Kotsu airport-bus stops. Coordinates are from NAVITIME
     # route pages or Busmap structured stop data for the same route corridors.
     "国分ａコープ前": {"lat": 31.73218, "lon": 130.773544, "source": "navitime_route:00077774:国分Ａコープ前"},
@@ -422,7 +424,7 @@ def nearest_to_anchor(candidates: list[dict[str, Any]], anchor: dict[str, Any] |
 def airport_stop_match(stop_name: str, route_airport_iata: str, airports: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
     normalized = normalize_stop_name(stop_name)
     for iata, aliases in AIRPORT_STOP_ALIASES.items():
-        if any(normalize_stop_name(alias) in normalized or normalized in normalize_stop_name(alias) for alias in aliases):
+        if any(normalize_stop_name(alias) in normalized for alias in aliases):
             airport = airports.get(iata)
             if airport:
                 return {
