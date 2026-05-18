@@ -159,9 +159,41 @@ MANUAL_STOP_COORD_ALIASES = {
     # HND / Keikyu airport-bus terminal labels.
     "蘇我駅東口": {"aliasRailStation": "蘇我", "source": "rail_station_group_alias:蘇我"},
     "軽井沢駅前(北口)": {"aliasRailStation": "軽井沢", "source": "rail_station_group_alias:軽井沢"},
+    "軽井沢駅(北口)": {"aliasRailStation": "軽井沢", "source": "rail_station_group_alias:軽井沢"},
+    "軽井沢プリンスホテルスキー場(冬季限定)": {"lat": 36.3364101, "lon": 138.6433679, "source": "nominatim_manual_cache:軽井沢プリンスホテルスキー場"},
     "横浜駅(ycat)": {"aliasRailStation": "横浜", "source": "rail_station_group_alias:横浜"},
+    "横浜駅(ｙｃａｔ)": {"aliasRailStation": "横浜", "source": "rail_station_group_alias:横浜"},
+    "ﾖｺﾊﾏｸﾞﾗﾝﾄﾞｲﾝﾀｰｺﾝﾁﾈﾝﾀﾙﾎﾃﾙ(ﾊﾟｼﾌｨｺ横浜)": {"lat": 35.4577326, "lon": 139.6375026, "source": "manual_poi_alias:InterContinental Yokohama Grand"},
+    "国際橋ｶｯﾌﾟﾇｰﾄﾞﾙﾐｭｰｼﾞｱﾑ前": {"lat": 35.4551301, "lon": 139.6387353, "source": "nominatim_manual_cache:国際橋・カップヌードルミュージアム前"},
+    "ザカハラホテル&リゾート横浜(パシフィコ横浜ノース)": {"lat": 35.4623097, "lon": 139.6342408, "source": "nominatim_manual_cache:ザ・カハラ・ホテル＆リゾート横浜"},
     "渋谷駅(渋谷フクラス)": {"aliasRailStation": "渋谷", "source": "rail_station_group_alias:渋谷"},
     "ｊｒ千葉駅(西口)": {"aliasRailStation": "千葉", "source": "rail_station_group_alias:千葉"},
+    "中央道西桂": {"aliasRailStation": "三つ峠", "source": "rail_station_group_alias:三つ峠"},
+    "中央道小形山": {"lat": 35.5905243, "lon": 138.9245592, "source": "nominatim_manual_cache:中央道小形山"},
+    "木更津羽鳥野バスストップ": {"lat": 35.3474710, "lon": 139.9449330, "source": "nominatim_manual_cache:木更津羽鳥野"},
+    # KMI / Miyazaki Kotsu airport-bus terminal labels.
+    "飫肥(日南)": {"aliasRailStation": "飫肥", "source": "rail_station_group_alias:飫肥"},
+    "シーガイア": {"lat": 31.9603050, "lon": 131.4702795, "source": "nominatim_manual_cache:シーガイアコンベンションセンター"},
+    # TAK / Kotoden and Kotosan airport-bus city stops.
+    "jrホテルクレメント高松": {"lat": 34.3521595, "lon": 134.0479138, "source": "nominatim_manual_cache:JRホテルクレメント高松バス停"},
+    "フェリー乗り場": {"lat": 34.350014, "lon": 134.050172, "source": "manual_poi_alias:高松港フェリーのりば"},
+    "県民ホール県立ミュージアム": {"lat": 34.350343, "lon": 134.050992, "source": "manual_poi_alias:レクザムホール・香川県立ミュージアム"},
+    "兵庫町": {"lat": 34.34480, "lon": 134.04825, "source": "manual_city_stop_alias:高松兵庫町"},
+    "県庁通り中央公園前": {"lat": 34.34168, "lon": 134.04611, "source": "manual_city_stop_alias:高松県庁通り中央公園前"},
+    "栗林公園前": {"aliasRailStation": "栗林公園", "source": "rail_station_group_alias:栗林公園"},
+    "ゆめタウン高松前": {"lat": 34.3169382, "lon": 134.0389990, "source": "nominatim_manual_cache:ゆめタウン高松前"},
+    "香川大学附属中学校前": {"lat": 34.2991367, "lon": 134.0346724, "source": "nominatim_manual_cache:香川大学附属中学校前"},
+    "オークラホテル丸亀": {"lat": 34.3068532, "lon": 133.7950996, "source": "nominatim_manual_cache:オークラホテル丸亀"},
+    # UKB / Kobe airport to Tokushima labels include bilingual suffixes.
+    "新神戸駅shinkobesta": {"aliasRailStation": "新神戸", "source": "rail_station_group_alias:新神戸"},
+    "三宮btsannomiyabt": {"aliasRailStation": "神戸三宮", "source": "rail_station_group_alias:神戸三宮"},
+    "高速舞子highwaymaiko": {"aliasRailStation": "舞子", "source": "rail_station_group_alias:舞子"},
+    "鳴門公園口narutopark": {"lat": 34.22908, "lon": 134.64078, "source": "manual_poi_alias:鳴門公園口"},
+    "アオアヲナルトリゾート前(※)aoawonarutoresort": {"lat": 34.2200534, "lon": 134.6329971, "source": "nominatim_manual_cache:アオアヲナルトリゾート"},
+    "大塚国際美術館前(※)otsukamuseumofart": {"lat": 34.2325795, "lon": 134.6375369, "source": "nominatim_manual_cache:大塚国際美術館"},
+    "高速鳴門highwaynaruto": {"aliasRailStation": "鳴門", "source": "rail_station_group_alias:鳴門"},
+    "徳島大学前tokushimauniv": {"lat": 34.0779745, "lon": 134.5590655, "source": "nominatim_manual_cache:徳島大学前"},
+    "徳島駅tokushimasta": {"aliasRailStation": "徳島", "source": "rail_station_group_alias:徳島"},
 }
 
 

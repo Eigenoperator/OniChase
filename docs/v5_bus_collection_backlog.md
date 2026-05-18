@@ -5,13 +5,13 @@ Generated from the current V5 bus audits on `2026-05-16`.
 ## Current Playable Source Layer
 
 - GTFS bundle: 454 successfully parsed feeds.
-- Bus stops: 88,213.
-- Bus routes: 5,114.
-- Bus trips: 74,536.
-- Stop times: 2,243,003.
-- Runtime planner tiles: 374 tiles.
-- Saturday active trips in planner tiles: 23,580.
-- Walking connectors: 107,349.
+- Bus stops: 89,015.
+- Bus routes: 5,219.
+- Bus trips: 78,209.
+- Stop times: 2,265,289.
+- Runtime planner tiles: 394 tiles.
+- Saturday active trips in planner tiles: 27,235.
+- Walking connectors: 111,334.
 - Routes with GTFS fare-rule coverage: 4,536.
 
 ## Highest Priority Gap
@@ -314,7 +314,7 @@ Completed ninth official-source collection pass:
   - Script: `scripts/ingest/augment_v5_bus_bundle_with_official_sources.py`
   - Audit: `data/v5_official_bus_bundle_augmentation_audit.json`
   - Docs audit: `docs/data/v5_official_bus_bundle_augmentation_audit.json`
-  - Current promoted routes: 95 routes, 3,200 trips, 19,369 stopTimes, 697 new
+  - Current promoted routes: 105 routes, 3,673 trips, 22,286 stopTimes, 802 new
     official bus stops.
   - Promoted sources: 阪急観光バス ITM ⇔ 大阪空港／蛍池駅, ITM ⇔ 新大阪駅,
     ITM ⇔ 神戸三宮駅, 四国交通 阿波池田バスターミナル ⇔ 高松空港, and
@@ -338,8 +338,8 @@ Completed ninth official-source collection pass:
   - KIX/KATE parser support: the KATE collector now attaches `stopName` and
     `stopIndex` to each `stopTime`, preserving Terminal 1/2 ordering even when
     the official page uses duplicate `KIX` stop codes.
-  - Latest tile rebuild: 5,209 bus routes, 77,736 bus trips, 88,910 bus stops,
-    110,749 walking connectors, and 26,780 active trips in Saturday planner
+  - Latest tile rebuild: 5,219 bus routes, 78,209 bus trips, 89,015 bus stops,
+    111,334 walking connectors, and 27,235 active trips in Saturday planner
     tiles.
   - KIX/KATE active coverage: all 17 active KATE airport-bus routes are now
     promoted into the playable runtime bundle. The final Wakayama route was
@@ -364,6 +364,14 @@ Completed ninth official-source collection pass:
     are now playable. The latest unblock added explicit aliases for clear
     station-terminal labels such as 蘇我駅東口, 渋谷駅（渋谷フクラス）,
     横浜駅（YCAT）, and JR千葉駅（西口）.
+  - 2026-05-18 runtime unblock: 10 additional official airport-bus routes are
+    now playable after adding high-confidence stop aliases/coordinates for
+    HND/Keikyu Karuizawa, Yokohama/Yamashita, Kawaguchiko, and Tateyama-area
+    routes; TAK Kotoden/Kotosan city and Marugame stops; KMI Obi/Seagaia
+    labels; and UKB Kobe Airport ⇔ Tokushima bilingual stops. Remaining
+    blockers are 6 unresolved-coordinate routes, 4 Miyazaki routes with
+    incomplete stopTimes, 1 possible GTFS overlap, and 20 no-trip/cancelled
+    source routes.
 
 ## Official Source Seeds
 
