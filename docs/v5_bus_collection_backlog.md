@@ -5,13 +5,13 @@ Generated from the current V5 bus audits on `2026-05-18`.
 ## Current Playable Source Layer
 
 - GTFS bundle: 454 successfully parsed feeds.
-- Bus stops: 89,105.
-- Bus routes: 5,225.
-- Bus trips: 78,269.
-- Stop times: 2,266,062.
-- Runtime planner tiles: 403 tiles.
-- Saturday active trips in planner tiles: 27,295.
-- Walking connectors: 111,469.
+- Bus stops: 89,114.
+- Bus routes: 5,229.
+- Bus trips: 78,416.
+- Stop times: 2,266,406.
+- Runtime planner tiles: 405 tiles.
+- Saturday active trips in planner tiles: 27,404.
+- Walking connectors: 111,490.
 - Routes with GTFS fare-rule coverage: 4,537.
 
 ## Highest Priority Gap
@@ -242,12 +242,36 @@ Completed eighth official-source runtime promotion pass:
 
 Remaining official-source runtime blockers:
 
-- 4 Miyazaki Airport routes remain departure-summary-only because the current
-  official airport page lacks complete stop-time tables.
-- 1 Takamatsu route remains blocked as possible GTFS overlap until we decide
-  whether to replace or suppress the existing GTFS representation.
+- 1 Takamatsu Shikoku Chuo / Seisan route remains intentionally blocked
+  because the existing GTFS layer already contains the same 西讃観光
+  高松空港 ⇔ 観音寺・四国中央 airport route with a valid 2026-03-29 to
+  2027-03-31 service window. Do not append the official PDF as a duplicate;
+  replace/suppress the GTFS route only if we explicitly choose source
+  precedence later.
 - 20 official source routes are empty/no-trip/cancelled and are not playable
   candidates yet.
+
+Completed ninth official-source runtime promotion pass:
+
+- KMI / Miyazaki Kotsu official route PDF parser.
+  - Script: `scripts/ingest/collect_v5_miyazaki_airport_bus.py`
+  - Source output: `data/v5_miyazaki_airport_official_bus_source.json`
+  - Docs copy: `docs/data/v5_miyazaki_airport_official_bus_source.json`
+  - Audit: `data/v5_miyazaki_airport_official_bus_audit.json`
+  - Result: replaced the previous airport-page summary-only source with
+    Miyazaki Kotsu official PDF timetable rows for 宮崎駅, 西都城,
+    飫肥・日南, and シーガイア airport corridors.
+  - Playable output: 4 KMI routes, 147 trips, and 344 stopTimes promoted into
+    runtime. The シーガイア service is marked weekend-only instead of daily.
+- Official-source augmenter support:
+  - `serviceDays` is now respected when building calendar rows, so official
+    sources can emit weekday/weekend-only bus services without being flattened
+    to daily service.
+- Rebuilt the V5 bus map and planner tiles after KMI promotion.
+  - Current total bus bundle: 5,229 routes, 78,416 trips, 89,114 stops.
+  - Current map audit: 97,812 features, 450 map tiles.
+  - Current planner audit: 27,404 Saturday active trips, 706,039 indexed
+    stopTimes, 111,490 walking connectors, 405 planner tiles.
 
 Completed eighth official-source collection pass:
 
@@ -369,8 +393,8 @@ Completed ninth official-source collection pass:
   - KIX/KATE parser support: the KATE collector now attaches `stopName` and
     `stopIndex` to each `stopTime`, preserving Terminal 1/2 ordering even when
     the official page uses duplicate `KIX` stop codes.
-  - Latest tile rebuild: 5,219 bus routes, 78,209 bus trips, 89,015 bus stops,
-    111,334 walking connectors, and 27,235 active trips in Saturday planner
+  - Latest tile rebuild: 5,229 bus routes, 78,416 bus trips, 89,114 bus stops,
+    111,490 walking connectors, and 27,404 active trips in Saturday planner
     tiles.
   - KIX/KATE active coverage: all 17 active KATE airport-bus routes are now
     promoted into the playable runtime bundle. The final Wakayama route was
@@ -398,10 +422,13 @@ Completed ninth official-source collection pass:
   - 2026-05-18 runtime unblock: 10 additional official airport-bus routes are
     now playable after adding high-confidence stop aliases/coordinates for
     HND/Keikyu Karuizawa, Yokohama/Yamashita, Kawaguchiko, and Tateyama-area
-    routes; TAK Kotoden/Kotosan city and Marugame stops; KMI Obi/Seagaia
-    labels; and UKB Kobe Airport ⇔ Tokushima bilingual stops. Remaining
-    blockers are 6 unresolved-coordinate routes, 4 Miyazaki routes with
-    incomplete stopTimes, 1 possible GTFS overlap, and 20 no-trip/cancelled
+    routes; TAK Kotoden/Kotosan city and Marugame stops; and UKB Kobe Airport
+    ⇔ Tokushima bilingual stops.
+  - 2026-05-18 KMI unblock: the Miyazaki Airport source was upgraded from
+    airport-page summary departures to Miyazaki Kotsu official route PDFs.
+    宮崎駅, 西都城, 飫肥・日南, and シーガイア airport bus corridors are now
+    playable with complete endpoint/airport stopTimes. Remaining blockers are
+    now 1 intentional GTFS-overlap Takamatsu route and 20 no-trip/cancelled
     source routes.
 
 ## Official Source Seeds

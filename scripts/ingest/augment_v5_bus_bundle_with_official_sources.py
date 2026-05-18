@@ -173,8 +173,14 @@ MANUAL_STOP_COORD_ALIASES = {
     "木更津羽鳥野バスストップ": {"lat": 35.3474710, "lon": 139.9449330, "source": "nominatim_manual_cache:木更津羽鳥野"},
     "富津浅間山バスストップ": {"lat": 35.23610934594869, "lon": 139.88811409090593, "source": "busmap:busstop:1081795"},
     # KMI / Miyazaki Kotsu airport-bus terminal labels.
+    "宮崎駅": {"aliasRailStation": "宮崎", "source": "rail_station_group_alias:宮崎"},
+    "西都城駅前バスセンター": {"aliasRailStation": "西都城", "source": "rail_station_group_alias:西都城"},
+    "西都城駅バスセンター": {"aliasRailStation": "西都城", "source": "rail_station_group_alias:西都城"},
+    "西都城駅前ｂｃ": {"aliasRailStation": "西都城", "source": "rail_station_group_alias:西都城"},
+    "飫肥": {"aliasRailStation": "飫肥", "source": "rail_station_group_alias:飫肥"},
     "飫肥(日南)": {"aliasRailStation": "飫肥", "source": "rail_station_group_alias:飫肥"},
     "シーガイア": {"lat": 31.9603050, "lon": 131.4702795, "source": "nominatim_manual_cache:シーガイアコンベンションセンター"},
+    "シーガイアｏｔ": {"lat": 31.9603050, "lon": 131.4702795, "source": "nominatim_manual_cache:シーガイアコンベンションセンター"},
     # KOJ / Kagoshima Kotsu airport-bus stops. Coordinates are from NAVITIME
     # route pages or Busmap structured stop data for the same route corridors.
     "国分ａコープ前": {"lat": 31.73218, "lon": 130.773544, "source": "navitime_route:00077774:国分Ａコープ前"},
@@ -648,8 +654,25 @@ def trip_time_bounds(trip: dict[str, Any]) -> tuple[int | None, int | None]:
     return min(times), max(times)
 
 
-def make_service_calendar_id(feed_key: str, service_start: str, service_end: str) -> str:
-    return f"bus:calendar:official:{feed_key}:{service_start}:{service_end}"
+def normalize_service_days(value: Any) -> tuple[str, ...]:
+    if isinstance(value, list):
+        days = tuple(day for day in DAYS if day in set(str(item) for item in value))
+        if days:
+            return days
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"weekday", "weekdays"}:
+            return ("monday", "tuesday", "wednesday", "thursday", "friday")
+        if lowered in {"weekend", "weekends", "holiday", "holidays"}:
+            return ("saturday", "sunday")
+        if lowered in {"daily", "all"}:
+            return tuple(DAYS)
+    return tuple(DAYS)
+
+
+def make_service_calendar_id(feed_key: str, service_start: str, service_end: str, service_days: tuple[str, ...]) -> str:
+    day_key = "".join(day[:2] for day in service_days)
+    return f"bus:calendar:official:{feed_key}:{service_start}:{service_end}:{day_key}"
 
 
 def append_official_route(
@@ -804,7 +827,8 @@ def append_official_route(
         trip = valid_trip["trip"]
         start = str(trip.get("serviceStart") or route.get("serviceStart") or service_date).replace("-", "")
         end = str(trip.get("serviceEnd") or route.get("serviceEnd") or "20270331").replace("-", "")
-        service_id = make_service_calendar_id(feed_key, start, end)
+        service_days = normalize_service_days(trip.get("serviceDays") or route.get("serviceDays"))
+        service_id = make_service_calendar_id(feed_key, start, end, service_days)
         if service_id not in calendars_seen:
             calendars_seen.add(service_id)
             bundle["calendars"].append(
@@ -812,7 +836,7 @@ def append_official_route(
                     "busServiceCalendarId": service_id,
                     "rowKind": "calendar",
                     "sourceServiceId": f"official:{feed_key}:{start}:{end}",
-                    **{day: 1 for day in DAYS},
+                    **{day: 1 if day in service_days else 0 for day in DAYS},
                     "startDate": start,
                     "endDate": end,
                 }
