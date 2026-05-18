@@ -5,13 +5,13 @@ Generated from the current V5 bus audits on `2026-05-18`.
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,195.
-- Bus routes: 5,235.
-- Bus trips: 78,748.
-- Stop times: 2,269,464.
-- Runtime planner tiles: 407 tiles.
-- Saturday active trips in planner tiles: 27,712.
-- Walking connectors: 111,591.
+- Bus stops: 89,200.
+- Bus routes: 5,237.
+- Bus trips: 78,907.
+- Stop times: 2,269,838.
+- Runtime planner tiles: 409 tiles.
+- Saturday active trips in planner tiles: 27,871.
+- Walking connectors: 111,626.
 - Routes with fare-rule coverage: 4,539.
 
 ## Highest Priority Gap
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 30 airports covered by GTFS/official airport-class bus routes.
+- 31 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 40 airports still have no bus stop within 5 km in this source layer.
+- 39 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -512,6 +512,22 @@ Completed ninth official-source collection pass:
       planner trips, 709,089 indexed planner stopTimes, and 111,591 walking
       connectors. Airport-class coverage increased to 30 airports; no-5km-stop
       airports decreased to 40.
+  - 2026-05-18 15:46:50 PDT HIJ / Hiroshima Airport continuation:
+    - Script: `scripts/ingest/collect_v5_hiroshima_airport_bus.py`
+    - Source output: `data/v5_hiroshima_airport_official_bus_source.json`
+    - Docs copy: `docs/data/v5_hiroshima_airport_official_bus_source.json`
+    - Audit: `data/v5_hiroshima_airport_official_bus_audit.json`
+    - Result: 2 official airport-bus routes normalized for
+      広島バスセンター・中筋駅 ⇔ 広島空港 and 広島駅新幹線口 ⇔ 広島空港,
+      with 159 trips, 374 stopTimes, 4 source stops, and release-period
+      calendars for 2026-03-29 through 2026-06-30. Stop-times come from the
+      official Hiroshima Airport HTML timetable pages; coordinates use
+      NAVITIME stop pages only as coordinate references.
+    - Runtime outputs rebuilt: total bus coverage is now 5,237 routes, 78,907
+      trips, 89,200 stops, 97,906 map features, 454 map tiles, 27,871 active
+      planner trips, 709,463 indexed planner stopTimes, and 111,626 walking
+      connectors. Airport-class coverage increased to 31 airports; no-5km-stop
+      airports decreased to 39.
 
 ## Official Source Seeds
 

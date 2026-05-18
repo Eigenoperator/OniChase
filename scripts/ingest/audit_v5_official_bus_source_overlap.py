@@ -34,6 +34,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_takamatsu_shikokuchuo_official_bus_source.json",
     ROOT / "data" / "v5_oita_airport_official_bus_source.json",
     ROOT / "data" / "v5_matsuyama_airport_official_bus_source.json",
+    ROOT / "data" / "v5_hiroshima_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -53,6 +54,7 @@ OPERATOR_HINTS = {
     "琴参バス・西讃観光バス": ["琴参", "西讃", "Kotosan"],
     "大分交通": ["大分交通", "Oita Kotsu"],
     "伊予鉄バス": ["伊予鉄", "Iyotetsu"],
+    "広島空港リムジンバス共同運行": ["広島", "Hiroshima", "広電", "広島バス", "JRバス"],
 }
 
 
@@ -224,7 +226,10 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
             matches: list[dict[str, Any]] = []
         else:
             scored = [score_candidate(route, candidate) for candidate in gtfs if not is_same_official_route(route, candidate)]
-            matches = sorted((item for item in scored if item["score"] >= 4 and item["airportHit"]), key=lambda item: (-item["score"], item["label"]))[:8]
+            matches = sorted(
+                (item for item in scored if item["score"] >= 4 and item["airportHit"] and item["overlapStopCount"] >= 2),
+                key=lambda item: (-item["score"], item["label"]),
+            )[:8]
             status = "possible_gtfs_overlap" if matches else "no_gtfs_overlap_found"
         status_counts[status] += 1
         rows.append(route | {"status": status, "candidateMatches": matches})
@@ -248,6 +253,9 @@ def main() -> None:
     parser.add_argument("--sources", type=Path, nargs="*", default=OFFICIAL_SOURCES)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
+    args.bus_bundle = args.bus_bundle.resolve()
+    args.sources = [source.resolve() for source in args.sources]
+    args.output = args.output.resolve()
     payload = audit(args)
     write_json(args.output, payload)
     print(json.dumps(payload["summary"], ensure_ascii=False, indent=2))
