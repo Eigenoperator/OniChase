@@ -122,6 +122,22 @@ MANUAL_STOP_COORD_ALIASES = {
     "淡河": {"lat": 34.8211569, "lon": 135.1060640, "source": "nominatim_manual_cache:淡河バス停"},
     "阪神甲子園": {"aliasRailStation": "甲子園", "source": "rail_station_group_alias:甲子園"},
     "ユニバーサルスタジオジャパン": {"lat": 34.6656393, "lon": 135.4324527, "source": "nominatim_manual_cache:ユニバーサル・スタジオ・ジャパン"},
+    # CTS / Hokkaido Chuo Bus English stop labels.
+    "minamichitosestationminamichitosesta": {"aliasRailStation": "南千歳", "source": "rail_station_group_alias:南千歳"},
+    "kita24josubwaystationkita24josubwaysta": {"aliasRailStation": "北24条", "source": "rail_station_group_alias:北24条"},
+    "asabusubwaystationasabusubwaysta": {"aliasRailStation": "麻生", "source": "rail_station_group_alias:麻生"},
+    "kita34jokita34josubwaysta": {"aliasRailStation": "北34条", "source": "rail_station_group_alias:北34条"},
+    "oyachisubwaystaoyachisubwaysta": {"aliasRailStation": "大谷地", "source": "rail_station_group_alias:大谷地"},
+    "miyanosawasubwaystationmiyanosawasubwaysta": {"aliasRailStation": "宮の沢", "source": "rail_station_group_alias:宮の沢"},
+    "hassamuminamisubwaystationhassamuminamisubwaysta": {"aliasRailStation": "発寒南", "source": "rail_station_group_alias:発寒南"},
+    "tsukisamuchuosubwaystationtsukisamuchuosubwaysta": {"aliasRailStation": "月寒中央", "source": "rail_station_group_alias:月寒中央"},
+    "fukuzumisubwaystationfukuzumisubwaysta": {"aliasRailStation": "福住", "source": "rail_station_group_alias:福住"},
+    "higashikuyakusyomaesubwaystationhigashikuyakusyomaesubwaysta": {"aliasRailStation": "東区役所前", "source": "rail_station_group_alias:東区役所前"},
+    "kanjodorihigashisubwaystationkanjodorihigashisubwaysta": {"aliasRailStation": "環状通東", "source": "rail_station_group_alias:環状通東"},
+    "otarustaotarusta": {"aliasRailStation": "小樽", "source": "rail_station_group_alias:小樽"},
+    "sapporostationsapporosta": {"aliasRailStation": "札幌", "source": "rail_station_group_alias:札幌"},
+    "nakajimaparknakajimapark": {"aliasRailStation": "中島公園", "source": "rail_station_group_alias:中島公園"},
+    "susukinosusukino": {"aliasRailStation": "すすきの", "source": "rail_station_group_alias:すすきの"},
 }
 
 
@@ -166,13 +182,30 @@ def normalize_stop_name(value: Any) -> str:
     return text
 
 
+def fallback_route_code(route: dict[str, Any]) -> str:
+    code = str(route.get("routeCode") or "").strip()
+    if code:
+        return code
+    route_number = str(route.get("routeNumber") or "").strip()
+    direction = str(route.get("direction") or "").strip()
+    if route_number and direction:
+        return f"{route_number}_{direction}"
+    if route_number:
+        return route_number
+    route_name = str(route.get("routeName") or "").strip()
+    if route_name and direction:
+        return f"{stable_slug(route_name)}_{stable_slug(direction)}"
+    return ""
+
+
 def source_ref(path: Path, route: dict[str, Any]) -> dict[str, Any]:
+    route_code = fallback_route_code(route)
     return {
         "sourceKind": route.get("sourceKind") or "official_airport_bus_source",
         "sourcePath": str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path),
         "operatorName": route.get("operatorName") or "",
         "airportIata": route.get("airportIata") or "",
-        "routeCode": route.get("routeCode") or "",
+        "routeCode": route_code,
         "routeName": route.get("routeName") or "",
         "sourceUrl": route.get("sourceUrl") or "",
         "cachePath": route.get("cachePath") or "",
@@ -181,7 +214,7 @@ def source_ref(path: Path, route: dict[str, Any]) -> dict[str, Any]:
 
 def route_key(path: Path, route: dict[str, Any]) -> tuple[str, str]:
     rel = str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
-    return rel, str(route.get("routeCode") or route.get("routeName") or "")
+    return rel, str(fallback_route_code(route) or route.get("routeName") or "")
 
 
 def load_overlap_status(path: Path) -> dict[tuple[str, str], str]:
@@ -486,15 +519,16 @@ def append_official_route(
 ) -> dict[str, Any]:
     trips = flatten_route_trips(route)
     if not trips:
-        return {"status": "skipped_no_trips", "tripCount": 0, "routeCode": route.get("routeCode"), "routeName": route.get("routeName")}
-    feed_key = stable_slug("official_airport_bus", path.name, route.get("routeCode") or route.get("routeName"))
+        return {"status": "skipped_no_trips", "tripCount": 0, "routeCode": fallback_route_code(route), "routeName": route.get("routeName")}
+    route_code = fallback_route_code(route)
+    feed_key = stable_slug("official_airport_bus", path.name, route_code or route.get("routeName"))
     route_id = f"bus:route:official:{feed_key}"
     if any(existing.get("busRouteId") == route_id for existing in bundle.get("routes") or []):
         return {
             "status": "skipped_existing_official_route",
             "operatorName": route.get("operatorName") or "",
             "airportIata": route.get("airportIata") or "",
-            "routeCode": route.get("routeCode") or "",
+            "routeCode": route_code,
             "routeName": route.get("routeName") or "",
             "tripCount": len(trips),
         }
@@ -522,7 +556,7 @@ def append_official_route(
             "status": "skipped_no_complete_stop_sequence",
             "operatorName": route.get("operatorName") or "",
             "airportIata": route_airport,
-            "routeCode": route.get("routeCode") or "",
+            "routeCode": route_code,
             "routeName": route.get("routeName") or "",
             "tripCount": len(trips),
             "stopCount": len(all_stop_names),
@@ -533,7 +567,7 @@ def append_official_route(
             "status": "skipped_unresolved_stop_coordinates",
             "operatorName": route.get("operatorName") or "",
             "airportIata": route_airport,
-            "routeCode": route.get("routeCode") or "",
+            "routeCode": route_code,
             "routeName": route.get("routeName") or "",
             "tripCount": len(trips),
             "stopCount": len(all_stop_names),
@@ -563,7 +597,7 @@ def append_official_route(
             "status": "skipped_no_complete_trip_stop_times",
             "operatorName": route.get("operatorName") or "",
             "airportIata": route_airport,
-            "routeCode": route.get("routeCode") or "",
+            "routeCode": route_code,
             "routeName": route.get("routeName") or "",
             "tripCount": len(trips),
             "stopCount": len(all_stop_names),
@@ -605,10 +639,10 @@ def append_official_route(
     bundle["routes"].append(
         {
             "busRouteId": route_id,
-            "sourceRouteId": route.get("routeCode") or route.get("routeName") or feed_key,
+            "sourceRouteId": route_code or route.get("routeName") or feed_key,
             "busAgencyId": agency_id,
             "agencyName": route.get("operatorName") or "",
-            "routeShortName": route.get("routeCode") or "",
+            "routeShortName": route_code,
             "routeLongName": route.get("routeName") or "",
             "routeDesc": route.get("sourceUrl") or "",
             "routeType": 3,
@@ -702,7 +736,7 @@ def append_official_route(
         "status": "appended",
         "operatorName": route.get("operatorName") or "",
         "airportIata": route_airport,
-        "routeCode": route.get("routeCode") or "",
+        "routeCode": route_code,
         "routeName": route.get("routeName") or "",
         "sourcePath": str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path),
         "stopCount": len(resolved),
@@ -761,6 +795,10 @@ def main() -> int:
             continue
         data = read_json(path)
         for route in data.get("routes") or []:
+            route = dict(route)
+            for field in ("sourceKind", "operatorName", "airportIata"):
+                if not route.get(field) and data.get(field):
+                    route[field] = data[field]
             key = route_key(path, route)
             status = overlap_status.get(key)
             if status == "possible_gtfs_overlap":
