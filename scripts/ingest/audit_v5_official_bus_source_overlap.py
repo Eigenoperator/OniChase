@@ -33,6 +33,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_takamatsu_yonkoh_official_bus_source.json",
     ROOT / "data" / "v5_takamatsu_shikokuchuo_official_bus_source.json",
     ROOT / "data" / "v5_oita_airport_official_bus_source.json",
+    ROOT / "data" / "v5_matsuyama_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -51,6 +52,7 @@ OPERATOR_HINTS = {
     "四国交通": ["四国交通", "Yonkoh"],
     "琴参バス・西讃観光バス": ["琴参", "西讃", "Kotosan"],
     "大分交通": ["大分交通", "Oita Kotsu"],
+    "伊予鉄バス": ["伊予鉄", "Iyotetsu"],
 }
 
 

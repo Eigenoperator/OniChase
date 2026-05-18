@@ -4,9 +4,9 @@
 Continue V5 public-transport expansion on top of the stable V4 rail base, with the current active work on nationwide real bus collection and playable promotion.
 
 ## V5 Bus Collection Status
-- As of 2026-05-18 14:54:38 PDT, the V5 bus runtime bundle has 5,234 routes, 78,657 trips, 89,188 stops, 708,649 indexed planner stopTimes, and 111,519 walking connectors.
-- Airport access audit status: 29 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 41 airports still with no bus stop within 5 km.
-- Latest promoted official source: OIT / Oita Airport 大分交通 Airliner, 84 trips and 674 stopTimes for エアライナー 大分・別府 ⇔ 大分空港 using the 2026-05-01 to 2026-05-31 release-period official timetable.
+- As of 2026-05-18 15:21:59 PDT, the V5 bus runtime bundle has 5,235 routes, 78,748 trips, 89,195 stops, 709,089 indexed planner stopTimes, and 111,591 walking connectors.
+- Airport access audit status: 30 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 40 airports still with no bus stop within 5 km.
+- Latest promoted official source: MYJ / Matsuyama Airport 伊予鉄 bus limousine, 91 trips and 440 stopTimes for 松山空港リムジンバス using the 2026-05-01 to 2026-05-31 release-period official timetable.
 - Important correction: "finished bus sources" only means the currently collected official source batch was either promoted or blocked; it does not mean nationwide airport liaison, highway/night, or local bus collection is complete.
 
 ## Done

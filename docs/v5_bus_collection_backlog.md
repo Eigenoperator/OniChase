@@ -5,13 +5,13 @@ Generated from the current V5 bus audits on `2026-05-18`.
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,188.
-- Bus routes: 5,234.
-- Bus trips: 78,657.
-- Stop times: 2,269,024.
-- Runtime planner tiles: 405 tiles.
-- Saturday active trips in planner tiles: 27,621.
-- Walking connectors: 111,519.
+- Bus stops: 89,195.
+- Bus routes: 5,235.
+- Bus trips: 78,748.
+- Stop times: 2,269,464.
+- Runtime planner tiles: 407 tiles.
+- Saturday active trips in planner tiles: 27,712.
+- Walking connectors: 111,591.
 - Routes with fare-rule coverage: 4,539.
 
 ## Highest Priority Gap
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 29 airports covered by GTFS/official airport-class bus routes.
+- 30 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 41 airports still have no bus stop within 5 km in this source layer.
+- 40 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -497,6 +497,21 @@ Completed ninth official-source collection pass:
       trips, 89,188 stops, 97,891 map features, 450 map tiles, 27,621 active
       planner trips, 708,649 indexed planner stopTimes, and 111,519 walking
       connectors.
+  - 2026-05-18 15:21:59 PDT MYJ / Matsuyama Airport continuation:
+    - Script: `scripts/ingest/collect_v5_matsuyama_airport_bus.py`
+    - Source output: `data/v5_matsuyama_airport_official_bus_source.json`
+    - Docs copy: `docs/data/v5_matsuyama_airport_official_bus_source.json`
+    - Audit: `data/v5_matsuyama_airport_official_bus_audit.json`
+    - Result: 1 official airport-bus route normalized for 松山空港リムジンバス,
+      with 91 trips, 440 stopTimes, 7 stops, and current release-period
+      calendars for 2026-05-01 through 2026-05-31. Stop-times come from the
+      official 伊予鉄 bus HTML timetable; coordinates use NAVITIME stop pages
+      only as coordinate references.
+    - Runtime outputs rebuilt: total bus coverage is now 5,235 routes, 78,748
+      trips, 89,195 stops, 97,899 map features, 452 map tiles, 27,712 active
+      planner trips, 709,089 indexed planner stopTimes, and 111,591 walking
+      connectors. Airport-class coverage increased to 30 airports; no-5km-stop
+      airports decreased to 40.
 
 ## Official Source Seeds
 
