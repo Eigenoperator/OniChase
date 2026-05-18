@@ -24,6 +24,8 @@ KARRY_URL = "https://karrykanko.com/ishigaki/"
 AZUMA_URL = "https://www.azumabus.co.jp/"
 AZUMA_ROUTE10_URL = "http://www.azumabus.co.jp/mwbhpwp/wp-content/uploads/304ee517825e26f2c4586d9463f9408d.pdf"
 AZUMA_ROUTE10_NAVITIME_URL = "https://www.navitime.co.jp/bus/company/00001313/route/00070167/"
+AZUMA_ROUTE4_URL = "http://www.azumabus.co.jp/mwbhpwp/wp-content/uploads/8b0914b31ee1e3a38334fa0a71c5c980.pdf"
+AZUMA_ROUTE4_NAVITIME_URL = "https://www.navitime.co.jp/bus/company/00001313/route/00070168/"
 DEFAULT_CACHE_DIR = ROOT / "data" / "v5_bus_official_cache" / "ishigaki_airport"
 DEFAULT_OUTPUT = ROOT / "data" / "v5_ishigaki_airport_official_bus_source.json"
 DEFAULT_DOCS_OUTPUT = ROOT / "docs" / "data" / "v5_ishigaki_airport_official_bus_source.json"
@@ -118,6 +120,139 @@ AZUMA_ROUTE10_STOP_COORDS = {
     "白保": (24.349734, 124.241257, "00428123"),
     "盛山南": (24.377801, 124.243894, "00428124"),
 }
+
+AZUMA_ROUTE4_EXTRA_STOP_COORDS = {
+    "博物館前": (24.332899, 124.159169, "00428102"),
+    "裁判所前": (24.331000, 124.161210, "00428103"),
+    "八重山毎日新聞社前": (24.331759, 124.165078, "00428233"),
+    "かねひで前": (24.332011, 124.169314, "00428105"),
+    "平得": (24.332696, 124.174080, "00428106"),
+    "平得東": (24.332274, 124.178852, "00428108"),
+    "サンエー前": (24.332520, 124.182803, "00428109"),
+}
+
+AZUMA_ROUTE4_DOWN_DEPARTURES = [
+    "06:30",
+    "07:00",
+    "07:30",
+    "08:00",
+    "08:30",
+    "09:00",
+    "09:30",
+    "10:00",
+    "10:30",
+    "11:00",
+    "11:30",
+    "12:00",
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30",
+    "16:00",
+    "16:30",
+    "17:00",
+    "17:30",
+    "18:00",
+    "18:30",
+    "19:00",
+    "19:30",
+    "20:00",
+    "21:00",
+]
+
+AZUMA_ROUTE4_UP_DEPARTURES = [
+    "07:15",
+    "07:45",
+    "08:30",
+    "09:00",
+    "09:30",
+    "10:00",
+    "10:30",
+    "11:00",
+    "11:30",
+    "12:00",
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30",
+    "16:00",
+    "16:30",
+    "17:00",
+    "17:30",
+    "18:00",
+    "18:30",
+    "19:00",
+    "19:30",
+    "20:00",
+    "20:30",
+    "21:00",
+    "21:45",
+]
+
+AZUMA_ROUTE4_DOWN_OFFSETS = [
+    ("バスターミナル", 0, None),
+    ("石垣港離島ターミナル", 3, {27, 28}),
+    ("博物館前", 5, None),
+    ("裁判所前", 6, None),
+    ("八重山毎日新聞社前", 8, None),
+    ("かねひで前", 10, None),
+    ("平得", 12, None),
+    ("平得東", 13, None),
+    ("サンエー前", 15, None),
+    ("沖縄県八重山合同庁舎前", 16, None),
+    ("徳洲会病院前", 16, None),
+    ("ドン・キホーテ前", 16, None),
+    ("大浜農協前", 17, None),
+    ("大浜", 18, None),
+    ("磯辺", 20, None),
+    ("太陽の里前", 20, None),
+    ("宮良団地前", 21, None),
+    ("宮良橋", 22, None),
+    ("宮良西", 23, None),
+    ("宮良東", 24, None),
+    ("特別支援学校", 25, None),
+    ("ばすきなよお入口", 26, None),
+    ("白保中学校", 26, None),
+    ("白保小学校", 27, None),
+    ("白保", 28, None),
+    ("盛山南", 32, None),
+    ("石垣空港", 35, None),
+]
+
+AZUMA_ROUTE4_UP_OFFSETS = [
+    ("石垣空港", 0, None),
+    ("白保", 7, None),
+    ("白保小学校", 8, None),
+    ("白保中学校", 9, None),
+    ("ばすきなよお入口", 9, None),
+    ("特別支援学校", 10, None),
+    ("宮良東", 11, None),
+    ("宮良西", 11, None),
+    ("宮良橋", 12, None),
+    ("宮良団地前", 13, None),
+    ("太陽の里前", 14, None),
+    ("磯辺", 14, None),
+    ("大浜", 16, None),
+    ("大浜農協前", 17, None),
+    ("ドン・キホーテ前", 17, None),
+    ("徳洲会病院前", 18, None),
+    ("沖縄県八重山合同庁舎前", 18, None),
+    ("サンエー前", 19, None),
+    ("平得東", 22, None),
+    ("平得", 23, None),
+    ("かねひで前", 25, None),
+    ("八重山毎日新聞社前", 26, {0, 1}),
+    ("裁判所前", 28, {0, 1}),
+    ("博物館前", 29, {0, 1}),
+    ("石垣港離島ターミナル", 32, {24, 25, 26, 27, 28}),
+    ("バスターミナル", 35, None),
+]
 
 
 def write_json(path: Path, payload: Any) -> None:
@@ -271,6 +406,69 @@ def build_column_trips(route_code: str, direction: str, rows: list[tuple[str, li
     return trips
 
 
+def build_offset_trips(route_code: str, direction: str, departures: list[str], offsets: list[tuple[str, int, set[int] | None]]) -> list[dict[str, Any]]:
+    trips = []
+    for index, departure in enumerate(departures):
+        hour, minute = map(int, departure.split(":"))
+        base = hour * 60 + minute
+        stop_times = []
+        for stop_name, offset, skipped_indexes in offsets:
+            if skipped_indexes and index in skipped_indexes:
+                continue
+            value = base + offset
+            stop_times.append({"stopName": stop_name, "time": f"{value // 60:02d}:{value % 60:02d}"})
+        trips.append(
+            {
+                "tripId": f"{route_code}:{direction}:{index + 1:03d}",
+                "direction": direction,
+                "stopTimes": stop_times,
+            }
+        )
+    return trips
+
+
+def route_stop_names_from_offsets(offsets: list[tuple[str, int, set[int] | None]]) -> list[str]:
+    names = []
+    for name, _offset, _skipped in offsets:
+        if name not in names:
+            names.append(name)
+    return names
+
+
+def parse_azuma_route4(cache_path: Path) -> dict[str, Any]:
+    route_code = "isg_azuma_route4_airport"
+    trips = build_offset_trips(route_code, "to_airport", AZUMA_ROUTE4_DOWN_DEPARTURES, AZUMA_ROUTE4_DOWN_OFFSETS) + build_offset_trips(
+        route_code, "from_airport", AZUMA_ROUTE4_UP_DEPARTURES, AZUMA_ROUTE4_UP_OFFSETS
+    )
+    merged_coords = AZUMA_ROUTE10_STOP_COORDS | AZUMA_ROUTE4_EXTRA_STOP_COORDS
+    bus_stops = []
+    for name, (lat, lon, node_id) in merged_coords.items():
+        bus_stops.append(
+            {
+                "name": name,
+                "lat": lat,
+                "lon": lon,
+                "coordinateSource": "NAVITIME bus stop page",
+                "coordinateSourceUrl": f"https://www.navitime.co.jp/diagram/bus/{node_id}/00070168/",
+            }
+        )
+    return {
+        "sourceKind": "official_azuma_pdf_timetable",
+        "operatorName": "東運輸",
+        "airportIata": "ISG",
+        "routeCode": route_code,
+        "routeName": "系統④ 平得・大浜・白保経由空港線",
+        "sourceUrl": AZUMA_ROUTE4_URL,
+        "cachePath": str(cache_path.relative_to(ROOT)),
+        "coordinateReferenceUrl": AZUMA_ROUTE4_NAVITIME_URL,
+        "serviceDays": "daily",
+        "routeStopNames": route_stop_names_from_offsets(AZUMA_ROUTE4_DOWN_OFFSETS),
+        "busStops": bus_stops,
+        "trips": trips,
+        "tripCount": len(trips),
+    }
+
+
 def parse_azuma_route10(cache_path: Path) -> dict[str, Any]:
     route_code = "isg_azuma_route10_airport"
     trips = build_column_trips(route_code, "to_airport", AZUMA_ROUTE10_DOWN_ROWS) + build_column_trips(
@@ -311,9 +509,12 @@ def collect(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
     azuma_html, azuma_cache = fetch_text(AZUMA_URL, args.cache_dir, refresh=args.refresh_cache, timeout=args.timeout)
     routes = [parse_karry_route(karry_html, karry_cache)]
     pdf_sources = []
+    route4_cache = None
     route10_cache = None
     for link in azuma_pdf_links(azuma_html):
         _data, path, content_type = fetch_bytes(link["url"], args.cache_dir, refresh=args.refresh_cache, timeout=args.timeout)
+        if link["url"] == AZUMA_ROUTE4_URL:
+            route4_cache = path
         if link["url"] == AZUMA_ROUTE10_URL:
             route10_cache = path
         text = pdf_text(path)
@@ -330,12 +531,14 @@ def collect(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
             }
         )
     status_counts = Counter(source["status"] for source in pdf_sources)
+    if route4_cache:
+        routes.append(parse_azuma_route4(route4_cache))
     if route10_cache:
         routes.append(parse_azuma_route10(route10_cache))
     source = {
         "schemaVersion": "v5_official_bus_source.ishigaki_airport.v1",
         "generatedAt": generated_at,
-        "sourcePolicy": "Official Ishigaki Airport bus sources. Karry Kanko direct-bus HTML and Azuma Bus route 10 official PDF are normalized into trips. Azuma route 10 stop coordinates are referenced from NAVITIME stop pages because the official PDF provides stop names and stop-times but not machine-readable coordinates. Remaining Azuma PDFs stay cached until a dedicated table parser is added.",
+        "sourcePolicy": "Official Ishigaki Airport bus sources. Karry Kanko direct-bus HTML and Azuma Bus route 4/10 official PDFs are normalized into trips. Azuma stop coordinates are referenced from NAVITIME stop pages because the official PDFs provide stop names and stop-times but not machine-readable coordinates. Remaining Azuma PDFs stay cached until a dedicated table parser is added.",
         "airportPage": {"sourceUrl": AIRPORT_PAGE, "cachePath": str(airport_cache.relative_to(ROOT)), "candidateTimeTextCount": len(re.findall(r"\b\d{1,2}:\d{2}\b", plain_text(airport_html)))},
         "azumaIndexPage": {"sourceUrl": AZUMA_URL, "cachePath": str(azuma_cache.relative_to(ROOT)), "pdfCount": len(pdf_sources)},
         "azumaPdfSources": pdf_sources,

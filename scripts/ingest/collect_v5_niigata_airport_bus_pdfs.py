@@ -2,9 +2,10 @@
 """Collect official Niigata Airport bus PDF timetable sources.
 
 The official PDFs publish complete endpoint times for the direct airport bus
-between 新潟駅 and 新潟空港.  The airport -> station PDF also lists local buses
-via 万代シテイ, but this collector leaves those out until we have a complete
-stop-time table for the intermediate stops.
+between 新潟駅 and 新潟空港. The airport -> station PDF also lists local buses
+via 万代シテイ with weekday/weekend departures and an official about-35-minute
+runtime. Those local buses are promoted as endpoint-playable trips; the source
+does not expose a full intermediate stop-time table.
 """
 
 from __future__ import annotations
@@ -32,6 +33,8 @@ DEFAULT_DOCS_OUTPUT = ROOT / "docs" / "data" / "v5_niigata_airport_official_bus_
 DEFAULT_AUDIT_OUTPUT = ROOT / "data" / "v5_niigata_airport_official_bus_pdfs_audit.json"
 
 ALL_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"]
+WEEKENDS = ["saturday", "sunday"]
 
 TO_AIRPORT_DEPARTURES = [
     "06:10",
@@ -88,6 +91,52 @@ FROM_AIRPORT_DIRECT_DEPARTURES = [
     "21:20",
 ]
 
+FROM_AIRPORT_LOCAL_WEEKDAY_DEPARTURES = [
+    "08:25",
+    "09:00",
+    "09:35",
+    "10:40",
+    "11:05",
+    "11:35",
+    "11:50",
+    "12:25",
+    "12:55",
+    "13:10",
+    "13:30",
+    "14:20",
+    "14:45",
+    "15:20",
+    "16:05",
+    "16:35",
+    "17:20",
+    "17:35",
+    "17:45",
+    "18:20",
+    "19:05",
+    "19:15",
+    "20:25",
+    "20:35",
+]
+
+FROM_AIRPORT_LOCAL_WEEKEND_DEPARTURES = [
+    "08:20",
+    "09:15",
+    "10:15",
+    "11:05",
+    "11:35",
+    "12:05",
+    "12:30",
+    "13:00",
+    "14:20",
+    "15:20",
+    "16:40",
+    "17:15",
+    "18:25",
+    "19:15",
+    "20:25",
+    "20:40",
+]
+
 
 def write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -122,11 +171,19 @@ def add_minutes(value: str, minutes: int) -> str:
     return f"{total // 60:02d}:{total % 60:02d}"
 
 
-def build_trip(route_code: str, direction: str, index: int, stop_names: list[str], departure: str, duration_minutes: int) -> dict[str, Any]:
+def build_trip(
+    route_code: str,
+    direction: str,
+    index: int,
+    stop_names: list[str],
+    departure: str,
+    duration_minutes: int,
+    service_days: list[str] | None = None,
+) -> dict[str, Any]:
     return {
         "tripId": f"niigata_kotsu:kij:{route_code}:{direction}:{index:03d}",
         "direction": direction,
-        "serviceDays": ALL_DAYS,
+        "serviceDays": service_days or ALL_DAYS,
         "stopTimes": [
             {"stopName": stop_names[0], "time": departure, "raw": departure},
             {"stopName": stop_names[1], "time": add_minutes(departure, duration_minutes), "raw": f"{departure}+{duration_minutes}min"},
@@ -135,11 +192,20 @@ def build_trip(route_code: str, direction: str, index: int, stop_names: list[str
 
 
 def build_routes() -> list[dict[str, Any]]:
-    trips = []
+    direct_trips = []
     for index, departure in enumerate(TO_AIRPORT_DEPARTURES, start=1):
-        trips.append(build_trip("niigata_station_airport_direct", "to_airport", index, ["新潟駅", "新潟空港"], departure, 25))
+        direct_trips.append(build_trip("niigata_station_airport_direct", "to_airport", index, ["新潟駅", "新潟空港"], departure, 25))
     for index, departure in enumerate(FROM_AIRPORT_DIRECT_DEPARTURES, start=1):
-        trips.append(build_trip("niigata_station_airport_direct", "from_airport", index, ["新潟空港", "新潟駅"], departure, 25))
+        direct_trips.append(build_trip("niigata_station_airport_direct", "from_airport", index, ["新潟空港", "新潟駅"], departure, 25))
+    local_trips = []
+    for index, departure in enumerate(FROM_AIRPORT_LOCAL_WEEKDAY_DEPARTURES, start=1):
+        local_trips.append(
+            build_trip("niigata_airport_bandai_city_local", "from_airport_weekday", index, ["新潟空港", "新潟駅"], departure, 35, WEEKDAYS)
+        )
+    for index, departure in enumerate(FROM_AIRPORT_LOCAL_WEEKEND_DEPARTURES, start=1):
+        local_trips.append(
+            build_trip("niigata_airport_bandai_city_local", "from_airport_weekend", index, ["新潟空港", "新潟駅"], departure, 35, WEEKENDS)
+        )
     return [
         {
             "sourceKind": "official_niigata_kotsu_airport_pdf_direct_bus",
@@ -148,13 +214,27 @@ def build_routes() -> list[dict[str, Any]]:
             "routeCode": "niigata_station_airport_direct",
             "routeName": "新潟駅 ⇔ 新潟空港 直行リムジンバス",
             "sourceUrl": SOURCE_URLS[0],
-            "sourcePolicy": "Official Niigata Kotsu PDF endpoint timetable. Direct buses are promoted with published departure times and the official about-25-minute runtime. Local airport buses via 万代シテイ are intentionally excluded until complete intermediate stop-times are normalized.",
+            "sourcePolicy": "Official Niigata Kotsu PDF endpoint timetable. Direct buses are promoted with published departure times and the official about-25-minute runtime.",
             "adultFareYen": 470,
             "serviceStart": "20260329",
             "serviceEnd": "20270331",
-            "trips": trips,
-            "tripCount": len(trips),
-        }
+            "trips": direct_trips,
+            "tripCount": len(direct_trips),
+        },
+        {
+            "sourceKind": "official_niigata_kotsu_airport_pdf_local_bus",
+            "operatorName": "Niigata Kotsu",
+            "airportIata": "KIJ",
+            "routeCode": "niigata_airport_bandai_city_local",
+            "routeName": "新潟空港 → 新潟駅 各停 万代シテイ経由",
+            "sourceUrl": SOURCE_URLS[1],
+            "sourcePolicy": "Official Niigata Kotsu PDF airport->station local-bus timetable. The PDF lists weekday/weekend airport departures via 万代シテイ and the official about-35-minute runtime, but not a complete intermediate stop-time table; promoted as endpoint-playable trips only.",
+            "adultFareYen": 470,
+            "serviceStart": "20260329",
+            "serviceEnd": "20270331",
+            "trips": local_trips,
+            "tripCount": len(local_trips),
+        },
     ]
 
 
@@ -184,7 +264,7 @@ def collect(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
     source = {
         "schemaVersion": "v5_official_bus_source.niigata_airport_pdfs.v2",
         "generatedAt": generated_at,
-        "sourcePolicy": "Official Niigata Kotsu airport-bus PDF timetable sources. Direct airport-bus endpoint times are normalized into playable route data; local buses via 万代シテイ remain cached but not promoted.",
+        "sourcePolicy": "Official Niigata Kotsu airport-bus PDF timetable sources. Direct airport-bus endpoint times and airport->station local buses via 万代シテイ are normalized into playable route data. Local buses are endpoint-playable because the PDF does not expose intermediate stop-times.",
         "airportIata": "KIJ",
         "operatorName": "Niigata Kotsu",
         "pdfs": pdfs,
@@ -196,9 +276,12 @@ def collect(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
         "pdfCount": len(pdfs),
         "statusCounts": dict(sorted(status_counts.items())),
         "timeTextPdfCount": status_counts["pdf_time_text_found"],
-        "routeCount": 1,
-        "tripCount": len(TO_AIRPORT_DEPARTURES) + len(FROM_AIRPORT_DIRECT_DEPARTURES),
-        "promotedPolicy": "Direct 新潟駅 ⇔ 新潟空港 buses only; airport local buses are source-cached but excluded.",
+        "routeCount": 2,
+        "tripCount": len(TO_AIRPORT_DEPARTURES)
+        + len(FROM_AIRPORT_DIRECT_DEPARTURES)
+        + len(FROM_AIRPORT_LOCAL_WEEKDAY_DEPARTURES)
+        + len(FROM_AIRPORT_LOCAL_WEEKEND_DEPARTURES),
+        "promotedPolicy": "Direct 新潟駅 ⇔ 新潟空港 buses and airport->station 万代シテイ経由 local buses are promoted. Local buses are endpoint-playable only because the PDF does not expose complete intermediate stop-times.",
         "pdfs": pdfs,
     }
     return source, audit

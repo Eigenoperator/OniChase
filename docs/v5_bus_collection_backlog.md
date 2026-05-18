@@ -282,11 +282,14 @@ Completed tenth official-source runtime promotion pass:
   - Docs copy: `docs/data/v5_niigata_airport_official_bus_pdfs.json`
   - Audit: `data/v5_niigata_airport_official_bus_pdfs_audit.json`
   - Result: promoted the official 新潟駅 ⇔ 新潟空港 direct limousine bus
-    endpoint timetable into runtime.
-  - Playable output: 1 KIJ route, 49 trips, 98 stopTimes, and ¥470 adult fare.
-  - Safety note: airport -> station local buses via 万代シテイ remain cached
-    but are not promoted yet because complete intermediate stop-time rows are
-    not normalized.
+    endpoint timetable into runtime. Later promoted the official
+    新潟空港 → 新潟駅 各停 万代シテイ経由 airport departures as endpoint-playable
+    trips with weekday/weekend calendars.
+  - Playable output after the remaining-source pass: 2 KIJ routes, 89 trips,
+    178 stopTimes, and ¥470 adult fare.
+  - Safety note: 万代シテイ経由 local buses are endpoint-playable only. The
+    official PDF gives airport departures and an about-35-minute runtime, but
+    it does not expose complete intermediate stop-times.
 - Airport stop matching was tightened so a city station name like 新潟駅
   cannot be reverse-matched to 新潟空港 just because the normalized station
   name is a substring of the airport name.
@@ -465,6 +468,15 @@ Completed ninth official-source collection pass:
     use NAVITIME stop pages where the PDF has no machine-readable coordinate
     data. 石垣港離島ターミナル and 石垣空港 reuse the existing terminal/airport
     anchors to avoid duplicate stop nodes.
+  - 2026-05-18 remaining-source unblock: the Ishigaki Airport 東運輸 source now
+    also promotes 系統④ 平得・大浜・白保経由空港線 from the official PDF
+    timetable. The playable runtime adds 1 route, 58 trips, 1,524 stopTimes,
+    and 29 newly created official stops/reused anchors. Stop-times come from
+    the official PDF; route stop coordinates use NAVITIME stop pages where the
+    PDF has no machine-readable coordinate data. The same pass promotes KIJ
+    万代シテイ経由 local buses as endpoint-playable trips. Remaining
+    non-playable/not-added sources are only 1 intentional Takamatsu
+    GTFS-overlap route and 20 empty/no-trip/cancelled official sources.
 
 ## Official Source Seeds
 

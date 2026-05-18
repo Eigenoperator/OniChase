@@ -1,18 +1,8 @@
 {
   "schemaVersion": "v5_official_bus_bundle_augmentation_audit_v1",
-  "generatedAt": "2026-05-18T20:39:28+00:00",
+  "generatedAt": "2026-05-18T21:13:52+00:00",
   "sourceBundle": "/home/xincheng/toy/Chase/docs/data/v5_bus_gtfs_current_bundle.json.gz",
   "before": {
-    "agencies": 575,
-    "stops": 89116,
-    "routes": 5230,
-    "trips": 78465,
-    "stopTimes": 2266464,
-    "calendars": 79980,
-    "fareAttributes": 68093,
-    "fareRules": 2427806
-  },
-  "after": {
     "agencies": 576,
     "stops": 89144,
     "routes": 5231,
@@ -22,37 +12,49 @@
     "fareAttributes": 68093,
     "fareRules": 2427806
   },
+  "after": {
+    "agencies": 578,
+    "stops": 89173,
+    "routes": 5233,
+    "trips": 78573,
+    "stopTimes": 2268343,
+    "calendars": 79984,
+    "fareAttributes": 68094,
+    "fareRules": 2427807
+  },
   "delta": {
-    "agencies": 1,
-    "stops": 28,
-    "routes": 1,
-    "trips": 10,
-    "stopTimes": 275,
-    "calendars": 1,
-    "fareAttributes": 0,
-    "fareRules": 0
+    "agencies": 2,
+    "stops": 29,
+    "routes": 2,
+    "trips": 98,
+    "stopTimes": 1604,
+    "calendars": 3,
+    "fareAttributes": 1,
+    "fareRules": 1
   },
   "summary": {
     "routeStatusCounts": {
-      "appended": 1,
-      "skipped_existing_official_route": 1
+      "appended": 2,
+      "skipped_existing_official_route": 3
     },
     "coordinateResolutionCounts": {
       "airport_iata_alias:ISG": 1,
-      "existing_bus_gtfs_stop": 1
+      "airport_iata_alias:KIJ": 1,
+      "existing_bus_gtfs_stop": 2
     },
     "connectorSummary": {
-      "eligibleBusStopCount": 28,
-      "busStopWithRailConnectorCount": 0,
-      "busStopWithAirportConnectorCount": 1,
+      "eligibleBusStopCount": 29,
+      "busStopWithRailConnectorCount": 1,
+      "busStopWithAirportConnectorCount": 2,
       "connectorCounts": {
-        "airport": 1
+        "airport": 2,
+        "rail_station_group": 2
       },
       "maxConnectorMeters": 2000,
       "maxRailConnectorsPerStop": 12,
       "maxAirportConnectorsPerStop": 4,
-      "existingConnectorCountPreserved": 111493,
-      "newOfficialConnectorCount": 1
+      "existingConnectorCountPreserved": 111494,
+      "newOfficialConnectorCount": 4
     }
   },
   "routeAudits": [
@@ -68,12 +70,41 @@
       "status": "appended",
       "operatorName": "東運輸",
       "airportIata": "ISG",
+      "routeCode": "isg_azuma_route4_airport",
+      "routeName": "系統④ 平得・大浜・白保経由空港線",
+      "sourcePath": "data/v5_ishigaki_airport_official_bus_source.json",
+      "stopCount": 27,
+      "tripCount": 58,
+      "stopTimeCount": 1524,
+      "skippedLimitedOperationTripCount": 0,
+      "skippedIncompleteTripCount": 0
+    },
+    {
+      "status": "skipped_existing_official_route",
+      "operatorName": "東運輸",
+      "airportIata": "ISG",
       "routeCode": "isg_azuma_route10_airport",
       "routeName": "系統⑩ アートホテル・ANAインターコンチネンタル経由空港線",
-      "sourcePath": "data/v5_ishigaki_airport_official_bus_source.json",
-      "stopCount": 28,
-      "tripCount": 10,
-      "stopTimeCount": 275,
+      "tripCount": 10
+    },
+    {
+      "status": "skipped_existing_official_route",
+      "operatorName": "Niigata Kotsu",
+      "airportIata": "KIJ",
+      "routeCode": "niigata_station_airport_direct",
+      "routeName": "新潟駅 ⇔ 新潟空港 直行リムジンバス",
+      "tripCount": 49
+    },
+    {
+      "status": "appended",
+      "operatorName": "Niigata Kotsu",
+      "airportIata": "KIJ",
+      "routeCode": "niigata_airport_bandai_city_local",
+      "routeName": "新潟空港 → 新潟駅 各停 万代シテイ経由",
+      "sourcePath": "data/v5_niigata_airport_official_bus_pdfs.json",
+      "stopCount": 2,
+      "tripCount": 40,
+      "stopTimeCount": 80,
       "skippedLimitedOperationTripCount": 0,
       "skippedIncompleteTripCount": 0
     }

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "v5_official_bus_source.niigata_airport_pdfs.v2",
-  "generatedAt": "2026-05-18T20:09:37Z",
-  "sourcePolicy": "Official Niigata Kotsu airport-bus PDF timetable sources. Direct airport-bus endpoint times are normalized into playable route data; local buses via 万代シテイ remain cached but not promoted.",
+  "generatedAt": "2026-05-18T21:13:27Z",
+  "sourcePolicy": "Official Niigata Kotsu airport-bus PDF timetable sources. Direct airport-bus endpoint times and airport->station local buses via 万代シテイ are normalized into playable route data. Local buses are endpoint-playable because the PDF does not expose intermediate stop-times.",
   "airportIata": "KIJ",
   "operatorName": "Niigata Kotsu",
   "pdfs": [
@@ -36,7 +36,7 @@
       "routeCode": "niigata_station_airport_direct",
       "routeName": "新潟駅 ⇔ 新潟空港 直行リムジンバス",
       "sourceUrl": "https://www.niigata-kotsu.co.jp/~noriai/route-bus/timetable/access/airport/files/260329_niigatasta-tt.pdf",
-      "sourcePolicy": "Official Niigata Kotsu PDF endpoint timetable. Direct buses are promoted with published departure times and the official about-25-minute runtime. Local airport buses via 万代シテイ are intentionally excluded until complete intermediate stop-times are normalized.",
+      "sourcePolicy": "Official Niigata Kotsu PDF endpoint timetable. Direct buses are promoted with published departure times and the official about-25-minute runtime.",
       "adultFareYen": 470,
       "serviceStart": "20260329",
       "serviceEnd": "20270331",
@@ -1268,6 +1268,893 @@
         }
       ],
       "tripCount": 49
+    },
+    {
+      "sourceKind": "official_niigata_kotsu_airport_pdf_local_bus",
+      "operatorName": "Niigata Kotsu",
+      "airportIata": "KIJ",
+      "routeCode": "niigata_airport_bandai_city_local",
+      "routeName": "新潟空港 → 新潟駅 各停 万代シテイ経由",
+      "sourceUrl": "https://www.niigata-kotsu.co.jp/~noriai/route-bus/timetable/access/airport/files/260329_airport-tt.pdf",
+      "sourcePolicy": "Official Niigata Kotsu PDF airport->station local-bus timetable. The PDF lists weekday/weekend airport departures via 万代シテイ and the official about-35-minute runtime, but not a complete intermediate stop-time table; promoted as endpoint-playable trips only.",
+      "adultFareYen": 470,
+      "serviceStart": "20260329",
+      "serviceEnd": "20270331",
+      "trips": [
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:001",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "08:25",
+              "raw": "08:25"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "09:00",
+              "raw": "08:25+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:002",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "09:00",
+              "raw": "09:00"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "09:35",
+              "raw": "09:00+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:003",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "09:35",
+              "raw": "09:35"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "10:10",
+              "raw": "09:35+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:004",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "10:40",
+              "raw": "10:40"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "11:15",
+              "raw": "10:40+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:005",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "11:05",
+              "raw": "11:05"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "11:40",
+              "raw": "11:05+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:006",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "11:35",
+              "raw": "11:35"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "12:10",
+              "raw": "11:35+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:007",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "11:50",
+              "raw": "11:50"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "12:25",
+              "raw": "11:50+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:008",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "12:25",
+              "raw": "12:25"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "13:00",
+              "raw": "12:25+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:009",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "12:55",
+              "raw": "12:55"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "13:30",
+              "raw": "12:55+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:010",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "13:10",
+              "raw": "13:10"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "13:45",
+              "raw": "13:10+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:011",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "13:30",
+              "raw": "13:30"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "14:05",
+              "raw": "13:30+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:012",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "14:20",
+              "raw": "14:20"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "14:55",
+              "raw": "14:20+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:013",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "14:45",
+              "raw": "14:45"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "15:20",
+              "raw": "14:45+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:014",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "15:20",
+              "raw": "15:20"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "15:55",
+              "raw": "15:20+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:015",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "16:05",
+              "raw": "16:05"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "16:40",
+              "raw": "16:05+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:016",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "16:35",
+              "raw": "16:35"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "17:10",
+              "raw": "16:35+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:017",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "17:20",
+              "raw": "17:20"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "17:55",
+              "raw": "17:20+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:018",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "17:35",
+              "raw": "17:35"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "18:10",
+              "raw": "17:35+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:019",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "17:45",
+              "raw": "17:45"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "18:20",
+              "raw": "17:45+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:020",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "18:20",
+              "raw": "18:20"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "18:55",
+              "raw": "18:20+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:021",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "19:05",
+              "raw": "19:05"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "19:40",
+              "raw": "19:05+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:022",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "19:15",
+              "raw": "19:15"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "19:50",
+              "raw": "19:15+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:023",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "20:25",
+              "raw": "20:25"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "21:00",
+              "raw": "20:25+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekday:024",
+          "direction": "from_airport_weekday",
+          "serviceDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "20:35",
+              "raw": "20:35"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "21:10",
+              "raw": "20:35+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:001",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "08:20",
+              "raw": "08:20"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "08:55",
+              "raw": "08:20+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:002",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "09:15",
+              "raw": "09:15"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "09:50",
+              "raw": "09:15+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:003",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "10:15",
+              "raw": "10:15"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "10:50",
+              "raw": "10:15+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:004",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "11:05",
+              "raw": "11:05"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "11:40",
+              "raw": "11:05+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:005",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "11:35",
+              "raw": "11:35"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "12:10",
+              "raw": "11:35+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:006",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "12:05",
+              "raw": "12:05"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "12:40",
+              "raw": "12:05+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:007",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "12:30",
+              "raw": "12:30"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "13:05",
+              "raw": "12:30+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:008",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "13:00",
+              "raw": "13:00"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "13:35",
+              "raw": "13:00+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:009",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "14:20",
+              "raw": "14:20"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "14:55",
+              "raw": "14:20+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:010",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "15:20",
+              "raw": "15:20"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "15:55",
+              "raw": "15:20+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:011",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "16:40",
+              "raw": "16:40"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "17:15",
+              "raw": "16:40+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:012",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "17:15",
+              "raw": "17:15"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "17:50",
+              "raw": "17:15+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:013",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "18:25",
+              "raw": "18:25"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "19:00",
+              "raw": "18:25+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:014",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "19:15",
+              "raw": "19:15"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "19:50",
+              "raw": "19:15+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:015",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "20:25",
+              "raw": "20:25"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "21:00",
+              "raw": "20:25+35min"
+            }
+          ]
+        },
+        {
+          "tripId": "niigata_kotsu:kij:niigata_airport_bandai_city_local:from_airport_weekend:016",
+          "direction": "from_airport_weekend",
+          "serviceDays": [
+            "saturday",
+            "sunday"
+          ],
+          "stopTimes": [
+            {
+              "stopName": "新潟空港",
+              "time": "20:40",
+              "raw": "20:40"
+            },
+            {
+              "stopName": "新潟駅",
+              "time": "21:15",
+              "raw": "20:40+35min"
+            }
+          ]
+        }
+      ],
+      "tripCount": 40
     }
   ]
 }
