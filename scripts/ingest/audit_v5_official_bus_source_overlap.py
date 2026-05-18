@@ -32,6 +32,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_takamatsu_kotoden_official_bus_source.json",
     ROOT / "data" / "v5_takamatsu_yonkoh_official_bus_source.json",
     ROOT / "data" / "v5_takamatsu_shikokuchuo_official_bus_source.json",
+    ROOT / "data" / "v5_oita_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -49,6 +50,7 @@ OPERATOR_HINTS = {
     "ことでんバス": ["ことでん", "琴電", "Kotoden"],
     "四国交通": ["四国交通", "Yonkoh"],
     "琴参バス・西讃観光バス": ["琴参", "西讃", "Kotosan"],
+    "大分交通": ["大分交通", "Oita Kotsu"],
 }
 
 
@@ -161,11 +163,26 @@ def build_gtfs_index(bundle: dict[str, Any]) -> list[dict[str, Any]]:
                 "label": route_label(route),
                 "labelNorm": normalize(route_label(route)),
                 "serviceClass": route.get("serviceClass") or "",
+                "sourceRefs": route.get("sourceRefs") or [],
                 "stopNames": names,
                 "stopNameNorms": {normalize(name) for name in names},
             }
         )
     return rows
+
+
+def is_same_official_route(official: dict[str, Any], candidate: dict[str, Any]) -> bool:
+    official_source = official.get("sourcePath") or ""
+    official_code = str(official.get("routeCode") or "")
+    for ref in candidate.get("sourceRefs") or []:
+        if str(ref.get("sourcePath") or "") != official_source:
+            continue
+        ref_code = str(ref.get("routeCode") or ref.get("routeName") or "")
+        if ref_code and official_code and ref_code == official_code:
+            return True
+        if not ref_code and not official_code:
+            return True
+    return False
 
 
 def score_candidate(official: dict[str, Any], candidate: dict[str, Any]) -> dict[str, Any]:
@@ -204,7 +221,7 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
             status = "official_no_active_trips"
             matches: list[dict[str, Any]] = []
         else:
-            scored = [score_candidate(route, candidate) for candidate in gtfs]
+            scored = [score_candidate(route, candidate) for candidate in gtfs if not is_same_official_route(route, candidate)]
             matches = sorted((item for item in scored if item["score"] >= 4 and item["airportHit"]), key=lambda item: (-item["score"], item["label"]))[:8]
             status = "possible_gtfs_overlap" if matches else "no_gtfs_overlap_found"
         status_counts[status] += 1

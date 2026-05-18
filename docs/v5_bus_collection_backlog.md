@@ -4,15 +4,15 @@ Generated from the current V5 bus audits on `2026-05-18`.
 
 ## Current Playable Source Layer
 
-- GTFS bundle: 454 successfully parsed feeds.
-- Bus stops: 89,116.
-- Bus routes: 5,230.
-- Bus trips: 78,465.
-- Stop times: 2,266,504.
+- GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
+- Bus stops: 89,188.
+- Bus routes: 5,234.
+- Bus trips: 78,657.
+- Stop times: 2,269,024.
 - Runtime planner tiles: 405 tiles.
-- Saturday active trips in planner tiles: 27,453.
-- Walking connectors: 111,493.
-- Routes with GTFS fare-rule coverage: 4,538.
+- Saturday active trips in planner tiles: 27,621.
+- Walking connectors: 111,519.
+- Routes with fare-rule coverage: 4,539.
 
 ## Highest Priority Gap
 
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 17 airports covered by GTFS airport-class bus routes.
+- 29 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 53 airports have no GTFS bus stop within 5 km in this first source layer.
+- 41 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -477,6 +477,26 @@ Completed ninth official-source collection pass:
     万代シテイ経由 local buses as endpoint-playable trips. Remaining
     non-playable/not-added sources are only 1 intentional Takamatsu
     GTFS-overlap route and 20 empty/no-trip/cancelled official sources.
+  - 2026-05-18 14:54:38 PDT nationwide gap continuation: the current airport
+    access audit showed this work is not nationally complete yet. It now
+    reports 29 covered airports, 2 airports with nearby non-airport-class bus
+    stops, 4 airports with stops only in the 5 km review radius, and 41
+    airports with no bus stop within 5 km. Added OIT / Oita Airport as the next
+    high-flight-volume missing-airport target.
+  - OIT / Oita Kotsu official Airliner HTML timetable.
+    - Script: `scripts/ingest/collect_v5_oita_airport_bus.py`
+    - Source output: `data/v5_oita_airport_official_bus_source.json`
+    - Docs copy: `docs/data/v5_oita_airport_official_bus_source.json`
+    - Audit: `data/v5_oita_airport_official_bus_audit.json`
+    - Result: 1 official airport-bus route normalized for
+      エアライナー 大分・別府 ⇔ 大分空港, with 84 trips, 674 stopTimes, 15
+      stops, and current release-period calendars for 2026-05-01 through
+      2026-05-31. Stop-times come from the official 大分交通 HTML timetable;
+      coordinates use NAVITIME stop pages only as coordinate references.
+    - Runtime outputs rebuilt: total bus coverage is now 5,234 routes, 78,657
+      trips, 89,188 stops, 97,891 map features, 450 map tiles, 27,621 active
+      planner trips, 708,649 indexed planner stopTimes, and 111,519 walking
+      connectors.
 
 ## Official Source Seeds
 

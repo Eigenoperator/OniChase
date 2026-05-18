@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="ja"><![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="ja"><![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="ja"><![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="ja">
+<!--<![endif]-->
+
+<head>
+	<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content="">
+<meta property="og:title" content="タイトル">
+<meta property="og:type" content="website">
+<meta property="og:url" content="http://任意のURL">
+<meta property="og:image" content="http://任意のURL/og_image.png">
+<meta property="og:site_name" content="">
+<meta property="og:description" content="" />
+<meta property="fb:app_id" content="任意のID">
+<title>大分交通</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/asset/css/jquery.pwstabs.css">
+<link rel="stylesheet" type="text/css" href="/asset/css/slick.css" />
+<link rel="stylesheet" type="text/css" href="/asset/css/slick-theme.css" />
+<link rel="stylesheet" type="text/css" href="/asset/css/superfish.css">
+<link rel="stylesheet" type="text/css" href="/asset/css/thickbox.css">
+<link rel="stylesheet" type="text/css" href="/asset/css/oitakotsu.css?p=20201224">
+<script type="text/javascript" src="/asset/js/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="/asset/js/jquery.pwstabs.min.js"></script>
+<script type="text/javascript" src="/asset/js/hoverIntent.js"></script>
+<script type="text/javascript" src="/asset/js/superfish.js"></script>
+<script type="text/javascript" src="/asset/js/slick.min.js"></script>
+<script type="text/javascript" src="/asset/js/thickbox.js"></script>
+<script type="text/javascript" src="/asset/js/jquery.feeds.min.js"></script>
+<script type="text/javascript" src="/asset/js/moment.min.js"></script>
+<script type="text/javascript" src="/asset/js/oitakotsu.js"></script>
+<script>
+	$(document).ready(function () {
+		$('ul.sf-menu').superfish();
+		$('.tabmenu01').pwstabs({
+			containerWidth: '600px',
+			tabsPosition: 'vertical',
+			theme: "pws_theme_dark_red"
+		});
+		<!--
+		$('.mainSlide').slick({
+			autoplay: true,
+			arrows: true,
+			dots: true,
+			autoplaySpeed: 7000,
+			speed: 1000,
+			fade: true
+		})
+		.on("afterChange", function(event, slick, currentSlide) {
+			switch (currentSlide){
+				case 0:
+					// 1枚目の秒数
+					$(this).slick("slickSetOption", "autoplaySpeed", 7000);
+					break;
+				case 1:
+					// 2枚目の秒数
+					$(this).slick("slickSetOption", "autoplaySpeed", 7000);
+					break;
+				case 2:
+					// 3枚目の秒数
+					$(this).slick("slickSetOption", "autoplaySpeed", 7000);
+					break;
+				case 4:
+					// 5枚目の秒数
+					$(this).slick("slickSetOption", "autoplaySpeed", 4000);
+					break;
+				case 5:
+					// 6枚目の秒数
+					$(this).slick("slickSetOption", "autoplaySpeed", 4000);
+					break;
+				default:
+					// その他の秒数
+					$(this).slick("slickSetOption", "autoplaySpeed", 3000);
+					break;
+			}
+		});
+		-->
+		pdfaddprm();
+	});
+
+	// PDF表示キャッシュ対策
+	function pdfaddprm() {
+		$("a[href$='.pdf']").each(function() {
+			var prmtime = $(this).attr('href');
+			prmtime = prmtime + '?' + $.now();
+			// 日出町内路線図に対して横幅に合わせて表示する設定
+			// 現状ファイル名で判定しているが...他の方法を模索中
+			if (prmtime.includes('youkoku.pdf')) {
+				prmtime = prmtime + '#view=FitH';
+			}
+			$(this).attr('href',prmtime);
+		});
+	}
+
+	//var _gaq = _gaq || [];
+	//_gaq.push(['_setAccount', 'UA-12827678-3']);
+	//_gaq.push(['_trackPageview']);
+
+	//(function () {
+	//	var ga = document.createElement('script');
+	//	ga.type = 'text/javascript';
+	//	ga.async = true;
+	//	ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	//	var s = document.getElementsByTagName('script')[0];
+	//	s.parentNode.insertBefore(ga, s);
+	//})();
+	
+	(function (i, s, o, g, r, a, m) {
+		i['GoogleAnalyticsObject'] = r;
+		i[r] = i[r] || function () {
+			(i[r].q = i[r].q || []).push(arguments)
+		}, i[r].l = 1 * new Date();
+		a = s.createElement(o),
+			m = s.getElementsByTagName(o)[0];
+		a.async = 1;
+		a.src = g;
+		m.parentNode.insertBefore(a, m)
+	})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+	ga('create', 'UA-12827678-3', 'auto');
+	ga('send', 'pageview');
+	
+</script></head>
+
+<body>
+	﻿<header role="banner">
+	<a href="/"><img src="/images/title01.png" style="margin:10px;float:left" alt="大分交通"></a>
+	<div id="googlesearch">
+		<script>
+			(function () {
+				var cx = '016991739335462936833:-jf27wgajpk';
+				var gcse = document.createElement('script');
+				gcse.type = 'text/javascript';
+				gcse.async = true;
+				gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//cse.google.com/cse.js?cx=' + cx;
+				var s = document.getElementsByTagName('script')[0];
+				s.parentNode.insertBefore(gcse, s);
+			})();
+		</script>
+		<gcse:search></gcse:search>
+	</div>
+	<div style="clear:both"></div>
+	<div id="menuwrap">
+		<ul class="sf-menu">
+			<li class="current">
+				<a href="#a"><i class="fa fa-clock-o"></i>バス情報</a>
+				<ul>
+					<li><a href="/bus/rosen/">路線バス</a></li>
+					<li><a href="/bus/airport/">空港バス</a></li>
+					<!-- <li><a href="http://www2.oitakotsu.co.jp/timetable/highway/">高速乗合バス</a></li> -->
+					<li><a href="/bus/highway/">高速乗合バス</a></li>
+					<li><a href="/bus/apu/">APU線</a></li>
+				</ul>
+			</li>
+			<li class="current">
+				<a href="#a"><i class="fa fa-ticket"></i>お得な乗車券</a>
+				<ul>
+					<li><a href="/bus/ticket/monkeymarine.php">モンキーマリーンチケット</a></li>
+					<!-- li><a href="/bus/ticket/senior.php">鶴亀定期券</a></li -->
+					<li><a href="https://nimocaoita.com/" target="_blank">めじろんnimoca</a></li>
+				</ul>
+			</li>
+			<li class="current">
+				<a href="/bus/kashikiri/"><i class="fa fa-bus" ></i>貸切バス</a>
+			</li>
+			<li class="current">
+				<a href="/1day/index_ja.html"><i class="fa fa-flag"></i>定期観光バス</a>
+			</li>
+			<li class="current">
+				<a href="#a"><i class="fa fa-building"></i>会社概要</a>
+				<ul>
+					<li><a href="/company/">会社概要</a></li>
+					<li><a href="/ir/">電子公告</a></li>
+				</ul>
+			</li>
+			<li class="current">
+				<a href="/recruit/"><i class="fa fa-user"></i>採用情報</a>
+			</li>
+			<li>
+				<a href="#a"><i class="fa fa-pencil-square"></i>お問合わせ</a>
+				<ul>
+					<li><a href="/company/group.php">電話でのお問合せ</a></li>
+					<li><a href="/company/form/">メールでのお問合せ</a></li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</header>	<nav id="breadcrumbs">
+		<ol>
+			<li itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb">
+				<a itemprop="url" href="/"><span itemprop="title">ホーム</span></a>
+			</li>
+			<li itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb">
+				<a itemprop="url" href="/bus/airport/"><span itemprop="title">空港バス</span></a>
+			</li>
+			<li itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb">
+				<a itemprop="url" href="#"><span itemprop="title">時刻表</span></a>
+			</li>
+		</ol>
+	</nav>
+
+	<div role="main" class="main">
+		<div align="center">
+			<a href="https://youtu.be/Rd5ZW6VHEXw?si=EI5vyYfCwGiyZsou" target="_brank"><img src="img/airliner-youtube2.png" style="width: 500px;height: 250px;padding-right: 10px;"></a>
+			<a href="https://ap-fu.wifibox.jp/lsv?p=79222c8a23f92af6e481ace4e32dc408a6414dd13c1a673df32273638ee214d4&utm_source=oita&utm_medium=affiliate&utm_campaign=none" target="_brank"><img src="img/wi-fi-box-PC-air-top.png"></a>
+		</div>
+		<div style="width:950px;text-align:right"><a href="disp.php?rosen=01&shubetu=1&period=20260601_20260630"><img src="/images/gyaku_kukan.gif" border="0" alt="逆区間を見る"></a></div><div class="airport"><div id="rosen_name">大分空港→大分・別府</div><div>航空機の到着時刻に応じてバスの出発時刻が前後することがあります。</div><div id="kikan">2026年6月1日～2026年6月30日</div><br /><div><table id="timetable" class="airport"><thead><tr><th class="routeNo">系統番号</th>
+<th>大分空港</th>
+<th>杵築インター</th>
+<th>日出<br /><span style="font-size:2.0em">&#10125;</span></th>
+<th>グランドメルキュール別府湾前</th>
+<th>亀川古市<br /><span style="font-size:2.0em">&#10124;</span></th>
+<th>亀川駅前<br /><span style="font-size:2.0em">&#10124;</span></th>
+<th>六勝園</th>
+<th>観光港<br /><span style="font-size:2.0em">&#10123;</span></th>
+<th>餅ヶ浜</th>
+<th>別府北浜<br /><span style="font-size:2.0em">&#10125;</span></th>
+<th>別府駅前</th>
+<th>生石<br /><span style="font-size:2.0em">&#10123;</span></th>
+<th>大分駅前</th>
+<th>荷揚町</th>
+<th>新川<br /><span style="font-size:2.0em">&#10126;</span></th>
+</tr>
+<tr><th class="routeNo">Route No.</th>
+<th class="teiName_e">Oita Airport</th>
+<th class="teiName_e">Kitsuki I.C.</th>
+<th class="teiName_e">Hiji</th>
+<th class="teiName_e">Grand Mercure BEPPUWAN</th>
+<th class="teiName_e">Kamegawa Furuichi</th>
+<th class="teiName_e">Kamegawa Sta.</th>
+<th class="teiName_e">Rokushoen</th>
+<th class="teiName_e">Kankoko</th>
+<th class="teiName_e">Mochigahama</th>
+<th class="teiName_e">Beppu Kitahama</th>
+<th class="teiName_e">Beppu Sta.</th>
+<th class="teiName_e">Ikushi</th>
+<th class="teiName_e">Oita Sta.</th>
+<th class="teiName_e">Niagemachi</th>
+<th class="teiName_e">Shinkawa</th>
+</tr>
+</thead><tfoot><tr><th class="routeNo">系統番号</th>
+<th>大分空港</th>
+<th>杵築インター</th>
+<th>日出<br /><span style="font-size:2.0em">&#10125;</span></th>
+<th>グランドメルキュール別府湾前</th>
+<th>亀川古市<br /><span style="font-size:2.0em">&#10124;</span></th>
+<th>亀川駅前<br /><span style="font-size:2.0em">&#10124;</span></th>
+<th>六勝園</th>
+<th>観光港<br /><span style="font-size:2.0em">&#10123;</span></th>
+<th>餅ヶ浜</th>
+<th>別府北浜<br /><span style="font-size:2.0em">&#10125;</span></th>
+<th>別府駅前</th>
+<th>生石<br /><span style="font-size:2.0em">&#10123;</span></th>
+<th>大分駅前</th>
+<th>荷揚町</th>
+<th>新川<br /><span style="font-size:2.0em">&#10126;</span></th>
+</tr>
+<tr><th class="routeNo">Route No.</th>
+<th class="teiName_e">Oita Airport</th>
+<th class="teiName_e">Kitsuki I.C.</th>
+<th class="teiName_e">Hiji</th>
+<th class="teiName_e">Grand Mercure BEPPUWAN</th>
+<th class="teiName_e">Kamegawa Furuichi</th>
+<th class="teiName_e">Kamegawa Sta.</th>
+<th class="teiName_e">Rokushoen</th>
+<th class="teiName_e">Kankoko</th>
+<th class="teiName_e">Mochigahama</th>
+<th class="teiName_e">Beppu Kitahama</th>
+<th class="teiName_e">Beppu Sta.</th>
+<th class="teiName_e">Ikushi</th>
+<th class="teiName_e">Oita Sta.</th>
+<th class="teiName_e">Niagemachi</th>
+<th class="teiName_e">Shinkawa</th>
+</tr>
+</tfoot><tr><td class="routeNo">X</td>
+<td id="airport">8:15</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>9:13</td>
+<td>9:18</td>
+<td>9:20</td>
+</tr>
+<tr><td class="routeNo">B</td>
+<td id="airport">8:15</td><td>8:34</td>
+<td>8:42</td>
+<td>8:48</td>
+<td>8:50</td>
+<td>8:52</td>
+<td>8:56</td>
+<td>9:00</td>
+<td>9:02</td>
+<td>9:05</td>
+<td>9:08</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr><td class="routeNo">K</td>
+<td id="airport">8:25</td><td>8:44</td>
+<td>8:52</td>
+<td>8:58</td>
+<td>9:00</td>
+<td>→→</td>
+<td>→→</td>
+<td>9:07</td>
+<td>→→</td>
+<td>9:12</td>
+<td>→→</td>
+<td>9:25</td>
+<td>9:32</td>
+<td>9:37</td>
+<td>9:39</td>
+</tr>
+<tr><td class="routeNo">K</td>
+<td id="airport">8:55</td><td>9:14</td>
+<td>9:22</td>
+<td>9:28</td>
+<td>9:30</td>
+<td>→→</td>
+<td>→→</td>
+<td>9:37</td>
+<td>→→</td>
+<td>9:42</td>
+<td>→→</td>
+<td>9:55</td>
+<td>10:02</td>
+<td>10:07</td>
+<td>10:09</td>
+</tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">9:50</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>10:48</td>
+<td>10:53</td>
+<td>10:55</td>
+</tr>
+<tr><td class="routeNo">B</td>
+<td id="airport">9:50</td><td>10:09</td>
+<td>10:17</td>
+<td>10:23</td>
+<td>10:25</td>
+<td>10:27</td>
+<td>10:31</td>
+<td>10:35</td>
+<td>10:37</td>
+<td>10:40</td>
+<td>10:43</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">9:55</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>10:53</td>
+<td>10:58</td>
+<td>11:00</td>
+</tr>
+<tr><td class="routeNo">B</td>
+<td id="airport">9:55</td><td>10:14</td>
+<td>10:22</td>
+<td>10:28</td>
+<td>10:30</td>
+<td>10:32</td>
+<td>10:36</td>
+<td>10:40</td>
+<td>10:42</td>
+<td>10:45</td>
+<td>10:48</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">10:15</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>11:13</td>
+<td>11:18</td>
+<td>11:20</td>
+</tr>
+<tr><td class="routeNo">B</td>
+<td id="airport">10:15</td><td>10:34</td>
+<td>10:42</td>
+<td>10:48</td>
+<td>10:50</td>
+<td>10:52</td>
+<td>10:56</td>
+<td>11:00</td>
+<td>11:02</td>
+<td>11:05</td>
+<td>11:08</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr><td class="routeNo">K</td>
+<td id="airport">10:40</td><td>10:59</td>
+<td>11:07</td>
+<td>11:13</td>
+<td>11:15</td>
+<td>→→</td>
+<td>→→</td>
+<td>11:22</td>
+<td>→→</td>
+<td>11:27</td>
+<td>→→</td>
+<td>11:40</td>
+<td>11:47</td>
+<td>11:52</td>
+<td>11:54</td>
+</tr>
+<tr><td class="routeNo">K</td>
+<td id="airport">11:20</td><td>11:39</td>
+<td>11:47</td>
+<td>11:53</td>
+<td>11:55</td>
+<td>→→</td>
+<td>→→</td>
+<td>12:02</td>
+<td>→→</td>
+<td>12:07</td>
+<td>→→</td>
+<td>12:20</td>
+<td>12:27</td>
+<td>12:32</td>
+<td>12:34</td>
+</tr>
+<tr><td class="routeNo">K</td>
+<td id="airport">11:25</td><td>11:44</td>
+<td>11:52</td>
+<td>11:58</td>
+<td>12:00</td>
+<td>→→</td>
+<td>→→</td>
+<td>12:07</td>
+<td>→→</td>
+<td>12:12</td>
+<td>→→</td>
+<td>12:25</td>
+<td>12:32</td>
+<td>12:37</td>
+<td>12:39</td>
+</tr>
+<tr id="caution"><td id="caution_top" class="routeNo" rowspan="2">X</td><td id="caution_top">11:30</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">12:28</td><td id="caution_top">12:33</td><td id="caution_top">12:35</td></tr>
+<tr>
+<td id="caution_bottom" colspan="15">※当便はリフト付き車両運行便です。車いすでリフトをご利用の場合は「大分駅前」「大分空港」バス停のみご利用できます。詳しくは大分交通HP「<a href="https://www.oitakotsu.co.jp/bus/airport/annai/liftAirBus.php" data-ajax="false">リフト付バスご案内</a>」をご確認ください。</td></tr>
+<tr><td class="routeNo">B</td>
+<td id="airport">11:30</td><td>11:49</td>
+<td>11:57</td>
+<td>12:03</td>
+<td>12:05</td>
+<td>12:07</td>
+<td>12:11</td>
+<td>12:15</td>
+<td>12:17</td>
+<td>12:20</td>
+<td>12:23</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">11:55</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>12:53</td>
+<td>12:58</td>
+<td>13:00</td>
+</tr>
+<tr><td class="routeNo">B</td>
+<td id="airport">11:55</td><td>12:14</td>
+<td>12:22</td>
+<td>12:28</td>
+<td>12:30</td>
+<td>12:32</td>
+<td>12:36</td>
+<td>12:40</td>
+<td>12:42</td>
+<td>12:45</td>
+<td>12:48</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr id="caution"><td id="caution_top" class="routeNo" rowspan="2">K</td><td id="caution_top">12:15</td><td id="caution_top">12:34</td><td id="caution_top">12:42</td><td id="caution_top">12:48</td><td id="caution_top">12:50</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">12:57</td><td id="caution_top">→→</td><td id="caution_top">13:02</td><td id="caution_top">→→</td><td id="caution_top">13:15</td><td id="caution_top">13:22</td><td id="caution_top">13:27</td><td id="caution_top">13:29</td></tr>
+<tr>
+<td id="caution_bottom" colspan="15">※火・木・土のみ運行します。</td></tr>
+<tr id="caution"><td id="caution_top" class="routeNo" rowspan="2">B</td><td id="caution_top">12:15</td><td id="caution_top">12:34</td><td id="caution_top">12:42</td><td id="caution_top">12:48</td><td id="caution_top">12:50</td><td id="caution_top">12:52</td><td id="caution_top">12:56</td><td id="caution_top">13:00</td><td id="caution_top">13:02</td><td id="caution_top">13:05</td><td id="caution_top">13:08</td><td id="caution_top"></td><td id="caution_top"></td><td id="caution_top"></td><td id="caution_top"></td></tr>
+<tr>
+<td id="caution_bottom" colspan="15">※火・木・土のみ運行します。</td></tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">12:45</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>13:43</td>
+<td>13:48</td>
+<td>13:50</td>
+</tr>
+<tr><td class="routeNo">B</td>
+<td id="airport">12:45</td><td>13:04</td>
+<td>13:12</td>
+<td>13:18</td>
+<td>13:20</td>
+<td>13:22</td>
+<td>13:26</td>
+<td>13:30</td>
+<td>13:32</td>
+<td>13:35</td>
+<td>13:38</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">14:00</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>14:58</td>
+<td>15:03</td>
+<td>15:05</td>
+</tr>
+<tr><td class="routeNo">B</td>
+<td id="airport">14:00</td><td>14:19</td>
+<td>14:27</td>
+<td>14:33</td>
+<td>14:35</td>
+<td>14:37</td>
+<td>14:41</td>
+<td>14:45</td>
+<td>14:47</td>
+<td>14:50</td>
+<td>14:53</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr id="caution"><td id="caution_top" class="routeNo" rowspan="2">K</td><td id="caution_top">15:30</td><td id="caution_top">15:49</td><td id="caution_top">15:57</td><td id="caution_top">16:03</td><td id="caution_top">16:05</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">16:12</td><td id="caution_top">→→</td><td id="caution_top">16:17</td><td id="caution_top">→→</td><td id="caution_top">16:30</td><td id="caution_top">16:37</td><td id="caution_top">16:42</td><td id="caution_top">16:44</td></tr>
+<tr>
+<td id="caution_bottom" colspan="15">※水・土のみ運行します。</td></tr>
+<tr id="caution"><td id="caution_top" class="routeNo" rowspan="2">B</td><td id="caution_top">15:30</td><td id="caution_top">15:49</td><td id="caution_top">15:57</td><td id="caution_top">16:03</td><td id="caution_top">16:05</td><td id="caution_top">16:07</td><td id="caution_top">16:11</td><td id="caution_top">16:15</td><td id="caution_top">16:17</td><td id="caution_top">16:20</td><td id="caution_top">16:23</td><td id="caution_top"></td><td id="caution_top"></td><td id="caution_top"></td><td id="caution_top"></td></tr>
+<tr>
+<td id="caution_bottom" colspan="15">※水・土のみ運行します。</td></tr>
+<tr><td class="routeNo">K</td>
+<td id="airport">15:50</td><td>16:09</td>
+<td>16:17</td>
+<td>16:23</td>
+<td>16:25</td>
+<td>→→</td>
+<td>→→</td>
+<td>16:32</td>
+<td>→→</td>
+<td>16:37</td>
+<td>→→</td>
+<td>16:50</td>
+<td>16:57</td>
+<td>17:02</td>
+<td>17:04</td>
+</tr>
+<tr id="caution"><td id="caution_top" class="routeNo" rowspan="2">X</td><td id="caution_top">16:35</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">→→</td><td id="caution_top">17:33</td><td id="caution_top">17:38</td><td id="caution_top">17:40</td></tr>
+<tr>
+<td id="caution_bottom" colspan="15">※当便はリフト付き車両運行便です。車いすでリフトをご利用の場合は「大分駅前」「大分空港」バス停のみご利用できます。詳しくは大分交通HP「<a href="https://www.oitakotsu.co.jp/bus/airport/annai/liftAirBus.php" data-ajax="false">リフト付バスご案内</a>」をご確認ください。</td></tr>
+<tr><td class="routeNo">B</td>
+<td id="airport">16:35</td><td>16:54</td>
+<td>17:02</td>
+<td>17:08</td>
+<td>17:10</td>
+<td>17:12</td>
+<td>17:16</td>
+<td>17:20</td>
+<td>17:22</td>
+<td>17:25</td>
+<td>17:28</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">16:50</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>17:48</td>
+<td>17:53</td>
+<td>17:55</td>
+</tr>
+<tr><td class="routeNo">B</td>
+<td id="airport">16:50</td><td>17:09</td>
+<td>17:17</td>
+<td>17:23</td>
+<td>17:25</td>
+<td>17:27</td>
+<td>17:31</td>
+<td>17:35</td>
+<td>17:37</td>
+<td>17:40</td>
+<td>17:43</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">17:25</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>18:23</td>
+<td>18:28</td>
+<td>18:30</td>
+</tr>
+<tr><td class="routeNo">B</td>
+<td id="airport">17:25</td><td>17:44</td>
+<td>17:52</td>
+<td>17:58</td>
+<td>18:00</td>
+<td>18:02</td>
+<td>18:06</td>
+<td>18:10</td>
+<td>18:12</td>
+<td>18:15</td>
+<td>18:18</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr><td class="routeNo">K</td>
+<td id="airport">18:15</td><td>18:34</td>
+<td>18:42</td>
+<td>18:48</td>
+<td>18:50</td>
+<td>→→</td>
+<td>→→</td>
+<td>18:57</td>
+<td>→→</td>
+<td>19:02</td>
+<td>→→</td>
+<td>19:15</td>
+<td>19:22</td>
+<td>19:27</td>
+<td>19:29</td>
+</tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">18:30</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>19:28</td>
+<td>19:33</td>
+<td>19:35</td>
+</tr>
+<tr><td class="routeNo">K</td>
+<td id="airport">18:30</td><td>18:49</td>
+<td>18:57</td>
+<td>19:03</td>
+<td>19:05</td>
+<td>→→</td>
+<td>→→</td>
+<td>19:12</td>
+<td>→→</td>
+<td>19:17</td>
+<td>→→</td>
+<td>19:30</td>
+<td>19:37</td>
+<td>19:42</td>
+<td>19:44</td>
+</tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">18:45</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>19:43</td>
+<td>19:48</td>
+<td>19:50</td>
+</tr>
+<tr><td class="routeNo">B</td>
+<td id="airport">18:45</td><td>19:04</td>
+<td>19:12</td>
+<td>19:18</td>
+<td>19:20</td>
+<td>19:22</td>
+<td>19:26</td>
+<td>19:30</td>
+<td>19:32</td>
+<td>19:35</td>
+<td>19:38</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr><td class="routeNo">K</td>
+<td id="airport">19:05</td><td>19:24</td>
+<td>19:32</td>
+<td>19:38</td>
+<td>19:40</td>
+<td>→→</td>
+<td>→→</td>
+<td>19:47</td>
+<td>→→</td>
+<td>19:52</td>
+<td>→→</td>
+<td>20:05</td>
+<td>20:12</td>
+<td>20:17</td>
+<td>20:19</td>
+</tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">19:10</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>20:08</td>
+<td>20:13</td>
+<td>20:15</td>
+</tr>
+<tr><td class="routeNo">K</td>
+<td id="airport">19:10</td><td>19:29</td>
+<td>19:37</td>
+<td>19:43</td>
+<td>19:45</td>
+<td>→→</td>
+<td>→→</td>
+<td>19:52</td>
+<td>→→</td>
+<td>19:57</td>
+<td>→→</td>
+<td>20:10</td>
+<td>20:17</td>
+<td>20:22</td>
+<td>20:24</td>
+</tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">21:10</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>22:08</td>
+<td>22:13</td>
+<td>22:15</td>
+</tr>
+<tr><td class="routeNo">K</td>
+<td id="airport">21:10</td><td>21:29</td>
+<td>21:37</td>
+<td>21:43</td>
+<td>21:45</td>
+<td>→→</td>
+<td>→→</td>
+<td>21:52</td>
+<td>→→</td>
+<td>21:57</td>
+<td>→→</td>
+<td>22:10</td>
+<td>22:17</td>
+<td>22:22</td>
+<td>22:24</td>
+</tr>
+<tr><td class="routeNo">X</td>
+<td id="airport">22:05</td><td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>→→</td>
+<td>23:03</td>
+<td>23:08</td>
+<td>23:10</td>
+</tr>
+<tr><td class="routeNo">K</td>
+<td id="airport">22:05</td><td>22:24</td>
+<td>22:32</td>
+<td>22:38</td>
+<td>22:40</td>
+<td>→→</td>
+<td>→→</td>
+<td>22:47</td>
+<td>→→</td>
+<td>22:52</td>
+<td>→→</td>
+<td>23:05</td>
+<td>23:12</td>
+<td>23:17</td>
+<td>23:19</td>
+</tr>
+</table></div>
+</div><div style="width:950px;text-align:right"><a href="disp.php?rosen=01&shubetu=1&period=20260601_20260630"><img src="/images/gyaku_kukan.gif" border="0" alt="逆区間を見る"></a></div>	</div>
+	﻿<footer class="pc_menu" role="banner" style="width:1000px;background-color:#D6D6D6;margin:auto;">
+	<table class=tbl_footer>
+		<tr>
+			<td>
+				<dl>
+					<dt>路線バス情報</dt>
+					<dd><a href="/bus/rosen/">路線バス時刻表</a></dd>
+					<dd><a href="/bus/apu/">立命館アジア太平洋大学線</a></dd>
+				</dl>
+			</td>
+			<td>
+				<dl>
+					<dt>空港バス情報</dt>
+					<dd><a href="/bus/airport/">空港バス時刻表</a></dd>
+					<dd><a href="/bus/airport/rosen/">のりば一覧</a></dd>
+					<dd><a href="/bus/airport/unchin.php">バス停ごとの運賃</a></dd>
+					<dd><a href="/bus/airport/annai/">ご利用案内</a></dd>
+				</dl>
+			</td>
+			<td>
+				<dl>
+					<dt>高速バス情報</dt>
+					<dd><a href="/bus/highway/fukuoka/">福岡</a></dd>
+					<dd><a href="/bus/highway/sunlight/">長崎</a></dd>
+					<!-- <dd><a href="/bus/highway/miyazaki/">宮崎</a></dd> -->
+					<!-- <dd><a href="/bus/highway/sorin/">大阪・京都</a></dd> -->
+					<!-- <dd><a href="/bus/highway/kitakyu-airport/overview.pdf">北九州空港</a></dd> -->
+				</dl>
+			</td>
+			<td>
+				<dl>
+					<dt>会社概要</dt>
+					<dd><a href="/company/">会社概要</a></dd>
+					<dd><a href="/company/history.php">沿革</a></dd>
+					<dd><a href="/recruit/">採用情報</a></dd>
+					<dd><a href="/company/group.php">お問合せ先一覧</a></dd>
+					<dd><a href="/ir/">電子公告</a></dd>
+				</dl>
+			</td>
+			<td>
+				<dl>
+					<dt>大分交通グループ</dt>
+					<dd><a href="/company/group.php">グループ会社一覧</a></dd>
+					<dd><a href="http://www.gotaku.com/">別府大分合同タクシー(株)</a></dd>
+					<!-- wpblog.jpドメインのサービスが2022/3/31時点で終了。
+					下記のリンク先ページが表示されなくなったので、リンクのみ削除した。2022/12/02 -->
+					<!-- <dd><a href="http://kktaxi.wpblog.jp/">杵築国東合同タクシー(株)</a></dd> -->
+					<dd>杵築国東合同タクシー(株)</dd>
+					<dd>大交メンテナンス㈱</dd>
+					<dd><a href="https://daikoairmente.com/">㈱大分空港メンテナンス</a></dd>
+					<dd><a href="http://www.dksol.co.jp/">大交ソリューションズ(株)</a></dd>
+					<dd><a href="https://nimocaoita.com/">大分ICカード開発</a></dd>
+					<dd><a href="https://daiko-sharyo.com/">大交車輌整備株式会社</a></dd>
+				</dl>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="5">
+				<dl>
+					<dd><a href="/privacy.php">個人情報の取り扱いに関する基本指針</a><br /></dd>
+					<dd><a href="/pdf/anti_social_force.pdf">反社会的勢力排除宣言</a><br /></dd>
+					<dd>運輸安全マネジメントに対する取り組み(<a href="/company/management/">大分交通</a>/<a href="/company/management/group.pdf">大分交通グループ</a>)</dd>
+					<dd><a href="/pdf/unsouyakkan.pdf">一般乗合旅客自動車運送事業運送約款</a></dd>
+					<dd><a href="/pdf/iccard_toriatsukai_kisoku.pdf">ＩＣカード取扱規則</a></dd>
+					<dd><a href="/pdf/enkatsuka_20250618.pdf">令和6年度 移動円滑化取組報告書、及び令和7年度 計画書</a></dd>
+					<dd><a href="/company/isms/">情報セキュリティ基本方針</a></dd>
+					<dd><a href="/pdf/health_management.pdf">健康経営宣言</a></dd>
+				</dl>
+			</td>
+		</tr>
+	</table>
+	<div style="background-color:#000;color:#FFF"><img src="/images/footer.png"><a href="http://webby.aflac.co.jp/ooita"><img src="/images/hoken.gif"></a><a href="/company/business/ISdept.php"><img src="/images/syokai.png"></a></div>
+</footer>	<!--[if lt IE 9]>
+		<script src="js/html5.js"></script>
+		<script src="js/IE9.js"></script>
+		<script src="js/css3-mediaqueries.js"></script>
+	<![endif]-->
+</body>
+
+</html>
