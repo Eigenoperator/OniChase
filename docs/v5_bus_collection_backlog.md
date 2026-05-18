@@ -458,6 +458,13 @@ Completed ninth official-source collection pass:
     now playable with 49 direct limousine-bus trips and ¥470 adult fare. Local
     airport buses via 万代シテイ remain source-cached until complete
     intermediate stop-times are normalized.
+  - 2026-05-18 ISG route 10 unblock: the Ishigaki Airport 東運輸 source now
+    promotes 系統⑩ アートホテル・ANAインターコンチネンタル経由空港線 from the official
+    PDF timetable. The playable runtime adds 1 route, 10 trips, 275 stopTimes,
+    and 28 stops. Stop-times come from the official PDF; route stop coordinates
+    use NAVITIME stop pages where the PDF has no machine-readable coordinate
+    data. 石垣港離島ターミナル and 石垣空港 reuse the existing terminal/airport
+    anchors to avoid duplicate stop nodes.
 
 ## Official Source Seeds
 
