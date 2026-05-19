@@ -5,14 +5,14 @@ Generated from the current V5 bus audits on `2026-05-19`.
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,234.
-- Bus routes: 5,253.
-- Bus trips: 79,212.
-- Stop times: 2,270,464.
-- Runtime planner tiles: 419 tiles.
-- Saturday active trips in planner tiles: 28,129.
-- Walking connectors: 111,731.
-- Routes with fare-rule coverage: 4,551.
+- Bus stops: 89,236.
+- Bus routes: 5,254.
+- Bus trips: 79,225.
+- Stop times: 2,270,490.
+- Runtime planner tiles: 420 tiles.
+- Saturday active trips in planner tiles: 28,142.
+- Walking connectors: 111,733.
+- Routes with fare-rule coverage: 4,552.
 
 ## Highest Priority Gap
 
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 41 airports covered by GTFS/official airport-class bus routes.
+- 42 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 29 airports still have no bus stop within 5 km in this source layer.
+- 28 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -783,3 +783,38 @@ layer before merging:
   - Active planner bus trips: 28,129
   - Indexed planner stopTimes: 709,995
   - Planner walking connectors: 111,731
+
+## KUH / Kushiro Airport
+
+- 2026-05-19 15:36:57 PDT - Added KUH from the official Akan Bus Kushiro Airport shuttle PDF.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 28
+  - Review-inclusive gaps: 34
+- Source:
+  - Official Akan Bus airport page: `https://www.akanbus.co.jp/airport/`
+  - Official timetable script: `https://www.akanbus.co.jp/airport/time-table.cgi`
+  - Official current PDF: `https://www.akanbus.co.jp/airport/data/80_01.pdf`
+  - Current section effective 2026-04-24 through 2026-05-31.
+- Parser:
+  - `scripts/ingest/collect_v5_kushiro_airport_bus.py`
+- Output:
+  - `data/v5_kushiro_airport_official_bus_source.json`
+  - `docs/data/v5_kushiro_airport_official_bus_source.json`
+  - `data/v5_kushiro_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Route: 釧路空港連絡バス 釧路駅前 ⇔ たんちょう釧路空港
+  - Fixed-clock trips emitted: 13 city-to-airport trips
+  - StopTimes: 26
+  - Endpoint stops: 釧路駅前, たんちょう釧路空港
+  - Fare: ¥1200
+  - Limitation: airport-to-city service is officially arrival-connected and departs about 10 to 25 minutes after each plane arrival, so it is documented in source notes but not emitted as fixed-clock trips until V5 supports flexible airport-arrival bus departures.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: KUH is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,254
+  - Total bus trips: 79,225
+  - Total bus stops: 89,236
+  - Active planner bus trips: 28,142
+  - Indexed planner stopTimes: 710,021
+  - Planner walking connectors: 111,733

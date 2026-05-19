@@ -73,6 +73,7 @@ AIRPORT_STOP_ALIASES = {
     "IBR": ["茨城空港", "ibaraki airport"],
     "IWK": ["岩国錦帯橋空港", "iwakuni kintaikyo airport"],
     "OKJ": ["岡山桃太郎空港", "岡山空港", "okayama airport"],
+    "KUH": ["たんちょう釧路空港", "釧路空港", "kushiro airport"],
 }
 MANUAL_STOP_COORD_ALIASES = {
     # Nagasaki airport-bus city stops.  中央橋 coordinates are from Busmap's

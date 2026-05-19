@@ -4,9 +4,9 @@
 Continue V5 public-transport expansion on top of the stable V4 rail base, with the current active work on nationwide real bus collection and playable promotion.
 
 ## V5 Bus Collection Status
-- As of 2026-05-19 14:36:03 PDT, the V5 bus runtime bundle has 5,253 routes, 79,212 trips, 89,234 stops, 709,995 indexed planner stopTimes, and 111,731 walking connectors.
-- Airport access audit status: 41 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 29 airports still with no bus stop within 5 km.
-- Latest promoted official source: OKJ / Okayama Momotaro Airport official access bus timetable, 2 endpoint-playable routes and 45 trips for 岡山駅西口 and 倉敷駅北口 airport access. The source covers current/future rows from the 2026-03-29 to 2026-06-30 official timetable and the overlap audit found no existing GTFS duplicate.
+- As of 2026-05-19 15:36:57 PDT, the V5 bus runtime bundle has 5,254 routes, 79,225 trips, 89,236 stops, 710,021 indexed planner stopTimes, and 111,733 walking connectors.
+- Airport access audit status: 42 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 28 airports still with no bus stop within 5 km.
+- Latest promoted official source: KUH / Kushiro Airport official Akan Bus timetable, 1 endpoint-playable route and 13 fixed-clock trips for 釧路駅前 to たんちょう釧路空港. The source covers the current 2026-04-24 to 2026-05-31 PDF; city-bound airport departures are documented as arrival-connected 10-25 minute flexible service and are not emitted as fixed-clock trips until the bus model supports that.
 - Important correction: "finished bus sources" only means the currently collected official source batch was either promoted or blocked; it does not mean nationwide airport liaison, highway/night, or local bus collection is complete.
 
 ## Done
