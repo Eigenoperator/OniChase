@@ -5,14 +5,14 @@ Generated from the current V5 bus audits on `2026-05-19`.
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,212.
-- Bus routes: 5,243.
-- Bus trips: 79,023.
-- Stop times: 2,270,004.
-- Runtime planner tiles: 414 tiles.
-- Saturday active trips in planner tiles: 27,969.
-- Walking connectors: 111,671.
-- Routes with fare-rule coverage: 4,541.
+- Bus stops: 89,216.
+- Bus routes: 5,245.
+- Bus trips: 79,059.
+- Stop times: 2,270,142.
+- Runtime planner tiles: 416 tiles.
+- Saturday active trips in planner tiles: 28,005.
+- Walking connectors: 111,685.
+- Routes with fare-rule coverage: 4,543.
 
 ## Highest Priority Gap
 
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 36 airports covered by GTFS/official airport-class bus routes.
+- 37 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 34 airports still have no bus stop within 5 km in this source layer.
+- 33 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -240,14 +240,28 @@ Remaining no-stop-within-5km airport gaps by current flight volume now begin:
 
 1. ASJ / Amami Airport: 36 flights.
 2. IZO / Izumo Enmusubi Airport: 34 flights.
-3. UBJ / Yamaguchi Ube Airport: 29 flights.
-4. HSG / Kyushu Saga International Airport: 24 flights.
-5. IBR / Ibaraki Airport: 24 flights.
-6. IWK / Iwakuni Kintaikyo Airport: 24 flights.
-7. OKJ / Okayama Momotaro Airport: 24 flights.
-8. KUH / Kushiro Airport: 22 flights.
-9. MMB / Memanbetsu Airport: 22 flights.
-10. AKJ / Asahikawa Airport: 20 flights.
+3. HSG / Kyushu Saga International Airport: 24 flights.
+4. IBR / Ibaraki Airport: 24 flights.
+5. IWK / Iwakuni Kintaikyo Airport: 24 flights.
+6. OKJ / Okayama Momotaro Airport: 24 flights.
+7. KUH / Kushiro Airport: 22 flights.
+8. MMB / Memanbetsu Airport: 22 flights.
+9. AKJ / Asahikawa Airport: 20 flights.
+10. YGJ / Yonago Kitaro Airport: 19 flights.
+
+- UBJ / Yamaguchi Ube Airport official airport access bus HTML timetables.
+  - Script: `scripts/ingest/collect_v5_yamaguchi_ube_airport_bus.py`
+  - Source output: `data/v5_yamaguchi_ube_airport_official_bus_source.json`
+  - Docs copy: `docs/data/v5_yamaguchi_ube_airport_official_bus_source.json`
+  - Audit: `data/v5_yamaguchi_ube_airport_official_bus_audit.json`
+  - Result: 2 official route pages normalized; 36 endpoint-playable trips
+    extracted for 新山口駅 ⇔ 山口宇部空港 and 宇部新川駅 ⇔ 山口宇部空港.
+  - Timetable scope: official airport site current section, effective
+    2026-04-01 through 2026-05-31. This matches the current V5 bus planner
+    service date.
+  - Fares: 新山口駅 line ¥910; 宇部新川駅 line ¥310.
+  - Overlap audit: no GTFS duplicate found for either route, so both routes
+    were promoted into the runtime bus bundle and planner tiles.
 
 ### 2026-05-18
 

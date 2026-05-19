@@ -4,9 +4,9 @@
 Continue V5 public-transport expansion on top of the stable V4 rail base, with the current active work on nationwide real bus collection and playable promotion.
 
 ## V5 Bus Collection Status
-- As of 2026-05-19 11:30:11 PDT, the V5 bus runtime bundle has 5,243 routes, 79,023 trips, 89,212 stops, 709,659 indexed planner stopTimes, and 111,671 walking connectors.
-- Airport access audit status: 36 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 34 airports still with no bus stop within 5 km.
-- Latest promoted official source: AOJ / Aomori Airport JR Bus Tohoku airport line, 33 endpoint-playable trips and 66 stopTimes for 青森駅 ⇔ 青森空港. The source is the official JR Bus Tohoku PDF effective 2026-03-01, and the overlap audit found no existing GTFS duplicate.
+- As of 2026-05-19 13:10:26 PDT, the V5 bus runtime bundle has 5,245 routes, 79,059 trips, 89,216 stops, 709,731 indexed planner stopTimes, and 111,685 walking connectors.
+- Airport access audit status: 37 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 33 airports still with no bus stop within 5 km.
+- Latest promoted official source: UBJ / Yamaguchi Ube Airport official access bus HTML tables, 2 endpoint-playable routes and 36 trips for 新山口駅 ⇔ 山口宇部空港 and 宇部新川駅 ⇔ 山口宇部空港. The source covers 2026-04-01 through 2026-05-31, matches the current planner service date, and the overlap audit found no existing GTFS duplicate.
 - Important correction: "finished bus sources" only means the currently collected official source batch was either promoted or blocked; it does not mean nationwide airport liaison, highway/night, or local bus collection is complete.
 
 ## Done
