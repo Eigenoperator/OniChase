@@ -5,13 +5,13 @@ Generated from the current V5 bus audits on `2026-05-18`.
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,208.
-- Bus routes: 5,241.
-- Bus trips: 78,982.
-- Stop times: 2,269,988.
-- Runtime planner tiles: 412 tiles.
-- Saturday active trips in planner tiles: 27,928.
-- Walking connectors: 111,667.
+- Bus stops: 89,210.
+- Bus routes: 5,242.
+- Bus trips: 78,990.
+- Stop times: 2,270,004.
+- Runtime planner tiles: 414 tiles.
+- Saturday active trips in planner tiles: 27,936.
+- Walking connectors: 111,669.
 - Routes with fare-rule coverage: 4,539.
 
 ## Highest Priority Gap
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 33 airports covered by GTFS/official airport-class bus routes.
+- 35 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 37 airports still have no bus stop within 5 km in this source layer.
+- 35 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -562,6 +562,22 @@ Completed ninth official-source collection pass:
       planner trips, 709,577 indexed planner stopTimes, and 111,667 walking
       connectors. Airport-class coverage increased to 33 airports; no-5km-stop
       airports decreased to 37.
+  - 2026-05-18 17:06:28 PDT MMY / Miyako Airport continuation:
+    - Script: `scripts/ingest/collect_v5_miyako_airport_bus.py`
+    - Source output: `data/v5_miyako_airport_official_bus_source.json`
+    - Docs copy: `docs/data/v5_miyako_airport_official_bus_source.json`
+    - Audit: `data/v5_miyako_airport_official_bus_audit.json`
+    - Result: 1 endpoint-playable airport-liner route normalized for 宮古空港
+      ⇔ みやこ下地島空港, with 8 trips and 16 stopTimes. Times come from the
+      Miyakojima City tourism route page; airport coordinates come from the V5
+      airport map.
+    - Runtime outputs rebuilt: total bus coverage is now 5,242 routes, 78,990
+      trips, 89,210 stops, 97,921 map features, 459 map tiles, 27,936 active
+      planner trips, 709,593 indexed planner stopTimes, and 111,669 walking
+      connectors. Airport-class coverage increased to 35 airports because the
+      route covers both MMY and SHI; no-5km-stop airports decreased to 35.
+    - Source limitation: intermediate stops from the public page are not yet
+      promoted because their stop coordinates are not normalized.
 
 ## Official Source Seeds
 

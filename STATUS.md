@@ -4,9 +4,9 @@
 Continue V5 public-transport expansion on top of the stable V4 rail base, with the current active work on nationwide real bus collection and playable promotion.
 
 ## V5 Bus Collection Status
-- As of 2026-05-18 16:39:05 PDT, the V5 bus runtime bundle has 5,241 routes, 78,982 trips, 89,208 stops, 709,577 indexed planner stopTimes, and 111,667 walking connectors.
-- Airport access audit status: 33 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 37 airports still with no bus stop within 5 km.
-- Latest promoted official source: AXT / Akita Airport 秋田中央交通 limousine bus, 37 trips and 74 stopTimes for 秋田駅西口 ⇔ 秋田空港 using the 2026-05-01 to 2026-05-31 official AJAX timetable.
+- As of 2026-05-18 17:06:28 PDT, the V5 bus runtime bundle has 5,242 routes, 78,990 trips, 89,210 stops, 709,593 indexed planner stopTimes, and 111,669 walking connectors.
+- Airport access audit status: 35 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 35 airports still with no bus stop within 5 km.
+- Latest promoted official source: MMY / Miyako Airport airport liner, 8 trips and 16 stopTimes for 宮古空港 ⇔ みやこ下地島空港. This endpoint-playable route also covers SHI / Shimojishima Airport.
 - Important correction: "finished bus sources" only means the currently collected official source batch was either promoted or blocked; it does not mean nationwide airport liaison, highway/night, or local bus collection is complete.
 
 ## Done
