@@ -4,9 +4,9 @@
 Continue V5 public-transport expansion on top of the stable V4 rail base, with the current active work on nationwide real bus collection and playable promotion.
 
 ## V5 Bus Collection Status
-- As of 2026-05-19 13:42:08 PDT, the V5 bus runtime bundle has 5,249 routes, 79,151 trips, 89,224 stops, 709,863 indexed planner stopTimes, and 111,697 walking connectors.
-- Airport access audit status: 39 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 31 airports still with no bus stop within 5 km.
-- Latest promoted official source: IBR / Ibaraki Airport official access bus timetables, 3 endpoint-playable routes and 75 trips for 水戸駅高速線, 水戸駅一般道線, and 石岡駅線. The source covers current V5 planner service date and the overlap audit found no existing GTFS duplicate.
+- As of 2026-05-19 14:17:26 PDT, the V5 bus runtime bundle has 5,251 routes, 79,167 trips, 89,230 stops, 709,911 indexed planner stopTimes, and 111,715 walking connectors.
+- Airport access audit status: 40 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 30 airports still with no bus stop within 5 km.
+- Latest promoted official source: IWK / Iwakuni Kintaikyo Airport official access bus timetable, 2 endpoint-playable routes and 16 trips for 岩国駅東口 and 広島バスセンター / 錦帯橋 airport access. The source covers current V5 planner service date and the overlap audit found no existing GTFS duplicate.
 - Important correction: "finished bus sources" only means the currently collected official source batch was either promoted or blocked; it does not mean nationwide airport liaison, highway/night, or local bus collection is complete.
 
 ## Done

@@ -42,6 +42,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_yamaguchi_ube_airport_official_bus_source.json",
     ROOT / "data" / "v5_saga_airport_official_bus_source.json",
     ROOT / "data" / "v5_ibaraki_airport_official_bus_source.json",
+    ROOT / "data" / "v5_iwakuni_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -69,6 +70,7 @@ OPERATOR_HINTS = {
     "山口宇部空港アクセスバス": ["山口宇部", "Yamaguchi Ube", "宇部市交通局", "防長交通"],
     "佐賀市営バス": ["佐賀市営", "佐賀市交通局", "Saga City"],
     "茨城空港アクセスバス": ["茨城空港", "関東鉄道", "茨城交通", "Ibaraki"],
+    "いわくにバス": ["いわくにバス", "岩国", "Iwakuni"],
 }
 
 

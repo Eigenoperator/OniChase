@@ -5,14 +5,14 @@ Generated from the current V5 bus audits on `2026-05-19`.
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,224.
-- Bus routes: 5,249.
-- Bus trips: 79,151.
-- Stop times: 2,270,326.
-- Runtime planner tiles: 417 tiles.
-- Saturday active trips in planner tiles: 28,071.
-- Walking connectors: 111,697.
-- Routes with fare-rule coverage: 4,547.
+- Bus stops: 89,230.
+- Bus routes: 5,251.
+- Bus trips: 79,167.
+- Stop times: 2,270,374.
+- Runtime planner tiles: 418 tiles.
+- Saturday active trips in planner tiles: 28,087.
+- Walking connectors: 111,715.
+- Routes with fare-rule coverage: 4,549.
 
 ## Highest Priority Gap
 
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 39 airports covered by GTFS/official airport-class bus routes.
+- 40 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 31 airports still have no bus stop within 5 km in this source layer.
+- 30 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -715,3 +715,37 @@ layer before merging:
   exist.
 - If both sources are valid but represent different seasonal calendars, keep
   both only when service dates do not overlap.
+
+## IWK / Iwakuni Kintaikyo Airport
+
+- 2026-05-19 14:17:26 PDT - Added IWK from the official Iwakuni Kintaikyo Airport access-bus PDF and airport access HTML.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 30
+  - Review-inclusive gaps: 36
+- Source:
+  - Official Iwakuni Kintaikyo Airport bus access page: `https://www.iwakuni-airport.jp/access/access-bus/`
+  - Official timetable PDF: `https://www.iwakuni-airport.jp/cms/wp-content/themes/iwakuni-airport/images/download/timetable_20260329.pdf`
+  - Current section effective 2026-03-29 through 2026-10-24.
+- Parser:
+  - `scripts/ingest/collect_v5_iwakuni_airport_bus.py`
+- Output:
+  - `data/v5_iwakuni_airport_official_bus_source.json`
+  - `docs/data/v5_iwakuni_airport_official_bus_source.json`
+  - `data/v5_iwakuni_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Routes: 岩国駅東口線 and 広島バスセンター線 via 錦帯橋
+  - Trips: 16
+  - StopTimes: 48
+  - Endpoint/intermediate stops: 岩国駅東口, シンフォニア, 岩国錦帯橋空港, 錦帯橋, 広島バスセンター
+  - Fares: ¥200 for 岩国駅東口, ¥1000 for 広島バスセンター, with 錦帯橋 listed inside the official route context.
+  - Direction split: 9 to airport, 7 from airport
+- Checks:
+  - Targeted overlap audit: both route families `no_gtfs_overlap_found`
+  - Airport access audit: IWK is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,251
+  - Total bus trips: 79,167
+  - Total bus stops: 89,230
+  - Active planner bus trips: 28,087
+  - Indexed planner stopTimes: 709,911
+  - Planner walking connectors: 111,715
