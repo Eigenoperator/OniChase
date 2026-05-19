@@ -1,0 +1,1422 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="ja">
+<head>
+<!-- Global Site Tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-107691150-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-107691150-1');
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta name="copyright" content="Saga Prefecture">
+<meta name="GENERATOR" content="IBM WebSphere Studio Homepage Builder Version 11.0.0.0 for Windows">
+
+<title>佐賀市営バス：佐賀空港線時刻表</title>
+
+<link rel="stylesheet" href="style.css" type="text/css" media="screen,tv">
+<link rel="stylesheet" href="print.css" type="text/css" media="print">
+<link rel="index" href="/index.html">
+<link rev="made" href="mailto:kotsu@city.saga.lg.jp">
+<!-- WebAnalysis --><script src="/ControlPanel/static/js/wa.js"></script><!-- End WebAnalysis -->
+
+<style type="text/css">
+/* ==============================
+   共通：表レイアウト安定化（sticky＋罫線崩れ防止）
+============================== */
+.tbl{
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+.tbl th, .tbl td{
+  border-right: 1px solid #999;
+  border-bottom: 1px solid #999;
+  box-sizing: border-box;
+}
+.tbl thead th{ border-top: 1px solid #999; }
+.tbl tr > *:first-child{ border-left: 1px solid #999; }
+
+/* wrapper（横スクロール） */
+.tbl-xwrap{
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  margin: 10px 0;
+}
+
+/* ヘッダ固定（縦スクロール） */
+.tbl thead th{
+  position: sticky;
+  top: 0;
+  background: #f3f3f3;
+  z-index: 6;
+}
+
+/* 左端固定（航空機行先／時刻） */
+.sticky-col-1{
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 4;
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+}
+
+/* ==============================
+   ★太字制御
+============================== */
+.airport-time{ font-weight: bold; }
+.bc-time{ font-weight: normal; }
+.bc-bold{ font-weight: bold; }
+
+/* 試験運行（●行） */
+.test-block{ background:#f2f2f2; font-size:85%; }
+.test-block td, .test-block th{ background:#f2f2f2; }
+
+/* 試験運行 注記 */
+.tbl-note{
+  background:#f2f2f2;
+  border:1px solid #999;
+  padding:6px 8px;
+  font-size:80%;
+  margin:10px 0 0;
+}
+
+/* ==============================
+   準急便：列幅（画面用）
+============================== */
+.tbl-junkyuu{ table-layout: fixed; }
+.tbl-junkyuu th:nth-child(1),
+.tbl-junkyuu td:nth-child(1){ width:120px; }
+
+/* 2列目〜最終列まで全部同じ幅 */
+.tbl-junkyuu th:nth-child(n+2),
+.tbl-junkyuu td:nth-child(n+2){ width:95px; }
+
+/* ==============================
+   直行便：PCでは全部表示／スマホは横スクロール
+============================== */
+@media screen and (min-width: 900px){
+  .tbl-xwrap-direct{ overflow-x: visible; }
+  .tbl-xwrap-direct .tbl{
+    min-width: 0 !important;
+    width: 100%;
+  }
+}
+@media screen and (max-width: 899px){
+  .tbl-xwrap-direct{ overflow-x: auto; }
+}
+
+/* 航空機行先／出発時刻・航空機出発地／到着時刻 */
+.aircraft-head{
+  line-height: 1.2;
+  height: 2.4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+}
+
+/* 左端固定列が右スクロール時に隠れないよう最前面 */
+.tbl th.sticky-col-1,
+.tbl td.sticky-col-1{
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 20;
+  background-clip: padding-box;
+  border-right: 1px solid #999;
+}
+.tbl thead th.sticky-col-1{
+  background: #f3f3f3;
+  z-index: 30;
+}
+
+/* ● 航空機接続なし 行の高さ（画面用） */
+.test-block td{
+  padding-top: 6px;
+  padding-bottom: 6px;
+  line-height: 1.4;
+  height: 38px;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+/* 準急便：行の高さ（画面用） */
+.tbl-junkyuu tbody td{
+  height: 70px;
+  vertical-align: middle;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  line-height: 1.35;
+  box-sizing: border-box;
+}
+.tbl-junkyuu tbody tr.test-block td.sticky-col-1{ background: #f2f2f2 !important; }
+.tbl-junkyuu tbody tr.test-block td{ background: #f2f2f2 !important; }
+.tbl-junkyuu tbody tr.test-block td{ border-bottom: 1px solid #999 !important; }
+
+/* =========================
+   直行便：画面用（スマホは固定幅）
+========================= */
+.tbl-direct{ table-layout: fixed !important; }
+
+/* スマホ：横スクロール前提で固定 */
+@media screen and (max-width: 899px){
+  .tbl-direct{
+    width: 620px !important;
+    min-width: 620px !important;
+  }
+}
+
+/* PC：左端120pxは維持しつつ、残りは画面幅に合わせる */
+@media screen and (min-width: 900px){
+  .tbl-direct{
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+  }
+  .tbl-direct th:nth-child(1),
+  .tbl-direct td:nth-child(1){
+    width: 120px !important;
+  }
+  .tbl-direct th:nth-child(n+2),
+  .tbl-direct td:nth-child(n+2){
+    width: auto !important;
+  }
+}
+
+.scroll-notice{ margin: 6px 0 4px; }
+.tbl-direct th, .tbl-direct td{ vertical-align: middle !important; }
+
+/* =========================
+   言語切替UI
+========================= */
+.lang-switch{
+  margin: 8px 0 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.lang-btn{
+  border: 1px solid #caa300;
+  background: #fff3b3;
+  color: #222;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 90%;
+  border-radius: 10px;
+  line-height: 1.1;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+}
+.lang-btn:hover{ background: #ffe58a; }
+.lang-btn.is-active{
+  background: #ffd34d;
+  border-color: #b68600;
+  font-weight: bold;
+}
+.lang-btn:focus{
+  outline: 2px solid #b68600;
+  outline-offset: 2px;
+}
+.print-btn{
+  border: 1px solid #777;
+  background: #fff;
+  color: #222;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 90%;
+  border-radius: 10px;
+  line-height: 1.1;
+}
+.print-btn:hover{ background:#f2f2f2; }
+
+/* =========================
+   運賃行（停留所名の上）
+========================= */
+.fare-row th{
+  background: #fafafa;
+  font-size: 95%;
+  font-weight: bold;
+  color: #333;
+  white-space: nowrap;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  line-height: 1.15;
+  vertical-align: middle;
+}
+.fare-row th.sticky-col-1{ background: #fafafa; }
+
+/* 画面：準急の運賃行だけ高さを直行並みに */
+@media screen{
+  .tbl-junkyuu thead tr.fare-row th{
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+}
+
+/* 見出し重なり防止（画面） */
+.tbl thead th{
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.15;
+  vertical-align: middle;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* =========================
+   遅延案内：画面ではスクロールしても見える
+========================= */
+.delay-note{
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  background: #fff8d9;
+  border: 1px solid #d8c36a;
+  font-size: 90%;
+  line-height: 1.5;
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+}
+
+/* 表示位置安定 */
+.print-col{
+  position: relative;
+}
+
+/* =========================
+   PDFリンク見出し
+========================= */
+.pdf-block h3{
+  margin-bottom: 6px;
+}
+.pdf-note{
+  margin: 0 0 8px;
+  font-size: 90%;
+  color: #555;
+}
+
+/* =========================
+   印刷用：電話番号ブロック（共通）
+========================= */
+.print-contact{
+  display:none;
+  margin-top: 10px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.print-contact span{ display:none; }
+
+/* 画面では縦並び（印刷で制御） */
+.print-grid{ display:block; }
+.print-col{ margin-bottom: 12px; }
+
+/* =====================================================
+   ★印刷：準急は上下、直行は左右。右切れ防止を最優先
+===================================================== */
+@media print{
+  @page{
+    size: A4 portrait;
+    margin: 10mm 10mm;
+  }
+
+  html, body{
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  body{ zoom: 1 !important; }
+
+  #honbun{
+    transform: scale(0.95);
+    transform-origin: top left;
+    width: 105.263% !important;
+  }
+
+  .print-semi .tbl-junkyuu{
+    box-sizing: border-box !important;
+    border: 1px solid #999 !important;
+  }
+
+  .print-semi .tbl-junkyuu thead tr:first-child > *{ border-top: 0 !important; }
+  .print-semi .tbl-junkyuu tbody tr:last-child  > *{ border-bottom: 0 !important; }
+  .print-semi .tbl-junkyuu tr > *:first-child{ border-left: 0 !important; }
+  .print-semi .tbl-junkyuu tr > *:last-child { border-right: 0 !important; }
+
+  .print-semi .tbl-junkyuu tr > *:last-child{
+    border-right: 0 !important;
+    box-shadow: inset -0.6pt 0 0 #999 !important;
+  }
+
+  #header,
+  #gl-navi,
+  #sub,
+  #pankuzu,
+  #sig-terminal,
+  #copyright,
+  .lang-switch,
+  .scroll-notice,
+  .print-btn,
+  .pdf-block,
+  h2[data-i18n="info_title"],
+  h2[data-i18n="info_title"] + ul,
+  h2[data-i18n="info_title"] + ul + p{
+    display:none !important;
+  }
+
+@media print{
+  #honbun > hr{
+    display: none !important;
+  }
+}
+
+  #honbun h1[data-i18n="title"]{
+    display: block !important;
+    font-size: 15pt !important;
+    margin: 0 0 1.5mm !important;
+  }
+
+  #honbun h2[data-i18n="period"],
+  #honbun p span[data-i18n="asof"]{
+    display: none !important;
+  }
+
+  #honbun h1[data-i18n="title"]{
+    font-size: 15pt !important;
+    margin: 0 0 1.5mm !important;
+  }
+  #honbun h2[data-i18n="period"]{
+    font-size: 12pt !important;
+    margin: 0 0 1.2mm !important;
+  }
+  #honbun h2[data-i18n="semi_out_title"],
+  #honbun h2[data-i18n="semi_in_title"],
+  #honbun h2[data-i18n="direct_out_title"],
+  #honbun h2[data-i18n="direct_in_title"]{
+    font-size: 11.5pt !important;
+    margin: 1.2mm 0 0.8mm !important;
+  }
+  #honbun h3[data-i18n="operating_time"]{
+    font-size: 10pt !important;
+    margin: 0 0 0.8mm !important;
+  }
+
+  .aircraft-head{
+    display: block !important;
+    height: auto !important;
+    line-height: 1.15 !important;
+    text-align: center !important;
+  }
+
+  .aircraft-head br{
+    display: block !important;
+    content: "" !important;
+  }
+
+  .print-semi .print-grid{ display:block !important; }
+  .print-semi .print-col{
+    margin-bottom: 3mm !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    min-width: 0 !important;
+  }
+
+  .print-direct .print-grid{
+    display:grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 2mm !important;
+    align-items:start !important;
+  }
+  .print-direct .print-col{
+    margin-bottom: 0 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    min-width: 0 !important;
+  }
+
+  .tbl-xwrap, .tbl-xwrap-direct{ overflow: visible !important; }
+  .tbl thead th{ position: static !important; }
+  .tbl .sticky-col-1{ position: static !important; }
+
+  .tbl.tbl-junkyuu{ min-width: 0 !important; }
+
+  .tbl{
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+  }
+
+  .tbl-direct{
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+  }
+
+  .print-direct .tbl-direct th:nth-child(1),
+  .print-direct .tbl-direct td:nth-child(1){ width: 26% !important; }
+  .print-direct .tbl-direct th:nth-child(2),
+  .print-direct .tbl-direct td:nth-child(2){ width: 22% !important; }
+  .print-direct .tbl-direct th:nth-child(3),
+  .print-direct .tbl-direct td:nth-child(3){ width: 30% !important; }
+  .print-direct .tbl-direct th:nth-child(4),
+  .print-direct .tbl-direct td:nth-child(4){ width: 22% !important; }
+
+  .tbl th, .tbl td{
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .print-direct .tbl-direct td{
+    font-size: 92% !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+
+  .print-direct .tbl-direct tbody tr{ height: 10mm !important; }
+  .print-direct .tbl-direct tbody td{
+    height: 10mm !important;
+    vertical-align: middle !important;
+    padding-top: 1.2mm !important;
+    padding-bottom: 1.2mm !important;
+    line-height: 1.15 !important;
+  }
+  .print-direct .tbl-direct td:nth-child(3){ white-space: nowrap !important; }
+  .print-direct .tbl-direct td:nth-child(1){ white-space: nowrap !important; }
+
+  .tbl thead th{
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+    line-height: 1.10 !important;
+  }
+
+  .print-direct .tbl-direct thead th{
+    height: 9.5mm !important;
+    min-height: 9.5mm !important;
+    vertical-align: middle !important;
+    padding-top: 1mm !important;
+    padding-bottom: 1mm !important;
+    line-height: 1.10 !important;
+    overflow: hidden !important;
+  }
+
+  .print-semi .fare-row th{
+    height: 9.5mm !important;
+    min-height: 9.5mm !important;
+    vertical-align: middle !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 1.10 !important;
+  }
+
+  .tbl tbody td{
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    line-height: 1.18 !important;
+  }
+
+  .fare-row th{
+    font-size: 92% !important;
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+    line-height: 1.10 !important;
+  }
+
+  .print-contact{
+    display:block !important;
+    margin-top: 1.5mm !important;
+    text-align: right !important;
+    font-size: 92% !important;
+    line-height: 1.10 !important;
+  }
+  .print-contact span{ display:none; }
+  .print-contact span[style*="inline"]{ display:inline !important; }
+
+  .tbl-junkyuu tbody td{ height: auto !important; }
+
+  table, thead, tbody, tr, .print-contact{
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print-semi .tbl-junkyuu tr > *:last-child{
+    border-right: 0 !important;
+    box-shadow: inset -1.0pt 0 0 #999 !important;
+  }
+
+  .delay-note{
+    position: static !important;
+    margin-top: 1.5mm !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    font-size: 92% !important;
+    line-height: 1.10 !important;
+  }
+}
+.tbl-junkyuu tbody tr.test-block td.sticky-col-1{
+  border-bottom: 1px solid #999 !important;
+}
+</style>
+</head>
+
+<body>
+<noscript><img src="/mode2_piwik/piwik.php?idsite=1" style="border:0;"></noscript>
+
+<div id="body">
+
+  <div id="header">
+    <p class="h1"><a href="index.php"><img src="images/title2.gif" width="256" height="72" alt="佐賀市営バス・佐賀市交通局"></a></p>
+    <p class="hide"><a href="#honbun">本文へ移動</a></p>
+
+    <div id="head-sub">
+      <form action="/cgi-local/search/index.cgi" method="GET">
+        <p><img src="images/site-search.gif" alt="サイト内検索" width="105" height="19">
+          <input size="20" type="text" class="form" name="query"><input type="submit" value="検索">
+        </p>
+      </form>
+      <p><img src="images/tel-fax.gif" alt="Tel:0952-23-3155,Fax:0952-23-7309" width="297" height="30"></p>
+    </div>
+  </div>
+
+  <div id="gl-navi">
+    <ul>
+      <li><a href="index.php">トップページ</a></li>
+      <li><a href="text_size.html">文字を大きくするには</a></li>
+      <li><a href="sitemap.html">サイトマップ</a></li>
+      <li><a href="link.html">リンク集</a></li>
+      <li><a href="http://sagacitybus.sagafan.jp/">佐賀市営バスブログ</a></li>
+    </ul>
+  </div>
+
+  <div id="sub">
+    <div class="box">
+      <h2><img src="images/sub-rosen.gif" alt="路線バス" width="191" height="37"></h2>
+      <ul>
+        <li><a href="rosenzutop.html">路線図</a></li>
+        <li><a href="diagram/index.html">時刻・運賃検索</a></li>
+        <li><a href="noriba.html">主要バス停のりば案内</a></li>
+        <li><a href="norikata.html">バスの乗り方</a></li>
+        <li><a href="unchin.html">運賃の取り扱い</a></li>
+        <li><a href="kaisuuken.html">回数券</a></li>
+        <li><a href="teikiken-nimoca.html">定期券</a></li>
+        <li><a href="waribiki.html">各種割引、サービス等</a></li>
+      </ul>
+      <h2><a href="kanko.html"><img src="images/sub-kanko.gif" alt="路線バスで行く観光地" width="191" height="37"></a></h2>
+      <h2><a href="gaiyou.html"><img src="images/sub-gaiyou.gif" alt="交通局の概要" width="191" height="37"></a></h2>
+      <h2><a href="mobile.html"><img src="images/sub-mobile.gif" alt="携帯電話版のご案内" width="191" height="37"></a></h2>
+      <h2><a href="about-site.html"><img src="images/sub-site.gif" alt="このサイトについて" width="191" height="37"></a></h2>
+      <p><a href="kids/index.html"><img src="images/kids-banner.gif" alt="市営バスキッズページ" width="185" height="74"></a></p>
+    </div>
+  </div>
+
+  <div id="main">
+    <div class="box">
+
+      <div id="pankuzu">
+        <p>＞<a href="index.php">トップページ</a>＞<a href="rosenkuko.html">佐賀空港接続バス時刻表</a>＞<strong>佐賀空港接続バス時刻表（3/29～5/31）</strong></p>
+      </div>
+
+      <div id="honbun">
+
+        <h1 data-i18n="title">佐賀空港接続バス時刻表</h1>
+        <h2 data-i18n="period">2026年3月29日（日）～2026年5月31日（日）</h2>
+        <p style="font-size:90%; text-align:right;">
+          <span data-i18n="asof">（令和8年2月24日現在）</span>
+        </p>
+        <hr>
+
+        <div class="lang-switch" aria-label="Language switch">
+          <button type="button" class="lang-btn is-active" data-lang="ja">日本語</button>
+          <button type="button" class="lang-btn" data-lang="en">English</button>
+          <button type="button" class="lang-btn" data-lang="zh">中文</button>
+          <button type="button" class="lang-btn" data-lang="ko">한국어</button>
+          <button type="button" class="print-btn" onclick="window.print()" data-i18n="print_btn">印刷</button>
+        </div>
+
+        <hr>
+
+        <div class="pdf-block">
+          <h3 data-i18n="pdf_title">PDF時刻表</h3>
+          <p class="pdf-note" data-i18n="pdf_note">※PDFファイルは日本語版です。</p>
+          <ul>
+            <li>
+              <a href="http://www.bus.saga.saga.jp/info/kuukou8.3.29-5.31.pdf">
+                2026年3月29日～2026年5月31日（PDF）
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <hr>
+
+        <section class="print-page print-semi">
+          <div class="print-grid">
+
+            <div class="print-col">
+              <h2 data-i18n="semi_out_title">【準急】佐賀駅バスセンター ⇒ 佐賀空港</h2>
+              <h3 data-i18n="operating_time">2026年3月29日（日）～2026年5月31日（日）の運行時刻</h3>
+
+              <p class="scroll-notice" style="display:none; font-size:90%; color:#555;" data-i18n="scroll_notice">
+                ※ 表が横にスクロールできます。スクロールして最後までご確認ください。
+              </p>
+
+              <div class="tbl-xwrap" tabindex="0">
+                <table class="tbl tbl-junkyuu" border="0" cellspacing="0" cellpadding="6" style="margin:0; font-size:95%; min-width:1350px;">
+                  <thead>
+                    <tr class="fare-row">
+                      <th class="sticky-col-1" data-i18n="th_fare_to_airport">佐賀空港までの<br>運賃</th>
+                      <th align="center">￥600</th>
+                      <th align="center">￥600</th>
+                      <th align="center">￥570</th>
+                      <th align="center">￥570</th>
+                      <th align="center">￥550</th>
+                      <th align="center">￥510</th>
+                      <th align="center">￥410</th>
+                      <th align="center">￥310</th>
+                      <th align="center">￥160</th>
+                      <th align="center">—</th>
+                    </tr>
+
+                    <tr>
+                      <th class="sticky-col-1" data-i18n="th_air_dest_dep">航空機行先<br>出発時刻</th>
+                      <th data-i18n="th_saga_bc_1">佐賀駅<br>ﾊﾞｽｾﾝﾀｰ<br>①のりば</th>
+                      <th data-i18n="th_ekiminami">駅南本町</th>
+                      <th data-i18n="th_kencho_mae">佐賀県庁前</th>
+                      <th data-i18n="th_kokorozashi">こころざしのもり</th>
+                      <th data-i18n="th_hakubutsukan">博物館前</th>
+                      <th data-i18n="th_fukuro">袋入口</th>
+                      <th data-i18n="th_higashiyoka_aeon">東与賀<br>イオン前</th>
+                      <th data-i18n="th_kokomori_kita">小々森北</th>
+                      <th data-i18n="th_chutonti">佐賀<br>駐屯地</th>
+                      <th data-i18n="th_airport_1_dom">佐賀空港<br>①国内線</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_haneda">羽田</span><br>6:40</td>
+                      <td class="bc-bold" align="center">5:30</td>
+                      <td align="center">5:31</td>
+                      <td align="center">5:36</td>
+                      <td align="center">5:37</td>
+                      <td align="center">5:38</td>
+                      <td align="center">5:40</td>
+                      <td align="center">5:43</td>
+                      <td align="center">5:46</td>
+                      <td align="center">5:51</td>
+                      <td align="center">6:05</td>
+                    </tr>
+
+                    <tr class="test-block">
+                      <td class="sticky-col-1" align="center" data-i18n="no_connection_weekday">
+                        航空機接続なし<br>●試験運行 平日のみ運行（土日祝運休）
+                      </td>
+                      <td class="bc-bold" align="center">●7:03</td>
+                      <td align="center">●7:04</td>
+                      <td align="center">●7:09</td>
+                      <td align="center">●7:10</td>
+                      <td align="center">●7:11</td>
+                      <td align="center">●7:13</td>
+                      <td align="center">●7:16</td>
+                      <td align="center">●7:19</td>
+                      <td align="center">●7:24</td>
+                      <td align="center">●7:38</td>
+                    </tr>
+
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_haneda">羽田</span><br>9:50</td>
+                      <td class="bc-bold" align="center">8:10</td>
+                      <td align="center">8:11</td>
+                      <td align="center">8:16</td>
+                      <td align="center">8:17</td>
+                      <td align="center">8:18</td>
+                      <td align="center">8:20</td>
+                      <td align="center">8:23</td>
+                      <td align="center">8:26</td>
+                      <td align="center">8:31</td>
+                      <td align="center">8:45</td>
+                    </tr>
+
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_haneda">羽田</span><br>12:00</td>
+                      <td class="bc-bold" align="center">10:25</td>
+                      <td align="center">10:26</td>
+                      <td align="center">10:31</td>
+                      <td align="center">10:32</td>
+                      <td align="center">10:33</td>
+                      <td align="center">10:35</td>
+                      <td align="center">10:38</td>
+                      <td align="center">10:41</td>
+                      <td align="center">10:46</td>
+                      <td align="center">11:00</td>
+                    </tr>
+
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_haneda">羽田</span><br>15:45</td>
+                      <td class="bc-bold" align="center">14:10</td>
+                      <td align="center">14:11</td>
+                      <td align="center">14:16</td>
+                      <td align="center">14:17</td>
+                      <td align="center">14:18</td>
+                      <td align="center">14:20</td>
+                      <td align="center">14:23</td>
+                      <td align="center">14:26</td>
+                      <td align="center">14:31</td>
+                      <td align="center">14:45</td>
+                    </tr>
+
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_haneda">羽田</span><br>19:10</td>
+                      <td class="bc-bold" align="center">17:30</td>
+                      <td align="center">17:31</td>
+                      <td align="center">17:36</td>
+                      <td align="center">17:37</td>
+                      <td align="center">17:38</td>
+                      <td align="center">17:40</td>
+                      <td align="center">17:43</td>
+                      <td align="center">17:46</td>
+                      <td align="center">17:51</td>
+                      <td align="center">18:05</td>
+                    </tr>
+
+                    <tr class="test-block">
+                      <td class="sticky-col-1" align="center" data-i18n="no_connection_daily">
+                        航空機接続なし<br>〇試験運行 毎日運行
+                      </td>
+                      <td class="bc-bold" align="center">〇20:55</td>
+                      <td align="center">〇20:56</td>
+                      <td align="center">〇21:01</td>
+                      <td align="center">〇21:02</td>
+                      <td align="center">〇21:03</td>
+                      <td align="center">〇21:05</td>
+                      <td align="center">〇21:08</td>
+                      <td align="center">〇21:11</td>
+                      <td align="center">〇21:16</td>
+                      <td align="center">〇21:30</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="print-col">
+              <h2 data-i18n="semi_in_title">【準急】佐賀空港 ⇒ 佐賀駅バスセンター</h2>
+              <h3 data-i18n="operating_time">2026年3月29日（日）～2026年5月31日（日）の運行時刻</h3>
+
+              <p class="scroll-notice" style="display:none; font-size:90%; color:#555;" data-i18n="scroll_notice">
+                ※ 表が横にスクロールできます。スクロールして最後までご確認ください。
+              </p>
+
+              <div class="tbl-xwrap" tabindex="0">
+                <table class="tbl tbl-junkyuu" border="0" cellspacing="0" cellpadding="6" style="margin:0; font-size:95%; min-width:1350px;">
+                  <thead>
+                    <tr class="fare-row">
+                      <th class="sticky-col-1" data-i18n="th_fare_from_airport">佐賀空港からの<br>運賃</th>
+                      <th align="center">—</th>
+                      <th align="center">￥160</th>
+                      <th align="center">￥310</th>
+                      <th align="center">￥410</th>
+                      <th align="center">￥510</th>
+                      <th align="center">￥550</th>
+                      <th align="center">￥570</th>
+                      <th align="center">￥570</th>
+                      <th align="center">￥600</th>
+                      <th align="center">￥600</th>
+                    </tr>
+
+                    <tr>
+                      <th class="sticky-col-1" data-i18n="th_air_origin_arr">航空機出発地<br>到着時刻</th>
+                      <th data-i18n="th_airport_1_dom">佐賀空港<br>①国内線</th>
+                      <th data-i18n="th_chutonti">佐賀<br>駐屯地</th>
+                      <th data-i18n="th_kokomori_kita">小々森北</th>
+                      <th data-i18n="th_higashiyoka_aeon">東与賀<br>イオン前</th>
+                      <th data-i18n="th_fukuro">袋入口</th>
+                      <th data-i18n="th_hakubutsukan">博物館前</th>
+                      <th data-i18n="th_kokorozashi">こころざしのもり</th>
+                      <th data-i18n="th_kencho_mae">佐賀県庁前</th>
+                      <th data-i18n="th_ekiminami">駅南本町</th>
+                      <th data-i18n="th_saga_bc">佐賀駅<br>ﾊﾞｽｾﾝﾀｰ</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_haneda">羽田</span><br>9:10</td>
+                      <td class="airport-time" align="center">9:25</td>
+                      <td align="center">9:26</td>
+                      <td align="center">9:31</td>
+                      <td align="center">9:34</td>
+                      <td align="center">9:38</td>
+                      <td align="center">9:41</td>
+                      <td align="center">9:42</td>
+                      <td align="center">9:45</td>
+                      <td align="center">9:48</td>
+                      <td class="bc-time" align="center">10:00</td>
+                    </tr>
+
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_haneda">羽田</span><br>11:20</td>
+                      <td class="airport-time" align="center">11:35</td>
+                      <td align="center">11:36</td>
+                      <td align="center">11:41</td>
+                      <td align="center">11:44</td>
+                      <td align="center">11:48</td>
+                      <td align="center">11:51</td>
+                      <td align="center">11:52</td>
+                      <td align="center">11:55</td>
+                      <td align="center">11:58</td>
+                      <td class="bc-time" align="center">12:10</td>
+                    </tr>
+
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_haneda">羽田</span><br>15:00</td>
+                      <td class="airport-time" align="center">15:15</td>
+                      <td align="center">15:16</td>
+                      <td align="center">15:21</td>
+                      <td align="center">15:24</td>
+                      <td align="center">15:28</td>
+                      <td align="center">15:31</td>
+                      <td align="center">15:32</td>
+                      <td align="center">15:35</td>
+                      <td align="center">15:38</td>
+                      <td class="bc-time" align="center">15:50</td>
+                    </tr>
+
+                    <tr class="test-block">
+                      <td class="sticky-col-1" align="center" data-i18n="no_connection_weekday">
+                        航空機接続なし<br>●試験運行 平日のみ運行（土日祝運休）
+                      </td>
+                      <td class="airport-time" align="center">●18:00</td>
+                      <td align="center">●18:01</td>
+                      <td align="center">●18:06</td>
+                      <td align="center">●18:09</td>
+                      <td align="center">●18:13</td>
+                      <td align="center">●18:16</td>
+                      <td align="center">●18:17</td>
+                      <td align="center">●18:20</td>
+                      <td align="center">●18:23</td>
+                      <td class="bc-time" align="center">●18:35</td>
+                    </tr>
+
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_haneda">羽田</span><br>18:25</td>
+                      <td class="airport-time" align="center">18:40</td>
+                      <td align="center">18:41</td>
+                      <td align="center">18:46</td>
+                      <td align="center">18:49</td>
+                      <td align="center">18:53</td>
+                      <td align="center">18:56</td>
+                      <td align="center">18:57</td>
+                      <td align="center">19:00</td>
+                      <td align="center">19:03</td>
+                      <td class="bc-time" align="center">19:15</td>
+                    </tr>
+
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_haneda">羽田</span><br>21:30</td>
+                      <td class="airport-time" align="center">21:45</td>
+                      <td align="center">21:46</td>
+                      <td align="center">21:51</td>
+                      <td align="center">21:54</td>
+                      <td align="center">21:58</td>
+                      <td align="center">22:01</td>
+                      <td align="center">22:02</td>
+                      <td align="center">22:05</td>
+                      <td align="center">22:08</td>
+                      <td class="bc-time" align="center">22:20</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="tbl-xwrap"></div>
+
+              <p class="delay-note" data-i18n="delay_notice">
+                ※航空機の到着が遅れた場合、接続のためバスの発車を遅らせます。
+              </p>
+            </div>
+
+          </div>
+        </section>
+
+        <hr>
+
+        <section class="print-page print-direct">
+          <div class="print-grid">
+
+            <div class="print-col">
+              <h2 data-i18n="direct_out_title">【直行】佐賀駅バスセンター ⇒ 佐賀空港</h2>
+              <h3 data-i18n="operating_time">2026年3月29日（日）～2026年5月31日（日）の運行時刻</h3>
+
+              <p class="scroll-notice" style="display:none; font-size:90%; color:#555;" data-i18n="scroll_notice">
+                ※ 表が横にスクロールできます。スクロールして最後までご確認ください。
+              </p>
+
+              <div class="tbl-xwrap tbl-xwrap-direct" tabindex="0">
+                <table class="tbl tbl-direct tbl-direct-out" border="0" cellspacing="0" cellpadding="6" style="margin:0; font-size:95%;">
+                  <thead>
+                    <tr class="fare-row">
+                      <th class="sticky-col-1" data-i18n="th_fare_to_airport">佐賀空港までの<br>運賃</th>
+                      <th align="center">￥600</th>
+                      <th align="center">—</th>
+                      <th align="center">—</th>
+                    </tr>
+                    <tr>
+                      <th class="sticky-col-1" data-i18n="th_air_dest_dep">航空機行先<br>出発時刻</th>
+                      <th data-i18n="th_saga_bc_1">佐賀駅<br>ﾊﾞｽｾﾝﾀｰ<br>①のりば</th>
+                      <th data-i18n="th_direct_days">運行日<br>（祝日の場合も運行します）</th>
+                      <th data-i18n="th_airport_2_int">佐賀空港<br>②国際線</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_seoul">ソウル</span><br>10:40</td>
+                      <td class="bc-bold" align="center">8:05</td>
+                      <td align="center"><span data-i18n="days_mon_wed_fri_sun">月・水・金・日</span></td>
+                      <td align="center">8:35</td>
+                    </tr>
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_taipei">台北</span><br>11:35</td>
+                      <td class="bc-bold" align="center">9:10</td>
+                      <td align="center"><span data-i18n="days_tue_thu_sun">火・木・日</span></td>
+                      <td align="center">9:40</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="print-col">
+              <h2 data-i18n="direct_in_title">【直行】佐賀空港 ⇒ 佐賀駅バスセンター</h2>
+              <h3 data-i18n="operating_time">2026年3月29日（日）～2026年5月31日（日）の運行時刻</h3>
+
+              <p class="scroll-notice" style="display:none; font-size:90%; color:#555;" data-i18n="scroll_notice">
+                ※ 表が横にスクロールできます。スクロールして最後までご確認ください。
+              </p>
+
+              <div class="tbl-xwrap tbl-xwrap-direct" tabindex="0">
+                <table class="tbl tbl-direct tbl-direct-in" border="0" cellspacing="0" cellpadding="6" style="margin:0; font-size:95%;">
+                  <thead>
+                    <tr class="fare-row">
+                      <th class="sticky-col-1" data-i18n="th_fare_from_airport">佐賀空港からの<br>運賃</th>
+                      <th align="center">—</th>
+                      <th align="center">—</th>
+                      <th align="center">￥600</th>
+                    </tr>
+                    <tr>
+                      <th class="sticky-col-1" data-i18n="th_air_origin_arr">航空機出発地<br>到着時刻</th>
+                      <th data-i18n="th_airport_2_int">佐賀空港<br>②国際線</th>
+                      <th data-i18n="th_direct_days">運行日<br>（祝日の場合も運行します）</th>
+                      <th data-i18n="th_saga_bc">佐賀駅<br>ﾊﾞｽｾﾝﾀｰ</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_seoul">ソウル</span><br>9:40</td>
+                      <td class="airport-time" align="center">10:25</td>
+                      <td align="center"><span data-i18n="days_mon_wed_fri_sun">月・水・金・日</span></td>
+                      <td class="bc-time" align="center">10:55</td>
+                    </tr>
+                    <tr>
+                      <td class="sticky-col-1" align="center"><span data-i18n="flight_taipei">台北</span><br>10:35</td>
+                      <td class="airport-time" align="center">11:20</td>
+                      <td align="center"><span data-i18n="days_tue_thu_sun">火・木・日</span></td>
+                      <td class="bc-time" align="center">11:50</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="tbl-xwrap"></div>
+
+              <p class="delay-note" data-i18n="delay_notice">
+                ※航空機の到着が遅れた場合、接続のためバスの発車を遅らせます。
+              </p>
+
+
+
+          </div>
+        </section>
+
+        <hr>
+
+        <p style="font-size:100%;" data-i18n="disclaimer">※道路状況等により遅延する場合があります。運行内容は予告なく変更となる場合がありますのでご了承ください。</p>
+<div class="print-contact" id="printContact">
+  <span class="ja">佐賀市営バス　電話 0952-23-3155</span>
+  <span class="en">Saga City Bus　Tel: +81-952-23-3155</span>
+  <span class="zh">佐贺市营巴士　电话 0952-23-3155</span>
+  <span class="ko">사가시영 버스　전화 0952-23-3155</span>
+</div>
+      </div>
+
+      <div id="sig-terminal">
+        <hr>
+        <address><strong>佐賀市交通局総務課</strong><br>
+          〒840-0812　佐賀市愛敬町4番23号【<a target="_blank" href="https://maps.app.goo.gl/pfL8AzXYJbjcSFkcA">地図</a>】<br>
+          Tel 0952-23-3155, Fax0952-23-7309<br>
+          E-mail: <a href="mailto:kotsu@city.saga.lg.jp">kotsu@city.saga.lg.jp</a>
+        </address>
+      </div>
+
+    </div>
+  </div>
+
+  <br style="clear:both;">
+
+  <div id="copyright">
+    <p>Copyright 2007 Saga City Bus. All Rights Reserved.</p>
+  </div>
+
+</div>
+
+<script>
+/* =========================================
+   横スクロール注意表示
+========================================= */
+(function () {
+  function updateScrollNotices() {
+    var wraps = document.querySelectorAll(".tbl-xwrap");
+    for (var i = 0; i < wraps.length; i++) {
+      var wrap = wraps[i];
+      var table = wrap.querySelector("table");
+      if (!table) continue;
+
+      var el = wrap.previousElementSibling;
+      while (el && !(el.className && el.className.indexOf("scroll-notice") !== -1)) {
+        el = el.previousElementSibling;
+      }
+      if (!el) continue;
+
+      if (table.scrollWidth > wrap.clientWidth + 1) {
+        el.style.display = "block";
+      } else {
+        el.style.display = "none";
+      }
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", updateScrollNotices);
+  } else {
+    updateScrollNotices();
+  }
+  window.addEventListener("resize", updateScrollNotices);
+})();
+
+/* =========================================
+   多言語：辞書（I18N）＋切替処理
+========================================= */
+var I18N = { ja:{}, en:{}, zh:{}, ko:{} };
+var CURRENT_LANG = "ja";
+
+I18N.ja.print_btn = "印刷";
+I18N.en.print_btn = "Print";
+I18N.zh.print_btn = "打印";
+I18N.ko.print_btn = "인쇄";
+
+I18N.ja.title = "佐賀空港接続バス時刻表";
+I18N.en.title = "Saga Airport Shuttle Bus Timetable";
+I18N.zh.title = "佐贺机场接驳巴士时刻表";
+I18N.ko.title = "사가공항 연계 버스 시간표";
+
+I18N.ja.period = "2026年3月29日（日）～2026年5月31日（日）";
+I18N.en.period = "Mar 29, 2026 (Sun) – May 31, 2026 (Sun)";
+I18N.zh.period = "2026年3月29日（周日）～2026年5月31日（周日）";
+I18N.ko.period = "2026년 3월 29일(일) ~ 2026년 5월 31일(일)";
+
+I18N.ja.asof = "（令和8年2月24日現在）";
+I18N.en.asof = "(As of Feb 24, 2026)";
+I18N.zh.asof = "（截至2026年2月24日）";
+I18N.ko.asof = "(2026년 2월 24일 기준)";
+
+I18N.ja.scroll_notice = "※ 表が横にスクロールできます。スクロールして最後までご確認ください。";
+I18N.en.scroll_notice = "Note: This table can be scrolled horizontally. Please scroll to the end.";
+I18N.zh.scroll_notice = "※ 表格可横向滚动。请滚动查看到最后。";
+I18N.ko.scroll_notice = "※ 표는 가로로 스크롤할 수 있습니다. 끝까지 확인해 주세요.";
+
+I18N.ja.operating_time = "2026年3月29日（日）～2026年5月31日（日）の運行時刻";
+I18N.en.operating_time = "Operating times: Mar 29, 2026 – May 31, 2026";
+I18N.zh.operating_time = "运行时刻：2026年3月29日～2026年5月31日";
+I18N.ko.operating_time = "운행 시간: 2026년 3월 29일 ~ 5월 31일";
+
+I18N.ja.semi_out_title = "【準急】佐賀駅バスセンター ⇒ 佐賀空港";
+I18N.en.semi_out_title = "[Local-Express] Saga Sta. Bus Center ⇒ Saga Airport";
+I18N.zh.semi_out_title = "【准急】佐贺站巴士中心 ⇒ 佐贺机场";
+I18N.ko.semi_out_title = "【준급】사가역 버스센터 ⇒ 사가공항";
+
+I18N.ja.semi_in_title = "【準急】佐賀空港 ⇒ 佐賀駅バスセンター";
+I18N.en.semi_in_title = "[Local-Express] Saga Airport ⇒ Saga Sta. Bus Center";
+I18N.zh.semi_in_title = "【准急】佐贺机场 ⇒ 佐贺站巴士中心";
+I18N.ko.semi_in_title = "【준급】사가공항 ⇒ 사가역 버스센터";
+
+I18N.ja.direct_out_title = "【直行】佐賀駅バスセンター ⇒ 佐賀空港";
+I18N.en.direct_out_title = "[Non-stop] Saga Sta. Bus Center ⇒ Saga Airport";
+I18N.zh.direct_out_title = "【直达】佐贺站巴士中心 ⇒ 佐贺机场";
+I18N.ko.direct_out_title = "【직행】사가역 버스센터 ⇒ 사가공항";
+
+I18N.ja.direct_in_title = "【直行】佐賀空港 ⇒ 佐賀駅バスセンター";
+I18N.en.direct_in_title = "[Non-stop] Saga Airport ⇒ Saga Sta. Bus Center";
+I18N.zh.direct_in_title = "【直达】佐贺机场 ⇒ 佐贺站巴士中心";
+I18N.ko.direct_in_title = "【직행】사가공항 ⇒ 사가역 버스센터";
+
+I18N.ja.info_title = "ご案内";
+I18N.en.info_title = "Information";
+I18N.zh.info_title = "说明";
+I18N.ko.info_title = "안내";
+
+I18N.ja.info1 = "準急便の佐賀空港バス停は、国内線到着ロビー前の<strong>①のりば</strong>に停車します。国際線到着ロビー前の<strong>②のりば</strong>には停車しません。";
+I18N.en.info1 = "For Semi-Express buses, the Saga Airport stop is <strong>Stop ①</strong> (in front of the Domestic Arrivals lobby). It does not stop at <strong>Stop ②</strong> (International Arrivals).";
+I18N.zh.info1 = "准急班次在佐贺机场停靠<strong>①号站台</strong>（国内线到达大厅前），不停靠<strong>②号站台</strong>（国际线到达大厅前）。";
+I18N.ko.info1 = "준급편은 사가공항 <strong>①번 승강장</strong>(국내선 도착 로비 앞)에 정차하며, <strong>②번 승강장</strong>(국제선 도착 로비 앞)에는 정차하지 않습니다.";
+
+I18N.ja.info2 = "直行便の佐賀空港バス停は、国際線到着ロビー前の<strong>②のりば</strong>に停車します。国内線到着ロビー前の<strong>①のりば</strong>には停車しません。";
+I18N.en.info2 = "For Direct buses, the Saga Airport stop is <strong>Stop ②</strong> (in front of the International Arrivals lobby). It does not stop at <strong>Stop ①</strong> (Domestic Arrivals).";
+I18N.zh.info2 = "直达班次在佐贺机场停靠<strong>②号站台</strong>（国际线到达大厅前），不停靠<strong>①号站台</strong>（国内线到达大厅前）。";
+I18N.ko.info2 = "직행편은 사가공항 <strong>②번 승강장</strong>(국제선 도착 로비 앞)에 정차하며, <strong>①번 승강장</strong>(국내선 도착 로비 앞)에는 정차하지 않습니다.";
+
+I18N.ja.disclaimer = "※道路状況等により遅延する場合があります。運行内容は予告なく変更となる場合がありますのでご了承ください。";
+I18N.en.disclaimer = "Service may be delayed due to road conditions. Operations are subject to change without notice.";
+I18N.zh.disclaimer = "※可能因道路状况等发生延误。运行内容可能不经预告而变更，敬请谅解。";
+I18N.ko.disclaimer = "※도로 상황 등에 따라 지연될 수 있습니다. 운행 내용은 예고 없이 변경될 수 있습니다.";
+
+I18N.ja.flight_haneda = "羽田";
+I18N.en.flight_haneda = "Haneda";
+I18N.zh.flight_haneda = "羽田";
+I18N.ko.flight_haneda = "하네다";
+
+I18N.ja.flight_seoul = "ソウル";
+I18N.en.flight_seoul = "Seoul";
+I18N.zh.flight_seoul = "首尔";
+I18N.ko.flight_seoul = "서울";
+
+I18N.ja.flight_taipei = "台北";
+I18N.en.flight_taipei = "Taipei";
+I18N.zh.flight_taipei = "台北";
+I18N.ko.flight_taipei = "타이베이";
+
+I18N.ja.days_mon_wed_fri_sun = "月・水・金・日";
+I18N.en.days_mon_wed_fri_sun = "Mon / Wed / Fri / Sun";
+I18N.zh.days_mon_wed_fri_sun = "周一・周三・周五・周日";
+I18N.ko.days_mon_wed_fri_sun = "월·수·금·일";
+
+I18N.ja.days_tue = "火";
+I18N.en.days_tue = "Tue";
+I18N.zh.days_tue = "周二";
+I18N.ko.days_tue = "화";
+
+I18N.ja.days_thu = "木";
+I18N.en.days_thu = "Thu";
+I18N.zh.days_thu = "周四";
+I18N.ko.days_thu = "목";
+
+I18N.ja.days_sun = "日";
+I18N.en.days_sun = "Sun";
+I18N.zh.days_sun = "周日";
+I18N.ko.days_sun = "일";
+
+I18N.ja.days_tue_thu_sun = "火・木・日";
+I18N.en.days_tue_thu_sun = "Tue / Thu / Sun";
+I18N.zh.days_tue_thu_sun = "周二・周四・周日";
+I18N.ko.days_tue_thu_sun = "화·목·일";
+
+I18N.ja.th_air_dest_dep = "航空機行先<br>出発時刻";
+I18N.ja.th_air_origin_arr = "航空機出発地<br>到着時刻";
+I18N.ja.th_saga_bc_1 = "佐賀駅<br>ﾊﾞｽｾﾝﾀｰ<br>①のりば";
+I18N.ja.th_saga_bc = "佐賀駅<br>ﾊﾞｽｾﾝﾀｰ";
+I18N.ja.th_ekiminami = "駅南本町";
+I18N.ja.th_kencho_mae = "佐賀県庁前";
+I18N.ja.th_kokorozashi = "こころざしのもり";
+I18N.ja.th_hakubutsukan = "博物館前";
+I18N.ja.th_fukuro = "袋入口";
+I18N.ja.th_higashiyoka_aeon = "東与賀<br>イオン前";
+I18N.ja.th_kokomori_kita = "小々森北";
+I18N.ja.th_chutonti = "佐賀<br>駐屯地";
+I18N.ja.th_airport_1_dom = "佐賀空港<br>①国内線";
+I18N.ja.th_airport_2_int = "佐賀空港<br>②国際線";
+I18N.ja.th_direct_days = "運行日<br>（祝日の場合も運行します）";
+I18N.ja.no_connection_weekday = "航空機接続なし<br>●試験運行 平日のみ運行（土日祝運休）";
+I18N.ja.no_connection_daily = "航空機接続なし<br>〇試験運行 毎日運行";
+I18N.ja.th_fare_to_airport = "佐賀空港までの<br>運賃";
+I18N.ja.th_fare_from_airport = "佐賀空港からの<br>運賃";
+
+I18N.en.th_air_dest_dep = "Flight<br>Departure time";
+I18N.en.th_air_origin_arr = "Flight origin<br>Arrival time";
+I18N.en.th_saga_bc_1 = "Saga Sta. Bus Center<br>Stop ①";
+I18N.en.th_saga_bc = "Saga Sta. Bus Center";
+I18N.en.th_ekiminami = "Ekiminami-honmachi";
+I18N.en.th_kencho_mae = "Saga Prefectural Office (Front)";
+I18N.en.th_kokorozashi = "Kokorozashi-no-mori";
+I18N.en.th_hakubutsukan = "Museum";
+I18N.en.th_fukuro = "Fukuro Entrance";
+I18N.en.th_higashiyoka_aeon = "Higashiyoka AEON (Front)";
+I18N.en.th_kokomori_kita = "Kokomori-kita";
+I18N.en.th_chutonti = "Saga Garrison";
+I18N.en.th_airport_1_dom = "Saga Airport<br>Stop ① (Domestic)";
+I18N.en.th_airport_2_int = "Saga Airport<br>Stop ② (International)";
+I18N.en.th_direct_days = "Operating days<br>(Runs on public holidays too)";
+I18N.en.no_connection_weekday = "No flight connection<br>●Trial service operates on weekdays only (No service on weekends and holidays)";
+I18N.en.no_connection_daily = "No flight connection<br>〇Trial service operates daily";
+I18N.en.th_fare_to_airport = "Fare to Saga Airport";
+I18N.en.th_fare_from_airport = "Fare from Saga Airport";
+
+I18N.zh.th_air_dest_dep = "航班目的地<br>起飞时间";
+I18N.zh.th_air_origin_arr = "航班出发地<br>到达时间";
+I18N.zh.th_saga_bc_1 = "佐贺站巴士中心<br>①号站台";
+I18N.zh.th_saga_bc = "佐贺站巴士中心";
+I18N.zh.th_ekiminami = "站南本町";
+I18N.zh.th_kencho_mae = "佐贺县政府前";
+I18N.zh.th_kokorozashi = "志之森";
+I18N.zh.th_hakubutsukan = "佐贺县立博物馆前";
+I18N.zh.th_fukuro = "袋入口";
+I18N.zh.th_higashiyoka_aeon = "东与贺永旺前";
+I18N.zh.th_kokomori_kita = "小小森北";
+I18N.zh.th_chutonti = "佐贺驻地";
+I18N.zh.th_airport_1_dom = "佐贺机场<br>① 国内线";
+I18N.zh.th_airport_2_int = "佐贺机场<br>② 国际线";
+I18N.zh.th_direct_days = "运行日<br>（节假日也运行）";
+I18N.zh.no_connection_weekday = "无航班接驳<br>●试运行 仅工作日运行（周末及节假日停运）";
+I18N.zh.no_connection_daily = "无航班接驳<br>〇试运行 每日运行";
+I18N.zh.th_fare_to_airport = "到佐贺机场票价";
+I18N.zh.th_fare_from_airport = "从佐贺机场票价";
+
+I18N.ko.th_air_dest_dep = "항공편 목적지<br>출발 시간";
+I18N.ko.th_air_origin_arr = "항공편 출발지<br>도착 시간";
+I18N.ko.th_saga_bc_1 = "사가역 버스센터<br>①번 승강장";
+I18N.ko.th_saga_bc = "사가역 버스센터";
+I18N.ko.th_ekiminami = "에키난혼마치";
+I18N.ko.th_kencho_mae = "사가현청 앞";
+I18N.ko.th_kokorozashi = "코코로자시노모리";
+I18N.ko.th_hakubutsukan = "박물관앞";
+I18N.ko.th_fukuro = "후쿠로입구";
+I18N.ko.th_higashiyoka_aeon = "히가시요카이온앞";
+I18N.ko.th_kokomori_kita = "고고모리키타";
+I18N.ko.th_chutonti = "사가 주둔지";
+I18N.ko.th_airport_1_dom = "사가공항<br>① 국내선";
+I18N.ko.th_airport_2_int = "사가공항<br>② 국제선";
+I18N.ko.th_direct_days = "운행일<br>(공휴일도 운행)";
+I18N.ko.no_connection_weekday = "항공편 연결 없음<br>●시험 운행 평일만 운행합니다(토·일·공휴일 운휴)";
+I18N.ko.no_connection_daily = "항공편 연결 없음<br>〇시험 운행 매일 운행합니다";
+I18N.ko.th_fare_to_airport = "사가공항까지 요금";
+I18N.ko.th_fare_from_airport = "사가공항에서 요금";
+
+I18N.ja.delay_notice = "※航空機の到着が遅れた場合、接続のためバスの発車を遅らせます。";
+I18N.en.delay_notice = "If the flight arrives late, the bus departure may be delayed to maintain the connection.";
+I18N.zh.delay_notice = "※如航班到达延误，为衔接航班，巴士发车时间可能会相应延后。";
+I18N.ko.delay_notice = "※항공기 도착이 지연될 경우, 접속을 위해 버스 출발이 늦어질 수 있습니다.";
+
+I18N.ja.pdf_title = "PDF時刻表";
+I18N.en.pdf_title = "PDF Timetable";
+I18N.zh.pdf_title = "PDF时刻表";
+I18N.ko.pdf_title = "PDF 시간표";
+
+I18N.ja.pdf_note = "※PDFファイルは日本語版です。";
+I18N.en.pdf_note = "*The PDF file is available in Japanese only.";
+I18N.zh.pdf_note = "※PDF文件仅提供日文版。";
+I18N.ko.pdf_note = "※PDF 파일은 일본어판만 제공됩니다.";
+
+/* ==============================
+   印刷用の電話番号表示：言語ごとに1つだけ出す
+============================== */
+function updatePrintContact(lang){
+  var box = document.querySelector(".print-contact");
+  if(!box) return;
+
+  var spans = box.querySelectorAll("span");
+  for(var i=0; i<spans.length; i++){
+    spans[i].style.display = "none";
+  }
+
+  var target = box.querySelector("." + lang);
+  if(target){
+    target.style.display = "inline";
+  }else{
+    var ja = box.querySelector(".ja");
+    if(ja) ja.style.display = "inline";
+  }
+}
+
+/* ==============================
+   反映関数：data-i18n を置換（innerHTML）
+============================== */
+function applyLang(lang){
+  CURRENT_LANG = lang || "ja";
+  var dict = I18N[CURRENT_LANG] || I18N.ja;
+
+  document.documentElement.lang = CURRENT_LANG;
+
+  var nodes = document.querySelectorAll("[data-i18n]");
+  for(var i=0; i<nodes.length; i++){
+    var key = nodes[i].getAttribute("data-i18n");
+    if(dict && (dict[key] !== undefined) && (dict[key] !== null)){
+      nodes[i].innerHTML = dict[key];
+    }
+  }
+
+  updatePrintContact(CURRENT_LANG);
+}
+
+/* ==============================
+   言語ボタン：クリックで切替
+============================== */
+(function(){
+  function setActiveButton(lang){
+    var btns = document.querySelectorAll(".lang-btn");
+    for(var i=0; i<btns.length; i++){
+      var b = btns[i];
+      if(b.getAttribute("data-lang") === lang){
+        if(b.className.indexOf("is-active") === -1) b.className += " is-active";
+      }else{
+        b.className = b.className
+          .replace(/\bis-active\b/g,"")
+          .replace(/\s{2,}/g," ")
+          .replace(/^\s+|\s+$/g,"");
+      }
+    }
+  }
+
+  function initLangSwitch(){
+    var btns = document.querySelectorAll(".lang-btn");
+    for(var i=0; i<btns.length; i++){
+      btns[i].onclick = function(){
+        var lang = this.getAttribute("data-lang") || "ja";
+        setActiveButton(lang);
+        applyLang(lang);
+      };
+    }
+
+    setActiveButton(CURRENT_LANG);
+    applyLang(CURRENT_LANG);
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", initLangSwitch);
+  }else{
+    initLangSwitch();
+  }
+})();
+
+window.addEventListener("beforeprint", function(){
+  applyLang(CURRENT_LANG);
+});
+</script>
+
+</body>
+</html>

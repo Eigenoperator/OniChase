@@ -4,9 +4,9 @@
 Continue V5 public-transport expansion on top of the stable V4 rail base, with the current active work on nationwide real bus collection and playable promotion.
 
 ## V5 Bus Collection Status
-- As of 2026-05-19 13:10:26 PDT, the V5 bus runtime bundle has 5,245 routes, 79,059 trips, 89,216 stops, 709,731 indexed planner stopTimes, and 111,685 walking connectors.
-- Airport access audit status: 37 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 33 airports still with no bus stop within 5 km.
-- Latest promoted official source: UBJ / Yamaguchi Ube Airport official access bus HTML tables, 2 endpoint-playable routes and 36 trips for 新山口駅 ⇔ 山口宇部空港 and 宇部新川駅 ⇔ 山口宇部空港. The source covers 2026-04-01 through 2026-05-31, matches the current planner service date, and the overlap audit found no existing GTFS duplicate.
+- As of 2026-05-19 13:27:58 PDT, the V5 bus runtime bundle has 5,246 routes, 79,076 trips, 89,218 stops, 709,753 indexed planner stopTimes, and 111,687 walking connectors.
+- Airport access audit status: 38 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 32 airports still with no bus stop within 5 km.
+- Latest promoted official source: HSG / Kyushu Saga International Airport official Saga City Bus timetable, 1 endpoint-playable route and 17 trips for 佐賀駅バスセンター ⇔ 佐賀空港. The source covers 2026-03-29 through 2026-05-31, matches the current planner service date, and the overlap audit found no existing GTFS duplicate.
 - Important correction: "finished bus sources" only means the currently collected official source batch was either promoted or blocked; it does not mean nationwide airport liaison, highway/night, or local bus collection is complete.
 
 ## Done
