@@ -67,6 +67,7 @@ AIRPORT_STOP_ALIASES = {
     "AXT": ["秋田空港", "akita airport"],
     "MMY": ["宮古空港", "miyako airport"],
     "SHI": ["みやこ下地島空港", "下地島空港", "shimojishima airport"],
+    "AOJ": ["青森空港", "aomori airport"],
 }
 MANUAL_STOP_COORD_ALIASES = {
     # Nagasaki airport-bus city stops.  中央橋 coordinates are from Busmap's

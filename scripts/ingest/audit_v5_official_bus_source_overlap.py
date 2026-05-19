@@ -38,6 +38,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_hakodate_airport_official_bus_source.json",
     ROOT / "data" / "v5_akita_airport_official_bus_source.json",
     ROOT / "data" / "v5_miyako_airport_official_bus_source.json",
+    ROOT / "data" / "v5_aomori_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -61,6 +62,7 @@ OPERATOR_HINTS = {
     "函館バス": ["函館バス", "Hakodate Bus"],
     "秋田中央交通": ["秋田中央", "Akita Chuo"],
     "中央交通": ["中央交通"],
+    "JRバス東北": ["JRバス東北", "JR Bus Tohoku"],
 }
 
 

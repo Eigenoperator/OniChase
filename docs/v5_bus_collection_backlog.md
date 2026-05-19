@@ -1,18 +1,18 @@
 # OniChase V5 Bus Collection Backlog
 
-Generated from the current V5 bus audits on `2026-05-18`.
+Generated from the current V5 bus audits on `2026-05-19`.
 
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,210.
-- Bus routes: 5,242.
-- Bus trips: 78,990.
+- Bus stops: 89,212.
+- Bus routes: 5,243.
+- Bus trips: 79,023.
 - Stop times: 2,270,004.
 - Runtime planner tiles: 414 tiles.
-- Saturday active trips in planner tiles: 27,936.
-- Walking connectors: 111,669.
-- Routes with fare-rule coverage: 4,539.
+- Saturday active trips in planner tiles: 27,969.
+- Walking connectors: 111,671.
+- Routes with fare-rule coverage: 4,541.
 
 ## Highest Priority Gap
 
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 35 airports covered by GTFS/official airport-class bus routes.
+- 36 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 35 airports still have no bus stop within 5 km in this source layer.
+- 34 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -218,6 +218,36 @@ Completed seventh official-source collection pass:
   - Result: 118 official routes checked; 3,486 official trips represented in
     source files; no likely GTFS duplicate overlap found by the current
     heuristic.
+
+### 2026-05-19
+
+Continued high-flight-volume airport access gap collection:
+
+- AOJ / Aomori Airport official JR Bus Tohoku PDF timetable.
+  - Script: `scripts/ingest/collect_v5_aomori_airport_bus.py`
+  - Source output: `data/v5_aomori_airport_official_bus_source.json`
+  - Docs copy: `docs/data/v5_aomori_airport_official_bus_source.json`
+  - Audit: `data/v5_aomori_airport_official_bus_audit.json`
+  - Result: 1 official route normalized; 33 endpoint-playable trips extracted
+    for 青森駅 ⇔ 青森空港. Adult fare is recorded as ¥690.
+  - Timetable scope: official JR Bus Tohoku PDF effective 2026-03-01; most
+    trips are daily, with one airport-bound and one city-bound Tue/Thu/Sat
+    service preserved at trip level.
+  - Overlap audit: no GTFS duplicate found, so the route was promoted into the
+    runtime bus bundle and planner tiles.
+
+Remaining no-stop-within-5km airport gaps by current flight volume now begin:
+
+1. ASJ / Amami Airport: 36 flights.
+2. IZO / Izumo Enmusubi Airport: 34 flights.
+3. UBJ / Yamaguchi Ube Airport: 29 flights.
+4. HSG / Kyushu Saga International Airport: 24 flights.
+5. IBR / Ibaraki Airport: 24 flights.
+6. IWK / Iwakuni Kintaikyo Airport: 24 flights.
+7. OKJ / Okayama Momotaro Airport: 24 flights.
+8. KUH / Kushiro Airport: 22 flights.
+9. MMB / Memanbetsu Airport: 22 flights.
+10. AKJ / Asahikawa Airport: 20 flights.
 
 ### 2026-05-18
 
