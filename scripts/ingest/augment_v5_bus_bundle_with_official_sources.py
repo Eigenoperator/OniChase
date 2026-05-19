@@ -75,6 +75,7 @@ AIRPORT_STOP_ALIASES = {
     "OKJ": ["岡山桃太郎空港", "岡山空港", "okayama airport"],
     "KUH": ["たんちょう釧路空港", "釧路空港", "kushiro airport"],
     "MMB": ["女満別空港", "memanbetsu airport"],
+    "AKJ": ["旭川空港", "asahikawa airport"],
 }
 MANUAL_STOP_COORD_ALIASES = {
     # Nagasaki airport-bus city stops.  中央橋 coordinates are from Busmap's

@@ -5,14 +5,14 @@ Generated from the current V5 bus audits on `2026-05-19`.
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,238.
-- Bus routes: 5,255.
-- Bus trips: 79,244.
-- Stop times: 2,270,528.
-- Runtime planner tiles: 422 tiles.
-- Saturday active trips in planner tiles: 28,161.
-- Walking connectors: 111,737.
-- Routes with fare-rule coverage: 4,553.
+- Bus stops: 89,240.
+- Bus routes: 5,256.
+- Bus trips: 79,262.
+- Stop times: 2,270,564.
+- Runtime planner tiles: 424 tiles.
+- Saturday active trips in planner tiles: 28,179.
+- Walking connectors: 111,741.
+- Routes with fare-rule coverage: 4,554.
 
 ## Highest Priority Gap
 
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 43 airports covered by GTFS/official airport-class bus routes.
+- 44 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 27 airports still have no bus stop within 5 km in this source layer.
+- 26 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -236,18 +236,19 @@ Continued high-flight-volume airport access gap collection:
   - Overlap audit: no GTFS duplicate found, so the route was promoted into the
     runtime bus bundle and planner tiles.
 
-Remaining no-stop-within-5km airport gaps by current flight volume now begin:
+Remaining no-stop-within-5km airport gaps by current flight volume now begin
+as of the 2026-05-19 16:14:55 PDT AKJ promotion:
 
 1. ASJ / Amami Airport: 36 flights.
 2. IZO / Izumo Enmusubi Airport: 34 flights.
-3. IWK / Iwakuni Kintaikyo Airport: 24 flights.
-4. OKJ / Okayama Momotaro Airport: 24 flights.
-5. KUH / Kushiro Airport: 22 flights.
-6. MMB / Memanbetsu Airport: 22 flights.
-7. AKJ / Asahikawa Airport: 20 flights.
-8. YGJ / Yonago Kitaro Airport: 19 flights.
-9. TSJ / Tsushima Airport: 18 flights.
-10. FUJ / Fukue Airport: 16 flights.
+3. YGJ / Yonago Kitaro Airport: 19 flights.
+4. TSJ / Tsushima Airport: 18 flights.
+5. FUJ / Fukue Airport: 16 flights.
+6. KUM / Yakushima Airport: 16 flights.
+7. TTJ / Tottori Airport: 15 flights.
+8. OBO / Tokachi-Obihiro Airport: 14 flights.
+9. TKN / Tokunoshima Airport: 14 flights.
+10. FKS / Fukushima Airport: 10 flights.
 
 - UBJ / Yamaguchi Ube Airport official airport access bus HTML timetables.
   - Script: `scripts/ingest/collect_v5_yamaguchi_ube_airport_bus.py`
@@ -852,3 +853,38 @@ layer before merging:
   - Active planner bus trips: 28,161
   - Indexed planner stopTimes: 710,059
   - Planner walking connectors: 111,737
+
+## AKJ / Asahikawa Airport
+
+- 2026-05-19 16:14:55 PDT - Added AKJ from the official Asahikawa Denkikidou airport-bus page and May 2026 PDF.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 26
+  - Review-inclusive gaps: 32
+- Source:
+  - Official Asahikawa Denkikidou airport-bus page: `https://www.asahikawa-denkikidou.jp/asahikawa-airport/`
+  - Official May 2026 PDF: `https://www.asahikawa-denkikidou.jp/manage/wp-content/uploads/2026/03/airport_timetable.R8.5.01-R8.5.31.pdf`
+  - Current section effective 2026-05-01 through 2026-05-31.
+- Parser:
+  - `scripts/ingest/collect_v5_asahikawa_airport_bus.py`
+- Output:
+  - `data/v5_asahikawa_airport_official_bus_source.json`
+  - `docs/data/v5_asahikawa_airport_official_bus_source.json`
+  - `data/v5_asahikawa_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Route: 旭川空港線 旭川駅 ⇔ 旭川空港
+  - Trips: 18
+  - StopTimes: 36
+  - Endpoint stops: 旭川駅, 旭川空港
+  - Fare: ¥750
+  - Direction split: 9 to airport, 9 from airport
+  - Endpoint normalization is intentional because the official airport-bound note disallows alighting before the airport and the city-bound note disallows boarding after the airport.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: AKJ is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,256
+  - Total bus trips: 79,262
+  - Total bus stops: 89,240
+  - Active planner bus trips: 28,179
+  - Indexed planner stopTimes: 710,095
+  - Planner walking connectors: 111,741

@@ -4,9 +4,9 @@
 Continue V5 public-transport expansion on top of the stable V4 rail base, with the current active work on nationwide real bus collection and playable promotion.
 
 ## V5 Bus Collection Status
-- As of 2026-05-19 15:54:05 PDT, the V5 bus runtime bundle has 5,255 routes, 79,244 trips, 89,238 stops, 710,059 indexed planner stopTimes, and 111,737 walking connectors.
-- Airport access audit status: 43 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 27 airports still with no bus stop within 5 km.
-- Latest promoted official source: MMB / Memanbetsu Airport official Abashiri Bus timetable, 1 endpoint-playable route and 19 fixed-clock trips for 網走駅前 ⇔ 女満別空港. The source covers the current 2026-05-01 to 2026-05-31 official PDFs and the overlap audit found no existing GTFS duplicate.
+- As of 2026-05-19 16:14:55 PDT, the V5 bus runtime bundle has 5,256 routes, 79,262 trips, 89,240 stops, 710,095 indexed planner stopTimes, and 111,741 walking connectors.
+- Airport access audit status: 44 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 26 airports still with no bus stop within 5 km.
+- Latest promoted official source: AKJ / Asahikawa Airport official Asahikawa Denkikidou timetable, 1 endpoint-playable route and 18 fixed-clock trips for 旭川駅 ⇔ 旭川空港. The source covers the current 2026-05-01 to 2026-05-31 official page/PDF and the overlap audit found no existing GTFS duplicate.
 - Important correction: "finished bus sources" only means the currently collected official source batch was either promoted or blocked; it does not mean nationwide airport liaison, highway/night, or local bus collection is complete.
 
 ## Done
