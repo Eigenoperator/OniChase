@@ -43,6 +43,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_saga_airport_official_bus_source.json",
     ROOT / "data" / "v5_ibaraki_airport_official_bus_source.json",
     ROOT / "data" / "v5_iwakuni_airport_official_bus_source.json",
+    ROOT / "data" / "v5_okayama_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -71,6 +72,7 @@ OPERATOR_HINTS = {
     "佐賀市営バス": ["佐賀市営", "佐賀市交通局", "Saga City"],
     "茨城空港アクセスバス": ["茨城空港", "関東鉄道", "茨城交通", "Ibaraki"],
     "いわくにバス": ["いわくにバス", "岩国", "Iwakuni"],
+    "岡山空港リムジンバス共同運行": ["岡山空港", "岡電", "中鉃", "中鉄", "Okayama"],
 }
 
 

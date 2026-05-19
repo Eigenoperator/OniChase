@@ -5,14 +5,14 @@ Generated from the current V5 bus audits on `2026-05-19`.
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,230.
-- Bus routes: 5,251.
-- Bus trips: 79,167.
-- Stop times: 2,270,374.
-- Runtime planner tiles: 418 tiles.
-- Saturday active trips in planner tiles: 28,087.
-- Walking connectors: 111,715.
-- Routes with fare-rule coverage: 4,549.
+- Bus stops: 89,234.
+- Bus routes: 5,253.
+- Bus trips: 79,212.
+- Stop times: 2,270,464.
+- Runtime planner tiles: 419 tiles.
+- Saturday active trips in planner tiles: 28,129.
+- Walking connectors: 111,731.
+- Routes with fare-rule coverage: 4,551.
 
 ## Highest Priority Gap
 
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 40 airports covered by GTFS/official airport-class bus routes.
+- 41 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 30 airports still have no bus stop within 5 km in this source layer.
+- 29 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -749,3 +749,37 @@ layer before merging:
   - Active planner bus trips: 28,087
   - Indexed planner stopTimes: 709,911
   - Planner walking connectors: 111,715
+
+## OKJ / Okayama Momotaro Airport
+
+- 2026-05-19 14:36:03 PDT - Added OKJ from the official Okayama Momotaro Airport bus access timetable.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 29
+  - Review-inclusive gaps: 35
+- Source:
+  - Official Okayama Momotaro Airport bus page: `https://www.okayama-airport.org/access/bus`
+  - Current section effective 2026-03-29 through 2026-06-30.
+- Parser:
+  - `scripts/ingest/collect_v5_okayama_airport_bus.py`
+- Output:
+  - `data/v5_okayama_airport_official_bus_source.json`
+  - `docs/data/v5_okayama_airport_official_bus_source.json`
+  - `data/v5_okayama_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Routes: 岡山駅西口線 and 倉敷駅北口線
+  - Trips: 45
+  - StopTimes: 90
+  - Endpoint stops: 岡山駅西口, 倉敷駅北口, 岡山桃太郎空港
+  - Fares: ¥1000 for 岡山駅西口 and ¥1400 for 倉敷駅北口
+  - Direction split: 22 to airport, 23 from airport
+  - Service windows: daily rows plus official current/future special markers for the 2026-03-29 to 2026-06-30 timetable.
+- Checks:
+  - Targeted overlap audit: both route families `no_gtfs_overlap_found`
+  - Airport access audit: OKJ is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,253
+  - Total bus trips: 79,212
+  - Total bus stops: 89,234
+  - Active planner bus trips: 28,129
+  - Indexed planner stopTimes: 709,995
+  - Planner walking connectors: 111,731
