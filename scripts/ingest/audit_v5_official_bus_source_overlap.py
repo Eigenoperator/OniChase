@@ -45,6 +45,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_iwakuni_airport_official_bus_source.json",
     ROOT / "data" / "v5_okayama_airport_official_bus_source.json",
     ROOT / "data" / "v5_kushiro_airport_official_bus_source.json",
+    ROOT / "data" / "v5_memanbetsu_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -75,6 +76,7 @@ OPERATOR_HINTS = {
     "いわくにバス": ["いわくにバス", "岩国", "Iwakuni"],
     "岡山空港リムジンバス共同運行": ["岡山空港", "岡電", "中鉃", "中鉄", "Okayama"],
     "阿寒バス": ["阿寒バス", "釧路", "Akan"],
+    "網走バス": ["網走バス", "網走", "女満別", "Abashiri"],
 }
 
 

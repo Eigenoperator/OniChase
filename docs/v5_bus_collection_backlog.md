@@ -5,14 +5,14 @@ Generated from the current V5 bus audits on `2026-05-19`.
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,236.
-- Bus routes: 5,254.
-- Bus trips: 79,225.
-- Stop times: 2,270,490.
-- Runtime planner tiles: 420 tiles.
-- Saturday active trips in planner tiles: 28,142.
-- Walking connectors: 111,733.
-- Routes with fare-rule coverage: 4,552.
+- Bus stops: 89,238.
+- Bus routes: 5,255.
+- Bus trips: 79,244.
+- Stop times: 2,270,528.
+- Runtime planner tiles: 422 tiles.
+- Saturday active trips in planner tiles: 28,161.
+- Walking connectors: 111,737.
+- Routes with fare-rule coverage: 4,553.
 
 ## Highest Priority Gap
 
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 42 airports covered by GTFS/official airport-class bus routes.
+- 43 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 28 airports still have no bus stop within 5 km in this source layer.
+- 27 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -818,3 +818,37 @@ layer before merging:
   - Active planner bus trips: 28,142
   - Indexed planner stopTimes: 710,021
   - Planner walking connectors: 111,733
+
+## MMB / Memanbetsu Airport
+
+- 2026-05-19 15:54:05 PDT - Added MMB from the official Abashiri Bus Memanbetsu Airport line PDFs.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 27
+  - Review-inclusive gaps: 33
+- Source:
+  - Official Abashiri Bus PDF to airport: `https://www.abashiribus.com/jikoku/mmbR08.05.01_1.pdf`
+  - Official Abashiri Bus PDF from airport: `https://www.abashiribus.com/jikoku/mmbR08.05.01_2.pdf`
+  - Current section effective 2026-05-01 through 2026-05-31.
+- Parser:
+  - `scripts/ingest/collect_v5_memanbetsu_airport_bus.py`
+- Output:
+  - `data/v5_memanbetsu_airport_official_bus_source.json`
+  - `docs/data/v5_memanbetsu_airport_official_bus_source.json`
+  - `data/v5_memanbetsu_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Route: 女満別空港線 網走駅前 ⇔ 女満別空港
+  - Trips: 19
+  - StopTimes: 38
+  - Endpoint stops: 網走駅前, 女満別空港
+  - Fare: ¥1050
+  - Direction split: 9 to airport, 10 from airport
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: MMB is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,255
+  - Total bus trips: 79,244
+  - Total bus stops: 89,238
+  - Active planner bus trips: 28,161
+  - Indexed planner stopTimes: 710,059
+  - Planner walking connectors: 111,737
