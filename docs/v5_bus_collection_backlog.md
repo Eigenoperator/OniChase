@@ -5,14 +5,14 @@ Generated from the current V5 bus audits on `2026-05-19`.
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,240.
-- Bus routes: 5,256.
-- Bus trips: 79,262.
-- Stop times: 2,270,564.
-- Runtime planner tiles: 424 tiles.
-- Saturday active trips in planner tiles: 28,179.
-- Walking connectors: 111,741.
-- Routes with fare-rule coverage: 4,554.
+- Bus stops: 89,244.
+- Bus routes: 5,258.
+- Bus trips: 79,286.
+- Stop times: 2,270,612.
+- Runtime planner tiles: 426 tiles.
+- Saturday active trips in planner tiles: 28,203.
+- Walking connectors: 111,756.
+- Routes with fare-rule coverage: 4,556.
 
 ## Highest Priority Gap
 
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 44 airports covered by GTFS/official airport-class bus routes.
+- 45 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 26 airports still have no bus stop within 5 km in this source layer.
+- 25 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -237,18 +237,18 @@ Continued high-flight-volume airport access gap collection:
     runtime bus bundle and planner tiles.
 
 Remaining no-stop-within-5km airport gaps by current flight volume now begin
-as of the 2026-05-19 16:14:55 PDT AKJ promotion:
+as of the 2026-05-19 16:39:38 PDT YGJ promotion:
 
 1. ASJ / Amami Airport: 36 flights.
 2. IZO / Izumo Enmusubi Airport: 34 flights.
-3. YGJ / Yonago Kitaro Airport: 19 flights.
-4. TSJ / Tsushima Airport: 18 flights.
-5. FUJ / Fukue Airport: 16 flights.
-6. KUM / Yakushima Airport: 16 flights.
-7. TTJ / Tottori Airport: 15 flights.
-8. OBO / Tokachi-Obihiro Airport: 14 flights.
-9. TKN / Tokunoshima Airport: 14 flights.
-10. FKS / Fukushima Airport: 10 flights.
+3. TSJ / Tsushima Airport: 18 flights.
+4. FUJ / Fukue Airport: 16 flights.
+5. KUM / Yakushima Airport: 16 flights.
+6. TTJ / Tottori Airport: 15 flights.
+7. OBO / Tokachi-Obihiro Airport: 14 flights.
+8. TKN / Tokunoshima Airport: 14 flights.
+9. FKS / Fukushima Airport: 10 flights.
+10. HAC / Hachijojima Airport: 10 flights.
 
 - UBJ / Yamaguchi Ube Airport official airport access bus HTML timetables.
   - Script: `scripts/ingest/collect_v5_yamaguchi_ube_airport_bus.py`
@@ -888,3 +888,40 @@ layer before merging:
   - Active planner bus trips: 28,179
   - Indexed planner stopTimes: 710,095
   - Planner walking connectors: 111,741
+
+## YGJ / Yonago Kitaro Airport
+
+- 2026-05-19 16:39:38 PDT - Added YGJ from official Hinomaru Bus and Matsue Ichibata / Hinomaru Hire timetables.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 25
+  - Review-inclusive gaps: 31
+- Source:
+  - Official Yonago Airport access page: `https://www.yonago-air.com/access/bus/`
+  - Official Hinomaru Bus airport page: `https://hinomarubus.co.jp/route/airport/?tab=2`
+  - Official Matsue Ichibata airport-bus page: `https://t-matsue.ichibata.co.jp/airport-bus-yonago/`
+  - Official Matsue PDF: `https://t-matsue.ichibata.co.jp/wp-content/media/米子空港連絡バス時刻表新）2026.3.29～2026.10.24-2.pdf`
+  - Current timetables effective 2026-03-29 through 2026-10-24.
+- Parser:
+  - `scripts/ingest/collect_v5_yonago_airport_bus.py`
+- Output:
+  - `data/v5_yonago_airport_official_bus_source.json`
+  - `docs/data/v5_yonago_airport_official_bus_source.json`
+  - `data/v5_yonago_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Routes: 米子駅 ⇔ 米子鬼太郎空港 and 松江駅 ⇔ 米子鬼太郎空港
+  - Trips: 24
+  - StopTimes: 48
+  - Endpoint stops: 米子駅, 松江駅, 米子鬼太郎空港
+  - Fares: ¥640 for 米子駅 and ¥1200 for 松江駅
+  - Direction split: 12 to airport, 12 from airport
+  - Airport departures may shift with flight arrival/baggage handling, but the official timetables publish fixed scheduled departure times; those fixed times are emitted for gameplay.
+- Checks:
+  - Targeted overlap audit: both route families `no_gtfs_overlap_found`
+  - Airport access audit: YGJ is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,258
+  - Total bus trips: 79,286
+  - Total bus stops: 89,244
+  - Active planner bus trips: 28,203
+  - Indexed planner stopTimes: 710,143
+  - Planner walking connectors: 111,756
