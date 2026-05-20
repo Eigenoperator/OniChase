@@ -51,6 +51,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_tsushima_airport_official_bus_source.json",
     ROOT / "data" / "v5_fukue_airport_official_bus_source.json",
     ROOT / "data" / "v5_yakushima_airport_official_bus_source.json",
+    ROOT / "data" / "v5_tottori_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -88,6 +89,7 @@ OPERATOR_HINTS = {
     "対馬交通": ["対馬交通", "対馬", "Tsushima"],
     "五島自動車": ["五島自動車", "五島バス", "Goto Bus", "福江"],
     "まつばんだ交通": ["まつばんだ", "Matsubanda", "屋久島"],
+    "日ノ丸自動車": ["日ノ丸", "日ノ丸自動車", "Hinomaru", "鳥取"],
 }
 
 

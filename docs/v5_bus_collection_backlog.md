@@ -1030,3 +1030,37 @@ layer before merging:
   - Active planner bus trips: 28,252
   - Indexed planner stopTimes: 710,243
   - Planner walking connectors: 111,760
+
+## TTJ / Tottori Sand Dunes Conan Airport
+
+- 2026-05-19 17:59:12 PDT - Added TTJ from the official Tottori Airport connection-bus PDF.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 21
+  - Review-inclusive gaps: 27
+- Source:
+  - Official Tottori Airport connection-bus PDF: `https://www.ttj-ap-bld.co.jp/files/access/bus_diagram01.pdf`
+  - Current service window is 2026-03-29 through 2026-05-31.
+- Parser:
+  - `scripts/ingest/collect_v5_tottori_airport_bus.py`
+- Output:
+  - `data/v5_tottori_airport_official_bus_source.json`
+  - `docs/data/v5_tottori_airport_official_bus_source.json`
+  - `data/v5_tottori_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Route: 鳥取駅 ⇔ 鳥取空港
+  - Trips: 10
+  - StopTimes: 20
+  - Endpoint stops: 鳥取駅, 鳥取空港
+  - Fare: ¥480
+  - Direction split: 5 to airport, 5 from airport
+  - Endpoint normalization is intentional because the official PDF disallows intermediate alighting on airport-bound buses and intermediate boarding on city-bound buses.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: TTJ is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,263
+  - Total bus trips: 79,345
+  - Total bus stops: 89,256
+  - Active planner bus trips: 28,262
+  - Indexed planner stopTimes: 710,263
+  - Planner walking connectors: 111,763
