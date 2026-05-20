@@ -1361,3 +1361,35 @@ layer before merging:
   - Active planner bus trips: 28,381
   - Indexed planner stopTimes: 710,645
   - Planner walking connectors: 111,821
+
+## IKI / Iki Airport and OKE / Okinoerabu Airport
+
+- 2026-05-19 22:27:44 PDT - Added IKI and OKE from official island airport-bus PDFs.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 10
+  - Review-inclusive gaps: 16
+- Sources:
+  - `https://iki-kotsu.com/pdf/iki_AirPortBus.pdf`
+  - `https://okinoerabubus.org/wp-content/uploads/2026/04/schedule_202604.pdf`
+- Parser:
+  - `scripts/ingest/collect_v5_island_airport_bus.py`
+- Normalized gameplay data:
+  - Routes: 郷ノ浦 ⇔ 壱岐空港, 知名 ⇔ 沖永良部空港, 和泊 ⇔ 沖永良部空港
+  - Trips: 30
+  - StopTimes: 60
+  - Stops: 6 route-scoped stops
+  - Fares: ¥850 for 知名, ¥430 for 和泊; 壱岐 fare is not emitted yet because the official PDF lists pass products rather than a clear endpoint fare in the extracted table.
+  - Service windows: IKI 2026-03-29 through 2026-10-24; OKE from 2025-10-15.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found` for all 3 routes
+  - Airport access audit: IKI and OKE are now `covered_by_gtfs_airport_bus`
+- Source limitations:
+  - IKI ORC41/42 rows have explicit 2026 planned suspension windows, so only the ORC43/44 pair is promoted until official bus calendar-date exceptions are modeled.
+  - Intermediate island stops are visible in the PDFs but are not emitted until stop coordinates are reviewed.
+- Runtime after promotion:
+  - Total bus routes: 5,277
+  - Total bus trips: 79,502
+  - Total bus stops: 89,306
+  - Active planner bus trips: 28,411
+  - Indexed planner stopTimes: 710,705
+  - Planner walking connectors: 111,824

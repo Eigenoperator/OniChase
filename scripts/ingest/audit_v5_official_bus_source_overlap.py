@@ -61,6 +61,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_odate_noshiro_airport_official_bus_source.json",
     ROOT / "data" / "v5_izumo_airport_official_bus_source.json",
     ROOT / "data" / "v5_monbetsu_airport_official_bus_source.json",
+    ROOT / "data" / "v5_island_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -109,6 +110,8 @@ OPERATOR_HINTS = {
     "出雲一畑交通": ["出雲一畑", "一畑", "Izumo Ichibata"],
     "松江一畑交通": ["松江一畑", "一畑", "Matsue Ichibata"],
     "紋別市空港連絡バス": ["紋別", "Monbetsu"],
+    "壱岐交通": ["壱岐交通", "壱岐", "Iki"],
+    "沖永良部バス企業団": ["沖永良部", "Okinoerabu"],
 }
 
 
