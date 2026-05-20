@@ -1234,3 +1234,37 @@ layer before merging:
   - Active planner bus trips: 28,320
   - Indexed planner stopTimes: 710,379
   - Planner walking connectors: 111,774
+
+## WKJ / Wakkanai Airport
+
+- 2026-05-19 19:33:51 PDT - Added WKJ from official Soya Bus airport page and PDF; this completed the 10-airport continuation batch.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 15
+  - Review-inclusive gaps: 21
+- Source:
+  - Official Soya Bus airport page: `http://www.soyabus.co.jp/airport/`
+  - Official Soya Bus PDF: `http://www.soyabus.co.jp/app-wp/wp-content/themes/Souyabus-child/images/airport/Airport_2026_0329-1024.pdf`
+  - Current service window is 2026-03-29 through 2026-10-24.
+- Parser:
+  - `scripts/ingest/collect_v5_wakkanai_airport_bus.py`
+- Output:
+  - `data/v5_wakkanai_airport_official_bus_source.json`
+  - `docs/data/v5_wakkanai_airport_official_bus_source.json`
+  - `data/v5_wakkanai_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Route: 稚内フェリーターミナル ⇔ 稚内駅前ターミナル ⇔ 空港ターミナル
+  - Trips: 8
+  - StopTimes: 24
+  - Endpoint/major stops: 稚内フェリーターミナル, 稚内駅前ターミナル, 空港ターミナル
+  - Fare: ¥800 flat fare
+  - The official ③ connection pair is emitted only for 2026-06-01 through 2026-09-30.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: WKJ is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,270
+  - Total bus trips: 79,417
+  - Total bus stops: 89,271
+  - Active planner bus trips: 28,326
+  - Indexed planner stopTimes: 710,397
+  - Planner walking connectors: 111,778
