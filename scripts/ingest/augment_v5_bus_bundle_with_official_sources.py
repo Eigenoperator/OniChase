@@ -83,6 +83,7 @@ AIRPORT_STOP_ALIASES = {
     "TTJ": ["鳥取空港", "鳥取砂丘コナン空港", "tottori airport", "tottori sand dunes conan airport"],
     "OBO": ["とかち帯広空港", "帯広空港", "tokachi obihiro airport", "obihiro airport"],
     "TKN": ["徳之島空港", "tokunoshima airport"],
+    "FKS": ["福島空港", "fukushima airport"],
 }
 MANUAL_STOP_COORD_ALIASES = {
     # Nagasaki airport-bus city stops.  中央橋 coordinates are from Busmap's

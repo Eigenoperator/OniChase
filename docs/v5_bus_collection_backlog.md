@@ -1132,3 +1132,38 @@ layer before merging:
   - Active planner bus trips: 28,288
   - Indexed planner stopTimes: 710,315
   - Planner walking connectors: 111,766
+
+## FKS / Fukushima Airport
+
+- 2026-05-19 18:53:02 PDT - Added FKS from the official Fukushima Kotsu airport limousine page.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 18
+  - Review-inclusive gaps: 24
+- Source:
+  - Official Fukushima Kotsu airport limousine page: `https://www.fukushima-koutu.co.jp/express/line/06-revision.html`
+  - Current service begins 2026-03-29.
+- Parser:
+  - `scripts/ingest/collect_v5_fukushima_airport_bus.py`
+- Output:
+  - `data/v5_fukushima_airport_official_bus_source.json`
+  - `docs/data/v5_fukushima_airport_official_bus_source.json`
+  - `data/v5_fukushima_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Route: 郡山駅前 ⇔ 福島空港
+  - Trips: 12
+  - StopTimes: 24
+  - Endpoint stops: 郡山駅前, 福島空港
+  - Direction split: 6 to airport, 6 from airport
+  - Service split: 10 daily trips, 2 Tuesday/Friday-only trips
+  - Fare: ¥1200
+  - 中央工業団地 is omitted because the official timetable marks it as boarding-only toward the airport and alighting-only toward 郡山.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: FKS is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,266
+  - Total bus trips: 79,387
+  - Total bus stops: 89,262
+  - Active planner bus trips: 28,298
+  - Indexed planner stopTimes: 710,335
+  - Planner walking connectors: 111,768
