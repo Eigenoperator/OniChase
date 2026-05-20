@@ -58,6 +58,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_hachijojima_airport_official_bus_source.json",
     ROOT / "data" / "v5_shonai_airport_official_bus_source.json",
     ROOT / "data" / "v5_wakkanai_airport_official_bus_source.json",
+    ROOT / "data" / "v5_odate_noshiro_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -102,6 +103,7 @@ OPERATOR_HINTS = {
     "八丈町営バス": ["八丈町営", "八丈町", "八丈"],
     "庄内交通": ["庄内交通", "庄内", "Shonai"],
     "宗谷バス": ["宗谷バス", "宗谷", "Soya"],
+    "秋北タクシー": ["秋北タクシー", "秋北", "大館能代", "Odate", "Noshiro"],
 }
 
 

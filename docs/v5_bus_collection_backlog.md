@@ -1268,3 +1268,37 @@ layer before merging:
   - Active planner bus trips: 28,326
   - Indexed planner stopTimes: 710,397
   - Planner walking connectors: 111,778
+
+## ONJ / Odate-Noshiro Airport
+
+- 2026-05-19 20:53:54 PDT - Added ONJ from the official Odate-Noshiro Airport page plus Shuhoku Taxi's official JSON/KML source set.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 14
+  - Review-inclusive gaps: 20
+- Source:
+  - `https://onj-airterminal.com/bus/`
+  - `https://shuhokubus-gr.co.jp/taxi/limousine.html`
+  - `https://shuhokubus-gr.co.jp/taxi/json/outbound.json`
+  - `https://shuhokubus-gr.co.jp/taxi/json/inbound.json`
+  - `https://shuhokubus-gr.co.jp/taxi/json/flights.json`
+  - `https://shuhokubus-gr.co.jp/taxi/json/periods.json`
+  - `https://www.google.com/maps/d/u/0/kml?mid=z9WuJAM-0_64.kXRZAwX4g6tQ&forcekml=1`
+- Parser:
+  - `scripts/ingest/collect_v5_odate_noshiro_airport_bus.py`
+- Normalized gameplay data:
+  - Route: 大館市内・鷹巣駅前 ⇔ 大館能代空港
+  - Trips: 6
+  - StopTimes: 126
+  - Stops: 22
+  - Fare: ¥1300 to/from 大館駅前
+  - Source period: `2026_spring`
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: ONJ is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,271
+  - Total bus trips: 79,423
+  - Total bus stops: 89,293
+  - Active planner bus trips: 28,332
+  - Indexed planner stopTimes: 710,523
+  - Planner walking connectors: 111,808
