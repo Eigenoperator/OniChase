@@ -57,6 +57,16 @@ Current status:
   - 2 ports, 2 directional routes, 16 daily trips
   - Adult passenger fare is stored from the official 2-season fare table
     (`¥2,700` normal season, `¥3,200` peak season)
+- Second batch promoted into the source/map artifact:
+  - 津エアポートライン 津なぎさまち ⇔ 中部国際空港高速船のりば
+  - 神戸-関空ベイ・シャトル 神戸空港 ⇔ 関西空港
+  - 南海フェリー 和歌山港 ⇔ 徳島港
+  - 伊勢湾フェリー 鳥羽港 ⇔ 伊良湖港
+  - 桜島フェリー 鹿児島港 ⇔ 桜島港
+  - 有明フェリー 多比良港 ⇔ 長洲港
+- Current artifact coverage: 7 route groups, 14 ports, 14 directional routes,
+  and 62 explicit timetable trips. Some routes have official fare/port/service
+  pattern data but still need detailed timetable parsing before boarding.
 - Boarding remains disabled until port connectors and ship-boarding gameplay
   guards are implemented.
 - No fake port or route is included.
@@ -64,4 +74,5 @@ Current status:
 ## Current Official Source Files
 
 - `data/v5_ship_seikan_ferry_official.json`
+- `data/v5_ship_priority_batch_official.json`
 - Builder: `scripts/ingest/build_v5_ship_map.py`

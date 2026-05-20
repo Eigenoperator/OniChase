@@ -7,7 +7,10 @@ import json
 from pathlib import Path
 
 
-SOURCE_FILES = [Path("data/v5_ship_seikan_ferry_official.json")]
+SOURCE_FILES = [
+    Path("data/v5_ship_seikan_ferry_official.json"),
+    Path("data/v5_ship_priority_batch_official.json"),
+]
 OUT = Path("docs/data/v5_ship_map.geojson")
 
 
@@ -54,6 +57,7 @@ def main() -> None:
             origin = ports[route["origin"]]
             destination = ports[route["destination"]]
             route_trips = trips_by_route.get(route["routeId"], [])
+            service_patterns = route.get("servicePatterns") or []
             trip_count += len(route_trips)
             route_count += 1
             features.append(
@@ -69,10 +73,13 @@ def main() -> None:
                         "destination": route["destination"],
                         "distanceKm": route.get("distanceKm"),
                         "tripCount": len(route_trips),
+                        "servicePatternCount": len(service_patterns),
+                        "dailyDirectionalTripCount": max((pattern.get("dailyDirectionalTripCount", 0) for pattern in service_patterns), default=None),
                         "firstDepartureMinute": min((trip["departureMinute"] for trip in route_trips), default=None),
+                        "fareAdultJpy": route.get("fare", {}).get("adultPassengerFare", {}).get("amount"),
                         "fareNormalAdultJpy": route.get("fare", {}).get("adultPassengerFare", {}).get("normalSeason", {}).get("amount"),
                         "farePeakAdultJpy": route.get("fare", {}).get("adultPassengerFare", {}).get("peakSeason", {}).get("amount"),
-                        "playableStatus": source.get("summary", {}).get("playablePromotionStatus"),
+                        "playableStatus": route.get("playablePromotionStatus") or source.get("summary", {}).get("playablePromotionStatus"),
                     },
                     "geometry": {"type": "LineString", "coordinates": line_for(origin, destination)},
                 }
