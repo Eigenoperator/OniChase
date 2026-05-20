@@ -13,6 +13,7 @@ SOURCE_FILES = [
     Path("data/v5_ship_long_distance_batch_official.json"),
 ]
 OUT = Path("docs/data/v5_ship_map.geojson")
+PORT_COORDINATE_OVERRIDES = Path("data/v5_ship_port_coordinates.json")
 
 
 def line_for(origin: dict, destination: dict) -> list[list[float]]:
@@ -22,6 +23,38 @@ def line_for(origin: dict, destination: dict) -> list[list[float]]:
     ]
 
 
+def load_port_overrides() -> dict[str, dict]:
+    if not PORT_COORDINATE_OVERRIDES.exists():
+        return {}
+    payload = json.loads(PORT_COORDINATE_OVERRIDES.read_text(encoding="utf-8"))
+    return payload.get("ports") or {}
+
+
+def coordinate_summary(features: list[dict]) -> dict[str, int]:
+    summary: dict[str, int] = {}
+    for feature in features:
+        props = feature.get("properties") or {}
+        if props.get("kind") != "port":
+            continue
+        status = props.get("coordinateStatus") or "source_seed"
+        summary[status] = summary.get(status, 0) + 1
+    return summary
+
+
+def port_with_override(name: str, port: dict, overrides: dict[str, dict]) -> dict:
+    override = overrides.get(name)
+    if not override:
+        return port
+    merged = dict(port)
+    merged["lat"] = override.get("lat", port.get("lat"))
+    merged["lon"] = override.get("lon", port.get("lon"))
+    merged["coordinateSource"] = override.get("source", port.get("coordinateSource"))
+    merged["coordinateStatus"] = override.get("status")
+    merged["coordinateQuery"] = override.get("query")
+    merged["coordinateDisplayName"] = (override.get("osm") or {}).get("displayName")
+    return merged
+
+
 def main() -> None:
     features = []
     port_seen = set()
@@ -29,13 +62,17 @@ def main() -> None:
     route_group_count = 0
     trip_count = 0
     sources = []
+    port_overrides = load_port_overrides()
     for path in SOURCE_FILES:
         if not path.exists():
             continue
         source = json.loads(path.read_text(encoding="utf-8"))
         sources.append(str(path))
         route_group_count += int(source.get("summary", {}).get("routeGroupCount") or 1)
-        ports = source.get("ports", {})
+        ports = {
+            name: port_with_override(name, port, port_overrides)
+            for name, port in (source.get("ports", {}) or {}).items()
+        }
         for name, port in ports.items():
             if name in port_seen:
                 continue
@@ -49,6 +86,9 @@ def main() -> None:
                         "name": name,
                         "city": port.get("city"),
                         "coordinateSource": port.get("coordinateSource"),
+                        "coordinateStatus": port.get("coordinateStatus"),
+                        "coordinateQuery": port.get("coordinateQuery"),
+                        "coordinateDisplayName": port.get("coordinateDisplayName"),
                     },
                     "geometry": {"type": "Point", "coordinates": [port["lon"], port["lat"]]},
                 }
@@ -100,6 +140,7 @@ def main() -> None:
             "routeGroupCount": route_group_count,
             "routeCount": route_count,
             "tripCount": trip_count,
+            "coordinateSummary": coordinate_summary(features),
             "note": "Ship map contains official promoted source data. Boarding remains disabled until gameplay connector integration is implemented.",
         },
         "features": features,
