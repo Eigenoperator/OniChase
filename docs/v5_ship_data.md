@@ -97,6 +97,15 @@ Current status:
     from the Ship Map until precise official port names and real port
     coordinates are verified; city/island route text must not be converted into
     fake port nodes.
+- Sixth map-promotion batch:
+  - Added `data/v5_ship_expansion_150_map_batch1_official.json` with 30
+    reviewed local and island route groups promoted from the 150-source pool.
+  - Current Ship Map coverage is now 100 route groups, 190 ports, 284
+    directional route segments, and 62 explicit timetable trips.
+  - These 30 newly mapped groups remain
+    `official_route_and_ports_collected_timetable_calendar_fare_pending`; they
+    are visible as real port/route geography but are not boardable until
+    timetable, calendar, fare, and connector checks are complete.
 - Boarding remains disabled until port connectors and ship-boarding gameplay
   guards are implemented.
 - No fake port or route is included.
@@ -108,4 +117,5 @@ Current status:
 - `data/v5_ship_long_distance_batch_official.json`
 - `data/v5_ship_expansion_to_70_official.json`
 - `data/v5_ship_expansion_to_150_source_inventory.json`
+- `data/v5_ship_expansion_150_map_batch1_official.json`
 - Builder: `scripts/ingest/build_v5_ship_map.py`
