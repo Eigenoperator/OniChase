@@ -1167,3 +1167,36 @@ layer before merging:
   - Active planner bus trips: 28,298
   - Indexed planner stopTimes: 710,335
   - Planner walking connectors: 111,768
+
+## HAC / Hachijojima Airport
+
+- 2026-05-19 19:07:07 PDT - Added HAC from the official Hachijo town-bus PDF timetable.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 17
+  - Review-inclusive gaps: 23
+- Source:
+  - Official Hachijo town-bus timetable PDF: `https://www.8bus.jp/bus_route/bus_time.pdf`
+- Parser:
+  - `scripts/ingest/collect_v5_hachijojima_airport_bus.py`
+- Output:
+  - `data/v5_hachijojima_airport_official_bus_source.json`
+  - `docs/data/v5_hachijojima_airport_official_bus_source.json`
+  - `data/v5_hachijojima_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Route: 町役場 ⇔ 八丈島空港
+  - Trips: 12
+  - StopTimes: 24
+  - Endpoint stops: 町役場, 八丈島空港
+  - Direction split: 6 to airport, 6 from airport
+  - Fare: not emitted until the current official fare table is parsed safely.
+  - The official loop passes 八丈島空港 twice; endpoint segments are emitted for each airport pass.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: HAC is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,267
+  - Total bus trips: 79,399
+  - Total bus stops: 89,264
+  - Active planner bus trips: 28,310
+  - Indexed planner stopTimes: 710,359
+  - Planner walking connectors: 111,770

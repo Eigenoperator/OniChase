@@ -55,6 +55,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_obihiro_airport_official_bus_source.json",
     ROOT / "data" / "v5_tokunoshima_airport_official_bus_source.json",
     ROOT / "data" / "v5_fukushima_airport_official_bus_source.json",
+    ROOT / "data" / "v5_hachijojima_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -96,6 +97,7 @@ OPERATOR_HINTS = {
     "十勝バス": ["十勝バス", "Tokachi", "帯広"],
     "徳之島総合陸運": ["徳之島総合陸運", "徳之島", "Tokunoshima"],
     "福島交通": ["福島交通", "Fukushima Kotsu", "郡山"],
+    "八丈町営バス": ["八丈町営", "八丈町", "八丈"],
 }
 
 
