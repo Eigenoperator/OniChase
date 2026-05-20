@@ -197,6 +197,127 @@ async function main() {
     return results;
   }, { sampleIatas });
 
+  const targetedBusAccessFlow = await page.evaluate(async () => {
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    await loadBusPlanner();
+
+    async function loadPlannerTilesNearCoordinate(coordinate, radiusMeters = 6000) {
+      const entries = busPlannerTileEntriesNear(coordinate, radiusMeters);
+      const tiles = await Promise.all(entries.map(loadBusPlannerTile));
+      mergeBusPlannerTiles(tiles.filter(Boolean));
+      return entries.length;
+    }
+
+    function findScenario(iata) {
+      const candidates = [];
+      state.busPlannerTripsById.forEach((trip) => {
+        const stops = trip.stops || [];
+        stops.forEach((stop, index) => {
+          if (busStopAirportIata(stop.stopId) !== iata) return;
+          stops.slice(0, index).forEach((boardStop) => {
+            const boardMinute = Number(boardStop.dep ?? boardStop.arr);
+            if (!Number.isFinite(boardMinute)) return;
+            const connector = state.busPlannerConnectors
+              .filter((item) => item.fromStopId === boardStop.stopId && item.toMode === 'rail_station_group')
+              .filter((item) => Number(item.distanceMeters) <= V5_ACTIVE_WALKING_THRESHOLD_METERS)
+              .sort((a, b) => Number(a.distanceMeters || 0) - Number(b.distanceMeters || 0))[0];
+            if (!connector) return;
+            const walkMinutes = Math.ceil(walkingTimeSecForDistance(Number(connector.distanceMeters || 0)) / 60);
+            if (boardMinute < hhmmToMinutes(state.startTime) + walkMinutes) return;
+            candidates.push({ trip, boardStop, airportStop: stop, connector, boardMinute });
+          });
+        });
+      });
+      return candidates.sort((a, b) => a.boardMinute - b.boardMinute)[0] || null;
+    }
+
+    for (const iata of ['KMQ', 'TAK']) {
+      await loadPlannerTilesNearCoordinate(airportCoordinate(iata), 12000);
+      const scenario = findScenario(iata);
+      if (!scenario) continue;
+      const arriveMinute = Number(scenario.airportStop.arr ?? scenario.airportStop.dep);
+      const flight = (state.flightsByOriginAirport.get(iata) || [])
+        .filter(flightOperatesForGameDay)
+        .filter((candidate) => flightPurchaseStatus(candidate, previewPlayer(state.activeMode, state.currentGameMinute)).ok)
+        .find((candidate) => flightRuleTimes(candidate).airportDeadlineMinute >= arriveMinute);
+      if (!flight) continue;
+
+      state.activeMode = 'runner';
+      state.phase = 'PLANNING';
+      state.latestResult = null;
+      state.currentGameMinute = hhmmToMinutes(state.startTime);
+      activePlayer().start_station_id = scenario.connector.toNodeId;
+      activePlayer().steps = [];
+      activePlayer().flight_ticket = null;
+      clearBusPlanning();
+      clearPendingTrip();
+      invalidateSimulation();
+      renderGame();
+      await loadPlannerTilesNearCoordinate(stationLonLat(scenario.connector.toNodeId), 12000);
+
+      buyFlightTicket(flight.physicalFlightId);
+      const hintRows = flightTicketRowsFromPreview(planTailPreview(state.activeMode));
+      planFlightBusAccess(flight.physicalFlightId);
+      await sleep(80);
+      const preview = planTailPreview(state.activeMode);
+      const stops = busReachableStopChoices(preview).filter((item) =>
+        busRouteChoicesFromStop(item.stopId, preview, iata).length > 0
+      );
+      const boardChoice = stops.find((item) => item.stopId === scenario.boardStop.stopId) || stops[0];
+      if (!boardChoice) {
+        return {
+          iata,
+          flightId: flight.physicalFlightId,
+          hintRowShown: hintRows.some((html) => html.includes(`Bus access to ${iata}`)),
+          modeAfterClick: activePlanningMode(),
+          targetAirportIata: busPlanningState().targetAirportIata,
+          stopRowsToAirport: 0,
+          routeChoice: null,
+          tripChoice: null,
+          destinationRows: 0,
+          steps: activePlayer().steps,
+          finalPreview: preview?.currentState || null,
+          planTextHasAirportAccess: false,
+          debug: {
+            scenarioBoardStopId: scenario.boardStop.stopId,
+            scenarioBoardStopName: scenario.boardStop.name,
+            scenarioStationGroupId: scenario.connector.toNodeId,
+            currentState: preview?.currentState,
+            reachableStopCount: busReachableStopChoices(preview).length,
+            plannerStopCount: state.busPlannerStopsById.size,
+            plannerConnectorCount: state.busPlannerConnectors.length,
+            plannerTripCount: state.busPlannerTripsById.size,
+          },
+        };
+      }
+      chooseBusStop(boardChoice.stopId);
+      const routeChoice = busRouteChoicesFromStop(boardChoice.stopId, preview, iata)[0];
+      chooseBusRoute(routeChoice.key);
+      const tripChoice = busTripChoicesFromRoute(boardChoice.stopId, routeChoice.key, preview, iata)[0];
+      chooseBusTrip(tripChoice.trip.id);
+      const destination = busDestinationRowsHtml(boardChoice.stopId, tripChoice.trip.id, iata);
+      const targetAirportBeforeRide = busPlanningState().targetAirportIata;
+      addBusRideToStop(busTripDownstreamAirportStops(tripChoice.trip.id, boardChoice.stopId, iata)[0].stopId);
+      await sleep(80);
+      const planText = document.querySelector('#plan-board')?.textContent || '';
+      return {
+        iata,
+        flightId: flight.physicalFlightId,
+        hintRowShown: hintRows.some((html) => html.includes(`Bus access to ${iata}`)),
+        modeAfterClick: activePlanningMode(),
+        targetAirportIata: targetAirportBeforeRide,
+        stopRowsToAirport: stops.length,
+        routeChoice: routeChoice ? { routeId: routeChoice.routeId, tripCount: routeChoice.tripCount } : null,
+        tripChoice: tripChoice ? { tripId: tripChoice.trip.id } : null,
+        destinationRows: destination.length,
+        steps: activePlayer().steps,
+        finalPreview: planTailPreview(state.activeMode)?.currentState || null,
+        planTextHasAirportAccess: planText.includes(`Bus access to ${iata}`),
+      };
+    }
+    return null;
+  });
+
   const failures = [...dataAudit.failures];
   for (const result of interaction) {
     if (!result.airportLoaded) failures.push({ message: `Airport ${result.iata} did not load in web airport map`, details: result });
@@ -210,12 +331,24 @@ async function main() {
     if (result.railAccessNeedsBusHint && !result.flight) failures.push({ message: `No catchable outbound flight from airport bus stop at rail-gap airport ${result.iata}`, details: result });
     if (result.railAccessNeedsBusHint && !result.addedFlightStep) failures.push({ message: `Could not add TAKE_FLIGHT from airport bus stop at rail-gap airport ${result.iata}`, details: result });
   }
+  if (!targetedBusAccessFlow) {
+    failures.push({ message: 'No rail-gap airport bus access flow scenario could be constructed' });
+  } else {
+    if (!targetedBusAccessFlow.hintRowShown) failures.push({ message: 'Purchased flight should show an actionable bus access row', details: targetedBusAccessFlow });
+    if (targetedBusAccessFlow.modeAfterClick !== 'bus') failures.push({ message: 'Bus access row should switch planner to Bus mode', details: targetedBusAccessFlow });
+    if (targetedBusAccessFlow.targetAirportIata !== targetedBusAccessFlow.iata) failures.push({ message: 'Bus access planner should retain target airport', details: targetedBusAccessFlow });
+    if (!targetedBusAccessFlow.stopRowsToAirport) failures.push({ message: 'Targeted Bus mode should expose stops reaching the flight origin airport', details: targetedBusAccessFlow });
+    if (!targetedBusAccessFlow.destinationRows) failures.push({ message: 'Targeted Bus mode should expose airport destination stops', details: targetedBusAccessFlow });
+    if (targetedBusAccessFlow.finalPreview?.kind !== 'BUS_STOP') failures.push({ message: 'Targeted bus access should leave plan at airport bus stop', details: targetedBusAccessFlow });
+    if (!targetedBusAccessFlow.planTextHasAirportAccess) failures.push({ message: 'Current Plan should label the bus leg as airport access', details: targetedBusAccessFlow });
+  }
 
   const output = {
     failureCount: failures.length,
     failures,
     dataAudit: dataAudit.summary,
     interaction,
+    targetedBusAccessFlow,
     consoleMessages,
   };
   await browser.close();

@@ -5761,8 +5761,8 @@
       busPlannerLoadStatus: 'idle',
       lastBusPlannerAnchorKey: '',
       busPlanning: {
-        runner: { stopId: null, routeKey: null, tripId: null },
-        hunter: { stopId: null, routeKey: null, tripId: null },
+        runner: { stopId: null, routeKey: null, tripId: null, targetAirportIata: null },
+        hunter: { stopId: null, routeKey: null, tripId: null, targetAirportIata: null },
       },
       nearestAirportStationCache: new Map(),
       fareRules: null,
@@ -14822,6 +14822,25 @@
       return `Bus access hint: use Bus mode toward ${hint.iata}; ${routeText || 'airport bus available'}; ${stopText}`;
     }
 
+    function flightBusAccessHintRow(flight, preview) {
+      const hint = flightBusAccessHint(flight, preview);
+      if (!hint) return '';
+      const routeText = [hint.agencyName, hint.routeLabel].filter(Boolean).join(' · ');
+      const stopText = hint.stopName
+        ? `${hint.stopName}${Number.isFinite(Number(hint.stopDistanceMeters)) ? ` · ${walkingDistanceLabel(Number(hint.stopDistanceMeters))} from airport` : ''}`
+        : 'airport bus stop';
+      return `
+        <button class="route-row" type="button" data-row-key="${escapeHtml(`flight-bus-access:${flight.physicalFlightId}`)}" data-action="plan-flight-bus-access" data-flight-id="${escapeHtml(flight.physicalFlightId)}">
+          <span class="route-swatch" style="background:#0f766e"></span>
+          <span>
+            <span class="row-title">Bus access to ${escapeHtml(hint.iata)}</span>
+            <span class="row-sub">${escapeHtml(routeText || 'airport bus available')} · ${escapeHtml(stopText)}</span>
+          </span>
+          <span class="row-meta">bus</span>
+        </button>
+      `;
+    }
+
     function nearestAirportsFromStation(stationGroupId, limit = 10) {
       const origin = stationLonLat(stationGroupId);
       if (!origin || !state.airportByIata?.size) return [];
@@ -14962,7 +14981,7 @@
           </span>
           <span class="row-meta">${escapeHtml(status.label)}</span>
         </button>
-      `];
+      `, flightBusAccessHintRow(flight, preview)].filter(Boolean);
     }
 
     function busStopName(stopId) {
@@ -15001,12 +15020,13 @@
     }
 
     function busPlanningState(playerId = state.activeMode) {
-      if (!state.busPlanning[playerId]) state.busPlanning[playerId] = { stopId: null, routeKey: null, tripId: null };
+      if (!state.busPlanning[playerId]) state.busPlanning[playerId] = { stopId: null, routeKey: null, tripId: null, targetAirportIata: null };
       return state.busPlanning[playerId];
     }
 
-    function clearBusPlanning(playerId = state.activeMode) {
-      state.busPlanning[playerId] = { stopId: null, routeKey: null, tripId: null };
+    function clearBusPlanning(playerId = state.activeMode, { preserveTarget = false } = {}) {
+      const targetAirportIata = preserveTarget ? (state.busPlanning[playerId]?.targetAirportIata || null) : null;
+      state.busPlanning[playerId] = { stopId: null, routeKey: null, tripId: null, targetAirportIata };
     }
 
     function busBoardReadyMinute(stopId, preview) {
@@ -15121,6 +15141,31 @@
         .filter((row) => busTripHasDownstreamStop(row.tripId, stopId));
     }
 
+    function busStopAirportIata(stopId) {
+      return accessibleAirportFromBusStop(stopId)?.iata || null;
+    }
+
+    function busStopRecordAirportIata(stop) {
+      if (!stop?.stopId) return null;
+      const fromLoadedStop = busStopAirportIata(stop.stopId);
+      if (fromLoadedStop) return fromLoadedStop;
+      if (!validCoordinate([stop.lon, stop.lat])) return null;
+      const nearest = nearestAirportFromCoordinate([stop.lon, stop.lat]);
+      return nearest && nearest.distanceMeters <= V5_AIRPORT_ACCESS_RADIUS_METERS
+        ? nearest.feature.properties?.iata || null
+        : null;
+    }
+
+    function busTripDownstreamAirportStops(tripId, boardStopId, targetAirportIata) {
+      if (!targetAirportIata) return [];
+      return busDownstreamStops(tripId, boardStopId)
+        .filter((stop) => busStopRecordAirportIata(stop) === targetAirportIata);
+    }
+
+    function busTripReachesAirport(tripId, boardStopId, targetAirportIata) {
+      return !targetAirportIata || busTripDownstreamAirportStops(tripId, boardStopId, targetAirportIata).length > 0;
+    }
+
     function busRouteKey(routeId, headsign = '') {
       return `${routeId}::${headsign || ''}`;
     }
@@ -15130,10 +15175,10 @@
       return { routeId, headsign: rest.join('::') };
     }
 
-    function busRouteChoicesFromStop(stopId, preview) {
+    function busRouteChoicesFromStop(stopId, preview, targetAirportIata = null) {
       const rows = busRideableDeparturesFromStop(stopId, busBoardReadyMinute(stopId, preview));
       const grouped = new Map();
-      rows.forEach((row) => {
+      rows.filter((row) => busTripReachesAirport(row.tripId, stopId, targetAirportIata)).forEach((row) => {
         const key = busRouteKey(row.routeId, row.headsign || state.busPlannerTripsById.get(row.tripId)?.headsign || '');
         const group = grouped.get(key) || { key, routeId: row.routeId, headsign: row.headsign || '', firstDepartureMinute: row.departureMinute, tripCount: 0 };
         group.firstDepartureMinute = Math.min(group.firstDepartureMinute, row.departureMinute);
@@ -15147,12 +15192,13 @@
       ).slice(0, 80);
     }
 
-    function busTripChoicesFromRoute(stopId, routeKey, preview) {
+    function busTripChoicesFromRoute(stopId, routeKey, preview, targetAirportIata = null) {
       const parsed = parseBusRouteKey(routeKey);
       const currentMinute = busBoardReadyMinute(stopId, preview);
       return busRideableDeparturesFromStop(stopId, currentMinute)
         .filter((row) => row.routeId === parsed.routeId)
         .filter((row) => !parsed.headsign || (row.headsign || state.busPlannerTripsById.get(row.tripId)?.headsign || '') === parsed.headsign)
+        .filter((row) => busTripReachesAirport(row.tripId, stopId, targetAirportIata))
         .map((row) => ({ row, trip: state.busPlannerTripsById.get(row.tripId) }))
         .filter((item) => item.trip)
         .sort((a, b) => Number(a.row.departureMinute) - Number(b.row.departureMinute))
@@ -15193,53 +15239,57 @@
       return [last.lon, last.lat];
     }
 
-    function busStopRowsHtml(preview) {
-      const rows = busReachableStopChoices(preview);
+    function busStopRowsHtml(preview, targetAirportIata = null) {
+      const rows = busReachableStopChoices(preview).filter((item) =>
+        !targetAirportIata || busRouteChoicesFromStop(item.stopId, preview, targetAirportIata).length > 0
+      );
       return rows.map((item) => `
         <button class="route-row" type="button" data-row-key="${escapeHtml(`bus-stop:${item.stopId}`)}" data-action="choose-bus-stop" data-bus-stop-id="${escapeHtml(item.stopId)}">
           <span class="route-swatch" style="background:#0f766e"></span>
           <span>
             <span class="row-title">${escapeHtml(item.stop.name || item.stopId)}</span>
-            <span class="row-sub">${item.distanceMeters ? `${walkingDistanceLabel(item.distanceMeters)} · ${walkingTimeLabel(item.walkTimeSec)} walk` : 'current bus stop'}</span>
+            <span class="row-sub">${item.distanceMeters ? `${walkingDistanceLabel(item.distanceMeters)} · ${walkingTimeLabel(item.walkTimeSec)} walk` : 'current bus stop'}${targetAirportIata ? ` · reaches ${targetAirportIata}` : ''}</span>
           </span>
           <span class="row-meta">stop</span>
         </button>
       `);
     }
 
-    function busRouteRowsHtml(stopId, preview) {
-      return busRouteChoicesFromStop(stopId, preview).map((choice) => `
+    function busRouteRowsHtml(stopId, preview, targetAirportIata = null) {
+      return busRouteChoicesFromStop(stopId, preview, targetAirportIata).map((choice) => `
         <button class="route-row" type="button" data-row-key="${escapeHtml(`bus-route:${choice.key}`)}" data-action="choose-bus-route" data-bus-route-key="${escapeHtml(choice.key)}">
           <span class="route-swatch" style="background:${busRouteColor(choice.routeId)}"></span>
           <span>
             <span class="row-title">${escapeHtml(busRouteName(choice.routeId))}</span>
-            <span class="row-sub">${escapeHtml(choice.headsign || 'direction unknown')} · ${choice.tripCount} buses</span>
+            <span class="row-sub">${escapeHtml(choice.headsign || 'direction unknown')} · ${choice.tripCount} buses${targetAirportIata ? ` · to ${targetAirportIata}` : ''}</span>
           </span>
           <span class="row-meta">${minutesToHhmm(choice.firstDepartureMinute)}</span>
         </button>
       `);
     }
 
-    function busTripRowsHtml(stopId, routeKey, preview) {
-      return busTripChoicesFromRoute(stopId, routeKey, preview).map(({ row, trip }) => `
+    function busTripRowsHtml(stopId, routeKey, preview, targetAirportIata = null) {
+      return busTripChoicesFromRoute(stopId, routeKey, preview, targetAirportIata).map(({ row, trip }) => `
         <button class="outlook-row" type="button" data-row-key="${escapeHtml(`bus-trip:${trip.id}:${row.stopSequence}`)}" data-action="choose-bus-trip" data-bus-trip-id="${escapeHtml(trip.id)}">
           <span class="row-meta">${minutesToHhmm(row.departureMinute)}</span>
           <span>
             <span class="row-title">${escapeHtml(busRouteName(row.routeId))}</span>
-            <span class="row-sub">終点 ${escapeHtml((trip.stops || [])[trip.stops.length - 1]?.name || trip.headsign || 'unknown')}</span>
+            <span class="row-sub">終点 ${escapeHtml((trip.stops || [])[trip.stops.length - 1]?.name || trip.headsign || 'unknown')}${targetAirportIata ? ` · reaches ${targetAirportIata}` : ''}</span>
           </span>
         </button>
       `);
     }
 
-    function busDestinationRowsHtml(stopId, tripId) {
+    function busDestinationRowsHtml(stopId, tripId, targetAirportIata = null) {
       const trip = state.busPlannerTripsById.get(tripId);
-      return busDownstreamStops(tripId, stopId).map((stop) => `
+      const stops = busDownstreamStops(tripId, stopId);
+      const targetStops = targetAirportIata ? stops.filter((stop) => busStopRecordAirportIata(stop) === targetAirportIata) : stops;
+      return targetStops.map((stop) => `
         <button class="outlook-row destination-row" type="button" data-row-key="${escapeHtml(`bus-dest:${tripId}:${stop.stopId}:${stop.seq}`)}" data-action="ride-bus-here" data-bus-stop-id="${escapeHtml(stop.stopId)}">
           <span class="row-meta">${minutesToHhmm(stop.arrivalMinute)}</span>
           <span>
             <span class="row-title">${escapeHtml(stop.name || stop.stopId)}</span>
-            <span class="row-sub">${escapeHtml(busRouteName(trip?.routeId))}</span>
+            <span class="row-sub">${escapeHtml(busRouteName(trip?.routeId))}${targetAirportIata ? ` · airport access to ${targetAirportIata}` : ''}</span>
           </span>
         </button>
       `);
@@ -15423,6 +15473,7 @@
           else if (action === 'back-flight-destinations') backToFlightDestinations();
           else if (action === 'buy-flight-ticket') buyFlightTicket(button.dataset.flightId);
           else if (action === 'take-flight') addFlightStep(button.dataset.flightId);
+          else if (action === 'plan-flight-bus-access') planFlightBusAccess(button.dataset.flightId);
           else if (action === 'choose-mode') choosePlanningMode(button.dataset.mode);
           else if (action === 'choose-bus-stop') chooseBusStop(button.dataset.busStopId);
           else if (action === 'choose-bus-route') chooseBusRoute(button.dataset.busRouteKey);
@@ -15459,6 +15510,23 @@
       renderGame();
     }
 
+    function planFlightBusAccess(flightId) {
+      const flight = state.flightById.get(flightId);
+      if (!flight) return;
+      state.planningModes[state.activeMode] = 'bus';
+      state.planningRouteIds[state.activeMode] = null;
+      clearPendingTrip();
+      setSelectedRoute(null);
+      state.busPlanning[state.activeMode] = {
+        stopId: null,
+        routeKey: null,
+        tripId: null,
+        targetAirportIata: flight.originAirport || null,
+      };
+      setBusMapActive(true, { focus: true });
+      renderGame();
+    }
+
     function chooseFlightOrigin(iata) {
       state.flightPlanning[state.activeMode] = { origin: iata || null, destination: null };
       setFlightMapActive(true);
@@ -15488,37 +15556,38 @@
     }
 
     function chooseBusStop(stopId) {
-      state.busPlanning[state.activeMode] = { stopId: stopId || null, routeKey: null, tripId: null };
+      const current = busPlanningState();
+      state.busPlanning[state.activeMode] = { stopId: stopId || null, routeKey: null, tripId: null, targetAirportIata: current.targetAirportIata || null };
       setBusMapActive(true);
       renderGame();
     }
 
     function chooseBusRoute(routeKey) {
       const current = busPlanningState();
-      state.busPlanning[state.activeMode] = { stopId: current.stopId || null, routeKey: routeKey || null, tripId: null };
+      state.busPlanning[state.activeMode] = { stopId: current.stopId || null, routeKey: routeKey || null, tripId: null, targetAirportIata: current.targetAirportIata || null };
       renderGame();
     }
 
     function chooseBusTrip(tripId) {
       const current = busPlanningState();
-      state.busPlanning[state.activeMode] = { stopId: current.stopId || null, routeKey: current.routeKey || null, tripId: tripId || null };
+      state.busPlanning[state.activeMode] = { stopId: current.stopId || null, routeKey: current.routeKey || null, tripId: tripId || null, targetAirportIata: current.targetAirportIata || null };
       renderGame();
     }
 
     function backToBusStops() {
-      clearBusPlanning();
+      clearBusPlanning(state.activeMode, { preserveTarget: true });
       renderGame();
     }
 
     function backToBusRoutes() {
       const current = busPlanningState();
-      state.busPlanning[state.activeMode] = { stopId: current.stopId || null, routeKey: null, tripId: null };
+      state.busPlanning[state.activeMode] = { stopId: current.stopId || null, routeKey: null, tripId: null, targetAirportIata: current.targetAirportIata || null };
       renderGame();
     }
 
     function backToBusTrips() {
       const current = busPlanningState();
-      state.busPlanning[state.activeMode] = { stopId: current.stopId || null, routeKey: current.routeKey || null, tripId: null };
+      state.busPlanning[state.activeMode] = { stopId: current.stopId || null, routeKey: current.routeKey || null, tripId: null, targetAirportIata: current.targetAirportIata || null };
       renderGame();
     }
 
@@ -15662,10 +15731,11 @@
           const airportRows = flightAirportRowsFromPreview(flightPreview);
           const selectedFlightPlan = state.flightPlanning[state.activeMode] || {};
           const selectedBusPlan = busPlanningState();
-          const busStopRows = planningMode === 'bus' ? busStopRowsHtml(preview) : [];
-          const busRouteRows = planningMode === 'bus' && selectedBusPlan.stopId ? busRouteRowsHtml(selectedBusPlan.stopId, preview) : [];
-          const busTripRows = planningMode === 'bus' && selectedBusPlan.stopId && selectedBusPlan.routeKey ? busTripRowsHtml(selectedBusPlan.stopId, selectedBusPlan.routeKey, preview) : [];
-          const busDestinationRows = planningMode === 'bus' && selectedBusPlan.stopId && selectedBusPlan.tripId ? busDestinationRowsHtml(selectedBusPlan.stopId, selectedBusPlan.tripId) : [];
+          const busTargetAirport = selectedBusPlan.targetAirportIata || null;
+          const busStopRows = planningMode === 'bus' ? busStopRowsHtml(preview, busTargetAirport) : [];
+          const busRouteRows = planningMode === 'bus' && selectedBusPlan.stopId ? busRouteRowsHtml(selectedBusPlan.stopId, preview, busTargetAirport) : [];
+          const busTripRows = planningMode === 'bus' && selectedBusPlan.stopId && selectedBusPlan.routeKey ? busTripRowsHtml(selectedBusPlan.stopId, selectedBusPlan.routeKey, preview, busTargetAirport) : [];
+          const busDestinationRows = planningMode === 'bus' && selectedBusPlan.stopId && selectedBusPlan.tripId ? busDestinationRowsHtml(selectedBusPlan.stopId, selectedBusPlan.tripId, busTargetAirport) : [];
           const railAccessRows = preview.currentState.kind === 'BUS_STOP' ? busRailAccessRowsHtml(preview) : [];
           const stepTitle = planningMode === 'walk'
             ? `Walking from ${currentLabel}`
@@ -15682,7 +15752,9 @@
                     ? `Buses on ${busRouteName(parseBusRouteKey(selectedBusPlan.routeKey).routeId)}`
                     : selectedBusPlan.stopId
                       ? `Routes at ${busStopName(selectedBusPlan.stopId)}`
-                      : `Bus stops near ${currentLabel}`)
+                      : busTargetAirport
+                        ? `Bus access to ${busTargetAirport}`
+                        : `Bus stops near ${currentLabel}`)
               : `Lines at ${currentLabel}`;
           const stepSub = planningMode === 'walk'
             ? `Walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km`
@@ -15690,7 +15762,7 @@
               ? `buy ${V5_FLIGHT_PURCHASE_ADVANCE_MINUTES}m ahead · airport ${V5_FLIGHT_AIRPORT_ARRIVAL_ADVANCE_MINUTES}m ahead · boarding ${V5_FLIGHT_BOARDING_ADVANCE_MINUTES}m ahead`
               : planningMode === 'bus'
                 ? state.busPlannerLoadStatus === 'ready'
-                  ? `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))} · walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km`
+                  ? `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))} · walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km${busTargetAirport ? ` · target ${busTargetAirport}` : ''}`
                   : state.busPlannerLoadStatus === 'failed'
                     ? 'Bus planner data failed to load'
                     : 'Loading real GTFS bus planner data'
@@ -15735,7 +15807,7 @@
                             : `<div class="empty" data-row-key="empty:bus-routes">No future buses at this stop.</div>`)
                           : (busStopRows.length
                             ? busStopRows.join('')
-                            : `<div class="empty" data-row-key="empty:bus-stops">No reachable bus stops within ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km.</div>`))
+                            : `<div class="empty" data-row-key="empty:bus-stops">${busTargetAirport ? `No reachable bus service to ${busTargetAirport} within ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km.` : `No reachable bus stops within ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km.`}</div>`))
                     : `<div class="empty" data-row-key="empty:bus-loading">${state.busPlannerLoadStatus === 'failed' ? 'Bus planner data failed to load.' : 'Loading bus planner data...'}</div>`)
                 : preview.currentState.kind === 'BUS_STOP'
                   ? (railAccessRows.length
@@ -15940,12 +16012,13 @@
           const alightStop = (pendingBusTrip?.stops || []).find((stop) => stop.stopId === step.bus_stop_id);
           const from = busStopName(chainBusStop || pendingBusBoardStop?.stopId);
           const to = busStopName(step.bus_stop_id);
+          const airportAccessIata = busStopRecordAirportIata(alightStop) || busStopAirportIata(step.bus_stop_id);
           const boardHhmm = pendingBusBoardStop ? minutesToHhmm(Number(pendingBusBoardStop.dep ?? pendingBusBoardStop.arr)) : '--:--';
           const alightMinute = Number(alightStop?.arr ?? alightStop?.dep);
           const alightHhmm = Number.isFinite(alightMinute) ? minutesToHhmm(alightMinute) : '--:--';
           rows.push({
             time: `LEG ${legIndex}`,
-            title: `${busRouteName(pendingBusTrip?.routeId)}: ${from} -> ${to}`,
+            title: `${airportAccessIata ? `Bus access to ${airportAccessIata}` : busRouteName(pendingBusTrip?.routeId)}: ${from} -> ${to}`,
             sub: `${boardHhmm} -> ${alightHhmm}`,
             markerHtml: `<span class="route-swatch" style="background:${busRouteColor(pendingBusTrip?.routeId)}"></span>`,
             editable: false,
