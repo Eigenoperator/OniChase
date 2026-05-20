@@ -1393,3 +1393,34 @@ layer before merging:
   - Active planner bus trips: 28,411
   - Indexed planner stopTimes: 710,705
   - Planner walking connectors: 111,824
+
+## OGN / Yonaguni Airport and NTQ / Noto Satoyama Airport
+
+- 2026-05-19 22:40:28 PDT - Added OGN and NTQ from official remote-airport bus PDFs.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 8
+  - Review-inclusive gaps: 14
+- Sources:
+  - `https://welcome-yonaguni.jp/wp-content/uploads/2026/03/yonaguni_bus_2026.pdf`
+  - `https://www.hokutetsu.co.jp/highway-bus/noto/`
+  - `https://www.hokutetsu.co.jp/_wp/wp-content/uploads/2026/04/c8b02ddbc9a94b03a25f5e6255891183-1.pdf`
+  - `https://www.hokutetsu.co.jp/_wp/wp-content/uploads/2026/04/eaa060855d021d23056f6b8dc576b0f0-1.pdf`
+- Parser:
+  - `scripts/ingest/collect_v5_remote_airport_bus.py`
+- Normalized gameplay data:
+  - Routes: 祖納 ⇔ 与那国空港, 久部良 ⇔ 与那国空港, 金沢駅西口 ⇔ のと里山空港, 穴水駅前 ⇔ のと里山空港
+  - Trips: 47
+  - StopTimes: 94
+  - Stops: 8 route-scoped stops
+  - Fares: 与那国 is free; NTQ fares are not emitted yet because the current official source used here is the timetable PDF, not the fare table.
+  - Service windows: OGN from 2026-04-01; NTQ from 2026-03-15.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found` for all 4 routes
+  - Airport access audit: OGN and NTQ are now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,281
+  - Total bus trips: 79,549
+  - Total bus stops: 89,314
+  - Active planner bus trips: 28,458
+  - Indexed planner stopTimes: 710,799
+  - Planner walking connectors: 111,834
