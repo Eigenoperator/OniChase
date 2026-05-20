@@ -1200,3 +1200,37 @@ layer before merging:
   - Active planner bus trips: 28,310
   - Indexed planner stopTimes: 710,359
   - Planner walking connectors: 111,770
+
+## SYO / Shonai Airport
+
+- 2026-05-19 19:21:18 PDT - Added SYO from the official Shonai Kotsu limousine pages.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 16
+  - Review-inclusive gaps: 22
+- Source:
+  - Official Shonai Kotsu Tsuruoka page: `https://www.shonaikotsu.jp/limousine/tsuruoka.html`
+  - Official Shonai Kotsu Sakata page: `https://www.shonaikotsu.jp/limousine/sakata.html`
+  - Current emitted service window is 2026-04-01 through 2026-05-31.
+- Parser:
+  - `scripts/ingest/collect_v5_shonai_airport_bus.py`
+- Output:
+  - `data/v5_shonai_airport_official_bus_source.json`
+  - `docs/data/v5_shonai_airport_official_bus_source.json`
+  - `data/v5_shonai_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Routes: 鶴岡駅前 ⇔ 庄内空港, 酒田駅前 ⇔ 庄内空港
+  - Trips: 10
+  - StopTimes: 20
+  - Endpoint stops: 鶴岡駅前, 酒田駅前, 庄内空港
+  - Fares: ¥1000 from 鶴岡駅前, ¥1010 from 酒田駅前
+  - Airport-to-city trips are arrival-triggered and remain un-emitted until the bus model supports arrival-triggered departures.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found` for both routes
+  - Airport access audit: SYO is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,269
+  - Total bus trips: 79,409
+  - Total bus stops: 89,268
+  - Active planner bus trips: 28,320
+  - Indexed planner stopTimes: 710,379
+  - Planner walking connectors: 111,774

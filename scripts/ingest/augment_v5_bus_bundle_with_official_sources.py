@@ -85,6 +85,7 @@ AIRPORT_STOP_ALIASES = {
     "TKN": ["徳之島空港", "tokunoshima airport"],
     "FKS": ["福島空港", "fukushima airport"],
     "HAC": ["八丈島空港", "hachijojima airport"],
+    "SYO": ["庄内空港", "shonai airport"],
 }
 MANUAL_STOP_COORD_ALIASES = {
     # Nagasaki airport-bus city stops.  中央橋 coordinates are from Busmap's
