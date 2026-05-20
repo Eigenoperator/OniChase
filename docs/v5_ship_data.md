@@ -106,6 +106,16 @@ Current status:
     `official_route_and_ports_collected_timetable_calendar_fare_pending`; they
     are visible as real port/route geography but are not boardable until
     timetable, calendar, fare, and connector checks are complete.
+- Seventh source-completion batch:
+  - Added `data/v5_ship_expansion_to_193_source_inventory.json` with the final
+    60 MLIT public/municipal scheduled ferry source entries not already
+    represented by promoted sources or the 150-source inventory.
+  - Current MLIT source coverage is now 193/193 public/municipal scheduled
+    ship/ferry candidates. The 6 `review_transport_or_sightseeing` entries are
+    still excluded from this public-transport source baseline.
+  - These final 60 entries are source-only and remain blocked from Ship Map and
+    playable promotion until precise ports, coordinates, timetables, calendars,
+    fares, and connectors are verified.
 - Boarding remains disabled until port connectors and ship-boarding gameplay
   guards are implemented.
 - No fake port or route is included.
@@ -118,4 +128,5 @@ Current status:
 - `data/v5_ship_expansion_to_70_official.json`
 - `data/v5_ship_expansion_to_150_source_inventory.json`
 - `data/v5_ship_expansion_150_map_batch1_official.json`
+- `data/v5_ship_expansion_to_193_source_inventory.json`
 - Builder: `scripts/ingest/build_v5_ship_map.py`
