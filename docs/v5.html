@@ -14898,7 +14898,8 @@
       if (!preview?.currentState) return [];
       if (preview.currentState.kind === 'BUS_STOP') {
         const stop = state.busPlannerStopsById.get(preview.currentState.busStopId);
-        return stop ? [{ stopId: stop.id, stop, distanceMeters: 0, walkTimeSec: 0, from: 'current' }] : [];
+        if (!stop || !busRideableDeparturesFromStop(stop.id, effectiveDepartureMinute(state.activeMode, preview.currentMinute)).length) return [];
+        return [{ stopId: stop.id, stop, distanceMeters: 0, walkTimeSec: 0, from: 'current' }];
       }
       if (preview.currentState.kind !== 'NODE') return [];
       const stationGroupId = preview.currentState.stationGroupId;
@@ -14924,6 +14925,8 @@
       return [...byStop.values()].sort((a, b) =>
         a.distanceMeters - b.distanceMeters ||
         String(a.stop.name || '').localeCompare(String(b.stop.name || ''), 'ja')
+      ).filter((choice) =>
+        busRideableDeparturesFromStop(choice.stopId, effectiveDepartureMinute(state.activeMode, preview.currentMinute)).length > 0
       ).slice(0, 60);
     }
 
@@ -14944,6 +14947,22 @@
         .sort((a, b) => Number(a.departureMinute) - Number(b.departureMinute));
     }
 
+    function busTripHasDownstreamStop(tripId, boardStopId) {
+      const trip = state.busPlannerTripsById.get(tripId);
+      if (!trip || !boardStopId) return false;
+      const board = (trip.stops || []).find((stop) => stop.stopId === boardStopId);
+      if (!board) return false;
+      return (trip.stops || []).some((stop) =>
+        Number(stop.seq) > Number(board.seq) &&
+        Number.isFinite(Number(stop.arr ?? stop.dep))
+      );
+    }
+
+    function busRideableDeparturesFromStop(stopId, currentMinute) {
+      return busDeparturesFromStop(stopId, currentMinute)
+        .filter((row) => busTripHasDownstreamStop(row.tripId, stopId));
+    }
+
     function busRouteKey(routeId, headsign = '') {
       return `${routeId}::${headsign || ''}`;
     }
@@ -14954,7 +14973,7 @@
     }
 
     function busRouteChoicesFromStop(stopId, preview) {
-      const rows = busDeparturesFromStop(stopId, effectiveDepartureMinute(state.activeMode, preview.currentMinute));
+      const rows = busRideableDeparturesFromStop(stopId, effectiveDepartureMinute(state.activeMode, preview.currentMinute));
       const grouped = new Map();
       rows.forEach((row) => {
         const key = busRouteKey(row.routeId, row.headsign || state.busPlannerTripsById.get(row.tripId)?.headsign || '');
@@ -14973,7 +14992,7 @@
     function busTripChoicesFromRoute(stopId, routeKey, preview) {
       const parsed = parseBusRouteKey(routeKey);
       const currentMinute = effectiveDepartureMinute(state.activeMode, preview.currentMinute);
-      return busDeparturesFromStop(stopId, currentMinute)
+      return busRideableDeparturesFromStop(stopId, currentMinute)
         .filter((row) => row.routeId === parsed.routeId)
         .filter((row) => !parsed.headsign || (row.headsign || state.busPlannerTripsById.get(row.tripId)?.headsign || '') === parsed.headsign)
         .map((row) => ({ row, trip: state.busPlannerTripsById.get(row.tripId) }))
