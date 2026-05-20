@@ -995,3 +995,38 @@ layer before merging:
   - Active planner bus trips: 28,251
   - Indexed planner stopTimes: 710,239
   - Planner walking connectors: 111,759
+
+## KUM / Yakushima Airport
+
+- 2026-05-19 17:44:51 PDT - Added KUM from official Matsubanda route-bus timetable and cached the Yakushima Kotsu 2026 PDF for a later dense-table parser.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 22
+  - Review-inclusive gaps: 28
+- Source:
+  - Official Matsubanda route-bus page: `https://yakushima.co.jp/route_bus/`
+  - Cached Yakushima Kotsu 2026 PDF: `https://yakukan.jp/wp-content/uploads/2026/02/6de96096aa9bc3268bf65e5bd4fecea0.pdf`
+  - Current emitted route is 2026-03-01 through 2026-11-30.
+- Parser:
+  - `scripts/ingest/collect_v5_yakushima_airport_bus.py`
+- Output:
+  - `data/v5_yakushima_airport_official_bus_source.json`
+  - `docs/data/v5_yakushima_airport_official_bus_source.json`
+  - `data/v5_yakushima_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Route: 宮之浦港 ⇔ 屋久島空港 ⇔ 安房港 ⇔ 屋久杉自然館
+  - Trips: 1
+  - StopTimes: 4
+  - Endpoint/major stops: 宮之浦港, 屋久島空港, 安房港, 屋久杉自然館
+  - Fare: ¥1020 full route; airport-related source fares include ¥590 from 宮之浦港, ¥400 to 安房港, and ¥580 to 屋久杉自然館.
+  - Direction split: 1 to 屋久杉自然館
+  - Yakushima Kotsu's richer PDF is source-cached but not emitted until its multi-column alignment is parsed safely.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: KUM is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,262
+  - Total bus trips: 79,335
+  - Total bus stops: 89,254
+  - Active planner bus trips: 28,252
+  - Indexed planner stopTimes: 710,243
+  - Planner walking connectors: 111,760
