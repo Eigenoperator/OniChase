@@ -2,8 +2,111 @@
   "type": "FeatureCollection",
   "metadata": {
     "schema": "onichase.v5.ship_map.1",
-    "source": "empty_runtime_placeholder",
-    "note": "Ship Map runtime scaffold is enabled; real ferry ports, routes, timetables, and fares must be promoted from official sources before ship boarding is playable."
+    "source": "official_ship_sources",
+    "sourceFiles": [
+      "data/v5_ship_seikan_ferry_official.json"
+    ],
+    "portCount": 2,
+    "routeCount": 2,
+    "tripCount": 16,
+    "note": "Ship map contains official promoted source data. Boarding remains disabled until gameplay connector integration is implemented."
   },
-  "features": []
+  "features": [
+    {
+      "type": "Feature",
+      "id": "port:青森フェリーターミナル",
+      "properties": {
+        "kind": "port",
+        "name": "青森フェリーターミナル",
+        "city": "青森",
+        "coordinateSource": "manual_geocode:青森フェリーターミナル"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.7362,
+          40.8393
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "port:函館フェリーターミナル",
+      "properties": {
+        "kind": "port",
+        "name": "函館フェリーターミナル",
+        "city": "函館",
+        "coordinateSource": "manual_geocode:函館フェリーターミナル"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.7169,
+          41.8065
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ship-route:seikan_ferry_aomori_hakodate",
+      "properties": {
+        "kind": "ship-route",
+        "routeId": "seikan_ferry_aomori_hakodate",
+        "routeName": "青森・函館",
+        "operator": "青函フェリー",
+        "origin": "青森フェリーターミナル",
+        "destination": "函館フェリーターミナル",
+        "distanceKm": 113,
+        "tripCount": 8,
+        "firstDepartureMinute": 120,
+        "fareNormalAdultJpy": 2700,
+        "farePeakAdultJpy": 3200,
+        "playableStatus": "timetable_fare_ports_collected_connectors_pending"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            140.7362,
+            40.8393
+          ],
+          [
+            140.7169,
+            41.8065
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ship-route:seikan_ferry_hakodate_aomori",
+      "properties": {
+        "kind": "ship-route",
+        "routeId": "seikan_ferry_hakodate_aomori",
+        "routeName": "函館・青森",
+        "operator": "青函フェリー",
+        "origin": "函館フェリーターミナル",
+        "destination": "青森フェリーターミナル",
+        "distanceKm": 113,
+        "tripCount": 8,
+        "firstDepartureMinute": 120,
+        "fareNormalAdultJpy": 2700,
+        "farePeakAdultJpy": 3200,
+        "playableStatus": "timetable_fare_ports_collected_connectors_pending"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            140.7169,
+            41.8065
+          ],
+          [
+            140.7362,
+            40.8393
+          ]
+        ]
+      }
+    }
+  ]
 }

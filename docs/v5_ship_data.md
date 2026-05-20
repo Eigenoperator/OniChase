@@ -52,6 +52,16 @@ The web runtime reads:
 Current status:
 
 - The Ship Map and planning UI scaffold are enabled.
-- The artifact is intentionally empty until official ferry data is collected.
+- First official ferry source promoted into the map artifact:
+  - 青函フェリー 青森フェリーターミナル ⇔ 函館フェリーターミナル
+  - 2 ports, 2 directional routes, 16 daily trips
+  - Adult passenger fare is stored from the official 2-season fare table
+    (`¥2,700` normal season, `¥3,200` peak season)
+- Boarding remains disabled until port connectors and ship-boarding gameplay
+  guards are implemented.
 - No fake port or route is included.
 
+## Current Official Source Files
+
+- `data/v5_ship_seikan_ferry_official.json`
+- Builder: `scripts/ingest/build_v5_ship_map.py`
