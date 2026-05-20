@@ -1097,3 +1097,38 @@ layer before merging:
   - Active planner bus trips: 28,276
   - Indexed planner stopTimes: 710,291
   - Planner walking connectors: 111,765
+
+## TKN / Tokunoshima Airport
+
+- 2026-05-19 18:36:49 PDT - Added TKN from the official Tokunoshima Sogo Rikuun route-bus timetable page.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 19
+  - Review-inclusive gaps: 25
+- Source:
+  - Official Tokunoshima Sogo Rikuun route-bus timetable: `http://www.sogorikuun.com/bus_time/`
+  - Current published table is revised 2020-03-29.
+- Parser:
+  - `scripts/ingest/collect_v5_tokunoshima_airport_bus.py`
+- Output:
+  - `data/v5_tokunoshima_airport_official_bus_source.json`
+  - `docs/data/v5_tokunoshima_airport_official_bus_source.json`
+  - `data/v5_tokunoshima_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Route: 亀津 ⇔ 徳之島空港
+  - Trips: 16
+  - StopTimes: 32
+  - Endpoint stops: 亀津, 徳之島空港
+  - Direction split: 8 to airport, 8 from airport
+  - Service split: 12 daily trips, 4 weekday-only trips
+  - Fare: not emitted because the official fare table is image-only.
+  - Intermediate island stops remain cached but are not emitted until coordinates are reviewed.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: TKN is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,265
+  - Total bus trips: 79,375
+  - Total bus stops: 89,260
+  - Active planner bus trips: 28,288
+  - Indexed planner stopTimes: 710,315
+  - Planner walking connectors: 111,766
