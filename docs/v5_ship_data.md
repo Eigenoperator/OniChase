@@ -88,6 +88,15 @@ Current status:
     It is visible on the Ship Map as real source/port/route coverage, but it is
     not promoted to playable boarding until timetable, calendar, fare, and port
     connector checks are attached.
+- Fifth collection batch:
+  - Added `data/v5_ship_expansion_to_150_source_inventory.json` with 80 more
+    official MLIT-discovered public/municipal scheduled ferry source entries.
+  - Overall ship collection now has 150 official source entries covered by
+    either promoted map route groups or source-inventory records.
+  - These 80 entries are source-only for now. They are intentionally blocked
+    from the Ship Map until precise official port names and real port
+    coordinates are verified; city/island route text must not be converted into
+    fake port nodes.
 - Boarding remains disabled until port connectors and ship-boarding gameplay
   guards are implemented.
 - No fake port or route is included.
@@ -98,4 +107,5 @@ Current status:
 - `data/v5_ship_priority_batch_official.json`
 - `data/v5_ship_long_distance_batch_official.json`
 - `data/v5_ship_expansion_to_70_official.json`
+- `data/v5_ship_expansion_to_150_source_inventory.json`
 - Builder: `scripts/ingest/build_v5_ship_map.py`
