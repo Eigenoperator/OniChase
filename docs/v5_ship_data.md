@@ -68,12 +68,13 @@ Current status:
   and 62 explicit timetable trips. Some routes have official fare/port/service
   pattern data but still need detailed timetable parsing before boarding.
 - Third batch promoted into the source/map artifact:
-  - 23 additional long-distance and island-trunk route groups from official
+  - 28 additional long-distance, island-trunk, and major regional route groups from official
     operator sources, including 太平洋フェリー, 商船三井さんふらわあ,
     新日本海フェリー, 阪九フェリー, 名門大洋フェリー, 東京九州フェリー,
     オーシャン東九フェリー, 宮崎カーフェリー, シルバーフェリー,
-    津軽海峡フェリー, 佐渡汽船, 小笠原海運, and 東海汽船.
-  - Current artifact coverage is now 30 route groups, 53 ports, 70
+    津軽海峡フェリー, 佐渡汽船, 小笠原海運, 東海汽船, 四国開発フェリー,
+    ジャンボフェリー, 小豆島フェリー, and 瀬戸内海汽船/石崎汽船.
+  - Current artifact coverage is now 35 route groups, 62 ports, 84
     directional route segments, and 62 explicit timetable trips.
   - The long-distance batch is intentionally `timetable_calendar_fare_pending`
     because seasonal fare/calendar parsers must be implemented before boarding.

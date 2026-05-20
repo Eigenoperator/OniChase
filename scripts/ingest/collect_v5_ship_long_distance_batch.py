@@ -57,6 +57,15 @@ PORTS = {
     "鹿児島新港": [130.5580, 31.5906, "鹿児島"],
     "名瀬港": [129.4938, 28.3832, "奄美"],
     "那覇泊港": [127.6826, 26.2302, "那覇"],
+    "東予港": [133.1183542, 33.9298724, "西条"],
+    "新居浜東港": [133.3322321, 33.9873309, "新居浜"],
+    "坂手港": [134.3207403, 34.4559104, "小豆島"],
+    "高松東港": [134.0745442, 34.3543047, "高松"],
+    "高松港": [134.0486568, 34.3540829, "高松"],
+    "土庄港": [134.1717904, 34.4892524, "小豆島"],
+    "広島港": [132.4550554, 34.3524545, "広島"],
+    "呉港": [132.5564154, 34.2406728, "呉"],
+    "松山観光港": [132.704287, 33.888602, "松山"],
 }
 
 
@@ -132,6 +141,11 @@ def main() -> None:
         ("sadokisen_naoetsu_ogi", "佐渡汽船", "直江津・小木", [("直江津港", "小木港")], ["https://www.sadokisen.co.jp/reservation/timetables/"]),
         ("ogasawara_tokyo_chichijima", "小笠原海運", "東京・父島", [("竹芝", "父島二見港")], ["https://www.ogasawarakaiun.co.jp/"]),
         ("tokai_tokyo_izu_islands", "東海汽船", "東京・伊豆諸島", [("竹芝", "大島岡田港"), ("竹芝", "八丈島底土港")], ["https://www.tokaikisen.co.jp/boarding/"]),
+        ("orange_toyo_osaka", "四国開発フェリー", "東予・大阪", [("東予港", "大阪南港")], ["https://www.orange-ferry.co.jp/"]),
+        ("orange_niihama_kobe", "四国開発フェリー", "新居浜東・神戸", [("新居浜東港", "神戸港")], ["https://www.orange-ferry.co.jp/"]),
+        ("jumbo_kobe_shodoshima_takamatsu", "ジャンボフェリー", "神戸・小豆島・高松", [("神戸港", "坂手港"), ("坂手港", "高松東港")], ["https://ferry.co.jp/", "https://ferry.co.jp/home/ports-all/takamatsu/"]),
+        ("shodoshima_takamatsu_tonosho", "小豆島フェリー", "高松・土庄", [("高松港", "土庄港")], ["https://www.shikokuferry.com/route2"]),
+        ("setonaikai_hiroshima_kure_matsuyama", "瀬戸内海汽船/石崎汽船", "広島・呉・松山", [("広島港", "呉港"), ("呉港", "松山観光港")], ["https://setonaikaikisen.co.jp/west-setouchi/item/item01/", "https://www.ishizakikisen.co.jp/contents/price.html"]),
     ]
     for group_id, operator, group_name, pairs, urls in groups:
         for origin, destination in pairs:

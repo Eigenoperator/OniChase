@@ -103,6 +103,60 @@ ONLINE_VERIFIED_COORDINATES = {
         "source": "https://www.mapion.co.jp/m2/31.58044245%2C130.56871406%2C16/poi%3DILSP0000032344_ipclm",
         "note": "Mapion coordinate for 鹿児島新港FT（マルエーフェリー）.",
     },
+    "東予港": {
+        "lat": 33.9298724,
+        "lon": 133.1183542,
+        "source": "https://nominatim.openstreetmap.org/",
+        "note": "Resolved by OSM/Nominatim query 'Toyo Port ferry terminal Saijo Ehime'.",
+    },
+    "新居浜東港": {
+        "lat": 33.9873309,
+        "lon": 133.3322321,
+        "source": "https://mapfan.com/spots/SC3IH%2CJ%2CQR",
+        "note": "MapFan coordinate for 新居浜東港FT（四国開発フェリー）.",
+    },
+    "坂手港": {
+        "lat": 34.4559104,
+        "lon": 134.3207403,
+        "source": "https://mapfan.com/spots/SC3IH%2CJ%2C46",
+        "note": "MapFan coordinate for 坂手港FT（ジャンボフェリー）.",
+    },
+    "高松東港": {
+        "lat": 34.3543047,
+        "lon": 134.0745442,
+        "source": "https://mapfan.com/spots/SC3IH%2CJ%2C2Y",
+        "note": "MapFan coordinate for 高松東港FT（ジャンボフェリー）.",
+    },
+    "高松港": {
+        "lat": 34.3540829,
+        "lon": 134.0486568,
+        "source": "https://mapfan.com/spots/SC3IH%2CJ%2CRY",
+        "note": "MapFan coordinate for 高松港FT（四国フェリー）.",
+    },
+    "土庄港": {
+        "lat": 34.4892524,
+        "lon": 134.1717904,
+        "source": "https://nominatim.openstreetmap.org/",
+        "note": "Resolved by OSM/Nominatim query '土庄港フェリーターミナル'.",
+    },
+    "広島港": {
+        "lat": 34.3524545,
+        "lon": 132.4550554,
+        "source": "https://nominatim.openstreetmap.org/",
+        "note": "Resolved by OSM/Nominatim query '広島港宇品旅客ターミナル'.",
+    },
+    "呉港": {
+        "lat": 34.2406728,
+        "lon": 132.5564154,
+        "source": "https://nominatim.openstreetmap.org/",
+        "note": "Resolved by OSM/Nominatim query '呉中央桟橋ターミナル'.",
+    },
+    "松山観光港": {
+        "lat": 33.888602,
+        "lon": 132.704287,
+        "source": "https://www.navitime.co.jp/poi?spot=00004-38168500016",
+        "note": "NAVITIME coordinate for 松山観光港ターミナル.",
+    },
 }
 
 ALIASES = {
