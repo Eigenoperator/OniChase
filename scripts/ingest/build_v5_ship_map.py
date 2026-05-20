@@ -11,6 +11,7 @@ SOURCE_FILES = [
     Path("data/v5_ship_seikan_ferry_official.json"),
     Path("data/v5_ship_priority_batch_official.json"),
     Path("data/v5_ship_long_distance_batch_official.json"),
+    Path("data/v5_ship_expansion_to_70_official.json"),
 ]
 OUT = Path("docs/data/v5_ship_map.geojson")
 PORT_COORDINATE_OVERRIDES = Path("data/v5_ship_port_coordinates.json")

@@ -78,6 +78,16 @@ Current status:
     directional route segments, and 62 explicit timetable trips.
   - The long-distance batch is intentionally `timetable_calendar_fare_pending`
     because seasonal fare/calendar parsers must be implemented before boarding.
+- Fourth batch promoted into the source/map artifact:
+  - 35 additional official public route groups covering Hokkaido island routes,
+    Izu/Ogasawara feeders, Hokuriku/local island ferries, major Kyushu/Shikoku
+    crossings, Okinawa remote-island ferries, Yaeyama routes, and Oki Kisen.
+  - Current artifact coverage is now 70 route groups, 134 ports, 208
+    directional route segments, and 62 explicit timetable trips.
+  - This batch is intentionally `official_route_and_ports_collected_timetable_calendar_fare_pending`.
+    It is visible on the Ship Map as real source/port/route coverage, but it is
+    not promoted to playable boarding until timetable, calendar, fare, and port
+    connector checks are attached.
 - Boarding remains disabled until port connectors and ship-boarding gameplay
   guards are implemented.
 - No fake port or route is included.
@@ -87,4 +97,5 @@ Current status:
 - `data/v5_ship_seikan_ferry_official.json`
 - `data/v5_ship_priority_batch_official.json`
 - `data/v5_ship_long_distance_batch_official.json`
+- `data/v5_ship_expansion_to_70_official.json`
 - Builder: `scripts/ingest/build_v5_ship_map.py`

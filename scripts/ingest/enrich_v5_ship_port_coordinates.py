@@ -21,6 +21,7 @@ SOURCE_FILES = [
     Path("data/v5_ship_seikan_ferry_official.json"),
     Path("data/v5_ship_priority_batch_official.json"),
     Path("data/v5_ship_long_distance_batch_official.json"),
+    Path("data/v5_ship_expansion_to_70_official.json"),
 ]
 OUT = Path("data/v5_ship_port_coordinates.json")
 CACHE = Path("data/v5_ship_port_geocode_cache.json")
@@ -280,6 +281,18 @@ def resolve_port(name: str, fallback: dict, cache: dict) -> dict:
             "note": verified["note"],
         }
 
+    coordinate_source = fallback.get("coordinateSource") or ""
+    if coordinate_source.startswith("online_verified:"):
+        return {
+            "name": name,
+            "lat": fallback.get("lat"),
+            "lon": fallback.get("lon"),
+            "status": "online_verified_source_seed",
+            "score": 90,
+            "source": coordinate_source,
+            "note": "Coordinate seed is from the route expansion collection pass; keep it instead of accepting weak geocoder matches.",
+        }
+
     queries = ALIASES.get(name, []) + [f"{name} ferry terminal Japan", f"{name} port Japan"]
     candidates = []
     errors = []
@@ -333,6 +346,9 @@ def main() -> None:
         "onlineResolvedCount": sum(1 for item in resolved.values() if item["status"] == "online_resolved"),
         "onlineVerifiedManualCount": sum(
             1 for item in resolved.values() if item["status"] == "online_verified_manual_extract"
+        ),
+        "onlineVerifiedSourceSeedCount": sum(
+            1 for item in resolved.values() if item["status"] == "online_verified_source_seed"
         ),
         "manualFallbackCount": sum(1 for item in resolved.values() if item["status"].startswith("manual_")),
     }
