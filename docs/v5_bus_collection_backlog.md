@@ -1302,3 +1302,34 @@ layer before merging:
   - Active planner bus trips: 28,332
   - Indexed planner stopTimes: 710,523
   - Planner walking connectors: 111,808
+
+## IZO / Izumo Enmusubi Airport
+
+- 2026-05-19 21:05:01 PDT - Added IZO from official Ichibata airport-bus PDFs.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 13
+  - Review-inclusive gaps: 19
+- Source:
+  - `https://t-izumo.ichibata.co.jp/airport-bus-izumo/`
+  - `https://t-izumo.ichibata.co.jp/wp-content/media/3.29%EF%BD%9E5.31%E5%87%BA%E9%9B%B2%E7%B7%9A.pdf`
+  - `https://t-matsue.ichibata.co.jp/airport-bus-izumo/`
+  - `https://t-matsue.ichibata.co.jp/wp-content/media/%E5%87%BA%E9%9B%B2%E7%A9%BA%E6%B8%AF%E9%80%A3%E7%B5%A1%E3%83%90%E3%82%B9%E6%99%82%E5%88%BB%E8%A1%A8%E6%96%B0%EF%BC%892026.3.29-5.31.pdf`
+- Parser:
+  - `scripts/ingest/collect_v5_izumo_airport_bus.py`
+- Normalized gameplay data:
+  - Routes: 出雲市駅 ⇔ 出雲空港, 松江しんじ湖温泉駅・JR松江駅 ⇔ 出雲空港
+  - Trips: 47
+  - StopTimes: 118
+  - Stops: 5 route-scoped stops
+  - Fares: ¥850 for 出雲市駅, ¥1400 for 松江
+  - Current service window: 2026-03-29 through 2026-05-31
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found` for both routes
+  - Airport access audit: IZO is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,273
+  - Total bus trips: 79,470
+  - Total bus stops: 89,298
+  - Active planner bus trips: 28,379
+  - Indexed planner stopTimes: 710,641
+  - Planner walking connectors: 111,820

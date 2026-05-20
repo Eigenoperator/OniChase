@@ -59,6 +59,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_shonai_airport_official_bus_source.json",
     ROOT / "data" / "v5_wakkanai_airport_official_bus_source.json",
     ROOT / "data" / "v5_odate_noshiro_airport_official_bus_source.json",
+    ROOT / "data" / "v5_izumo_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -104,6 +105,8 @@ OPERATOR_HINTS = {
     "庄内交通": ["庄内交通", "庄内", "Shonai"],
     "宗谷バス": ["宗谷バス", "宗谷", "Soya"],
     "秋北タクシー": ["秋北タクシー", "秋北", "大館能代", "Odate", "Noshiro"],
+    "出雲一畑交通": ["出雲一畑", "一畑", "Izumo Ichibata"],
+    "松江一畑交通": ["松江一畑", "一畑", "Matsue Ichibata"],
 }
 
 
