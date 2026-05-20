@@ -1296,6 +1296,7 @@
         <button id="global-replay-button" type="button" hidden>Global Replay</button>
         <button id="walking-map-button" type="button" hidden>Walking Map</button>
         <button id="flight-map-button" type="button" hidden>Plane Map</button>
+        <button id="ship-map-button" type="button" hidden>Ship Map</button>
         <button id="corridor-button" class="debug-only active" type="button" hidden>Corridor</button>
         <button id="service-button" class="debug-only" type="button" hidden>Service</button>
         <button id="fit-button" type="button" hidden>Fit</button>
@@ -1399,6 +1400,7 @@
     const FLIGHT_MAP_URL = './data/v5_flight_map.geojson';
     const FLIGHT_TIMETABLE_URL = './data/v5_domestic_flights_current_bundle.json';
     const AIRPORT_BUS_ACCESS_AUDIT_URL = './data/v5_airport_bus_access_audit.json';
+    const SHIP_MAP_URL = './data/v5_ship_map.geojson';
     const BUS_MAP_MANIFEST_URL = './data/v5_bus_map_tiles/manifest.json';
     const BUS_PLANNER_MANIFEST_URL = './data/v5_bus_planner_tiles/manifest.json';
     const BUS_MAP_AROUND_FALLBACK_RADII_METERS = [25000, 60000, 120000];
@@ -5675,6 +5677,7 @@
       selectedTripStopFeatureIds: [],
       walkingMapActive: false,
       flightMapActive: false,
+      shipMapActive: false,
       busMapActive: false,
       planningModes: { runner: 'rail', hunter: 'rail' },
       activeMode: 'runner',
@@ -5682,6 +5685,7 @@
       pendingTripIds: { runner: null, hunter: null },
       planningRouteIds: { runner: null, hunter: null },
       flightPlanning: { runner: { origin: null, destination: null }, hunter: { origin: null, destination: null } },
+      shipPlanning: { runner: { origin: null, destination: null }, hunter: { origin: null, destination: null } },
       pendingCoupledChoices: { runner: null, hunter: null },
       trainOutlookHtml: '',
       phase: 'PLANNING',
@@ -5742,6 +5746,8 @@
       flightsByOriginAirport: new Map(),
       airportBusAccessAudit: null,
       airportBusAccessByIata: new Map(),
+      shipMap: null,
+      portByName: new Map(),
       busMapManifest: null,
       busMapTileCache: new Map(),
       busMapTileInflight: new Map(),
@@ -8272,6 +8278,27 @@
       }
     }
 
+    function indexShipMap(payload) {
+      state.shipMap = payload || { type: 'FeatureCollection', features: [] };
+      state.portByName = new Map();
+      (state.shipMap.features || [])
+        .filter((feature) => feature?.properties?.kind === 'port')
+        .forEach((feature) => {
+          const name = feature.properties?.name;
+          if (name) state.portByName.set(name, feature);
+        });
+    }
+
+    async function loadShipMap() {
+      try {
+        const payload = await fetchJsonMaybeGz(SHIP_MAP_URL);
+        indexShipMap(payload);
+      } catch (error) {
+        console.warn('Failed to load v5 ship map', error);
+        indexShipMap(null);
+      }
+    }
+
     function indexBusMapManifest(payload) {
       state.busMapManifest = payload || null;
       state.busMapTileCache = new Map();
@@ -9338,6 +9365,12 @@
         promoteId: 'id',
         tolerance: 0.45,
       });
+      map.addSource('ship-map', {
+        type: 'geojson',
+        data: state.shipMap || { type: 'FeatureCollection', features: [] },
+        promoteId: 'id',
+        tolerance: 0.45,
+      });
       map.addSource('bus-map', {
         type: 'geojson',
         data: state.busMap || { type: 'FeatureCollection', features: [] },
@@ -9415,6 +9448,7 @@
 
       addWalkingLayers(map);
       addFlightLayers(map);
+      addShipLayers(map);
       addBusLayers(map);
       addStationLayers(map);
       addLabelLayers(map);
@@ -9555,6 +9589,71 @@
         },
         paint: {
           'text-color': '#134e4a',
+          'text-halo-color': 'rgba(255,255,255,0.72)',
+          'text-halo-width': 0.8,
+        },
+      });
+    }
+
+    function addShipLayers(map) {
+      map.addLayer({
+        id: 'ship-route-lines',
+        type: 'line',
+        source: 'ship-map',
+        filter: ['==', ['get', 'kind'], 'ship-route'],
+        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' },
+        paint: {
+          'line-color': '#2563eb',
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 4, 0.2, 7, 0.38, 10, 0.54],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 4, 0.6, 7, 1.25, 10, 2.2],
+        },
+      });
+      map.addLayer({
+        id: 'ship-port-halo',
+        type: 'circle',
+        source: 'ship-map',
+        filter: ['==', ['get', 'kind'], 'port'],
+        layout: { visibility: 'none' },
+        paint: {
+          'circle-color': 'rgba(37,99,235,0.16)',
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 4, 8, ['+', 5, ['coalesce', ['get', 'rank'], 4]], 12, ['+', 8, ['*', ['coalesce', ['get', 'rank'], 4], 1.25]]],
+          'circle-stroke-color': 'rgba(37,99,235,0.28)',
+          'circle-stroke-width': 1,
+        },
+      });
+      map.addLayer({
+        id: 'ship-port-points',
+        type: 'circle',
+        source: 'ship-map',
+        filter: ['==', ['get', 'kind'], 'port'],
+        layout: { visibility: 'none' },
+        paint: {
+          'circle-color': '#2563eb',
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.4, 8, ['+', 2.8, ['*', ['coalesce', ['get', 'rank'], 4], 0.42]], 12, ['+', 3.4, ['*', ['coalesce', ['get', 'rank'], 4], 0.58]]],
+          'circle-opacity': 0.96,
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 1.7,
+        },
+      });
+      map.addLayer({
+        id: 'ship-port-labels',
+        type: 'symbol',
+        source: 'ship-map',
+        filter: ['==', ['get', 'kind'], 'port'],
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Regular'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 4, 10, 8, 12.5, 12, 15],
+          'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+          'text-radial-offset': 0.78,
+          'text-justify': 'auto',
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
+          'symbol-sort-key': ['-', 20, ['coalesce', ['get', 'rank'], 4]],
+        },
+        paint: {
+          'text-color': '#1d4ed8',
           'text-halo-color': 'rgba(255,255,255,0.72)',
           'text-halo-width': 0.8,
         },
@@ -10461,6 +10560,16 @@
       document.getElementById('flight-map-button')?.classList.toggle('active', state.flightMapActive);
     }
 
+    function updateShipMapLayers() {
+      if (!state.map?.getSource('ship-map')) return;
+      state.map.getSource('ship-map').setData(activeShipMapFeatureCollection());
+      const visibility = state.shipMapActive ? 'visible' : 'none';
+      ['ship-route-lines', 'ship-port-halo', 'ship-port-points', 'ship-port-labels'].forEach((layerId) => {
+        if (state.map.getLayer(layerId)) state.map.setLayoutProperty(layerId, 'visibility', visibility);
+      });
+      document.getElementById('ship-map-button')?.classList.toggle('active', state.shipMapActive);
+    }
+
     function updateBusMapLayers() {
       if (!state.map?.getSource('bus-map')) return;
       if (state.busMapActive && state.busMapLoadStatus === 'idle') ensureBusMapLoaded();
@@ -10744,6 +10853,28 @@
       return { type: 'FeatureCollection', features: [...visibleAirportFeatures, ...visibleRoutes] };
     }
 
+    function activeShipMapFeatureCollection() {
+      const features = state.shipMap?.features || [];
+      const selected = state.shipPlanning[state.activeMode] || {};
+      const origin = selected.origin || null;
+      const destination = selected.destination || null;
+      if (!state.shipMapActive || !origin) return state.shipMap || { type: 'FeatureCollection', features: [] };
+      const visiblePorts = new Set([origin]);
+      const visibleRoutes = features.filter((feature) => {
+        const props = feature?.properties || {};
+        if (props.kind !== 'ship-route') return false;
+        if (props.origin !== origin) return false;
+        if (destination && props.destination !== destination) return false;
+        visiblePorts.add(props.destination);
+        return true;
+      });
+      const visiblePortFeatures = features.filter((feature) =>
+        feature?.properties?.kind === 'port' &&
+        visiblePorts.has(feature.properties.name)
+      );
+      return { type: 'FeatureCollection', features: [...visiblePortFeatures, ...visibleRoutes] };
+    }
+
     function focusWalkingMap() {
       const preview = walkingMapOriginPreview();
       const origin = stationLonLat(preview?.currentState?.stationGroupId);
@@ -10759,11 +10890,13 @@
       state.walkingMapActive = Boolean(active && walkingMapOriginPreview());
       if (state.walkingMapActive) {
         state.flightMapActive = false;
+        state.shipMapActive = false;
         state.busMapActive = false;
       }
       updateRailDimForWalkingMap();
       updateWalkingMapLayers();
       updateFlightMapLayers();
+      updateShipMapLayers();
       updateBusMapLayers();
       if (state.walkingMapActive && focus) focusWalkingMap();
     }
@@ -10790,11 +10923,13 @@
       state.flightMapActive = Boolean(active && state.airportByIata?.size);
       if (state.flightMapActive) {
         state.walkingMapActive = false;
+        state.shipMapActive = false;
         state.busMapActive = false;
       }
       updateRailDimForWalkingMap();
       updateWalkingMapLayers();
       updateFlightMapLayers();
+      updateShipMapLayers();
       updateBusMapLayers();
       if (state.flightMapActive && focus) focusFlightMap();
     }
@@ -10807,6 +10942,52 @@
         clearPendingTrip();
         setSelectedRoute(null);
       } else if (activePlanningMode() === 'flight') {
+        state.planningModes[state.activeMode] = 'rail';
+      }
+      renderGame();
+    }
+
+    function shipMapBounds() {
+      const coordinates = (activeShipMapFeatureCollection().features || [])
+        .filter((feature) => feature?.properties?.kind === 'port')
+        .map((feature) => feature.geometry?.coordinates)
+        .filter(validCoordinate);
+      if (!coordinates.length) return null;
+      return [
+        [Math.min(...coordinates.map((coord) => coord[0])), Math.min(...coordinates.map((coord) => coord[1]))],
+        [Math.max(...coordinates.map((coord) => coord[0])), Math.max(...coordinates.map((coord) => coord[1]))],
+      ];
+    }
+
+    function focusShipMap() {
+      const bounds = shipMapBounds();
+      if (!bounds || !state.map) return;
+      state.map.fitBounds(bounds, { padding: 72, duration: 650, maxZoom: 7.2 });
+    }
+
+    function setShipMapActive(active, { focus = false } = {}) {
+      state.shipMapActive = Boolean(active && state.portByName?.size);
+      if (state.shipMapActive) {
+        state.walkingMapActive = false;
+        state.flightMapActive = false;
+        state.busMapActive = false;
+      }
+      updateRailDimForWalkingMap();
+      updateWalkingMapLayers();
+      updateFlightMapLayers();
+      updateShipMapLayers();
+      updateBusMapLayers();
+      if (state.shipMapActive && focus) focusShipMap();
+    }
+
+    function toggleShipMap() {
+      setShipMapActive(!state.shipMapActive, { focus: true });
+      if (state.shipMapActive) {
+        state.planningModes[state.activeMode] = 'ship';
+        state.planningRouteIds[state.activeMode] = null;
+        clearPendingTrip();
+        setSelectedRoute(null);
+      } else if (activePlanningMode() === 'ship') {
         state.planningModes[state.activeMode] = 'rail';
       }
       renderGame();
@@ -10843,12 +11024,14 @@
       if (state.busMapActive) {
         state.walkingMapActive = false;
         state.flightMapActive = false;
+        state.shipMapActive = false;
         ensureBusMapLoaded();
         ensureBusPlannerLoaded();
       }
       updateRailDimForWalkingMap();
       updateWalkingMapLayers();
       updateFlightMapLayers();
+      updateShipMapLayers();
       updateBusMapLayers();
       if (state.busMapActive) {
         refreshBusMapVisibleFeatures();
@@ -13406,7 +13589,7 @@
 
     function updateRailDimForWalkingMap() {
       if (!state.map) return;
-      const dimmed = state.walkingMapActive || state.flightMapActive || state.busMapActive;
+      const dimmed = state.walkingMapActive || state.flightMapActive || state.shipMapActive || state.busMapActive;
       const opacityByLayer = {
         'track-casing': dimmed ? 0.18 : ['interpolate', ['linear'], ['zoom'], 5, 0.45, 8, 0.72, 12, 0.82],
         'track-lines': dimmed ? 0.18 : ['interpolate', ['linear'], ['zoom'], 5, 0.42, 8, 0.62, 12, 0.82],
@@ -13479,7 +13662,7 @@
       const overlay = state.stationLabelOverlayEl;
       if (!map || !overlay) return;
       const zoom = map.getZoom();
-      if (state.walkingMapActive || state.flightMapActive || state.busMapActive || zoom < 12) {
+      if (state.walkingMapActive || state.flightMapActive || state.shipMapActive || state.busMapActive || zoom < 12) {
         overlay.classList.add('hidden');
         overlay.replaceChildren();
         return;
@@ -13706,6 +13889,23 @@
       });
       map.on('mouseenter', 'flight-airport-points', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'flight-airport-points', () => { map.getCanvas().style.cursor = ''; });
+
+      map.on('click', 'ship-port-points', (event) => {
+        const feature = event.features?.[0];
+        const name = feature?.properties?.name;
+        if (!name) return;
+        if (state.shipMapActive || activePlanningMode() === 'ship') {
+          state.planningModes[state.activeMode] = 'ship';
+          const current = state.shipPlanning[state.activeMode] || {};
+          if (!current.origin) chooseShipOrigin(name);
+          else if (!current.destination && name !== current.origin) chooseShipDestination(name);
+          else focusShipMap();
+        } else {
+          setShipMapActive(true, { focus: true });
+        }
+      });
+      map.on('mouseenter', 'ship-port-points', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'ship-port-points', () => { map.getCanvas().style.cursor = ''; });
     }
 
     function bindServiceInteractions(map) {
@@ -13861,6 +14061,7 @@
       state.planningRouteIds[state.activeMode] = null;
       state.planningModes[state.activeMode] = 'rail';
       state.flightPlanning[state.activeMode] = { origin: null, destination: null };
+      state.shipPlanning[state.activeMode] = { origin: null, destination: null };
       clearPendingTrip();
       invalidateSimulation();
       updateSelectedTripPath();
@@ -13895,6 +14096,7 @@
       activePlayer().steps = [];
       state.planningRouteIds[state.activeMode] = null;
       state.planningModes[state.activeMode] = 'rail';
+      state.shipPlanning[state.activeMode] = { origin: null, destination: null };
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
@@ -14242,6 +14444,7 @@
       state.planningRouteIds = { runner: null, hunter: null };
       state.planningModes = { runner: 'rail', hunter: 'rail' };
       state.flightPlanning = { runner: { origin: null, destination: null }, hunter: { origin: null, destination: null } };
+      state.shipPlanning = { runner: { origin: null, destination: null }, hunter: { origin: null, destination: null } };
       state.pendingCoupledChoices = { runner: null, hunter: null };
       state.selectedTripId = null;
       state.selectedTripStopIds = [];
@@ -14280,6 +14483,7 @@
       const replayButton = document.getElementById('simulate-button');
       const walkingMapButton = document.getElementById('walking-map-button');
       const flightMapButton = document.getElementById('flight-map-button');
+      const shipMapButton = document.getElementById('ship-map-button');
       startButton.textContent = onlineActive() ? 'Ready / Start' : 'Start Game';
       startButton.disabled =
         state.phase !== 'PLANNING' ||
@@ -14295,6 +14499,10 @@
       if (flightMapButton) {
         flightMapButton.disabled = !state.airportByIata?.size;
         flightMapButton.classList.toggle('active', state.flightMapActive);
+      }
+      if (shipMapButton) {
+        shipMapButton.disabled = !state.portByName?.size;
+        shipMapButton.classList.toggle('active', state.shipMapActive);
       }
     }
 
@@ -14959,6 +15167,69 @@
       `);
     }
 
+    function shipPortRowsFromPreview() {
+      return [...state.portByName.values()]
+        .sort((a, b) => String(a.properties?.name || '').localeCompare(String(b.properties?.name || ''), 'ja'))
+        .slice(0, 120)
+        .map((feature) => {
+          const name = feature.properties?.name || 'Port';
+          const routeCount = (state.shipMap?.features || []).filter((route) =>
+            route?.properties?.kind === 'ship-route' && route.properties.origin === name
+          ).length;
+          return `
+            <button class="route-row" type="button" data-row-key="${escapeHtml(`ship-port:${name}`)}" data-action="choose-ship-origin" data-port-name="${escapeHtml(name)}">
+              <span class="route-swatch" style="background:#2563eb"></span>
+              <span>
+                <span class="row-title">${escapeHtml(name)}</span>
+                <span class="row-sub">${routeCount} scheduled ship routes · no ticket required</span>
+              </span>
+              <span class="row-meta">from</span>
+            </button>
+          `;
+        });
+    }
+
+    function shipDestinationRowsFromPreview() {
+      const origin = state.shipPlanning[state.activeMode]?.origin;
+      if (!origin) return [];
+      const destinations = new Map();
+      (state.shipMap?.features || [])
+        .filter((feature) => feature?.properties?.kind === 'ship-route' && feature.properties.origin === origin)
+        .forEach((feature) => {
+          const destination = feature.properties.destination;
+          if (destination && !destinations.has(destination)) destinations.set(destination, feature);
+        });
+      return [...destinations.values()].map((feature) => {
+        const destination = feature.properties.destination;
+        return `
+          <button class="route-row" type="button" data-row-key="${escapeHtml(`ship-dest:${destination}`)}" data-action="choose-ship-destination" data-port-name="${escapeHtml(destination)}">
+            <span class="route-swatch" style="background:#38bdf8"></span>
+            <span>
+              <span class="row-title">${escapeHtml(destination)}</span>
+              <span class="row-sub">${escapeHtml(feature.properties.operator || 'scheduled ferry')} · real fare required before playable promotion</span>
+            </span>
+            <span class="row-meta">to</span>
+          </button>
+        `;
+      });
+    }
+
+    function shipRowsFromPreview() {
+      const selected = state.shipPlanning[state.activeMode] || {};
+      if (!selected.origin || !selected.destination) return [];
+      return (state.shipMap?.features || [])
+        .filter((feature) =>
+          feature?.properties?.kind === 'ship-route' &&
+          feature.properties.origin === selected.origin &&
+          feature.properties.destination === selected.destination
+        )
+        .map((feature) => `
+          <div class="empty" data-row-key="${escapeHtml(`ship-route:${feature.id || feature.properties.routeId || feature.properties.origin}`)}">
+            ${escapeHtml(feature.properties.routeName || `${selected.origin} -> ${selected.destination}`)} requires the real timetable and fare bundle before boarding is enabled.
+          </div>
+        `);
+    }
+
     function flightTicketRowsFromPreview(preview) {
       const ticket = activeFlightTicket();
       const plannedSteps = state.players?.[state.activeMode]?.steps || [];
@@ -15335,7 +15606,7 @@
       { id: 'rail', label: 'Rail', icon: '🚆', enabled: true },
       { id: 'walk', label: 'Walk', icon: '👣', enabled: true },
       { id: 'flight', label: 'Flight', icon: '✈', enabled: true },
-      { id: 'ship', label: 'Ship', icon: '⛴', enabled: false },
+      { id: 'ship', label: 'Ship', icon: '⛴', enabled: true },
       { id: 'bus', label: 'Bus', icon: '🚌', enabled: true },
     ]);
 
@@ -15474,6 +15745,10 @@
           else if (action === 'buy-flight-ticket') buyFlightTicket(button.dataset.flightId);
           else if (action === 'take-flight') addFlightStep(button.dataset.flightId);
           else if (action === 'plan-flight-bus-access') planFlightBusAccess(button.dataset.flightId);
+          else if (action === 'choose-ship-origin') chooseShipOrigin(button.dataset.portName);
+          else if (action === 'choose-ship-destination') chooseShipDestination(button.dataset.portName);
+          else if (action === 'back-ship-origins') backToShipOrigins();
+          else if (action === 'back-ship-destinations') backToShipDestinations();
           else if (action === 'choose-mode') choosePlanningMode(button.dataset.mode);
           else if (action === 'choose-bus-stop') chooseBusStop(button.dataset.busStopId);
           else if (action === 'choose-bus-route') chooseBusRoute(button.dataset.busRouteKey);
@@ -15502,9 +15777,11 @@
       setSelectedRoute(null);
       if (mode === 'walk') setWalkingMapActive(true, { focus: true });
       else if (mode === 'flight') setFlightMapActive(true, { focus: true });
+      else if (mode === 'ship') setShipMapActive(true, { focus: true });
       else if (mode === 'bus') setBusMapActive(true, { focus: true });
       else setWalkingMapActive(false);
       if (mode !== 'flight') setFlightMapActive(false);
+      if (mode !== 'ship') setShipMapActive(false);
       if (mode !== 'bus') setBusMapActive(false);
       if (mode !== 'bus') clearBusPlanning();
       renderGame();
@@ -15552,6 +15829,34 @@
     function backToFlightDestinations() {
       const current = state.flightPlanning[state.activeMode] || {};
       state.flightPlanning[state.activeMode] = { origin: current.origin || null, destination: null };
+      renderGame();
+    }
+
+    function chooseShipOrigin(name) {
+      state.shipPlanning[state.activeMode] = { origin: name || null, destination: null };
+      setShipMapActive(true);
+      updateShipMapLayers();
+      focusShipMap();
+      renderGame();
+    }
+
+    function chooseShipDestination(name) {
+      const current = state.shipPlanning[state.activeMode] || {};
+      state.shipPlanning[state.activeMode] = { ...current, destination: name || null };
+      setShipMapActive(true);
+      updateShipMapLayers();
+      focusShipMap();
+      renderGame();
+    }
+
+    function backToShipOrigins() {
+      state.shipPlanning[state.activeMode] = { origin: null, destination: null };
+      renderGame();
+    }
+
+    function backToShipDestinations() {
+      const current = state.shipPlanning[state.activeMode] || {};
+      state.shipPlanning[state.activeMode] = { origin: current.origin || null, destination: null };
       renderGame();
     }
 
@@ -15730,6 +16035,7 @@
           const flightTicketRows = flightTicketRowsFromPreview(flightPreview);
           const airportRows = flightAirportRowsFromPreview(flightPreview);
           const selectedFlightPlan = state.flightPlanning[state.activeMode] || {};
+          const selectedShipPlan = state.shipPlanning[state.activeMode] || {};
           const selectedBusPlan = busPlanningState();
           const busTargetAirport = selectedBusPlan.targetAirportIata || null;
           const busStopRows = planningMode === 'bus' ? busStopRowsHtml(preview, busTargetAirport) : [];
@@ -15737,6 +16043,9 @@
           const busTripRows = planningMode === 'bus' && selectedBusPlan.stopId && selectedBusPlan.routeKey ? busTripRowsHtml(selectedBusPlan.stopId, selectedBusPlan.routeKey, preview, busTargetAirport) : [];
           const busDestinationRows = planningMode === 'bus' && selectedBusPlan.stopId && selectedBusPlan.tripId ? busDestinationRowsHtml(selectedBusPlan.stopId, selectedBusPlan.tripId, busTargetAirport) : [];
           const railAccessRows = preview.currentState.kind === 'BUS_STOP' ? busRailAccessRowsHtml(preview) : [];
+          const shipPortRows = planningMode === 'ship' ? shipPortRowsFromPreview(preview) : [];
+          const shipDestinationRows = planningMode === 'ship' ? shipDestinationRowsFromPreview(preview) : [];
+          const shipRows = planningMode === 'ship' ? shipRowsFromPreview(preview) : [];
           const stepTitle = planningMode === 'walk'
             ? `Walking from ${currentLabel}`
             : planningMode === 'flight'
@@ -15745,6 +16054,12 @@
                 : selectedFlightPlan.origin
                   ? `Destinations from ${selectedFlightPlan.origin}`
                   : 'Choose departure airport')
+              : planningMode === 'ship'
+                ? (selectedShipPlan.destination
+                  ? `${selectedShipPlan.origin} -> ${selectedShipPlan.destination}`
+                  : selectedShipPlan.origin
+                    ? `Destinations from ${selectedShipPlan.origin}`
+                    : 'Choose departure port')
               : planningMode === 'bus'
                 ? (selectedBusPlan.tripId
                   ? `Stops after ${busRouteName(state.busPlannerTripsById.get(selectedBusPlan.tripId)?.routeId)}`
@@ -15760,6 +16075,8 @@
             ? `Walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km`
             : planningMode === 'flight'
               ? `buy ${V5_FLIGHT_PURCHASE_ADVANCE_MINUTES}m ahead · airport ${V5_FLIGHT_AIRPORT_ARRIVAL_ADVANCE_MINUTES}m ahead · boarding ${V5_FLIGHT_BOARDING_ADVANCE_MINUTES}m ahead`
+              : planningMode === 'ship'
+                ? 'No ticket · no port arrival buffer · long-distance/night ferry reveals boarding'
               : planningMode === 'bus'
                 ? state.busPlannerLoadStatus === 'ready'
                   ? `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))} · walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km${busTargetAirport ? ` · target ${busTargetAirport}` : ''}`
@@ -15787,10 +16104,22 @@
                         ? plannerBackNav('back-flight-origins', 'Back to airports') + (flightDestinationRows.length
                           ? flightDestinationRows.join('')
                           : `<div class="empty" data-row-key="empty:flight-destinations">No destinations remain from this airport.</div>`)
-                        : (airportRows.length
+                    : (airportRows.length
                       ? airportRows.join('')
                       : `<div class="empty" data-row-key="empty:flight">No airport coordinates available.</div>`))
                   )
+                : planningMode === 'ship'
+                  ? (selectedShipPlan.destination
+                    ? plannerBackNav('back-ship-destinations', 'Back to ports') + (shipRows.length
+                      ? shipRows.join('')
+                      : `<div class="empty" data-row-key="empty:ship-route">No playable ship timetable has been promoted for this route yet.</div>`)
+                    : selectedShipPlan.origin
+                      ? plannerBackNav('back-ship-origins', 'Back to ports') + (shipDestinationRows.length
+                        ? shipDestinationRows.join('')
+                        : `<div class="empty" data-row-key="empty:ship-destinations">No ship destinations have been promoted from this port yet.</div>`)
+                      : (shipPortRows.length
+                        ? shipPortRows.join('')
+                        : `<div class="empty" data-row-key="empty:ship">Ship Map is ready, but no real ferry ports have been promoted yet.</div>`))
                 : planningMode === 'bus'
                   ? (state.busPlannerLoadStatus === 'ready'
                     ? (selectedBusPlan.tripId
@@ -16201,8 +16530,12 @@
       if (!state.bundle) return;
       if (state.walkingMapActive && !walkingMapOriginPreview()) state.walkingMapActive = false;
       if (state.flightMapActive && !state.airportByIata?.size) state.flightMapActive = false;
+      if (state.shipMapActive && !state.portByName?.size) state.shipMapActive = false;
       if (state.busMapActive || activePlanningMode() === 'bus') refreshBusPlannerVisibleData();
       updateRailDimForWalkingMap();
+      updateWalkingMapLayers();
+      updateFlightMapLayers();
+      updateShipMapLayers();
       updateBusMapLayers();
       renderCurrentStatus();
       renderTrainOutlook();
@@ -16211,8 +16544,6 @@
       renderRoomPanel();
       renderResult();
       updatePlayerMarkers();
-      updateWalkingMapLayers();
-      updateFlightMapLayers();
       updateSelectedTripPath();
       updateSelectedRouteHighlights();
       if (state.map?.getLayer('selected-trip-stops')) {
@@ -18226,6 +18557,7 @@
       buildIndexes(bundle);
       await loadWalkingGraph();
       await loadFlightMap();
+      await loadShipMap();
       await loadFlightTimetable();
       await loadAirportBusAccessAudit();
       buildStationTransferIndex();
@@ -18268,6 +18600,7 @@
       });
       document.getElementById('walking-map-button').addEventListener('click', toggleWalkingMap);
       document.getElementById('flight-map-button').addEventListener('click', toggleFlightMap);
+      document.getElementById('ship-map-button').addEventListener('click', toggleShipMap);
       document.getElementById('replay-run-button').addEventListener('click', runSimulation);
       document.getElementById('replay-copy-link-button').addEventListener('click', copyReplayLink);
       document.getElementById('replay-copy-json-button').addEventListener('click', copyReplayJson);

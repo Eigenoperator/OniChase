@@ -164,7 +164,20 @@ Fields:
 - `weatherOrSeasonNote`
 - `vehicleType`
 
-Urban ferries and long-distance ferries use the same service model, but may have different default buffers.
+Gameplay rules:
+
+- Ships do not require advance ticket purchase.
+- Ships do not require an arrival-at-port buffer in the current rule set.
+- Long-distance and night ferries reveal boarding to the opponent.
+- Urban ferries and short island ferries do not reveal by default.
+- Weather is not modeled; scheduled services run according to their calendar.
+- Cross-day ferry arrivals are allowed and stored by carrying arrival minutes
+  past 24:00, the same time-axis convention used by flights and night buses.
+- Port names shown to players are real names, not artificial three-letter
+  codes.
+
+Urban ferries and long-distance ferries use the same service model, but the
+`serviceClass` / `vehicleType` metadata decides reveal policy and UI grouping.
 
 ## Bus Model
 

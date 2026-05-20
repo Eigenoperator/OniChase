@@ -25,7 +25,7 @@ The GitHub Pages site currently exposes only the active public playtest pages:
 Version focus:
 
 - `v4` is the stable nationwide railway gameplay build.
-- `v5` is the active multimodal build based on v4. It currently keeps the railway gameplay shell, adds walking-transfer planning, and adds a domestic plane map layer with airport nodes and aggregated flight routes.
+- `v5` is the active multimodal build based on v4. It currently keeps the railway gameplay shell, adds walking-transfer planning, domestic flight gameplay, airport bus access, and the first independent Ship Map scaffold for real ferry data.
 
 Browser source pages:
 
