@@ -1333,3 +1333,31 @@ layer before merging:
   - Active planner bus trips: 28,379
   - Indexed planner stopTimes: 710,641
   - Planner walking connectors: 111,820
+
+## MBE / Monbetsu Airport
+
+- 2026-05-19 21:13:51 PDT - Added MBE from the official Monbetsu city airport-access page.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 12
+  - Review-inclusive gaps: 18
+- Source:
+  - `https://mombetsu.jp/tourism/?content=1766`
+- Parser:
+  - `scripts/ingest/collect_v5_monbetsu_airport_bus.py`
+- Normalized gameplay data:
+  - Route: 紋別バスターミナル ⇔ 紋別空港
+  - Trips: 2
+  - StopTimes: 4
+  - Stops: 2 route-scoped stops
+  - Fare: free
+  - Current service window: 2026-03-29 through 2026-06-30
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: MBE is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,274
+  - Total bus trips: 79,472
+  - Total bus stops: 89,300
+  - Active planner bus trips: 28,381
+  - Indexed planner stopTimes: 710,645
+  - Planner walking connectors: 111,821

@@ -89,6 +89,7 @@ AIRPORT_STOP_ALIASES = {
     "WKJ": ["稚内空港", "空港ターミナル", "wakkanai airport"],
     "ONJ": ["大館能代空港", "大館能代空港バス停", "odate noshiro airport"],
     "IZO": ["出雲空港", "出雲縁結び空港", "izumo airport"],
+    "MBE": ["紋別空港", "オホーツク紋別空港", "monbetsu airport"],
 }
 MANUAL_STOP_COORD_ALIASES = {
     # Nagasaki airport-bus city stops.  中央橋 coordinates are from Busmap's
