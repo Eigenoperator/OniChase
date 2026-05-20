@@ -12981,7 +12981,7 @@
           continue;
         }
         if (step.type === 'TAKE_FLIGHT') {
-          if (currentState.kind !== 'NODE') break;
+          if (currentState.kind !== 'NODE' && currentState.kind !== 'BUS_STOP') break;
           const flight = state.flightById.get(step.flight_id);
           if (!flight) break;
           const catchability = flightCatchability(flight, { currentState, currentMinute });
@@ -13911,7 +13911,7 @@
 
     function addFlightStep(flightId) {
       const preview = truncateFuturePlan();
-      if (preview.currentState.kind !== 'NODE') return;
+      if (preview.currentState.kind !== 'NODE' && preview.currentState.kind !== 'BUS_STOP') return;
       const flight = state.flightById.get(flightId);
       if (!flight) return;
       const catchability = flightCatchability(flight, preview);
@@ -14557,6 +14557,45 @@
       };
     }
 
+    function nearestAirportFromCoordinate(coordinate) {
+      if (!validCoordinate(coordinate) || !state.airportByIata?.size) return null;
+      let best = null;
+      state.airportByIata.forEach((feature) => {
+        const distanceMeters = coordinateDistanceMeters(coordinate, feature.geometry?.coordinates);
+        if (!Number.isFinite(distanceMeters)) return;
+        if (!best || distanceMeters < best.distanceMeters) {
+          best = { feature, distanceMeters };
+        }
+      });
+      return best;
+    }
+
+    function accessibleAirportFromBusStop(busStopId) {
+      const coordinate = busStopCoordinate(busStopId);
+      const nearest = nearestAirportFromCoordinate(coordinate);
+      if (!nearest || nearest.distanceMeters > V5_AIRPORT_ACCESS_RADIUS_METERS) return null;
+      return {
+        iata: nearest.feature.properties?.iata,
+        feature: nearest.feature,
+        distanceMeters: nearest.distanceMeters,
+      };
+    }
+
+    function accessibleAirportFromPreview(preview) {
+      const currentState = preview?.currentState;
+      if (!currentState || !state.airportByIata?.size) return null;
+      if (currentState.airportIata && state.airportByIata.has(currentState.airportIata)) {
+        return {
+          iata: currentState.airportIata,
+          feature: state.airportByIata.get(currentState.airportIata),
+          distanceMeters: 0,
+        };
+      }
+      if (currentState.kind === 'NODE') return accessibleAirportFromStation(currentState.stationGroupId);
+      if (currentState.kind === 'BUS_STOP') return accessibleAirportFromBusStop(currentState.busStopId);
+      return null;
+    }
+
     function flightDepartureMinute(flight) {
       return hhmmToMinutes(flight?.departureTimeLocal || '00:00');
     }
@@ -14613,8 +14652,7 @@
     }
 
     function flightCatchability(flight, preview) {
-      const currentStationGroupId = preview?.currentState?.stationGroupId;
-      const accessibleAirport = accessibleAirportFromStation(currentStationGroupId);
+      const accessibleAirport = accessibleAirportFromPreview(preview);
       const times = flightRuleTimes(flight);
       const reasons = [];
       if (!flightOperatesForGameDay(flight)) reasons.push('not operating on game weekday');
@@ -16222,10 +16260,15 @@
           continue;
         }
         if (action.type === 'TAKE_FLIGHT') {
-          if (!currentStationId) throw new Error(`${playerId} cannot buy a flight while not at a station`);
+          if (!currentStationId && !currentBusStopId) throw new Error(`${playerId} cannot board a flight away from an airport access point`);
           const flight = state.flightById.get(action.flight_id);
           if (!flight) throw new Error(`Unknown flight ${action.flight_id}`);
-          const preview = { currentState: { kind: 'NODE', stationGroupId: currentStationId }, currentMinute };
+          const preview = {
+            currentState: currentStationId
+              ? { kind: 'NODE', stationGroupId: currentStationId }
+              : { kind: 'BUS_STOP', busStopId: currentBusStopId },
+            currentMinute,
+          };
           const catchability = flightCatchability(flight, preview);
           if (!catchability.ok) throw new Error(`${playerId} cannot take ${flightDisplayLabel(flight)}: ${catchability.reasons.join(', ')}`);
           const times = catchability.times;
@@ -16241,7 +16284,8 @@
             origin_airport: flight.originAirport,
             destination_airport: flight.destinationAirport,
             from_station_id: currentStationId,
-            from_label: displayNameForGroup(currentStationId),
+            from_bus_stop_id: currentBusStopId,
+            from_label: currentStationId ? displayNameForGroup(currentStationId) : busStopName(currentBusStopId),
             to_station_id: arrivalStationId,
             to_label: displayNameForGroup(arrivalStationId),
             purchase_hhmm: minutesToHhmm(currentMinute),
