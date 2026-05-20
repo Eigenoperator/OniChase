@@ -65,6 +65,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_remote_airport_official_bus_source.json",
     ROOT / "data" / "v5_arrival_trigger_airport_official_bus_source.json",
     ROOT / "data" / "v5_remaining_airport_official_bus_source.json",
+    ROOT / "data" / "v5_review_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -124,6 +125,11 @@ OPERATOR_HINTS = {
     "南陸運": ["南陸運", "与論", "Yoron"],
     "奥尻町有バス": ["奥尻", "Okushiri"],
     "宗谷バス": ["宗谷バス", "宗谷", "Soya", "利尻"],
+    "西日本鉄道": ["西日本鉄道", "西鉄", "Nishitetsu", "福岡"],
+    "太陽交通": ["太陽交通", "北九州", "Kitakyushu"],
+    "石見交通": ["石見交通", "石見", "Iwami"],
+    "エアポートバス東京・成田": ["TYO-NRT", "成田", "東京・成田"],
+    "全但バス": ["全但", "但馬", "Zentan"],
 }
 
 

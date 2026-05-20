@@ -102,6 +102,12 @@ AIRPORT_STOP_ALIASES = {
     "OIR": ["奥尻空港", "okushiri airport"],
     "RIS": ["利尻空港", "rishiri airport"],
     "KTD": ["北大東空港", "kitadaito airport"],
+    "FUK": ["福岡空港", "福岡空港国際線", "fukuoka airport"],
+    "KMQ": ["小松空港", "komatsu airport"],
+    "KKJ": ["北九州空港", "kitakyushu airport"],
+    "IWJ": ["萩・石見空港", "石見空港", "iwami airport", "hagi iwami airport"],
+    "NRT": ["成田空港", "成田空港第3ターミナル", "narita airport"],
+    "TJH": ["コウノトリ但馬空港", "但馬空港", "tajima airport"],
 }
 MANUAL_STOP_COORD_ALIASES = {
     # Nagasaki airport-bus city stops.  中央橋 coordinates are from Busmap's

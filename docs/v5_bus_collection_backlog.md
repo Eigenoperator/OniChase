@@ -1490,3 +1490,37 @@ layer before merging:
   - Documented no public bus: 1
   - Undocumented no-nearby-stop review items: 4
   - Nearby stop but no airport-class route review items: 2
+
+## FUK / KMQ / KKJ / IWJ / NRT / TJH Review Items
+
+- 2026-05-20 12:44:49 PDT - Cleared the remaining V5 airport-bus access review items.
+- Sources:
+  - FUK: Fukuoka Airport bus access page, Nishitetsu Airport Express page, and official Airport Express PDF.
+  - KMQ: Hokutetsu Komatsu Airport bus page and May 2026 Kanazawa-line PDF.
+  - KKJ: Kitakyushu Airport bus access page.
+  - IWJ: Hagi-Iwami Airport access page.
+  - NRT: official TYO-NRT timetable page.
+  - TJH: Toyooka City Tajima Airport access page.
+- Parser:
+  - `scripts/ingest/collect_v5_review_airport_bus.py`
+- Normalized gameplay data:
+  - Routes: 西鉄天神高速バスターミナル ⇔ 福岡空港国際線, 金沢駅西口 ⇔ 小松空港, 天神高速バスターミナル前 ⇔ 北九州空港, 益田駅 ⇔ 萩・石見空港, 東京駅日本橋口 ⇔ 成田空港第3ターミナル, 城崎温泉駅・豊岡駅 ⇔ コウノトリ但馬空港.
+  - Trips: 92
+  - StopTimes: 188
+  - Stops: 13 route-scoped stops after bundle promotion
+  - Fares: FUK ¥500, KMQ ¥1300, IWJ ¥340, NRT ¥1300; KKJ and TJH fares left unset pending a safe current endpoint fare parse.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found` for all 6 promoted routes.
+  - Airport access audit: all 6 target airports are now `covered_by_gtfs_airport_bus`.
+- Runtime after promotion:
+  - Total bus routes: 5,295
+  - Total bus trips: 79,735
+  - Total bus stops: 89,344
+  - Active planner bus trips: 28,610
+  - Indexed planner stopTimes: 711,107
+  - Planner walking connectors: 111,898
+- Airport access audit status:
+  - Covered by airport-class bus: 75
+  - Documented no public bus: 1
+  - Undocumented no-nearby-stop review items: 0
+  - Nearby stop but no airport-class route review items: 0
