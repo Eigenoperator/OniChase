@@ -959,3 +959,39 @@ layer before merging:
   - Active planner bus trips: 28,241
   - Indexed planner stopTimes: 710,219
   - Planner walking connectors: 111,758
+
+## FUJ / Fukue Airport
+
+- 2026-05-19 17:29:07 PDT - Added FUJ from official Goto Bus airport-line PDFs linked by the current Goto Bus page.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 23
+  - Review-inclusive gaps: 29
+- Source:
+  - Official Goto Bus page: `https://goto-sight.com/gotobus/index.html`
+  - Official airport-line PDF: `https://goto-sight.com/gotobus/_userdata/kuukoujikann2020.12.1.pdf`
+  - Official flight-connection PDF: `https://goto-sight.com/gotobus/_userdata/kuukousen2020.12.1.pdf`
+  - Current emitted section is 2026-05-11 through 2026-05-31.
+- Parser:
+  - `scripts/ingest/collect_v5_fukue_airport_bus.py`
+- Output:
+  - `data/v5_fukue_airport_official_bus_source.json`
+  - `docs/data/v5_fukue_airport_official_bus_source.json`
+  - `data/v5_fukue_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Route: 空港線 福江 ⇔ 五島福江空港
+  - Trips: 10
+  - StopTimes: 20
+  - Endpoint stops: 福江, 五島福江空港
+  - Fare: ¥310
+  - Direction split: 5 to airport, 5 from airport
+  - Intermediate PDF stops remain cached but are not emitted until coordinates are reviewed.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: FUJ is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,261
+  - Total bus trips: 79,334
+  - Total bus stops: 89,250
+  - Active planner bus trips: 28,251
+  - Indexed planner stopTimes: 710,239
+  - Planner walking connectors: 111,759
