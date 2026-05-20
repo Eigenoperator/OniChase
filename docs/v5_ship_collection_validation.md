@@ -1,0 +1,65 @@
+# V5 Ship Collection List Validation
+
+Last updated: 2026-05-20 14:40:29 PDT
+
+## Verdict
+
+The first draft was good as a Priority 1 starter list, but it was not yet a
+reliable national collection list. Cross-checking against MLIT and regional
+association pages found missing gameplay-relevant routes. The backlog has now
+been corrected so that:
+
+- Priority 1 matches the Japan Long Course Ferry Service Association's 15
+  long-distance route groups.
+- Priority 2 and 3 include the major MLIT/regional gaps that materially affect
+  playability.
+- The remaining MLIT local-island routes are explicitly tracked as a discovery
+  backlog instead of silently omitted.
+
+## Sources Checked
+
+- MLIT `旅客船・フェリー事業者の運航情報`: master list of scheduled passenger
+  ship/ferry operators with web sources.
+- 日本長距離フェリー協会: long-distance ferry route cross-check.
+- 四国旅客船協会 `航路案内`: cross-check for Shikoku-Honshu-Kyushu routes.
+- Operator official pages remain required before any route becomes playable.
+
+## Corrections Made
+
+- 新日本海フェリー multi-leg route corrected to include `敦賀・新潟・秋田・苫小牧東`.
+- Added missing long/intercity routes:
+  - 四国開発フェリー / オレンジフェリー `東予・新居浜・神戸・大阪`
+  - 松山・小倉フェリー `松山・小倉`
+  - 小笠原海運 `東京・父島`
+  - 伊豆諸島開発 `八丈島・青ヶ島 / 父島・母島`
+  - 九州郵船 `博多・壱岐・対馬`
+  - 奄美海運 `鹿児島・喜界・奄美群島`
+  - 周防大島松山フェリー, 周防灘フェリー
+  - ふじさん駿河湾フェリー, 伊勢湾フェリー
+  - 津エアポートライン, 神戸-関空ベイ・シャトル
+  - 淡路ジェノバライン, 四国汽船, 桜島フェリー, 垂水フェリー,
+    有明フェリー, 三和フェリー
+
+## Reliability Rules Before Collection
+
+- Treat `docs/v5_ship_collection_backlog.md` as a prioritized collection wave,
+  not as a claim that every Japanese local ferry is already enumerated in detail.
+- Treat the MLIT operator page as the discovery baseline for local routes.
+- Do not promote sightseeing-only routes unless they are normal scheduled
+  point-to-point transport.
+- Do not promote any route with unknown adult fare.
+- Do not invent access edges to ports. Use rail, bus, or walking connectors
+  only when the corresponding node and timing are real.
+- For parallel operators on the same corridor, keep operator identity and
+  de-duplicate only by exact sailing identity.
+
+## Ready To Collect
+
+Formal timetable/fare collection should start with:
+
+1. Priority 1 long-distance/night ferries.
+2. Airport-related ship links: 津エアポートライン and 神戸-関空ベイ・シャトル.
+3. High-gameplay regional shortcuts: 南海, 国道九四, 伊勢湾, 駿河湾,
+   東京湾, 熊本/島原, 有明, 桜島/垂水.
+4. Major island trunks: 小笠原, 佐渡, 東海汽船, 九州郵船, 奄美/沖縄,
+   八重山.
