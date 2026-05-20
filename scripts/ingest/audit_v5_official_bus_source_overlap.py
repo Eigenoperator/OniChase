@@ -63,6 +63,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_monbetsu_airport_official_bus_source.json",
     ROOT / "data" / "v5_island_airport_official_bus_source.json",
     ROOT / "data" / "v5_remote_airport_official_bus_source.json",
+    ROOT / "data" / "v5_arrival_trigger_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -115,6 +116,7 @@ OPERATOR_HINTS = {
     "沖永良部バス企業団": ["沖永良部", "Okinoerabu"],
     "与那国町生活路線バス": ["与那国", "Yonaguni"],
     "北陸鉄道": ["北陸鉄道", "Hokutetsu", "能登"],
+    "隠岐一畑交通": ["隠岐一畑", "隠岐", "Oki"],
 }
 
 

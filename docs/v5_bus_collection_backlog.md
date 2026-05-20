@@ -1424,3 +1424,34 @@ layer before merging:
   - Active planner bus trips: 28,458
   - Indexed planner stopTimes: 710,799
   - Planner walking connectors: 111,834
+
+## OKI / Oki Global Geopark Airport
+
+- 2026-05-19 23:38:29 PDT - Added OKI using the arrival-trigger airport-bus rule.
+- Gameplay rule:
+  - Arrival-trigger buses are expanded as `flight arrival + 5 minutes`.
+  - Airport-bound buses use the official `flight departure - 50 minutes` Port Plaza departure rule.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 7
+  - Review-inclusive gaps: 13
+- Source:
+  - `https://oki.ichibata.co.jp/airport.html`
+- Parser:
+  - `scripts/ingest/collect_v5_arrival_trigger_airport_bus.py`
+- Normalized gameplay data:
+  - Route: 隠岐ポートプラザ前 ⇔ 隠岐空港
+  - Trips: 4
+  - StopTimes: 8
+  - Stops: 2 route-scoped stops
+  - Fare: ¥520
+  - Service window: 2026-03-29 through 2026-05-31, derived from the current domestic flight bundle rows that the official bus connects to.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: OKI is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,282
+  - Total bus trips: 79,553
+  - Total bus stops: 89,316
+  - Active planner bus trips: 28,462
+  - Indexed planner stopTimes: 710,807
+  - Planner walking connectors: 111,835

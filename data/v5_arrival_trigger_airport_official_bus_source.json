@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "sourceFamily": "official_arrival_trigger_airport_bus",
+  "generatedAt": "2026-05-20T06:32:23Z",
+  "license": "Official timetable facts collected for gameplay routing; source page retains copyright.",
+  "routes": [
+    {
+      "sourceKind": "official_oki_ichibata_arrival_trigger_airport_html",
+      "operatorName": "隠岐一畑交通",
+      "airportIata": "OKI",
+      "routeCode": "oki_airport_port_plaza",
+      "routeName": "隠岐ポートプラザ前 ⇔ 隠岐空港",
+      "sourceUrl": "https://oki.ichibata.co.jp/airport.html",
+      "sourceUrls": [
+        "https://oki.ichibata.co.jp/airport.html"
+      ],
+      "cachePath": "data/v5_bus_official_cache/arrival_trigger_airport_bus/d17eefee2c22bd63df585c2df61a7fcc9a7bc915.html",
+      "cachePaths": [
+        "data/v5_bus_official_cache/arrival_trigger_airport_bus/d17eefee2c22bd63df585c2df61a7fcc9a7bc915.html"
+      ],
+      "serviceStart": "20260329",
+      "serviceEnd": "20260531",
+      "serviceDays": "daily",
+      "adultFareYen": 520,
+      "arrivalTriggerOffsetMinutes": 5,
+      "airportBoardingLeadMinutes": 50,
+      "routeStopNames": [
+        "隠岐ポートプラザ前",
+        "隠岐空港"
+      ],
+      "tripCount": 4,
+      "stops": [
+        {
+          "stopName": "隠岐ポートプラザ前",
+          "lat": 36.2027906,
+          "lon": 133.3341518,
+          "coordinateSource": "nominatim:隠岐ビューポートホテル"
+        },
+        {
+          "stopName": "隠岐空港",
+          "lat": 36.178388,
+          "lon": 133.323566,
+          "coordinateSource": "OurAirports OKI coordinate"
+        }
+      ],
+      "busStops": [
+        {
+          "name": "隠岐ポートプラザ前",
+          "lat": 36.2027906,
+          "lon": 133.3341518,
+          "coordinateSource": "nominatim:隠岐ビューポートホテル"
+        },
+        {
+          "name": "隠岐空港",
+          "lat": 36.178388,
+          "lon": 133.323566,
+          "coordinateSource": "OurAirports OKI coordinate"
+        }
+      ],
+      "trips": [
+        {
+          "tripId": "oki_airport_port_plaza:from_airport:001",
+          "direction": "from_airport",
+          "serviceStart": "20260329",
+          "serviceEnd": "20260531",
+          "serviceDays": "daily",
+          "trigger": {
+            "kind": "flight_arrival",
+            "airportIata": "OKI",
+            "flightId": "flight.jp.dom.c75d563f0848f033",
+            "flightLabel": "JL3433",
+            "arrivalTimeLocal": "09:30",
+            "offsetMinutes": 5,
+            "sourceRule": "arrival_time_plus_configured_offset"
+          },
+          "stopTimes": [
+            {
+              "stopName": "隠岐空港",
+              "time": "09:35"
+            },
+            {
+              "stopName": "隠岐ポートプラザ前",
+              "time": "09:45"
+            }
+          ]
+        },
+        {
+          "tripId": "oki_airport_port_plaza:from_airport:002",
+          "direction": "from_airport",
+          "serviceStart": "20260329",
+          "serviceEnd": "20260531",
+          "serviceDays": "daily",
+          "trigger": {
+            "kind": "flight_arrival",
+            "airportIata": "OKI",
+            "flightId": "flight.jp.dom.906a03798b467fff",
+            "flightLabel": "JL2331",
+            "arrivalTimeLocal": "14:35",
+            "offsetMinutes": 5,
+            "sourceRule": "arrival_time_plus_configured_offset"
+          },
+          "stopTimes": [
+            {
+              "stopName": "隠岐空港",
+              "time": "14:40"
+            },
+            {
+              "stopName": "隠岐ポートプラザ前",
+              "time": "14:50"
+            }
+          ]
+        },
+        {
+          "tripId": "oki_airport_port_plaza:to_airport:001",
+          "direction": "to_airport",
+          "serviceStart": "20260329",
+          "serviceEnd": "20260531",
+          "serviceDays": "daily",
+          "trigger": {
+            "kind": "flight_departure",
+            "airportIata": "OKI",
+            "flightId": "flight.jp.dom.6a10d52bb58b858d",
+            "flightLabel": "JL3434",
+            "departureTimeLocal": "10:00",
+            "leadMinutes": 50,
+            "sourceRule": "flight_departure_minus_official_50_minutes"
+          },
+          "stopTimes": [
+            {
+              "stopName": "隠岐ポートプラザ前",
+              "time": "09:10"
+            },
+            {
+              "stopName": "隠岐空港",
+              "time": "09:20"
+            }
+          ]
+        },
+        {
+          "tripId": "oki_airport_port_plaza:to_airport:002",
+          "direction": "to_airport",
+          "serviceStart": "20260329",
+          "serviceEnd": "20260531",
+          "serviceDays": "daily",
+          "trigger": {
+            "kind": "flight_departure",
+            "airportIata": "OKI",
+            "flightId": "flight.jp.dom.b21ad85315a9ddaf",
+            "flightLabel": "JL2332",
+            "departureTimeLocal": "15:05",
+            "leadMinutes": 50,
+            "sourceRule": "flight_departure_minus_official_50_minutes"
+          },
+          "stopTimes": [
+            {
+              "stopName": "隠岐ポートプラザ前",
+              "time": "14:15"
+            },
+            {
+              "stopName": "隠岐空港",
+              "time": "14:25"
+            }
+          ]
+        }
+      ],
+      "sourceNotes": [
+        "Official Oki Ichibata page says airport-bound buses depart Port Plaza 50 minutes before each flight departure.",
+        "Official Oki Ichibata page says airport departures vary by aircraft arrival and leave after baggage/passengers are ready.",
+        "OniChase V5 gameplay expands arrival-trigger bus departures as flight arrival + 5 minutes by user rule.",
+        "Travel time between 隠岐空港 and 隠岐ポートプラザ is 10 minutes in the official source."
+      ]
+    }
+  ]
+}

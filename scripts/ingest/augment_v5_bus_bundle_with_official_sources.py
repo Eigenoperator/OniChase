@@ -94,6 +94,7 @@ AIRPORT_STOP_ALIASES = {
     "OKE": ["沖永良部空港", "okinoerabu airport"],
     "OGN": ["与那国空港", "yonaguni airport"],
     "NTQ": ["のと里山空港", "能登空港", "noto satoyama airport", "noto airport"],
+    "OKI": ["隠岐空港", "隠岐世界ジオパーク空港", "oki airport"],
 }
 MANUAL_STOP_COORD_ALIASES = {
     # Nagasaki airport-bus city stops.  中央橋 coordinates are from Busmap's
