@@ -71,6 +71,8 @@ async function main() {
   const interaction = await page.evaluate(async ({ sampleIatas }) => {
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     await loadBusPlanner();
+    const originalStartStationGroupId = activePlayer().start_station_id;
+    const originalStartCoordinate = stationLonLat(originalStartStationGroupId);
 
     async function loadPlannerTilesNearCoordinate(coordinate, radiusMeters = 5000) {
       const entries = busPlannerTileEntriesNear(coordinate, radiusMeters);
@@ -102,6 +104,10 @@ async function main() {
       const walkDistance = coordinateDistanceMeters(fromStationCoordinate, stopCoordinate);
       const walkTimeSec = walkingTimeSecForDistance(walkDistance || 0);
 
+      state.activeMode = 'runner';
+      state.phase = 'PLANNING';
+      state.latestResult = null;
+      state.currentGameMinute = hhmmToMinutes(state.startTime);
       activePlayer().start_station_id = station?.stationGroupId || activePlayer().start_station_id;
       activePlayer().steps = airportStop ? [{
         type: 'WALK_TO_BUS_STOP',
@@ -119,7 +125,7 @@ async function main() {
       renderGame();
       await sleep(80);
 
-      const previewAtBusStop = planCursorPreview(state.activeMode);
+      const previewAtBusStop = previewPlayer(state.activeMode, null);
       const accessibleFromPreview = accessibleAirportFromPreview(previewAtBusStop);
       const airportListAnchor = coordinateForFlightAirportListAnchor(previewAtBusStop);
       const airportRowsAllHaveDistance = [...state.airportByIata.values()]
@@ -131,15 +137,22 @@ async function main() {
         .find((candidate) => flightCatchability(candidate, previewAtBusStop).ok);
       let afterFlightPreview = null;
       let addedFlightStep = false;
+      let busAccessHint = null;
       if (flight) {
+        const hintPreviewAwayFromAirport = {
+          currentState: { kind: 'NODE', stationGroupId: originalStartStationGroupId },
+          currentMinute: hhmmToMinutes(state.startTime),
+          mapPosition: originalStartCoordinate,
+        };
         state.flightPlanning[state.activeMode] = { origin: iata, destination: flight.destinationAirport };
         buyFlightTicket(flight.physicalFlightId);
+        busAccessHint = flightBusAccessHint(flight, hintPreviewAwayFromAirport);
         addFlightStep(flight.physicalFlightId);
         await sleep(80);
         addedFlightStep = activePlayer().steps.some((step) =>
           step.type === 'TAKE_FLIGHT' && step.flight_id === flight.physicalFlightId
         );
-        afterFlightPreview = planCursorPreview(state.activeMode);
+        afterFlightPreview = previewPlayer(state.activeMode, null);
       }
 
       results.push({
@@ -171,6 +184,8 @@ async function main() {
           destinationAirport: flight.destinationAirport,
           departureTimeLocal: flight.departureTimeLocal,
         } : null,
+        railAccessNeedsBusHint: flightOriginNeedsBusAccess(iata),
+        busAccessHint,
         addedFlightStep,
         afterFlightPreview: afterFlightPreview ? {
           kind: afterFlightPreview.currentState?.kind,
@@ -186,11 +201,14 @@ async function main() {
   for (const result of interaction) {
     if (!result.airportLoaded) failures.push({ message: `Airport ${result.iata} did not load in web airport map`, details: result });
     if (!result.airportStop) failures.push({ message: `No loaded airport bus stop near ${result.iata}`, details: result });
-    if (result.previewAtBusStop.kind !== 'BUS_STOP') failures.push({ message: `Airport bus access did not leave player at BUS_STOP for ${result.iata}`, details: result });
-    if (result.accessibleFromPreview?.iata !== result.iata) failures.push({ message: `BUS_STOP preview should be recognized as airport ${result.iata}`, details: result });
+    if (result.railAccessNeedsBusHint && result.previewAtBusStop.kind !== 'BUS_STOP') failures.push({ message: `Airport bus access did not leave player at BUS_STOP for rail-gap airport ${result.iata}`, details: result });
+    if (result.railAccessNeedsBusHint && result.accessibleFromPreview?.iata !== result.iata) failures.push({ message: `BUS_STOP preview should be recognized as rail-gap airport ${result.iata}`, details: result });
     if (!result.airportRowsAllHaveDistance) failures.push({ message: `Departure airport list should have distance labels from BUS_STOP at ${result.iata}`, details: result });
-    if (!result.flight) failures.push({ message: `No catchable outbound flight from airport bus stop at ${result.iata}`, details: result });
-    if (!result.addedFlightStep) failures.push({ message: `Could not add TAKE_FLIGHT from airport bus stop at ${result.iata}`, details: result });
+    if (result.railAccessNeedsBusHint && !result.busAccessHint?.routeLabel) {
+      failures.push({ message: `Airport ${result.iata} needs rail-gap bus access guidance`, details: result });
+    }
+    if (result.railAccessNeedsBusHint && !result.flight) failures.push({ message: `No catchable outbound flight from airport bus stop at rail-gap airport ${result.iata}`, details: result });
+    if (result.railAccessNeedsBusHint && !result.addedFlightStep) failures.push({ message: `Could not add TAKE_FLIGHT from airport bus stop at rail-gap airport ${result.iata}`, details: result });
   }
 
   const output = {

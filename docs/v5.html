@@ -1398,6 +1398,7 @@
     const WALKING_EDGES_URL = './data/v5_walking_edges.json.gz';
     const FLIGHT_MAP_URL = './data/v5_flight_map.geojson';
     const FLIGHT_TIMETABLE_URL = './data/v5_domestic_flights_current_bundle.json';
+    const AIRPORT_BUS_ACCESS_AUDIT_URL = './data/v5_airport_bus_access_audit.json';
     const BUS_MAP_MANIFEST_URL = './data/v5_bus_map_tiles/manifest.json';
     const BUS_PLANNER_MANIFEST_URL = './data/v5_bus_planner_tiles/manifest.json';
     const BUS_MAP_AROUND_FALLBACK_RADII_METERS = [25000, 60000, 120000];
@@ -5739,6 +5740,8 @@
       flightTimetable: null,
       flightById: new Map(),
       flightsByOriginAirport: new Map(),
+      airportBusAccessAudit: null,
+      airportBusAccessByIata: new Map(),
       busMapManifest: null,
       busMapTileCache: new Map(),
       busMapTileInflight: new Map(),
@@ -8426,6 +8429,24 @@
       } catch (error) {
         console.warn('Failed to load v5 flight timetable', error);
         indexFlightTimetable(null);
+      }
+    }
+
+    function indexAirportBusAccessAudit(payload) {
+      state.airportBusAccessAudit = payload || null;
+      state.airportBusAccessByIata = new Map();
+      (payload?.airports || []).forEach((airport) => {
+        if (airport?.iata) state.airportBusAccessByIata.set(airport.iata, airport);
+      });
+    }
+
+    async function loadAirportBusAccessAudit() {
+      try {
+        const payload = await fetchJsonMaybeGz(AIRPORT_BUS_ACCESS_AUDIT_URL);
+        indexAirportBusAccessAudit(payload);
+      } catch (error) {
+        console.warn('Failed to load v5 airport bus access audit', error);
+        indexAirportBusAccessAudit(null);
       }
     }
 
@@ -14762,6 +14783,45 @@
       };
     }
 
+    function flightOriginNeedsBusAccess(iata) {
+      const nearestStation = nearestStationGroupForAirport(iata);
+      return !nearestStation?.stationGroupId ||
+        Number(nearestStation.distanceMeters) > V5_ACTIVE_WALKING_THRESHOLD_METERS;
+    }
+
+    function flightBusAccessHint(flight, preview) {
+      const originIata = flight?.originAirport;
+      if (!originIata || !flightOriginNeedsBusAccess(originIata)) return null;
+      const row = state.airportBusAccessByIata.get(originIata);
+      if (!row || row.status !== 'covered_by_gtfs_airport_bus') return null;
+      const nearbyLimit = Number(row.nearbyMeters) || 2000;
+      const stop = (row.nearestStops || [])
+        .filter((item) => Number(item.distanceMeters) <= nearbyLimit)
+        .sort((a, b) => Number(a.distanceMeters || 0) - Number(b.distanceMeters || 0))[0] || null;
+      const route = (row.airportClassRoutes || [])[0] || null;
+      const currentAirport = accessibleAirportFromPreview(preview)?.iata || null;
+      if (currentAirport === originIata) return null;
+      return {
+        iata: originIata,
+        airportName: airportName(originIata),
+        nearestRailDistanceMeters: nearestStationGroupForAirport(originIata)?.distanceMeters ?? null,
+        stopName: stop?.name || null,
+        stopDistanceMeters: stop?.distanceMeters ?? null,
+        routeLabel: route?.label || null,
+        agencyName: route?.agencyName || null,
+      };
+    }
+
+    function flightBusAccessHintText(flight, preview) {
+      const hint = flightBusAccessHint(flight, preview);
+      if (!hint) return '';
+      const routeText = [hint.agencyName, hint.routeLabel].filter(Boolean).join(' · ');
+      const stopText = hint.stopName
+        ? `airport stop ${hint.stopName}${Number.isFinite(Number(hint.stopDistanceMeters)) ? ` (${walkingDistanceLabel(Number(hint.stopDistanceMeters))} from airport)` : ''}`
+        : 'airport bus stop';
+      return `Bus access hint: use Bus mode toward ${hint.iata}; ${routeText || 'airport bus available'}; ${stopText}`;
+    }
+
     function nearestAirportsFromStation(stationGroupId, limit = 10) {
       const origin = stationLonLat(stationGroupId);
       if (!origin || !state.airportByIata?.size) return [];
@@ -14890,6 +14950,7 @@
       const board = status.board;
       const disabled = board.ok ? '' : 'disabled';
       const fare = ticket.fare || resolveFlightFare(flight);
+      const busHintText = flightBusAccessHintText(flight, preview);
       return [`
         <button class="route-row flight-ticket-row" type="button" data-row-key="${escapeHtml(`flight-ticket:${ticket.flight_id}`)}" data-action="take-flight" data-flight-id="${escapeHtml(ticket.flight_id)}" ${disabled}>
           ${airlineLogoHtml(flight)}
@@ -14897,6 +14958,7 @@
             <span class="row-title">Ticket: ${escapeHtml(flightDisplayLabel(flight))}</span>
             <span class="row-sub">bought ${ticket.purchase_hhmm} · ¥${Number(fare.total_yen || 0).toLocaleString('ja-JP')} · ${escapeHtml(flight.departureTimeLocal)} -> ${escapeHtml(flight.arrivalTimeLocal)}</span>
             <span class="flight-status-line">${escapeHtml(status.text)}</span>
+            ${busHintText ? `<span class="flight-status-line">${escapeHtml(busHintText)}</span>` : ''}
           </span>
           <span class="row-meta">${escapeHtml(status.label)}</span>
         </button>
@@ -18092,6 +18154,7 @@
       await loadWalkingGraph();
       await loadFlightMap();
       await loadFlightTimetable();
+      await loadAirportBusAccessAudit();
       buildStationTransferIndex();
       const runnerStart = bundle.metadata?.defaultRunnerStartStationId || 'SG_TOKYO';
       const hunterStart = bundle.metadata?.defaultHunterStartStationId || 'SG_SHINJUKU';
