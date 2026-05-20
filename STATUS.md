@@ -4,9 +4,9 @@
 Continue V5 public-transport expansion on top of the stable V4 rail base, with the current active work on nationwide real bus collection and playable promotion.
 
 ## V5 Bus Collection Status
-- As of 2026-05-19 16:39:38 PDT, the V5 bus runtime bundle has 5,258 routes, 79,286 trips, 89,244 stops, 710,143 indexed planner stopTimes, and 111,756 walking connectors.
-- Airport access audit status: 45 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 25 airports still with no bus stop within 5 km.
-- Latest promoted official source: YGJ / Yonago Kitaro Airport official Hinomaru + Matsue Ichibata timetables, 2 endpoint-playable routes and 24 fixed-clock trips for 米子駅/松江駅 ⇔ 米子鬼太郎空港. The sources cover the current 2026-03-29 to 2026-10-24 official timetables and the overlap audit found no existing GTFS duplicate.
+- As of 2026-05-19 17:08:37 PDT, the V5 bus runtime bundle has 5,260 routes, 79,324 trips, 89,248 stops, 710,219 indexed planner stopTimes, and 111,758 walking connectors.
+- Airport access audit status: 46 airports covered by airport-class bus routes, 2 airports with nearby non-airport bus stops, 4 airports with stops only within the 5 km review radius, and 24 airports still with no bus stop within 5 km.
+- Latest promoted official source: TSJ / Tsushima Airport official Tsushima Airport timetable, 2 endpoint-playable routes and 38 trips for 厳原/比田勝 ⇔ 対馬やまねこ空港. The source is the current official airport page snapshot and the overlap audit found no existing GTFS duplicate.
 - Important correction: "finished bus sources" only means the currently collected official source batch was either promoted or blocked; it does not mean nationwide airport liaison, highway/night, or local bus collection is complete.
 
 ## Done

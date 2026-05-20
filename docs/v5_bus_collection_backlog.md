@@ -5,14 +5,14 @@ Generated from the current V5 bus audits on `2026-05-19`.
 ## Current Playable Source Layer
 
 - GTFS / official runtime bundle: 454 successfully parsed GTFS feeds plus promoted official bus sources.
-- Bus stops: 89,244.
-- Bus routes: 5,258.
-- Bus trips: 79,286.
-- Stop times: 2,270,612.
-- Runtime planner tiles: 426 tiles.
-- Saturday active trips in planner tiles: 28,203.
-- Walking connectors: 111,756.
-- Routes with fare-rule coverage: 4,556.
+- Bus stops: 89,248.
+- Bus routes: 5,260.
+- Bus trips: 79,324.
+- Stop times: 2,270,688.
+- Runtime planner tiles: 429 tiles.
+- Saturday active trips in planner tiles: 28,241.
+- Walking connectors: 111,758.
+- Routes with fare-rule coverage: 4,558.
 
 ## Highest Priority Gap
 
@@ -21,10 +21,10 @@ gameplay depends on reliable airport ground access.
 
 Current airport access audit:
 
-- 45 airports covered by GTFS/official airport-class bus routes.
+- 46 airports covered by GTFS/official airport-class bus routes.
 - 2 airports have nearby GTFS bus stops but no airport-class route.
 - 4 airports have GTFS bus stops only within the wider 5 km review radius.
-- 25 airports still have no bus stop within 5 km in this source layer.
+- 24 airports still have no bus stop within 5 km in this source layer.
 
 ## First Airport-Bus Parser Targets
 
@@ -237,18 +237,18 @@ Continued high-flight-volume airport access gap collection:
     runtime bus bundle and planner tiles.
 
 Remaining no-stop-within-5km airport gaps by current flight volume now begin
-as of the 2026-05-19 16:39:38 PDT YGJ promotion:
+as of the 2026-05-19 17:08:37 PDT TSJ promotion:
 
 1. ASJ / Amami Airport: 36 flights.
 2. IZO / Izumo Enmusubi Airport: 34 flights.
-3. TSJ / Tsushima Airport: 18 flights.
-4. FUJ / Fukue Airport: 16 flights.
-5. KUM / Yakushima Airport: 16 flights.
-6. TTJ / Tottori Airport: 15 flights.
-7. OBO / Tokachi-Obihiro Airport: 14 flights.
-8. TKN / Tokunoshima Airport: 14 flights.
-9. FKS / Fukushima Airport: 10 flights.
-10. HAC / Hachijojima Airport: 10 flights.
+3. FUJ / Fukue Airport: 16 flights.
+4. KUM / Yakushima Airport: 16 flights.
+5. TTJ / Tottori Airport: 15 flights.
+6. OBO / Tokachi-Obihiro Airport: 14 flights.
+7. TKN / Tokunoshima Airport: 14 flights.
+8. FKS / Fukushima Airport: 10 flights.
+9. HAC / Hachijojima Airport: 10 flights.
+10. SYO / Shonai Airport: 9 flights.
 
 - UBJ / Yamaguchi Ube Airport official airport access bus HTML timetables.
   - Script: `scripts/ingest/collect_v5_yamaguchi_ube_airport_bus.py`
@@ -925,3 +925,37 @@ layer before merging:
   - Active planner bus trips: 28,203
   - Indexed planner stopTimes: 710,143
   - Planner walking connectors: 111,756
+
+## TSJ / Tsushima Airport
+
+- 2026-05-19 17:08:37 PDT - Added TSJ from the official Tsushima Airport bus timetable page.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 24
+  - Review-inclusive gaps: 30
+- Source:
+  - Official Tsushima Airport transport page: `https://tsushima-airport.co.jp/transportration`
+  - The page publishes the current bus timetable but does not expose an explicit revision date; the cached source snapshot is retained.
+- Parser:
+  - `scripts/ingest/collect_v5_tsushima_airport_bus.py`
+- Output:
+  - `data/v5_tsushima_airport_official_bus_source.json`
+  - `docs/data/v5_tsushima_airport_official_bus_source.json`
+  - `data/v5_tsushima_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Routes: 厳原 ⇔ 対馬やまねこ空港 and 比田勝 ⇔ 対馬やまねこ空港
+  - Trips: 38
+  - StopTimes: 76
+  - Endpoint stops: 厳原, 比田勝, 対馬やまねこ空港
+  - Fares: ¥710 for 厳原 and ¥3070 for 比田勝
+  - Direction split: 21 to airport, 17 from airport
+  - Rows that only expose 仁位 or 赤島 endpoints remain source-noted but not emitted until those stop coordinates are reviewed.
+- Checks:
+  - Targeted overlap audit: both route families `no_gtfs_overlap_found`
+  - Airport access audit: TSJ is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,260
+  - Total bus trips: 79,324
+  - Total bus stops: 89,248
+  - Active planner bus trips: 28,241
+  - Indexed planner stopTimes: 710,219
+  - Planner walking connectors: 111,758
