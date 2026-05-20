@@ -1064,3 +1064,36 @@ layer before merging:
   - Active planner bus trips: 28,262
   - Indexed planner stopTimes: 710,263
   - Planner walking connectors: 111,763
+
+## OBO / Tokachi-Obihiro Airport
+
+- 2026-05-19 18:14:38 PDT - Added OBO from the official Tokachi Bus airport PDF.
+- Remaining airport-bus gap after promotion:
+  - Strict no-stop-within-5km gaps: 20
+  - Review-inclusive gaps: 26
+- Source:
+  - Official Tokachi Bus airport PDF: `https://www.tokachibus.jp/bus/wp-content/uploads/KUKOUPDF/KUKOU8_03-2.pdf`
+  - Current service window is 2026-03-30 through 2026-10-24.
+- Parser:
+  - `scripts/ingest/collect_v5_obihiro_airport_bus.py`
+- Output:
+  - `data/v5_obihiro_airport_official_bus_source.json`
+  - `docs/data/v5_obihiro_airport_official_bus_source.json`
+  - `data/v5_obihiro_airport_official_bus_audit.json`
+- Normalized gameplay data:
+  - Route: 帯広駅バスターミナル ⇔ とかち帯広空港
+  - Trips: 14
+  - StopTimes: 28
+  - Endpoint stops: 帯広駅バスターミナル, とかち帯広空港
+  - Fare: ¥1000
+  - Direction split: 7 to airport, 7 from airport
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found`
+  - Airport access audit: OBO is now `covered_by_gtfs_airport_bus`
+- Runtime after promotion:
+  - Total bus routes: 5,264
+  - Total bus trips: 79,359
+  - Total bus stops: 89,258
+  - Active planner bus trips: 28,276
+  - Indexed planner stopTimes: 710,291
+  - Planner walking connectors: 111,765
