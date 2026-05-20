@@ -41,6 +41,10 @@ Current confidence:
   closure. The MLIT long tail contains many local island ferries; they are kept
   in the discovery backlog and promoted by gameplay value and connector
   readiness.
+- `data/v5_ship_mlit_discovery.json` snapshots the full MLIT web-source
+  discovery baseline. It currently contains 199 scheduled operator-route
+  entries: 150 public candidates, 43 municipal scheduled candidates, and 6
+  review-required sightseeing/water-bus candidates.
 
 ## Priority 1: Long-Distance And Night Ferries
 
@@ -154,9 +158,13 @@ are useful transport rather than only sightseeing.
 ## MLIT Long-Tail Discovery Backlog
 
 The MLIT scheduled-operator page lists many local island routes beyond the
-first playable collection wave. They should not be ignored, but they should be
-promoted after the high-value trunk routes because each one needs connectors and
-overlap checks.
+first playable collection wave. They are now stored in:
+
+- `data/v5_ship_mlit_discovery.json`
+- generator: `scripts/ingest/collect_v5_ship_mlit_discovery.py`
+
+They should not be ignored, but they should be promoted after the high-value
+trunk routes because each one needs connectors and overlap checks.
 
 Known long-tail groups to keep in discovery:
 
