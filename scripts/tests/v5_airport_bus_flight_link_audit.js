@@ -121,6 +121,11 @@ async function main() {
 
       const previewAtBusStop = planCursorPreview(state.activeMode);
       const accessibleFromPreview = accessibleAirportFromPreview(previewAtBusStop);
+      const airportListAnchor = coordinateForFlightAirportListAnchor(previewAtBusStop);
+      const airportRowsAllHaveDistance = [...state.airportByIata.values()]
+        .filter((feature) => state.flightsByOriginAirport.has(feature.properties?.iata))
+        .slice(0, 16)
+        .every((feature) => Number.isFinite(coordinateDistanceMeters(airportListAnchor, feature.geometry?.coordinates)));
       const flight = (state.flightsByOriginAirport.get(iata) || [])
         .filter((candidate) => flightOperatesForGameDay(candidate))
         .find((candidate) => flightCatchability(candidate, previewAtBusStop).ok);
@@ -158,6 +163,8 @@ async function main() {
           currentMinute: previewAtBusStop?.currentMinute || null,
         },
         accessibleFromPreview,
+        airportListAnchor,
+        airportRowsAllHaveDistance,
         flight: flight ? {
           flightId: flight.physicalFlightId,
           label: flightDisplayLabel(flight),
@@ -181,6 +188,7 @@ async function main() {
     if (!result.airportStop) failures.push({ message: `No loaded airport bus stop near ${result.iata}`, details: result });
     if (result.previewAtBusStop.kind !== 'BUS_STOP') failures.push({ message: `Airport bus access did not leave player at BUS_STOP for ${result.iata}`, details: result });
     if (result.accessibleFromPreview?.iata !== result.iata) failures.push({ message: `BUS_STOP preview should be recognized as airport ${result.iata}`, details: result });
+    if (!result.airportRowsAllHaveDistance) failures.push({ message: `Departure airport list should have distance labels from BUS_STOP at ${result.iata}`, details: result });
     if (!result.flight) failures.push({ message: `No catchable outbound flight from airport bus stop at ${result.iata}`, details: result });
     if (!result.addedFlightStep) failures.push({ message: `Could not add TAKE_FLIGHT from airport bus stop at ${result.iata}`, details: result });
   }

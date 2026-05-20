@@ -14783,12 +14783,21 @@
       });
     }
 
+    function coordinateForFlightAirportListAnchor(preview) {
+      if (validCoordinate(preview?.mapPosition)) return preview.mapPosition;
+      const currentState = preview?.currentState || {};
+      if (currentState.kind === 'NODE') return stationLonLat(currentState.stationGroupId);
+      if (currentState.kind === 'BUS_STOP') return busStopCoordinate(currentState.busStopId);
+      if (currentState.airportIata) return airportCoordinate(currentState.airportIata);
+      if (currentState.kind === 'FLIGHT') {
+        const flight = state.flightById.get(currentState.flightId);
+        return airportCoordinate(flight?.destinationAirport || currentState.destinationAirport);
+      }
+      return null;
+    }
+
     function flightAirportRowsFromPreview(preview) {
-      const anchor = validCoordinate(preview?.mapPosition)
-        ? preview.mapPosition
-        : (preview?.currentState?.kind === 'NODE'
-          ? stationLonLat(preview.currentState.stationGroupId)
-          : null);
+      const anchor = coordinateForFlightAirportListAnchor(preview);
       return [...state.airportByIata.values()]
         .filter((feature) => state.flightsByOriginAirport.has(feature.properties?.iata))
         .map((feature) => ({
