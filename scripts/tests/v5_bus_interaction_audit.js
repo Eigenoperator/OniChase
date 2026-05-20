@@ -127,6 +127,11 @@ async function main() {
     const tripRows = activeRows('[data-action="choose-bus-trip"]');
     const tripRow = tripRows[0] || null;
     const tripId = tripRow?.dataset.busTripId || null;
+    const boardPreview = planCursorPreview(state.activeMode);
+    const boardReadyMinute = stopId ? busBoardReadyMinute(stopId, boardPreview) : null;
+    const boardTrip = tripId ? state.busPlannerTripsById.get(tripId) : null;
+    const boardStop = boardTrip ? (boardTrip.stops || []).find((stop) => stop.stopId === stopId) : null;
+    const boardDepartureMinute = boardStop ? Number(boardStop.dep ?? boardStop.arr) : null;
     if (tripRow) {
       tripRow.click();
       await sleep(350);
@@ -160,6 +165,8 @@ async function main() {
         routeKey,
         routeName: routeKey ? busRouteName(parseBusRouteKey(routeKey).routeId) : null,
         tripId,
+        boardReadyMinute,
+        boardDepartureMinute,
         destinationStopId,
         destinationStopName: destinationStopId ? busStopName(destinationStopId) : null,
       },
@@ -192,6 +199,7 @@ async function main() {
   check(interaction.rowCounts.routes > 0, 'Choosing a bus stop should show bus routes', interaction);
   check(interaction.rowCounts.trips > 0, 'Choosing a bus route should show bus trips', interaction);
   check(interaction.rowCounts.destinations > 0, 'Choosing a bus trip should show downstream stops', interaction);
+  check(Number(interaction.chosen.boardDepartureMinute) >= Number(interaction.chosen.boardReadyMinute), 'Chosen bus must depart after walk-to-stop time', interaction.chosen);
   check(interaction.busSteps.some((step) => step.type === 'BOARD_BUS'), 'Selecting a downstream stop should add BOARD_BUS to current plan', interaction.busSteps);
   check(interaction.busSteps.some((step) => step.type === 'RIDE_TO_BUS_STOP'), 'Selecting a downstream stop should add RIDE_TO_BUS_STOP to current plan', interaction.busSteps);
   check(interaction.finalPreview.kind === 'BUS_STOP', 'After a bus ride the planner cursor should be at a bus stop', interaction.finalPreview);

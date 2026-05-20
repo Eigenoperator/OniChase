@@ -13967,8 +13967,11 @@
       const boardStop = (trip.stops || []).find((stop) => stop.stopId === boardStopId);
       const destinationStop = (trip.stops || []).find((stop) => stop.stopId === destinationStopId);
       if (!boardStop || !destinationStop || Number(destinationStop.seq) <= Number(boardStop.seq)) return;
+      const boardReadyMinute = busBoardReadyMinute(boardStopId, preview);
+      const boardDepartureMinute = Number(boardStop.dep ?? boardStop.arr);
+      if (!Number.isFinite(boardReadyMinute) || !Number.isFinite(boardDepartureMinute) || boardDepartureMinute < boardReadyMinute) return;
       if (preview.currentState.kind === 'NODE') {
-        const connector = busReachableStopChoices(preview).find((item) => item.stopId === boardStopId);
+        const connector = busReachableStopChoiceForStop(boardStopId, preview);
         if (!connector) return;
         if (Number(connector.distanceMeters || 0) > 0) {
           activePlayer().steps.push({
@@ -14941,12 +14944,55 @@
       state.busPlanning[playerId] = { stopId: null, routeKey: null, tripId: null };
     }
 
+    function busBoardReadyMinute(stopId, preview) {
+      if (!stopId || !preview?.currentState) return Number.POSITIVE_INFINITY;
+      const baseMinute = effectiveDepartureMinute(state.activeMode, preview.currentMinute);
+      if (preview.currentState.kind === 'BUS_STOP') {
+        return preview.currentState.busStopId === stopId ? baseMinute : Number.POSITIVE_INFINITY;
+      }
+      if (preview.currentState.kind !== 'NODE') return Number.POSITIVE_INFINITY;
+      const reachable = busReachableStopChoiceForStop(stopId, preview);
+      if (!reachable) return Number.POSITIVE_INFINITY;
+      const walkMinutes = Math.max(0, Math.ceil((Number(reachable.walkTimeSec) || 0) / 60));
+      return baseMinute + walkMinutes;
+    }
+
+    function busReachableStopChoiceForStop(stopId, preview) {
+      if (!stopId || !preview?.currentState) return null;
+      if (preview.currentState.kind === 'BUS_STOP') {
+        if (preview.currentState.busStopId !== stopId) return null;
+        const stop = state.busPlannerStopsById.get(stopId);
+        return stop ? { stopId, stop, distanceMeters: 0, walkTimeSec: 0, from: 'current' } : null;
+      }
+      if (preview.currentState.kind !== 'NODE') return null;
+      const stationGroupId = preview.currentState.stationGroupId;
+      let best = null;
+      state.busPlannerConnectors.forEach((connector) => {
+        if (connector.toMode !== 'rail_station_group' || connector.toNodeId !== stationGroupId || connector.fromStopId !== stopId) return;
+        const distance = Number(connector.distanceMeters);
+        if (!Number.isFinite(distance) || distance > V5_ACTIVE_WALKING_THRESHOLD_METERS) return;
+        const stop = state.busPlannerStopsById.get(connector.fromStopId);
+        if (!stop) return;
+        if (!best || distance < best.distanceMeters) {
+          best = {
+            stopId: connector.fromStopId,
+            stop,
+            connector,
+            distanceMeters: distance,
+            walkTimeSec: walkingTimeSecForDistance(distance, walkingSpeedMetersPerSecondFor(state.activeMode)),
+            from: 'station',
+          };
+        }
+      });
+      return best;
+    }
+
     function busReachableStopChoices(preview) {
       if (!preview?.currentState) return [];
       if (preview.currentState.kind === 'BUS_STOP') {
-        const stop = state.busPlannerStopsById.get(preview.currentState.busStopId);
-        if (!stop || !busRideableDeparturesFromStop(stop.id, effectiveDepartureMinute(state.activeMode, preview.currentMinute)).length) return [];
-        return [{ stopId: stop.id, stop, distanceMeters: 0, walkTimeSec: 0, from: 'current' }];
+        const choice = busReachableStopChoiceForStop(preview.currentState.busStopId, preview);
+        if (!choice || !busRideableDeparturesFromStop(choice.stopId, busBoardReadyMinute(choice.stopId, preview)).length) return [];
+        return [choice];
       }
       if (preview.currentState.kind !== 'NODE') return [];
       const stationGroupId = preview.currentState.stationGroupId;
@@ -14973,7 +15019,7 @@
         a.distanceMeters - b.distanceMeters ||
         String(a.stop.name || '').localeCompare(String(b.stop.name || ''), 'ja')
       ).filter((choice) =>
-        busRideableDeparturesFromStop(choice.stopId, effectiveDepartureMinute(state.activeMode, preview.currentMinute)).length > 0
+        busRideableDeparturesFromStop(choice.stopId, busBoardReadyMinute(choice.stopId, preview)).length > 0
       ).slice(0, 60);
     }
 
@@ -15020,7 +15066,7 @@
     }
 
     function busRouteChoicesFromStop(stopId, preview) {
-      const rows = busRideableDeparturesFromStop(stopId, effectiveDepartureMinute(state.activeMode, preview.currentMinute));
+      const rows = busRideableDeparturesFromStop(stopId, busBoardReadyMinute(stopId, preview));
       const grouped = new Map();
       rows.forEach((row) => {
         const key = busRouteKey(row.routeId, row.headsign || state.busPlannerTripsById.get(row.tripId)?.headsign || '');
@@ -15038,7 +15084,7 @@
 
     function busTripChoicesFromRoute(stopId, routeKey, preview) {
       const parsed = parseBusRouteKey(routeKey);
-      const currentMinute = effectiveDepartureMinute(state.activeMode, preview.currentMinute);
+      const currentMinute = busBoardReadyMinute(stopId, preview);
       return busRideableDeparturesFromStop(stopId, currentMinute)
         .filter((row) => row.routeId === parsed.routeId)
         .filter((row) => !parsed.headsign || (row.headsign || state.busPlannerTripsById.get(row.tripId)?.headsign || '') === parsed.headsign)
