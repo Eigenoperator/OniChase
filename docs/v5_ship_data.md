@@ -67,6 +67,16 @@ Current status:
 - Current artifact coverage: 7 route groups, 14 ports, 14 directional routes,
   and 62 explicit timetable trips. Some routes have official fare/port/service
   pattern data but still need detailed timetable parsing before boarding.
+- Third batch promoted into the source/map artifact:
+  - 23 additional long-distance and island-trunk route groups from official
+    operator sources, including 太平洋フェリー, 商船三井さんふらわあ,
+    新日本海フェリー, 阪九フェリー, 名門大洋フェリー, 東京九州フェリー,
+    オーシャン東九フェリー, 宮崎カーフェリー, シルバーフェリー,
+    津軽海峡フェリー, 佐渡汽船, 小笠原海運, and 東海汽船.
+  - Current artifact coverage is now 30 route groups, 53 ports, 70
+    directional route segments, and 62 explicit timetable trips.
+  - The long-distance batch is intentionally `timetable_calendar_fare_pending`
+    because seasonal fare/calendar parsers must be implemented before boarding.
 - Boarding remains disabled until port connectors and ship-boarding gameplay
   guards are implemented.
 - No fake port or route is included.
@@ -75,4 +85,5 @@ Current status:
 
 - `data/v5_ship_seikan_ferry_official.json`
 - `data/v5_ship_priority_batch_official.json`
+- `data/v5_ship_long_distance_batch_official.json`
 - Builder: `scripts/ingest/build_v5_ship_map.py`
