@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BUS_BUNDLE = ROOT / "data" / "v5_bus_gtfs_current_bundle.json.gz"
 DEFAULT_AIRPORT_MAP = ROOT / "docs" / "data" / "v5_flight_map.geojson"
 DEFAULT_OUTPUT = ROOT / "data" / "v5_airport_bus_access_audit.json"
+DEFAULT_DOCUMENTED_NO_PUBLIC_BUS = ROOT / "data" / "v5_remaining_airport_official_bus_source.json"
 EARTH_RADIUS_METERS = 6_371_008.8
 
 
@@ -110,11 +111,24 @@ def route_label(route: dict[str, Any]) -> str:
     return route.get("routeLongName") or route.get("routeShortName") or route.get("routeDesc") or route.get("busRouteId") or ""
 
 
+def documented_no_public_bus(path: Path) -> dict[str, dict[str, Any]]:
+    if not path.exists():
+        return {}
+    payload = read_json(path)
+    result = {}
+    for item in payload.get("documentedNoPublicBus") or []:
+        iata = item.get("airportIata")
+        if iata:
+            result[iata] = item
+    return result
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bus-bundle", type=Path, default=DEFAULT_BUS_BUNDLE)
     parser.add_argument("--airport-map", type=Path, default=DEFAULT_AIRPORT_MAP)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--documented-no-public-bus", type=Path, default=DEFAULT_DOCUMENTED_NO_PUBLIC_BUS)
     parser.add_argument("--nearby-meters", type=int, default=2000)
     parser.add_argument("--search-meters", type=int, default=5000)
     parser.add_argument("--top-stops", type=int, default=12)
@@ -127,6 +141,7 @@ def main() -> int:
 
     bundle = read_json(args.bus_bundle)
     airports = airport_nodes(args.airport_map)
+    no_public_bus = documented_no_public_bus(args.documented_no_public_bus)
     stops = [
         {
             "busStopId": stop["busStopId"],
@@ -161,7 +176,9 @@ def main() -> int:
         class_counts = Counter(route.get("serviceClass") or "unknown" for route in routes)
         agency_counts = Counter(route.get("agencyName") or "unknown" for route in routes)
         airport_class_routes = [route for route in routes if route.get("serviceClass") == "bus_airport"]
-        if airport_class_routes:
+        if airport["iata"] in no_public_bus and not nearby and not matches:
+            status = "documented_no_public_bus"
+        elif airport_class_routes:
             status = "covered_by_gtfs_airport_bus"
         elif nearby:
             status = "nearby_gtfs_bus_stop_no_airport_class_route"
@@ -202,6 +219,7 @@ def main() -> int:
                     }
                     for route in airport_class_routes[:25]
                 ],
+                "documentedNoPublicBus": no_public_bus.get(airport["iata"]),
             }
         )
 
@@ -221,6 +239,8 @@ def main() -> int:
             "airportClassCoveredCount": status_counts["covered_by_gtfs_airport_bus"],
             "nearbyStopWithoutAirportClassCount": status_counts["nearby_gtfs_bus_stop_no_airport_class_route"],
             "noNearbyStopCount": status_counts["gtfs_bus_stop_within_search_radius_only"] + status_counts["no_gtfs_bus_stop_within_search_radius"],
+            "documentedNoPublicBusCount": status_counts["documented_no_public_bus"],
+            "undocumentedNoNearbyStopCount": status_counts["gtfs_bus_stop_within_search_radius_only"] + status_counts["no_gtfs_bus_stop_within_search_radius"],
         },
         "airports": airport_results,
         "notes": [

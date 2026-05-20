@@ -1,0 +1,42 @@
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <script>
+        async function jrduuid(){
+        
+            const params = new URLSearchParams(window.location.search);
+            const set_url = "./set_uuid.cgi?" + params.toString();
+            const ver_url = "./verify_uuid.cgi?" + params.toString();
+            
+            try{
+                 // set_uuid
+                 const res1 = await fetch(set_url, { credentials: 'same-origin' });
+                 if (!res1.ok) {
+                     const text1 = await res1.text();
+                     window.location.href = text1;
+                     return;
+                 }
+                 // verify_uuid
+                 const res2 = await fetch(ver_url, { credentials: 'same-origin' });
+                 const text2 = await res2.text();
+                 if (!res2.ok) {
+                     window.location.href = text2;
+                     return;
+                 }
+                 window.location.href = text2;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        //画面表示時
+        window.addEventListener('pageshow', function (event) {
+                jrduuid();
+        });
+  </script>
+</head>
+<body>
+  <p>遷移しない場合は右のリンクをクリックしてください。<a href="./error.html" id="rdr">リンク</a></p>
+</body>
+</html>

@@ -1455,3 +1455,38 @@ layer before merging:
   - Active planner bus trips: 28,462
   - Indexed planner stopTimes: 710,807
   - Planner walking connectors: 111,835
+
+## ASJ / KKX / TNE / RNJ / OIR / RIS and KTD Review
+
+- 2026-05-20 00:03:21 PDT - Promoted the remaining strict airport-bus gap batch into the V5 playable bus layer, except KTD which is now documented as having no fixed public bus to collect.
+- Sources:
+  - ASJ: Amami Airport official bus access page.
+  - KKX: Kikai Town public-transport timetable / transport-meeting PDF.
+  - TNE: Furusato Tanegashima reservation-type shared airport taxi page.
+  - RNJ: Yoron Town Nanriku island-loop bus page and timetable PDF.
+  - OIR: Okushiri Town flight-connected bus announcement and town-bus PDFs.
+  - RIS: Soya Bus Rishiri airport-bus / route-bus sources.
+  - KTD: Jorudan airport-bus index documenting no listed connection bus.
+- Parser:
+  - `scripts/ingest/collect_v5_remaining_airport_bus.py`
+- Normalized gameplay data:
+  - Routes: 名瀬市街 ⇔ 奄美空港, 湾営業所 ⇔ 喜界空港, 西之表港 ⇔ 種子島空港, 中種子町役場 ⇔ 種子島空港, 南バス前・茶花海岸前 島内循環, 奥尻港フェリーターミナル ⇔ 奥尻空港, 鴛泊フェリーターミナル ⇔ 利尻空港.
+  - Trips: 90
+  - StopTimes: 180
+  - Stops: 15 route-scoped stops after bundle promotion
+  - Fares: TNE emits ¥1200 and ¥800 endpoint fares; RNJ emits ¥200; other fares are left unset until a clear official endpoint fare table is parsed.
+- Checks:
+  - Targeted overlap audit: `no_gtfs_overlap_found` for all 7 promoted routes.
+  - Airport access audit: ASJ, KKX, TNE, RNJ, OIR, and RIS are now covered or have nearby playable walking access; KTD is `documented_no_public_bus`.
+- Runtime after promotion:
+  - Total bus routes: 5,289
+  - Total bus trips: 79,643
+  - Total bus stops: 89,331
+  - Active planner bus trips: 28,552
+  - Indexed planner stopTimes: 710,987
+  - Planner walking connectors: 111,844
+- Remaining airport-bus audit status:
+  - Covered by airport-class bus: 69
+  - Documented no public bus: 1
+  - Undocumented no-nearby-stop review items: 4
+  - Nearby stop but no airport-class route review items: 2

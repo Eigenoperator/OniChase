@@ -64,6 +64,7 @@ OFFICIAL_SOURCES = [
     ROOT / "data" / "v5_island_airport_official_bus_source.json",
     ROOT / "data" / "v5_remote_airport_official_bus_source.json",
     ROOT / "data" / "v5_arrival_trigger_airport_official_bus_source.json",
+    ROOT / "data" / "v5_remaining_airport_official_bus_source.json",
 ]
 
 OPERATOR_HINTS = {
@@ -117,6 +118,12 @@ OPERATOR_HINTS = {
     "与那国町生活路線バス": ["与那国", "Yonaguni"],
     "北陸鉄道": ["北陸鉄道", "Hokutetsu", "能登"],
     "隠岐一畑交通": ["隠岐一畑", "隠岐", "Oki"],
+    "しまバス": ["しまバス", "奄美", "Amami"],
+    "奄美航空喜界バス": ["喜界", "Kikai"],
+    "種子島地域公共交通活性化協議会": ["種子島", "Tanegashima"],
+    "南陸運": ["南陸運", "与論", "Yoron"],
+    "奥尻町有バス": ["奥尻", "Okushiri"],
+    "宗谷バス": ["宗谷バス", "宗谷", "Soya", "利尻"],
 }
 
 
