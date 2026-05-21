@@ -61,6 +61,7 @@ SOURCE_FILES = [
     ROOT / "data/v5_ship_playable_tane_yaku_jetfoil_batch_official.json",
     ROOT / "data/v5_ship_playable_miyazaki_car_ferry_batch_official.json",
     ROOT / "data/v5_ship_playable_kaminoseki_iwaishima_batch_official.json",
+    ROOT / "data/v5_ship_playable_ferry_taiyo_batch_official.json",
 ]
 SHIP_MAP_PATH = ROOT / "docs/data/v5_ship_map.geojson"
 OUT_PATH = ROOT / "docs/data/v5_ship_timetable_current_bundle.json"
