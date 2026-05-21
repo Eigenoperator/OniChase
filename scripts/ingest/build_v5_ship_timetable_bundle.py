@@ -26,6 +26,8 @@ SOURCE_FILES = [
     ROOT / "data/v5_ship_playable_400_batch_official.json",
     ROOT / "data/v5_ship_playable_500_batch_official.json",
     ROOT / "data/v5_ship_playable_omishima_batch_official.json",
+    ROOT / "data/v5_ship_playable_sanyo_batch_official.json",
+    ROOT / "data/v5_ship_playable_kume_batch_official.json",
 ]
 SHIP_MAP_PATH = ROOT / "docs/data/v5_ship_map.geojson"
 OUT_PATH = ROOT / "docs/data/v5_ship_timetable_current_bundle.json"

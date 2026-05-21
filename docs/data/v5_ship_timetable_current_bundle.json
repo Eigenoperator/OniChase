@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v5.ship_timetable.1",
-  "generatedAt": "2026-05-21T04:43:54+00:00",
+  "generatedAt": "2026-05-21T04:57:33+00:00",
   "source": "official_ship_sources_promoted_for_gameplay",
   "promotionPolicy": "explicit_official_trip_times_and_known_adult_fare_only",
   "ports": {
@@ -19,6 +19,30 @@
       "lat": 34.0699838,
       "coordinateStatus": "online_verified_source_seed",
       "coordinateSource": "online_verified:OSM/Nominatim query=今治港 ferry terminal Japan; score=31; needs_precise_port_review"
+    },
+    "佐柳本浦": {
+      "name": "佐柳本浦",
+      "city": "佐柳本浦",
+      "lon": 136.7205262,
+      "lat": 34.4666502,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:OSM/Nominatim query=佐柳本浦 港 日本; score=0; needs_precise_port_review"
+    },
+    "六島": {
+      "name": "六島",
+      "city": "六島",
+      "lon": 133.5318239,
+      "lat": 34.3040257,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:OSM/Nominatim query=六島 港 日本; score=2; needs_precise_port_review"
+    },
+    "兼城港": {
+      "name": "兼城港",
+      "city": "久米島",
+      "lon": 126.7637,
+      "lat": 26.3417,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI"
     },
     "函館フェリーターミナル": {
       "name": "函館フェリーターミナル",
@@ -148,6 +172,14 @@
       "coordinateStatus": "online_resolved",
       "coordinateSource": "nominatim.openstreetmap.org"
     },
+    "渡名喜港": {
+      "name": "渡名喜港",
+      "city": "渡名喜",
+      "lon": 127.1382878,
+      "lat": 26.3732954,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI"
+    },
     "玄界島": {
       "name": "玄界島",
       "city": "玄界島",
@@ -164,6 +196,14 @@
       "coordinateStatus": "online_verified_source_seed",
       "coordinateSource": "online_verified:OSM/Nominatim query=神戸空港海上アクセスターミナル ferry terminal Japan; score=31; needs_precise_port_review"
     },
+    "笠岡": {
+      "name": "笠岡",
+      "city": "笠岡",
+      "lon": 129.9203972,
+      "lat": 31.8432167,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:OSM/Nominatim query=笠岡 ferry terminal Japan; score=29; needs_precise_port_review"
+    },
     "能古": {
       "name": "能古",
       "city": "能古",
@@ -171,6 +211,14 @@
       "lat": 33.5974913,
       "coordinateStatus": "online_verified_source_seed",
       "coordinateSource": "online_verified:OSM/Nominatim query=能古 ferry terminal Japan; score=26; needs_precise_port_review"
+    },
+    "那覇泊港": {
+      "name": "那覇泊港",
+      "city": "那覇",
+      "lon": 127.681322,
+      "lat": 26.2254399,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:OSM/Nominatim query=那覇泊港 港 日本; score=31; needs_precise_port_review"
     },
     "長洲港": {
       "name": "長洲港",
@@ -195,6 +243,14 @@
       "lat": 40.8438885,
       "coordinateStatus": "online_verified_manual_extract",
       "coordinateSource": "https://www.seikan-ferry.co.jp/access/"
+    },
+    "飛鳥": {
+      "name": "飛鳥",
+      "city": "飛鳥",
+      "lon": 137.9964012,
+      "lat": 34.7925099,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:OSM/Nominatim query=飛鳥 港 日本; score=2; needs_precise_port_review"
     },
     "高松港": {
       "name": "高松港",
@@ -323,6 +379,78 @@
       "sourceFile": "data/v5_ship_playable_400_batch_official.json"
     },
     {
+      "routeId": "kume_naha_tonaki_kume_074_out",
+      "routeGroupId": "kume_naha_tonaki_kume_074_out",
+      "operator": "久米商船",
+      "routeName": "那覇・渡名喜",
+      "originPort": "那覇泊港",
+      "destinationPort": "渡名喜港",
+      "distanceKm": null,
+      "routeClass": "island_public_ferry",
+      "revealPolicy": "long_distance_or_overnight_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 2750,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_kume_batch_official.json"
+    },
+    {
+      "routeId": "kume_naha_tonaki_kume_075_back",
+      "routeGroupId": "kume_naha_tonaki_kume_075_back",
+      "operator": "久米商船",
+      "routeName": "渡名喜・那覇",
+      "originPort": "渡名喜港",
+      "destinationPort": "那覇泊港",
+      "distanceKm": null,
+      "routeClass": "island_public_ferry",
+      "revealPolicy": "long_distance_or_overnight_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 2750,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_kume_batch_official.json"
+    },
+    {
+      "routeId": "kume_naha_tonaki_kume_076_out",
+      "routeGroupId": "kume_naha_tonaki_kume_076_out",
+      "operator": "久米商船",
+      "routeName": "渡名喜・兼城",
+      "originPort": "渡名喜港",
+      "destinationPort": "兼城港",
+      "distanceKm": null,
+      "routeClass": "island_public_ferry",
+      "revealPolicy": "long_distance_or_overnight_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1160,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_kume_batch_official.json"
+    },
+    {
+      "routeId": "kume_naha_tonaki_kume_077_back",
+      "routeGroupId": "kume_naha_tonaki_kume_077_back",
+      "operator": "久米商船",
+      "routeName": "兼城・渡名喜",
+      "originPort": "兼城港",
+      "destinationPort": "渡名喜港",
+      "distanceKm": null,
+      "routeClass": "island_public_ferry",
+      "revealPolicy": "long_distance_or_overnight_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1160,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_kume_batch_official.json"
+    },
+    {
       "routeId": "miyajima_matsudai_048_out",
       "routeGroupId": "miyajima_matsudai_048_out",
       "operator": "宮島松大汽船",
@@ -357,6 +485,114 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceFile": "data/v5_ship_playable_400_batch_official.json"
+    },
+    {
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "operator": "三洋汽船",
+      "routeName": "佐柳本浦・笠岡",
+      "originPort": "佐柳本浦",
+      "destinationPort": "笠岡",
+      "distanceKm": null,
+      "routeClass": "island_public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_sanyo_batch_official.json"
+    },
+    {
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "operator": "三洋汽船",
+      "routeName": "笠岡・佐柳本浦",
+      "originPort": "笠岡",
+      "destinationPort": "佐柳本浦",
+      "distanceKm": null,
+      "routeClass": "island_public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_sanyo_batch_official.json"
+    },
+    {
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_back",
+      "operator": "三洋汽船",
+      "routeName": "飛島・笠岡",
+      "originPort": "飛鳥",
+      "destinationPort": "笠岡",
+      "distanceKm": null,
+      "routeClass": "island_public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1020,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_sanyo_batch_official.json"
+    },
+    {
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_out",
+      "operator": "三洋汽船",
+      "routeName": "笠岡・飛島",
+      "originPort": "笠岡",
+      "destinationPort": "飛鳥",
+      "distanceKm": null,
+      "routeClass": "island_public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1020,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_sanyo_batch_official.json"
+    },
+    {
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back",
+      "operator": "三洋汽船",
+      "routeName": "六島・飛島",
+      "originPort": "六島",
+      "destinationPort": "飛鳥",
+      "distanceKm": null,
+      "routeClass": "island_public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 430,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_sanyo_batch_official.json"
+    },
+    {
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_out",
+      "operator": "三洋汽船",
+      "routeName": "飛島・六島",
+      "originPort": "飛鳥",
+      "destinationPort": "六島",
+      "distanceKm": null,
+      "routeClass": "island_public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 430,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_sanyo_batch_official.json"
     },
     {
       "routeId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_000_back",
@@ -1513,6 +1749,30 @@
       "sourceUrl": "https://omishima-bl.net/"
     },
     {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back_001",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "operator": "三洋汽船",
+      "routeName": "佐柳本浦・笠岡",
+      "serviceNo": "1",
+      "vessel": null,
+      "originPort": "佐柳本浦",
+      "destinationPort": "笠岡",
+      "departureMinute": 390,
+      "arrivalMinute": 454,
+      "departureHhmm": "06:30",
+      "arrivalHhmm": "07:34",
+      "durationMinutes": 64,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
       "sailingId": "bay_shuttle_kobe_kix_02",
       "routeId": "bay_shuttle_kobe_kix",
       "routeGroupId": "bay_shuttle_kobe_kix",
@@ -2233,6 +2493,30 @@
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
     },
     {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out_001",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "operator": "三洋汽船",
+      "routeName": "笠岡・佐柳本浦",
+      "serviceNo": "1",
+      "vessel": null,
+      "originPort": "笠岡",
+      "destinationPort": "佐柳本浦",
+      "departureMinute": 445,
+      "arrivalMinute": 489,
+      "departureHhmm": "07:25",
+      "arrivalHhmm": "08:09",
+      "durationMinutes": 44,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
       "sailingId": "miyajima_matsudai_049_back_002",
       "routeId": "miyajima_matsudai_049_back",
       "routeGroupId": "miyajima_matsudai_049_back",
@@ -2495,6 +2779,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back_001",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back",
+      "operator": "三洋汽船",
+      "routeName": "六島・飛島",
+      "serviceNo": "1",
+      "vessel": null,
+      "originPort": "六島",
+      "destinationPort": "飛鳥",
+      "departureMinute": 470,
+      "arrivalMinute": 490,
+      "departureHhmm": "07:50",
+      "arrivalHhmm": "08:10",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 430,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
       "sailingId": "jr_miyajima_047_back_004",
@@ -2977,6 +3285,30 @@
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
     },
     {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out_002",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "operator": "三洋汽船",
+      "routeName": "笠岡・佐柳本浦",
+      "serviceNo": "2",
+      "vessel": null,
+      "originPort": "笠岡",
+      "destinationPort": "佐柳本浦",
+      "departureMinute": 490,
+      "arrivalMinute": 554,
+      "departureHhmm": "08:10",
+      "arrivalHhmm": "09:14",
+      "durationMinutes": 64,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
       "sailingId": "seikan_ferry_5",
       "routeId": "seikan_ferry_aomori_hakodate",
       "routeGroupId": "seikan_ferry_aomori_hakodate",
@@ -2999,6 +3331,54 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.seikan-ferry.co.jp/schedule/"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_back_001",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_back",
+      "operator": "三洋汽船",
+      "routeName": "飛島・笠岡",
+      "serviceNo": "1",
+      "vessel": null,
+      "originPort": "飛鳥",
+      "destinationPort": "笠岡",
+      "departureMinute": 490,
+      "arrivalMinute": 525,
+      "departureHhmm": "08:10",
+      "arrivalHhmm": "08:45",
+      "durationMinutes": 35,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1020,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back_002",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "operator": "三洋汽船",
+      "routeName": "佐柳本浦・笠岡",
+      "serviceNo": "2",
+      "vessel": null,
+      "originPort": "佐柳本浦",
+      "destinationPort": "笠岡",
+      "departureMinute": 495,
+      "arrivalMinute": 539,
+      "departureHhmm": "08:15",
+      "arrivalHhmm": "08:59",
+      "durationMinutes": 44,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_000_out_003",
@@ -3529,6 +3909,30 @@
       "sourceUrl": "https://omishima-bl.net/"
     },
     {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_out_001",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_out",
+      "operator": "三洋汽船",
+      "routeName": "笠岡・飛島",
+      "serviceNo": "1",
+      "vessel": null,
+      "originPort": "笠岡",
+      "destinationPort": "飛鳥",
+      "departureMinute": 530,
+      "arrivalMinute": 565,
+      "departureHhmm": "08:50",
+      "arrivalHhmm": "09:25",
+      "durationMinutes": 35,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1020,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
       "sailingId": "jr_miyajima_047_back_008",
       "routeId": "jr_miyajima_047_back",
       "routeGroupId": "jr_miyajima_047_back",
@@ -3671,6 +4075,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.city.fukuoka.lg.jp/kowan/kyakusen/hakata-port/documents/time_schedule_J.pdf"
+    },
+    {
+      "sailingId": "kume_naha_tonaki_kume_074_out_001",
+      "routeId": "kume_naha_tonaki_kume_074_out",
+      "routeGroupId": "kume_naha_tonaki_kume_074_out",
+      "operator": "久米商船",
+      "routeName": "那覇・渡名喜",
+      "serviceNo": "1",
+      "vessel": "フェリー海邦",
+      "originPort": "那覇泊港",
+      "destinationPort": "渡名喜港",
+      "departureMinute": 540,
+      "arrivalMinute": 655,
+      "departureHhmm": "09:00",
+      "arrivalHhmm": "10:55",
+      "durationMinutes": 115,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 2750,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "http://www.kumeline.com/"
     },
     {
       "sailingId": "bay_shuttle_kix_kobe_04",
@@ -3863,6 +4291,54 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out_003",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "operator": "三洋汽船",
+      "routeName": "笠岡・佐柳本浦",
+      "serviceNo": "3",
+      "vessel": null,
+      "originPort": "笠岡",
+      "destinationPort": "佐柳本浦",
+      "departureMinute": 550,
+      "arrivalMinute": 594,
+      "departureHhmm": "09:10",
+      "arrivalHhmm": "09:54",
+      "durationMinutes": 44,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back_003",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "operator": "三洋汽船",
+      "routeName": "佐柳本浦・笠岡",
+      "serviceNo": "3",
+      "vessel": null,
+      "originPort": "佐柳本浦",
+      "destinationPort": "笠岡",
+      "departureMinute": 554,
+      "arrivalMinute": 618,
+      "departureHhmm": "09:14",
+      "arrivalHhmm": "10:18",
+      "durationMinutes": 64,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
       "sailingId": "ariake_ferry_taira_nagasu_005",
@@ -4103,6 +4579,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_out_001",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_out",
+      "operator": "三洋汽船",
+      "routeName": "飛島・六島",
+      "serviceNo": "1",
+      "vessel": null,
+      "originPort": "飛鳥",
+      "destinationPort": "六島",
+      "departureMinute": 565,
+      "arrivalMinute": 585,
+      "departureHhmm": "09:25",
+      "arrivalHhmm": "09:45",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 430,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
       "sailingId": "ariake_ferry_nagasu_taira_005",
@@ -4825,6 +5325,30 @@
       "sourceUrl": "https://www.city.fukuoka.lg.jp/kowan/kyakusen/hakata-port/documents/time_schedule_J.pdf"
     },
     {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back_002",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back",
+      "operator": "三洋汽船",
+      "routeName": "六島・飛島",
+      "serviceNo": "2",
+      "vessel": null,
+      "originPort": "六島",
+      "destinationPort": "飛鳥",
+      "departureMinute": 620,
+      "arrivalMinute": 635,
+      "departureHhmm": "10:20",
+      "arrivalHhmm": "10:35",
+      "durationMinutes": 15,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 430,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
       "sailingId": "shodoshima_takamatsu_tonosho_065_back_005",
       "routeId": "shodoshima_takamatsu_tonosho_065_back",
       "routeGroupId": "shodoshima_takamatsu_tonosho_065_back",
@@ -5135,6 +5659,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_back_002",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_back",
+      "operator": "三洋汽船",
+      "routeName": "飛島・笠岡",
+      "serviceNo": "2",
+      "vessel": null,
+      "originPort": "飛鳥",
+      "destinationPort": "笠岡",
+      "departureMinute": 635,
+      "arrivalMinute": 675,
+      "departureHhmm": "10:35",
+      "arrivalHhmm": "11:15",
+      "durationMinutes": 40,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1020,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
       "sailingId": "jr_miyajima_047_back_015",
@@ -5737,6 +6285,30 @@
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
     },
     {
+      "sailingId": "kume_naha_tonaki_kume_076_out_001",
+      "routeId": "kume_naha_tonaki_kume_076_out",
+      "routeGroupId": "kume_naha_tonaki_kume_076_out",
+      "operator": "久米商船",
+      "routeName": "渡名喜・兼城",
+      "serviceNo": "1",
+      "vessel": "フェリー海邦",
+      "originPort": "渡名喜港",
+      "destinationPort": "兼城港",
+      "departureMinute": 670,
+      "arrivalMinute": 750,
+      "departureHhmm": "11:10",
+      "arrivalHhmm": "12:30",
+      "durationMinutes": 80,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1160,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "http://www.kumeline.com/"
+    },
+    {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_back_009",
       "routeId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_back",
       "routeGroupId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_back",
@@ -5831,6 +6403,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out_004",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "operator": "三洋汽船",
+      "routeName": "笠岡・佐柳本浦",
+      "serviceNo": "4",
+      "vessel": null,
+      "originPort": "笠岡",
+      "destinationPort": "佐柳本浦",
+      "departureMinute": 680,
+      "arrivalMinute": 744,
+      "departureHhmm": "11:20",
+      "arrivalHhmm": "12:24",
+      "durationMinutes": 64,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
       "sailingId": "sakurajima_ferry_kagoshima_sakurajima_018",
@@ -6841,6 +7437,30 @@
       "sourceUrl": "https://www.kobe-access.jp/time"
     },
     {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back_004",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "operator": "三洋汽船",
+      "routeName": "佐柳本浦・笠岡",
+      "serviceNo": "4",
+      "vessel": null,
+      "originPort": "佐柳本浦",
+      "destinationPort": "笠岡",
+      "departureMinute": 755,
+      "arrivalMinute": 819,
+      "departureHhmm": "12:35",
+      "arrivalHhmm": "13:39",
+      "durationMinutes": 64,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
       "sailingId": "miyajima_matsudai_049_back_022",
       "routeId": "miyajima_matsudai_049_back",
       "routeGroupId": "miyajima_matsudai_049_back",
@@ -7465,6 +8085,30 @@
       "sourceUrl": "https://nankai-ferry.co.jp/timetable/"
     },
     {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_out_002",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_out",
+      "operator": "三洋汽船",
+      "routeName": "笠岡・飛島",
+      "serviceNo": "2",
+      "vessel": null,
+      "originPort": "笠岡",
+      "destinationPort": "飛鳥",
+      "departureMinute": 800,
+      "arrivalMinute": 835,
+      "departureHhmm": "13:20",
+      "arrivalHhmm": "13:55",
+      "durationMinutes": 35,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1020,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
       "sailingId": "sakurajima_ferry_kagoshima_sakurajima_024",
       "routeId": "sakurajima_ferry_kagoshima_sakurajima",
       "routeGroupId": "sakurajima_ferry_kagoshima_sakurajima",
@@ -7849,6 +8493,30 @@
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
     },
     {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out_005",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "operator": "三洋汽船",
+      "routeName": "笠岡・佐柳本浦",
+      "serviceNo": "5",
+      "vessel": null,
+      "originPort": "笠岡",
+      "destinationPort": "佐柳本浦",
+      "departureMinute": 825,
+      "arrivalMinute": 894,
+      "departureHhmm": "13:45",
+      "arrivalHhmm": "14:54",
+      "durationMinutes": 69,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_000_back_010",
       "routeId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_000_back",
       "routeGroupId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_000_back",
@@ -7991,6 +8659,54 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_out_002",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_out",
+      "operator": "三洋汽船",
+      "routeName": "飛島・六島",
+      "serviceNo": "2",
+      "vessel": null,
+      "originPort": "飛鳥",
+      "destinationPort": "六島",
+      "departureMinute": 835,
+      "arrivalMinute": 855,
+      "departureHhmm": "13:55",
+      "arrivalHhmm": "14:15",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 430,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
+      "sailingId": "kume_naha_tonaki_kume_077_back_001",
+      "routeId": "kume_naha_tonaki_kume_077_back",
+      "routeGroupId": "kume_naha_tonaki_kume_077_back",
+      "operator": "久米商船",
+      "routeName": "兼城・渡名喜",
+      "serviceNo": "1",
+      "vessel": "フェリー海邦",
+      "originPort": "兼城港",
+      "destinationPort": "渡名喜港",
+      "departureMinute": 840,
+      "arrivalMinute": 920,
+      "departureHhmm": "14:00",
+      "arrivalHhmm": "15:20",
+      "durationMinutes": 80,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1160,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "http://www.kumeline.com/"
     },
     {
       "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_001_back_004",
@@ -8231,6 +8947,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back_003",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back",
+      "operator": "三洋汽船",
+      "routeName": "六島・飛島",
+      "serviceNo": "3",
+      "vessel": null,
+      "originPort": "六島",
+      "destinationPort": "飛鳥",
+      "departureMinute": 855,
+      "arrivalMinute": 880,
+      "departureHhmm": "14:15",
+      "arrivalHhmm": "14:40",
+      "durationMinutes": 25,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 430,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_back_012",
@@ -8687,6 +9427,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_back_003",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_back",
+      "operator": "三洋汽船",
+      "routeName": "飛島・笠岡",
+      "serviceNo": "3",
+      "vessel": null,
+      "originPort": "飛鳥",
+      "destinationPort": "笠岡",
+      "departureMinute": 880,
+      "arrivalMinute": 915,
+      "departureHhmm": "14:40",
+      "arrivalHhmm": "15:15",
+      "durationMinutes": 35,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1020,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
       "sailingId": "sakurajima_ferry_kagoshima_sakurajima_028",
@@ -9431,6 +10195,54 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.kobe-access.jp/time"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back_005",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "operator": "三洋汽船",
+      "routeName": "佐柳本浦・笠岡",
+      "serviceNo": "5",
+      "vessel": null,
+      "originPort": "佐柳本浦",
+      "destinationPort": "笠岡",
+      "departureMinute": 935,
+      "arrivalMinute": 979,
+      "departureHhmm": "15:35",
+      "arrivalHhmm": "16:19",
+      "durationMinutes": 44,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
+      "sailingId": "kume_naha_tonaki_kume_075_back_001",
+      "routeId": "kume_naha_tonaki_kume_075_back",
+      "routeGroupId": "kume_naha_tonaki_kume_075_back",
+      "operator": "久米商船",
+      "routeName": "渡名喜・那覇",
+      "serviceNo": "1",
+      "vessel": "フェリー海邦",
+      "originPort": "渡名喜港",
+      "destinationPort": "那覇泊港",
+      "departureMinute": 935,
+      "arrivalMinute": 1050,
+      "departureHhmm": "15:35",
+      "arrivalHhmm": "17:30",
+      "durationMinutes": 115,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 2750,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "http://www.kumeline.com/"
     },
     {
       "sailingId": "ariake_ferry_nagasu_taira_013",
@@ -10225,6 +11037,30 @@
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
     },
     {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back_006",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "operator": "三洋汽船",
+      "routeName": "佐柳本浦・笠岡",
+      "serviceNo": "6",
+      "vessel": null,
+      "originPort": "佐柳本浦",
+      "destinationPort": "笠岡",
+      "departureMinute": 990,
+      "arrivalMinute": 1054,
+      "departureHhmm": "16:30",
+      "arrivalHhmm": "17:34",
+      "durationMinutes": 64,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
       "sailingId": "shodoshima_takamatsu_tonosho_065_back_011",
       "routeId": "shodoshima_takamatsu_tonosho_065_back",
       "routeGroupId": "shodoshima_takamatsu_tonosho_065_back",
@@ -10321,6 +11157,30 @@
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
     },
     {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out_006",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "operator": "三洋汽船",
+      "routeName": "笠岡・佐柳本浦",
+      "serviceNo": "6",
+      "vessel": null,
+      "originPort": "笠岡",
+      "destinationPort": "佐柳本浦",
+      "departureMinute": 990,
+      "arrivalMinute": 1034,
+      "departureHhmm": "16:30",
+      "arrivalHhmm": "17:14",
+      "durationMinutes": 44,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
       "sailingId": "bay_shuttle_kix_kobe_10",
       "routeId": "bay_shuttle_kix_kobe",
       "routeGroupId": "bay_shuttle_kix_kobe",
@@ -10415,6 +11275,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_out_003",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_001_out",
+      "operator": "三洋汽船",
+      "routeName": "笠岡・飛島",
+      "serviceNo": "3",
+      "vessel": null,
+      "originPort": "笠岡",
+      "destinationPort": "飛鳥",
+      "departureMinute": 1000,
+      "arrivalMinute": 1035,
+      "departureHhmm": "16:40",
+      "arrivalHhmm": "17:15",
+      "durationMinutes": 35,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1020,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
       "sailingId": "sakurajima_ferry_kagoshima_sakurajima_034",
@@ -10945,6 +11829,30 @@
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
     },
     {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_out_003",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_out",
+      "operator": "三洋汽船",
+      "routeName": "飛島・六島",
+      "serviceNo": "3",
+      "vessel": null,
+      "originPort": "飛鳥",
+      "destinationPort": "六島",
+      "departureMinute": 1035,
+      "arrivalMinute": 1055,
+      "departureHhmm": "17:15",
+      "arrivalHhmm": "17:35",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 430,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
+    },
+    {
       "sailingId": "shodoshima_takamatsu_tonosho_064_out_011",
       "routeId": "shodoshima_takamatsu_tonosho_064_out",
       "routeGroupId": "shodoshima_takamatsu_tonosho_064_out",
@@ -11087,6 +11995,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back_007",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "operator": "三洋汽船",
+      "routeName": "佐柳本浦・笠岡",
+      "serviceNo": "7",
+      "vessel": null,
+      "originPort": "佐柳本浦",
+      "destinationPort": "笠岡",
+      "departureMinute": 1048,
+      "arrivalMinute": 1092,
+      "departureHhmm": "17:28",
+      "arrivalHhmm": "18:12",
+      "durationMinutes": 44,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
       "sailingId": "shodoshima_takamatsu_tonosho_065_back_012",
@@ -11423,6 +12355,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out_007",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
+      "operator": "三洋汽船",
+      "routeName": "笠岡・佐柳本浦",
+      "serviceNo": "7",
+      "vessel": null,
+      "originPort": "笠岡",
+      "destinationPort": "佐柳本浦",
+      "departureMinute": 1067,
+      "arrivalMinute": 1135,
+      "departureHhmm": "17:47",
+      "arrivalHhmm": "18:55",
+      "durationMinutes": 68,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
       "sailingId": "shodoshima_takamatsu_tonosho_064_out_012",
@@ -12431,6 +13387,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.shikokuferry.com/route2"
+    },
+    {
+      "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back_008",
+      "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_back",
+      "operator": "三洋汽船",
+      "routeName": "佐柳本浦・笠岡",
+      "serviceNo": "8",
+      "vessel": null,
+      "originPort": "佐柳本浦",
+      "destinationPort": "笠岡",
+      "departureMinute": 1135,
+      "arrivalMinute": 1170,
+      "departureHhmm": "18:55",
+      "arrivalHhmm": "19:30",
+      "durationMinutes": 35,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1200,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
       "sailingId": "nankai_ferry_tokushima_wakayama_008",
@@ -14282,9 +15262,9 @@
     }
   ],
   "metadata": {
-    "routeGroupCount": 32,
-    "routeCount": 32,
-    "sailingCount": 562,
+    "routeGroupCount": 42,
+    "routeCount": 42,
+    "sailingCount": 593,
     "mapRouteGroupCount": 193
   }
 }
