@@ -1401,6 +1401,7 @@
     const FLIGHT_TIMETABLE_URL = './data/v5_domestic_flights_current_bundle.json';
     const AIRPORT_BUS_ACCESS_AUDIT_URL = './data/v5_airport_bus_access_audit.json';
     const SHIP_MAP_URL = './data/v5_ship_map.geojson';
+    const SHIP_TIMETABLE_URL = './data/v5_ship_timetable_current_bundle.json';
     const BUS_MAP_MANIFEST_URL = './data/v5_bus_map_tiles/manifest.json';
     const BUS_PLANNER_MANIFEST_URL = './data/v5_bus_planner_tiles/manifest.json';
     const BUS_MAP_AROUND_FALLBACK_RADII_METERS = [25000, 60000, 120000];
@@ -1415,6 +1416,7 @@
     const V5_FLIGHT_BOARDING_ADVANCE_MINUTES = 15;
     const V5_FLIGHT_ARRIVAL_COOLDOWN_MINUTES = 10;
     const V5_AIRPORT_ACCESS_RADIUS_METERS = 5000;
+    const V5_SHIP_PORT_ACCESS_RADIUS_METERS = 5000;
     const V5_FLIGHT_BASE_FARE_YEN = 6500;
     const V5_FLIGHT_DISTANCE_FARE_YEN_PER_KM = 18;
     const V5_FLIGHT_PEAK_SURCHARGE_YEN = 2500;
@@ -5748,6 +5750,10 @@
       airportBusAccessByIata: new Map(),
       shipMap: null,
       portByName: new Map(),
+      shipTimetable: null,
+      shipSailingById: new Map(),
+      shipSailingsByOriginPort: new Map(),
+      nearestPortStationCache: new Map(),
       busMapManifest: null,
       busMapTileCache: new Map(),
       busMapTileInflight: new Map(),
@@ -8296,6 +8302,42 @@
       } catch (error) {
         console.warn('Failed to load v5 ship map', error);
         indexShipMap(null);
+      }
+    }
+
+    function indexShipTimetable(payload) {
+      const sailings = (payload?.sailings || []).filter((sailing) =>
+        sailing?.sailingId &&
+        sailing.originPort &&
+        sailing.destinationPort &&
+        Number.isFinite(Number(sailing.departureMinute)) &&
+        Number.isFinite(Number(sailing.arrivalMinute))
+      );
+      state.shipTimetable = payload || null;
+      state.shipSailingById = new Map();
+      state.shipSailingsByOriginPort = new Map();
+      sailings.forEach((sailing) => {
+        state.shipSailingById.set(sailing.sailingId, sailing);
+        if (!state.shipSailingsByOriginPort.has(sailing.originPort)) {
+          state.shipSailingsByOriginPort.set(sailing.originPort, []);
+        }
+        state.shipSailingsByOriginPort.get(sailing.originPort).push(sailing);
+      });
+      state.shipSailingsByOriginPort.forEach((rows) => {
+        rows.sort((a, b) =>
+          Number(a.departureMinute) - Number(b.departureMinute) ||
+          String(a.sailingId).localeCompare(String(b.sailingId))
+        );
+      });
+    }
+
+    async function loadShipTimetable() {
+      try {
+        const payload = await fetchJsonMaybeGz(SHIP_TIMETABLE_URL);
+        indexShipTimetable(payload);
+      } catch (error) {
+        console.warn('Failed to load v5 ship timetable', error);
+        indexShipTimetable(null);
       }
     }
 
@@ -13268,6 +13310,109 @@
           currentBoardPhysicalStationId = null;
           continue;
         }
+        if (step.type === 'TAKE_SHIP') {
+          if (currentState.kind !== 'NODE' && currentState.kind !== 'BUS_STOP') break;
+          const sailing = state.shipSailingById.get(step.sailing_id);
+          if (!sailing) break;
+          const catchability = shipCatchability(sailing, { currentState, currentMinute }, playerId);
+          if (!catchability.ok) break;
+          const originCoordinate = portCoordinate(sailing.originPort);
+          const destinationCoordinate = portCoordinate(sailing.destinationPort);
+          const originStartCoordinate = currentState.kind === 'NODE'
+            ? stationLonLat(currentState.stationGroupId)
+            : busStopCoordinate(currentState.busStopId);
+          const originWalkMinutes = catchability.originAccess.walkMinutes;
+          const originArrivalMinute = currentMinute + originWalkMinutes;
+          if (timeCapMinute !== null && timeCapMinute < originArrivalMinute) {
+            const ratio = originWalkMinutes <= 0 ? 1 : clamp((timeCapMinute - currentMinute) / originWalkMinutes, 0, 1);
+            const mapPosition = originStartCoordinate && originCoordinate
+              ? [
+                  originStartCoordinate[0] + (originCoordinate[0] - originStartCoordinate[0]) * ratio,
+                  originStartCoordinate[1] + (originCoordinate[1] - originStartCoordinate[1]) * ratio,
+                ]
+              : originStartCoordinate || originCoordinate || null;
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'WALK_TO_PORT', originPort: sailing.originPort, sailingId: sailing.sailingId },
+              currentTrip: null,
+              currentBoardStop: null,
+              resolvedSteps,
+              mapPosition,
+              mapStationGroupId: null,
+            };
+          }
+          if (timeCapMinute !== null && timeCapMinute < catchability.departureMinute) {
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'PORT_WAIT', portName: sailing.originPort, sailingId: sailing.sailingId },
+              currentTrip: null,
+              currentBoardStop: null,
+              resolvedSteps,
+              mapPosition: originCoordinate,
+              mapStationGroupId: null,
+            };
+          }
+          if (timeCapMinute !== null && timeCapMinute < catchability.arrivalMinute) {
+            const ratio = clamp((timeCapMinute - catchability.departureMinute) / Math.max(1, catchability.arrivalMinute - catchability.departureMinute), 0, 1);
+            const mapPosition = originCoordinate && destinationCoordinate
+              ? [
+                  originCoordinate[0] + (destinationCoordinate[0] - originCoordinate[0]) * ratio,
+                  originCoordinate[1] + (destinationCoordinate[1] - originCoordinate[1]) * ratio,
+                ]
+              : originCoordinate || destinationCoordinate || null;
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'SHIP', sailingId: sailing.sailingId, originPort: sailing.originPort, destinationPort: sailing.destinationPort },
+              currentTrip: null,
+              currentBoardStop: null,
+              resolvedSteps,
+              mapPosition,
+              mapStationGroupId: null,
+            };
+          }
+          const destinationStationGroupId = catchability.destinationStation.stationGroupId;
+          const destinationStationCoordinate = stationLonLat(destinationStationGroupId);
+          const destinationWalkTimeSec = Number(step.destination_access_walk_time_sec) || walkingTimeSecForDistance(catchability.destinationStation.distanceMeters, walkingSpeedMetersPerSecondFor(playerId));
+          const destinationWalkMinutes = Math.max(0, Math.ceil(destinationWalkTimeSec / 60));
+          const destinationStationArrivalMinute = catchability.arrivalMinute + destinationWalkMinutes;
+          if (timeCapMinute !== null && timeCapMinute < destinationStationArrivalMinute) {
+            const ratio = destinationWalkMinutes <= 0 ? 1 : clamp((timeCapMinute - catchability.arrivalMinute) / destinationWalkMinutes, 0, 1);
+            const mapPosition = destinationCoordinate && destinationStationCoordinate
+              ? [
+                  destinationCoordinate[0] + (destinationStationCoordinate[0] - destinationCoordinate[0]) * ratio,
+                  destinationCoordinate[1] + (destinationStationCoordinate[1] - destinationCoordinate[1]) * ratio,
+                ]
+              : destinationCoordinate || destinationStationCoordinate || null;
+            return {
+              currentMinute: timeCapMinute,
+              currentTime: minutesToHhmm(timeCapMinute),
+              currentState: { kind: 'WALK_FROM_PORT_TO_STATION', destinationPort: sailing.destinationPort, toStationGroupId: destinationStationGroupId },
+              currentTrip: null,
+              currentBoardStop: null,
+              resolvedSteps,
+              mapPosition,
+              mapStationGroupId: null,
+            };
+          }
+          currentMinute = destinationStationArrivalMinute;
+          currentState = { kind: 'NODE', stationGroupId: destinationStationGroupId, physicalStationId: null, alightTripId: null };
+          resolvedSteps.push({
+            ...step,
+            origin_access_arrival_hhmm: minutesToHhmm(originArrivalMinute),
+            departure_hhmm: minutesToHhmm(catchability.departureMinute),
+            arrival_hhmm: minutesToHhmm(catchability.arrivalMinute),
+            destination_station_arrival_hhmm: minutesToHhmm(destinationStationArrivalMinute),
+            destination_access_station_id: destinationStationGroupId,
+            fare: step.fare || catchability.fare,
+          });
+          currentTrip = null;
+          currentBoardStop = null;
+          currentBoardPhysicalStationId = null;
+          continue;
+        }
         if (step.type === 'BOARD_TRAIN') {
           if (currentState.kind !== 'NODE') break;
           const trip = state.tripById.get(step.trip_id);
@@ -13385,6 +13530,19 @@
       } else if (currentState.kind === 'AIRPORT_WAIT' || currentState.kind === 'BOARDING' || currentState.kind === 'ARRIVAL_COOLDOWN') {
         mapPosition = airportCoordinate(currentState.airportIata);
         mapStationGroupId = null;
+      } else if (currentState.kind === 'PORT_WAIT') {
+        mapPosition = portCoordinate(currentState.portName);
+        mapStationGroupId = null;
+      } else if (currentState.kind === 'SHIP') {
+        const sailing = state.shipSailingById.get(currentState.sailingId);
+        mapPosition = portCoordinate(sailing?.destinationPort) || portCoordinate(sailing?.originPort);
+        mapStationGroupId = null;
+      } else if (currentState.kind === 'WALK_TO_PORT') {
+        mapPosition = portCoordinate(currentState.originPort);
+        mapStationGroupId = null;
+      } else if (currentState.kind === 'WALK_FROM_PORT_TO_STATION') {
+        mapPosition = stationLonLat(currentState.toStationGroupId) || portCoordinate(currentState.destinationPort);
+        mapStationGroupId = null;
       }
       return { currentMinute, currentTime: minutesToHhmm(currentMinute), currentState, currentTrip, currentBoardStop, resolvedSteps, mapPosition, mapStationGroupId };
     }
@@ -13444,6 +13602,18 @@
           ? [origin[0] + (destination[0] - origin[0]) * ratio, origin[1] + (destination[1] - origin[1]) * ratio]
           : origin || destination || null;
         mapStationGroupId = null;
+      } else if (currentState.kind === 'PORT_WAIT') {
+        mapPosition = portCoordinate(currentState.portName);
+        mapStationGroupId = null;
+      } else if (currentState.kind === 'SHIP') {
+        const sailing = state.shipSailingById.get(currentState.sailingId);
+        const origin = portCoordinate(sailing?.originPort);
+        const destination = portCoordinate(sailing?.destinationPort);
+        const ratio = sailing ? clamp((event.time_minute - Number(sailing.departureMinute)) / Math.max(1, Number(sailing.arrivalMinute) - Number(sailing.departureMinute)), 0, 1) : 0;
+        mapPosition = origin && destination
+          ? [origin[0] + (destination[0] - origin[0]) * ratio, origin[1] + (destination[1] - origin[1]) * ratio]
+          : origin || destination || null;
+        mapStationGroupId = null;
       }
       return {
         currentMinute: event.time_minute,
@@ -13475,12 +13645,16 @@
       if (preview.currentState.kind === 'AIRPORT_WAIT') return `waiting at ${airportName(preview.currentState.airportIata)} ${preview.currentTime}`;
       if (preview.currentState.kind === 'BOARDING') return `boarding at ${airportName(preview.currentState.airportIata)} ${preview.currentTime}`;
       if (preview.currentState.kind === 'FLIGHT') return `on ${flightDisplayLabel(state.flightById.get(preview.currentState.flightId))} ${preview.currentTime}`;
+      if (preview.currentState.kind === 'PORT_WAIT') return `waiting at ${preview.currentState.portName} ${preview.currentTime}`;
+      if (preview.currentState.kind === 'SHIP') return `on ${state.shipSailingById.get(preview.currentState.sailingId)?.operator || 'ship'} ${preview.currentTime}`;
       if (preview.currentState.kind === 'BUS') return `on ${busRouteName(state.busPlannerTripsById.get(preview.currentState.tripId)?.routeId)} ${preview.currentTime}`;
       if (preview.currentState.kind === 'BUS_STOP') return `at ${busStopName(preview.currentState.busStopId)} ${preview.currentTime}`;
       if (preview.currentState.kind === 'ARRIVAL_COOLDOWN') return `arrived at ${airportName(preview.currentState.airportIata)} ${preview.currentTime}`;
       if (preview.currentState.kind === 'WALK') {
         return `walking ${displayNameForGroup(preview.currentState.fromStationGroupId)} -> ${displayNameForGroup(preview.currentState.toStationGroupId)} ${preview.currentTime}`;
       }
+      if (preview.currentState.kind === 'WALK_TO_PORT') return `walking to ${preview.currentState.originPort} ${preview.currentTime}`;
+      if (preview.currentState.kind === 'WALK_FROM_PORT_TO_STATION') return `walking from ${preview.currentState.destinationPort} ${preview.currentTime}`;
       return preview.currentState.kind === 'NODE'
         ? `at ${displayNameForGroup(preview.currentState.stationGroupId)} ${preview.currentTime}`
         : `on ${formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })} ${preview.currentTime}`;
@@ -14156,6 +14330,41 @@
       });
       state.planningRouteIds[state.activeMode] = null;
       state.flightPlanning[state.activeMode] = { origin: null, destination: null };
+      clearPendingTrip();
+      invalidateSimulation();
+      renderGame();
+      syncPlanIfOnline();
+    }
+
+    function addShipStep(sailingId) {
+      const preview = truncateFuturePlan();
+      const sailing = state.shipSailingById.get(sailingId);
+      if (!sailing) return;
+      const catchability = shipCatchability(sailing, preview);
+      if (!catchability.ok) return;
+      activePlayer().steps.push({
+        type: 'TAKE_SHIP',
+        sailing_id: sailing.sailingId,
+        route_id: sailing.routeId,
+        operator: sailing.operator,
+        service_no: sailing.serviceNo || null,
+        vessel: sailing.vessel || null,
+        origin_port: sailing.originPort,
+        destination_port: sailing.destinationPort,
+        departure_hhmm: sailing.departureHhmm || minutesToHhmm(catchability.departureMinute),
+        arrival_hhmm: sailing.arrivalHhmm || minutesToHhmm(catchability.arrivalMinute),
+        origin_access_kind: catchability.originAccess.kind,
+        origin_access_station_id: catchability.originAccess.stationGroupId || null,
+        origin_access_bus_stop_id: catchability.originAccess.busStopId || null,
+        origin_access_distance_meters: catchability.originAccess.distanceMeters,
+        origin_access_walk_time_sec: catchability.originAccess.walkTimeSec,
+        destination_access_station_id: catchability.destinationStation.stationGroupId,
+        destination_access_distance_meters: catchability.destinationStation.distanceMeters,
+        destination_access_walk_time_sec: walkingTimeSecForDistance(catchability.destinationStation.distanceMeters),
+        fare: catchability.fare,
+      });
+      state.planningRouteIds[state.activeMode] = null;
+      state.shipPlanning[state.activeMode] = { origin: null, destination: null };
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
@@ -15167,67 +15376,204 @@
       `);
     }
 
-    function shipPortRowsFromPreview() {
+    function portCoordinate(name) {
+      return state.portByName?.get(name)?.geometry?.coordinates || null;
+    }
+
+    function nearestStationGroupForPort(name) {
+      if (!name) return null;
+      if (state.nearestPortStationCache.has(name)) return state.nearestPortStationCache.get(name);
+      const port = portCoordinate(name);
+      let best = null;
+      state.stationGroupById.forEach((_group, stationGroupId) => {
+        const stationCoordinate = stationLonLat(stationGroupId);
+        const distanceMeters = coordinateDistanceMeters(port, stationCoordinate);
+        if (!Number.isFinite(distanceMeters)) return;
+        if (!best || distanceMeters < best.distanceMeters) {
+          best = { stationGroupId, distanceMeters };
+        }
+      });
+      state.nearestPortStationCache.set(name, best);
+      return best;
+    }
+
+    function shipFare(sailing) {
+      const total = Number(sailing?.fare?.total_yen);
+      return {
+        model_version: 'v5_ship_official_adult_passenger_fare_v1',
+        source: sailing?.fare?.source || 'official_adult_passenger_fare',
+        currency: 'JPY',
+        total_yen: Number.isFinite(total) ? total : null,
+        fare_known: Number.isFinite(total),
+        components: [{
+          type: 'ship',
+          route_id: sailing?.routeId || null,
+          sailing_id: sailing?.sailingId || null,
+          total_yen: Number.isFinite(total) ? total : null,
+        }],
+      };
+    }
+
+    function shipAccessFromPreview(preview, portName, playerId = state.activeMode) {
+      const currentState = preview?.currentState;
+      const port = portCoordinate(portName);
+      if (!currentState || !port) return null;
+      if (currentState.kind === 'NODE') {
+        const stationCoordinate = stationLonLat(currentState.stationGroupId);
+        const distanceMeters = coordinateDistanceMeters(stationCoordinate, port);
+        if (!Number.isFinite(distanceMeters)) return null;
+        const walkTimeSec = walkingTimeSecForDistance(distanceMeters, walkingSpeedMetersPerSecondFor(playerId));
+        return {
+          kind: 'station',
+          stationGroupId: currentState.stationGroupId,
+          distanceMeters,
+          walkTimeSec,
+          walkMinutes: Math.max(0, Math.ceil(walkTimeSec / 60)),
+        };
+      }
+      if (currentState.kind === 'BUS_STOP') {
+        const busCoordinate = busStopCoordinate(currentState.busStopId);
+        const distanceMeters = coordinateDistanceMeters(busCoordinate, port);
+        if (!Number.isFinite(distanceMeters)) return null;
+        const walkTimeSec = walkingTimeSecForDistance(distanceMeters, walkingSpeedMetersPerSecondFor(playerId));
+        return {
+          kind: 'bus_stop',
+          busStopId: currentState.busStopId,
+          distanceMeters,
+          walkTimeSec,
+          walkMinutes: Math.max(0, Math.ceil(walkTimeSec / 60)),
+        };
+      }
+      return null;
+    }
+
+    function shipCatchability(sailing, preview, playerId = state.activeMode) {
+      const reasons = [];
+      const originAccess = shipAccessFromPreview(preview, sailing?.originPort, playerId);
+      const destinationStation = nearestStationGroupForPort(sailing?.destinationPort);
+      const departureMinute = Number(sailing?.departureMinute);
+      const arrivalMinute = Number(sailing?.arrivalMinute);
+      const fare = shipFare(sailing);
+      if (!originAccess) reasons.push(`no access coordinate for ${sailing?.originPort || 'origin port'}`);
+      if (originAccess && originAccess.distanceMeters > V5_SHIP_PORT_ACCESS_RADIUS_METERS) {
+        reasons.push(`too far from ${sailing.originPort}: ${walkingDistanceLabel(originAccess.distanceMeters)}`);
+      }
+      const originArrivalMinute = (preview?.currentMinute || 0) + (originAccess?.walkMinutes || 0);
+      if (Number.isFinite(departureMinute) && originArrivalMinute > departureMinute) {
+        reasons.push(`reach port by ${minutesToHhmm(departureMinute)}`);
+      }
+      if (!destinationStation?.stationGroupId) reasons.push(`no station near ${sailing?.destinationPort || 'destination port'}`);
+      if (destinationStation && destinationStation.distanceMeters > V5_SHIP_PORT_ACCESS_RADIUS_METERS) {
+        reasons.push(`destination port needs bus connector`);
+      }
+      if (!Number.isFinite(arrivalMinute) || !Number.isFinite(departureMinute)) reasons.push('missing sailing time');
+      if (!fare.fare_known) reasons.push('missing real fare');
+      return {
+        ok: reasons.length === 0,
+        reasons,
+        originAccess,
+        destinationStation,
+        departureMinute,
+        arrivalMinute,
+        fare,
+      };
+    }
+
+    function shipBlockedReasonText(reasons) {
+      return (reasons || []).join(' · ');
+    }
+
+    function shipSailingsForSelection(preview, limit = 72) {
+      const selected = state.shipPlanning[state.activeMode] || {};
+      if (!selected.origin || !selected.destination) return [];
+      return (state.shipSailingsByOriginPort.get(selected.origin) || [])
+        .filter((sailing) => sailing.destinationPort === selected.destination)
+        .filter((sailing) => Number(sailing.departureMinute) >= (preview?.currentMinute || 0))
+        .sort((a, b) => Number(a.departureMinute) - Number(b.departureMinute) || String(a.sailingId).localeCompare(String(b.sailingId)))
+        .slice(0, limit);
+    }
+
+    function shipPortRowsFromPreview(preview) {
+      const anchor = validCoordinate(preview?.mapPosition) ? preview.mapPosition : null;
       return [...state.portByName.values()]
-        .sort((a, b) => String(a.properties?.name || '').localeCompare(String(b.properties?.name || ''), 'ja'))
+        .filter((feature) => state.shipSailingsByOriginPort.has(feature.properties?.name))
+        .map((feature) => ({
+          feature,
+          distanceMeters: anchor ? coordinateDistanceMeters(anchor, feature.geometry?.coordinates) : null,
+        }))
+        .sort((a, b) => {
+          const leftDistance = Number.isFinite(a.distanceMeters) ? a.distanceMeters : Number.POSITIVE_INFINITY;
+          const rightDistance = Number.isFinite(b.distanceMeters) ? b.distanceMeters : Number.POSITIVE_INFINITY;
+          return leftDistance - rightDistance || String(a.feature.properties?.name || '').localeCompare(String(b.feature.properties?.name || ''), 'ja');
+        })
         .slice(0, 120)
-        .map((feature) => {
+        .map(({ feature, distanceMeters }) => {
           const name = feature.properties?.name || 'Port';
-          const routeCount = (state.shipMap?.features || []).filter((route) =>
-            route?.properties?.kind === 'ship-route' && route.properties.origin === name
-          ).length;
+          const sailings = state.shipSailingsByOriginPort.get(name) || [];
+          const destinationCount = new Set(sailings.map((sailing) => sailing.destinationPort)).size;
+          const distanceText = Number.isFinite(distanceMeters) ? `${walkingDistanceLabel(distanceMeters)} from plan end` : 'distance unknown';
           return `
             <button class="route-row" type="button" data-row-key="${escapeHtml(`ship-port:${name}`)}" data-action="choose-ship-origin" data-port-name="${escapeHtml(name)}">
               <span class="route-swatch" style="background:#2563eb"></span>
               <span>
                 <span class="row-title">${escapeHtml(name)}</span>
-                <span class="row-sub">${routeCount} scheduled ship routes · no ticket required</span>
+                <span class="row-sub">${distanceText} · ${destinationCount} destinations · ${sailings.length} sailings</span>
               </span>
-              <span class="row-meta">from</span>
+              <span class="row-meta">${Number.isFinite(distanceMeters) ? walkingDistanceLabel(distanceMeters) : 'from'}</span>
             </button>
           `;
         });
     }
 
-    function shipDestinationRowsFromPreview() {
+    function shipDestinationRowsFromPreview(preview) {
       const origin = state.shipPlanning[state.activeMode]?.origin;
       if (!origin) return [];
       const destinations = new Map();
-      (state.shipMap?.features || [])
-        .filter((feature) => feature?.properties?.kind === 'ship-route' && feature.properties.origin === origin)
-        .forEach((feature) => {
-          const destination = feature.properties.destination;
-          if (destination && !destinations.has(destination)) destinations.set(destination, feature);
+      (state.shipSailingsByOriginPort.get(origin) || [])
+        .filter((sailing) => Number(sailing.departureMinute) >= (preview?.currentMinute || 0))
+        .forEach((sailing) => {
+          const current = destinations.get(sailing.destinationPort) || {
+            destination: sailing.destinationPort,
+            operator: sailing.operator,
+            count: 0,
+            firstDepartureMinute: Infinity,
+          };
+          current.count += 1;
+          current.firstDepartureMinute = Math.min(current.firstDepartureMinute, Number(sailing.departureMinute));
+          destinations.set(sailing.destinationPort, current);
         });
-      return [...destinations.values()].map((feature) => {
-        const destination = feature.properties.destination;
-        return `
-          <button class="route-row" type="button" data-row-key="${escapeHtml(`ship-dest:${destination}`)}" data-action="choose-ship-destination" data-port-name="${escapeHtml(destination)}">
+      return [...destinations.values()]
+        .sort((a, b) => a.firstDepartureMinute - b.firstDepartureMinute || a.destination.localeCompare(b.destination, 'ja'))
+        .map((item) => `
+          <button class="route-row" type="button" data-row-key="${escapeHtml(`ship-dest:${item.destination}`)}" data-action="choose-ship-destination" data-port-name="${escapeHtml(item.destination)}">
             <span class="route-swatch" style="background:#38bdf8"></span>
             <span>
-              <span class="row-title">${escapeHtml(destination)}</span>
-              <span class="row-sub">${escapeHtml(feature.properties.operator || 'scheduled ferry')} · real fare required before playable promotion</span>
+              <span class="row-title">${escapeHtml(item.destination)}</span>
+              <span class="row-sub">${escapeHtml(item.operator || 'scheduled ferry')} · ${item.count} sailings · first ${minutesToHhmm(item.firstDepartureMinute)}</span>
             </span>
             <span class="row-meta">to</span>
           </button>
-        `;
-      });
+        `);
     }
 
-    function shipRowsFromPreview() {
-      const selected = state.shipPlanning[state.activeMode] || {};
-      if (!selected.origin || !selected.destination) return [];
-      return (state.shipMap?.features || [])
-        .filter((feature) =>
-          feature?.properties?.kind === 'ship-route' &&
-          feature.properties.origin === selected.origin &&
-          feature.properties.destination === selected.destination
-        )
-        .map((feature) => `
-          <div class="empty" data-row-key="${escapeHtml(`ship-route:${feature.id || feature.properties.routeId || feature.properties.origin}`)}">
-            ${escapeHtml(feature.properties.routeName || `${selected.origin} -> ${selected.destination}`)} requires the real timetable and fare bundle before boarding is enabled.
-          </div>
-        `);
+    function shipRowsFromPreview(preview) {
+      return shipSailingsForSelection(preview).map((sailing) => {
+        const status = shipCatchability(sailing, preview);
+        const disabled = status.ok ? '' : 'disabled';
+        const accessText = status.ok
+          ? `${walkingDistanceLabel(status.originAccess.distanceMeters)} to port · ${walkingDistanceLabel(status.destinationStation.distanceMeters)} from port`
+          : shipBlockedReasonText(status.reasons);
+        return `
+          <button class="route-row" type="button" data-row-key="${escapeHtml(`ship:${sailing.sailingId}`)}" data-action="take-ship" data-sailing-id="${escapeHtml(sailing.sailingId)}" ${disabled}>
+            <span class="route-swatch" style="background:#0f766e"></span>
+            <span>
+              <span class="row-title">${escapeHtml(sailing.operator || 'Ferry')} ${escapeHtml(sailing.serviceNo ? `#${sailing.serviceNo}` : '')}</span>
+              <span class="row-sub">${escapeHtml(sailing.departureHhmm || minutesToHhmm(Number(sailing.departureMinute)))} -> ${escapeHtml(sailing.arrivalHhmm || minutesToHhmm(Number(sailing.arrivalMinute)))} · ${escapeHtml(accessText)}</span>
+            </span>
+            <span class="row-meta">¥${Number(status.fare.total_yen || 0).toLocaleString('ja-JP')}</span>
+          </button>
+        `;
+      });
     }
 
     function flightTicketRowsFromPreview(preview) {
@@ -15749,6 +16095,7 @@
           else if (action === 'choose-ship-destination') chooseShipDestination(button.dataset.portName);
           else if (action === 'back-ship-origins') backToShipOrigins();
           else if (action === 'back-ship-destinations') backToShipDestinations();
+          else if (action === 'take-ship') addShipStep(button.dataset.sailingId);
           else if (action === 'choose-mode') choosePlanningMode(button.dataset.mode);
           else if (action === 'choose-bus-stop') chooseBusStop(button.dataset.busStopId);
           else if (action === 'choose-bus-route') chooseBusRoute(button.dataset.busRouteKey);
@@ -15933,6 +16280,10 @@
           ? `${displayNameForGroup(preview.currentState.fromStationGroupId)} -> ${displayNameForGroup(preview.currentState.toStationGroupId)}`
         : preview.currentState.kind === 'FLIGHT'
           ? flightDisplayLabel(state.flightById.get(preview.currentState.flightId))
+        : preview.currentState.kind === 'SHIP'
+          ? `${state.shipSailingById.get(preview.currentState.sailingId)?.operator || 'Ferry'}`
+        : preview.currentState.kind === 'PORT_WAIT'
+          ? preview.currentState.portName
         : preview.currentState.kind === 'BUS_STOP'
           ? busStopName(preview.currentState.busStopId)
         : preview.currentState.kind === 'BUS'
@@ -15993,6 +16344,13 @@
           preview.currentState.kind === 'FLIGHT' ? 'In flight' : 'Airport state',
           currentLabel,
           `<div class="empty" data-row-key="empty:flight-now">Finish this flight state before planning another leg.</div>`,
+        );
+      } else if (['WALK_TO_PORT', 'PORT_WAIT', 'SHIP', 'WALK_FROM_PORT_TO_STATION'].includes(preview.currentState.kind)) {
+        html += plannerStep(
+          '1/3',
+          preview.currentState.kind === 'SHIP' ? 'On ship' : 'Port state',
+          currentLabel,
+          `<div class="empty" data-row-key="empty:ship-now">Finish this ship state before planning another leg.</div>`,
         );
       } else if (['WALK_TO_BUS_STOP', 'WALK_FROM_BUS_TO_STATION', 'BUS'].includes(preview.currentState.kind)) {
         html += plannerStep(
@@ -16259,6 +16617,29 @@
             editable: false,
           });
           if (times) currentMinute = times.cooldownEndMinute;
+          if (destinationStation?.stationGroupId) chainStation = destinationStation.stationGroupId;
+          chainBusStop = null;
+          pendingTrip = null;
+          pendingBoardStop = null;
+          pendingBusTrip = null;
+          pendingBusBoardStop = null;
+          legIndex += 1;
+        } else if (step.type === 'TAKE_SHIP') {
+          const sailing = state.shipSailingById.get(step.sailing_id);
+          const departHhmm = sailing?.departureHhmm || step.departure_hhmm || '--:--';
+          const arriveHhmm = sailing?.arrivalHhmm || step.arrival_hhmm || '--:--';
+          const destinationStation = sailing ? nearestStationGroupForPort(sailing.destinationPort) : { stationGroupId: step.destination_access_station_id };
+          const fare = step.fare || (sailing ? shipFare(sailing) : null);
+          rows.push({
+            time: `LEG ${legIndex}`,
+            title: `${sailing?.operator || step.operator || 'Ferry'}${sailing?.serviceNo || step.service_no ? ` #${sailing?.serviceNo || step.service_no}` : ''}: ${sailing?.originPort || step.origin_port || 'Port'} -> ${sailing?.destinationPort || step.destination_port || 'Port'}`,
+            sub: `${departHhmm} -> ${arriveHhmm}${fare?.fare_known ? ` · ¥${Number(fare.total_yen || 0).toLocaleString('ja-JP')}` : ''}`,
+            markerHtml: '<span class="route-swatch" style="background:#0f766e"></span>',
+            editable: false,
+          });
+          const arrivalMinute = sailing ? Number(sailing.arrivalMinute) : hhmmToMinutes(arriveHhmm);
+          const destinationWalkTimeSec = Number(step.destination_access_walk_time_sec) || (destinationStation?.distanceMeters ? walkingTimeSecForDistance(destinationStation.distanceMeters) : 0);
+          if (Number.isFinite(arrivalMinute)) currentMinute = arrivalMinute + Math.max(0, Math.ceil(destinationWalkTimeSec / 60));
           if (destinationStation?.stationGroupId) chainStation = destinationStation.stationGroupId;
           chainBusStop = null;
           pendingTrip = null;
@@ -16559,7 +16940,7 @@
       if (['SCENARIO_START', 'SCENARIO_END'].includes(eventType)) return 'LIFECYCLE';
       if (eventType === 'CAPTURE') return 'RESOLUTION';
       if (['START_AT_STATION', 'WAIT_UNTIL'].includes(eventType)) return 'POSITION';
-      if (['BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'WALK_TO_BUS_STOP', 'WALK_FROM_BUS_TO_STATION', 'BOARD_BUS', 'ALIGHT_BUS', 'BUY_FLIGHT_TICKET', 'BOARD_FLIGHT', 'DEPART_FLIGHT', 'ARRIVE_FLIGHT', 'EXIT_AIRPORT'].includes(eventType)) return 'MOVEMENT';
+      if (['BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'WALK_TO_BUS_STOP', 'WALK_FROM_BUS_TO_STATION', 'BOARD_BUS', 'ALIGHT_BUS', 'BUY_FLIGHT_TICKET', 'BOARD_FLIGHT', 'DEPART_FLIGHT', 'ARRIVE_FLIGHT', 'EXIT_AIRPORT', 'WALK_TO_PORT', 'BOARD_SHIP', 'ARRIVE_SHIP', 'WALK_FROM_PORT_TO_STATION'].includes(eventType)) return 'MOVEMENT';
       return 'GENERIC';
     }
 
@@ -16590,11 +16971,15 @@
         WALK_FROM_BUS_TO_STATION: 9,
         BOARD_FLIGHT: 10,
         DEPART_FLIGHT: 11,
-        ALIGHT_TRAIN: 12,
-        ARRIVE_FLIGHT: 13,
-        EXIT_AIRPORT: 14,
-        CAPTURE: 15,
-        SCENARIO_END: 16,
+        WALK_TO_PORT: 12,
+        BOARD_SHIP: 13,
+        ALIGHT_TRAIN: 14,
+        ARRIVE_SHIP: 15,
+        WALK_FROM_PORT_TO_STATION: 16,
+        ARRIVE_FLIGHT: 17,
+        EXIT_AIRPORT: 18,
+        CAPTURE: 19,
+        SCENARIO_END: 20,
       }[eventType] ?? 99;
     }
 
@@ -16856,6 +17241,90 @@
           resolvedActions.push({ step_index: i + 1, ...action, fare, arrival_station_id: arrivalStationId });
           continue;
         }
+        if (action.type === 'TAKE_SHIP') {
+          if (!currentStationId && !currentBusStopId) throw new Error(`${playerId} cannot board a ship away from a port access point`);
+          const sailing = state.shipSailingById.get(action.sailing_id);
+          if (!sailing) throw new Error(`Unknown ship sailing ${action.sailing_id}`);
+          const preview = {
+            currentState: currentStationId
+              ? { kind: 'NODE', stationGroupId: currentStationId }
+              : { kind: 'BUS_STOP', busStopId: currentBusStopId },
+            currentMinute,
+          };
+          const catchability = shipCatchability(sailing, preview, playerId);
+          if (!catchability.ok) throw new Error(`${playerId} cannot take ship ${sailing.sailingId}: ${catchability.reasons.join(', ')}`);
+          const originWalkMinutes = catchability.originAccess.walkMinutes;
+          const originPortArrivalMinute = currentMinute + originWalkMinutes;
+          const destinationWalkTimeSec = Number(action.destination_access_walk_time_sec) || walkingTimeSecForDistance(catchability.destinationStation.distanceMeters, walkingSpeedMetersPerSecondFor(playerId));
+          const destinationWalkMinutes = Math.max(0, Math.ceil(destinationWalkTimeSec / 60));
+          const stationArrivalMinute = catchability.arrivalMinute + destinationWalkMinutes;
+          const fare = action.fare || catchability.fare;
+          const leg = {
+            leg_index: legs.length + 1,
+            step_index: i + 1,
+            mode: 'ship',
+            sailing_id: sailing.sailingId,
+            route_id: sailing.routeId,
+            operator: sailing.operator,
+            service_no: sailing.serviceNo || null,
+            vessel: sailing.vessel || null,
+            origin_port: sailing.originPort,
+            destination_port: sailing.destinationPort,
+            from_station_id: currentStationId,
+            from_bus_stop_id: currentBusStopId,
+            from_label: currentStationId ? displayNameForGroup(currentStationId) : busStopName(currentBusStopId),
+            to_station_id: catchability.destinationStation.stationGroupId,
+            to_label: displayNameForGroup(catchability.destinationStation.stationGroupId),
+            origin_access_arrive_hhmm: minutesToHhmm(originPortArrivalMinute),
+            depart_hhmm: minutesToHhmm(catchability.departureMinute),
+            arrive_hhmm: minutesToHhmm(catchability.arrivalMinute),
+            destination_access_arrive_hhmm: minutesToHhmm(stationArrivalMinute),
+            origin_access_distance_meters: catchability.originAccess.distanceMeters,
+            destination_access_distance_meters: catchability.destinationStation.distanceMeters,
+            fare,
+          };
+          legs.push(leg);
+          events.push(formatEvent(originPortArrivalMinute, 'WALK_TO_PORT', playerId, {
+            port_name: sailing.originPort,
+            from_station_group_id: currentStationId || null,
+            from_bus_stop_id: currentBusStopId || null,
+            distance_meters: catchability.originAccess.distanceMeters,
+            walk_time_sec: catchability.originAccess.walkTimeSec,
+            carrier_after: { kind: 'PORT_WAIT', portName: sailing.originPort, sailingId: sailing.sailingId },
+          }));
+          events.push(formatEvent(catchability.departureMinute, 'BOARD_SHIP', playerId, {
+            sailing_id: sailing.sailingId,
+            route_id: sailing.routeId,
+            origin_port: sailing.originPort,
+            destination_port: sailing.destinationPort,
+            carrier_after: { kind: 'SHIP', sailingId: sailing.sailingId, originPort: sailing.originPort, destinationPort: sailing.destinationPort },
+          }));
+          events.push(formatEvent(catchability.arrivalMinute, 'ARRIVE_SHIP', playerId, {
+            sailing_id: sailing.sailingId,
+            route_id: sailing.routeId,
+            port_name: sailing.destinationPort,
+            fare,
+            fare_total_yen: fare.total_yen,
+            carrier_after: { kind: 'PORT_WAIT', portName: sailing.destinationPort, sailingId: sailing.sailingId },
+          }));
+          events.push(formatEvent(stationArrivalMinute, 'WALK_FROM_PORT_TO_STATION', playerId, {
+            port_name: sailing.destinationPort,
+            station_group_id: catchability.destinationStation.stationGroupId,
+            distance_meters: catchability.destinationStation.distanceMeters,
+            walk_time_sec: destinationWalkTimeSec,
+            carrier_after: { kind: 'NODE', stationGroupId: catchability.destinationStation.stationGroupId, physicalStationId: null },
+          }));
+          currentMinute = stationArrivalMinute;
+          currentStationId = catchability.destinationStation.stationGroupId;
+          currentBusStopId = null;
+          currentStationPhysicalId = null;
+          currentStationTrip = null;
+          currentTrip = null;
+          currentBoardStop = null;
+          currentBoardPhysicalStationId = null;
+          resolvedActions.push({ step_index: i + 1, ...action, fare, destination_access_station_id: currentStationId });
+          continue;
+        }
         if (action.type === 'BOARD_TRAIN') {
           const trip = state.tripById.get(action.trip_id);
           if (!trip) throw new Error(`Unknown trip ${action.trip_id}`);
@@ -17025,18 +17494,21 @@
       else if (event.type === 'DEPART_FLIGHT') carrierState[event.player_id] = { kind: 'FLIGHT', flightId: event.flight_id, originAirport: event.origin_airport, destinationAirport: event.destination_airport };
       else if (event.type === 'ARRIVE_FLIGHT') carrierState[event.player_id] = { kind: 'ARRIVAL_COOLDOWN', airportIata: event.airport_iata, flightId: event.flight_id };
       else if (event.type === 'EXIT_AIRPORT') carrierState[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
+      else if (event.type === 'WALK_TO_PORT' || event.type === 'ARRIVE_SHIP') carrierState[event.player_id] = { kind: 'PORT_WAIT', portName: event.port_name, sailingId: event.sailing_id };
+      else if (event.type === 'BOARD_SHIP') carrierState[event.player_id] = { kind: 'SHIP', sailingId: event.sailing_id, originPort: event.origin_port, destinationPort: event.destination_port };
+      else if (event.type === 'WALK_FROM_PORT_TO_STATION') carrierState[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
     }
 
     function allowsSameNodeCapture(event, minuteEvents) {
       const playerEvents = minuteEvents.filter((item) => item.player_id);
       const involvedPlayers = new Set(playerEvents.map((item) => item.player_id));
       if (involvedPlayers.size < 2) return true;
-      const nodeEnteringTypes = new Set(['START_AT_STATION', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'WALK_FROM_BUS_TO_STATION']);
+      const nodeEnteringTypes = new Set(['START_AT_STATION', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'WALK_FROM_BUS_TO_STATION', 'WALK_FROM_PORT_TO_STATION']);
       return playerEvents.every((item) => nodeEnteringTypes.has(item.type));
     }
 
     function detectCaptureAfterEvent(event, carrierState, minuteEvents) {
-      if (!['SCENARIO_START', 'START_AT_STATION', 'BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'WALK_TO_BUS_STOP', 'BOARD_BUS', 'ALIGHT_BUS', 'WALK_FROM_BUS_TO_STATION', 'BUY_FLIGHT_TICKET', 'BOARD_FLIGHT', 'ARRIVE_FLIGHT', 'EXIT_AIRPORT'].includes(event.type)) return null;
+      if (!['SCENARIO_START', 'START_AT_STATION', 'BOARD_TRAIN', 'ALIGHT_TRAIN', 'WALK_TO_STATION', 'WALK_TO_BUS_STOP', 'BOARD_BUS', 'ALIGHT_BUS', 'WALK_FROM_BUS_TO_STATION', 'BUY_FLIGHT_TICKET', 'BOARD_FLIGHT', 'ARRIVE_FLIGHT', 'EXIT_AIRPORT', 'WALK_TO_PORT', 'BOARD_SHIP', 'ARRIVE_SHIP', 'WALK_FROM_PORT_TO_STATION'].includes(event.type)) return null;
       const runnerState = carrierState.runner;
       const hunterState = carrierState.hunter;
       if (
@@ -17064,6 +17536,20 @@
         hunterState.kind !== 'FLIGHT'
       ) {
         return { type: 'same_airport', airport_iata: runnerState.airportIata };
+      }
+      if (
+        runnerState.kind === 'SHIP' &&
+        hunterState.kind === 'SHIP' &&
+        runnerState.sailingId === hunterState.sailingId
+      ) {
+        return { type: 'same_ship', sailing_id: runnerState.sailingId };
+      }
+      if (
+        runnerState.kind === 'PORT_WAIT' &&
+        hunterState.kind === 'PORT_WAIT' &&
+        runnerState.portName === hunterState.portName
+      ) {
+        return { type: 'same_port', port_name: runnerState.portName };
       }
       return null;
     }
@@ -17182,6 +17668,8 @@
       if (carrier.kind === 'BUS_STOP') return busStopName(carrier.busStopId);
       if (carrier.kind === 'FLIGHT') return flightDisplayLabel(state.flightById.get(carrier.flightId));
       if (carrier.airportIata) return airportName(carrier.airportIata);
+      if (carrier.kind === 'SHIP') return state.shipSailingById.get(carrier.sailingId)?.operator || carrier.sailingId || 'Ship';
+      if (carrier.kind === 'PORT_WAIT') return carrier.portName || 'Port';
       return carrier.kind || 'unknown';
     }
 
@@ -17545,6 +18033,9 @@
       if (event.airport_iata) parts.push(airportName(event.airport_iata));
       if (event.origin_airport && event.destination_airport) parts.push(`${event.origin_airport}->${event.destination_airport}`);
       if (event.flight_id) parts.push(flightDisplayLabel(state.flightById.get(event.flight_id)));
+      if (event.origin_port && event.destination_port) parts.push(`${event.origin_port}->${event.destination_port}`);
+      if (event.port_name) parts.push(event.port_name);
+      if (event.sailing_id) parts.push(state.shipSailingById.get(event.sailing_id)?.operator || event.sailing_id);
       if (event.trip_id) parts.push(formatTripLabel(state.tripById.get(event.trip_id) || { serviceName: event.trip_id }));
       if (event.capture_type) parts.push(event.capture_type);
       return parts.join('  ');
@@ -17578,6 +18069,9 @@
       if (event.airport_iata) lines.push(`Airport: ${airportName(event.airport_iata)}`);
       if (event.origin_airport && event.destination_airport) lines.push(`Flight route: ${event.origin_airport} -> ${event.destination_airport}`);
       if (event.flight_id) lines.push(`Flight: ${flightDisplayLabel(state.flightById.get(event.flight_id))}`);
+      if (event.origin_port && event.destination_port) lines.push(`Ship route: ${event.origin_port} -> ${event.destination_port}`);
+      if (event.port_name) lines.push(`Port: ${event.port_name}`);
+      if (event.sailing_id) lines.push(`Ship: ${state.shipSailingById.get(event.sailing_id)?.operator || event.sailing_id}`);
       if (event.trip_id) lines.push(`Trip: ${formatTripLabel(state.tripById.get(event.trip_id) || { serviceName: event.trip_id })}`);
       if (event.capture_type) lines.push(`Capture: ${event.capture_type}`);
       if (event.state_after) {
@@ -18558,6 +19052,7 @@
       await loadWalkingGraph();
       await loadFlightMap();
       await loadShipMap();
+      await loadShipTimetable();
       await loadFlightTimetable();
       await loadAirportBusAccessAudit();
       buildStationTransferIndex();
