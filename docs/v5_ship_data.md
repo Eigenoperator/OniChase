@@ -142,9 +142,12 @@ Current status:
   - Added `data/v5_ship_playable_400_batch_official.json` with official
     high-frequency timetables and fares for JR西日本宮島フェリー, 宮島松大汽船,
     桜島フェリー, 有明フェリー, and 南海フェリー.
-  - Current playable ship bundle is now 16 directional routes and 416 explicit
+- 500-sailing playable batch:
+  - Added `data/v5_ship_playable_500_batch_official.json` with official
+    timetables and fares for 福岡市営渡船 and 小豆島フェリー.
+  - Current playable ship bundle is now 26 directional routes and 536 explicit
     official sailings.
-  - The remaining 552 map-visible directional routes stay visible but are not
+  - The remaining 542 map-visible directional routes stay visible but are not
     boardable because they still need exact timetable/fare/calendar promotion.
 - No fake port or route is included.
 
@@ -159,5 +162,6 @@ Current status:
 - `data/v5_ship_expansion_to_193_source_inventory.json`
 - `data/v5_ship_map_to_193_official.json`
 - `data/v5_ship_playable_400_batch_official.json`
+- `data/v5_ship_playable_500_batch_official.json`
 - Builder: `scripts/ingest/build_v5_ship_map.py`
 - Playable timetable builder: `scripts/ingest/build_v5_ship_timetable_bundle.py`
