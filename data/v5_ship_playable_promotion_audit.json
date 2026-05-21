@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v5.ship_playable_promotion_audit.1",
-  "generatedAt": "2026-05-21T23:03:40+00:00",
+  "generatedAt": "2026-05-21T23:53:52+00:00",
   "sourceFiles": [
     "data/v5_ship_seikan_ferry_official.json",
     "data/v5_ship_priority_batch_official.json",
@@ -56,15 +56,19 @@
     "data/v5_ship_playable_priority_100_batch_official.json",
     "data/v5_ship_playable_setonaikai_remaining_batch_official.json",
     "data/v5_ship_playable_priority_100_batch2_official.json",
-    "data/v5_ship_playable_priority_100_batch3_official.json"
+    "data/v5_ship_playable_priority_100_batch3_official.json",
+    "data/v5_ship_playable_to_400_batch1_official.json",
+    "data/v5_ship_playable_to_400_batch2_official.json",
+    "data/v5_ship_playable_to_400_batch3_official.json",
+    "data/v5_ship_playable_to_400_batch4_official.json"
   ],
   "mapRouteGroupCount": 193,
-  "sourceRouteGroupCount": 362,
+  "sourceRouteGroupCount": 466,
   "sourceRouteCount": 580,
-  "promotedRouteGroupCount": 209,
-  "promotedRouteCount": 294,
-  "promotedSailingCount": 1824,
-  "coveredDuplicateRouteCount": 40,
+  "promotedRouteGroupCount": 315,
+  "promotedRouteCount": 400,
+  "promotedSailingCount": 2615,
+  "coveredDuplicateRouteCount": 44,
   "coveredDuplicateRoutes": [
     {
       "routeId": "cosmo_kagoshima_tanegashima_yakushima_070_out",
@@ -94,6 +98,36 @@
       "sourceFile": "data/v5_ship_expansion_to_70_official.json",
       "coveredByRouteId": "mlit_map_193_062_種子屋久高速船_鹿児島_種子_屋久_001_back",
       "coveredByOperator": "種子屋久高速船",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
+      "routeId": "kumamoto_ferry_kumamoto_shimabara_040_out",
+      "routeGroupId": "kumamoto_ferry_kumamoto_shimabara",
+      "operator": "熊本フェリー",
+      "origin": "熊本港",
+      "destination": "島原港",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_expansion_to_70_official.json",
+      "coveredByRouteId": "kyusho_ferry_kumamoto_shimabara_042_out",
+      "coveredByOperator": "九商フェリー",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
+      "routeId": "kumamoto_ferry_kumamoto_shimabara_041_back",
+      "routeGroupId": "kumamoto_ferry_kumamoto_shimabara",
+      "operator": "熊本フェリー",
+      "origin": "島原港",
+      "destination": "熊本港",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_expansion_to_70_official.json",
+      "coveredByRouteId": "kyusho_ferry_kumamoto_shimabara_043_back",
+      "coveredByOperator": "九商フェリー",
       "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
     },
     {
@@ -364,6 +398,36 @@
       "sourceFile": "data/v5_ship_map_to_193_official.json",
       "coveredByRouteId": "mlit_map_193_062_種子屋久高速船_鹿児島_種子_屋久_001_out",
       "coveredByOperator": "種子屋久高速船",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
+      "routeId": "osaki_kisen_takehara_shiromizu_042_out",
+      "routeGroupId": "osaki_kisen_takehara_shiromizu",
+      "operator": "大崎汽船",
+      "origin": "竹原港",
+      "destination": "白水港",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json",
+      "coveredByRouteId": "sanyo_shosen_takehara_shiromizu_044_out",
+      "coveredByOperator": "山陽商船",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
+      "routeId": "osaki_kisen_takehara_shiromizu_043_back",
+      "routeGroupId": "osaki_kisen_takehara_shiromizu",
+      "operator": "大崎汽船",
+      "origin": "白水港",
+      "destination": "竹原港",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json",
+      "coveredByRouteId": "sanyo_shosen_takehara_shiromizu_045_back",
+      "coveredByOperator": "山陽商船",
       "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
     },
     {
@@ -667,10 +731,10 @@
       "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
     }
   ],
-  "skippedRouteCount": 246,
+  "skippedRouteCount": 136,
   "skippedReasonCounts": {
-    "missing_explicit_trip_times": 246,
-    "missing_adult_fare": 244
+    "missing_explicit_trip_times": 136,
+    "missing_adult_fare": 136
   },
   "skippedRoutes": [
     {
@@ -746,78 +810,6 @@
       "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
     },
     {
-      "routeId": "akitsu_ferry_052_out",
-      "routeGroupId": "akitsu_ferry",
-      "operator": "安芸津フェリー",
-      "origin": "安芸津港",
-      "destination": "大西港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "akitsu_ferry_053_back",
-      "routeGroupId": "akitsu_ferry",
-      "operator": "安芸津フェリー",
-      "origin": "大西港",
-      "destination": "安芸津港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "awashima_iwafune_022_out",
-      "routeGroupId": "awashima_iwafune",
-      "operator": "粟島汽船",
-      "origin": "岩船港",
-      "destination": "粟島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "awashima_iwafune_023_back",
-      "routeGroupId": "awashima_iwafune",
-      "operator": "粟島汽船",
-      "origin": "粟島港",
-      "destination": "岩船港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "bouze_hikari_034_out",
-      "routeGroupId": "bouze_hikari",
-      "operator": "坊勢輝汽船",
-      "origin": "姫路港",
-      "destination": "坊勢港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "bouze_hikari_035_back",
-      "routeGroupId": "bouze_hikari",
-      "operator": "坊勢輝汽船",
-      "origin": "坊勢港",
-      "destination": "姫路港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
       "routeId": "bouze_tosen_036_out",
       "routeGroupId": "bouze_tosen",
       "operator": "坊勢渡船",
@@ -866,30 +858,6 @@
       "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
     },
     {
-      "routeId": "habu_shosen_mihara_050_out",
-      "routeGroupId": "habu_shosen_mihara",
-      "operator": "土生商船",
-      "origin": "土生港因島",
-      "destination": "三原港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "habu_shosen_mihara_051_back",
-      "routeGroupId": "habu_shosen_mihara",
-      "operator": "土生商船",
-      "origin": "三原港",
-      "destination": "土生港因島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
       "routeId": "hagi_mishima_066_out",
       "routeGroupId": "hagi_mishima",
       "operator": "萩海運",
@@ -907,30 +875,6 @@
       "operator": "萩海運",
       "origin": "見島本村港",
       "destination": "萩港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "hashirijima_tomo_056_out",
-      "routeGroupId": "hashirijima_tomo",
-      "operator": "走島汽船",
-      "origin": "走島港",
-      "destination": "鞆港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "hashirijima_tomo_057_back",
-      "routeGroupId": "hashirijima_tomo",
-      "operator": "走島汽船",
-      "origin": "鞆港",
-      "destination": "走島港",
       "missing": [
         "missing_explicit_trip_times",
         "missing_adult_fare"
@@ -960,52 +904,6 @@
         "missing_adult_fare"
       ],
       "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "heigun_yanai_074_out",
-      "routeGroupId": "heigun_yanai",
-      "operator": "平郡航路",
-      "origin": "柳井港",
-      "destination": "平郡港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "heigun_yanai_075_back",
-      "routeGroupId": "heigun_yanai",
-      "operator": "平郡航路",
-      "origin": "平郡港",
-      "destination": "柳井港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "ise_wan_ferry_irago_toba",
-      "routeGroupId": "ise_wan_ferry_irago_toba",
-      "operator": "伊勢湾フェリー",
-      "origin": "伊良湖港",
-      "destination": "鳥羽港",
-      "missing": [
-        "missing_explicit_trip_times"
-      ],
-      "sourceFile": "data/v5_ship_priority_batch_official.json"
-    },
-    {
-      "routeId": "ise_wan_ferry_toba_irago",
-      "routeGroupId": "ise_wan_ferry_toba_irago",
-      "operator": "伊勢湾フェリー",
-      "origin": "鳥羽港",
-      "destination": "伊良湖港",
-      "missing": [
-        "missing_explicit_trip_times"
-      ],
-      "sourceFile": "data/v5_ship_priority_batch_official.json"
     },
     {
       "routeId": "iwakuni_hashirajima_064_out",
@@ -1078,126 +976,6 @@
         "missing_adult_fare"
       ],
       "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "koku94_saganoseki_misaki_030_out",
-      "routeGroupId": "koku94_saganoseki_misaki",
-      "operator": "国道九四フェリー",
-      "origin": "佐賀関港",
-      "destination": "三崎港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "koku94_saganoseki_misaki_031_back",
-      "routeGroupId": "koku94_saganoseki_misaki",
-      "operator": "国道九四フェリー",
-      "origin": "三崎港",
-      "destination": "佐賀関港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "kumamoto_ferry_kumamoto_shimabara_040_out",
-      "routeGroupId": "kumamoto_ferry_kumamoto_shimabara",
-      "operator": "熊本フェリー",
-      "origin": "熊本港",
-      "destination": "島原港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "kumamoto_ferry_kumamoto_shimabara_041_back",
-      "routeGroupId": "kumamoto_ferry_kumamoto_shimabara",
-      "operator": "熊本フェリー",
-      "origin": "島原港",
-      "destination": "熊本港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "kyusho_ferry_kumamoto_shimabara_042_out",
-      "routeGroupId": "kyusho_ferry_kumamoto_shimabara",
-      "operator": "九商フェリー",
-      "origin": "熊本港",
-      "destination": "島原港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "kyusho_ferry_kumamoto_shimabara_043_back",
-      "routeGroupId": "kyusho_ferry_kumamoto_shimabara",
-      "operator": "九商フェリー",
-      "origin": "島原港",
-      "destination": "熊本港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "maejima_ushimado_060_out",
-      "routeGroupId": "maejima_ushimado",
-      "operator": "瀬戸内市緑の村公社",
-      "origin": "牛窓港",
-      "destination": "前島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "maejima_ushimado_061_back",
-      "routeGroupId": "maejima_ushimado",
-      "operator": "瀬戸内市緑の村公社",
-      "origin": "前島港",
-      "destination": "牛窓港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "meimon_osaka_shinmoji_028_out",
-      "routeGroupId": "meimon_osaka_shinmoji",
-      "operator": "名門大洋フェリー",
-      "origin": "大阪南港",
-      "destination": "新門司港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "meimon_osaka_shinmoji_029_back",
-      "routeGroupId": "meimon_osaka_shinmoji",
-      "operator": "名門大洋フェリー",
-      "origin": "新門司港",
-      "destination": "大阪南港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
     },
     {
       "routeId": "mlit_map_193_002_琵琶湖汽船_大津_長浜_000_back",
@@ -1289,30 +1067,6 @@
       "operator": "瀬戸内海汽船",
       "origin": "広島港宇品",
       "destination": "三津浜港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_007_備後商船_常石_尾道_000_back",
-      "routeGroupId": "mlit_map_193_007_備後商船_常石_尾道",
-      "operator": "備後商船",
-      "origin": "尾道港",
-      "destination": "常石港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_007_備後商船_常石_尾道_000_out",
-      "routeGroupId": "mlit_map_193_007_備後商船_常石_尾道",
-      "operator": "備後商船",
-      "origin": "常石港",
-      "destination": "尾道港",
       "missing": [
         "missing_explicit_trip_times",
         "missing_adult_fare"
@@ -1416,54 +1170,6 @@
       "sourceFile": "data/v5_ship_map_to_193_official.json"
     },
     {
-      "routeId": "mlit_map_193_014_牛島海運_牛島_室積_000_back",
-      "routeGroupId": "mlit_map_193_014_牛島海運_牛島_室積",
-      "operator": "牛島海運",
-      "origin": "室積",
-      "destination": "牛島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_014_牛島海運_牛島_室積_000_out",
-      "routeGroupId": "mlit_map_193_014_牛島海運_牛島_室積",
-      "operator": "牛島海運",
-      "origin": "牛島",
-      "destination": "室積",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_015_野島海運_野島_三田尻_000_back",
-      "routeGroupId": "mlit_map_193_015_野島海運_野島_三田尻",
-      "operator": "野島海運",
-      "origin": "三田尻",
-      "destination": "野島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_015_野島海運_野島_三田尻_000_out",
-      "routeGroupId": "mlit_map_193_015_野島海運_野島_三田尻",
-      "operator": "野島海運",
-      "origin": "野島",
-      "destination": "三田尻",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
       "routeId": "mlit_map_193_017_しまなみ海運_竹原_大長_明石_小長_000_back",
       "routeGroupId": "mlit_map_193_017_しまなみ海運_竹原_大長_明石_小長",
       "operator": "しまなみ海運",
@@ -1481,30 +1187,6 @@
       "operator": "しまなみ海運",
       "origin": "竹原",
       "destination": "大長",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_back",
-      "routeGroupId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比",
-      "operator": "斎島汽船",
-      "origin": "久比",
-      "destination": "斎島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_out",
-      "routeGroupId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比",
-      "operator": "斎島汽船",
-      "origin": "斎島",
-      "destination": "久比",
       "missing": [
         "missing_explicit_trip_times",
         "missing_adult_fare"
@@ -1608,30 +1290,6 @@
       "sourceFile": "data/v5_ship_map_to_193_official.json"
     },
     {
-      "routeId": "mlit_map_193_023_小豆島豊島フェリー_宇野_小豆島_土庄_000_back",
-      "routeGroupId": "mlit_map_193_023_小豆島豊島フェリー_宇野_小豆島_土庄",
-      "operator": "小豆島豊島フェリー",
-      "origin": "土庄港",
-      "destination": "宇野",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_023_小豆島豊島フェリー_宇野_小豆島_土庄_000_out",
-      "routeGroupId": "mlit_map_193_023_小豆島豊島フェリー_宇野_小豆島_土庄",
-      "operator": "小豆島豊島フェリー",
-      "origin": "宇野",
-      "destination": "土庄港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
       "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
       "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松",
       "operator": "雌雄島海運",
@@ -1697,54 +1355,6 @@
       "operator": "たどつ汽船",
       "origin": "多度津",
       "destination": "佐柳",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_029_真鍋海運_伊吹_観音寺_000_back",
-      "routeGroupId": "mlit_map_193_029_真鍋海運_伊吹_観音寺",
-      "operator": "真鍋海運",
-      "origin": "観音寺",
-      "destination": "伊吹",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_029_真鍋海運_伊吹_観音寺_000_out",
-      "routeGroupId": "mlit_map_193_029_真鍋海運_伊吹_観音寺",
-      "operator": "真鍋海運",
-      "origin": "伊吹",
-      "destination": "観音寺",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_031_伊島連絡交通事業_伊島_答島_000_back",
-      "routeGroupId": "mlit_map_193_031_伊島連絡交通事業_伊島_答島",
-      "operator": "伊島連絡交通事業",
-      "origin": "答島",
-      "destination": "伊島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_031_伊島連絡交通事業_伊島_答島_000_out",
-      "routeGroupId": "mlit_map_193_031_伊島連絡交通事業_伊島_答島",
-      "operator": "伊島連絡交通事業",
-      "origin": "伊島",
-      "destination": "答島",
       "missing": [
         "missing_explicit_trip_times",
         "missing_adult_fare"
@@ -1992,102 +1602,6 @@
       "sourceFile": "data/v5_ship_map_to_193_official.json"
     },
     {
-      "routeId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back",
-      "routeGroupId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊",
-      "operator": "鳴門市",
-      "origin": "高島港",
-      "destination": "黒崎港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_out",
-      "routeGroupId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊",
-      "operator": "鳴門市",
-      "origin": "黒崎港",
-      "destination": "高島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_001_back",
-      "routeGroupId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊",
-      "operator": "鳴門市",
-      "origin": "土佐泊港",
-      "destination": "岡崎港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_001_out",
-      "routeGroupId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊",
-      "operator": "鳴門市",
-      "origin": "岡崎港",
-      "destination": "土佐泊港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_047_大入島観光フェリー_大入島_佐伯_000_back",
-      "routeGroupId": "mlit_map_193_047_大入島観光フェリー_大入島_佐伯",
-      "operator": "大入島観光フェリー",
-      "origin": "佐伯",
-      "destination": "大入島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_047_大入島観光フェリー_大入島_佐伯_000_out",
-      "routeGroupId": "mlit_map_193_047_大入島観光フェリー_大入島_佐伯",
-      "operator": "大入島観光フェリー",
-      "origin": "大入島",
-      "destination": "佐伯",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_048_姫島村_姫島_国見_000_back",
-      "routeGroupId": "mlit_map_193_048_姫島村_姫島_国見",
-      "operator": "姫島村",
-      "origin": "国見",
-      "destination": "姫島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_048_姫島村_姫島_国見_000_out",
-      "routeGroupId": "mlit_map_193_048_姫島村_姫島_国見",
-      "operator": "姫島村",
-      "origin": "姫島",
-      "destination": "国見",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
       "routeId": "mlit_map_193_050_佐賀玄海漁業共同組合_高島_唐津_000_back",
       "routeGroupId": "mlit_map_193_050_佐賀玄海漁業共同組合_高島_唐津",
       "operator": "佐賀玄海漁業共同組合",
@@ -2105,102 +1619,6 @@
       "operator": "佐賀玄海漁業共同組合",
       "origin": "高島港",
       "destination": "唐津港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_053_黒島旅客船_黒島_高島_相浦_000_back",
-      "routeGroupId": "mlit_map_193_053_黒島旅客船_黒島_高島_相浦",
-      "operator": "黒島旅客船",
-      "origin": "高島港",
-      "destination": "黒島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_053_黒島旅客船_黒島_高島_相浦_000_out",
-      "routeGroupId": "mlit_map_193_053_黒島旅客船_黒島_高島_相浦",
-      "operator": "黒島旅客船",
-      "origin": "黒島",
-      "destination": "高島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_053_黒島旅客船_黒島_高島_相浦_001_back",
-      "routeGroupId": "mlit_map_193_053_黒島旅客船_黒島_高島_相浦",
-      "operator": "黒島旅客船",
-      "origin": "相浦",
-      "destination": "高島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_053_黒島旅客船_黒島_高島_相浦_001_out",
-      "routeGroupId": "mlit_map_193_053_黒島旅客船_黒島_高島_相浦",
-      "operator": "黒島旅客船",
-      "origin": "高島港",
-      "destination": "相浦",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_054_平戸市_大島_的山_神浦_平戸_000_back",
-      "routeGroupId": "mlit_map_193_054_平戸市_大島_的山_神浦_平戸",
-      "operator": "平戸市",
-      "origin": "平戸港",
-      "destination": "大島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_054_平戸市_大島_的山_神浦_平戸_000_out",
-      "routeGroupId": "mlit_map_193_054_平戸市_大島_的山_神浦_平戸",
-      "operator": "平戸市",
-      "origin": "大島港",
-      "destination": "平戸港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_056_江崎海陸運送_瀬戸_松島_000_back",
-      "routeGroupId": "mlit_map_193_056_江崎海陸運送_瀬戸_松島",
-      "operator": "江崎海陸運送",
-      "origin": "松島",
-      "destination": "瀬戸",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_056_江崎海陸運送_瀬戸_松島_000_out",
-      "routeGroupId": "mlit_map_193_056_江崎海陸運送_瀬戸_松島",
-      "operator": "江崎海陸運送",
-      "origin": "瀬戸",
-      "destination": "松島",
       "missing": [
         "missing_explicit_trip_times",
         "missing_adult_fare"
@@ -2448,30 +1866,6 @@
       "sourceFile": "data/v5_ship_map_to_193_official.json"
     },
     {
-      "routeId": "mlit_map_193_068_壱岐市_大島_郷ノ浦_000_back",
-      "routeGroupId": "mlit_map_193_068_壱岐市_大島_郷ノ浦",
-      "operator": "壱岐市",
-      "origin": "郷ノ浦",
-      "destination": "大島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_068_壱岐市_大島_郷ノ浦_000_out",
-      "routeGroupId": "mlit_map_193_068_壱岐市_大島_郷ノ浦",
-      "operator": "壱岐市",
-      "origin": "大島港",
-      "destination": "郷ノ浦",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
       "routeId": "mlit_map_193_069_竹山運輸_度島_本村_平戸_000_back",
       "routeGroupId": "mlit_map_193_069_竹山運輸_度島_本村_平戸",
       "operator": "竹山運輸",
@@ -2513,30 +1907,6 @@
       "operator": "共同フェリー",
       "origin": "棚底",
       "destination": "大道",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_071_日豊汽船_島浦_浦城_000_back",
-      "routeGroupId": "mlit_map_193_071_日豊汽船_島浦_浦城",
-      "operator": "日豊汽船",
-      "origin": "浦城",
-      "destination": "島浦",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_071_日豊汽船_島浦_浦城_000_out",
-      "routeGroupId": "mlit_map_193_071_日豊汽船_島浦_浦城",
-      "operator": "日豊汽船",
-      "origin": "島浦",
-      "destination": "浦城",
       "missing": [
         "missing_explicit_trip_times",
         "missing_adult_fare"
@@ -2616,150 +1986,6 @@
       "sourceFile": "data/v5_ship_map_to_193_official.json"
     },
     {
-      "routeId": "mlit_map_193_075_加唐島汽船_加唐島_呼子_000_back",
-      "routeGroupId": "mlit_map_193_075_加唐島汽船_加唐島_呼子",
-      "operator": "加唐島汽船",
-      "origin": "呼子",
-      "destination": "加唐島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_075_加唐島汽船_加唐島_呼子_000_out",
-      "routeGroupId": "mlit_map_193_075_加唐島汽船_加唐島_呼子",
-      "operator": "加唐島汽船",
-      "origin": "加唐島",
-      "destination": "呼子",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_076_唐津汽船_神集島_湊_000_back",
-      "routeGroupId": "mlit_map_193_076_唐津汽船_神集島_湊",
-      "operator": "唐津汽船",
-      "origin": "湊",
-      "destination": "神集島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_076_唐津汽船_神集島_湊_000_out",
-      "routeGroupId": "mlit_map_193_076_唐津汽船_神集島_湊",
-      "operator": "唐津汽船",
-      "origin": "神集島",
-      "destination": "湊",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_077_佐世保市_神浦_寺島_柳_000_back",
-      "routeGroupId": "mlit_map_193_077_佐世保市_神浦_寺島_柳",
-      "operator": "佐世保市",
-      "origin": "寺島",
-      "destination": "神浦",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_077_佐世保市_神浦_寺島_柳_000_out",
-      "routeGroupId": "mlit_map_193_077_佐世保市_神浦_寺島_柳",
-      "operator": "佐世保市",
-      "origin": "神浦",
-      "destination": "寺島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_077_佐世保市_神浦_寺島_柳_001_back",
-      "routeGroupId": "mlit_map_193_077_佐世保市_神浦_寺島_柳",
-      "operator": "佐世保市",
-      "origin": "柳",
-      "destination": "寺島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_077_佐世保市_神浦_寺島_柳_001_out",
-      "routeGroupId": "mlit_map_193_077_佐世保市_神浦_寺島_柳",
-      "operator": "佐世保市",
-      "origin": "寺島",
-      "destination": "柳",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_078_五島旅客船_郷ノ首_福江_000_back",
-      "routeGroupId": "mlit_map_193_078_五島旅客船_郷ノ首_福江",
-      "operator": "五島旅客船",
-      "origin": "福江港",
-      "destination": "郷ノ首",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_078_五島旅客船_郷ノ首_福江_000_out",
-      "routeGroupId": "mlit_map_193_078_五島旅客船_郷ノ首_福江",
-      "operator": "五島旅客船",
-      "origin": "郷ノ首",
-      "destination": "福江港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_079_黄島海運_黄島_福江_000_back",
-      "routeGroupId": "mlit_map_193_079_黄島海運_黄島_福江",
-      "operator": "黄島海運",
-      "origin": "福江港",
-      "destination": "黄島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_079_黄島海運_黄島_福江_000_out",
-      "routeGroupId": "mlit_map_193_079_黄島海運_黄島_福江",
-      "operator": "黄島海運",
-      "origin": "黄島",
-      "destination": "福江港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
       "routeId": "mlit_map_193_080_津吉商船_津吉_相浦_佐世保_000_back",
       "routeGroupId": "mlit_map_193_080_津吉商船_津吉_相浦_佐世保",
       "operator": "津吉商船",
@@ -2808,30 +2034,6 @@
       "sourceFile": "data/v5_ship_map_to_193_official.json"
     },
     {
-      "routeId": "mlit_map_193_082_津久見市_津久見_保戸島_000_back",
-      "routeGroupId": "mlit_map_193_082_津久見市_津久見_保戸島",
-      "operator": "津久見市",
-      "origin": "保戸島",
-      "destination": "津久見",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_082_津久見市_津久見_保戸島_000_out",
-      "routeGroupId": "mlit_map_193_082_津久見市_津久見_保戸島",
-      "operator": "津久見市",
-      "origin": "津久見",
-      "destination": "保戸島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
       "routeId": "mlit_map_193_084_苓北観光汽船_天草_長崎_000_back",
       "routeGroupId": "mlit_map_193_084_苓北観光汽船_天草_長崎",
       "operator": "苓北観光汽船",
@@ -2849,54 +2051,6 @@
       "operator": "苓北観光汽船",
       "origin": "天草",
       "destination": "長崎港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑_000_back",
-      "routeGroupId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑",
-      "operator": "北九州市",
-      "origin": "小倉",
-      "destination": "藍島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑_000_out",
-      "routeGroupId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑",
-      "operator": "北九州市",
-      "origin": "藍島",
-      "destination": "小倉",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑_001_back",
-      "routeGroupId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑",
-      "operator": "北九州市",
-      "origin": "戸畑",
-      "destination": "若松",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑_001_out",
-      "routeGroupId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑",
-      "operator": "北九州市",
-      "origin": "若松",
-      "destination": "戸畑",
       "missing": [
         "missing_explicit_trip_times",
         "missing_adult_fare"
@@ -2952,78 +2106,6 @@
       "sourceFile": "data/v5_ship_map_to_193_official.json"
     },
     {
-      "routeId": "mlit_map_193_092_下関市_竹崎_六連島_蓋井島_吉見_000_back",
-      "routeGroupId": "mlit_map_193_092_下関市_竹崎_六連島_蓋井島_吉見",
-      "operator": "下関市",
-      "origin": "六連島",
-      "destination": "竹崎",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_092_下関市_竹崎_六連島_蓋井島_吉見_000_out",
-      "routeGroupId": "mlit_map_193_092_下関市_竹崎_六連島_蓋井島_吉見",
-      "operator": "下関市",
-      "origin": "竹崎",
-      "destination": "六連島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_092_下関市_竹崎_六連島_蓋井島_吉見_001_back",
-      "routeGroupId": "mlit_map_193_092_下関市_竹崎_六連島_蓋井島_吉見",
-      "operator": "下関市",
-      "origin": "吉見",
-      "destination": "蓋井島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_092_下関市_竹崎_六連島_蓋井島_吉見_001_out",
-      "routeGroupId": "mlit_map_193_092_下関市_竹崎_六連島_蓋井島_吉見",
-      "operator": "下関市",
-      "origin": "蓋井島",
-      "destination": "吉見",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島_000_back",
-      "routeGroupId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島",
-      "operator": "小値賀町",
-      "origin": "大島港",
-      "destination": "笛吹",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島_000_out",
-      "routeGroupId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島",
-      "operator": "小値賀町",
-      "origin": "笛吹",
-      "destination": "大島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
       "routeId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島_001_back",
       "routeGroupId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島",
       "operator": "小値賀町",
@@ -3048,174 +2130,6 @@
       "sourceFile": "data/v5_ship_map_to_193_official.json"
     },
     {
-      "routeId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島_002_back",
-      "routeGroupId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島",
-      "operator": "小値賀町",
-      "origin": "納島",
-      "destination": "柳",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島_002_out",
-      "routeGroupId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島",
-      "operator": "小値賀町",
-      "origin": "柳",
-      "destination": "納島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mol_oarai_tomakomai_004_out",
-      "routeGroupId": "mol_oarai_tomakomai",
-      "operator": "商船三井さんふらわあ",
-      "origin": "大洗港",
-      "destination": "苫小牧西港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "mol_oarai_tomakomai_005_back",
-      "routeGroupId": "mol_oarai_tomakomai",
-      "operator": "商船三井さんふらわあ",
-      "origin": "苫小牧西港",
-      "destination": "大洗港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "ninoshima_kisen_040_out",
-      "routeGroupId": "ninoshima_kisen",
-      "operator": "似島汽船",
-      "origin": "広島港宇品",
-      "destination": "似島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "ninoshima_kisen_041_back",
-      "routeGroupId": "ninoshima_kisen",
-      "operator": "似島汽船",
-      "origin": "似島港",
-      "destination": "広島港宇品",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "nushima_habu_028_out",
-      "routeGroupId": "nushima_habu",
-      "operator": "沼島汽船",
-      "origin": "沼島港",
-      "destination": "土生港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "nushima_habu_029_back",
-      "routeGroupId": "nushima_habu",
-      "operator": "沼島汽船",
-      "origin": "土生港",
-      "destination": "沼島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "ocean_tokyu_tokyo_tokushima_shinmoji_032_out",
-      "routeGroupId": "ocean_tokyu_tokyo_tokushima_shinmoji",
-      "operator": "オーシャン東九フェリー",
-      "origin": "東京港",
-      "destination": "徳島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "ocean_tokyu_tokyo_tokushima_shinmoji_033_back",
-      "routeGroupId": "ocean_tokyu_tokyo_tokushima_shinmoji",
-      "operator": "オーシャン東九フェリー",
-      "origin": "徳島港",
-      "destination": "東京港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "ocean_tokyu_tokyo_tokushima_shinmoji_034_out",
-      "routeGroupId": "ocean_tokyu_tokyo_tokushima_shinmoji",
-      "operator": "オーシャン東九フェリー",
-      "origin": "徳島港",
-      "destination": "新門司港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "ocean_tokyu_tokyo_tokushima_shinmoji_035_back",
-      "routeGroupId": "ocean_tokyu_tokyo_tokushima_shinmoji",
-      "operator": "オーシャン東九フェリー",
-      "origin": "新門司港",
-      "destination": "徳島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "ogasawara_tokyo_chichijima_050_out",
-      "routeGroupId": "ogasawara_tokyo_chichijima",
-      "operator": "小笠原海運",
-      "origin": "竹芝",
-      "destination": "父島二見港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "ogasawara_tokyo_chichijima_051_back",
-      "routeGroupId": "ogasawara_tokyo_chichijima",
-      "operator": "小笠原海運",
-      "origin": "父島二見港",
-      "destination": "竹芝",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
       "routeId": "oki_kisen_shimane_oki_122_out",
       "routeGroupId": "oki_kisen_shimane_oki",
       "operator": "隠岐汽船",
@@ -3238,54 +2152,6 @@
         "missing_adult_fare"
       ],
       "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "omishima_ferry_tadanoumi_sakari_054_out",
-      "routeGroupId": "omishima_ferry_tadanoumi_sakari",
-      "operator": "大三島フェリー",
-      "origin": "忠海港",
-      "destination": "盛港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "omishima_ferry_tadanoumi_sakari_055_back",
-      "routeGroupId": "omishima_ferry_tadanoumi_sakari",
-      "operator": "大三島フェリー",
-      "origin": "盛港",
-      "destination": "忠海港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "osaki_kisen_takehara_shiromizu_042_out",
-      "routeGroupId": "osaki_kisen_takehara_shiromizu",
-      "operator": "大崎汽船",
-      "origin": "竹原港",
-      "destination": "白水港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "osaki_kisen_takehara_shiromizu_043_back",
-      "routeGroupId": "osaki_kisen_takehara_shiromizu",
-      "operator": "大崎汽船",
-      "origin": "白水港",
-      "destination": "竹原港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
     },
     {
       "routeId": "otsushima_tokuyama_068_out",
@@ -3336,30 +2202,6 @@
       "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
     },
     {
-      "routeId": "sanyo_shosen_takehara_shiromizu_044_out",
-      "routeGroupId": "sanyo_shosen_takehara_shiromizu",
-      "operator": "山陽商船",
-      "origin": "竹原港",
-      "destination": "白水港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "sanyo_shosen_takehara_shiromizu_045_back",
-      "routeGroupId": "sanyo_shosen_takehara_shiromizu",
-      "operator": "山陽商船",
-      "origin": "白水港",
-      "destination": "竹原港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
       "routeId": "seapal_onagawa_enoshima_018_out",
       "routeGroupId": "seapal_onagawa_enoshima",
       "operator": "シーパル女川汽船",
@@ -3382,30 +2224,6 @@
         "missing_adult_fare"
       ],
       "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "shimatetsu_kuchinotsu_oniike_066_out",
-      "routeGroupId": "shimatetsu_kuchinotsu_oniike",
-      "operator": "島原鉄道",
-      "origin": "口之津港",
-      "destination": "鬼池港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "shimatetsu_kuchinotsu_oniike_067_back",
-      "routeGroupId": "shimatetsu_kuchinotsu_oniike",
-      "operator": "島原鉄道",
-      "origin": "鬼池港",
-      "destination": "口之津港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
     },
     {
       "routeId": "suonada_tokuyama_taketatsu_038_out",
@@ -3504,30 +2322,6 @@
       "sourceFile": "data/v5_ship_long_distance_batch_official.json"
     },
     {
-      "routeId": "taisei_hinase_otabu_062_out",
-      "routeGroupId": "taisei_hinase_otabu",
-      "operator": "大生汽船",
-      "origin": "日生港",
-      "destination": "大多府港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "taisei_hinase_otabu_063_back",
-      "routeGroupId": "taisei_hinase_otabu",
-      "operator": "大生汽船",
-      "origin": "大多府港",
-      "destination": "日生港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
       "routeId": "tokai_tokyo_izu_islands_052_out",
       "routeGroupId": "tokai_tokyo_izu_islands",
       "operator": "東海汽船",
@@ -3574,54 +2368,6 @@
         "missing_adult_fare"
       ],
       "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "tokyo_bay_kurihama_kanaya_050_out",
-      "routeGroupId": "tokyo_bay_kurihama_kanaya",
-      "operator": "東京湾フェリー",
-      "origin": "久里浜港",
-      "destination": "金谷港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "tokyo_bay_kurihama_kanaya_051_back",
-      "routeGroupId": "tokyo_bay_kurihama_kanaya",
-      "operator": "東京湾フェリー",
-      "origin": "金谷港",
-      "destination": "久里浜港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "uwajima_unyu_yawatahama_beppu_060_out",
-      "routeGroupId": "uwajima_unyu_yawatahama_beppu",
-      "operator": "宇和島運輸",
-      "origin": "八幡浜港",
-      "destination": "別府港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
-    },
-    {
-      "routeId": "uwajima_unyu_yawatahama_beppu_061_back",
-      "routeGroupId": "uwajima_unyu_yawatahama_beppu",
-      "operator": "宇和島運輸",
-      "origin": "別府港",
-      "destination": "八幡浜港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_expansion_to_70_official.json"
     }
   ]
 }

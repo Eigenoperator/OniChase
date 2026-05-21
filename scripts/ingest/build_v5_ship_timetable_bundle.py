@@ -72,6 +72,10 @@ SOURCE_FILES = [
     ROOT / "data/v5_ship_playable_setonaikai_remaining_batch_official.json",
     ROOT / "data/v5_ship_playable_priority_100_batch2_official.json",
     ROOT / "data/v5_ship_playable_priority_100_batch3_official.json",
+    ROOT / "data/v5_ship_playable_to_400_batch1_official.json",
+    ROOT / "data/v5_ship_playable_to_400_batch2_official.json",
+    ROOT / "data/v5_ship_playable_to_400_batch3_official.json",
+    ROOT / "data/v5_ship_playable_to_400_batch4_official.json",
 ]
 SHIP_MAP_PATH = ROOT / "docs/data/v5_ship_map.geojson"
 OUT_PATH = ROOT / "docs/data/v5_ship_timetable_current_bundle.json"
@@ -116,11 +120,11 @@ def adult_fare_yen(route: dict) -> int | None:
         value = adult.get(key)
         if isinstance(value, dict):
             value = value.get("amount")
-        if isinstance(value, (int, float)) and value > 0:
+        if isinstance(value, (int, float)) and value >= 0:
             return int(value)
     for key in ("fareAdultJpy", "fareNormalAdultJpy", "farePeakAdultJpy"):
         value = route.get(key)
-        if isinstance(value, (int, float)) and value > 0:
+        if isinstance(value, (int, float)) and value >= 0:
             return int(value)
     return None
 
