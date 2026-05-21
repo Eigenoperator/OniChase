@@ -40,6 +40,7 @@ SOURCE_FILES = [
     ROOT / "data/v5_ship_playable_shikoku_ferry_batch_official.json",
     ROOT / "data/v5_ship_playable_tsugaru_batch_official.json",
     ROOT / "data/v5_ship_playable_heartland_batch_official.json",
+    ROOT / "data/v5_ship_playable_haboro_batch_official.json",
 ]
 SHIP_MAP_PATH = ROOT / "docs/data/v5_ship_map.geojson"
 OUT_PATH = ROOT / "docs/data/v5_ship_timetable_current_bundle.json"
