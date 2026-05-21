@@ -15565,6 +15565,8 @@
       if (calendar === 'monday_to_saturday') return V5_FLIGHT_SERVICE_WEEKDAY >= 1 && V5_FLIGHT_SERVICE_WEEKDAY <= 6;
       if (calendar === 'weekend_holiday') return V5_FLIGHT_SERVICE_WEEKDAY === 6 || V5_FLIGHT_SERVICE_WEEKDAY === 7;
       if (calendar === 'monday_wednesday_friday') return [1, 3, 5].includes(V5_FLIGHT_SERVICE_WEEKDAY);
+      if (calendar === 'monday_thursday_saturday') return [1, 4, 6].includes(V5_FLIGHT_SERVICE_WEEKDAY);
+      if (calendar === 'tuesday_friday_sunday') return [2, 5, 7].includes(V5_FLIGHT_SERVICE_WEEKDAY);
       return true;
     }
 
