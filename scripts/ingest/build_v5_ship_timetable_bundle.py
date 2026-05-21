@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+import re
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -28,6 +29,24 @@ SOURCE_FILES = [
 SHIP_MAP_PATH = ROOT / "docs/data/v5_ship_map.geojson"
 OUT_PATH = ROOT / "docs/data/v5_ship_timetable_current_bundle.json"
 AUDIT_OUT_PATH = ROOT / "data/v5_ship_playable_promotion_audit.json"
+
+PORT_ALIASES = {
+    "関西空港": "関西空港ポートターミナル",
+    "桜島": "桜島港",
+    "高松": "高松港",
+    "土庄": "土庄港",
+    "岡山": "岡山港",
+    "宇野": "宇野港",
+    "博多": "博多港",
+    "三津浜": "三津浜港",
+    "広島": "広島港宇品",
+    "丸亀": "丸亀港",
+}
+
+OPERATOR_ALIASES = {
+    "こうべ未来都市機構": "神戸-関空ベイ・シャトル",
+    "鹿児島市船舶局（桜島フェリー）": "鹿児島市船舶局",
+}
 
 
 def read_json(path: Path) -> dict:
@@ -53,6 +72,38 @@ def adult_fare_yen(route: dict) -> int | None:
         if isinstance(value, (int, float)) and value > 0:
             return int(value)
     return None
+
+
+def normalized_text(value: object) -> str:
+    text = str(value or "")
+    text = text.replace("（", "(").replace("）", ")")
+    text = re.sub(r"\s+", "", text)
+    return text
+
+
+def normalize_operator(value: object) -> str:
+    text = normalized_text(value)
+    return OPERATOR_ALIASES.get(text, text)
+
+
+def normalize_port(value: object) -> str:
+    text = normalized_text(value)
+    text = PORT_ALIASES.get(text, text)
+    if text and not text.endswith(("港", "ターミナル", "桟橋", "島", "駅")):
+        text = PORT_ALIASES.get(f"{text}港", text)
+    return text
+
+
+def route_coverage_keys(route: dict) -> set[tuple[str, str, str] | tuple[str, str]]:
+    origin = normalize_port(route.get("origin") or route.get("originPort"))
+    destination = normalize_port(route.get("destination") or route.get("destinationPort"))
+    operator = normalize_operator(route.get("operator"))
+    keys: set[tuple[str, str, str] | tuple[str, str]] = set()
+    if origin and destination:
+        keys.add((origin, destination))
+        if operator:
+            keys.add((operator, origin, destination))
+    return keys
 
 
 def calendar_type(trip: dict) -> str:
@@ -101,6 +152,7 @@ def main() -> None:
     promoted_routes = []
     sailings = []
     skipped = []
+    duplicate_candidates = []
     for route_id, route in sorted(routes_by_id.items()):
         route_trips = sorted(
             trips_by_source_route.get(route_id, []),
@@ -119,7 +171,7 @@ def main() -> None:
         if destination not in ports:
             missing.append("missing_destination_port_coordinate")
         if missing:
-            skipped.append({
+            duplicate_candidates.append({
                 "routeId": route_id,
                 "routeGroupId": route_group_key(route),
                 "operator": route.get("operator"),
@@ -127,6 +179,7 @@ def main() -> None:
                 "destination": destination,
                 "missing": missing,
                 "sourceFile": route.get("_sourceFile"),
+                "_coverageKeys": sorted(route_coverage_keys(route), key=str),
             })
             continue
 
@@ -180,6 +233,29 @@ def main() -> None:
             })
 
     promoted_route_groups = {route["routeGroupId"] for route in promoted_routes}
+    promoted_keys: dict[tuple[str, str, str] | tuple[str, str], dict] = {}
+    for route in promoted_routes:
+        for key in route_coverage_keys(route):
+            promoted_keys.setdefault(key, route)
+
+    covered_duplicates = []
+    for item in duplicate_candidates:
+        matched_route = None
+        for key in item.pop("_coverageKeys", []):
+            key_tuple = tuple(key)
+            if key_tuple in promoted_keys:
+                matched_route = promoted_keys[key_tuple]
+                break
+        if matched_route:
+            covered_duplicates.append({
+                **item,
+                "coveredByRouteId": matched_route["routeId"],
+                "coveredByOperator": matched_route["operator"],
+                "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare",
+            })
+        else:
+            skipped.append(item)
+
     audit = {
         "schema": "onichase.v5.ship_playable_promotion_audit.1",
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -190,6 +266,8 @@ def main() -> None:
         "promotedRouteGroupCount": len(promoted_route_groups),
         "promotedRouteCount": len(promoted_routes),
         "promotedSailingCount": len(sailings),
+        "coveredDuplicateRouteCount": len(covered_duplicates),
+        "coveredDuplicateRoutes": covered_duplicates,
         "skippedRouteCount": len(skipped),
         "skippedReasonCounts": {},
         "skippedRoutes": skipped,

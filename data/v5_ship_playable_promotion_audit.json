@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v5.ship_playable_promotion_audit.1",
-  "generatedAt": "2026-05-21T04:12:50+00:00",
+  "generatedAt": "2026-05-21T04:40:32+00:00",
   "sourceFiles": [
     "data/v5_ship_seikan_ferry_official.json",
     "data/v5_ship_priority_batch_official.json",
@@ -17,10 +17,103 @@
   "promotedRouteGroupCount": 26,
   "promotedRouteCount": 26,
   "promotedSailingCount": 536,
-  "skippedRouteCount": 542,
+  "coveredDuplicateRouteCount": 6,
+  "coveredDuplicateRoutes": [
+    {
+      "routeId": "mlit_map_193_004_こうべ未来都市機構_神戸空港_関西空港_000_back",
+      "routeGroupId": "mlit_map_193_004_こうべ未来都市機構_神戸空港_関西空港",
+      "operator": "こうべ未来都市機構",
+      "origin": "関西空港",
+      "destination": "神戸空港海上アクセスターミナル",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_map_to_193_official.json",
+      "coveredByRouteId": "bay_shuttle_kix_kobe",
+      "coveredByOperator": "神戸-関空ベイ・シャトル",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
+      "routeId": "mlit_map_193_004_こうべ未来都市機構_神戸空港_関西空港_000_out",
+      "routeGroupId": "mlit_map_193_004_こうべ未来都市機構_神戸空港_関西空港",
+      "operator": "こうべ未来都市機構",
+      "origin": "神戸空港海上アクセスターミナル",
+      "destination": "関西空港",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_map_to_193_official.json",
+      "coveredByRouteId": "bay_shuttle_kobe_kix",
+      "coveredByOperator": "神戸-関空ベイ・シャトル",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
+      "routeId": "mlit_map_193_022_国際両備フェリー_高松_小豆島_池田_000_back",
+      "routeGroupId": "mlit_map_193_022_国際両備フェリー_高松_小豆島_池田",
+      "operator": "国際両備フェリー",
+      "origin": "土庄港",
+      "destination": "高松",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_map_to_193_official.json",
+      "coveredByRouteId": "shodoshima_takamatsu_tonosho_065_back",
+      "coveredByOperator": "小豆島フェリー",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
+      "routeId": "mlit_map_193_022_国際両備フェリー_高松_小豆島_池田_000_out",
+      "routeGroupId": "mlit_map_193_022_国際両備フェリー_高松_小豆島_池田",
+      "operator": "国際両備フェリー",
+      "origin": "高松",
+      "destination": "土庄港",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_map_to_193_official.json",
+      "coveredByRouteId": "shodoshima_takamatsu_tonosho_064_out",
+      "coveredByOperator": "小豆島フェリー",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
+      "routeId": "mlit_map_193_060_鹿児島市船舶局_桜島フェリー_桜島_鹿児島_000_back",
+      "routeGroupId": "mlit_map_193_060_鹿児島市船舶局_桜島フェリー_桜島_鹿児島",
+      "operator": "鹿児島市船舶局（桜島フェリー）",
+      "origin": "鹿児島港",
+      "destination": "桜島",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_map_to_193_official.json",
+      "coveredByRouteId": "sakurajima_ferry_kagoshima_sakurajima",
+      "coveredByOperator": "鹿児島市船舶局",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
+      "routeId": "mlit_map_193_060_鹿児島市船舶局_桜島フェリー_桜島_鹿児島_000_out",
+      "routeGroupId": "mlit_map_193_060_鹿児島市船舶局_桜島フェリー_桜島_鹿児島",
+      "operator": "鹿児島市船舶局（桜島フェリー）",
+      "origin": "桜島",
+      "destination": "鹿児島港",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_map_to_193_official.json",
+      "coveredByRouteId": "sakurajima_ferry_sakurajima_kagoshima",
+      "coveredByOperator": "鹿児島市船舶局",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    }
+  ],
+  "skippedRouteCount": 536,
   "skippedReasonCounts": {
-    "missing_explicit_trip_times": 542,
-    "missing_adult_fare": 540
+    "missing_explicit_trip_times": 536,
+    "missing_adult_fare": 534
   },
   "skippedRoutes": [
     {
@@ -1414,30 +1507,6 @@
       "sourceFile": "data/v5_ship_map_to_193_official.json"
     },
     {
-      "routeId": "mlit_map_193_004_こうべ未来都市機構_神戸空港_関西空港_000_back",
-      "routeGroupId": "mlit_map_193_004_こうべ未来都市機構_神戸空港_関西空港",
-      "operator": "こうべ未来都市機構",
-      "origin": "関西空港",
-      "destination": "神戸空港海上アクセスターミナル",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_004_こうべ未来都市機構_神戸空港_関西空港_000_out",
-      "routeGroupId": "mlit_map_193_004_こうべ未来都市機構_神戸空港_関西空港",
-      "operator": "こうべ未来都市機構",
-      "origin": "神戸空港海上アクセスターミナル",
-      "destination": "関西空港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
       "routeId": "mlit_map_193_005_瀬戸内海汽船_広島_宇品_松山_000_back",
       "routeGroupId": "mlit_map_193_005_瀬戸内海汽船_広島_宇品_松山",
       "operator": "瀬戸内海汽船",
@@ -2150,30 +2219,6 @@
       "routeGroupId": "mlit_map_193_021_四国フェリー_岡山_小豆島_土庄",
       "operator": "四国フェリー",
       "origin": "岡山",
-      "destination": "土庄港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_022_国際両備フェリー_高松_小豆島_池田_000_back",
-      "routeGroupId": "mlit_map_193_022_国際両備フェリー_高松_小豆島_池田",
-      "operator": "国際両備フェリー",
-      "origin": "土庄港",
-      "destination": "高松",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_022_国際両備フェリー_高松_小豆島_池田_000_out",
-      "routeGroupId": "mlit_map_193_022_国際両備フェリー_高松_小豆島_池田",
-      "operator": "国際両備フェリー",
-      "origin": "高松",
       "destination": "土庄港",
       "missing": [
         "missing_explicit_trip_times",
@@ -3255,30 +3300,6 @@
       "operator": "マルエーフェリー",
       "origin": "鹿児島港",
       "destination": "那覇泊港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_060_鹿児島市船舶局_桜島フェリー_桜島_鹿児島_000_back",
-      "routeGroupId": "mlit_map_193_060_鹿児島市船舶局_桜島フェリー_桜島_鹿児島",
-      "operator": "鹿児島市船舶局（桜島フェリー）",
-      "origin": "鹿児島港",
-      "destination": "桜島",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_map_to_193_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_060_鹿児島市船舶局_桜島フェリー_桜島_鹿児島_000_out",
-      "routeGroupId": "mlit_map_193_060_鹿児島市船舶局_桜島フェリー_桜島_鹿児島",
-      "operator": "鹿児島市船舶局（桜島フェリー）",
-      "origin": "桜島",
-      "destination": "鹿児島港",
       "missing": [
         "missing_explicit_trip_times",
         "missing_adult_fare"
