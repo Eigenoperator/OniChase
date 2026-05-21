@@ -68,6 +68,10 @@ SOURCE_FILES = [
     ROOT / "data/v5_ship_playable_urato_batch_official.json",
     ROOT / "data/v5_ship_playable_aoshima_batch_official.json",
     ROOT / "data/v5_ship_playable_snf_batch_official.json",
+    ROOT / "data/v5_ship_playable_priority_100_batch_official.json",
+    ROOT / "data/v5_ship_playable_setonaikai_remaining_batch_official.json",
+    ROOT / "data/v5_ship_playable_priority_100_batch2_official.json",
+    ROOT / "data/v5_ship_playable_priority_100_batch3_official.json",
 ]
 SHIP_MAP_PATH = ROOT / "docs/data/v5_ship_map.geojson"
 OUT_PATH = ROOT / "docs/data/v5_ship_timetable_current_bundle.json"
@@ -81,6 +85,7 @@ PORT_ALIASES = {
     "岡山": "岡山港",
     "宇野": "宇野港",
     "博多": "博多港",
+    "八戸港": "八戸港",
     "三津浜": "三津浜港",
     "広島": "広島港宇品",
     "丸亀": "丸亀港",
