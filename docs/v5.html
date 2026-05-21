@@ -15285,21 +15285,40 @@
       });
     }
 
-    function coordinateForFlightAirportListAnchor(preview) {
-      if (validCoordinate(preview?.mapPosition)) return preview.mapPosition;
-      const currentState = preview?.currentState || {};
-      if (currentState.kind === 'NODE') return stationLonLat(currentState.stationGroupId);
-      if (currentState.kind === 'BUS_STOP') return busStopCoordinate(currentState.busStopId);
-      if (currentState.airportIata) return airportCoordinate(currentState.airportIata);
-      if (currentState.kind === 'FLIGHT') {
-        const flight = state.flightById.get(currentState.flightId);
-        return airportCoordinate(flight?.destinationAirport || currentState.destinationAirport);
-      }
+    function coordinateForFlightAirportListAnchor(preview, playerId = state.activeMode) {
+      const coordinateFromPreview = (candidatePreview) => {
+        if (validCoordinate(candidatePreview?.mapPosition)) return candidatePreview.mapPosition;
+        const currentState = candidatePreview?.currentState || {};
+        if (currentState.kind === 'NODE') return stationLonLat(currentState.stationGroupId);
+        if (currentState.kind === 'BUS_STOP') return busStopCoordinate(currentState.busStopId);
+        if (currentState.airportIata) return airportCoordinate(currentState.airportIata);
+        if (currentState.kind === 'FLIGHT') {
+          const flight = state.flightById.get(currentState.flightId);
+          return airportCoordinate(flight?.destinationAirport || currentState.destinationAirport);
+        }
+        if (currentState.kind === 'PORT_WAIT') return portCoordinate(currentState.portName);
+        if (currentState.kind === 'SHIP') {
+          const sailing = state.shipSailingById.get(currentState.sailingId);
+          return portCoordinate(sailing?.destinationPort || currentState.destinationPort);
+        }
+        return null;
+      };
+      const direct = coordinateFromPreview(preview);
+      if (validCoordinate(direct)) return direct;
+      const currentPreview = previewPlayer(playerId, state.currentGameMinute);
+      const currentPosition = coordinateFromPreview(currentPreview);
+      if (validCoordinate(currentPosition)) return currentPosition;
+      const tailPreview = previewPlayer(playerId, null);
+      const tailPosition = coordinateFromPreview(tailPreview);
+      if (validCoordinate(tailPosition)) return tailPosition;
+      const startPosition = stationLonLat(state.players?.[playerId]?.start_station_id);
+      if (validCoordinate(startPosition)) return startPosition;
       return null;
     }
 
-    function flightAirportRowsFromPreview(preview) {
-      const anchor = coordinateForFlightAirportListAnchor(preview);
+    function flightAirportRowsFromPreview(preview, options = {}) {
+      const playerId = options.playerId || state.activeMode;
+      const anchor = coordinateForFlightAirportListAnchor(preview, playerId);
       return [...state.airportByIata.values()]
         .filter((feature) => state.flightsByOriginAirport.has(feature.properties?.iata))
         .map((feature) => ({
@@ -15317,7 +15336,7 @@
         const props = feature.properties || {};
         const flightCount = (state.flightsByOriginAirport.get(props.iata) || []).length;
         const distanceText = Number.isFinite(distanceMeters)
-          ? `${walkingDistanceLabel(distanceMeters)} from plan end`
+          ? `${walkingDistanceLabel(distanceMeters)} from current position`
           : 'distance unknown';
         return `
           <button class="route-row" type="button" data-row-key="${escapeHtml(`airport:${props.iata}`)}" data-action="choose-flight-origin" data-iata="${escapeHtml(props.iata)}">
@@ -16410,7 +16429,7 @@
           const flightRows = flightRowsFromPreview(flightPreview, { purchasePreview: flightPurchasePreview });
           const flightDestinationRows = flightDestinationRowsFromPreview(flightPreview, { purchasePreview: flightPurchasePreview });
           const flightTicketRows = flightTicketRowsFromPreview(flightPreview);
-          const airportRows = flightAirportRowsFromPreview(flightPreview);
+          const airportRows = flightAirportRowsFromPreview(flightPurchasePreview);
           const selectedFlightPlan = state.flightPlanning[state.activeMode] || {};
           const selectedShipPlan = state.shipPlanning[state.activeMode] || {};
           const selectedBusPlan = busPlanningState();
