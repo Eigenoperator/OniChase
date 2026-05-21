@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v5.ship_playable_promotion_audit.1",
-  "generatedAt": "2026-05-21T21:31:15+00:00",
+  "generatedAt": "2026-05-21T21:47:52+00:00",
   "sourceFiles": [
     "data/v5_ship_seikan_ferry_official.json",
     "data/v5_ship_priority_batch_official.json",
@@ -46,15 +46,17 @@
     "data/v5_ship_playable_tane_yaku_jetfoil_batch_official.json",
     "data/v5_ship_playable_miyazaki_car_ferry_batch_official.json",
     "data/v5_ship_playable_kaminoseki_iwaishima_batch_official.json",
-    "data/v5_ship_playable_ferry_taiyo_batch_official.json"
+    "data/v5_ship_playable_ferry_taiyo_batch_official.json",
+    "data/v5_ship_playable_setonaikai_batch_official.json",
+    "data/v5_ship_playable_hankyu_batch_official.json"
   ],
   "mapRouteGroupCount": 193,
   "sourceRouteGroupCount": 314,
-  "sourceRouteCount": 568,
-  "promotedRouteGroupCount": 144,
-  "promotedRouteCount": 168,
-  "promotedSailingCount": 1338,
-  "coveredDuplicateRouteCount": 20,
+  "sourceRouteCount": 580,
+  "promotedRouteGroupCount": 147,
+  "promotedRouteCount": 184,
+  "promotedSailingCount": 1428,
+  "coveredDuplicateRouteCount": 24,
   "coveredDuplicateRoutes": [
     {
       "routeId": "cosmo_kagoshima_tanegashima_yakushima_070_out",
@@ -327,6 +329,66 @@
       "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
     },
     {
+      "routeId": "setonaikai_hiroshima_kure_matsuyama_066_out",
+      "routeGroupId": "setonaikai_hiroshima_kure_matsuyama",
+      "operator": "瀬戸内海汽船/石崎汽船",
+      "origin": "広島港",
+      "destination": "呉港",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_long_distance_batch_official.json",
+      "coveredByRouteId": "setonaikai_hiroshima_kure_matsuyama_cruise_ferry_hiroshima_kure",
+      "coveredByOperator": "瀬戸内海汽船/石崎汽船",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
+      "routeId": "setonaikai_hiroshima_kure_matsuyama_067_back",
+      "routeGroupId": "setonaikai_hiroshima_kure_matsuyama",
+      "operator": "瀬戸内海汽船/石崎汽船",
+      "origin": "呉港",
+      "destination": "広島港",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_long_distance_batch_official.json",
+      "coveredByRouteId": "setonaikai_hiroshima_kure_matsuyama_cruise_ferry_kure_hiroshima",
+      "coveredByOperator": "瀬戸内海汽船/石崎汽船",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
+      "routeId": "setonaikai_hiroshima_kure_matsuyama_068_out",
+      "routeGroupId": "setonaikai_hiroshima_kure_matsuyama",
+      "operator": "瀬戸内海汽船/石崎汽船",
+      "origin": "呉港",
+      "destination": "松山観光港",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_long_distance_batch_official.json",
+      "coveredByRouteId": "setonaikai_hiroshima_kure_matsuyama_cruise_ferry_kure_matsuyama",
+      "coveredByOperator": "瀬戸内海汽船/石崎汽船",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
+      "routeId": "setonaikai_hiroshima_kure_matsuyama_069_back",
+      "routeGroupId": "setonaikai_hiroshima_kure_matsuyama",
+      "operator": "瀬戸内海汽船/石崎汽船",
+      "origin": "松山観光港",
+      "destination": "呉港",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare"
+      ],
+      "sourceFile": "data/v5_ship_long_distance_batch_official.json",
+      "coveredByRouteId": "setonaikai_hiroshima_kure_matsuyama_cruise_ferry_matsuyama_kure",
+      "coveredByOperator": "瀬戸内海汽船/石崎汽船",
+      "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
+    },
+    {
       "routeId": "uwajima_unyu_yawatahama_usuki_062_out",
       "routeGroupId": "uwajima_unyu_yawatahama_usuki",
       "operator": "宇和島運輸",
@@ -357,10 +419,10 @@
       "coverageReason": "same_normalized_direction_already_has_explicit_official_timetable_and_fare"
     }
   ],
-  "skippedRouteCount": 380,
+  "skippedRouteCount": 372,
   "skippedReasonCounts": {
-    "missing_explicit_trip_times": 380,
-    "missing_adult_fare": 378
+    "missing_explicit_trip_times": 372,
+    "missing_adult_fare": 370
   },
   "skippedRoutes": [
     {
@@ -770,54 +832,6 @@
         "missing_adult_fare"
       ],
       "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "hankyu_izumiotsu_shinmoji_024_out",
-      "routeGroupId": "hankyu_izumiotsu_shinmoji",
-      "operator": "阪九フェリー",
-      "origin": "泉大津港",
-      "destination": "新門司港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "hankyu_izumiotsu_shinmoji_025_back",
-      "routeGroupId": "hankyu_izumiotsu_shinmoji",
-      "operator": "阪九フェリー",
-      "origin": "新門司港",
-      "destination": "泉大津港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "hankyu_kobe_shinmoji_026_out",
-      "routeGroupId": "hankyu_kobe_shinmoji",
-      "operator": "阪九フェリー",
-      "origin": "神戸港",
-      "destination": "新門司港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "hankyu_kobe_shinmoji_027_back",
-      "routeGroupId": "hankyu_kobe_shinmoji",
-      "operator": "阪九フェリー",
-      "origin": "新門司港",
-      "destination": "神戸港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
     },
     {
       "routeId": "hashirijima_tomo_056_out",
@@ -4176,54 +4190,6 @@
         "missing_adult_fare"
       ],
       "sourceFile": "data/v5_ship_expansion_150_map_batch1_official.json"
-    },
-    {
-      "routeId": "setonaikai_hiroshima_kure_matsuyama_066_out",
-      "routeGroupId": "setonaikai_hiroshima_kure_matsuyama",
-      "operator": "瀬戸内海汽船/石崎汽船",
-      "origin": "広島港",
-      "destination": "呉港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "setonaikai_hiroshima_kure_matsuyama_067_back",
-      "routeGroupId": "setonaikai_hiroshima_kure_matsuyama",
-      "operator": "瀬戸内海汽船/石崎汽船",
-      "origin": "呉港",
-      "destination": "広島港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "setonaikai_hiroshima_kure_matsuyama_068_out",
-      "routeGroupId": "setonaikai_hiroshima_kure_matsuyama",
-      "operator": "瀬戸内海汽船/石崎汽船",
-      "origin": "呉港",
-      "destination": "松山観光港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
-    },
-    {
-      "routeId": "setonaikai_hiroshima_kure_matsuyama_069_back",
-      "routeGroupId": "setonaikai_hiroshima_kure_matsuyama",
-      "operator": "瀬戸内海汽船/石崎汽船",
-      "origin": "松山観光港",
-      "destination": "呉港",
-      "missing": [
-        "missing_explicit_trip_times",
-        "missing_adult_fare"
-      ],
-      "sourceFile": "data/v5_ship_long_distance_batch_official.json"
     },
     {
       "routeId": "shimatetsu_kuchinotsu_oniike_066_out",
