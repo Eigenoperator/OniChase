@@ -28,6 +28,8 @@ SOURCE_FILES = [
     ROOT / "data/v5_ship_playable_omishima_batch_official.json",
     ROOT / "data/v5_ship_playable_sanyo_batch_official.json",
     ROOT / "data/v5_ship_playable_kume_batch_official.json",
+    ROOT / "data/v5_ship_playable_sakura_kaiun_batch_official.json",
+    ROOT / "data/v5_ship_playable_sanwa_batch_official.json",
 ]
 SHIP_MAP_PATH = ROOT / "docs/data/v5_ship_map.geojson"
 OUT_PATH = ROOT / "docs/data/v5_ship_timetable_current_bundle.json"
@@ -44,11 +46,14 @@ PORT_ALIASES = {
     "三津浜": "三津浜港",
     "広島": "広島港宇品",
     "丸亀": "丸亀港",
+    "多比良": "多比良港",
+    "長洲": "長洲港",
 }
 
 OPERATOR_ALIASES = {
     "こうべ未来都市機構": "神戸-関空ベイ・シャトル",
     "鹿児島市船舶局（桜島フェリー）": "鹿児島市船舶局",
+    "有明海自動車航送船組合（有明フェリー）": "有明フェリー",
 }
 
 
