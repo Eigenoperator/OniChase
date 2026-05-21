@@ -130,16 +130,22 @@ Current status:
   - Added `docs/data/v5_ship_timetable_current_bundle.json` and
     `data/v5_ship_playable_promotion_audit.json`.
   - Only routes with explicit official trip times and a known adult passenger
-    fare are promoted to gameplay boarding. Current playable coverage is 6
-    directional routes and 62 sailings: 青函フェリー, 津エアポートライン, and
-    神戸-関空ベイ・シャトル.
-  - The remaining 562 map-visible directional routes stay visible but are not
-    boardable because they still need exact timetable/fare/calendar promotion.
+    fare are promoted to gameplay boarding.
+  - The first playable cut promoted 6 directional routes and 62 sailings:
+    青函フェリー, 津エアポートライン, and 神戸-関空ベイ・シャトル.
   - V5 gameplay currently uses walking access from the current rail/bus node to
     the origin port and walking access from the destination port to the nearest
     rail station, with a configurable port-access radius. Bus/rail port
     connector collection should replace long walking access where real
     connector services exist.
+- 400-sailing playable batch:
+  - Added `data/v5_ship_playable_400_batch_official.json` with official
+    high-frequency timetables and fares for JR西日本宮島フェリー, 宮島松大汽船,
+    桜島フェリー, 有明フェリー, and 南海フェリー.
+  - Current playable ship bundle is now 16 directional routes and 416 explicit
+    official sailings.
+  - The remaining 552 map-visible directional routes stay visible but are not
+    boardable because they still need exact timetable/fare/calendar promotion.
 - No fake port or route is included.
 
 ## Current Official Source Files
@@ -152,5 +158,6 @@ Current status:
 - `data/v5_ship_expansion_150_map_batch1_official.json`
 - `data/v5_ship_expansion_to_193_source_inventory.json`
 - `data/v5_ship_map_to_193_official.json`
+- `data/v5_ship_playable_400_batch_official.json`
 - Builder: `scripts/ingest/build_v5_ship_map.py`
 - Playable timetable builder: `scripts/ingest/build_v5_ship_timetable_bundle.py`

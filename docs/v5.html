@@ -15487,6 +15487,7 @@
       const selected = state.shipPlanning[state.activeMode] || {};
       if (!selected.origin || !selected.destination) return [];
       return (state.shipSailingsByOriginPort.get(selected.origin) || [])
+        .filter(shipOperatesForGameDay)
         .filter((sailing) => sailing.destinationPort === selected.destination)
         .filter((sailing) => Number(sailing.departureMinute) >= (preview?.currentMinute || 0))
         .sort((a, b) => Number(a.departureMinute) - Number(b.departureMinute) || String(a.sailingId).localeCompare(String(b.sailingId)))
@@ -15530,6 +15531,7 @@
       if (!origin) return [];
       const destinations = new Map();
       (state.shipSailingsByOriginPort.get(origin) || [])
+        .filter(shipOperatesForGameDay)
         .filter((sailing) => Number(sailing.departureMinute) >= (preview?.currentMinute || 0))
         .forEach((sailing) => {
           const current = destinations.get(sailing.destinationPort) || {
@@ -15554,6 +15556,14 @@
             <span class="row-meta">to</span>
           </button>
         `);
+    }
+
+    function shipOperatesForGameDay(sailing) {
+      const calendarValue = typeof sailing?.calendar === 'object' ? sailing.calendar?.type : sailing?.calendar;
+      const calendar = String(calendarValue || 'daily');
+      if (calendar === 'weekday') return V5_FLIGHT_SERVICE_WEEKDAY >= 1 && V5_FLIGHT_SERVICE_WEEKDAY <= 5;
+      if (calendar === 'weekend_holiday') return V5_FLIGHT_SERVICE_WEEKDAY === 6 || V5_FLIGHT_SERVICE_WEEKDAY === 7;
+      return true;
     }
 
     function shipRowsFromPreview(preview) {
