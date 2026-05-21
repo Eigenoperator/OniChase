@@ -15622,7 +15622,15 @@
       const calendarValue = typeof sailing?.calendar === 'object' ? sailing.calendar?.type : sailing?.calendar;
       const calendar = String(calendarValue || 'daily');
       if (calendar === 'weekday') return V5_FLIGHT_SERVICE_WEEKDAY >= 1 && V5_FLIGHT_SERVICE_WEEKDAY <= 5;
+      if (calendar === 'monday') return V5_FLIGHT_SERVICE_WEEKDAY === 1;
+      if (calendar === 'tuesday') return V5_FLIGHT_SERVICE_WEEKDAY === 2;
+      if (calendar === 'wednesday') return V5_FLIGHT_SERVICE_WEEKDAY === 3;
+      if (calendar === 'thursday') return V5_FLIGHT_SERVICE_WEEKDAY === 4;
+      if (calendar === 'friday') return V5_FLIGHT_SERVICE_WEEKDAY === 5;
+      if (calendar === 'saturday') return V5_FLIGHT_SERVICE_WEEKDAY === 6;
+      if (calendar === 'sunday') return V5_FLIGHT_SERVICE_WEEKDAY === 7;
       if (calendar === 'monday_to_saturday') return V5_FLIGHT_SERVICE_WEEKDAY >= 1 && V5_FLIGHT_SERVICE_WEEKDAY <= 6;
+      if (calendar === 'tuesday_to_sunday') return V5_FLIGHT_SERVICE_WEEKDAY >= 2 && V5_FLIGHT_SERVICE_WEEKDAY <= 7;
       if (calendar === 'weekend_holiday') return V5_FLIGHT_SERVICE_WEEKDAY === 6 || V5_FLIGHT_SERVICE_WEEKDAY === 7;
       if (calendar === 'monday_wednesday_friday') return [1, 3, 5].includes(V5_FLIGHT_SERVICE_WEEKDAY);
       if (calendar === 'monday_thursday_saturday') return [1, 4, 6].includes(V5_FLIGHT_SERVICE_WEEKDAY);
