@@ -116,6 +116,16 @@ Current status:
   - These final 60 entries are source-only and remain blocked from Ship Map and
     playable promotion until precise ports, coordinates, timetables, calendars,
     fares, and connectors are verified.
+- Eighth map-completion batch:
+  - Added `data/v5_ship_map_to_193_official.json` with 93 additional MLIT
+    public/municipal candidate route groups promoted to Ship Map visibility.
+  - Current Ship Map coverage is now 193 route groups, 366 ports, 568
+    directional route segments, and 62 explicit timetable trips.
+  - This batch is explicitly
+    `map_visible_needs_precise_port_timetable_calendar_fare_connector_review`.
+    It completes visual coverage, but all newly added route-text-derived
+    endpoints must be reviewed against exact official pier names before they can
+    become playable.
 - Boarding remains disabled until port connectors and ship-boarding gameplay
   guards are implemented.
 - No fake port or route is included.
@@ -129,4 +139,5 @@ Current status:
 - `data/v5_ship_expansion_to_150_source_inventory.json`
 - `data/v5_ship_expansion_150_map_batch1_official.json`
 - `data/v5_ship_expansion_to_193_source_inventory.json`
+- `data/v5_ship_map_to_193_official.json`
 - Builder: `scripts/ingest/build_v5_ship_map.py`
