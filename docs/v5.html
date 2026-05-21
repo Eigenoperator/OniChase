@@ -13660,6 +13660,33 @@
         : `on ${formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })} ${preview.currentTime}`;
     }
 
+    function playerMarkerLabel(preview) {
+      if (!preview?.currentState) return '';
+      const currentState = preview.currentState;
+      if (currentState.kind === 'TRAIN') {
+        return formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: currentState.tripId });
+      }
+      if (currentState.kind === 'WALK') return `Walk to ${displayNameForGroup(currentState.toStationGroupId)}`;
+      if (currentState.kind === 'WALK_TO_BUS_STOP') return `Walk to ${busStopName(currentState.toBusStopId)}`;
+      if (currentState.kind === 'WALK_FROM_BUS_TO_STATION') return `Walk to ${displayNameForGroup(currentState.toStationGroupId)}`;
+      if (currentState.kind === 'BUS') return busRouteName(state.busPlannerTripsById.get(currentState.tripId)?.routeId);
+      if (currentState.kind === 'BUS_STOP') return busStopName(currentState.busStopId);
+      if (currentState.kind === 'AIRPORT_WAIT' || currentState.kind === 'BOARDING' || currentState.kind === 'ARRIVAL_COOLDOWN') {
+        return airportName(currentState.airportIata);
+      }
+      if (currentState.kind === 'FLIGHT') return flightDisplayLabel(state.flightById.get(currentState.flightId));
+      if (currentState.kind === 'WALK_TO_PORT') return `Walk to ${currentState.originPort || 'Port'}`;
+      if (currentState.kind === 'PORT_WAIT') return currentState.portName || 'Port';
+      if (currentState.kind === 'SHIP') {
+        const sailing = state.shipSailingById.get(currentState.sailingId);
+        return sailing
+          ? `${sailing.operator || 'Ferry'} ${sailing.originPort || currentState.originPort || ''} -> ${sailing.destinationPort || currentState.destinationPort || ''}`.trim()
+          : 'Ship';
+      }
+      if (currentState.kind === 'WALK_FROM_PORT_TO_STATION') return `Walk from ${currentState.destinationPort || 'Port'}`;
+      return currentState.stationGroupId ? displayNameForGroup(currentState.stationGroupId) : (preview.displayLabel || currentState.kind);
+    }
+
     function shouldShowPlayer(playerId) {
       if (onlineActive()) {
         const presence = state.online.presences[playerId];
@@ -13939,13 +13966,7 @@
         if (!preview?.mapPosition) continue;
         const point = map.project(preview.mapPosition);
         if (point.x < -40 || point.x > width + 160 || point.y < -40 || point.y > height + 80) continue;
-        const tripLabel = preview.currentState.kind === 'TRAIN'
-          ? formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })
-          : preview.currentState.kind === 'WALK'
-            ? `Walk to ${displayNameForGroup(preview.currentState.toStationGroupId)}`
-            : preview.currentState.kind === 'FLIGHT'
-              ? flightDisplayLabel(state.flightById.get(preview.currentState.flightId))
-              : (preview.currentState.airportIata ? airportName(preview.currentState.airportIata) : displayNameForGroup(preview.currentState.stationGroupId));
+        const tripLabel = playerMarkerLabel(preview);
         const node = document.createElement('div');
         node.className = `player-html-marker ${playerId}`;
         node.style.setProperty('--player-color', playerId === 'runner' ? '#dc4d62' : '#2d6cdf');
@@ -14155,13 +14176,7 @@
         if (!shouldShowPlayer(playerId)) continue;
         const preview = currentMapPreview(playerId);
         if (!preview?.mapPosition) continue;
-        const tripLabel = preview.currentState.kind === 'TRAIN'
-          ? formatTripLabel(preview.currentTrip || { serviceName: '列車', serviceNumber: preview.currentState.tripId })
-          : preview.currentState.kind === 'WALK'
-            ? `Walk to ${displayNameForGroup(preview.currentState.toStationGroupId)}`
-            : preview.currentState.kind === 'FLIGHT'
-              ? flightDisplayLabel(state.flightById.get(preview.currentState.flightId))
-              : (preview.currentState.airportIata ? airportName(preview.currentState.airportIata) : displayNameForGroup(preview.currentState.stationGroupId));
+        const tripLabel = playerMarkerLabel(preview);
         features.push({
           type: 'Feature',
           geometry: { type: 'Point', coordinates: preview.mapPosition },
@@ -14550,7 +14565,33 @@
       ) {
         return { type: 'same_airport', time_hhmm: minutesToHhmm(state.currentGameMinute), airport_iata: runnerState.airportIata };
       }
+      if (
+        runnerState?.kind === 'SHIP' &&
+        hunterState?.kind === 'SHIP' &&
+        runnerState.sailingId === hunterState.sailingId
+      ) {
+        return { type: 'same_ship', time_hhmm: minutesToHhmm(state.currentGameMinute), sailing_id: runnerState.sailingId };
+      }
+      if (
+        runnerState?.kind === 'PORT_WAIT' &&
+        hunterState?.kind === 'PORT_WAIT' &&
+        runnerState.portName === hunterState.portName
+      ) {
+        return { type: 'same_port', time_hhmm: minutesToHhmm(state.currentGameMinute), port_name: runnerState.portName };
+      }
       return null;
+    }
+
+    function captureSummaryText(capture) {
+      if (!capture) return 'No capture.';
+      if (capture.type === 'same_node') return `same_node at ${displayNameForGroup(capture.station_group_id)} ${capture.time_hhmm}`;
+      if (capture.type === 'same_train') return `same_train on ${formatTripLabel(state.tripById.get(capture.trip_id) || { serviceName: capture.trip_id })} ${capture.time_hhmm}`;
+      if (capture.type === 'same_airport') return `same_airport at ${airportName(capture.airport_iata)} ${capture.time_hhmm}`;
+      if (capture.type === 'same_bus') return `same_bus on ${busRouteName(state.busPlannerTripsById.get(capture.trip_id)?.routeId)} ${capture.time_hhmm}`;
+      if (capture.type === 'same_bus_stop') return `same_bus_stop at ${busStopName(capture.bus_stop_id)} ${capture.time_hhmm}`;
+      if (capture.type === 'same_ship') return `same_ship on ${state.shipSailingById.get(capture.sailing_id)?.operator || capture.sailing_id || 'ship'} ${capture.time_hhmm}`;
+      if (capture.type === 'same_port') return `same_port at ${capture.port_name || 'Port'} ${capture.time_hhmm}`;
+      return `${capture.type || 'capture'} ${capture.time_hhmm || ''}`.trim();
     }
 
     function checkLiveCapture() {
@@ -16934,11 +16975,7 @@
       renderReplayActions();
       renderReplaySummary();
       if (state.liveCapture) {
-        resultCardEl.textContent = state.liveCapture.type === 'same_node'
-          ? `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_node\nStation: ${displayNameForGroup(state.liveCapture.station_group_id)}`
-          : state.liveCapture.type === 'same_airport'
-            ? `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_airport\nAirport: ${airportName(state.liveCapture.airport_iata)}`
-            : `GAME END\n\nHunter caught the runner at ${state.liveCapture.time_hhmm}.\nRule: same_train\nTrip: ${formatTripLabel(state.tripById.get(state.liveCapture.trip_id) || { serviceName: state.liveCapture.trip_id })}`;
+        resultCardEl.textContent = `GAME END\n\nHunter caught the runner by ${captureSummaryText(state.liveCapture)}.`;
       } else if (!state.latestResult) {
         resultCardEl.textContent = '';
       }
@@ -17986,11 +18023,7 @@
     }
 
     function replayCaptureLineFromCapture(capture) {
-      if (!capture) return 'No capture.';
-      if (capture.type === 'same_node') return `same_node at ${displayNameForGroup(capture.station_group_id)} ${capture.time_hhmm}`;
-      if (capture.type === 'same_train') return `same_train on ${formatTripLabel(state.tripById.get(capture.trip_id) || { serviceName: capture.trip_id })} ${capture.time_hhmm}`;
-      if (capture.type === 'same_airport') return `same_airport at ${airportName(capture.airport_iata)} ${capture.time_hhmm}`;
-      return `${capture.type || 'capture'} ${capture.time_hhmm || ''}`.trim();
+      return captureSummaryText(capture);
     }
 
     function replayHunterGapLine(record) {
@@ -18128,10 +18161,7 @@
         const lines = [`Scenario: ${result.scenario_id}`, `Events: ${result.match_event_log.length}`];
         lines.push(`Runner fare: ${formatFareYen(result.players?.runner?.fare_summary?.total_yen)}`);
         lines.push(`Hunter fare: ${formatFareYen(result.players?.hunter?.fare_summary?.total_yen)}`);
-        if (!capture) lines.push('Capture: none');
-        else if (capture.type === 'same_node') lines.push(`Capture: same_node at ${displayNameForGroup(capture.station_group_id)} ${capture.time_hhmm}`);
-        else if (capture.type === 'same_airport') lines.push(`Capture: same_airport at ${airportName(capture.airport_iata)} ${capture.time_hhmm}`);
-        else lines.push(`Capture: same_train on ${formatTripLabel(state.tripById.get(capture.trip_id) || { serviceName: capture.trip_id })} ${capture.time_hhmm}`);
+        lines.push(`Capture: ${capture ? captureSummaryText(capture) : 'none'}`);
         resultCardEl.innerHTML = `<pre>SIMULATION\n\n${lines.join('\n')}</pre>`;
       } catch (error) {
         resultCardEl.innerHTML = `<pre>SIMULATION\n\nFailed to simulate: ${String(error)}</pre>`;
