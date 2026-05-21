@@ -1,9 +1,17 @@
 {
   "schema": "onichase.v5.ship_timetable.1",
-  "generatedAt": "2026-05-21T05:21:57+00:00",
+  "generatedAt": "2026-05-21T05:26:49+00:00",
   "source": "official_ship_sources_promoted_for_gameplay",
   "promotionPolicy": "explicit_official_trip_times_and_known_adult_fare_only",
   "ports": {
+    "上弓削港": {
+      "name": "上弓削港",
+      "city": "弓削島",
+      "lon": 133.205,
+      "lat": 34.258,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check"
+    },
     "中部国際空港高速船のりば": {
       "name": "中部国際空港高速船のりば",
       "city": "常滑",
@@ -84,6 +92,14 @@
       "coordinateStatus": "online_verified_source_seed",
       "coordinateSource": "online_verified:OSM/Nominatim query=切串 ferry terminal Japan; score=26; needs_precise_port_review"
     },
+    "初島港": {
+      "name": "初島港",
+      "city": "初島",
+      "lon": 139.171,
+      "lat": 35.039,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI"
+    },
     "博多港": {
       "name": "博多港",
       "city": "福岡",
@@ -107,6 +123,14 @@
       "lat": 34.4892524,
       "coordinateStatus": "online_verified_manual_extract",
       "coordinateSource": "https://nominatim.openstreetmap.org/"
+    },
+    "土肥港": {
+      "name": "土肥港",
+      "city": "伊豆",
+      "lon": 138.7862481,
+      "lat": 34.9060292,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI"
     },
     "多比良港": {
       "name": "多比良港",
@@ -163,6 +187,14 @@
       "lat": 34.312,
       "coordinateStatus": "online_verified_source_seed",
       "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI"
+    },
+    "家老渡港": {
+      "name": "家老渡港",
+      "city": "因島",
+      "lon": 133.097,
+      "lat": 34.233,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check"
     },
     "小呂島": {
       "name": "小呂島",
@@ -260,11 +292,27 @@
       "coordinateStatus": "online_resolved",
       "coordinateSource": "nominatim.openstreetmap.org"
     },
+    "清水港": {
+      "name": "清水港",
+      "city": "静岡",
+      "lon": 138.496,
+      "lat": 35.012,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI"
+    },
     "渡名喜港": {
       "name": "渡名喜港",
       "city": "渡名喜",
       "lon": 127.1382878,
       "lat": 26.3732954,
+      "coordinateStatus": "online_verified_source_seed",
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI"
+    },
+    "熱海港": {
+      "name": "熱海港",
+      "city": "熱海",
+      "lon": 139.0761296,
+      "lat": 35.0896639,
       "coordinateStatus": "online_verified_source_seed",
       "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI"
     },
@@ -535,6 +583,42 @@
       "sourceFile": "data/v5_ship_priority_batch_official.json"
     },
     {
+      "routeId": "hatsushima_atami_026_out",
+      "routeGroupId": "hatsushima_atami_026_out",
+      "operator": "富士急マリンリゾート",
+      "routeName": "熱海港・初島港",
+      "originPort": "熱海港",
+      "destinationPort": "初島港",
+      "distanceKm": null,
+      "routeClass": "short_public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_short_ferries_batch_official.json"
+    },
+    {
+      "routeId": "hatsushima_atami_027_back",
+      "routeGroupId": "hatsushima_atami_027_back",
+      "operator": "富士急マリンリゾート",
+      "routeName": "初島港・熱海港",
+      "originPort": "初島港",
+      "destinationPort": "熱海港",
+      "distanceKm": null,
+      "routeClass": "short_public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_short_ferries_batch_official.json"
+    },
+    {
       "routeId": "jr_miyajima_046_out",
       "routeGroupId": "jr_miyajima_046_out",
       "operator": "JR西日本宮島フェリー",
@@ -569,6 +653,42 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceFile": "data/v5_ship_playable_400_batch_official.json"
+    },
+    {
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "distanceKm": null,
+      "routeClass": "short_public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_short_ferries_batch_official.json"
+    },
+    {
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "distanceKm": null,
+      "routeClass": "short_public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_short_ferries_batch_official.json"
     },
     {
       "routeId": "kume_naha_tonaki_kume_074_out",
@@ -1397,6 +1517,42 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceFile": "data/v5_ship_playable_500_batch_official.json"
+    },
+    {
+      "routeId": "suruga_shimizu_toi_032_out",
+      "routeGroupId": "suruga_shimizu_toi_032_out",
+      "operator": "ふじさん駿河湾フェリー",
+      "routeName": "清水港・土肥港",
+      "originPort": "清水港",
+      "destinationPort": "土肥港",
+      "distanceKm": null,
+      "routeClass": "short_public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 3000,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_short_ferries_batch_official.json"
+    },
+    {
+      "routeId": "suruga_shimizu_toi_033_back",
+      "routeGroupId": "suruga_shimizu_toi_033_back",
+      "operator": "ふじさん駿河湾フェリー",
+      "routeName": "土肥港・清水港",
+      "originPort": "土肥港",
+      "destinationPort": "清水港",
+      "distanceKm": null,
+      "routeClass": "short_public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 3000,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_short_ferries_batch_official.json"
     },
     {
       "routeId": "tsu_airportline_centrair_tsu",
@@ -2757,6 +2913,30 @@
       "sourceUrl": "https://tanakayuso.co.jp/timetable-fares/"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_001",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "1",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 410,
+      "arrivalMinute": 417,
+      "departureHhmm": "06:50",
+      "arrivalHhmm": "06:57",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "mlit_map_193_027_本島汽船_本島_丸亀_000_out_daily_001",
       "routeId": "mlit_map_193_027_本島汽船_本島_丸亀_000_out",
       "routeGroupId": "mlit_map_193_027_本島汽船_本島_丸亀_000_out",
@@ -2803,6 +2983,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://sakurakaiun.jimdofree.com/"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_001",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "1",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 420,
+      "arrivalMinute": 427,
+      "departureHhmm": "07:00",
+      "arrivalHhmm": "07:07",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "tsu_airportline_centrair_tsu_01",
@@ -3141,6 +3345,30 @@
       "sourceUrl": "https://www.city.fukuoka.lg.jp/kowan/kyakusen/hakata-port/documents/time_schedule_J.pdf"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_002",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "2",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 430,
+      "arrivalMinute": 437,
+      "departureHhmm": "07:10",
+      "arrivalHhmm": "07:17",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "mlit_map_193_010_さくら海運_呉ポートピアパーク_切串_000_back_003",
       "routeId": "mlit_map_193_010_さくら海運_呉ポートピアパーク_切串_000_back",
       "routeGroupId": "mlit_map_193_010_さくら海運_呉ポートピアパーク_切串_000_back",
@@ -3259,6 +3487,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.kobe-access.jp/time"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_002",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "2",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 440,
+      "arrivalMinute": 447,
+      "departureHhmm": "07:20",
+      "arrivalHhmm": "07:27",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_000_out_002",
@@ -3573,6 +3825,30 @@
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_003",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "3",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 450,
+      "arrivalMinute": 457,
+      "departureHhmm": "07:30",
+      "arrivalHhmm": "07:37",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "awaji_jenova_akashi_iwaya_026_out_weekend_holiday_101",
       "routeId": "awaji_jenova_akashi_iwaya_026_out",
       "routeGroupId": "awaji_jenova_akashi_iwaya_026_out",
@@ -3595,6 +3871,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.jenova-line.co.jp/jikoku.php"
+    },
+    {
+      "sailingId": "hatsushima_atami_026_out_daily_001",
+      "routeId": "hatsushima_atami_026_out",
+      "routeGroupId": "hatsushima_atami_026_out",
+      "operator": "富士急マリンリゾート",
+      "routeName": "熱海港・初島港",
+      "serviceNo": "1",
+      "vessel": null,
+      "originPort": "熱海港",
+      "destinationPort": "初島港",
+      "departureMinute": 450,
+      "arrivalMinute": 480,
+      "departureHhmm": "07:30",
+      "arrivalHhmm": "08:00",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out_005",
@@ -3691,6 +3991,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.city.fukuoka.lg.jp/kowan/kyakusen/hakata-port/documents/time_schedule_J.pdf"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_003",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "3",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 460,
+      "arrivalMinute": 467,
+      "departureHhmm": "07:40",
+      "arrivalHhmm": "07:47",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "mlit_map_193_027_本島汽船_本島_丸亀_000_back_daily_002",
@@ -3811,6 +4135,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://omishima-bl.net/"
+    },
+    {
+      "sailingId": "suruga_shimizu_toi_032_out_daily_001",
+      "routeId": "suruga_shimizu_toi_032_out",
+      "routeGroupId": "suruga_shimizu_toi_032_out",
+      "operator": "ふじさん駿河湾フェリー",
+      "routeName": "清水港・土肥港",
+      "serviceNo": "1",
+      "vessel": null,
+      "originPort": "清水港",
+      "destinationPort": "土肥港",
+      "departureMinute": 460,
+      "arrivalMinute": 550,
+      "departureHhmm": "07:40",
+      "arrivalHhmm": "09:10",
+      "durationMinutes": 90,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 3000,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.223-ferry.or.jp/timetable.html"
     },
     {
       "sailingId": "sanwa_kuranomoto_ushibuka_044_out_001",
@@ -4005,6 +4353,30 @@
       "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_004",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "4",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 470,
+      "arrivalMinute": 477,
+      "departureHhmm": "07:50",
+      "arrivalHhmm": "07:57",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "jr_miyajima_047_back_004",
       "routeId": "jr_miyajima_047_back",
       "routeGroupId": "jr_miyajima_047_back",
@@ -4053,6 +4425,30 @@
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
     },
     {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_004",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "4",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 480,
+      "arrivalMinute": 487,
+      "departureHhmm": "08:00",
+      "arrivalHhmm": "08:07",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "mlit_map_193_055_木口汽船_久賀_福江_椛島_000_out_001",
       "routeId": "mlit_map_193_055_木口汽船_久賀_福江_椛島_000_out",
       "routeGroupId": "mlit_map_193_055_木口汽船_久賀_福江_椛島_000_out",
@@ -4075,6 +4471,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.kiguchi-kisen.jp/contents/timetable/"
+    },
+    {
+      "sailingId": "hatsushima_atami_027_back_daily_001",
+      "routeId": "hatsushima_atami_027_back",
+      "routeGroupId": "hatsushima_atami_027_back",
+      "operator": "富士急マリンリゾート",
+      "routeName": "初島港・熱海港",
+      "serviceNo": "1",
+      "vessel": null,
+      "originPort": "初島港",
+      "destinationPort": "熱海港",
+      "departureMinute": 480,
+      "arrivalMinute": 510,
+      "departureHhmm": "08:00",
+      "arrivalHhmm": "08:30",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
       "sailingId": "ariake_ferry_taira_nagasu_003",
@@ -4629,6 +5049,30 @@
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_005",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "5",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 490,
+      "arrivalMinute": 497,
+      "departureHhmm": "08:10",
+      "arrivalHhmm": "08:17",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out_002",
       "routeId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
       "routeGroupId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out",
@@ -4819,6 +5263,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_005",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "5",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 500,
+      "arrivalMinute": 507,
+      "departureHhmm": "08:20",
+      "arrivalHhmm": "08:27",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "awaji_jenova_akashi_iwaya_026_out_weekend_holiday_102",
@@ -5061,6 +5529,30 @@
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_006",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "6",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 510,
+      "arrivalMinute": 517,
+      "departureHhmm": "08:30",
+      "arrivalHhmm": "08:37",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "awaji_jenova_akashi_iwaya_027_back_weekday_007",
       "routeId": "awaji_jenova_akashi_iwaya_027_back",
       "routeGroupId": "awaji_jenova_akashi_iwaya_027_back",
@@ -5205,6 +5697,30 @@
       "sourceUrl": "https://www.ariake-ferry.com/wp-content/uploads/2024/01/568672bf1610b8eb56ff45068b4a375f.pdf"
     },
     {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_006",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "6",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 520,
+      "arrivalMinute": 527,
+      "departureHhmm": "08:40",
+      "arrivalHhmm": "08:47",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "jr_miyajima_047_back_007",
       "routeId": "jr_miyajima_047_back",
       "routeGroupId": "jr_miyajima_047_back",
@@ -5275,6 +5791,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.jenova-line.co.jp/jikoku.php"
+    },
+    {
+      "sailingId": "hatsushima_atami_026_out_daily_002",
+      "routeId": "hatsushima_atami_026_out",
+      "routeGroupId": "hatsushima_atami_026_out",
+      "operator": "富士急マリンリゾート",
+      "routeName": "熱海港・初島港",
+      "serviceNo": "2",
+      "vessel": null,
+      "originPort": "熱海港",
+      "destinationPort": "初島港",
+      "departureMinute": 520,
+      "arrivalMinute": 550,
+      "departureHhmm": "08:40",
+      "arrivalHhmm": "09:10",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
       "sailingId": "sakurajima_ferry_kagoshima_sakurajima_010",
@@ -5925,6 +6465,30 @@
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_007",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "7",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 550,
+      "arrivalMinute": 557,
+      "departureHhmm": "09:10",
+      "arrivalHhmm": "09:17",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "mlit_map_193_055_木口汽船_久賀_福江_椛島_000_back_001",
       "routeId": "mlit_map_193_055_木口汽船_久賀_福江_椛島_000_back",
       "routeGroupId": "mlit_map_193_055_木口汽船_久賀_福江_椛島_000_back",
@@ -6091,6 +6655,54 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://sakurakaiun.jimdofree.com/"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_007",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "7",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 560,
+      "arrivalMinute": 567,
+      "departureHhmm": "09:20",
+      "arrivalHhmm": "09:27",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
+      "sailingId": "hatsushima_atami_027_back_daily_002",
+      "routeId": "hatsushima_atami_027_back",
+      "routeGroupId": "hatsushima_atami_027_back",
+      "operator": "富士急マリンリゾート",
+      "routeName": "初島港・熱海港",
+      "serviceNo": "2",
+      "vessel": null,
+      "originPort": "初島港",
+      "destinationPort": "熱海港",
+      "departureMinute": 560,
+      "arrivalMinute": 590,
+      "departureHhmm": "09:20",
+      "arrivalHhmm": "09:50",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
       "sailingId": "miyajima_matsudai_049_back_009",
@@ -6427,6 +7039,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.kiguchi-kisen.jp/contents/timetable/"
+    },
+    {
+      "sailingId": "suruga_shimizu_toi_033_back_daily_001",
+      "routeId": "suruga_shimizu_toi_033_back",
+      "routeGroupId": "suruga_shimizu_toi_033_back",
+      "operator": "ふじさん駿河湾フェリー",
+      "routeName": "土肥港・清水港",
+      "serviceNo": "1",
+      "vessel": null,
+      "originPort": "土肥港",
+      "destinationPort": "清水港",
+      "departureMinute": 575,
+      "arrivalMinute": 665,
+      "departureHhmm": "09:35",
+      "arrivalHhmm": "11:05",
+      "durationMinutes": 90,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 3000,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.223-ferry.or.jp/timetable.html"
     },
     {
       "sailingId": "miyajima_matsudai_049_back_010",
@@ -6957,6 +7593,30 @@
       "sourceUrl": "https://www.jenova-line.co.jp/jikoku.php"
     },
     {
+      "sailingId": "hatsushima_atami_026_out_daily_003",
+      "routeId": "hatsushima_atami_026_out",
+      "routeGroupId": "hatsushima_atami_026_out",
+      "operator": "富士急マリンリゾート",
+      "routeName": "熱海港・初島港",
+      "serviceNo": "3",
+      "vessel": null,
+      "originPort": "熱海港",
+      "destinationPort": "初島港",
+      "departureMinute": 600,
+      "arrivalMinute": 630,
+      "departureHhmm": "10:00",
+      "arrivalHhmm": "10:30",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
+    },
+    {
       "sailingId": "bay_shuttle_kobe_kix_06",
       "routeId": "bay_shuttle_kobe_kix",
       "routeGroupId": "bay_shuttle_kobe_kix",
@@ -7221,6 +7881,30 @@
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_008",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "8",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 610,
+      "arrivalMinute": 617,
+      "departureHhmm": "10:10",
+      "arrivalHhmm": "10:17",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "ariake_ferry_nagasu_taira_006",
       "routeId": "ariake_ferry_nagasu_taira",
       "routeGroupId": "ariake_ferry_nagasu_taira",
@@ -7315,6 +7999,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://sakurakaiun.jimdofree.com/"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_008",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "8",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 620,
+      "arrivalMinute": 627,
+      "departureHhmm": "10:20",
+      "arrivalHhmm": "10:27",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back_002",
@@ -7773,6 +8481,30 @@
       "sourceUrl": "https://honjima-kisen.com/about/"
     },
     {
+      "sailingId": "hatsushima_atami_027_back_daily_003",
+      "routeId": "hatsushima_atami_027_back",
+      "routeGroupId": "hatsushima_atami_027_back",
+      "operator": "富士急マリンリゾート",
+      "routeName": "初島港・熱海港",
+      "serviceNo": "3",
+      "vessel": null,
+      "originPort": "初島港",
+      "destinationPort": "熱海港",
+      "departureMinute": 640,
+      "arrivalMinute": 670,
+      "departureHhmm": "10:40",
+      "arrivalHhmm": "11:10",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
+    },
+    {
       "sailingId": "jr_miyajima_047_back_015",
       "routeId": "jr_miyajima_047_back",
       "routeGroupId": "jr_miyajima_047_back",
@@ -7867,6 +8599,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.jenova-line.co.jp/jikoku.php"
+    },
+    {
+      "sailingId": "hatsushima_atami_026_out_daily_004",
+      "routeId": "hatsushima_atami_026_out",
+      "routeGroupId": "hatsushima_atami_026_out",
+      "operator": "富士急マリンリゾート",
+      "routeName": "熱海港・初島港",
+      "serviceNo": "4",
+      "vessel": null,
+      "originPort": "熱海港",
+      "destinationPort": "初島港",
+      "departureMinute": 640,
+      "arrivalMinute": 670,
+      "departureHhmm": "10:40",
+      "arrivalHhmm": "11:10",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
       "sailingId": "shodoshima_takamatsu_tonosho_064_out_006",
@@ -8469,6 +9225,30 @@
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_009",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "9",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 670,
+      "arrivalMinute": 677,
+      "departureHhmm": "11:10",
+      "arrivalHhmm": "11:17",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "awaji_jenova_akashi_iwaya_027_back_weekday_012",
       "routeId": "awaji_jenova_akashi_iwaya_027_back",
       "routeGroupId": "awaji_jenova_akashi_iwaya_027_back",
@@ -8563,6 +9343,54 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://sakurakaiun.jimdofree.com/"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_009",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "9",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 680,
+      "arrivalMinute": 687,
+      "departureHhmm": "11:20",
+      "arrivalHhmm": "11:27",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
+      "sailingId": "hatsushima_atami_027_back_daily_004",
+      "routeId": "hatsushima_atami_027_back",
+      "routeGroupId": "hatsushima_atami_027_back",
+      "operator": "富士急マリンリゾート",
+      "routeName": "初島港・熱海港",
+      "serviceNo": "4",
+      "vessel": null,
+      "originPort": "初島港",
+      "destinationPort": "熱海港",
+      "departureMinute": 680,
+      "arrivalMinute": 710,
+      "departureHhmm": "11:20",
+      "arrivalHhmm": "11:50",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_001_back_003",
@@ -8707,6 +9535,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.jenova-line.co.jp/jikoku.php"
+    },
+    {
+      "sailingId": "suruga_shimizu_toi_032_out_daily_002",
+      "routeId": "suruga_shimizu_toi_032_out",
+      "routeGroupId": "suruga_shimizu_toi_032_out",
+      "operator": "ふじさん駿河湾フェリー",
+      "routeName": "清水港・土肥港",
+      "serviceNo": "2",
+      "vessel": null,
+      "originPort": "清水港",
+      "destinationPort": "土肥港",
+      "departureMinute": 680,
+      "arrivalMinute": 770,
+      "departureHhmm": "11:20",
+      "arrivalHhmm": "12:50",
+      "durationMinutes": 90,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 3000,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.223-ferry.or.jp/timetable.html"
     },
     {
       "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_000_out_004",
@@ -9379,6 +10231,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.jenova-line.co.jp/jikoku.php"
+    },
+    {
+      "sailingId": "hatsushima_atami_026_out_daily_005",
+      "routeId": "hatsushima_atami_026_out",
+      "routeGroupId": "hatsushima_atami_026_out",
+      "operator": "富士急マリンリゾート",
+      "routeName": "熱海港・初島港",
+      "serviceNo": "5",
+      "vessel": null,
+      "originPort": "熱海港",
+      "destinationPort": "初島港",
+      "departureMinute": 720,
+      "arrivalMinute": 750,
+      "departureHhmm": "12:00",
+      "arrivalHhmm": "12:30",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out_010",
@@ -10413,6 +11289,54 @@
       "sourceUrl": "https://www.ariake-ferry.com/wp-content/uploads/2024/01/568672bf1610b8eb56ff45068b4a375f.pdf"
     },
     {
+      "sailingId": "hatsushima_atami_027_back_daily_005",
+      "routeId": "hatsushima_atami_027_back",
+      "routeGroupId": "hatsushima_atami_027_back",
+      "operator": "富士急マリンリゾート",
+      "routeName": "初島港・熱海港",
+      "serviceNo": "5",
+      "vessel": null,
+      "originPort": "初島港",
+      "destinationPort": "熱海港",
+      "departureMinute": 780,
+      "arrivalMinute": 810,
+      "departureHhmm": "13:00",
+      "arrivalHhmm": "13:30",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
+    },
+    {
+      "sailingId": "suruga_shimizu_toi_033_back_daily_002",
+      "routeId": "suruga_shimizu_toi_033_back",
+      "routeGroupId": "suruga_shimizu_toi_033_back",
+      "operator": "ふじさん駿河湾フェリー",
+      "routeName": "土肥港・清水港",
+      "serviceNo": "2",
+      "vessel": null,
+      "originPort": "土肥港",
+      "destinationPort": "清水港",
+      "departureMinute": 780,
+      "arrivalMinute": 870,
+      "departureHhmm": "13:00",
+      "arrivalHhmm": "14:30",
+      "durationMinutes": 90,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 3000,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.223-ferry.or.jp/timetable.html"
+    },
+    {
       "sailingId": "mlit_map_193_010_さくら海運_呉ポートピアパーク_切串_000_out_010",
       "routeId": "mlit_map_193_010_さくら海運_呉ポートピアパーク_切串_000_out",
       "routeGroupId": "mlit_map_193_010_さくら海運_呉ポートピアパーク_切串_000_out",
@@ -10483,6 +11407,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.jenova-line.co.jp/jikoku.php"
+    },
+    {
+      "sailingId": "hatsushima_atami_026_out_daily_006",
+      "routeId": "hatsushima_atami_026_out",
+      "routeGroupId": "hatsushima_atami_026_out",
+      "operator": "富士急マリンリゾート",
+      "routeName": "熱海港・初島港",
+      "serviceNo": "6",
+      "vessel": null,
+      "originPort": "熱海港",
+      "destinationPort": "初島港",
+      "departureMinute": 780,
+      "arrivalMinute": 810,
+      "departureHhmm": "13:00",
+      "arrivalHhmm": "13:30",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out_011",
@@ -10725,6 +11673,30 @@
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_010",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "10",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 790,
+      "arrivalMinute": 797,
+      "departureHhmm": "13:10",
+      "arrivalHhmm": "13:17",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_back_011",
       "routeId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_back",
       "routeGroupId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_back",
@@ -10843,6 +11815,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://sakurakaiun.jimdofree.com/"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_010",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "10",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 800,
+      "arrivalMinute": 807,
+      "departureHhmm": "13:20",
+      "arrivalHhmm": "13:27",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "nankai_ferry_tokushima_wakayama_006",
@@ -11613,6 +12609,30 @@
       "sourceUrl": "http://www.kumeline.com/"
     },
     {
+      "sailingId": "hatsushima_atami_027_back_daily_006",
+      "routeId": "hatsushima_atami_027_back",
+      "routeGroupId": "hatsushima_atami_027_back",
+      "operator": "富士急マリンリゾート",
+      "routeName": "初島港・熱海港",
+      "serviceNo": "6",
+      "vessel": null,
+      "originPort": "初島港",
+      "destinationPort": "熱海港",
+      "departureMinute": 840,
+      "arrivalMinute": 870,
+      "departureHhmm": "14:00",
+      "arrivalHhmm": "14:30",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
+    },
+    {
       "sailingId": "mlit_map_193_040_田中輸送_大島_八幡浜_000_out_daily_002",
       "routeId": "mlit_map_193_040_田中輸送_大島_八幡浜_000_out",
       "routeGroupId": "mlit_map_193_040_田中輸送_大島_八幡浜_000_out",
@@ -11781,6 +12801,30 @@
       "sourceUrl": "https://www.centrair.jp/access/ship.html"
     },
     {
+      "sailingId": "hatsushima_atami_026_out_daily_007",
+      "routeId": "hatsushima_atami_026_out",
+      "routeGroupId": "hatsushima_atami_026_out",
+      "operator": "富士急マリンリゾート",
+      "routeName": "熱海港・初島港",
+      "serviceNo": "7",
+      "vessel": null,
+      "originPort": "熱海港",
+      "destinationPort": "初島港",
+      "departureMinute": 840,
+      "arrivalMinute": 870,
+      "departureHhmm": "14:00",
+      "arrivalHhmm": "14:30",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
+    },
+    {
       "sailingId": "sanwa_kuranomoto_ushibuka_045_back_006",
       "routeId": "sanwa_kuranomoto_ushibuka_045_back",
       "routeGroupId": "sanwa_kuranomoto_ushibuka_045_back",
@@ -11947,6 +12991,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_011",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "11",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 850,
+      "arrivalMinute": 857,
+      "departureHhmm": "14:10",
+      "arrivalHhmm": "14:17",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "mlit_map_193_020_三洋汽船_笠岡_佐柳本浦_笠岡_飛鳥_六島_002_back_003",
@@ -12139,6 +13207,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.ariake-ferry.com/wp-content/uploads/2024/01/568672bf1610b8eb56ff45068b4a375f.pdf"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_011",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "11",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 860,
+      "arrivalMinute": 867,
+      "departureHhmm": "14:20",
+      "arrivalHhmm": "14:27",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "sakurajima_ferry_kagoshima_sakurajima_027",
@@ -12501,6 +13593,30 @@
       "sourceUrl": "https://www.seikan-ferry.co.jp/schedule/"
     },
     {
+      "sailingId": "hatsushima_atami_027_back_daily_007",
+      "routeId": "hatsushima_atami_027_back",
+      "routeGroupId": "hatsushima_atami_027_back",
+      "operator": "富士急マリンリゾート",
+      "routeName": "初島港・熱海港",
+      "serviceNo": "7",
+      "vessel": null,
+      "originPort": "初島港",
+      "destinationPort": "熱海港",
+      "departureMinute": 880,
+      "arrivalMinute": 910,
+      "departureHhmm": "14:40",
+      "arrivalHhmm": "15:10",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
+    },
+    {
       "sailingId": "jr_miyajima_047_back_031",
       "routeId": "jr_miyajima_047_back",
       "routeGroupId": "jr_miyajima_047_back",
@@ -12571,6 +13687,54 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://atatajimakisen.sakura.ne.jp/timetable/"
+    },
+    {
+      "sailingId": "suruga_shimizu_toi_032_out_daily_003",
+      "routeId": "suruga_shimizu_toi_032_out",
+      "routeGroupId": "suruga_shimizu_toi_032_out",
+      "operator": "ふじさん駿河湾フェリー",
+      "routeName": "清水港・土肥港",
+      "serviceNo": "3",
+      "vessel": null,
+      "originPort": "清水港",
+      "destinationPort": "土肥港",
+      "departureMinute": 880,
+      "arrivalMinute": 970,
+      "departureHhmm": "14:40",
+      "arrivalHhmm": "16:10",
+      "durationMinutes": 90,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 3000,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.223-ferry.or.jp/timetable.html"
+    },
+    {
+      "sailingId": "hatsushima_atami_026_out_daily_008",
+      "routeId": "hatsushima_atami_026_out",
+      "routeGroupId": "hatsushima_atami_026_out",
+      "operator": "富士急マリンリゾート",
+      "routeName": "熱海港・初島港",
+      "serviceNo": "8",
+      "vessel": null,
+      "originPort": "熱海港",
+      "destinationPort": "初島港",
+      "departureMinute": 880,
+      "arrivalMinute": 910,
+      "departureHhmm": "14:40",
+      "arrivalHhmm": "15:10",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
       "sailingId": "sanwa_kuranomoto_ushibuka_044_out_006",
@@ -13125,6 +14289,30 @@
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_012",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "12",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 910,
+      "arrivalMinute": 917,
+      "departureHhmm": "15:10",
+      "arrivalHhmm": "15:17",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "ariake_ferry_taira_nagasu_013",
       "routeId": "ariake_ferry_taira_nagasu",
       "routeGroupId": "ariake_ferry_taira_nagasu",
@@ -13219,6 +14407,54 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_012",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "12",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 920,
+      "arrivalMinute": 927,
+      "departureHhmm": "15:20",
+      "arrivalHhmm": "15:27",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
+      "sailingId": "hatsushima_atami_027_back_daily_008",
+      "routeId": "hatsushima_atami_027_back",
+      "routeGroupId": "hatsushima_atami_027_back",
+      "operator": "富士急マリンリゾート",
+      "routeName": "初島港・熱海港",
+      "serviceNo": "8",
+      "vessel": null,
+      "originPort": "初島港",
+      "destinationPort": "熱海港",
+      "departureMinute": 920,
+      "arrivalMinute": 950,
+      "departureHhmm": "15:20",
+      "arrivalHhmm": "15:50",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
       "sailingId": "sanwa_kuranomoto_ushibuka_045_back_007",
@@ -14085,6 +15321,30 @@
       "sourceUrl": "https://www.centrair.jp/access/ship.html"
     },
     {
+      "sailingId": "hatsushima_atami_026_out_daily_009",
+      "routeId": "hatsushima_atami_026_out",
+      "routeGroupId": "hatsushima_atami_026_out",
+      "operator": "富士急マリンリゾート",
+      "routeName": "熱海港・初島港",
+      "serviceNo": "9",
+      "vessel": null,
+      "originPort": "熱海港",
+      "destinationPort": "初島港",
+      "departureMinute": 960,
+      "arrivalMinute": 990,
+      "departureHhmm": "16:00",
+      "arrivalHhmm": "16:30",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
+    },
+    {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out_014",
       "routeId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out",
       "routeGroupId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out",
@@ -14229,6 +15489,30 @@
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_013",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "13",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 970,
+      "arrivalMinute": 977,
+      "departureHhmm": "16:10",
+      "arrivalHhmm": "16:17",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "shodoshima_takamatsu_tonosho_064_out_010",
       "routeId": "shodoshima_takamatsu_tonosho_064_out",
       "routeGroupId": "shodoshima_takamatsu_tonosho_064_out",
@@ -14347,6 +15631,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.ariake-ferry.com/wp-content/uploads/2024/01/568672bf1610b8eb56ff45068b4a375f.pdf"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_013",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "13",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 980,
+      "arrivalMinute": 987,
+      "departureHhmm": "16:20",
+      "arrivalHhmm": "16:27",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_000_out_011",
@@ -14685,6 +15993,30 @@
       "sourceUrl": "https://www.shikokuferry.com/route2"
     },
     {
+      "sailingId": "suruga_shimizu_toi_033_back_daily_003",
+      "routeId": "suruga_shimizu_toi_033_back",
+      "routeGroupId": "suruga_shimizu_toi_033_back",
+      "operator": "ふじさん駿河湾フェリー",
+      "routeName": "土肥港・清水港",
+      "serviceNo": "3",
+      "vessel": null,
+      "originPort": "土肥港",
+      "destinationPort": "清水港",
+      "departureMinute": 990,
+      "arrivalMinute": 1080,
+      "departureHhmm": "16:30",
+      "arrivalHhmm": "18:00",
+      "durationMinutes": 90,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 3000,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.223-ferry.or.jp/timetable.html"
+    },
+    {
       "sailingId": "mlit_map_193_010_さくら海運_呉ポートピアパーク_切串_000_out_013",
       "routeId": "mlit_map_193_010_さくら海運_呉ポートピアパーク_切串_000_out",
       "routeGroupId": "mlit_map_193_010_さくら海運_呉ポートピアパーク_切串_000_out",
@@ -14875,6 +16207,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.kiguchi-kisen.jp/contents/timetable/"
+    },
+    {
+      "sailingId": "hatsushima_atami_027_back_daily_009",
+      "routeId": "hatsushima_atami_027_back",
+      "routeGroupId": "hatsushima_atami_027_back",
+      "operator": "富士急マリンリゾート",
+      "routeName": "初島港・熱海港",
+      "serviceNo": "9",
+      "vessel": null,
+      "originPort": "初島港",
+      "destinationPort": "熱海港",
+      "departureMinute": 1000,
+      "arrivalMinute": 1030,
+      "departureHhmm": "16:40",
+      "arrivalHhmm": "17:10",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
       "sailingId": "mlit_map_193_040_田中輸送_大島_八幡浜_000_out_daily_003",
@@ -15189,6 +16545,30 @@
       "sourceUrl": "https://sakurakaiun.jimdofree.com/"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_014",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "14",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 1010,
+      "arrivalMinute": 1017,
+      "departureHhmm": "16:50",
+      "arrivalHhmm": "16:57",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "jr_miyajima_047_back_040",
       "routeId": "jr_miyajima_047_back",
       "routeGroupId": "jr_miyajima_047_back",
@@ -15259,6 +16639,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.ariake-ferry.com/wp-content/uploads/2024/01/568672bf1610b8eb56ff45068b4a375f.pdf"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_014",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "14",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 1020,
+      "arrivalMinute": 1027,
+      "departureHhmm": "17:00",
+      "arrivalHhmm": "17:07",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "tsu_airportline_centrair_tsu_05",
@@ -15669,6 +17073,30 @@
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_015",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "15",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 1030,
+      "arrivalMinute": 1037,
+      "departureHhmm": "17:10",
+      "arrivalHhmm": "17:17",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "mlit_map_193_027_本島汽船_本島_丸亀_000_out_daily_006",
       "routeId": "mlit_map_193_027_本島汽船_本島_丸亀_000_out",
       "routeGroupId": "mlit_map_193_027_本島汽船_本島_丸亀_000_out",
@@ -15837,6 +17265,30 @@
       "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1%ef%bd%9e%e9%a3%9b%e5%b3%b6%ef%bd%9e%e5%85%ad%e5%b3%b6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_015",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "15",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 1040,
+      "arrivalMinute": 1047,
+      "departureHhmm": "17:20",
+      "arrivalHhmm": "17:27",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "awaji_jenova_akashi_iwaya_026_out_weekday_021",
       "routeId": "awaji_jenova_akashi_iwaya_026_out",
       "routeGroupId": "awaji_jenova_akashi_iwaya_026_out",
@@ -15859,6 +17311,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.jenova-line.co.jp/jikoku.php"
+    },
+    {
+      "sailingId": "hatsushima_atami_026_out_daily_010",
+      "routeId": "hatsushima_atami_026_out",
+      "routeGroupId": "hatsushima_atami_026_out",
+      "operator": "富士急マリンリゾート",
+      "routeName": "熱海港・初島港",
+      "serviceNo": "10",
+      "vessel": null,
+      "originPort": "熱海港",
+      "destinationPort": "初島港",
+      "departureMinute": 1040,
+      "arrivalMinute": 1070,
+      "departureHhmm": "17:20",
+      "arrivalHhmm": "17:50",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
       "sailingId": "sanwa_kuranomoto_ushibuka_044_out_008",
@@ -16149,6 +17625,30 @@
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_016",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "16",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 1050,
+      "arrivalMinute": 1057,
+      "departureHhmm": "17:30",
+      "arrivalHhmm": "17:37",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out_016",
       "routeId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out",
       "routeGroupId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out",
@@ -16219,6 +17719,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.ariake-ferry.com/wp-content/uploads/2024/01/568672bf1610b8eb56ff45068b4a375f.pdf"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_016",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "16",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 1060,
+      "arrivalMinute": 1067,
+      "departureHhmm": "17:40",
+      "arrivalHhmm": "17:47",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_002_out_005",
@@ -16533,6 +18057,54 @@
       "sourceUrl": "https://sanyo-kisen.jp/%e6%99%82%e5%88%bb%e8%a1%a8/%e7%ac%a0%e5%b2%a1-%ef%bd%9e-%e4%bd%90%e6%9f%b3%e6%9c%ac%e6%b5%a6-%e6%99%82%e5%88%bb%e8%a1%a8"
     },
     {
+      "sailingId": "hatsushima_atami_027_back_daily_010",
+      "routeId": "hatsushima_atami_027_back",
+      "routeGroupId": "hatsushima_atami_027_back",
+      "operator": "富士急マリンリゾート",
+      "routeName": "初島港・熱海港",
+      "serviceNo": "10",
+      "vessel": null,
+      "originPort": "初島港",
+      "destinationPort": "熱海港",
+      "departureMinute": 1070,
+      "arrivalMinute": 1100,
+      "departureHhmm": "17:50",
+      "arrivalHhmm": "18:20",
+      "durationMinutes": 30,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 1450,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://www.hatsushima.jp/access/"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_017",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "17",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 1070,
+      "arrivalMinute": 1077,
+      "departureHhmm": "17:50",
+      "arrivalHhmm": "17:57",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "mlit_map_193_027_本島汽船_本島_丸亀_000_out_daily_007",
       "routeId": "mlit_map_193_027_本島汽船_本島_丸亀_000_out",
       "routeGroupId": "mlit_map_193_027_本島汽船_本島_丸亀_000_out",
@@ -16651,6 +18223,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_017",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "17",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 1080,
+      "arrivalMinute": 1087,
+      "departureHhmm": "18:00",
+      "arrivalHhmm": "18:07",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "seikan_ferry_12",
@@ -17061,6 +18657,30 @@
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_018",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "18",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 1090,
+      "arrivalMinute": 1097,
+      "departureHhmm": "18:10",
+      "arrivalHhmm": "18:17",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "ariake_ferry_nagasu_taira_017",
       "routeId": "ariake_ferry_nagasu_taira",
       "routeGroupId": "ariake_ferry_nagasu_taira",
@@ -17203,6 +18823,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_018",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "18",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 1100,
+      "arrivalMinute": 1107,
+      "departureHhmm": "18:20",
+      "arrivalHhmm": "18:27",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "awaji_jenova_akashi_iwaya_027_back_weekday_022",
@@ -17541,6 +19185,30 @@
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_019",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "19",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 1110,
+      "arrivalMinute": 1117,
+      "departureHhmm": "18:30",
+      "arrivalHhmm": "18:37",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out_018",
       "routeId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out",
       "routeGroupId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out",
@@ -17563,6 +19231,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.city.fukuoka.lg.jp/kowan/kyakusen/hakata-port/documents/time_schedule_J.pdf"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_019",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "19",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 1120,
+      "arrivalMinute": 1127,
+      "departureHhmm": "18:40",
+      "arrivalHhmm": "18:47",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "shodoshima_takamatsu_tonosho_065_back_013",
@@ -17901,6 +19593,30 @@
       "sourceUrl": "https://sakurakaiun.jimdofree.com/"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_020",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "20",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 1130,
+      "arrivalMinute": 1137,
+      "departureHhmm": "18:50",
+      "arrivalHhmm": "18:57",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "shodoshima_takamatsu_tonosho_064_out_013",
       "routeId": "shodoshima_takamatsu_tonosho_064_out",
       "routeGroupId": "shodoshima_takamatsu_tonosho_064_out",
@@ -17971,6 +19687,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://nankai-ferry.co.jp/timetable/"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_020",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "20",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 1140,
+      "arrivalMinute": 1147,
+      "departureHhmm": "19:00",
+      "arrivalHhmm": "19:07",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "tsu_airportline_centrair_tsu_06",
@@ -18357,6 +20097,30 @@
       "sourceUrl": "https://sakurakaiun.jimdofree.com/"
     },
     {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_021",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "21",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 1150,
+      "arrivalMinute": 1157,
+      "departureHhmm": "19:10",
+      "arrivalHhmm": "19:17",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
       "sailingId": "miyajima_matsudai_049_back_048",
       "routeId": "miyajima_matsudai_049_back",
       "routeGroupId": "miyajima_matsudai_049_back",
@@ -18427,6 +20191,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_021",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "21",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 1160,
+      "arrivalMinute": 1167,
+      "departureHhmm": "19:20",
+      "arrivalHhmm": "19:27",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_000_back_013",
@@ -18811,6 +20599,54 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.city.fukuoka.lg.jp/kowan/kyakusen/hakata-port/documents/time_schedule_J.pdf"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_022",
+      "routeId": "karouto_kamiyuge_058_out",
+      "routeGroupId": "karouto_kamiyuge_058_out",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "家老渡港・上弓削港",
+      "serviceNo": "22",
+      "vessel": null,
+      "originPort": "家老渡港",
+      "destinationPort": "上弓削港",
+      "departureMinute": 1190,
+      "arrivalMinute": 1197,
+      "departureHhmm": "19:50",
+      "arrivalHhmm": "19:57",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
+    },
+    {
+      "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_022",
+      "routeId": "karouto_kamiyuge_059_back",
+      "routeGroupId": "karouto_kamiyuge_059_back",
+      "operator": "家老渡フェリー汽船",
+      "routeName": "上弓削港・家老渡港",
+      "serviceNo": "22",
+      "vessel": null,
+      "originPort": "上弓削港",
+      "destinationPort": "家老渡港",
+      "departureMinute": 1200,
+      "arrivalMinute": 1207,
+      "departureHhmm": "20:00",
+      "arrivalHhmm": "20:07",
+      "durationMinutes": 7,
+      "calendar": "monday_to_saturday",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 100,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
       "sailingId": "mlit_map_193_027_本島汽船_本島_丸亀_000_back_daily_008",
@@ -20518,9 +22354,9 @@
     }
   ],
   "metadata": {
-    "routeGroupCount": 58,
-    "routeCount": 58,
-    "sailingCount": 795,
+    "routeGroupCount": 64,
+    "routeCount": 64,
+    "sailingCount": 865,
     "mapRouteGroupCount": 193
   }
 }
