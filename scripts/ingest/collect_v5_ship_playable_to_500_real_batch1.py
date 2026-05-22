@@ -185,6 +185,38 @@ def main() -> None:
     add_route(routes, trips, route_id="bouze_tosen_036_out", operator="坊勢渡船", origin="坊勢港", destination="網手港", fare=400, urls=[bouze_tosen_url], note=bouze_tosen_note, rows=[("07:15", "07:25", "坊勢渡船"), ("07:50", "08:00", "坊勢渡船"), ("08:35", "08:45", "坊勢渡船"), ("09:35", "09:45", "坊勢渡船"), ("10:35", "10:45", "坊勢渡船"), ("11:35", "11:45", "坊勢渡船"), ("13:35", "13:45", "坊勢渡船"), ("15:35", "15:45", "坊勢渡船"), ("17:35", "17:45", "坊勢渡船")])
     add_route(routes, trips, route_id="bouze_tosen_037_back", operator="坊勢渡船", origin="網手港", destination="坊勢港", fare=400, urls=[bouze_tosen_url], note=bouze_tosen_note, rows=[("07:30", "07:40", "坊勢渡船"), ("08:10", "08:20", "坊勢渡船"), ("08:50", "09:00", "坊勢渡船"), ("09:50", "10:00", "坊勢渡船"), ("10:50", "11:00", "坊勢渡船"), ("11:50", "12:00", "坊勢渡船"), ("13:50", "14:00", "坊勢渡船"), ("15:50", "16:00", "坊勢渡船"), ("17:50", "18:00", "坊勢渡船")])
 
+    suo_oshima_time = "https://www.boyoferry.co.jp/smp/timetable.html"
+    suo_oshima_fare = "https://boyoferry.co.jp/c_fare2_a.html"
+    suo_oshima_note = (
+        "Official Boyo Ferry mobile timetable lists the 2025-03-01 normal timetable and marks the Ihota-calling rows. "
+        "Official 2025-08-01 fare page lists the Yanai-Ihota adult one-way fare of JPY 1,640. "
+        "V5 keeps only daily normal Ihota-call passenger rows and excludes suspended rows, vehicles, reservations, and discounts."
+    )
+    add_route(routes, trips, route_id="suoshima_yanai_ihota_mitsuhama_034_out", operator="周防大島松山フェリー", origin="柳井港", destination="伊保田港", fare=1640, urls=[suo_oshima_time, suo_oshima_fare], note=suo_oshima_note, rows=[("07:00", "08:10", "しらきさん"), ("12:25", "13:40", "しらきさん"), ("17:50", "19:05", "しらきさん")])
+    add_route(routes, trips, route_id="suoshima_yanai_ihota_mitsuhama_035_back", operator="周防大島松山フェリー", origin="伊保田港", destination="柳井港", fare=1640, urls=[suo_oshima_time, suo_oshima_fare], note=suo_oshima_note, rows=[("10:52", "12:15", "しらきさん"), ("16:17", "17:40", "しらきさん"), ("21:42", "23:05", "しらきさん")])
+
+    tankai_url = "https://www.tankai.jp/trip/amaboat/"
+    tankai_note = (
+        "Official Tankai Amanohashidate sightseeing boat page lists the normal timetable and adult fare. "
+        "V5 records the Amanohashidate-Ichinomiya segment at the official adult one-way fare of JPY 800. "
+        "Weekend/holiday special-course departures, optional temporary sailings, conditional no-passenger cancellations, sets, and discounts are excluded."
+    )
+    tankai_to_ichinomiya = [("09:00", "09:12", "かもめ"), ("10:00", "10:12", "かもめ"), ("10:30", "10:42", "かもめ"), ("11:00", "11:12", "かもめ"), ("11:30", "11:42", "かもめ"), ("12:00", "12:12", "かもめ"), ("12:30", "12:42", "かもめ"), ("13:00", "13:12", "かもめ"), ("13:30", "13:42", "かもめ"), ("14:00", "14:12", "かもめ"), ("14:30", "14:42", "かもめ"), ("15:00", "15:12", "かもめ"), ("15:30", "15:42", "かもめ"), ("16:00", "16:12", "かもめ"), ("17:00", "17:12", "かもめ"), ("17:30", "17:42", "かもめ")]
+    tankai_to_amanohashidate = [("09:15", "09:27", "かもめ"), ("10:15", "10:27", "かもめ"), ("10:45", "10:57", "かもめ"), ("11:15", "11:27", "かもめ"), ("11:45", "11:57", "かもめ"), ("12:15", "12:27", "かもめ"), ("12:45", "12:57", "かもめ"), ("13:15", "13:27", "かもめ"), ("13:45", "13:57", "かもめ"), ("14:15", "14:27", "かもめ"), ("14:45", "14:57", "かもめ"), ("15:15", "15:27", "かもめ"), ("15:45", "15:57", "かもめ"), ("16:15", "16:27", "かもめ"), ("16:45", "16:57", "かもめ"), ("17:15", "17:27", "かもめ"), ("17:45", "17:57", "かもめ")]
+    add_route(routes, trips, route_id="mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_001_out", operator="丹後海陸交通", origin="天橋立", destination="一宮", fare=800, urls=[tankai_url], note=tankai_note, rows=tankai_to_ichinomiya)
+    add_route(routes, trips, route_id="mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_001_back", operator="丹後海陸交通", origin="一宮", destination="天橋立", fare=800, urls=[tankai_url], note=tankai_note, rows=tankai_to_amanohashidate)
+
+    osakikamijima_url = "https://www.town.osakikamijima.hiroshima.jp/soshiki/kensetsu/1/2/1/1308.html"
+    osakikamijima_note = (
+        "Osakikamijima town official Sazanami page lists the timetable and fare table. "
+        "V5 records only rows that call at Ketajima and the official Hakusui-Ketajima adult one-way fare of JPY 290. "
+        "Jan 1-3 suspension, hazardous-material-only restrictions, vehicles, commuter tickets, and non-public landing restrictions at Ketajima are excluded from gameplay pricing."
+    )
+    osakikamijima_out = [("06:40", "07:15", "さざなみ"), ("07:55", "08:30", "さざなみ"), ("13:00", "13:35", "さざなみ"), ("15:15", "15:50", "さざなみ"), ("16:30", "17:05", "さざなみ"), ("17:40", "18:15", "さざなみ")]
+    osakikamijima_back = [("07:15", "07:45", "さざなみ"), ("08:30", "09:00", "さざなみ"), ("13:35", "14:05", "さざなみ"), ("15:50", "16:20", "さざなみ"), ("17:05", "17:35", "さざなみ"), ("18:15", "18:45", "さざなみ")]
+    add_route(routes, trips, route_id="mlit_map_193_008_大崎上島町_白水_契島_000_out", operator="大崎上島町", origin="白水港", destination="契島港", fare=290, urls=[osakikamijima_url], note=osakikamijima_note, rows=osakikamijima_out)
+    add_route(routes, trips, route_id="mlit_map_193_008_大崎上島町_白水_契島_000_back", operator="大崎上島町", origin="契島港", destination="白水港", fare=290, urls=[osakikamijima_url], note=osakikamijima_note, rows=osakikamijima_back)
+
     payload = {
         "schema": "onichase.v5.ship.playable.official.to500.realBatch1",
         "operator": "multi-operator verified official batch",
