@@ -76,7 +76,6 @@ SOURCE_FILES = [
     ROOT / "data/v5_ship_playable_to_400_batch2_official.json",
     ROOT / "data/v5_ship_playable_to_400_batch3_official.json",
     ROOT / "data/v5_ship_playable_to_400_batch4_official.json",
-    ROOT / "data/v5_ship_playable_to_500_batch1_official.json",
 ]
 SHIP_MAP_PATH = ROOT / "docs/data/v5_ship_map.geojson"
 OUT_PATH = ROOT / "docs/data/v5_ship_timetable_current_bundle.json"
