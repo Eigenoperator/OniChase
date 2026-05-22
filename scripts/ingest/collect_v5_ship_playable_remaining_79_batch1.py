@@ -109,6 +109,118 @@ def main() -> None:
     add_route(routes, trips, route_id="hegura_wajima_024_out", operator="へぐら航路", origin="輪島港", destination="舳倉島港", fare=2300, urls=[hegura_url], note=hegura_note, rows=[("09:00", "10:25", "希海")], calendar=hegura_calendar)
     add_route(routes, trips, route_id="hegura_wajima_025_back", operator="へぐら航路", origin="舳倉島港", destination="輪島港", fare=2300, urls=[hegura_url], note=hegura_note, rows=[("15:00", "16:25", "希海")], calendar=hegura_calendar)
 
+    susaki_time = "https://www.city.susaki.lg.jp/download/?fid=36165&id=3548&t=LD"
+    susaki_fare = "https://www.city.susaki.lg.jp/download/?fid=36164&id=3548&t=LD"
+    susaki_page = "https://www.city.susaki.lg.jp/life/detail.php?hdnKey=3548"
+    susaki_note = (
+        "Official Susaki municipal cruise-ship page and PDFs list the Umetate-Sakanai timetable, Sunday/holiday/New-Year suspension, "
+        "and the adult ordinary Umetate-Sakanai fare of JPY 640. V5 records only the direct end-to-end OD rows; intermediate-stop boarding, "
+        "school/discount fares, baggage, GTFS variants, and disruption changes are excluded."
+    )
+    susaki_calendar = {"type": "weekdays_and_saturdays_except_holidays_new_year"}
+    add_route(routes, trips, route_id="mlit_map_193_042_須崎市_坂内_埋立_000_out", operator="須崎市", origin="坂内", destination="埋立", fare=640, urls=[susaki_page, susaki_time, susaki_fare], note=susaki_note, rows=[("08:21", "09:22", "須崎市営巡航船"), ("13:38", "14:40", "須崎市営巡航船"), ("16:20", "17:10", "須崎市営巡航船")], calendar=susaki_calendar)
+    add_route(routes, trips, route_id="mlit_map_193_042_須崎市_坂内_埋立_000_back", operator="須崎市", origin="埋立", destination="坂内", fare=640, urls=[susaki_page, susaki_time, susaki_fare], note=susaki_note, rows=[("07:10", "08:11", "須崎市営巡航船"), ("10:05", "11:07", "須崎市営巡航船"), ("14:50", "15:40", "須崎市営巡航船")], calendar=susaki_calendar)
+
+    onomichi_page = "https://www.city.onomichi.hiroshima.jp/soshiki/39/69388.html"
+    onomichi_pdf = "https://www.city.onomichi.hiroshima.jp/uploaded/attachment/46298.pdf"
+    onomichi_note = (
+        "Official Onomichi city Hososhima route page and timetable/fare PDF list municipal ferry Komataki service between Nishihama and Hososhima. "
+        "V5 records the weekday table and adult ordinary passenger fare of JPY 150; Sunday/holiday pattern, vehicle fares, commuter tickets, baggage, "
+        "discounts, and temporary changes are excluded."
+    )
+    onomichi_weekday = {"type": "weekday"}
+    add_route(routes, trips, route_id="mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back", operator="尾道市因島総合支所", origin="因島西浜港", destination="細島港", fare=150, urls=[onomichi_page, onomichi_pdf], note=onomichi_note, rows=[("07:00", "07:15", "こまたき"), ("07:40", "07:55", "こまたき"), ("09:30", "09:45", "こまたき"), ("11:00", "11:15", "こまたき"), ("13:40", "13:55", "こまたき"), ("15:40", "15:55", "こまたき"), ("17:20", "17:35", "こまたき"), ("18:40", "18:55", "こまたき")], calendar=onomichi_weekday)
+    add_route(routes, trips, route_id="mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_out", operator="尾道市因島総合支所", origin="細島港", destination="因島西浜港", fare=150, urls=[onomichi_page, onomichi_pdf], note=onomichi_note, rows=[("07:20", "07:35", "こまたき"), ("08:10", "08:25", "こまたき"), ("10:40", "10:55", "こまたき"), ("12:00", "12:15", "こまたき"), ("14:00", "14:15", "こまたき"), ("16:00", "16:15", "こまたき"), ("17:40", "17:55", "こまたき"), ("19:00", "19:15", "こまたき")], calendar=onomichi_weekday)
+
+    suo_oshima_jowa_time = "https://www.town.suo-oshima.lg.jp/uploaded/attachment/11520.pdf"
+    suo_oshima_jowa_fare = "https://www.town.suo-oshima.lg.jp/uploaded/attachment/5060.pdf"
+    suo_oshima_tarumi_time = "https://www.town.suo-oshima.lg.jp/uploaded/attachment/11525.pdf"
+    suo_oshima_tarumi_fare = "https://www.town.suo-oshima.lg.jp/uploaded/attachment/11526.pdf"
+    suo_oshima_reiki = "https://www1.g-reiki.net/town.suo-oshima/reiki_honbun/r050RG00000064.html"
+    suo_oshima_remaining_note = (
+        "Official Suo-Oshima municipal ferry timetable PDFs and fare PDFs/bylaw list the remaining Jowa and Tarumi-Hizumi town routes. "
+        "V5 records regular adult one-way fares and timetable rows only; ad-hoc extra/charter sailings, child fares, commuter tickets, baggage, "
+        "and disruption changes are excluded."
+    )
+    add_route(routes, trips, route_id="mlit_map_193_019_周防大島町_久賀_前島_樽見_日前_情島_伊保田_002_back", operator="周防大島町", origin="伊保田", destination="情島", fare=290, urls=[suo_oshima_jowa_time, suo_oshima_jowa_fare, suo_oshima_reiki], note=suo_oshima_remaining_note, rows=[("06:20", "06:35", "せと丸"), ("11:00", "11:15", "せと丸"), ("14:30", "14:45", "せと丸"), ("18:00", "18:15", "せと丸")])
+    add_route(routes, trips, route_id="mlit_map_193_019_周防大島町_久賀_前島_樽見_日前_情島_伊保田_002_out", operator="周防大島町", origin="情島", destination="伊保田", fare=290, urls=[suo_oshima_jowa_time, suo_oshima_jowa_fare, suo_oshima_reiki], note=suo_oshima_remaining_note, rows=[("06:50", "07:05", "せと丸"), ("12:20", "12:35", "せと丸"), ("15:00", "15:15", "せと丸"), ("18:20", "18:35", "せと丸")])
+    add_route(routes, trips, route_id="mlit_map_193_019_周防大島町_久賀_前島_樽見_日前_情島_伊保田_001_back", operator="周防大島町", origin="日前", destination="樽見", fare=330, urls=[suo_oshima_tarumi_time, suo_oshima_tarumi_fare, suo_oshima_reiki], note=suo_oshima_remaining_note, rows=[("08:00", "08:30", "ひらい丸"), ("11:30", "12:00", "ひらい丸"), ("16:50", "17:20", "ひらい丸"), ("18:00", "18:30", "ひらい丸")])
+    add_route(routes, trips, route_id="mlit_map_193_019_周防大島町_久賀_前島_樽見_日前_情島_伊保田_001_out", operator="周防大島町", origin="樽見", destination="日前", fare=330, urls=[suo_oshima_tarumi_time, suo_oshima_tarumi_fare, suo_oshima_reiki], note=suo_oshima_remaining_note, rows=[("07:10", "07:40", "ひらい丸"), ("10:00", "10:30", "ひらい丸"), ("15:00", "15:30", "ひらい丸"), ("17:25", "17:55", "ひらい丸")])
+
+    iwakuni_time = "http://ww4.et.tiki.ne.jp/~suisei-ihk/jikoku.htm"
+    iwakuni_fare = "http://ww4.et.tiki.ne.jp/~suisei-ihk/unntinn.htm"
+    iwakuni_note = (
+        "Official Iwakuni Hashirajima Kaiun timetable and fare pages list the Iwakuni-Hashirajima route, adult fare of JPY 1,860, "
+        "and weekend/New-Year/Obon-only marked sailings. V5 records the unmarked regular rows only; intermediate Hashima/Kuroshima "
+        "boarding, child fares, baggage, discounts, and disruption changes are excluded."
+    )
+    add_route(routes, trips, route_id="iwakuni_hashirajima_064_out", operator="岩国柱島海運", origin="岩国港", destination="柱島港", fare=1860, urls=[iwakuni_time, iwakuni_fare], note=iwakuni_note, rows=[("07:40", "08:39", "岩国柱島海運"), ("15:30", "16:08", "岩国柱島海運"), ("17:30", "18:29", "岩国柱島海運")])
+    add_route(routes, trips, route_id="iwakuni_hashirajima_065_back", operator="岩国柱島海運", origin="柱島港", destination="岩国港", fare=1860, urls=[iwakuni_time, iwakuni_fare], note=iwakuni_note, rows=[("06:45", "07:30", "岩国柱島海運"), ("08:50", "09:28", "岩国柱島海運"), ("16:15", "17:14", "岩国柱島海運")])
+
+    amami_time = "https://www.aline-ferry.com/cms/wp-content/uploads/2022/02/73aaa91a02188a28a82ce85a28ef8710.pdf"
+    amami_fare = "https://www.aline-ferry.com/cms/wp-content/uploads/2019/03/c3b4804d070ddf88c5d9766d041e0e5f-1.pdf"
+    amami_page = "https://www.aline-ferry.com/amami/fare/passenger/"
+    amami_note = (
+        "Official A-Line/Amami Kaiun May-July 2026 timetable PDF and passenger-fare PDF list the Kagoshima-Kikai service and 2026-05-01 "
+        "2nd-class adult one-way fare of JPY 9,220 before fuel adjustment. V5 records the current post-2025 China-port-suspension pattern; "
+        "BAF fuel adjustment, resident discounts, higher cabins, bedding charges, vehicles, and monthly non-operating dates are excluded."
+    )
+    amami_calendar = {"type": "official_may_july_2026_pattern_dates_in_source_pdf"}
+    add_route(routes, trips, route_id="mlit_map_193_058_奄美海運_鹿児島_喜界_知名_000_out", operator="奄美海運", origin="鹿児島港", destination="喜界港", fare=9220, urls=[amami_page, amami_time, amami_fare], note=amami_note, rows=[("17:30", "翌04:30", "フェリーあまみ/フェリーきかい")], calendar=amami_calendar, route_class="long_distance_public_ferry")
+    add_route(routes, trips, route_id="mlit_map_193_058_奄美海運_鹿児島_喜界_知名_000_back", operator="奄美海運", origin="喜界港", destination="鹿児島港", fare=9220, urls=[amami_page, amami_time, amami_fare], note=amami_note, rows=[("21:00", "翌08:30", "フェリーあまみ/フェリーきかい")], calendar=amami_calendar, route_class="long_distance_public_ferry")
+
+    mishima_page = "https://mishimamura.com/ferry/"
+    mishima_note = (
+        "Official Mishima Village Ferry Mishima page lists the normal one-night/two-day timetable and the adult 2nd-class passenger fare of JPY 3,660 "
+        "for Kagoshima to Mishima islands. V5 records the normal Kagoshima-Iojima OD rows only; monthly sailing calendars, day-trip variants, "
+        "islander discounts, higher class, cargo, vehicles, and weather changes are excluded."
+    )
+    mishima_calendar = {"type": "official_monthly_calendar_required_normal_pattern"}
+    add_route(routes, trips, route_id="mlit_map_193_064_三島村_鹿児島_三島_000_out", operator="三島村", origin="鹿児島港", destination="硫黄島港", fare=3660, urls=[mishima_page], note=mishima_note, rows=[("09:30", "13:25", "フェリーみしま")], calendar=mishima_calendar, route_class="long_distance_public_ferry")
+    add_route(routes, trips, route_id="mlit_map_193_064_三島村_鹿児島_三島_000_back", operator="三島村", origin="硫黄島港", destination="鹿児島港", fare=3660, urls=[mishima_page], note=mishima_note, rows=[("10:10", "14:05", "フェリーみしま")], calendar=mishima_calendar, route_class="long_distance_public_ferry")
+
+    ajishima_timetable = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRisF8TXvcY1UfMIT5SgIqM4F7ZnX6Xp6lXwwvelqtM-cDbtnGRHAksGrmHd4VvEYH_NU3UdqBzZtqu/pub?output=csv"
+    ajishima_page = "https://ajishimaline.com/pg117.html"
+    ajishima_fare = "https://ajishimaline.com/about.html"
+    ajishima_note = (
+        "Official Ajishima Line timetable page embeds the public Google Sheet for the 2026-02-01 year-round timetable, and the official fare page "
+        "lists the one-way adult fares. V5 records only OD rows with explicit stop times in that sheet; Odomari/Futawatashi alternate boarding, "
+        "vehicle fares, free coupons, discounts, cash-only notes, and same-day disruption changes are excluded."
+    )
+    ajishima_calendar = {"type": "official_year_round_from_2026_02_01"}
+    add_route(routes, trips, route_id="ajishima_line_012_out", operator="網地島ライン", origin="石巻中央発着所", destination="田代島仁斗田港", fare=1250, urls=[ajishima_page, ajishima_timetable, ajishima_fare], note=ajishima_note, rows=[("09:00", "09:44", "シーキャット"), ("12:30", "13:34", "マーメイドII"), ("15:30", "16:14", "シーキャット")], calendar=ajishima_calendar)
+    add_route(routes, trips, route_id="ajishima_line_013_back", operator="網地島ライン", origin="田代島仁斗田港", destination="石巻中央発着所", fare=1250, urls=[ajishima_page, ajishima_timetable, ajishima_fare], note=ajishima_note, rows=[("07:55", "08:42", "シーキャット"), ("13:55", "14:40", "シーキャット"), ("15:30", "16:27", "マーメイドII")], calendar=ajishima_calendar)
+    add_route(routes, trips, route_id="ajishima_line_014_out", operator="網地島ライン", origin="田代島仁斗田港", destination="網地港", fare=350, urls=[ajishima_page, ajishima_timetable, ajishima_fare], note=ajishima_note, rows=[("06:40", "06:50", "シーキャット"), ("09:44", "09:54", "シーキャット"), ("13:34", "13:52", "マーメイドII"), ("16:14", "16:24", "シーキャット")], calendar=ajishima_calendar)
+    add_route(routes, trips, route_id="ajishima_line_015_back", operator="網地島ライン", origin="網地港", destination="田代島仁斗田港", fare=350, urls=[ajishima_page, ajishima_timetable, ajishima_fare], note=ajishima_note, rows=[("07:45", "07:55", "シーキャット"), ("13:45", "13:55", "シーキャット"), ("15:12", "15:30", "マーメイドII"), ("17:09", "17:28", "シーキャット")], calendar=ajishima_calendar)
+    add_route(routes, trips, route_id="ajishima_line_016_out", operator="網地島ライン", origin="網地港", destination="鮎川港", fare=470, urls=[ajishima_page, ajishima_timetable, ajishima_fare], note=ajishima_note, rows=[("06:50", "07:18", "シーキャット"), ("09:54", "10:20", "シーキャット"), ("13:52", "14:31", "マーメイドII"), ("16:24", "16:50", "シーキャット")], calendar=ajishima_calendar)
+    add_route(routes, trips, route_id="ajishima_line_017_back", operator="網地島ライン", origin="鮎川港", destination="網地港", fare=470, urls=[ajishima_page, ajishima_timetable, ajishima_fare], note=ajishima_note, rows=[("07:20", "07:45", "シーキャット"), ("10:30", "10:55", "シーキャット"), ("14:35", "15:12", "マーメイドII"), ("16:51", "17:09", "シーキャット")], calendar=ajishima_calendar)
+
+    saikai_time = "https://www.city.saikai.nagasaki.jp/material/files/group/5/saikaienganferi-.pdf"
+    saikai_fare = "https://www.city.saikai.nagasaki.jp/material/files/group/5/ryokakuuntinhyo.pdf"
+    saikai_page = "https://www.city.saikai.nagasaki.jp/kurashi/kotsu/3/index.html"
+    saikai_note = (
+        "Official Saikai coastal ferry timetable PDF lists the normal ferry pattern for the Sasebo-Kono-ura route, and the official passenger-fare PDF "
+        "lists the Seto-Matsushima adult ordinary ferry fare of JPY 240. The MLIT source labels the Matsushima-side port as Kamaura; V5 keeps the MLIT "
+        "port name for route-key compatibility while using only rows with explicit Matsushima/Seto departure-arrival times. Dock-replacement high-speed "
+        "boat rows, monthly extra sailings, child/disabled fares, commuter tickets, and disruption changes are excluded."
+    )
+    add_route(routes, trips, route_id="mlit_map_193_067_西海市_釜浦_瀬戸_000_out", operator="西海市", origin="釜浦", destination="瀬戸", fare=240, urls=[saikai_page, saikai_time, saikai_fare], note=saikai_note, rows=[("08:40", "08:50", "フェリーかしま"), ("15:00", "15:10", "フェリーかしま"), ("17:55", "18:05", "フェリーかしま")])
+    add_route(routes, trips, route_id="mlit_map_193_067_西海市_釜浦_瀬戸_000_back", operator="西海市", origin="瀬戸", destination="釜浦", fare=240, urls=[saikai_page, saikai_time, saikai_fare], note=saikai_note, rows=[("08:20", "08:35", "フェリーかしま"), ("14:47", "14:57", "フェリーかしま"), ("17:40", "17:50", "フェリーかしま")])
+
+    taiheiyo_time = "https://www.taiheiyo-ferry.co.jp/koro/index.html"
+    taiheiyo_fare = "https://www.taiheiyo-ferry.co.jp/unchin/pdf/20241213.pdf"
+    taiheiyo_note = (
+        "Official Taiheiyo Ferry timetable page lists the Sendai/Tomakomai/Nagoya departure and arrival times, and the official fare PDF valid from "
+        "2025-01-06 lists adult 2nd-class basic fares. V5 uses the A-period adult 2nd-class base fare as the conservative playable fare; other seasons, "
+        "ship/room classes, private-room surcharge rules, internet discounts, vehicle fares, January-March irregular diagrams, and disruption changes are excluded."
+    )
+    daily_calendar = {"type": "daily"}
+    alternate_calendar = {"type": "official_alternate_day"}
+    add_route(routes, trips, route_id="taiheiyo_nagoya_sendai_tomakomai_000_out", operator="太平洋フェリー", origin="名古屋港", destination="仙台港", fare=8200, urls=[taiheiyo_time, taiheiyo_fare], note=taiheiyo_note, rows=[("19:00", "翌16:40", "太平洋フェリー")], calendar=alternate_calendar, route_class="long_distance_public_ferry")
+    add_route(routes, trips, route_id="taiheiyo_nagoya_sendai_tomakomai_001_back", operator="太平洋フェリー", origin="仙台港", destination="名古屋港", fare=8200, urls=[taiheiyo_time, taiheiyo_fare], note=taiheiyo_note, rows=[("12:50", "翌10:30", "太平洋フェリー")], calendar=alternate_calendar, route_class="long_distance_public_ferry")
+    add_route(routes, trips, route_id="taiheiyo_nagoya_sendai_tomakomai_002_out", operator="太平洋フェリー", origin="仙台港", destination="苫小牧西港", fare=9500, urls=[taiheiyo_time, taiheiyo_fare], note=taiheiyo_note, rows=[("19:40", "翌11:00", "太平洋フェリー")], calendar=daily_calendar, route_class="long_distance_public_ferry")
+    add_route(routes, trips, route_id="taiheiyo_nagoya_sendai_tomakomai_003_back", operator="太平洋フェリー", origin="苫小牧西港", destination="仙台港", fare=9500, urls=[taiheiyo_time, taiheiyo_fare], note=taiheiyo_note, rows=[("19:00", "翌10:00", "太平洋フェリー")], calendar=daily_calendar, route_class="long_distance_public_ferry")
+
     payload = {
         "schema": "onichase.v5.ship.playable.remaining79.batch1",
         "operator": "multi-operator verified official remaining red-light cleanup",
