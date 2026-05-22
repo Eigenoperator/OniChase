@@ -168,6 +168,23 @@ def main() -> None:
     add_route(routes, trips, route_id="mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out", operator="新居浜市", origin="大島港", destination="黒島", fare=60, urls=[niihama_time, niihama_fare], note=niihama_note, rows=oshima_rows)
     add_route(routes, trips, route_id="mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back", operator="新居浜市", origin="黒島", destination="大島港", fare=60, urls=[niihama_time, niihama_fare], note=niihama_note, rows=kuroshima_rows)
 
+    meon_url = "https://meon.co.jp/access"
+    meon_note = (
+        "Meon official access page lists the ordinary timetable and passenger fare table. "
+        "V5 models the ordinary non-8/1-to-8/20 Takamatsu-Ogijima segment and adult one-way fare of JPY 510; "
+        "Megijima-only summer extras, child fares, vehicles, and discount tickets are excluded."
+    )
+    add_route(routes, trips, route_id="mlit_map_193_024_雌雄島海運_男木_高松_000_out", operator="雌雄島海運", origin="男木", destination="高松", fare=510, urls=[meon_url], note=meon_note, rows=[("07:00", "07:40", "めおん"), ("09:00", "09:40", "めおん"), ("11:00", "11:40", "めおん"), ("13:00", "13:40", "めおん"), ("15:00", "15:40", "めおん"), ("17:00", "17:40", "めおん")])
+    add_route(routes, trips, route_id="mlit_map_193_024_雌雄島海運_男木_高松_000_back", operator="雌雄島海運", origin="高松", destination="男木", fare=510, urls=[meon_url], note=meon_note, rows=[("08:00", "08:40", "めおん"), ("10:00", "10:40", "めおん"), ("12:00", "12:40", "めおん"), ("14:00", "14:40", "めおん"), ("16:00", "16:40", "めおん"), ("18:10", "18:50", "めおん")])
+
+    bouze_tosen_url = "https://www.heart-y.ne.jp/tosen/adekouro.htm"
+    bouze_tosen_note = (
+        "Official Bouze Tosen page lists the Bouze-Amite timetable and adult fare of JPY 400. "
+        "V5 keeps the regular table and excludes holiday-only extra rows marked with ※, bikes, and temporary notices."
+    )
+    add_route(routes, trips, route_id="bouze_tosen_036_out", operator="坊勢渡船", origin="坊勢港", destination="網手港", fare=400, urls=[bouze_tosen_url], note=bouze_tosen_note, rows=[("07:15", "07:25", "坊勢渡船"), ("07:50", "08:00", "坊勢渡船"), ("08:35", "08:45", "坊勢渡船"), ("09:35", "09:45", "坊勢渡船"), ("10:35", "10:45", "坊勢渡船"), ("11:35", "11:45", "坊勢渡船"), ("13:35", "13:45", "坊勢渡船"), ("15:35", "15:45", "坊勢渡船"), ("17:35", "17:45", "坊勢渡船")])
+    add_route(routes, trips, route_id="bouze_tosen_037_back", operator="坊勢渡船", origin="網手港", destination="坊勢港", fare=400, urls=[bouze_tosen_url], note=bouze_tosen_note, rows=[("07:30", "07:40", "坊勢渡船"), ("08:10", "08:20", "坊勢渡船"), ("08:50", "09:00", "坊勢渡船"), ("09:50", "10:00", "坊勢渡船"), ("10:50", "11:00", "坊勢渡船"), ("11:50", "12:00", "坊勢渡船"), ("13:50", "14:00", "坊勢渡船"), ("15:50", "16:00", "坊勢渡船"), ("17:50", "18:00", "坊勢渡船")])
+
     payload = {
         "schema": "onichase.v5.ship.playable.official.to500.realBatch1",
         "operator": "multi-operator verified official batch",
