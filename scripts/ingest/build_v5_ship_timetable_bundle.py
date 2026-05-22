@@ -77,10 +77,12 @@ SOURCE_FILES = [
     ROOT / "data/v5_ship_playable_to_400_batch3_official.json",
     ROOT / "data/v5_ship_playable_to_400_batch4_official.json",
     ROOT / "data/v5_ship_playable_to_500_real_batch1_official.json",
+    ROOT / "data/v5_ship_playable_remaining_79_batch1_official.json",
 ]
 SHIP_MAP_PATH = ROOT / "docs/data/v5_ship_map.geojson"
 OUT_PATH = ROOT / "docs/data/v5_ship_timetable_current_bundle.json"
 AUDIT_OUT_PATH = ROOT / "data/v5_ship_playable_promotion_audit.json"
+VERIFIED_NONPLAYABLE_PATH = ROOT / "data/v5_ship_verified_nonplayable_routes.json"
 
 PORT_ALIASES = {
     "関西空港": "関西空港ポートターミナル",
@@ -96,6 +98,9 @@ PORT_ALIASES = {
     "丸亀": "丸亀港",
     "多比良": "多比良港",
     "長洲": "長洲港",
+    "前島": "前島港",
+    "徳山": "徳山港",
+    "大津島": "大津島馬島港",
 }
 
 OPERATOR_ALIASES = {
@@ -186,6 +191,10 @@ def main() -> None:
     trips_by_source_route: dict[str, list[dict]] = {}
     source_route_group_ids: set[str] = set()
     source_route_ids: set[str] = set()
+    verified_nonplayable = {}
+    if VERIFIED_NONPLAYABLE_PATH.exists():
+        payload = read_json(VERIFIED_NONPLAYABLE_PATH)
+        verified_nonplayable = {item["routeId"]: item for item in payload.get("routes", [])}
 
     for source_path in SOURCE_FILES:
         if not source_path.exists():
@@ -208,8 +217,15 @@ def main() -> None:
     promoted_routes = []
     sailings = []
     skipped = []
+    nonplayable_routes = []
     duplicate_candidates = []
     for route_id, route in sorted(routes_by_id.items()):
+        if route_id in verified_nonplayable:
+            nonplayable_routes.append({
+                **verified_nonplayable[route_id],
+                "sourceFile": route.get("_sourceFile"),
+            })
+            continue
         route_trips = sorted(
             trips_by_source_route.get(route_id, []),
             key=lambda row: (int(row.get("departureMinute", 99999)), str(row.get("tripId", ""))),
@@ -324,6 +340,8 @@ def main() -> None:
         "promotedSailingCount": len(sailings),
         "coveredDuplicateRouteCount": len(covered_duplicates),
         "coveredDuplicateRoutes": covered_duplicates,
+        "verifiedNonPlayableRouteCount": len(nonplayable_routes),
+        "verifiedNonPlayableRoutes": nonplayable_routes,
         "skippedRouteCount": len(skipped),
         "skippedReasonCounts": {},
         "skippedRoutes": skipped,
