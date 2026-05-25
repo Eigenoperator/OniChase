@@ -252,11 +252,14 @@ python scripts/ingest/build_v5_bus_planner_tiles.py
 Current output on `2026-05-16`:
 
 - Service date: `2026-05-16` Saturday.
-- 374 planner tiles at `0.25` degree resolution.
-- 23,580 active bus trips for the service date.
-- 683,004 indexed stop-time rows.
-- 107,349 walking connectors.
-- 4,536 routes with GTFS fare-rule coverage.
+- 461 planner tiles at `0.25` degree resolution.
+- 28,659 active bus trips for the service date.
+- 711,205 indexed stop-time rows.
+- 112,867 walking connectors.
+- 4,580 routes with GTFS fare-rule coverage.
+- Official non-GTFS local bus augmentation includes port connector buses such
+  as 小豆島オリーブバス 坂手線 and 直島町営バス, imported only from official
+  timetable sources with real stop coordinates.
 
 Runtime flow:
 
@@ -271,10 +274,12 @@ Runtime flow:
 ## Known First-Layer Limits
 
 - GTFS repository coverage is broad but not all Japanese buses.
-- Some airport limousine and highway buses may not publish GTFS; those need
-  official operator parsers.
+- Some airport limousine, highway, port-access, and island local buses may not
+  publish GTFS; those need official operator parsers.
 - Reservation rules are not guaranteed by GTFS and need route/operator audits.
-- Port connectors wait for the ferry node dataset.
+- Port connectors are generated from the ferry node dataset at the active 2 km
+  threshold. Ports beyond that threshold require real bus/rail connector data,
+  not synthetic long walking edges.
 - Bus fares use GTFS fare rules when available. Missing fare rules remain
   unknown rather than estimated.
 - The first playable bus layer is service-date based. More weekday switching

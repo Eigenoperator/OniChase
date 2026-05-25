@@ -155,9 +155,21 @@ Current status:
   - `docs/data/v5_port_connectors.json`
   - `data/v5_port_connector_audit.json`
   - `docs/data/v5_port_connector_audit.json`
-  - Current coverage: 366 ports scanned; 179 have rail/bus/airport access
-    within 2 km; 187 remain connector gaps pending real local bus or access
+  - `data/v5_ship_port_access_priority_audit.json`
+  - `docs/data/v5_ship_port_access_priority_audit.json`
+  - Current coverage: 366 ports scanned; 184 have rail/bus/airport access
+    within 2 km; 182 remain connector gaps pending real local bus or access
     data.
+  - Added official local-bus connector source `data/v5_port_connector_official_bus_source.json`
+    for 小豆島オリーブバス 坂手線（土庄港 ⇔ 坂手港ターミナル前） and
+    直島町営バス（宮浦港 ⇔ つつじ荘）. These are playable bus trips with
+    real stop coordinates and official timetable sources, then linked to ports
+    through generated 2 km port connectors.
+  - The priority audit separates ports that need real mainland/large-island
+    connector collection from remote or small-island cases that can be recorded
+    as local-island connector gaps. Port names are not enough for collection:
+    ambiguous names such as 大島港 must be checked with route/operator and
+    coordinates before adding access data.
 
 ## Current Official Source Files
 

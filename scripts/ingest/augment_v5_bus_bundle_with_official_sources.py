@@ -311,9 +311,9 @@ def read_json(path: Path) -> Any:
 def write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.suffix == ".gz":
+        text = json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n"
         with gzip.open(path, "wt", encoding="utf-8", compresslevel=9) as handle:
-            json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
-            handle.write("\n")
+            handle.write(text)
         return
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -735,7 +735,11 @@ def append_official_route(
     if not trips:
         return {"status": "skipped_no_trips", "tripCount": 0, "routeCode": fallback_route_code(route), "routeName": route.get("routeName")}
     route_code = fallback_route_code(route)
-    feed_key = stable_slug("official_airport_bus", path.name, route_code or route.get("routeName"))
+    route_airport = str(route.get("airportIata") or "")
+    feed_kind = str(route.get("feedKind") or ("official_airport_bus" if route_airport else "official_bus"))
+    service_class = str(route.get("serviceClass") or ("bus_airport" if route_airport else "bus_local"))
+    route_color = str(route.get("routeColor") or ("2c7be5" if service_class == "bus_airport" else "0f766e")).lstrip("#")
+    feed_key = stable_slug(feed_kind, path.name, route_code or route.get("routeName"))
     route_id = f"bus:route:official:{feed_key}"
     if any(existing.get("busRouteId") == route_id for existing in bundle.get("routes") or []):
         return {
@@ -747,7 +751,6 @@ def append_official_route(
             "tripCount": len(trips),
         }
 
-    route_airport = str(route.get("airportIata") or "")
     source_coords = route_stop_coordinate_index(route)
     all_stop_names = []
     for trip in trips:
@@ -860,8 +863,8 @@ def append_official_route(
             "routeLongName": route.get("routeName") or "",
             "routeDesc": route.get("sourceUrl") or "",
             "routeType": 3,
-            "serviceClass": "bus_airport",
-            "routeColor": "2c7be5",
+            "serviceClass": service_class,
+            "routeColor": route_color,
             "routeTextColor": "ffffff",
             "sourceRefs": [ref],
         }
@@ -907,7 +910,7 @@ def append_official_route(
                 "busShapeId": None,
                 "wheelchairAccessible": None,
                 "bikesAllowed": None,
-                "serviceClass": "bus_airport",
+                "serviceClass": service_class,
             }
         )
         appended_trips += 1
@@ -954,6 +957,8 @@ def append_official_route(
         "routeCode": route_code,
         "routeName": route.get("routeName") or "",
         "sourcePath": str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path),
+        "feedKind": feed_kind,
+        "serviceClass": service_class,
         "stopCount": len(resolved),
         "tripCount": appended_trips,
         "stopTimeCount": appended_stop_times,
