@@ -1402,6 +1402,7 @@
     const AIRPORT_BUS_ACCESS_AUDIT_URL = './data/v5_airport_bus_access_audit.json';
     const SHIP_MAP_URL = './data/v5_ship_map.geojson';
     const SHIP_TIMETABLE_URL = './data/v5_ship_timetable_current_bundle.json';
+    const PORT_CONNECTORS_URL = './data/v5_port_connectors.json';
     const BUS_MAP_MANIFEST_URL = './data/v5_bus_map_tiles/manifest.json';
     const BUS_PLANNER_MANIFEST_URL = './data/v5_bus_planner_tiles/manifest.json';
     const BUS_MAP_AROUND_FALLBACK_RADII_METERS = [25000, 60000, 120000];
@@ -5753,6 +5754,8 @@
       shipTimetable: null,
       shipSailingById: new Map(),
       shipSailingsByOriginPort: new Map(),
+      portConnectors: null,
+      portAccessByName: new Map(),
       nearestPortStationCache: new Map(),
       busMapManifest: null,
       busMapTileCache: new Map(),
@@ -8302,6 +8305,24 @@
       } catch (error) {
         console.warn('Failed to load v5 ship map', error);
         indexShipMap(null);
+      }
+    }
+
+    function indexPortConnectors(payload) {
+      state.portConnectors = payload || null;
+      state.portAccessByName = new Map();
+      Object.entries(payload?.ports || {}).forEach(([name, access]) => {
+        state.portAccessByName.set(name, access);
+      });
+    }
+
+    async function loadPortConnectors() {
+      try {
+        const payload = await fetchJsonMaybeGz(PORT_CONNECTORS_URL);
+        indexPortConnectors(payload);
+      } catch (error) {
+        console.warn('Failed to load v5 port connectors', error);
+        indexPortConnectors(null);
       }
     }
 
@@ -13373,23 +13394,23 @@
               mapStationGroupId: null,
             };
           }
-          const destinationStationGroupId = catchability.destinationStation.stationGroupId;
-          const destinationStationCoordinate = stationLonLat(destinationStationGroupId);
-          const destinationWalkTimeSec = Number(step.destination_access_walk_time_sec) || walkingTimeSecForDistance(catchability.destinationStation.distanceMeters, walkingSpeedMetersPerSecondFor(playerId));
+          const destinationAccess = catchability.destinationAccess;
+          const destinationAccessCoordinate = accessCoordinate(destinationAccess);
+          const destinationWalkTimeSec = Number(step.destination_access_walk_time_sec) || walkingTimeSecForDistance(destinationAccess.distanceMeters, walkingSpeedMetersPerSecondFor(playerId));
           const destinationWalkMinutes = Math.max(0, Math.ceil(destinationWalkTimeSec / 60));
-          const destinationStationArrivalMinute = catchability.arrivalMinute + destinationWalkMinutes;
-          if (timeCapMinute !== null && timeCapMinute < destinationStationArrivalMinute) {
+          const destinationAccessArrivalMinute = catchability.arrivalMinute + destinationWalkMinutes;
+          if (timeCapMinute !== null && timeCapMinute < destinationAccessArrivalMinute) {
             const ratio = destinationWalkMinutes <= 0 ? 1 : clamp((timeCapMinute - catchability.arrivalMinute) / destinationWalkMinutes, 0, 1);
-            const mapPosition = destinationCoordinate && destinationStationCoordinate
+            const mapPosition = destinationCoordinate && destinationAccessCoordinate
               ? [
-                  destinationCoordinate[0] + (destinationStationCoordinate[0] - destinationCoordinate[0]) * ratio,
-                  destinationCoordinate[1] + (destinationStationCoordinate[1] - destinationCoordinate[1]) * ratio,
+                  destinationCoordinate[0] + (destinationAccessCoordinate[0] - destinationCoordinate[0]) * ratio,
+                  destinationCoordinate[1] + (destinationAccessCoordinate[1] - destinationCoordinate[1]) * ratio,
                 ]
-              : destinationCoordinate || destinationStationCoordinate || null;
+              : destinationCoordinate || destinationAccessCoordinate || null;
             return {
               currentMinute: timeCapMinute,
               currentTime: minutesToHhmm(timeCapMinute),
-              currentState: { kind: 'WALK_FROM_PORT_TO_STATION', destinationPort: sailing.destinationPort, toStationGroupId: destinationStationGroupId },
+              currentState: { kind: 'WALK_FROM_PORT_TO_STATION', destinationPort: sailing.destinationPort, toAccessKind: destinationAccess.kind, toNodeId: destinationAccess.nodeId },
               currentTrip: null,
               currentBoardStop: null,
               resolvedSteps,
@@ -13397,15 +13418,18 @@
               mapStationGroupId: null,
             };
           }
-          currentMinute = destinationStationArrivalMinute;
-          currentState = { kind: 'NODE', stationGroupId: destinationStationGroupId, physicalStationId: null, alightTripId: null };
+          currentMinute = destinationAccessArrivalMinute;
+          currentState = destinationStateForAccess(destinationAccess, sailing.sailingId);
           resolvedSteps.push({
             ...step,
             origin_access_arrival_hhmm: minutesToHhmm(originArrivalMinute),
             departure_hhmm: minutesToHhmm(catchability.departureMinute),
             arrival_hhmm: minutesToHhmm(catchability.arrivalMinute),
-            destination_station_arrival_hhmm: minutesToHhmm(destinationStationArrivalMinute),
-            destination_access_station_id: destinationStationGroupId,
+            destination_station_arrival_hhmm: minutesToHhmm(destinationAccessArrivalMinute),
+            destination_access_kind: destinationAccess.kind,
+            destination_access_station_id: destinationAccess.stationGroupId || null,
+            destination_access_bus_stop_id: destinationAccess.busStopId || null,
+            destination_access_airport_iata: destinationAccess.airportIata || null,
             fare: step.fare || catchability.fare,
           });
           currentTrip = null;
@@ -14373,9 +14397,12 @@
         origin_access_bus_stop_id: catchability.originAccess.busStopId || null,
         origin_access_distance_meters: catchability.originAccess.distanceMeters,
         origin_access_walk_time_sec: catchability.originAccess.walkTimeSec,
-        destination_access_station_id: catchability.destinationStation.stationGroupId,
-        destination_access_distance_meters: catchability.destinationStation.distanceMeters,
-        destination_access_walk_time_sec: walkingTimeSecForDistance(catchability.destinationStation.distanceMeters),
+        destination_access_kind: catchability.destinationAccess.kind,
+        destination_access_station_id: catchability.destinationAccess.stationGroupId || null,
+        destination_access_bus_stop_id: catchability.destinationAccess.busStopId || null,
+        destination_access_airport_iata: catchability.destinationAccess.airportIata || null,
+        destination_access_distance_meters: catchability.destinationAccess.distanceMeters,
+        destination_access_walk_time_sec: catchability.destinationAccess.walkTimeSec,
         fare: catchability.fare,
       });
       state.planningRouteIds[state.activeMode] = null;
@@ -15440,9 +15467,44 @@
       return state.portByName?.get(name)?.geometry?.coordinates || null;
     }
 
+    function accessCoordinate(access) {
+      const coordinate = access?.coordinate;
+      if (coordinate && Number.isFinite(Number(coordinate.lon)) && Number.isFinite(Number(coordinate.lat))) {
+        return [Number(coordinate.lon), Number(coordinate.lat)];
+      }
+      if (access?.kind === 'station' || access?.mode === 'rail_station_group') return stationLonLat(access.stationGroupId || access.nodeId);
+      if (access?.kind === 'bus_stop' || access?.mode === 'bus_stop') return busStopCoordinate(access.busStopId || access.nodeId);
+      if (access?.kind === 'airport' || access?.mode === 'airport') return airportCoordinate(access.airportIata || access.iata || String(access.nodeId || '').replace(/^airport:/, ''));
+      return null;
+    }
+
+    function accessLabel(access) {
+      if (!access) return 'access point';
+      if (access.kind === 'station') return displayNameForGroup(access.stationGroupId);
+      if (access.kind === 'bus_stop') return busStopName(access.busStopId);
+      if (access.kind === 'airport') return airportName(access.airportIata);
+      return access.name || access.nodeId || 'access point';
+    }
+
+    function destinationStateForAccess(access, sailingId = null) {
+      if (access?.kind === 'station') {
+        return { kind: 'NODE', stationGroupId: access.stationGroupId, physicalStationId: null, alightTripId: null };
+      }
+      if (access?.kind === 'bus_stop') return { kind: 'BUS_STOP', busStopId: access.busStopId };
+      if (access?.kind === 'airport') return { kind: 'AIRPORT_WAIT', airportIata: access.airportIata, flightId: null, sailingId };
+      return null;
+    }
+
     function nearestStationGroupForPort(name) {
       if (!name) return null;
       if (state.nearestPortStationCache.has(name)) return state.nearestPortStationCache.get(name);
+      const portAccess = state.portAccessByName?.get(name);
+      const firstRail = portAccess?.rail?.[0];
+      if (firstRail?.nodeId) {
+        const best = { stationGroupId: firstRail.nodeId, distanceMeters: Number(firstRail.distanceMeters) };
+        state.nearestPortStationCache.set(name, best);
+        return best;
+      }
       const port = portCoordinate(name);
       let best = null;
       state.stationGroupById.forEach((_group, stationGroupId) => {
@@ -15455,6 +15517,72 @@
       });
       state.nearestPortStationCache.set(name, best);
       return best;
+    }
+
+    function bestDestinationAccessForPort(name, playerId = state.activeMode) {
+      const portAccess = state.portAccessByName?.get(name);
+      const candidates = [];
+      (portAccess?.rail || []).forEach((item) => {
+        if (!item?.nodeId) return;
+        candidates.push({
+          kind: 'station',
+          stationGroupId: item.nodeId,
+          nodeId: item.nodeId,
+          name: item.name,
+          coordinate: item.coordinate,
+          distanceMeters: Number(item.distanceMeters),
+        });
+      });
+      (portAccess?.busStops || []).forEach((item) => {
+        if (!item?.nodeId) return;
+        candidates.push({
+          kind: 'bus_stop',
+          busStopId: item.nodeId,
+          nodeId: item.nodeId,
+          name: item.name,
+          coordinate: item.coordinate,
+          distanceMeters: Number(item.distanceMeters),
+        });
+      });
+      (portAccess?.airports || []).forEach((item) => {
+        const airportIata = item?.iata || String(item?.nodeId || '').replace(/^airport:/, '');
+        if (!airportIata) return;
+        candidates.push({
+          kind: 'airport',
+          airportIata,
+          nodeId: item.nodeId,
+          name: item.name,
+          coordinate: item.coordinate,
+          distanceMeters: Number(item.distanceMeters),
+        });
+      });
+      if (!candidates.length) {
+        const station = nearestStationGroupForPort(name);
+        if (station?.stationGroupId) {
+          candidates.push({
+            kind: 'station',
+            stationGroupId: station.stationGroupId,
+            nodeId: station.stationGroupId,
+            name: displayNameForGroup(station.stationGroupId),
+            coordinate: stationLonLat(station.stationGroupId) ? { lon: stationLonLat(station.stationGroupId)[0], lat: stationLonLat(station.stationGroupId)[1] } : null,
+            distanceMeters: Number(station.distanceMeters),
+          });
+        }
+      }
+      const best = candidates
+        .filter((item) => Number.isFinite(item.distanceMeters))
+        .sort((a, b) =>
+          a.distanceMeters - b.distanceMeters ||
+          ({ station: 0, bus_stop: 1, airport: 2 }[a.kind] ?? 9) - ({ station: 0, bus_stop: 1, airport: 2 }[b.kind] ?? 9) ||
+          String(accessLabel(a)).localeCompare(String(accessLabel(b)), 'ja')
+        )[0] || null;
+      if (!best) return null;
+      const walkTimeSec = walkingTimeSecForDistance(best.distanceMeters, walkingSpeedMetersPerSecondFor(playerId));
+      return {
+        ...best,
+        walkTimeSec,
+        walkMinutes: Math.max(0, Math.ceil(walkTimeSec / 60)),
+      };
     }
 
     function shipFare(sailing) {
@@ -15510,7 +15638,10 @@
     function shipCatchability(sailing, preview, playerId = state.activeMode) {
       const reasons = [];
       const originAccess = shipAccessFromPreview(preview, sailing?.originPort, playerId);
-      const destinationStation = nearestStationGroupForPort(sailing?.destinationPort);
+      const destinationAccess = bestDestinationAccessForPort(sailing?.destinationPort, playerId);
+      const destinationStation = destinationAccess?.kind === 'station'
+        ? { stationGroupId: destinationAccess.stationGroupId, distanceMeters: destinationAccess.distanceMeters }
+        : nearestStationGroupForPort(sailing?.destinationPort);
       const departureMinute = Number(sailing?.departureMinute);
       const arrivalMinute = Number(sailing?.arrivalMinute);
       const fare = shipFare(sailing);
@@ -15522,9 +15653,9 @@
       if (Number.isFinite(departureMinute) && originArrivalMinute > departureMinute) {
         reasons.push(`reach port by ${minutesToHhmm(departureMinute)}`);
       }
-      if (!destinationStation?.stationGroupId) reasons.push(`no station near ${sailing?.destinationPort || 'destination port'}`);
-      if (destinationStation && destinationStation.distanceMeters > V5_SHIP_PORT_ACCESS_RADIUS_METERS) {
-        reasons.push(`destination port needs bus connector`);
+      if (!destinationAccess?.kind) reasons.push(`no access near ${sailing?.destinationPort || 'destination port'}`);
+      if (destinationAccess && destinationAccess.distanceMeters > V5_SHIP_PORT_ACCESS_RADIUS_METERS) {
+        reasons.push(`destination port access too far: ${walkingDistanceLabel(destinationAccess.distanceMeters)}`);
       }
       if (!Number.isFinite(arrivalMinute) || !Number.isFinite(departureMinute)) reasons.push('missing sailing time');
       if (!fare.fare_known) reasons.push('missing real fare');
@@ -15532,6 +15663,7 @@
         ok: reasons.length === 0,
         reasons,
         originAccess,
+        destinationAccess,
         destinationStation,
         departureMinute,
         arrivalMinute,
@@ -15651,7 +15783,7 @@
         const status = shipCatchability(sailing, preview);
         const disabled = status.ok ? '' : 'disabled';
         const accessText = status.ok
-          ? `${walkingDistanceLabel(status.originAccess.distanceMeters)} to port · ${walkingDistanceLabel(status.destinationStation.distanceMeters)} from port`
+          ? `${walkingDistanceLabel(status.originAccess.distanceMeters)} to port · ${walkingDistanceLabel(status.destinationAccess.distanceMeters)} to ${accessLabel(status.destinationAccess)}`
           : shipBlockedReasonText(status.reasons);
         return `
           <button class="route-row" type="button" data-row-key="${escapeHtml(`ship:${sailing.sailingId}`)}" data-action="take-ship" data-sailing-id="${escapeHtml(sailing.sailingId)}" ${disabled}>
@@ -16718,7 +16850,13 @@
           const sailing = state.shipSailingById.get(step.sailing_id);
           const departHhmm = sailing?.departureHhmm || step.departure_hhmm || '--:--';
           const arriveHhmm = sailing?.arrivalHhmm || step.arrival_hhmm || '--:--';
-          const destinationStation = sailing ? nearestStationGroupForPort(sailing.destinationPort) : { stationGroupId: step.destination_access_station_id };
+          const destinationAccess = sailing ? bestDestinationAccessForPort(sailing.destinationPort) : {
+            kind: step.destination_access_kind || 'station',
+            stationGroupId: step.destination_access_station_id || null,
+            busStopId: step.destination_access_bus_stop_id || null,
+            airportIata: step.destination_access_airport_iata || null,
+            distanceMeters: Number(step.destination_access_distance_meters) || 0,
+          };
           const fare = step.fare || (sailing ? shipFare(sailing) : null);
           rows.push({
             time: `LEG ${legIndex}`,
@@ -16728,10 +16866,10 @@
             editable: false,
           });
           const arrivalMinute = sailing ? Number(sailing.arrivalMinute) : hhmmToMinutes(arriveHhmm);
-          const destinationWalkTimeSec = Number(step.destination_access_walk_time_sec) || (destinationStation?.distanceMeters ? walkingTimeSecForDistance(destinationStation.distanceMeters) : 0);
+          const destinationWalkTimeSec = Number(step.destination_access_walk_time_sec) || (destinationAccess?.distanceMeters ? walkingTimeSecForDistance(destinationAccess.distanceMeters) : 0);
           if (Number.isFinite(arrivalMinute)) currentMinute = arrivalMinute + Math.max(0, Math.ceil(destinationWalkTimeSec / 60));
-          if (destinationStation?.stationGroupId) chainStation = destinationStation.stationGroupId;
-          chainBusStop = null;
+          chainStation = destinationAccess?.stationGroupId || null;
+          chainBusStop = destinationAccess?.busStopId || null;
           pendingTrip = null;
           pendingBoardStop = null;
           pendingBusTrip = null;
@@ -17073,6 +17211,7 @@
       let currentMinute = hhmmToMinutes(scenario.start_time_hhmm);
       let currentStationId = playerData.start_station_id;
       let currentBusStopId = null;
+      let currentAirportId = null;
       let currentStationPhysicalId = null;
       let currentStationTrip = null;
       let currentTrip = null;
@@ -17255,13 +17394,15 @@
           continue;
         }
         if (action.type === 'TAKE_FLIGHT') {
-          if (!currentStationId && !currentBusStopId) throw new Error(`${playerId} cannot board a flight away from an airport access point`);
+          if (!currentStationId && !currentBusStopId && !currentAirportId) throw new Error(`${playerId} cannot board a flight away from an airport access point`);
           const flight = state.flightById.get(action.flight_id);
           if (!flight) throw new Error(`Unknown flight ${action.flight_id}`);
           const preview = {
             currentState: currentStationId
               ? { kind: 'NODE', stationGroupId: currentStationId }
-              : { kind: 'BUS_STOP', busStopId: currentBusStopId },
+              : currentBusStopId
+                ? { kind: 'BUS_STOP', busStopId: currentBusStopId }
+                : { kind: 'AIRPORT_WAIT', airportIata: currentAirportId },
             currentMinute,
           };
           const catchability = flightCatchability(flight, preview);
@@ -17280,7 +17421,8 @@
             destination_airport: flight.destinationAirport,
             from_station_id: currentStationId,
             from_bus_stop_id: currentBusStopId,
-            from_label: currentStationId ? displayNameForGroup(currentStationId) : busStopName(currentBusStopId),
+            from_airport_iata: currentAirportId,
+            from_label: currentStationId ? displayNameForGroup(currentStationId) : (currentBusStopId ? busStopName(currentBusStopId) : airportName(currentAirportId)),
             to_station_id: arrivalStationId,
             to_label: displayNameForGroup(arrivalStationId),
             purchase_hhmm: minutesToHhmm(currentMinute),
@@ -17319,6 +17461,7 @@
           currentMinute = times.cooldownEndMinute;
           currentStationId = arrivalStationId;
           currentBusStopId = null;
+          currentAirportId = null;
           currentStationPhysicalId = null;
           currentStationTrip = null;
           currentTrip = null;
@@ -17341,9 +17484,10 @@
           if (!catchability.ok) throw new Error(`${playerId} cannot take ship ${sailing.sailingId}: ${catchability.reasons.join(', ')}`);
           const originWalkMinutes = catchability.originAccess.walkMinutes;
           const originPortArrivalMinute = currentMinute + originWalkMinutes;
-          const destinationWalkTimeSec = Number(action.destination_access_walk_time_sec) || walkingTimeSecForDistance(catchability.destinationStation.distanceMeters, walkingSpeedMetersPerSecondFor(playerId));
+          const destinationAccess = catchability.destinationAccess;
+          const destinationWalkTimeSec = Number(action.destination_access_walk_time_sec) || walkingTimeSecForDistance(destinationAccess.distanceMeters, walkingSpeedMetersPerSecondFor(playerId));
           const destinationWalkMinutes = Math.max(0, Math.ceil(destinationWalkTimeSec / 60));
-          const stationArrivalMinute = catchability.arrivalMinute + destinationWalkMinutes;
+          const destinationAccessArrivalMinute = catchability.arrivalMinute + destinationWalkMinutes;
           const fare = action.fare || catchability.fare;
           const leg = {
             leg_index: legs.length + 1,
@@ -17359,14 +17503,16 @@
             from_station_id: currentStationId,
             from_bus_stop_id: currentBusStopId,
             from_label: currentStationId ? displayNameForGroup(currentStationId) : busStopName(currentBusStopId),
-            to_station_id: catchability.destinationStation.stationGroupId,
-            to_label: displayNameForGroup(catchability.destinationStation.stationGroupId),
+            to_station_id: destinationAccess.stationGroupId || null,
+            to_bus_stop_id: destinationAccess.busStopId || null,
+            to_airport_iata: destinationAccess.airportIata || null,
+            to_label: accessLabel(destinationAccess),
             origin_access_arrive_hhmm: minutesToHhmm(originPortArrivalMinute),
             depart_hhmm: minutesToHhmm(catchability.departureMinute),
             arrive_hhmm: minutesToHhmm(catchability.arrivalMinute),
-            destination_access_arrive_hhmm: minutesToHhmm(stationArrivalMinute),
+            destination_access_arrive_hhmm: minutesToHhmm(destinationAccessArrivalMinute),
             origin_access_distance_meters: catchability.originAccess.distanceMeters,
-            destination_access_distance_meters: catchability.destinationStation.distanceMeters,
+            destination_access_distance_meters: destinationAccess.distanceMeters,
             fare,
           };
           legs.push(leg);
@@ -17393,22 +17539,33 @@
             fare_total_yen: fare.total_yen,
             carrier_after: { kind: 'PORT_WAIT', portName: sailing.destinationPort, sailingId: sailing.sailingId },
           }));
-          events.push(formatEvent(stationArrivalMinute, 'WALK_FROM_PORT_TO_STATION', playerId, {
+          events.push(formatEvent(destinationAccessArrivalMinute, 'WALK_FROM_PORT_TO_STATION', playerId, {
             port_name: sailing.destinationPort,
-            station_group_id: catchability.destinationStation.stationGroupId,
-            distance_meters: catchability.destinationStation.distanceMeters,
+            station_group_id: destinationAccess.stationGroupId || null,
+            bus_stop_id: destinationAccess.busStopId || null,
+            airport_iata: destinationAccess.airportIata || null,
+            distance_meters: destinationAccess.distanceMeters,
             walk_time_sec: destinationWalkTimeSec,
-            carrier_after: { kind: 'NODE', stationGroupId: catchability.destinationStation.stationGroupId, physicalStationId: null },
+            carrier_after: destinationStateForAccess(destinationAccess, sailing.sailingId),
           }));
-          currentMinute = stationArrivalMinute;
-          currentStationId = catchability.destinationStation.stationGroupId;
-          currentBusStopId = null;
+          currentMinute = destinationAccessArrivalMinute;
+          currentStationId = destinationAccess.stationGroupId || null;
+          currentBusStopId = destinationAccess.busStopId || null;
+          currentAirportId = destinationAccess.airportIata || null;
           currentStationPhysicalId = null;
           currentStationTrip = null;
           currentTrip = null;
           currentBoardStop = null;
           currentBoardPhysicalStationId = null;
-          resolvedActions.push({ step_index: i + 1, ...action, fare, destination_access_station_id: currentStationId });
+          resolvedActions.push({
+            step_index: i + 1,
+            ...action,
+            fare,
+            destination_access_kind: destinationAccess.kind,
+            destination_access_station_id: destinationAccess.stationGroupId || null,
+            destination_access_bus_stop_id: destinationAccess.busStopId || null,
+            destination_access_airport_iata: destinationAccess.airportIata || null,
+          });
           continue;
         }
         if (action.type === 'BOARD_TRAIN') {
@@ -19131,6 +19288,7 @@
       await loadWalkingGraph();
       await loadFlightMap();
       await loadShipMap();
+      await loadPortConnectors();
       await loadShipTimetable();
       await loadFlightTimetable();
       await loadAirportBusAccessAudit();

@@ -133,11 +133,11 @@ Current status:
     fare are promoted to gameplay boarding.
   - The first playable cut promoted 6 directional routes and 62 sailings:
     青函フェリー, 津エアポートライン, and 神戸-関空ベイ・シャトル.
-  - V5 gameplay currently uses walking access from the current rail/bus node to
-    the origin port and walking access from the destination port to the nearest
-    rail station, with a configurable port-access radius. Bus/rail port
-    connector collection should replace long walking access where real
-    connector services exist.
+  - V5 gameplay uses walking access from the current rail/bus node to the
+    origin port. At the destination port, gameplay now chooses the nearest
+    generated rail, bus-stop, or airport access node within the configurable
+    port-access radius, so a player can continue from ports that have real
+    nearby connector data.
 - 400-sailing playable batch:
   - Added `data/v5_ship_playable_400_batch_official.json` with official
     high-frequency timetables and fares for JR西日本宮島フェリー, 宮島松大汽船,
@@ -150,6 +150,14 @@ Current status:
   - The remaining 542 map-visible directional routes stay visible but are not
     boardable because they still need exact timetable/fare/calendar promotion.
 - No fake port or route is included.
+- Port connector artifact:
+  - `data/v5_port_connectors.json`
+  - `docs/data/v5_port_connectors.json`
+  - `data/v5_port_connector_audit.json`
+  - `docs/data/v5_port_connector_audit.json`
+  - Current coverage: 366 ports scanned; 220 have rail/bus/airport access
+    within 5 km; 146 remain connector gaps pending real local bus or access
+    data.
 
 ## Current Official Source Files
 
