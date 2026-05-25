@@ -173,10 +173,10 @@ python scripts/ingest/build_v5_bus_planner_tiles.py
 Current port connector audit:
 
 - 366 ship/ferry port nodes scanned.
-- 1,619 bus stop -> port walking connectors are available in the bus planner
+- 963 bus stop -> port walking connectors are available in the bus planner
   tiles.
-- 220 ports have at least one rail, bus, or airport access node within 5 km.
-- 146 ports remain connector gaps in the current rail/bus/airport source layer;
+- 179 ports have at least one rail, bus, or airport access node within 2 km.
+- 187 ports remain connector gaps in the current rail/bus/airport source layer;
   they are listed in `data/v5_port_connector_audit.json` and should be cleared
   by adding real local bus/port access data rather than fake walking links.
 

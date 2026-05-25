@@ -155,8 +155,8 @@ Current status:
   - `docs/data/v5_port_connectors.json`
   - `data/v5_port_connector_audit.json`
   - `docs/data/v5_port_connector_audit.json`
-  - Current coverage: 366 ports scanned; 220 have rail/bus/airport access
-    within 5 km; 146 remain connector gaps pending real local bus or access
+  - Current coverage: 366 ports scanned; 179 have rail/bus/airport access
+    within 2 km; 187 remain connector gaps pending real local bus or access
     data.
 
 ## Current Official Source Files

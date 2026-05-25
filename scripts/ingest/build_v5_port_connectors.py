@@ -238,7 +238,11 @@ def build_port_access(
 
 
 def merge_bus_connectors(bus_bundle: dict[str, Any], new_connectors: list[dict[str, Any]]) -> tuple[int, int]:
-    existing = list(bus_bundle.get("walkingConnectors") or [])
+    existing = [
+        item
+        for item in list(bus_bundle.get("walkingConnectors") or [])
+        if not (item.get("toMode") == "port" and str(item.get("source") or "").startswith("generated_haversine_bus_stop_port_connector"))
+    ]
     by_key = {
         (item.get("fromNodeId"), item.get("toMode"), item.get("toNodeId")): item
         for item in existing
@@ -273,7 +277,7 @@ def main() -> None:
     parser.add_argument("--docs-output", type=Path, default=DEFAULT_DOCS_OUTPUT)
     parser.add_argument("--audit-output", type=Path, default=DEFAULT_AUDIT_OUTPUT)
     parser.add_argument("--docs-audit-output", type=Path, default=DEFAULT_DOCS_AUDIT_OUTPUT)
-    parser.add_argument("--max-connector-meters", type=int, default=5000)
+    parser.add_argument("--max-connector-meters", type=int, default=2000)
     parser.add_argument("--max-rail-connectors-per-port", type=int, default=8)
     parser.add_argument("--max-bus-connectors-per-port", type=int, default=16)
     parser.add_argument("--max-airport-connectors-per-port", type=int, default=4)
