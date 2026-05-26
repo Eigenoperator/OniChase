@@ -9682,6 +9682,7 @@
           'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 4, 8, ['+', 5, ['coalesce', ['get', 'rank'], 4]], 12, ['+', 8, ['*', ['coalesce', ['get', 'rank'], 4], 1.25]]],
           'circle-stroke-color': 'rgba(37,99,235,0.28)',
           'circle-stroke-width': 1,
+          'circle-opacity': ['case', ['==', ['get', 'shipMapRole'], 'available'], 0.58, 1],
         },
       });
       map.addLayer({
@@ -9691,9 +9692,15 @@
         filter: ['==', ['get', 'kind'], 'port'],
         layout: { visibility: 'none' },
         paint: {
-          'circle-color': '#2563eb',
+          'circle-color': [
+            'match',
+            ['get', 'shipMapRole'],
+            'origin', '#1d4ed8',
+            'destination', '#38bdf8',
+            '#2563eb',
+          ],
           'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.4, 8, ['+', 2.8, ['*', ['coalesce', ['get', 'rank'], 4], 0.42]], 12, ['+', 3.4, ['*', ['coalesce', ['get', 'rank'], 4], 0.58]]],
-          'circle-opacity': 0.96,
+          'circle-opacity': ['case', ['==', ['get', 'shipMapRole'], 'available'], 0.62, 0.98],
           'circle-stroke-color': '#ffffff',
           'circle-stroke-width': 1.7,
         },
@@ -9702,7 +9709,7 @@
         id: 'ship-port-labels',
         type: 'symbol',
         source: 'ship-map',
-        filter: ['==', ['get', 'kind'], 'port'],
+        filter: ['all', ['==', ['get', 'kind'], 'port'], ['==', ['get', 'shipLabelVisible'], true]],
         layout: {
           visibility: 'none',
           'text-field': ['get', 'name'],
@@ -10921,7 +10928,24 @@
       const selected = state.shipPlanning[state.activeMode] || {};
       const origin = selected.origin || null;
       const destination = selected.destination || null;
-      if (!state.shipMapActive || !origin) return state.shipMap || { type: 'FeatureCollection', features: [] };
+      if (!state.shipMapActive) return { type: 'FeatureCollection', features: [] };
+      const portFeatures = features.filter((feature) => feature?.properties?.kind === 'port');
+      const withShipMapProps = (feature, extraProps) => ({
+        ...feature,
+        properties: {
+          ...(feature?.properties || {}),
+          ...extraProps,
+        },
+      });
+      if (!origin) {
+        return {
+          type: 'FeatureCollection',
+          features: portFeatures.map((feature) => withShipMapProps(feature, {
+            shipMapRole: 'available',
+            shipLabelVisible: false,
+          })),
+        };
+      }
       const visiblePorts = new Set([origin]);
       const visibleRoutes = features.filter((feature) => {
         const props = feature?.properties || {};
@@ -10931,10 +10955,12 @@
         visiblePorts.add(props.destination);
         return true;
       });
-      const visiblePortFeatures = features.filter((feature) =>
-        feature?.properties?.kind === 'port' &&
-        visiblePorts.has(feature.properties.name)
-      );
+      const visiblePortFeatures = portFeatures
+        .filter((feature) => visiblePorts.has(feature.properties.name))
+        .map((feature) => withShipMapProps(feature, {
+          shipMapRole: feature.properties.name === origin ? 'origin' : 'destination',
+          shipLabelVisible: true,
+        }));
       return { type: 'FeatureCollection', features: [...visiblePortFeatures, ...visibleRoutes] };
     }
 
@@ -16420,12 +16446,16 @@
 
     function backToShipOrigins() {
       state.shipPlanning[state.activeMode] = { origin: null, destination: null };
+      updateShipMapLayers();
+      focusShipMap();
       renderGame();
     }
 
     function backToShipDestinations() {
       const current = state.shipPlanning[state.activeMode] || {};
       state.shipPlanning[state.activeMode] = { origin: current.origin || null, destination: null };
+      updateShipMapLayers();
+      focusShipMap();
       renderGame();
     }
 
