@@ -9,8 +9,9 @@ review first.
 - `remotePortCount`: 111
 - `identityReviewFirst`: 36
 - `type2NoCollectionNeededNow`: 0
-- `type2CandidateConfirmNoOnwardCollection`: 15
-- `type1CollectIslandBus`: 60
+- `type2ConfirmedNoOnwardCollection`: 6
+- `type2CandidateConfirmNoOnwardCollection`: 0
+- `type1CollectIslandBus`: 69
 
 ## identity_review_first
 
@@ -55,23 +56,18 @@ review first.
 
 - None.
 
+## type2_confirmed_no_onward_collection
+
+- **小値賀大島港** (8 sailings): official town transport page lists ferry access to Oshima, but land bus coverage only for Ojika main island; no Oshima public bus source found
+- **見島本村港** (6 sailings): official/tourism access pages show ship access and mainland access, but no public island bus source was found for Mishima
+- **青ヶ島三宝港** (3 sailings): official barrier-free terminal record says Aogashima has no bus, taxi, or other land public transport
+- **硫黄島港** (2 sailings): official Mishima village transport plan says the village has no bus/taxi public transport
+- **舳倉島港** (2 sailings): official/search review found mainland Wajima bus but no public bus source on Hegurajima; treat as terminal-only until an island transport source appears
+- **飛島勝浦港** (2 sailings): island profile says Tobishima has no taxi or transport service and movement is on foot or free rental bicycle
+
 ## type2_candidate_confirm_no_onward_collection
 
-- **網地港** (16 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **大島岡田港** (14 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **小値賀柳港** (10 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **小値賀大島港** (8 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **瀬相** (8 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **笛吹** (8 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **上五島** (6 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **生間** (6 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **見島本村港** (6 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **佐世保柳港** (3 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **青ヶ島三宝港** (3 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **友住** (2 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **硫黄島港** (2 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **舳倉島港** (2 sailings): no known rail/bus source nearby; candidate terminal-only remote port
-- **飛島勝浦港** (2 sailings): no known rail/bus source nearby; candidate terminal-only remote port
+- None.
 
 ## type1_collect_island_bus
 
@@ -85,8 +81,10 @@ review first.
 - **初島港** (20 sailings): rail exists within 8203m but outside 2km; likely needs local access review
 - **御所浦** (20 sailings): bus source exists within 5648m but outside 2km; likely needs local access review
 - **沼島港** (20 sailings): bus source exists within 3780m but outside 2km; likely needs local access review
+- **網地港** (16 sailings): official Ishinomaki source says Ajishima has a citizen bus; collect the Ajishima bus system
 - **佐久島東港** (14 sailings): bus source exists within 8540m but outside 2km; likely needs local access review
 - **利島港** (14 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
+- **大島岡田港** (14 sailings): official Oshima Bus source lists route bus service at/around Okada Port; collect Oshima bus
 - **宗像大島港** (14 sailings): bus source exists within 7592m but outside 2km; likely needs local access review
 - **田代島仁斗田港** (14 sailings): remote record, but nearby access signal is ambiguous
 - **大多府港** (13 sailings): bus source exists within 4677m but outside 2km; likely needs local access review
@@ -99,6 +97,7 @@ review first.
 - **飛島** (12 sailings): remote record, but nearby access signal is ambiguous
 - **保戸島** (10 sailings): rail exists within 8985m but outside 2km; likely needs local access review
 - **印通寺** (10 sailings): bus source exists within 2897m but outside 2km; likely needs local access review
+- **小値賀柳港** (10 sailings): official Ojika/Kyushu passenger-ship sources list Ojika Kotsu access to Yanagi; collect Ojika demand bus
 - **的山港** (10 sailings): remote record, but nearby access signal is ambiguous
 - **竹富港** (10 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
 - **阿多田港** (10 sailings): bus source exists within 3549m but outside 2km; likely needs local access review
@@ -107,10 +106,13 @@ review first.
 - **六連島** (8 sailings): bus source exists within 5829m but outside 2km; likely needs local access review
 - **壱岐大島港** (8 sailings): bus source exists within 6525m but outside 2km; likely needs local access review
 - **大津島馬島港** (8 sailings): rail exists within 7982m but outside 2km; likely needs local access review
+- **瀬相** (8 sailings): official tourism source says Kakeroma buses wait at Sesou Port; collect Kakeroma Bus
+- **笛吹** (8 sailings): official Ojika/Kyushu passenger-ship sources list Ojika Kotsu access to Fuefuki; collect Ojika demand bus
 - **糸島姫島港** (8 sailings): rail exists within 8155m but outside 2km; likely needs local access review
 - **西表上原港** (8 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
 - **鮎川港** (8 sailings): remote record, but nearby access signal is ambiguous
 - **神島港** (7 sailings): remote record, but nearby access signal is ambiguous
+- **上五島** (6 sailings): official Shinkamigoto source says the town has public route buses; collect Shinkamigoto/Saihi bus
 - **八幡浜大島港** (6 sailings): bus source exists within 6790m but outside 2km; likely needs local access review
 - **六島** (6 sailings): bus source exists within 6711m but outside 2km; likely needs local access review
 - **小浜港** (6 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
@@ -120,6 +122,7 @@ review first.
 - **母島沖港** (6 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
 - **江島港** (6 sailings): remote record, but nearby access signal is ambiguous
 - **波照間港** (6 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
+- **生間** (6 sailings): official tourism source says Kakeroma buses wait at Ikenma Port; collect Kakeroma Bus
 - **西表大原港** (6 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
 - **黒島港** (6 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
 - **八丈島底土港** (5 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
@@ -130,7 +133,9 @@ review first.
 - **粟島港** (4 sailings): remote record, but nearby access signal is ambiguous
 - **郷ノ首** (4 sailings): remote record, but nearby access signal is ambiguous
 - **鳩間港** (4 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
+- **佐世保柳港** (3 sailings): official passenger-ship source lists Ojika Kotsu at Yanagi; collect Ojika demand bus
 - **兼城港** (2 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
+- **友住** (2 sailings): official Shinkamigoto source and current bus references show Saihi Bus service through Tomozumi; collect Shinkamigoto/Saihi bus
 - **渡嘉敷港** (2 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
 - **粟国港** (2 sailings): island/bus hint exists; collect or verify official island bus before terminal-only decision
 - **輪島港** (2 sailings): remote record, but nearby access signal is ambiguous
