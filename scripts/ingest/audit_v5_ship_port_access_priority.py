@@ -18,6 +18,7 @@ DEFAULT_PORT_CONNECTORS = ROOT / "data" / "v5_port_connectors.json"
 DEFAULT_PORT_CONNECTOR_AUDIT = ROOT / "data" / "v5_port_connector_audit.json"
 DEFAULT_BUS_BUNDLE = ROOT / "data" / "v5_bus_gtfs_current_bundle.json.gz"
 DEFAULT_MAP_BUNDLE = ROOT / "data" / "v4_gameplay_map_bundle.json.gz"
+DEFAULT_SHIP_MAP = ROOT / "docs" / "data" / "v5_ship_map.geojson"
 DEFAULT_SHIP_TIMETABLE = ROOT / "docs" / "data" / "v5_ship_timetable_current_bundle.json"
 DEFAULT_OUTPUT = ROOT / "data" / "v5_ship_port_access_priority_audit.json"
 DEFAULT_DOCS_OUTPUT = ROOT / "docs" / "data" / "v5_ship_port_access_priority_audit.json"
@@ -84,6 +85,21 @@ REMOTE_ISLAND_NAME_HINTS = [
     "新島",
     "式根島",
 ]
+GENERIC_AMBIGUOUS_PORT_NAMES = {
+    "大島港",
+    "長崎港",
+    "戸畑",
+    "呼子",
+    "佐伯",
+    "明石",
+    "笠岡",
+    "久賀",
+    "三津浜港",
+    "平戸港",
+    "土生",
+    "青森港",
+    "新潟港",
+}
 
 
 def read_json(path: Path) -> Any:
@@ -186,6 +202,48 @@ def ship_usage(timetable: dict[str, Any]) -> dict[str, Any]:
     return {"counts": by_port, "examples": examples}
 
 
+def ship_map_port_props(ship_map: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    rows = {}
+    for feature in ship_map.get("features") or []:
+        props = feature.get("properties") or {}
+        if props.get("kind") != "port":
+            continue
+        name = props.get("name")
+        if name:
+            rows[str(name)] = props
+    return rows
+
+
+def operator_contexts(timetable: dict[str, Any]) -> dict[str, list[str]]:
+    rows: dict[str, set[str]] = defaultdict(set)
+    for sailing in timetable.get("sailings") or []:
+        operator = str(sailing.get("operator") or "").strip()
+        if not operator:
+            continue
+        for key in ("originPort", "destinationPort"):
+            port = str(sailing.get(key) or "").strip()
+            if port:
+                rows[port].add(operator)
+    return {port: sorted(values) for port, values in rows.items()}
+
+
+def coordinate_identity_review(port_name: str, port_props: dict[str, Any], operators: list[str]) -> tuple[str, list[str]]:
+    reasons = []
+    source = str(port_props.get("coordinateSource") or "")
+    display = str(port_props.get("coordinateDisplayName") or "")
+    if "needs_precise_port_review" in source:
+        reasons.append("coordinate source already marked needs_precise_port_review")
+    if display and port_name not in display:
+        reasons.append(f"coordinate display name does not contain port name: {display[:80]}")
+    if port_name in GENERIC_AMBIGUOUS_PORT_NAMES and len(operators) >= 1:
+        reasons.append("generic/ambiguous port name; verify route/operator/region before adding connectors")
+    if len(operators) >= 4:
+        reasons.append(f"multiple operator contexts share this port name: {', '.join(operators[:5])}")
+    if reasons:
+        return "needs_port_identity_fix", reasons
+    return "ok", []
+
+
 def classify_port(port_name: str, point: dict[str, float], nearest_rail: dict[str, Any] | None, nearest_bus: dict[str, Any] | None, sailings: int) -> tuple[str, list[str]]:
     reasons = []
     band = land_band_for(point)
@@ -215,6 +273,7 @@ def main() -> None:
     parser.add_argument("--port-connector-audit", type=Path, default=DEFAULT_PORT_CONNECTOR_AUDIT)
     parser.add_argument("--bus-bundle", type=Path, default=DEFAULT_BUS_BUNDLE)
     parser.add_argument("--map-bundle", type=Path, default=DEFAULT_MAP_BUNDLE)
+    parser.add_argument("--ship-map", type=Path, default=DEFAULT_SHIP_MAP)
     parser.add_argument("--ship-timetable", type=Path, default=DEFAULT_SHIP_TIMETABLE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--docs-output", type=Path, default=DEFAULT_DOCS_OUTPUT)
@@ -224,10 +283,13 @@ def main() -> None:
     connector_audit = read_json(args.port_connector_audit)
     bus_bundle = read_json(args.bus_bundle)
     map_bundle = read_json(args.map_bundle)
+    ship_map = read_json(args.ship_map)
     timetable = read_json(args.ship_timetable)
     rail_nodes = station_nodes(map_bundle)
     bus_nodes = bus_stop_nodes(bus_bundle)
     usage = ship_usage(timetable)
+    port_props_by_name = ship_map_port_props(ship_map)
+    operators_by_port = operator_contexts(timetable)
     rows = []
     for item in connector_audit.get("portsWithoutAnyAccess") or []:
         port_name = item["portName"]
@@ -238,11 +300,22 @@ def main() -> None:
         counts = usage["counts"].get(port_name, Counter())
         sailing_count = int(counts.get("originSailings", 0) + counts.get("destinationSailings", 0))
         category, reasons = classify_port(port_name, point, nearest_rail, nearest_bus, sailing_count)
+        port_props = port_props_by_name.get(port_name, {})
+        operators = operators_by_port.get(port_name, [])
+        identity_status, identity_reasons = coordinate_identity_review(port_name, port_props, operators)
+        if identity_status == "needs_port_identity_fix" and sailing_count:
+            category = "resolve_port_identity_first"
+            reasons = identity_reasons + reasons
         rows.append({
             "portName": port_name,
             "coordinate": coordinate,
             "category": category,
             "reasons": reasons,
+            "coordinateIdentityStatus": identity_status,
+            "coordinateIdentityReasons": identity_reasons,
+            "coordinateSource": port_props.get("coordinateSource"),
+            "coordinateDisplayName": port_props.get("coordinateDisplayName"),
+            "operatorContexts": operators,
             "playableSailingCount": sailing_count,
             "originSailingCount": int(counts.get("originSailings", 0)),
             "destinationSailingCount": int(counts.get("destinationSailings", 0)),
@@ -265,9 +338,10 @@ def main() -> None:
         })
 
     priority_order = {
-        "collect_real_connector_high_priority": 0,
-        "collect_real_connector": 1,
-        "record_remote_or_small_island": 2,
+        "resolve_port_identity_first": 0,
+        "collect_real_connector_high_priority": 1,
+        "collect_real_connector": 2,
+        "record_remote_or_small_island": 3,
     }
     rows.sort(key=lambda row: (
         priority_order.get(row["category"], 9),
@@ -285,6 +359,7 @@ def main() -> None:
         "inputConnectorMaxMeters": port_connectors.get("maxConnectorMeters"),
         "summary": {
             "portsWithout2kmAccess": len(rows),
+            "resolvePortIdentityFirst": counts.get("resolve_port_identity_first", 0),
             "collectRealConnectorHighPriority": counts.get("collect_real_connector_high_priority", 0),
             "collectRealConnector": counts.get("collect_real_connector", 0),
             "recordRemoteOrSmallIsland": counts.get("record_remote_or_small_island", 0),
@@ -293,6 +368,7 @@ def main() -> None:
         "rules": {
             "portAccessPlayableRadiusMeters": port_connectors.get("maxConnectorMeters"),
             "highPriority": "No 2km connector, used by playable ship sailings, and likely on major land or near rail/bus source coverage.",
+            "resolvePortIdentityFirst": "No connector, but current port coordinate is suspicious or the port name is ambiguous. Fix the port identity before collecting access connectors.",
             "collectRealConnector": "No 2km connector but likely mainland/major-island or has rail/bus source coverage nearby; collect official port bus/access data.",
             "recordRemoteOrSmallIsland": "No nearby rail/bus source coverage and remote-island hints; record as island access gap until local island bus data is intentionally collected.",
         },

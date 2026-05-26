@@ -170,6 +170,16 @@ Current status:
     as local-island connector gaps. Port names are not enough for collection:
     ambiguous names such as 大島港 must be checked with route/operator and
     coordinates before adding access data.
+  - Current no-2 km access triage after identity review:
+    - 182 total no-access ports.
+    - 94 must resolve port identity first because the coordinate is suspicious
+      or the port name is ambiguous.
+    - 65 are high-priority real connector collection candidates.
+    - 6 are lower-priority real connector candidates.
+    - 17 are remote/small-island local access records.
+  - Connector collection rule: never add a bus/rail connector to a suspicious
+    same-name port. Fix `portName + operator/route context + coordinate` first,
+    then attach official bus/rail access.
 
 ## Current Official Source Files
 
