@@ -180,13 +180,19 @@ Current status:
     as local-island connector gaps. Port names are not enough for collection:
     ambiguous names such as 大島港 must be checked with route/operator and
     coordinates before adding access data.
+  - The audit must not use broad Honshu/Kyushu/Shikoku bounding boxes alone to
+    classify near-shore islands as mainland red lights. Explicit small-island
+    names such as 佐久島, 桂島, 玄界島, 飛島, 竹富, and 壱岐大島 are recorded
+    as remote/local-island access gaps unless a real 2 km connector is already
+    present or intentionally collected. Bridge-connected / urban-service cases
+    such as 伊王島 stay in the real connector collection queue.
   - Current no-2 km access triage after identity review:
     - 167 total no-access ports.
     - 0 must resolve port identity first; the previous ambiguous port-name
       red lights have been split by operator/route context.
-    - 125 are high-priority real connector collection candidates.
-    - 6 are lower-priority real connector candidates.
-    - 36 are remote/small-island local access records.
+    - 50 are high-priority real connector collection candidates.
+    - 1 is a lower-priority real connector candidate.
+    - 116 are remote/small-island local access records.
     - 159 playable-affected ports still need connector decisions.
   - Reservation-sensitive rule: reservation-demand access such as 江田島北部線
     / おれんじ号 must not be promoted as an ordinary bus until the bus model

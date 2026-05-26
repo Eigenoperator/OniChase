@@ -86,6 +86,78 @@ REMOTE_ISLAND_NAME_HINTS = [
     "新島",
     "式根島",
 ]
+REMOTE_RECORD_PORT_NAME_HINTS = [
+    # Explicit small or access-island ports.  The broad land-band boxes below
+    # cover many near-shore islands, so these names must be allowed to override
+    # the mainland-band shortcut when no 2 km public-transport connector exists.
+    "佐久島",
+    "桂島",
+    "野々島",
+    "石浜港",
+    "寒風沢",
+    "似島",
+    "大分姫島",
+    "宗方港",
+    "沼島",
+    "御所浦",
+    "佐合島",
+    "島浦",
+    "網地",
+    "湊",
+    "久比",
+    "宗像大島",
+    "玄界島",
+    "田代島",
+    "利島",
+    "大島岡田",
+    "大多府",
+    "朴島",
+    "出羽島",
+    "男木",
+    "馬島",
+    "飛島",
+    "式根島",
+    "新島",
+    "走島",
+    "伊保田",
+    "相島",
+    "岡村港",
+    "印通寺",
+    "阿多田",
+    "竹富",
+    "家浦",
+    "的山港",
+    "保戸島",
+    "小川島",
+    "牛島",
+    "壱岐大島",
+    "佐柳",
+    "五島久賀",
+    "六連島",
+    "糸島姫島",
+    "馬渡島",
+    "加唐島",
+    "情島",
+    "大津島",
+    "鮎川港",
+    "岩城港",
+    "伯方木浦港",
+    "土庄東港",
+    "白石島",
+    "大崎下島",
+    "斎島",
+    "横島",
+    "渡嘉敷",
+    "座間味",
+    "阿嘉",
+    "粟国",
+    "渡名喜",
+]
+REMOTE_RECORD_EXCEPTIONS = {
+    # Bridge-connected / urban-service islands where a real bus connector is
+    # expected and should remain in the collection queue.
+    "伊王島",
+}
 GENERIC_AMBIGUOUS_PORT_NAMES = {
     "大島港",
     "長崎港",
@@ -178,6 +250,16 @@ def land_band_for(point: dict[str, float]) -> str | None:
 
 def has_remote_name_hint(port_name: str) -> bool:
     return any(hint in port_name for hint in REMOTE_ISLAND_NAME_HINTS)
+
+
+def has_remote_record_hint(port_name: str) -> bool:
+    if any(token in port_name for token in REMOTE_RECORD_EXCEPTIONS):
+        return False
+    if any(hint in port_name for hint in REMOTE_RECORD_PORT_NAME_HINTS):
+        return True
+    if "島" in port_name and not any(token in port_name for token in ("島原", "鹿児島", "広島", "福島")):
+        return True
+    return False
 
 
 def ship_usage(timetable: dict[str, Any]) -> dict[str, Any]:
@@ -274,6 +356,9 @@ def classify_port(port_name: str, point: dict[str, float], nearest_rail: dict[st
         reasons.append(f"inside {band}")
     if has_remote_name_hint(port_name):
         reasons.append("remote island name hint")
+    remote_record_hint = has_remote_record_hint(port_name)
+    if remote_record_hint:
+        reasons.append("small/remote island record hint")
     rail_distance = nearest_rail["distanceMeters"] if nearest_rail else math.inf
     bus_distance = nearest_bus["distanceMeters"] if nearest_bus else math.inf
     if rail_distance <= 20_000:
@@ -282,6 +367,14 @@ def classify_port(port_name: str, point: dict[str, float], nearest_rail: dict[st
         reasons.append(f"bus stop within {bus_distance}m")
     if sailings:
         reasons.append(f"used by {sailings} playable sailings")
+
+    # A no-access port on a named small island should not stay as a mainland
+    # collection red light just because the island falls inside a broad Honshu /
+    # Kyushu / Shikoku bounding box.  If the port is already within 2 km of a
+    # connector, it would not be in this audit; otherwise record it as a local
+    # island connector gap until island bus data is intentionally collected.
+    if remote_record_hint and rail_distance > 2_000 and bus_distance > 2_000:
+        return "record_remote_or_small_island", reasons
 
     if sailings and (band or rail_distance <= 20_000 or bus_distance <= 10_000):
         return "collect_real_connector_high_priority", reasons
