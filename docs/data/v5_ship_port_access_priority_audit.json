@@ -1,15 +1,15 @@
 {
   "schemaVersion": "v5_ship_port_access_priority_audit_v1",
-  "generatedAt": "2026-05-26T02:11:57.321983+00:00",
+  "generatedAt": "2026-05-26T02:26:23.630228+00:00",
   "inputConnectorModel": "v5_port_rail_bus_airport_haversine_connectors_v1",
   "inputConnectorMaxMeters": 2000,
   "summary": {
-    "portsWithout2kmAccess": 182,
+    "portsWithout2kmAccess": 181,
     "resolvePortIdentityFirst": 94,
-    "collectRealConnectorHighPriority": 65,
+    "collectRealConnectorHighPriority": 64,
     "collectRealConnector": 6,
     "recordRemoteOrSmallIsland": 17,
-    "playableAffectedPortCount": 174
+    "playableAffectedPortCount": 173
   },
   "rules": {
     "portAccessPlayableRadiusMeters": 2000,
@@ -4148,6 +4148,89 @@
       ]
     },
     {
+      "portName": "保戸島",
+      "coordinate": {
+        "lat": 33.1013476,
+        "lon": 132.0054853
+      },
+      "category": "resolve_port_identity_first",
+      "reasons": [
+        "coordinate source already marked needs_precise_port_review",
+        "inside kyushu_mainland_band",
+        "rail within 8985m",
+        "used by 10 playable sailings"
+      ],
+      "coordinateIdentityStatus": "needs_port_identity_fix",
+      "coordinateIdentityReasons": [
+        "coordinate source already marked needs_precise_port_review"
+      ],
+      "coordinateSource": "online_verified:OSM/Nominatim query=保戸島 津久見市 津久見～保戸島 日本; score=7; needs_precise_port_review",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "津久見市"
+      ],
+      "playableSailingCount": 10,
+      "originSailingCount": 5,
+      "destinationSailingCount": 5,
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_009594",
+        "name": "日代",
+        "distanceMeters": 8985
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_port_connector_official_bus_source_json_1352d33e50:3f01db33f68b",
+        "name": "佐賀関",
+        "distanceMeters": 20498
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "mlit_map_193_082_津久見市_津久見_保戸島_000_back_001",
+          "operator": "津久見市",
+          "originPort": "保戸島",
+          "destinationPort": "津久見",
+          "departureHhmm": "07:00",
+          "arrivalHhmm": "07:25"
+        },
+        {
+          "sailingId": "mlit_map_193_082_津久見市_津久見_保戸島_000_out_001",
+          "operator": "津久見市",
+          "originPort": "津久見",
+          "destinationPort": "保戸島",
+          "departureHhmm": "07:30",
+          "arrivalHhmm": "07:55"
+        },
+        {
+          "sailingId": "mlit_map_193_082_津久見市_津久見_保戸島_000_back_002",
+          "operator": "津久見市",
+          "originPort": "保戸島",
+          "destinationPort": "津久見",
+          "departureHhmm": "08:30",
+          "arrivalHhmm": "08:55"
+        },
+        {
+          "sailingId": "mlit_map_193_082_津久見市_津久見_保戸島_000_out_002",
+          "operator": "津久見市",
+          "originPort": "津久見",
+          "destinationPort": "保戸島",
+          "departureHhmm": "10:00",
+          "arrivalHhmm": "10:25"
+        },
+        {
+          "sailingId": "mlit_map_193_082_津久見市_津久見_保戸島_000_back_003",
+          "operator": "津久見市",
+          "originPort": "保戸島",
+          "destinationPort": "津久見",
+          "departureHhmm": "11:00",
+          "arrivalHhmm": "11:25"
+        }
+      ],
+      "searchQueries": [
+        "保戸島 港 アクセス バス 時刻表",
+        "保戸島 フェリーターミナル 最寄り バス停",
+        "保戸島 連絡バス 公式"
+      ]
+    },
+    {
       "portName": "小川島",
       "coordinate": {
         "lat": 33.539298,
@@ -4394,89 +4477,6 @@
         "佐賀 港 アクセス バス 時刻表",
         "佐賀 フェリーターミナル 最寄り バス停",
         "佐賀 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "保戸島",
-      "coordinate": {
-        "lat": 33.1013476,
-        "lon": 132.0054853
-      },
-      "category": "resolve_port_identity_first",
-      "reasons": [
-        "coordinate source already marked needs_precise_port_review",
-        "inside kyushu_mainland_band",
-        "rail within 8985m",
-        "used by 10 playable sailings"
-      ],
-      "coordinateIdentityStatus": "needs_port_identity_fix",
-      "coordinateIdentityReasons": [
-        "coordinate source already marked needs_precise_port_review"
-      ],
-      "coordinateSource": "online_verified:OSM/Nominatim query=保戸島 津久見市 津久見～保戸島 日本; score=7; needs_precise_port_review",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "津久見市"
-      ],
-      "playableSailingCount": 10,
-      "originSailingCount": 5,
-      "destinationSailingCount": 5,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_009594",
-        "name": "日代",
-        "distanceMeters": 8985
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:sankobus_sankobus_https_api_gtfs-data_jp_v2_organizations_sankobus_fee_ff1d9e9f8a:103396_2",
-        "name": "戸次（大分）",
-        "distanceMeters": 32979
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_082_津久見市_津久見_保戸島_000_back_001",
-          "operator": "津久見市",
-          "originPort": "保戸島",
-          "destinationPort": "津久見",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:25"
-        },
-        {
-          "sailingId": "mlit_map_193_082_津久見市_津久見_保戸島_000_out_001",
-          "operator": "津久見市",
-          "originPort": "津久見",
-          "destinationPort": "保戸島",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "07:55"
-        },
-        {
-          "sailingId": "mlit_map_193_082_津久見市_津久見_保戸島_000_back_002",
-          "operator": "津久見市",
-          "originPort": "保戸島",
-          "destinationPort": "津久見",
-          "departureHhmm": "08:30",
-          "arrivalHhmm": "08:55"
-        },
-        {
-          "sailingId": "mlit_map_193_082_津久見市_津久見_保戸島_000_out_002",
-          "operator": "津久見市",
-          "originPort": "津久見",
-          "destinationPort": "保戸島",
-          "departureHhmm": "10:00",
-          "arrivalHhmm": "10:25"
-        },
-        {
-          "sailingId": "mlit_map_193_082_津久見市_津久見_保戸島_000_back_003",
-          "operator": "津久見市",
-          "originPort": "保戸島",
-          "destinationPort": "津久見",
-          "departureHhmm": "11:00",
-          "arrivalHhmm": "11:25"
-        }
-      ],
-      "searchQueries": [
-        "保戸島 港 アクセス バス 時刻表",
-        "保戸島 フェリーターミナル 最寄り バス停",
-        "保戸島 連絡バス 公式"
       ]
     },
     {
@@ -7945,86 +7945,6 @@
       ]
     },
     {
-      "portName": "佐賀関港",
-      "coordinate": {
-        "lat": 33.249,
-        "lon": 131.879
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside kyushu_mainland_band",
-        "rail within 7973m",
-        "used by 32 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "国道九四フェリー"
-      ],
-      "playableSailingCount": 32,
-      "originSailingCount": 16,
-      "destinationSailingCount": 16,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_009478",
-        "name": "幸崎",
-        "distanceMeters": 7973
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:sankobus_sankobus_https_api_gtfs-data_jp_v2_organizations_sankobus_fee_ff1d9e9f8a:104460_1",
-        "name": "米良バイパス入口",
-        "distanceMeters": 22775
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "koku94_saganoseki_misaki_030_out_001",
-          "operator": "国道九四フェリー",
-          "originPort": "佐賀関港",
-          "destinationPort": "三崎港",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "08:10"
-        },
-        {
-          "sailingId": "koku94_saganoseki_misaki_031_back_001",
-          "operator": "国道九四フェリー",
-          "originPort": "三崎港",
-          "destinationPort": "佐賀関港",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "08:40"
-        },
-        {
-          "sailingId": "koku94_saganoseki_misaki_030_out_002",
-          "operator": "国道九四フェリー",
-          "originPort": "佐賀関港",
-          "destinationPort": "三崎港",
-          "departureHhmm": "08:00",
-          "arrivalHhmm": "09:10"
-        },
-        {
-          "sailingId": "koku94_saganoseki_misaki_031_back_002",
-          "operator": "国道九四フェリー",
-          "originPort": "三崎港",
-          "destinationPort": "佐賀関港",
-          "departureHhmm": "08:30",
-          "arrivalHhmm": "09:40"
-        },
-        {
-          "sailingId": "koku94_saganoseki_misaki_030_out_003",
-          "operator": "国道九四フェリー",
-          "originPort": "佐賀関港",
-          "destinationPort": "三崎港",
-          "departureHhmm": "09:00",
-          "arrivalHhmm": "10:10"
-        }
-      ],
-      "searchQueries": [
-        "佐賀関港 港 アクセス バス 時刻表",
-        "佐賀関港 フェリーターミナル 最寄り バス停",
-        "佐賀関港 連絡バス 公式"
-      ]
-    },
-    {
       "portName": "三崎港",
       "coordinate": {
         "lat": 33.386,
@@ -8051,9 +7971,9 @@
         "distanceMeters": 30417
       },
       "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_oita_airport_official_bus_source_json_oit_oita_4da834e6f5:7f9235fa3447",
-        "name": "大分空港",
-        "distanceMeters": 37343
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_port_connector_official_bus_source_json_1352d33e50:3f01db33f68b",
+        "name": "佐賀関",
+        "distanceMeters": 27437
       },
       "sampleSailings": [
         {

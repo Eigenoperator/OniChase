@@ -157,12 +157,13 @@ Current status:
   - `docs/data/v5_port_connector_audit.json`
   - `data/v5_ship_port_access_priority_audit.json`
   - `docs/data/v5_ship_port_access_priority_audit.json`
-  - Current coverage: 366 ports scanned; 184 have rail/bus/airport access
-    within 2 km; 182 remain connector gaps pending real local bus or access
+  - Current coverage: 366 ports scanned; 185 have rail/bus/airport access
+    within 2 km; 181 remain connector gaps pending real local bus or access
     data.
   - Added official local-bus connector source `data/v5_port_connector_official_bus_source.json`
-    for 小豆島オリーブバス 坂手線（土庄港 ⇔ 坂手港ターミナル前） and
-    直島町営バス（宮浦港 ⇔ つつじ荘）. These are playable bus trips with
+    for 小豆島オリーブバス 坂手線（土庄港 ⇔ 坂手港ターミナル前）,
+    直島町営バス（宮浦港 ⇔ つつじ荘）, and 大分バス 佐賀関線
+    （大分駅前 ⇔ 佐賀関）. These are playable bus trips with
     real stop coordinates and official timetable sources, then linked to ports
     through generated 2 km port connectors.
   - The priority audit separates ports that need real mainland/large-island
@@ -171,10 +172,10 @@ Current status:
     ambiguous names such as 大島港 must be checked with route/operator and
     coordinates before adding access data.
   - Current no-2 km access triage after identity review:
-    - 182 total no-access ports.
+    - 181 total no-access ports.
     - 94 must resolve port identity first because the coordinate is suspicious
       or the port name is ambiguous.
-    - 65 are high-priority real connector collection candidates.
+    - 64 are high-priority real connector collection candidates.
     - 6 are lower-priority real connector candidates.
     - 17 are remote/small-island local access records.
   - Connector collection rule: never add a bus/rail connector to a suspicious
