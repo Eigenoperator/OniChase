@@ -157,8 +157,8 @@ Current status:
   - `docs/data/v5_port_connector_audit.json`
   - `data/v5_ship_port_access_priority_audit.json`
   - `docs/data/v5_ship_port_access_priority_audit.json`
-  - Current coverage: 366 ports scanned; 185 have rail/bus/airport access
-    within 2 km; 181 remain connector gaps pending real local bus or access
+  - Current coverage: 366 ports scanned; 197 have rail/bus/airport access
+    within 2 km; 169 remain connector gaps pending real local bus or access
     data.
   - Added official local-bus connector source `data/v5_port_connector_official_bus_source.json`
     for 小豆島オリーブバス 坂手線（土庄港 ⇔ 坂手港ターミナル前）,
@@ -172,15 +172,25 @@ Current status:
     ambiguous names such as 大島港 must be checked with route/operator and
     coordinates before adding access data.
   - Current no-2 km access triage after identity review:
-    - 181 total no-access ports.
-    - 94 must resolve port identity first because the coordinate is suspicious
+    - 169 total no-access ports.
+    - 5 must resolve port identity first because the coordinate is suspicious
       or the port name is ambiguous.
-    - 64 are high-priority real connector collection candidates.
+    - 125 are high-priority real connector collection candidates.
     - 6 are lower-priority real connector candidates.
-    - 17 are remote/small-island local access records.
+    - 33 are remote/small-island local access records.
   - Connector collection rule: never add a bus/rail connector to a suspicious
     same-name port. Fix `portName + operator/route context + coordinate` first,
     then attach official bus/rail access.
+  - Identity cleanup batch:
+    - Replaced weak same-name geocoder matches for major ports including
+      戸畑, 神湊, 長崎港, 佐伯, 呼子, 三津浜港, 青森港, 新潟港,
+      大洗港, 宮崎港, 苫小牧西港, 白水港, 笠岡, 尾道港, 福江港,
+      平戸港, 瀬相, 生間, 笛吹, and 郷ノ首.
+    - Corrected the 三洋汽船 source label `飛鳥` to the real route name
+      `飛島` using official 三洋汽船 and 笠岡観光WEB route context.
+    - The remaining identity-first ports are true unresolved cases:
+      大島港, 姫島, 久賀, 因島西浜港, and 柳. These need route-specific
+      port identity or official pier confirmation before connector collection.
 
 ## Current Official Source Files
 

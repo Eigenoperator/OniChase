@@ -7,6 +7,7 @@ import argparse
 import gzip
 import json
 import math
+import re
 from collections import Counter, defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -100,6 +101,7 @@ GENERIC_AMBIGUOUS_PORT_NAMES = {
     "青森港",
     "新潟港",
 }
+WEAK_COORDINATE_SCORE_MAX = 7
 
 
 def read_json(path: Path) -> Any:
@@ -231,17 +233,38 @@ def coordinate_identity_review(port_name: str, port_props: dict[str, Any], opera
     reasons = []
     source = str(port_props.get("coordinateSource") or "")
     display = str(port_props.get("coordinateDisplayName") or "")
-    if "needs_precise_port_review" in source:
-        reasons.append("coordinate source already marked needs_precise_port_review")
-    if display and port_name not in display:
+    is_manual_verified = source.startswith("manual_verified:")
+    score_match = re.search(r"\bscore=(\d+)\b", source)
+    weak_source = (
+        "needs_precise_port_review" in source
+        and score_match is not None
+        and int(score_match.group(1)) <= WEAK_COORDINATE_SCORE_MAX
+    )
+    if weak_source:
+        reasons.append("coordinate source was a weak geocoder match and needs precise port review")
+    if display and port_name not in display and not has_identity_token_overlap(port_name, display):
         reasons.append(f"coordinate display name does not contain port name: {display[:80]}")
-    if port_name in GENERIC_AMBIGUOUS_PORT_NAMES and len(operators) >= 1:
+    if port_name in GENERIC_AMBIGUOUS_PORT_NAMES and not is_manual_verified:
         reasons.append("generic/ambiguous port name; verify route/operator/region before adding connectors")
     if len(operators) >= 4:
         reasons.append(f"multiple operator contexts share this port name: {', '.join(operators[:5])}")
     if reasons:
         return "needs_port_identity_fix", reasons
     return "ok", []
+
+
+def has_identity_token_overlap(port_name: str, display: str) -> bool:
+    """Accept semantic terminal aliases such as 大島岡田港 -> 岡田港入口."""
+    if not display:
+        return False
+    tokens = {port_name}
+    for suffix in ("フェリーターミナル", "ターミナル", "港"):
+        if port_name.endswith(suffix) and len(port_name) > len(suffix):
+            tokens.add(port_name[: -len(suffix)])
+    for token in ("青森", "岡田港"):
+        if token in port_name:
+            tokens.add(token)
+    return any(len(token) >= 2 and token in display for token in tokens)
 
 
 def classify_port(port_name: str, point: dict[str, float], nearest_rail: dict[str, Any] | None, nearest_bus: dict[str, Any] | None, sailings: int) -> tuple[str, list[str]]:
