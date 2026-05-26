@@ -1,15 +1,15 @@
 {
   "schemaVersion": "v5_ship_port_access_priority_audit_v1",
-  "generatedAt": "2026-05-26T03:23:29.051789+00:00",
+  "generatedAt": "2026-05-26T03:49:13.738736+00:00",
   "inputConnectorModel": "v5_port_rail_bus_airport_haversine_connectors_v1",
   "inputConnectorMaxMeters": 2000,
   "summary": {
-    "portsWithout2kmAccess": 176,
+    "portsWithout2kmAccess": 168,
     "resolvePortIdentityFirst": 0,
-    "collectRealConnectorHighPriority": 134,
+    "collectRealConnectorHighPriority": 126,
     "collectRealConnector": 6,
     "recordRemoteOrSmallIsland": 36,
-    "playableAffectedPortCount": 168
+    "playableAffectedPortCount": 160
   },
   "rules": {
     "portAccessPlayableRadiusMeters": 2000,
@@ -19,6 +19,87 @@
     "recordRemoteOrSmallIsland": "No nearby rail/bus source coverage and remote-island hints; record as island access gap until local island bus data is intentionally collected."
   },
   "ports": [
+    {
+      "portName": "家老渡港",
+      "coordinate": {
+        "lat": 34.233,
+        "lon": 133.097
+      },
+      "category": "collect_real_connector_high_priority",
+      "reasons": [
+        "inside honshu_mainland_band",
+        "rail within 12805m",
+        "bus stop within 8926m",
+        "used by 44 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "家老渡フェリー汽船"
+      ],
+      "playableSailingCount": 44,
+      "originSailingCount": 22,
+      "destinationSailingCount": 22,
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_008193",
+        "name": "安芸幸崎",
+        "distanceMeters": 12805
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_setouchi_port_connector_official_bus_so_479c3b0d4c:5b19fe2371be",
+        "name": "立石港務所",
+        "distanceMeters": 8926
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_001",
+          "operator": "家老渡フェリー汽船",
+          "originPort": "家老渡港",
+          "destinationPort": "上弓削港",
+          "departureHhmm": "06:50",
+          "arrivalHhmm": "06:57"
+        },
+        {
+          "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_001",
+          "operator": "家老渡フェリー汽船",
+          "originPort": "上弓削港",
+          "destinationPort": "家老渡港",
+          "departureHhmm": "07:00",
+          "arrivalHhmm": "07:07"
+        },
+        {
+          "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_002",
+          "operator": "家老渡フェリー汽船",
+          "originPort": "家老渡港",
+          "destinationPort": "上弓削港",
+          "departureHhmm": "07:10",
+          "arrivalHhmm": "07:17"
+        },
+        {
+          "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_002",
+          "operator": "家老渡フェリー汽船",
+          "originPort": "上弓削港",
+          "destinationPort": "家老渡港",
+          "departureHhmm": "07:20",
+          "arrivalHhmm": "07:27"
+        },
+        {
+          "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_003",
+          "operator": "家老渡フェリー汽船",
+          "originPort": "家老渡港",
+          "destinationPort": "上弓削港",
+          "departureHhmm": "07:30",
+          "arrivalHhmm": "07:37"
+        }
+      ],
+      "searchQueries": [
+        "家老渡港 港 アクセス バス 時刻表",
+        "家老渡港 フェリーターミナル 最寄り バス停",
+        "家老渡港 連絡バス 公式"
+      ]
+    },
     {
       "portName": "切串港",
       "coordinate": {
@@ -97,247 +178,6 @@
         "切串港 港 アクセス バス 時刻表",
         "切串港 フェリーターミナル 最寄り バス停",
         "切串港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "家老渡港",
-      "coordinate": {
-        "lat": 34.233,
-        "lon": 133.097
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 12805m",
-        "used by 44 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "家老渡フェリー汽船"
-      ],
-      "playableSailingCount": 44,
-      "originSailingCount": 22,
-      "destinationSailingCount": 22,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008193",
-        "name": "安芸幸崎",
-        "distanceMeters": 12805
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_ed542e2f4d:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 28293
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_001",
-          "operator": "家老渡フェリー汽船",
-          "originPort": "家老渡港",
-          "destinationPort": "上弓削港",
-          "departureHhmm": "06:50",
-          "arrivalHhmm": "06:57"
-        },
-        {
-          "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_001",
-          "operator": "家老渡フェリー汽船",
-          "originPort": "上弓削港",
-          "destinationPort": "家老渡港",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:07"
-        },
-        {
-          "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_002",
-          "operator": "家老渡フェリー汽船",
-          "originPort": "家老渡港",
-          "destinationPort": "上弓削港",
-          "departureHhmm": "07:10",
-          "arrivalHhmm": "07:17"
-        },
-        {
-          "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_002",
-          "operator": "家老渡フェリー汽船",
-          "originPort": "上弓削港",
-          "destinationPort": "家老渡港",
-          "departureHhmm": "07:20",
-          "arrivalHhmm": "07:27"
-        },
-        {
-          "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_003",
-          "operator": "家老渡フェリー汽船",
-          "originPort": "家老渡港",
-          "destinationPort": "上弓削港",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "07:37"
-        }
-      ],
-      "searchQueries": [
-        "家老渡港 港 アクセス バス 時刻表",
-        "家老渡港 フェリーターミナル 最寄り バス停",
-        "家老渡港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "上弓削港",
-      "coordinate": {
-        "lat": 34.258,
-        "lon": 133.205
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 16365m",
-        "used by 44 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "家老渡フェリー汽船"
-      ],
-      "playableSailingCount": 44,
-      "originSailingCount": 22,
-      "destinationSailingCount": 22,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008011",
-        "name": "尾道",
-        "distanceMeters": 16365
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_ed542e2f4d:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 33206
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_001",
-          "operator": "家老渡フェリー汽船",
-          "originPort": "家老渡港",
-          "destinationPort": "上弓削港",
-          "departureHhmm": "06:50",
-          "arrivalHhmm": "06:57"
-        },
-        {
-          "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_001",
-          "operator": "家老渡フェリー汽船",
-          "originPort": "上弓削港",
-          "destinationPort": "家老渡港",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:07"
-        },
-        {
-          "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_002",
-          "operator": "家老渡フェリー汽船",
-          "originPort": "家老渡港",
-          "destinationPort": "上弓削港",
-          "departureHhmm": "07:10",
-          "arrivalHhmm": "07:17"
-        },
-        {
-          "sailingId": "karouto_kamiyuge_059_back_monday_to_saturday_002",
-          "operator": "家老渡フェリー汽船",
-          "originPort": "上弓削港",
-          "destinationPort": "家老渡港",
-          "departureHhmm": "07:20",
-          "arrivalHhmm": "07:27"
-        },
-        {
-          "sailingId": "karouto_kamiyuge_058_out_monday_to_saturday_003",
-          "operator": "家老渡フェリー汽船",
-          "originPort": "家老渡港",
-          "destinationPort": "上弓削港",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "07:37"
-        }
-      ],
-      "searchQueries": [
-        "上弓削港 港 アクセス バス 時刻表",
-        "上弓削港 フェリーターミナル 最寄り バス停",
-        "上弓削港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "白水港",
-      "coordinate": {
-        "lat": 34.248,
-        "lon": 132.892
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 8429m",
-        "used by 42 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "manual_verified:existing official expansion source coordinate for 白水港",
-      "coordinateDisplayName": "白水港",
-      "operatorContexts": [
-        "大崎上島町",
-        "山陽商船"
-      ],
-      "playableSailingCount": 42,
-      "originSailingCount": 23,
-      "destinationSailingCount": 19,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008228",
-        "name": "吉名",
-        "distanceMeters": 8429
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_12cb535c53:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 21552
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "sanyo_shosen_takehara_shiromizu_045_back_001",
-          "operator": "山陽商船",
-          "originPort": "白水港",
-          "destinationPort": "竹原港",
-          "departureHhmm": "06:00",
-          "arrivalHhmm": "06:30"
-        },
-        {
-          "sailingId": "sanyo_shosen_takehara_shiromizu_044_out_001",
-          "operator": "山陽商船",
-          "originPort": "竹原港",
-          "destinationPort": "白水港",
-          "departureHhmm": "06:05",
-          "arrivalHhmm": "06:35"
-        },
-        {
-          "sailingId": "sanyo_shosen_takehara_shiromizu_045_back_002",
-          "operator": "山陽商船",
-          "originPort": "白水港",
-          "destinationPort": "竹原港",
-          "departureHhmm": "06:35",
-          "arrivalHhmm": "07:05"
-        },
-        {
-          "sailingId": "sanyo_shosen_takehara_shiromizu_044_out_002",
-          "operator": "山陽商船",
-          "originPort": "竹原港",
-          "destinationPort": "白水港",
-          "departureHhmm": "06:37",
-          "arrivalHhmm": "07:07"
-        },
-        {
-          "sailingId": "mlit_map_193_008_大崎上島町_白水_契島_000_out_001",
-          "operator": "大崎上島町",
-          "originPort": "白水港",
-          "destinationPort": "契島港",
-          "departureHhmm": "06:40",
-          "arrivalHhmm": "07:15"
-        }
-      ],
-      "searchQueries": [
-        "白水港 港 アクセス バス 時刻表",
-        "白水港 フェリーターミナル 最寄り バス停",
-        "白水港 連絡バス 公式"
       ]
     },
     {
@@ -500,86 +340,6 @@
         "伊王島 港 アクセス バス 時刻表",
         "伊王島 フェリーターミナル 最寄り バス停",
         "伊王島 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "大西港",
-      "coordinate": {
-        "lat": 34.24,
-        "lon": 132.906
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 9699m",
-        "used by 32 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "安芸津フェリー"
-      ],
-      "playableSailingCount": 32,
-      "originSailingCount": 16,
-      "destinationSailingCount": 16,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008228",
-        "name": "吉名",
-        "distanceMeters": 9699
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_12cb535c53:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 22332
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "akitsu_ferry_053_back_001",
-          "operator": "安芸津フェリー",
-          "originPort": "大西港",
-          "destinationPort": "安芸津港",
-          "departureHhmm": "06:25",
-          "arrivalHhmm": "07:00"
-        },
-        {
-          "sailingId": "akitsu_ferry_052_out_001",
-          "operator": "安芸津フェリー",
-          "originPort": "安芸津港",
-          "destinationPort": "大西港",
-          "departureHhmm": "06:40",
-          "arrivalHhmm": "07:15"
-        },
-        {
-          "sailingId": "akitsu_ferry_053_back_002",
-          "operator": "安芸津フェリー",
-          "originPort": "大西港",
-          "destinationPort": "安芸津港",
-          "departureHhmm": "07:20",
-          "arrivalHhmm": "07:55"
-        },
-        {
-          "sailingId": "akitsu_ferry_052_out_002",
-          "operator": "安芸津フェリー",
-          "originPort": "安芸津港",
-          "destinationPort": "大西港",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "08:05"
-        },
-        {
-          "sailingId": "akitsu_ferry_052_out_003",
-          "operator": "安芸津フェリー",
-          "originPort": "安芸津港",
-          "destinationPort": "大西港",
-          "departureHhmm": "08:00",
-          "arrivalHhmm": "08:35"
-        }
-      ],
-      "searchQueries": [
-        "大西港 港 アクセス バス 時刻表",
-        "大西港 フェリーターミナル 最寄り バス停",
-        "大西港 連絡バス 公式"
       ]
     },
     {
@@ -1392,21 +1152,22 @@
       ]
     },
     {
-      "portName": "明石",
+      "portName": "小長",
       "coordinate": {
-        "lat": 34.2062694,
-        "lon": 132.8758992
+        "lat": 34.1883952,
+        "lon": 132.8533459
       },
       "category": "collect_real_connector_high_priority",
       "reasons": [
         "inside honshu_mainland_band",
-        "rail within 12752m",
+        "rail within 13218m",
+        "bus stop within 2873m",
         "used by 24 playable sailings"
       ],
       "coordinateIdentityStatus": "ok",
       "coordinateIdentityReasons": [],
-      "coordinateSource": "manual_verified:route context しまなみ海運 大崎上島 明石-小長; not Akashi city",
-      "coordinateDisplayName": "明石港（大崎上島）",
+      "coordinateSource": "online_verified:OSM/Nominatim query=小長 ferry terminal Japan; score=31; needs_precise_port_review",
+      "coordinateDisplayName": null,
       "operatorContexts": [
         "しまなみ海運"
       ],
@@ -1414,14 +1175,14 @@
       "originSailingCount": 12,
       "destinationSailingCount": 12,
       "nearestRail": {
-        "stationGroupId": "SG_N02G_008228",
-        "name": "吉名",
-        "distanceMeters": 12752
+        "stationGroupId": "SG_N02G_008475",
+        "name": "波方",
+        "distanceMeters": 13218
       },
       "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_ed542e2f4d:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 26347
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_setouchi_port_connector_official_bus_so_4efb980656:cfbcda124a03",
+        "name": "明石港（大崎上島）",
+        "distanceMeters": 2873
       },
       "sampleSailings": [
         {
@@ -1466,9 +1227,9 @@
         }
       ],
       "searchQueries": [
-        "明石 港 アクセス バス 時刻表",
-        "明石 フェリーターミナル 最寄り バス停",
-        "明石 連絡バス 公式"
+        "小長 港 アクセス バス 時刻表",
+        "小長 フェリーターミナル 最寄り バス停",
+        "小長 連絡バス 公式"
       ]
     },
     {
@@ -1551,167 +1312,6 @@
       ]
     },
     {
-      "portName": "小長",
-      "coordinate": {
-        "lat": 34.1883952,
-        "lon": 132.8533459
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 13218m",
-        "used by 24 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:OSM/Nominatim query=小長 ferry terminal Japan; score=31; needs_precise_port_review",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "しまなみ海運"
-      ],
-      "playableSailingCount": 24,
-      "originSailingCount": 12,
-      "destinationSailingCount": 12,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008475",
-        "name": "波方",
-        "distanceMeters": 13218
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_ed542e2f4d:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 28675
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_017_しまなみ海運_竹原_大長_明石_小長_001_back_weekday_001",
-          "operator": "しまなみ海運",
-          "originPort": "小長",
-          "destinationPort": "明石",
-          "departureHhmm": "06:20",
-          "arrivalHhmm": "06:35"
-        },
-        {
-          "sailingId": "mlit_map_193_017_しまなみ海運_竹原_大長_明石_小長_001_out_weekday_001",
-          "operator": "しまなみ海運",
-          "originPort": "明石",
-          "destinationPort": "小長",
-          "departureHhmm": "06:37",
-          "arrivalHhmm": "06:52"
-        },
-        {
-          "sailingId": "mlit_map_193_017_しまなみ海運_竹原_大長_明石_小長_001_back_daily_002",
-          "operator": "しまなみ海運",
-          "originPort": "小長",
-          "destinationPort": "明石",
-          "departureHhmm": "06:55",
-          "arrivalHhmm": "07:10"
-        },
-        {
-          "sailingId": "mlit_map_193_017_しまなみ海運_竹原_大長_明石_小長_001_out_daily_002",
-          "operator": "しまなみ海運",
-          "originPort": "明石",
-          "destinationPort": "小長",
-          "departureHhmm": "07:12",
-          "arrivalHhmm": "07:27"
-        },
-        {
-          "sailingId": "mlit_map_193_017_しまなみ海運_竹原_大長_明石_小長_001_back_daily_003",
-          "operator": "しまなみ海運",
-          "originPort": "小長",
-          "destinationPort": "明石",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "07:45"
-        }
-      ],
-      "searchQueries": [
-        "小長 港 アクセス バス 時刻表",
-        "小長 フェリーターミナル 最寄り バス停",
-        "小長 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "瀬戸",
-      "coordinate": {
-        "lat": 34.3130492,
-        "lon": 133.0902812
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 5381m",
-        "used by 22 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:OSM/Nominatim query=瀬戸 ferry terminal Japan; score=31; needs_precise_port_review",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "江崎海陸運送",
-        "西海市"
-      ],
-      "playableSailingCount": 22,
-      "originSailingCount": 11,
-      "destinationSailingCount": 11,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008193",
-        "name": "安芸幸崎",
-        "distanceMeters": 5381
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_12cb535c53:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 21186
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_056_江崎海陸運送_瀬戸_松島_000_out_001",
-          "operator": "江崎海陸運送",
-          "originPort": "瀬戸",
-          "destinationPort": "松島",
-          "departureHhmm": "07:15",
-          "arrivalHhmm": "07:35"
-        },
-        {
-          "sailingId": "mlit_map_193_056_江崎海陸運送_瀬戸_松島_000_back_001",
-          "operator": "江崎海陸運送",
-          "originPort": "松島",
-          "destinationPort": "瀬戸",
-          "departureHhmm": "07:40",
-          "arrivalHhmm": "08:00"
-        },
-        {
-          "sailingId": "mlit_map_193_067_西海市_釜浦_瀬戸_000_back_001",
-          "operator": "西海市",
-          "originPort": "瀬戸",
-          "destinationPort": "釜浦",
-          "departureHhmm": "08:20",
-          "arrivalHhmm": "08:35"
-        },
-        {
-          "sailingId": "mlit_map_193_056_江崎海陸運送_瀬戸_松島_000_out_002",
-          "operator": "江崎海陸運送",
-          "originPort": "瀬戸",
-          "destinationPort": "松島",
-          "departureHhmm": "08:40",
-          "arrivalHhmm": "09:00"
-        },
-        {
-          "sailingId": "mlit_map_193_067_西海市_釜浦_瀬戸_000_out_001",
-          "operator": "西海市",
-          "originPort": "釜浦",
-          "destinationPort": "瀬戸",
-          "departureHhmm": "08:40",
-          "arrivalHhmm": "08:50"
-        }
-      ],
-      "searchQueries": [
-        "瀬戸 港 アクセス バス 時刻表",
-        "瀬戸 フェリーターミナル 最寄り バス停",
-        "瀬戸 連絡バス 公式"
-      ]
-    },
-    {
       "portName": "宗方港",
       "coordinate": {
         "lat": 34.2031092,
@@ -1721,6 +1321,7 @@
       "reasons": [
         "inside honshu_mainland_band",
         "rail within 11926m",
+        "bus stop within 5322m",
         "used by 22 playable sailings"
       ],
       "coordinateIdentityStatus": "ok",
@@ -1739,9 +1340,9 @@
         "distanceMeters": 11926
       },
       "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_12cb535c53:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 26496
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_setouchi_port_connector_official_bus_so_4efb980656:a165cbb68c3e",
+        "name": "大西港",
+        "distanceMeters": 5322
       },
       "sampleSailings": [
         {
@@ -1789,6 +1390,88 @@
         "宗方港 港 アクセス バス 時刻表",
         "宗方港 フェリーターミナル 最寄り バス停",
         "宗方港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "瀬戸",
+      "coordinate": {
+        "lat": 34.3130492,
+        "lon": 133.0902812
+      },
+      "category": "collect_real_connector_high_priority",
+      "reasons": [
+        "inside honshu_mainland_band",
+        "rail within 5381m",
+        "bus stop within 8939m",
+        "used by 22 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:OSM/Nominatim query=瀬戸 ferry terminal Japan; score=31; needs_precise_port_review",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "江崎海陸運送",
+        "西海市"
+      ],
+      "playableSailingCount": 22,
+      "originSailingCount": 11,
+      "destinationSailingCount": 11,
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_008193",
+        "name": "安芸幸崎",
+        "distanceMeters": 5381
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_setouchi_port_connector_official_bus_so_479c3b0d4c:5b19fe2371be",
+        "name": "立石港務所",
+        "distanceMeters": 8939
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "mlit_map_193_056_江崎海陸運送_瀬戸_松島_000_out_001",
+          "operator": "江崎海陸運送",
+          "originPort": "瀬戸",
+          "destinationPort": "松島",
+          "departureHhmm": "07:15",
+          "arrivalHhmm": "07:35"
+        },
+        {
+          "sailingId": "mlit_map_193_056_江崎海陸運送_瀬戸_松島_000_back_001",
+          "operator": "江崎海陸運送",
+          "originPort": "松島",
+          "destinationPort": "瀬戸",
+          "departureHhmm": "07:40",
+          "arrivalHhmm": "08:00"
+        },
+        {
+          "sailingId": "mlit_map_193_067_西海市_釜浦_瀬戸_000_back_001",
+          "operator": "西海市",
+          "originPort": "瀬戸",
+          "destinationPort": "釜浦",
+          "departureHhmm": "08:20",
+          "arrivalHhmm": "08:35"
+        },
+        {
+          "sailingId": "mlit_map_193_056_江崎海陸運送_瀬戸_松島_000_out_002",
+          "operator": "江崎海陸運送",
+          "originPort": "瀬戸",
+          "destinationPort": "松島",
+          "departureHhmm": "08:40",
+          "arrivalHhmm": "09:00"
+        },
+        {
+          "sailingId": "mlit_map_193_067_西海市_釜浦_瀬戸_000_out_001",
+          "operator": "西海市",
+          "originPort": "釜浦",
+          "destinationPort": "瀬戸",
+          "departureHhmm": "08:40",
+          "arrivalHhmm": "08:50"
+        }
+      ],
+      "searchQueries": [
+        "瀬戸 港 アクセス バス 時刻表",
+        "瀬戸 フェリーターミナル 最寄り バス停",
+        "瀬戸 連絡バス 公式"
       ]
     },
     {
@@ -1963,6 +1646,7 @@
       "reasons": [
         "inside honshu_mainland_band",
         "rail within 9745m",
+        "bus stop within 8721m",
         "used by 20 playable sailings"
       ],
       "coordinateIdentityStatus": "ok",
@@ -1981,9 +1665,9 @@
         "distanceMeters": 9745
       },
       "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_ed542e2f4d:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 22685
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_setouchi_port_connector_official_bus_so_4efb980656:4aad49620bb9",
+        "name": "大崎上島町役場",
+        "distanceMeters": 8721
       },
       "sampleSailings": [
         {
@@ -2354,86 +2038,6 @@
       ]
     },
     {
-      "portName": "土生港因島",
-      "coordinate": {
-        "lat": 34.282,
-        "lon": 133.173
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 12776m",
-        "used by 18 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "土生商船"
-      ],
-      "playableSailingCount": 18,
-      "originSailingCount": 9,
-      "destinationSailingCount": 9,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008127",
-        "name": "須波",
-        "distanceMeters": 12776
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_12cb535c53:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 29249
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "habu_shosen_mihara_050_out_001",
-          "operator": "土生商船",
-          "originPort": "土生港因島",
-          "destinationPort": "三原港",
-          "departureHhmm": "06:10",
-          "arrivalHhmm": "06:50"
-        },
-        {
-          "sailingId": "habu_shosen_mihara_051_back_001",
-          "operator": "土生商船",
-          "originPort": "三原港",
-          "destinationPort": "土生港因島",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:40"
-        },
-        {
-          "sailingId": "habu_shosen_mihara_050_out_002",
-          "operator": "土生商船",
-          "originPort": "土生港因島",
-          "destinationPort": "三原港",
-          "departureHhmm": "07:10",
-          "arrivalHhmm": "07:50"
-        },
-        {
-          "sailingId": "habu_shosen_mihara_051_back_002",
-          "operator": "土生商船",
-          "originPort": "三原港",
-          "destinationPort": "土生港因島",
-          "departureHhmm": "08:15",
-          "arrivalHhmm": "08:55"
-        },
-        {
-          "sailingId": "habu_shosen_mihara_050_out_003",
-          "operator": "土生商船",
-          "originPort": "土生港因島",
-          "destinationPort": "三原港",
-          "departureHhmm": "08:20",
-          "arrivalHhmm": "09:00"
-        }
-      ],
-      "searchQueries": [
-        "土生港因島 港 アクセス バス 時刻表",
-        "土生港因島 フェリーターミナル 最寄り バス停",
-        "土生港因島 連絡バス 公式"
-      ]
-    },
-    {
       "portName": "青森フェリーターミナル",
       "coordinate": {
         "lat": 40.8438885,
@@ -2759,6 +2363,248 @@
       ]
     },
     {
+      "portName": "西浜港",
+      "coordinate": {
+        "lat": 34.347,
+        "lon": 133.157
+      },
+      "category": "collect_real_connector_high_priority",
+      "reasons": [
+        "inside honshu_mainland_band",
+        "rail within 6886m",
+        "bus stop within 7937m",
+        "used by 16 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "manual_verified:Onomichi municipal 細島-因島西浜 official route context; corrected from Hamamatsu weak match",
+      "coordinateDisplayName": "西浜港",
+      "operatorContexts": [
+        "尾道市因島総合支所"
+      ],
+      "playableSailingCount": 16,
+      "originSailingCount": 8,
+      "destinationSailingCount": 8,
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_008068",
+        "name": "糸崎",
+        "distanceMeters": 6886
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_setouchi_port_connector_official_bus_so_479c3b0d4c:5b19fe2371be",
+        "name": "立石港務所",
+        "distanceMeters": 7937
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back_001",
+          "operator": "尾道市因島総合支所",
+          "originPort": "西浜港",
+          "destinationPort": "細島港",
+          "departureHhmm": "07:00",
+          "arrivalHhmm": "07:15"
+        },
+        {
+          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_out_001",
+          "operator": "尾道市因島総合支所",
+          "originPort": "細島港",
+          "destinationPort": "西浜港",
+          "departureHhmm": "07:20",
+          "arrivalHhmm": "07:35"
+        },
+        {
+          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back_002",
+          "operator": "尾道市因島総合支所",
+          "originPort": "西浜港",
+          "destinationPort": "細島港",
+          "departureHhmm": "07:40",
+          "arrivalHhmm": "07:55"
+        },
+        {
+          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_out_002",
+          "operator": "尾道市因島総合支所",
+          "originPort": "細島港",
+          "destinationPort": "西浜港",
+          "departureHhmm": "08:10",
+          "arrivalHhmm": "08:25"
+        },
+        {
+          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back_003",
+          "operator": "尾道市因島総合支所",
+          "originPort": "西浜港",
+          "destinationPort": "細島港",
+          "departureHhmm": "09:30",
+          "arrivalHhmm": "09:45"
+        }
+      ],
+      "searchQueries": [
+        "西浜港 港 アクセス バス 時刻表",
+        "西浜港 フェリーターミナル 最寄り バス停",
+        "西浜港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "細島港",
+      "coordinate": {
+        "lat": 34.3607302,
+        "lon": 133.1371422
+      },
+      "category": "collect_real_connector_high_priority",
+      "reasons": [
+        "inside honshu_mainland_band",
+        "rail within 4530m",
+        "bus stop within 9956m",
+        "used by 16 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:OSM/Nominatim query=細島港 ferry terminal Japan; score=31; needs_precise_port_review",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "尾道市因島総合支所"
+      ],
+      "playableSailingCount": 16,
+      "originSailingCount": 8,
+      "destinationSailingCount": 8,
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_008068",
+        "name": "糸崎",
+        "distanceMeters": 4530
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_setouchi_port_connector_official_bus_so_479c3b0d4c:5b19fe2371be",
+        "name": "立石港務所",
+        "distanceMeters": 9956
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back_001",
+          "operator": "尾道市因島総合支所",
+          "originPort": "西浜港",
+          "destinationPort": "細島港",
+          "departureHhmm": "07:00",
+          "arrivalHhmm": "07:15"
+        },
+        {
+          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_out_001",
+          "operator": "尾道市因島総合支所",
+          "originPort": "細島港",
+          "destinationPort": "西浜港",
+          "departureHhmm": "07:20",
+          "arrivalHhmm": "07:35"
+        },
+        {
+          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back_002",
+          "operator": "尾道市因島総合支所",
+          "originPort": "西浜港",
+          "destinationPort": "細島港",
+          "departureHhmm": "07:40",
+          "arrivalHhmm": "07:55"
+        },
+        {
+          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_out_002",
+          "operator": "尾道市因島総合支所",
+          "originPort": "細島港",
+          "destinationPort": "西浜港",
+          "departureHhmm": "08:10",
+          "arrivalHhmm": "08:25"
+        },
+        {
+          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back_003",
+          "operator": "尾道市因島総合支所",
+          "originPort": "西浜港",
+          "destinationPort": "細島港",
+          "departureHhmm": "09:30",
+          "arrivalHhmm": "09:45"
+        }
+      ],
+      "searchQueries": [
+        "細島港 港 アクセス バス 時刻表",
+        "細島港 フェリーターミナル 最寄り バス停",
+        "細島港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "常石港",
+      "coordinate": {
+        "lat": 34.3840013,
+        "lon": 133.2964758
+      },
+      "category": "collect_real_connector_high_priority",
+      "reasons": [
+        "inside honshu_mainland_band",
+        "rail within 8117m",
+        "used by 16 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:OSM/Nominatim query=常石港 ferry terminal Japan; score=31; needs_precise_port_review",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "備後商船"
+      ],
+      "playableSailingCount": 16,
+      "originSailingCount": 8,
+      "destinationSailingCount": 8,
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_007962",
+        "name": "東尾道",
+        "distanceMeters": 8117
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_setouchi_port_connector_official_bus_so_479c3b0d4c:5b19fe2371be",
+        "name": "立石港務所",
+        "distanceMeters": 16085
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "mlit_map_193_007_備後商船_常石_尾道_000_out_001",
+          "operator": "備後商船",
+          "originPort": "常石港",
+          "destinationPort": "尾道港",
+          "departureHhmm": "06:20",
+          "arrivalHhmm": "07:05"
+        },
+        {
+          "sailingId": "mlit_map_193_007_備後商船_常石_尾道_000_back_001",
+          "operator": "備後商船",
+          "originPort": "尾道港",
+          "destinationPort": "常石港",
+          "departureHhmm": "07:15",
+          "arrivalHhmm": "08:00"
+        },
+        {
+          "sailingId": "mlit_map_193_007_備後商船_常石_尾道_000_out_002",
+          "operator": "備後商船",
+          "originPort": "常石港",
+          "destinationPort": "尾道港",
+          "departureHhmm": "07:20",
+          "arrivalHhmm": "08:05"
+        },
+        {
+          "sailingId": "mlit_map_193_007_備後商船_常石_尾道_000_back_002",
+          "operator": "備後商船",
+          "originPort": "尾道港",
+          "destinationPort": "常石港",
+          "departureHhmm": "08:15",
+          "arrivalHhmm": "09:00"
+        },
+        {
+          "sailingId": "mlit_map_193_007_備後商船_常石_尾道_000_out_003",
+          "operator": "備後商船",
+          "originPort": "常石港",
+          "destinationPort": "尾道港",
+          "departureHhmm": "08:25",
+          "arrivalHhmm": "09:10"
+        }
+      ],
+      "searchQueries": [
+        "常石港 港 アクセス バス 時刻表",
+        "常石港 フェリーターミナル 最寄り バス停",
+        "常石港 連絡バス 公式"
+      ]
+    },
+    {
       "portName": "島浦",
       "coordinate": {
         "lat": 33.9730659,
@@ -2836,406 +2682,6 @@
         "島浦 港 アクセス バス 時刻表",
         "島浦 フェリーターミナル 最寄り バス停",
         "島浦 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "常石港",
-      "coordinate": {
-        "lat": 34.3840013,
-        "lon": 133.2964758
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 8117m",
-        "used by 16 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:OSM/Nominatim query=常石港 ferry terminal Japan; score=31; needs_precise_port_review",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "備後商船"
-      ],
-      "playableSailingCount": 16,
-      "originSailingCount": 8,
-      "destinationSailingCount": 8,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_007962",
-        "name": "東尾道",
-        "distanceMeters": 8117
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:hokushin-bus_hokushinbus_https_api_gtfs-data_jp_v2_organizations_hokus_4792d0b6e7:127_01",
-        "name": "フジグラン前",
-        "distanceMeters": 18705
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_007_備後商船_常石_尾道_000_out_001",
-          "operator": "備後商船",
-          "originPort": "常石港",
-          "destinationPort": "尾道港",
-          "departureHhmm": "06:20",
-          "arrivalHhmm": "07:05"
-        },
-        {
-          "sailingId": "mlit_map_193_007_備後商船_常石_尾道_000_back_001",
-          "operator": "備後商船",
-          "originPort": "尾道港",
-          "destinationPort": "常石港",
-          "departureHhmm": "07:15",
-          "arrivalHhmm": "08:00"
-        },
-        {
-          "sailingId": "mlit_map_193_007_備後商船_常石_尾道_000_out_002",
-          "operator": "備後商船",
-          "originPort": "常石港",
-          "destinationPort": "尾道港",
-          "departureHhmm": "07:20",
-          "arrivalHhmm": "08:05"
-        },
-        {
-          "sailingId": "mlit_map_193_007_備後商船_常石_尾道_000_back_002",
-          "operator": "備後商船",
-          "originPort": "尾道港",
-          "destinationPort": "常石港",
-          "departureHhmm": "08:15",
-          "arrivalHhmm": "09:00"
-        },
-        {
-          "sailingId": "mlit_map_193_007_備後商船_常石_尾道_000_out_003",
-          "operator": "備後商船",
-          "originPort": "常石港",
-          "destinationPort": "尾道港",
-          "departureHhmm": "08:25",
-          "arrivalHhmm": "09:10"
-        }
-      ],
-      "searchQueries": [
-        "常石港 港 アクセス バス 時刻表",
-        "常石港 フェリーターミナル 最寄り バス停",
-        "常石港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "細島港",
-      "coordinate": {
-        "lat": 34.3607302,
-        "lon": 133.1371422
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 4530m",
-        "used by 16 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:OSM/Nominatim query=細島港 ferry terminal Japan; score=31; needs_precise_port_review",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "尾道市因島総合支所"
-      ],
-      "playableSailingCount": 16,
-      "originSailingCount": 8,
-      "destinationSailingCount": 8,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008068",
-        "name": "糸崎",
-        "distanceMeters": 4530
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_ed542e2f4d:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 21915
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back_001",
-          "operator": "尾道市因島総合支所",
-          "originPort": "西浜港",
-          "destinationPort": "細島港",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:15"
-        },
-        {
-          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_out_001",
-          "operator": "尾道市因島総合支所",
-          "originPort": "細島港",
-          "destinationPort": "西浜港",
-          "departureHhmm": "07:20",
-          "arrivalHhmm": "07:35"
-        },
-        {
-          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back_002",
-          "operator": "尾道市因島総合支所",
-          "originPort": "西浜港",
-          "destinationPort": "細島港",
-          "departureHhmm": "07:40",
-          "arrivalHhmm": "07:55"
-        },
-        {
-          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_out_002",
-          "operator": "尾道市因島総合支所",
-          "originPort": "細島港",
-          "destinationPort": "西浜港",
-          "departureHhmm": "08:10",
-          "arrivalHhmm": "08:25"
-        },
-        {
-          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back_003",
-          "operator": "尾道市因島総合支所",
-          "originPort": "西浜港",
-          "destinationPort": "細島港",
-          "departureHhmm": "09:30",
-          "arrivalHhmm": "09:45"
-        }
-      ],
-      "searchQueries": [
-        "細島港 港 アクセス バス 時刻表",
-        "細島港 フェリーターミナル 最寄り バス停",
-        "細島港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "木江港",
-      "coordinate": {
-        "lat": 34.233214,
-        "lon": 132.9174343
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 10819m",
-        "used by 16 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:OSM/Nominatim query=木江港 ferry terminal Japan; score=31; needs_precise_port_review",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "大三島ブルーライン"
-      ],
-      "playableSailingCount": 16,
-      "originSailingCount": 8,
-      "destinationSailingCount": 8,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008228",
-        "name": "吉名",
-        "distanceMeters": 10819
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_12cb535c53:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 23056
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_000_out_001",
-          "operator": "大三島ブルーライン",
-          "originPort": "今治港",
-          "destinationPort": "木江港",
-          "departureHhmm": "06:30",
-          "arrivalHhmm": "07:38"
-        },
-        {
-          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_001_back_001",
-          "operator": "大三島ブルーライン",
-          "originPort": "宗方港",
-          "destinationPort": "木江港",
-          "departureHhmm": "07:25",
-          "arrivalHhmm": "07:38"
-        },
-        {
-          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_001_out_001",
-          "operator": "大三島ブルーライン",
-          "originPort": "木江港",
-          "destinationPort": "宗方港",
-          "departureHhmm": "07:40",
-          "arrivalHhmm": "07:53"
-        },
-        {
-          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_001_back_002",
-          "operator": "大三島ブルーライン",
-          "originPort": "宗方港",
-          "destinationPort": "木江港",
-          "departureHhmm": "08:10",
-          "arrivalHhmm": "08:23"
-        },
-        {
-          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_001_out_002",
-          "operator": "大三島ブルーライン",
-          "originPort": "木江港",
-          "destinationPort": "宗方港",
-          "departureHhmm": "08:30",
-          "arrivalHhmm": "08:43"
-        }
-      ],
-      "searchQueries": [
-        "木江港 港 アクセス バス 時刻表",
-        "木江港 フェリーターミナル 最寄り バス停",
-        "木江港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "西浜港",
-      "coordinate": {
-        "lat": 34.347,
-        "lon": 133.157
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 6886m",
-        "used by 16 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "manual_verified:Onomichi municipal 細島-因島西浜 official route context; corrected from Hamamatsu weak match",
-      "coordinateDisplayName": "西浜港",
-      "operatorContexts": [
-        "尾道市因島総合支所"
-      ],
-      "playableSailingCount": 16,
-      "originSailingCount": 8,
-      "destinationSailingCount": 8,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008068",
-        "name": "糸崎",
-        "distanceMeters": 6886
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_12cb535c53:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 24210
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back_001",
-          "operator": "尾道市因島総合支所",
-          "originPort": "西浜港",
-          "destinationPort": "細島港",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:15"
-        },
-        {
-          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_out_001",
-          "operator": "尾道市因島総合支所",
-          "originPort": "細島港",
-          "destinationPort": "西浜港",
-          "departureHhmm": "07:20",
-          "arrivalHhmm": "07:35"
-        },
-        {
-          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back_002",
-          "operator": "尾道市因島総合支所",
-          "originPort": "西浜港",
-          "destinationPort": "細島港",
-          "departureHhmm": "07:40",
-          "arrivalHhmm": "07:55"
-        },
-        {
-          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_out_002",
-          "operator": "尾道市因島総合支所",
-          "originPort": "細島港",
-          "destinationPort": "西浜港",
-          "departureHhmm": "08:10",
-          "arrivalHhmm": "08:25"
-        },
-        {
-          "sailingId": "mlit_map_193_009_尾道市因島総合支所_細島_因島_西浜_000_back_003",
-          "operator": "尾道市因島総合支所",
-          "originPort": "西浜港",
-          "destinationPort": "細島港",
-          "departureHhmm": "09:30",
-          "arrivalHhmm": "09:45"
-        }
-      ],
-      "searchQueries": [
-        "西浜港 港 アクセス バス 時刻表",
-        "西浜港 フェリーターミナル 最寄り バス停",
-        "西浜港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "土生",
-      "coordinate": {
-        "lat": 34.2811931,
-        "lon": 133.180085
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 13269m",
-        "used by 16 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "manual_verified:OSM/Nominatim precise 土生港(長崎桟橋) result; route context 芸予汽船",
-      "coordinateDisplayName": "土生港(長崎桟橋)",
-      "operatorContexts": [
-        "芸予汽船"
-      ],
-      "playableSailingCount": 16,
-      "originSailingCount": 8,
-      "destinationSailingCount": 8,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008127",
-        "name": "須波",
-        "distanceMeters": 13269
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_12cb535c53:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 29824
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_039_芸予汽船_今治_土生_000_out_weekday_001",
-          "operator": "芸予汽船",
-          "originPort": "今治港",
-          "destinationPort": "土生",
-          "departureHhmm": "06:00",
-          "arrivalHhmm": "07:10"
-        },
-        {
-          "sailingId": "mlit_map_193_039_芸予汽船_今治_土生_000_out_weekend_holiday_100",
-          "operator": "芸予汽船",
-          "originPort": "今治港",
-          "destinationPort": "土生",
-          "departureHhmm": "06:20",
-          "arrivalHhmm": "07:40"
-        },
-        {
-          "sailingId": "mlit_map_193_039_芸予汽船_今治_土生_000_back_weekday_001",
-          "operator": "芸予汽船",
-          "originPort": "土生",
-          "destinationPort": "今治港",
-          "departureHhmm": "06:22",
-          "arrivalHhmm": "07:38"
-        },
-        {
-          "sailingId": "mlit_map_193_039_芸予汽船_今治_土生_000_back_weekend_holiday_100",
-          "operator": "芸予汽船",
-          "originPort": "土生",
-          "destinationPort": "今治港",
-          "departureHhmm": "07:45",
-          "arrivalHhmm": "09:05"
-        },
-        {
-          "sailingId": "mlit_map_193_039_芸予汽船_今治_土生_000_out_weekday_002",
-          "operator": "芸予汽船",
-          "originPort": "今治港",
-          "destinationPort": "土生",
-          "departureHhmm": "08:00",
-          "arrivalHhmm": "09:20"
-        }
-      ],
-      "searchQueries": [
-        "土生 港 アクセス バス 時刻表",
-        "土生 フェリーターミナル 最寄り バス停",
-        "土生 連絡バス 公式"
       ]
     },
     {
@@ -3394,6 +2840,87 @@
         "湊 港 アクセス バス 時刻表",
         "湊 フェリーターミナル 最寄り バス停",
         "湊 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "久比",
+      "coordinate": {
+        "lat": 34.1876943,
+        "lon": 132.8321167
+      },
+      "category": "collect_real_connector_high_priority",
+      "reasons": [
+        "inside honshu_mainland_band",
+        "rail within 12496m",
+        "bus stop within 4526m",
+        "used by 14 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:OSM/Nominatim query=久比 ferry terminal Japan; score=31; needs_precise_port_review",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "斎島汽船"
+      ],
+      "playableSailingCount": 14,
+      "originSailingCount": 7,
+      "destinationSailingCount": 7,
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_008331",
+        "name": "安登",
+        "distanceMeters": 12496
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_setouchi_port_connector_official_bus_so_4efb980656:cfbcda124a03",
+        "name": "明石港（大崎上島）",
+        "distanceMeters": 4526
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_001_out_001",
+          "operator": "斎島汽船",
+          "originPort": "三角",
+          "destinationPort": "久比",
+          "departureHhmm": "07:00",
+          "arrivalHhmm": "07:10"
+        },
+        {
+          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_out_001",
+          "operator": "斎島汽船",
+          "originPort": "斎島",
+          "destinationPort": "久比",
+          "departureHhmm": "07:00",
+          "arrivalHhmm": "07:27"
+        },
+        {
+          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_back_001",
+          "operator": "斎島汽船",
+          "originPort": "久比",
+          "destinationPort": "斎島",
+          "departureHhmm": "07:30",
+          "arrivalHhmm": "07:57"
+        },
+        {
+          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_001_back_001",
+          "operator": "斎島汽船",
+          "originPort": "久比",
+          "destinationPort": "三角",
+          "departureHhmm": "07:35",
+          "arrivalHhmm": "07:45"
+        },
+        {
+          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_001_out_002",
+          "operator": "斎島汽船",
+          "originPort": "三角",
+          "destinationPort": "久比",
+          "departureHhmm": "08:00",
+          "arrivalHhmm": "08:10"
+        }
+      ],
+      "searchQueries": [
+        "久比 港 アクセス バス 時刻表",
+        "久比 フェリーターミナル 最寄り バス停",
+        "久比 連絡バス 公式"
       ]
     },
     {
@@ -3718,86 +3245,6 @@
         "苫小牧西港 港 アクセス バス 時刻表",
         "苫小牧西港 フェリーターミナル 最寄り バス停",
         "苫小牧西港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "久比",
-      "coordinate": {
-        "lat": 34.1876943,
-        "lon": 132.8321167
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 12496m",
-        "used by 14 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:OSM/Nominatim query=久比 ferry terminal Japan; score=31; needs_precise_port_review",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "斎島汽船"
-      ],
-      "playableSailingCount": 14,
-      "originSailingCount": 7,
-      "destinationSailingCount": 7,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008331",
-        "name": "安登",
-        "distanceMeters": 12496
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_ed542e2f4d:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 29221
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_001_out_001",
-          "operator": "斎島汽船",
-          "originPort": "三角",
-          "destinationPort": "久比",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:10"
-        },
-        {
-          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_out_001",
-          "operator": "斎島汽船",
-          "originPort": "斎島",
-          "destinationPort": "久比",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:27"
-        },
-        {
-          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_back_001",
-          "operator": "斎島汽船",
-          "originPort": "久比",
-          "destinationPort": "斎島",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "07:57"
-        },
-        {
-          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_001_back_001",
-          "operator": "斎島汽船",
-          "originPort": "久比",
-          "destinationPort": "三角",
-          "departureHhmm": "07:35",
-          "arrivalHhmm": "07:45"
-        },
-        {
-          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_001_out_002",
-          "operator": "斎島汽船",
-          "originPort": "三角",
-          "destinationPort": "久比",
-          "departureHhmm": "08:00",
-          "arrivalHhmm": "08:10"
-        }
-      ],
-      "searchQueries": [
-        "久比 港 アクセス バス 時刻表",
-        "久比 フェリーターミナル 最寄り バス停",
-        "久比 連絡バス 公式"
       ]
     },
     {
@@ -5087,6 +4534,87 @@
       ]
     },
     {
+      "portName": "岡村港",
+      "coordinate": {
+        "lat": 34.1844812,
+        "lon": 132.8839061
+      },
+      "category": "collect_real_connector_high_priority",
+      "reasons": [
+        "inside honshu_mainland_band",
+        "rail within 11296m",
+        "bus stop within 2532m",
+        "used by 10 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:OSM/Nominatim query=岡村港 ferry terminal Japan; score=31; needs_precise_port_review",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "大三島ブルーライン"
+      ],
+      "playableSailingCount": 10,
+      "originSailingCount": 5,
+      "destinationSailingCount": 5,
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_008475",
+        "name": "波方",
+        "distanceMeters": 11296
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_setouchi_port_connector_official_bus_so_4efb980656:cfbcda124a03",
+        "name": "明石港（大崎上島）",
+        "distanceMeters": 2532
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_002_out_001",
+          "operator": "大三島ブルーライン",
+          "originPort": "宗方港",
+          "destinationPort": "岡村港",
+          "departureHhmm": "08:50",
+          "arrivalHhmm": "09:13"
+        },
+        {
+          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_002_back_001",
+          "operator": "大三島ブルーライン",
+          "originPort": "岡村港",
+          "destinationPort": "宗方港",
+          "departureHhmm": "09:15",
+          "arrivalHhmm": "09:38"
+        },
+        {
+          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_002_out_002",
+          "operator": "大三島ブルーライン",
+          "originPort": "宗方港",
+          "destinationPort": "岡村港",
+          "departureHhmm": "09:40",
+          "arrivalHhmm": "10:03"
+        },
+        {
+          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_002_back_002",
+          "operator": "大三島ブルーライン",
+          "originPort": "岡村港",
+          "destinationPort": "宗方港",
+          "departureHhmm": "10:05",
+          "arrivalHhmm": "10:28"
+        },
+        {
+          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_002_out_003",
+          "operator": "大三島ブルーライン",
+          "originPort": "宗方港",
+          "destinationPort": "岡村港",
+          "departureHhmm": "14:35",
+          "arrivalHhmm": "14:58"
+        }
+      ],
+      "searchQueries": [
+        "岡村港 港 アクセス バス 時刻表",
+        "岡村港 フェリーターミナル 最寄り バス停",
+        "岡村港 連絡バス 公式"
+      ]
+    },
+    {
       "portName": "印通寺",
       "coordinate": {
         "lat": 33.741574,
@@ -5805,86 +5333,6 @@
         "小川島 港 アクセス バス 時刻表",
         "小川島 フェリーターミナル 最寄り バス停",
         "小川島 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "岡村港",
-      "coordinate": {
-        "lat": 34.1844812,
-        "lon": 132.8839061
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 11296m",
-        "used by 10 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:OSM/Nominatim query=岡村港 ferry terminal Japan; score=31; needs_precise_port_review",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "大三島ブルーライン"
-      ],
-      "playableSailingCount": 10,
-      "originSailingCount": 5,
-      "destinationSailingCount": 5,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008475",
-        "name": "波方",
-        "distanceMeters": 11296
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_12cb535c53:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 28654
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_002_out_001",
-          "operator": "大三島ブルーライン",
-          "originPort": "宗方港",
-          "destinationPort": "岡村港",
-          "departureHhmm": "08:50",
-          "arrivalHhmm": "09:13"
-        },
-        {
-          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_002_back_001",
-          "operator": "大三島ブルーライン",
-          "originPort": "岡村港",
-          "destinationPort": "宗方港",
-          "departureHhmm": "09:15",
-          "arrivalHhmm": "09:38"
-        },
-        {
-          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_002_out_002",
-          "operator": "大三島ブルーライン",
-          "originPort": "宗方港",
-          "destinationPort": "岡村港",
-          "departureHhmm": "09:40",
-          "arrivalHhmm": "10:03"
-        },
-        {
-          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_002_back_002",
-          "operator": "大三島ブルーライン",
-          "originPort": "岡村港",
-          "destinationPort": "宗方港",
-          "departureHhmm": "10:05",
-          "arrivalHhmm": "10:28"
-        },
-        {
-          "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_002_out_003",
-          "operator": "大三島ブルーライン",
-          "originPort": "宗方港",
-          "destinationPort": "岡村港",
-          "departureHhmm": "14:35",
-          "arrivalHhmm": "14:58"
-        }
-      ],
-      "searchQueries": [
-        "岡村港 港 アクセス バス 時刻表",
-        "岡村港 フェリーターミナル 最寄り バス停",
-        "岡村港 連絡バス 公式"
       ]
     },
     {
@@ -7807,83 +7255,83 @@
       ]
     },
     {
-      "portName": "釜浦",
+      "portName": "斎島",
       "coordinate": {
-        "lat": 34.2844539,
-        "lon": 132.9131843
+        "lat": 34.1196117,
+        "lon": 132.7936031
       },
       "category": "collect_real_connector_high_priority",
       "reasons": [
         "inside honshu_mainland_band",
-        "rail within 5929m",
+        "rail within 10417m",
         "used by 6 playable sailings"
       ],
       "coordinateIdentityStatus": "ok",
       "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:OSM/Nominatim query=釜浦 ferry terminal Japan; score=29; needs_precise_port_review",
+      "coordinateSource": "online_verified:OSM/Nominatim query=斎島 ferry terminal Japan; score=31; needs_precise_port_review",
       "coordinateDisplayName": null,
       "operatorContexts": [
-        "西海市"
+        "斎島汽船"
       ],
       "playableSailingCount": 6,
       "originSailingCount": 3,
       "destinationSailingCount": 3,
       "nearestRail": {
-        "stationGroupId": "SG_N02G_008228",
-        "name": "吉名",
-        "distanceMeters": 5929
+        "stationGroupId": "SG_N02G_008523",
+        "name": "伊予亀岡",
+        "distanceMeters": 10417
       },
       "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_ed542e2f4d:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 17365
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_setouchi_port_connector_official_bus_so_4efb980656:cfbcda124a03",
+        "name": "明石港（大崎上島）",
+        "distanceMeters": 12255
       },
       "sampleSailings": [
         {
-          "sailingId": "mlit_map_193_067_西海市_釜浦_瀬戸_000_back_001",
-          "operator": "西海市",
-          "originPort": "瀬戸",
-          "destinationPort": "釜浦",
-          "departureHhmm": "08:20",
-          "arrivalHhmm": "08:35"
+          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_out_001",
+          "operator": "斎島汽船",
+          "originPort": "斎島",
+          "destinationPort": "久比",
+          "departureHhmm": "07:00",
+          "arrivalHhmm": "07:27"
         },
         {
-          "sailingId": "mlit_map_193_067_西海市_釜浦_瀬戸_000_out_001",
-          "operator": "西海市",
-          "originPort": "釜浦",
-          "destinationPort": "瀬戸",
-          "departureHhmm": "08:40",
-          "arrivalHhmm": "08:50"
+          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_back_001",
+          "operator": "斎島汽船",
+          "originPort": "久比",
+          "destinationPort": "斎島",
+          "departureHhmm": "07:30",
+          "arrivalHhmm": "07:57"
         },
         {
-          "sailingId": "mlit_map_193_067_西海市_釜浦_瀬戸_000_back_002",
-          "operator": "西海市",
-          "originPort": "瀬戸",
-          "destinationPort": "釜浦",
-          "departureHhmm": "14:47",
-          "arrivalHhmm": "14:57"
+          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_out_002",
+          "operator": "斎島汽船",
+          "originPort": "斎島",
+          "destinationPort": "久比",
+          "departureHhmm": "08:00",
+          "arrivalHhmm": "08:27"
         },
         {
-          "sailingId": "mlit_map_193_067_西海市_釜浦_瀬戸_000_out_002",
-          "operator": "西海市",
-          "originPort": "釜浦",
-          "destinationPort": "瀬戸",
-          "departureHhmm": "15:00",
-          "arrivalHhmm": "15:10"
+          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_back_002",
+          "operator": "斎島汽船",
+          "originPort": "久比",
+          "destinationPort": "斎島",
+          "departureHhmm": "10:45",
+          "arrivalHhmm": "11:12"
         },
         {
-          "sailingId": "mlit_map_193_067_西海市_釜浦_瀬戸_000_back_003",
-          "operator": "西海市",
-          "originPort": "瀬戸",
-          "destinationPort": "釜浦",
-          "departureHhmm": "17:40",
-          "arrivalHhmm": "17:50"
+          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_out_003",
+          "operator": "斎島汽船",
+          "originPort": "斎島",
+          "destinationPort": "久比",
+          "departureHhmm": "12:40",
+          "arrivalHhmm": "13:07"
         }
       ],
       "searchQueries": [
-        "釜浦 港 アクセス バス 時刻表",
-        "釜浦 フェリーターミナル 最寄り バス停",
-        "釜浦 連絡バス 公式"
+        "斎島 港 アクセス バス 時刻表",
+        "斎島 フェリーターミナル 最寄り バス停",
+        "斎島 連絡バス 公式"
       ]
     },
     {
@@ -8044,86 +7492,6 @@
         "土肥港 港 アクセス バス 時刻表",
         "土肥港 フェリーターミナル 最寄り バス停",
         "土肥港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "斎島",
-      "coordinate": {
-        "lat": 34.1196117,
-        "lon": 132.7936031
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 10417m",
-        "used by 6 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:OSM/Nominatim query=斎島 ferry terminal Japan; score=31; needs_precise_port_review",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "斎島汽船"
-      ],
-      "playableSailingCount": 6,
-      "originSailingCount": 3,
-      "destinationSailingCount": 3,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008523",
-        "name": "伊予亀岡",
-        "distanceMeters": 10417
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_matsuyama_airport_official_bus_source_json_myj_4aa4d95418:768be9a4a0c2",
-        "name": "道後温泉駅前",
-        "distanceMeters": 29922
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_out_001",
-          "operator": "斎島汽船",
-          "originPort": "斎島",
-          "destinationPort": "久比",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:27"
-        },
-        {
-          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_back_001",
-          "operator": "斎島汽船",
-          "originPort": "久比",
-          "destinationPort": "斎島",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "07:57"
-        },
-        {
-          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_out_002",
-          "operator": "斎島汽船",
-          "originPort": "斎島",
-          "destinationPort": "久比",
-          "departureHhmm": "08:00",
-          "arrivalHhmm": "08:27"
-        },
-        {
-          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_back_002",
-          "operator": "斎島汽船",
-          "originPort": "久比",
-          "destinationPort": "斎島",
-          "departureHhmm": "10:45",
-          "arrivalHhmm": "11:12"
-        },
-        {
-          "sailingId": "mlit_map_193_018_斎島汽船_斎島_久比_三角_久比_000_out_003",
-          "operator": "斎島汽船",
-          "originPort": "斎島",
-          "destinationPort": "久比",
-          "departureHhmm": "12:40",
-          "arrivalHhmm": "13:07"
-        }
-      ],
-      "searchQueries": [
-        "斎島 港 アクセス バス 時刻表",
-        "斎島 フェリーターミナル 最寄り バス停",
-        "斎島 連絡バス 公式"
       ]
     },
     {
@@ -10391,6 +9759,43 @@
       ]
     },
     {
+      "portName": "大長",
+      "coordinate": {
+        "lat": 34.1847278,
+        "lon": 132.8583812
+      },
+      "category": "collect_real_connector",
+      "reasons": [
+        "inside honshu_mainland_band",
+        "rail within 12612m",
+        "bus stop within 2887m"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:OSM/Nominatim query=大長 ferry terminal Japan; score=31; needs_precise_port_review",
+      "coordinateDisplayName": null,
+      "operatorContexts": [],
+      "playableSailingCount": 0,
+      "originSailingCount": 0,
+      "destinationSailingCount": 0,
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_008475",
+        "name": "波方",
+        "distanceMeters": 12612
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_setouchi_port_connector_official_bus_so_4efb980656:cfbcda124a03",
+        "name": "明石港（大崎上島）",
+        "distanceMeters": 2887
+      },
+      "sampleSailings": [],
+      "searchQueries": [
+        "大長 港 アクセス バス 時刻表",
+        "大長 フェリーターミナル 最寄り バス停",
+        "大長 連絡バス 公式"
+      ]
+    },
+    {
       "portName": "桜島",
       "coordinate": {
         "lat": 31.592602,
@@ -10501,42 +9906,6 @@
         "中島 港 アクセス バス 時刻表",
         "中島 フェリーターミナル 最寄り バス停",
         "中島 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "大長",
-      "coordinate": {
-        "lat": 34.1847278,
-        "lon": 132.8583812
-      },
-      "category": "collect_real_connector",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "rail within 12612m"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:OSM/Nominatim query=大長 ferry terminal Japan; score=31; needs_precise_port_review",
-      "coordinateDisplayName": null,
-      "operatorContexts": [],
-      "playableSailingCount": 0,
-      "originSailingCount": 0,
-      "destinationSailingCount": 0,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008475",
-        "name": "波方",
-        "distanceMeters": 12612
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_airport_bus_v5_hiroshima_airport_official_bus_source_json_hij_ed542e2f4d:60bb15c1a68f",
-        "name": "広島空港",
-        "distanceMeters": 28982
-      },
-      "sampleSailings": [],
-      "searchQueries": [
-        "大長 港 アクセス バス 時刻表",
-        "大長 フェリーターミナル 最寄り バス停",
-        "大長 連絡バス 公式"
       ]
     },
     {

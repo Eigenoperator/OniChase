@@ -172,11 +172,11 @@ python scripts/ingest/build_v5_bus_planner_tiles.py
 
 Current port connector audit:
 
-- 366 ship/ferry port nodes scanned.
-- 963 bus stop -> port walking connectors are available in the bus planner
+- 374 ship/ferry port nodes scanned.
+- 1,022 bus stop -> port walking connectors are available in the bus planner
   tiles.
-- 179 ports have at least one rail, bus, or airport access node within 2 km.
-- 187 ports remain connector gaps in the current rail/bus/airport source layer;
+- 206 ports have at least one rail, bus, or airport access node within 2 km.
+- 168 ports remain connector gaps in the current rail/bus/airport source layer;
   they are listed in `data/v5_port_connector_audit.json` and should be cleared
   by adding real local bus/port access data rather than fake walking links.
 
@@ -214,20 +214,20 @@ python scripts/ingest/build_v5_bus_map.py
 
 Current output on `2026-05-16`:
 
-- 96,797 GeoJSON features.
-- 8,584 bus route line features.
-- 88,213 bus stop point features.
-- 424 spatial bus-map tiles at `0.25` degree resolution.
+- 98,130 GeoJSON features.
+- 8,770 bus route line features.
+- 89,360 bus stop point features.
+- 509 spatial bus-map tiles at `0.25` degree resolution.
 - 158 KB tile manifest.
 - Largest gzipped tile is about 489 KB; median tile feature count is about 107.
 - Route lines by class:
-  - 143 airport-bus lines.
+  - 324 airport-bus lines.
   - 126 long-distance/highway/night-bus lines.
-  - 8,315 local-bus lines.
+  - 8,320 local-bus lines.
 - Stop points by class:
-  - 1,512 airport-bus stops.
+  - 2,648 airport-bus stops.
   - 1,052 long-distance/highway/night-bus stops.
-  - 85,649 local-bus stops.
+  - 85,660 local-bus stops.
 
 The V5 web page does not load `docs/data/v5_bus_map.geojson.gz` at runtime.
 That full file remains a rebuild/debug artifact. Runtime bus-map display loads
@@ -252,14 +252,15 @@ python scripts/ingest/build_v5_bus_planner_tiles.py
 Current output on `2026-05-16`:
 
 - Service date: `2026-05-16` Saturday.
-- 461 planner tiles at `0.25` degree resolution.
-- 28,659 active bus trips for the service date.
-- 711,205 indexed stop-time rows.
-- 112,867 walking connectors.
-- 4,580 routes with GTFS fare-rule coverage.
+- 464 planner tiles at `0.25` degree resolution.
+- 28,725 active bus trips for the service date.
+- 711,379 indexed stop-time rows.
+- 112,926 walking connectors.
+- 4,582 routes with GTFS fare-rule coverage.
 - Official non-GTFS local bus augmentation includes port connector buses such
-  as 小豆島オリーブバス 坂手線 and 直島町営バス, imported only from official
-  timetable sources with real stop coordinates.
+  as 小豆島オリーブバス 坂手線, 直島町営バス, 上島町町有バス,
+  and 大崎上島循環線, imported only from official timetable sources with real
+  stop coordinates.
 
 Runtime flow:
 
