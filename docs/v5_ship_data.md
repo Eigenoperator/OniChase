@@ -119,7 +119,7 @@ Current status:
 - Eighth map-completion batch:
   - Added `data/v5_ship_map_to_193_official.json` with 93 additional MLIT
     public/municipal candidate route groups promoted to Ship Map visibility.
-  - Current Ship Map coverage is now 193 route groups, 366 ports, 568
+  - Current Ship Map coverage is now 193 route groups, 374 ports, 568
     directional route segments, and 62 explicit timetable trips.
   - This batch is explicitly
     `map_visible_needs_precise_port_timetable_calendar_fare_connector_review`.
@@ -157,8 +157,8 @@ Current status:
   - `docs/data/v5_port_connector_audit.json`
   - `data/v5_ship_port_access_priority_audit.json`
   - `docs/data/v5_ship_port_access_priority_audit.json`
-  - Current coverage: 366 ports scanned; 197 have rail/bus/airport access
-    within 2 km; 169 remain connector gaps pending real local bus or access
+  - Current coverage: 374 ports scanned; 198 have rail/bus/airport access
+    within 2 km; 176 remain connector gaps pending real local bus or access
     data.
   - Added official local-bus connector source `data/v5_port_connector_official_bus_source.json`
     for 小豆島オリーブバス 坂手線（土庄港 ⇔ 坂手港ターミナル前）,
@@ -172,12 +172,13 @@ Current status:
     ambiguous names such as 大島港 must be checked with route/operator and
     coordinates before adding access data.
   - Current no-2 km access triage after identity review:
-    - 169 total no-access ports.
-    - 5 must resolve port identity first because the coordinate is suspicious
-      or the port name is ambiguous.
-    - 125 are high-priority real connector collection candidates.
+    - 176 total no-access ports.
+    - 0 must resolve port identity first; the previous ambiguous port-name
+      red lights have been split by operator/route context.
+    - 134 are high-priority real connector collection candidates.
     - 6 are lower-priority real connector candidates.
-    - 33 are remote/small-island local access records.
+    - 36 are remote/small-island local access records.
+    - 168 playable-affected ports still need connector decisions.
   - Connector collection rule: never add a bus/rail connector to a suspicious
     same-name port. Fix `portName + operator/route context + coordinate` first,
     then attach official bus/rail access.
@@ -188,9 +189,16 @@ Current status:
       平戸港, 瀬相, 生間, 笛吹, and 郷ノ首.
     - Corrected the 三洋汽船 source label `飛鳥` to the real route name
       `飛島` using official 三洋汽船 and 笠岡観光WEB route context.
-    - The remaining identity-first ports are true unresolved cases:
-      大島港, 姫島, 久賀, 因島西浜港, and 柳. These need route-specific
-      port identity or official pier confirmation before connector collection.
+  - Route/operator-specific identity split:
+    - Cleared the remaining 5 identity-first red lights: 大島港, 姫島, 久賀,
+      因島西浜港, and 柳.
+    - Generic same-name endpoints now resolve to distinct playable/map ports
+      such as 宗像大島港, 新居浜大島港, 壱岐大島港, 的山港,
+      大分姫島港, 糸島姫島港, 周防大島久賀港, 五島久賀港,
+      西浜港, 小値賀柳港, and 佐世保柳港.
+    - The old ambiguous endpoint names have 0 promoted sailings in the current
+      timetable bundle, so later connector work cannot accidentally attach a
+      mainland bus stop to the wrong island port.
 
 ## Current Official Source Files
 
