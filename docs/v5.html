@@ -15718,8 +15718,14 @@
         const currentState = candidatePreview?.currentState || {};
         if (currentState.kind === 'NODE') return stationLonLat(currentState.stationGroupId);
         if (currentState.kind === 'BUS_STOP') return busStopCoordinate(currentState.busStopId);
+        if (currentState.kind === 'TRAIN') return tripLocationOnMap(currentState.tripId, candidatePreview?.currentMinute)?.position || null;
+        if (currentState.kind === 'BUS') return busTripLocationOnMap(currentState.tripId, candidatePreview?.currentMinute);
         if (currentState.kind === 'AIRPORT_WAIT' || currentState.kind === 'BOARDING' || currentState.kind === 'ARRIVAL_COOLDOWN') {
           return airportCoordinate(currentState.airportIata);
+        }
+        if (currentState.kind === 'FLIGHT') {
+          const flight = state.flightById.get(currentState.flightId);
+          return airportCoordinate(flight?.destinationAirport || currentState.destinationAirport || currentState.originAirport);
         }
         if (currentState.kind === 'PORT_WAIT') return portCoordinate(currentState.portName);
         if (currentState.kind === 'SHIP') {
@@ -15728,6 +15734,9 @@
         }
         if (currentState.kind === 'WALK_TO_PORT') return portCoordinate(currentState.originPort);
         if (currentState.kind === 'WALK_FROM_PORT_TO_STATION') {
+          if (currentState.toAccessKind === 'station') return stationLonLat(currentState.toNodeId || currentState.toStationGroupId);
+          if (currentState.toAccessKind === 'bus_stop') return busStopCoordinate(currentState.toNodeId || currentState.toBusStopId);
+          if (currentState.toAccessKind === 'airport') return airportCoordinate(String(currentState.toNodeId || currentState.airportIata || '').replace(/^airport:/, ''));
           return stationLonLat(currentState.toStationGroupId) || portCoordinate(currentState.destinationPort);
         }
         return null;
