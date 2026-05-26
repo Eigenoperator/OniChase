@@ -1,0 +1,213 @@
+{
+  "schemaVersion": "v5_official_bus_source.type1_remote_port.v1",
+  "generatedAt": "2026-05-26T00:00:00-07:00",
+  "sourcePolicy": "Official/public timetable slices for V5 type1 remote ferry ports. These rows add real local bus access where a playable ferry port is outside the 2 km walking connector radius but official island/local transport exists.",
+  "routes": [
+    {
+      "sourceKind": "official_city_bus_pdf_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "石巻市",
+      "routeCode": "ishinomaki_ajishima_citizen_bus",
+      "routeName": "牡鹿地区市民バス（網地島線）",
+      "sourceUrl": "https://www.city.ishinomaki.lg.jp/cont/10053500/bus/Ajisimasen_20210401.pdf",
+      "sourceUrls": [
+        "https://www.city.ishinomaki.lg.jp/cont/10053500/bus/20130322165030.html",
+        "https://www.city.ishinomaki.lg.jp/cont/10053500/bus/Ajisimasen_20210401.pdf"
+      ],
+      "serviceStart": "2024-09-01",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "adultFareYen": 200,
+      "sourceNotes": [
+        "石巻市 official bus page links the current Ajishima PDF timetable.",
+        "PDF title: 牡鹿地区市民バス（網地島線）, revised 2024-09-01.",
+        "The official PDF states daily operation, five trips, and flat adult fare JPY 200 for 網地島線.",
+        "This gameplay slice keeps the port connector stops needed by V5: 根組車庫, 長渡港, and 網地港. Intermediate island stops remain source-visible in the PDF but are not emitted until their coordinates are reviewed."
+      ],
+      "busStops": [
+        {
+          "name": "根組車庫",
+          "lat": 38.2426,
+          "lon": 141.4901,
+          "coordinateSource": "manual_from_official_ajishima_bus_route_spot_check"
+        },
+        {
+          "name": "長渡港",
+          "lat": 38.2392,
+          "lon": 141.4949,
+          "coordinateSource": "manual_from_official_ajishima_bus_route_spot_check"
+        },
+        {
+          "name": "網地港",
+          "lat": 38.257,
+          "lon": 141.472,
+          "coordinateSource": "docs/data/v5_ship_map.geojson:網地港"
+        }
+      ],
+      "directions": [
+        {
+          "direction": "to_ajiko",
+          "trips": [
+            {
+              "tripId": "ishinomaki_ajishima_to_ajiko_001",
+              "stopTimes": [
+                {
+                  "stopName": "根組車庫",
+                  "time": "9:20"
+                },
+                {
+                  "stopName": "長渡港",
+                  "time": "9:22"
+                },
+                {
+                  "stopName": "網地港",
+                  "time": "9:36"
+                }
+              ]
+            },
+            {
+              "tripId": "ishinomaki_ajishima_to_ajiko_002",
+              "stopTimes": [
+                {
+                  "stopName": "根組車庫",
+                  "time": "11:00"
+                },
+                {
+                  "stopName": "長渡港",
+                  "time": "11:02"
+                },
+                {
+                  "stopName": "網地港",
+                  "time": "11:16"
+                }
+              ]
+            },
+            {
+              "tripId": "ishinomaki_ajishima_to_ajiko_003",
+              "stopTimes": [
+                {
+                  "stopName": "根組車庫",
+                  "time": "13:15"
+                },
+                {
+                  "stopName": "長渡港",
+                  "time": "13:17"
+                },
+                {
+                  "stopName": "網地港",
+                  "time": "13:31"
+                }
+              ]
+            },
+            {
+              "tripId": "ishinomaki_ajishima_to_ajiko_004",
+              "stopTimes": [
+                {
+                  "stopName": "根組車庫",
+                  "time": "14:40"
+                },
+                {
+                  "stopName": "長渡港",
+                  "time": "14:42"
+                },
+                {
+                  "stopName": "網地港",
+                  "time": "14:52"
+                }
+              ]
+            },
+            {
+              "tripId": "ishinomaki_ajishima_to_ajiko_005",
+              "stopTimes": [
+                {
+                  "stopName": "根組車庫",
+                  "time": "16:00"
+                },
+                {
+                  "stopName": "長渡港",
+                  "time": "16:02"
+                },
+                {
+                  "stopName": "網地港",
+                  "time": "16:12"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "from_ajiko",
+          "trips": [
+            {
+              "tripId": "ishinomaki_ajishima_from_ajiko_001",
+              "stopTimes": [
+                {
+                  "stopName": "網地港",
+                  "time": "9:54"
+                },
+                {
+                  "stopName": "根組車庫",
+                  "time": "10:04"
+                }
+              ]
+            },
+            {
+              "tripId": "ishinomaki_ajishima_from_ajiko_002",
+              "stopTimes": [
+                {
+                  "stopName": "網地港",
+                  "time": "11:16"
+                },
+                {
+                  "stopName": "根組車庫",
+                  "time": "11:26"
+                }
+              ]
+            },
+            {
+              "tripId": "ishinomaki_ajishima_from_ajiko_003",
+              "stopTimes": [
+                {
+                  "stopName": "網地港",
+                  "time": "13:52"
+                },
+                {
+                  "stopName": "根組車庫",
+                  "time": "14:02"
+                }
+              ]
+            },
+            {
+              "tripId": "ishinomaki_ajishima_from_ajiko_004",
+              "stopTimes": [
+                {
+                  "stopName": "網地港",
+                  "time": "15:12"
+                },
+                {
+                  "stopName": "根組車庫",
+                  "time": "15:22"
+                }
+              ]
+            },
+            {
+              "tripId": "ishinomaki_ajishima_from_ajiko_005",
+              "stopTimes": [
+                {
+                  "stopName": "網地港",
+                  "time": "16:24"
+                },
+                {
+                  "stopName": "根組車庫",
+                  "time": "16:36"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
