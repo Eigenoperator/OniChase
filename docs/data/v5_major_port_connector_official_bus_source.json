@@ -1,0 +1,222 @@
+{
+  "schemaVersion": "v5_port_connector_official_bus_source_v1",
+  "generatedAt": "2026-05-26T00:00:00Z",
+  "sourcePolicy": "Official port-access bus timetables promoted only when every stop has a verified rail-station or ferry-terminal coordinate. These are real fixed-route access buses, not inferred walking shortcuts.",
+  "routes": [
+    {
+      "sourceKind": "official_port_access_html_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "青森観光バス",
+      "routeCode": "aomori_nebutan_ferry_terminal",
+      "routeName": "あおもりシャトル de ルートバス ねぶたん号（青森駅西口 ⇔ フェリーターミナル ⇔ 新青森駅）",
+      "sourceUrl": "https://www.tsugarukaikyo.co.jp/guide/terminal/aomori/access/",
+      "adultFareYen": 300,
+      "serviceStart": "2025-04-01",
+      "serviceEnd": "2026-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Official Tsugaru Kaikyo Ferry Aomori terminal access page lists the 2025-04-01 to 2026-03-31 Nebutan-go timetable.",
+        "This imports the published large-loop departures that stop at 青森駅西口, 津軽海峡フェリーターミナル, 青森港フェリーターミナル, and 新青森駅東口.",
+        "Adult one-ride fare is listed as 300 yen on the official access page."
+      ],
+      "busStops": [
+        { "name": "青森駅西口②番のりば", "lat": 40.83032, "lon": 140.73465 },
+        { "name": "津軽海峡フェリーターミナル", "lat": 40.8432, "lon": 140.7168 },
+        { "name": "青森港フェリーターミナル", "lat": 40.8438885, "lon": 140.7158269 },
+        { "name": "新青森駅東口③番のりば", "lat": 40.8277175, "lon": 140.6934415 }
+      ],
+      "directions": [
+        {
+          "direction": "aomori_station_loop",
+          "sourceUrl": "https://www.tsugarukaikyo.co.jp/guide/terminal/aomori/access/",
+          "trips": [
+            { "tripId": "aomori_nebutan_loop_001", "stopTimes": [{ "stopName": "青森駅西口②番のりば", "time": "9:00" }, { "stopName": "津軽海峡フェリーターミナル", "time": "9:12" }, { "stopName": "青森港フェリーターミナル", "time": "9:14" }, { "stopName": "新青森駅東口③番のりば", "time": "9:24" }, { "stopName": "青森駅西口②番のりば", "time": "10:00" }] },
+            { "tripId": "aomori_nebutan_loop_002", "stopTimes": [{ "stopName": "青森駅西口②番のりば", "time": "10:30" }, { "stopName": "津軽海峡フェリーターミナル", "time": "10:42" }, { "stopName": "青森港フェリーターミナル", "time": "10:44" }, { "stopName": "新青森駅東口③番のりば", "time": "10:54" }, { "stopName": "青森駅西口②番のりば", "time": "11:30" }] },
+            { "tripId": "aomori_nebutan_loop_003", "stopTimes": [{ "stopName": "青森駅西口②番のりば", "time": "13:10" }, { "stopName": "津軽海峡フェリーターミナル", "time": "13:22" }, { "stopName": "青森港フェリーターミナル", "time": "13:24" }, { "stopName": "新青森駅東口③番のりば", "time": "13:34" }, { "stopName": "青森駅西口②番のりば", "time": "14:10" }] },
+            { "tripId": "aomori_nebutan_loop_004", "stopTimes": [{ "stopName": "青森駅西口②番のりば", "time": "16:10" }, { "stopName": "津軽海峡フェリーターミナル", "time": "16:22" }, { "stopName": "青森港フェリーターミナル", "time": "16:24" }, { "stopName": "新青森駅東口③番のりば", "time": "16:34" }, { "stopName": "青森駅西口②番のりば", "time": "17:10" }] }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_port_access_html_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "苫小牧港開発",
+      "routeCode": "tomakomai_west_port_station_bus",
+      "routeName": "苫小牧西港フェリーターミナル連絡バス（フェリーターミナル ⇔ 苫小牧駅前）",
+      "sourceUrl": "https://www.tomakai.com/ferry/access/",
+      "serviceStart": "2025-04-01",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Official Tomakomai West Port Ferry Terminal access page lists buses between the ferry terminal, Tomakomai Station, and Sapporo Station.",
+        "This connector slice stores the published ferry-terminal and Tomakomai-station stop times. Sapporo through times are not needed for the port connector and are omitted from gameplay here.",
+        "Some rows are noted as Saturday/Sunday/holiday only by the official page; they are retained as regular weekend trips."
+      ],
+      "busStops": [
+        { "name": "苫小牧西港フェリーターミナル", "lat": 42.634, "lon": 141.6352 },
+        { "name": "苫小牧駅前", "lat": 42.6394067, "lon": 141.5961367 }
+      ],
+      "directions": [
+        {
+          "direction": "to_tomakomai_station",
+          "sourceUrl": "https://www.tomakai.com/ferry/access/",
+          "trips": [
+            { "tripId": "tomakomai_west_port_to_sta_001", "stopTimes": [{ "stopName": "苫小牧西港フェリーターミナル", "time": "6:30" }, { "stopName": "苫小牧駅前", "time": "6:46" }] },
+            { "tripId": "tomakomai_west_port_to_sta_002", "stopTimes": [{ "stopName": "苫小牧西港フェリーターミナル", "time": "6:46" }, { "stopName": "苫小牧駅前", "time": "7:00" }] },
+            { "tripId": "tomakomai_west_port_to_sta_003", "stopTimes": [{ "stopName": "苫小牧西港フェリーターミナル", "time": "9:00" }, { "stopName": "苫小牧駅前", "time": "9:16" }] },
+            { "tripId": "tomakomai_west_port_to_sta_004", "stopTimes": [{ "stopName": "苫小牧西港フェリーターミナル", "time": "11:30" }, { "stopName": "苫小牧駅前", "time": "11:46" }] },
+            { "tripId": "tomakomai_west_port_to_sta_005", "stopTimes": [{ "stopName": "苫小牧西港フェリーターミナル", "time": "11:46" }, { "stopName": "苫小牧駅前", "time": "12:00" }] },
+            { "tripId": "tomakomai_west_port_to_sta_006", "stopTimes": [{ "stopName": "苫小牧西港フェリーターミナル", "time": "13:56" }, { "stopName": "苫小牧駅前", "time": "14:10" }] },
+            { "tripId": "tomakomai_west_port_to_sta_007", "stopTimes": [{ "stopName": "苫小牧西港フェリーターミナル", "time": "16:46" }, { "stopName": "苫小牧駅前", "time": "17:00" }] },
+            { "tripId": "tomakomai_west_port_to_sta_008", "stopTimes": [{ "stopName": "苫小牧西港フェリーターミナル", "time": "17:05" }, { "stopName": "苫小牧駅前", "time": "17:21" }] },
+            { "tripId": "tomakomai_west_port_to_sta_009", "serviceDays": "weekend", "stopTimes": [{ "stopName": "苫小牧西港フェリーターミナル", "time": "20:35" }, { "stopName": "苫小牧駅前", "time": "20:51" }] }
+          ]
+        },
+        {
+          "direction": "from_tomakomai_station",
+          "sourceUrl": "https://www.tomakai.com/ferry/access/",
+          "trips": [
+            { "tripId": "tomakomai_sta_to_west_port_001", "stopTimes": [{ "stopName": "苫小牧駅前", "time": "8:40" }, { "stopName": "苫小牧西港フェリーターミナル", "time": "8:57" }] },
+            { "tripId": "tomakomai_sta_to_west_port_002", "stopTimes": [{ "stopName": "苫小牧駅前", "time": "11:10" }, { "stopName": "苫小牧西港フェリーターミナル", "time": "11:27" }] },
+            { "tripId": "tomakomai_sta_to_west_port_003", "stopTimes": [{ "stopName": "苫小牧駅前", "time": "16:35" }, { "stopName": "苫小牧西港フェリーターミナル", "time": "16:52" }] },
+            { "tripId": "tomakomai_sta_to_west_port_004", "stopTimes": [{ "stopName": "苫小牧駅前", "time": "16:41" }, { "stopName": "苫小牧西港フェリーターミナル", "time": "16:55" }] },
+            { "tripId": "tomakomai_sta_to_west_port_005", "stopTimes": [{ "stopName": "苫小牧駅前", "time": "17:41" }, { "stopName": "苫小牧西港フェリーターミナル", "time": "17:55" }] },
+            { "tripId": "tomakomai_sta_to_west_port_006", "stopTimes": [{ "stopName": "苫小牧駅前", "time": "19:31" }, { "stopName": "苫小牧西港フェリーターミナル", "time": "19:45" }] },
+            { "tripId": "tomakomai_sta_to_west_port_007", "serviceDays": "weekend", "stopTimes": [{ "stopName": "苫小牧駅前", "time": "20:10" }, { "stopName": "苫小牧西港フェリーターミナル", "time": "20:27" }] },
+            { "tripId": "tomakomai_sta_to_west_port_008", "stopTimes": [{ "stopName": "苫小牧駅前", "time": "21:56" }, { "stopName": "苫小牧西港フェリーターミナル", "time": "22:10" }] },
+            { "tripId": "tomakomai_sta_to_west_port_009", "stopTimes": [{ "stopName": "苫小牧駅前", "time": "22:56" }, { "stopName": "苫小牧西港フェリーターミナル", "time": "23:10" }] }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_port_access_html_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "新潟交通",
+      "routeCode": "niigata_snf_ferry_terminal_e11",
+      "routeName": "E11 臨港町線 新潟駅 ⇔ 新日本海フェリー",
+      "sourceUrl": "https://www.snf.jp/guide/embark/niigata/",
+      "adultFareYen": 210,
+      "serviceStart": "2026-03-29",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Shin Nihonkai Ferry official Niigata terminal access page lists E11 Rinkomachi Line access via 新日本海フェリー and special ferry-connecting departure times.",
+        "The same official page states the nearest regular stop is 末広橋 when the direct 新日本海フェリー stop is not served; this source only promotes the direct ferry-terminal stop trips.",
+        "This is for the 山の下埠頭 Shin Nihonkai terminal currently represented by the shared 新潟港 port node."
+      ],
+      "busStops": [
+        { "name": "新潟駅", "lat": 37.9121738, "lon": 139.0613713 },
+        { "name": "新日本海フェリー", "lat": 37.9432, "lon": 139.061 }
+      ],
+      "directions": [
+        {
+          "direction": "to_ferry_terminal",
+          "sourceUrl": "https://www.snf.jp/guide/embark/niigata/",
+          "trips": [
+            { "tripId": "niigata_snf_sta_to_port_weekday_001", "serviceDays": "weekday", "stopTimes": [{ "stopName": "新潟駅", "time": "10:14" }, { "stopName": "新日本海フェリー", "time": "10:34" }] },
+            { "tripId": "niigata_snf_sta_to_port_weekend_001", "serviceDays": "weekend", "stopTimes": [{ "stopName": "新潟駅", "time": "10:34" }, { "stopName": "新日本海フェリー", "time": "10:54" }] }
+          ]
+        },
+        {
+          "direction": "from_ferry_terminal",
+          "sourceUrl": "https://www.snf.jp/guide/embark/niigata/",
+          "trips": [
+            { "tripId": "niigata_snf_port_to_sta_weekday_001", "serviceDays": "weekday", "stopTimes": [{ "stopName": "新日本海フェリー", "time": "9:38" }, { "stopName": "新潟駅", "time": "9:58" }] },
+            { "tripId": "niigata_snf_port_to_sta_weekday_002", "serviceDays": "weekday", "stopTimes": [{ "stopName": "新日本海フェリー", "time": "15:52" }, { "stopName": "新潟駅", "time": "16:12" }] },
+            { "tripId": "niigata_snf_port_to_sta_weekend_001", "serviceDays": "weekend", "stopTimes": [{ "stopName": "新日本海フェリー", "time": "9:40" }, { "stopName": "新潟駅", "time": "10:00" }] },
+            { "tripId": "niigata_snf_port_to_sta_weekend_002", "serviceDays": "weekend", "stopTimes": [{ "stopName": "新日本海フェリー", "time": "15:55" }, { "stopName": "新潟駅", "time": "16:15" }] }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_port_access_pdf_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "福井鉄道",
+      "routeCode": "tsuruga_station_ferry_terminal",
+      "routeName": "フェリー線 敦賀駅 ⇔ フェリーターミナル",
+      "sourceUrl": "https://fukutetsu.jp/cms/uploads/2025-11-1.pdf",
+      "adultFareYen": 350,
+      "serviceStart": "2025-11-01",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Fukui Railway official PDF lists ferry-line buses between 敦賀駅 and フェリーターミナル.",
+        "The PDF states trips run only on ferry operation days. The game calendar stores the published connector trips; ferry availability remains governed by the ship timetable."
+      ],
+      "busStops": [
+        { "name": "敦賀駅", "lat": 35.6447488, "lon": 136.0767826 },
+        { "name": "敦賀港フェリーターミナル", "lat": 35.6786218, "lon": 136.0723443 }
+      ],
+      "directions": [
+        {
+          "direction": "to_ferry_terminal",
+          "sourceUrl": "https://fukutetsu.jp/cms/uploads/2025-11-1.pdf",
+          "trips": [
+            { "tripId": "tsuruga_sta_to_ferry_001", "stopTimes": [{ "stopName": "敦賀駅", "time": "8:50" }, { "stopName": "敦賀港フェリーターミナル", "time": "9:05" }] },
+            { "tripId": "tsuruga_sta_to_ferry_002", "stopTimes": [{ "stopName": "敦賀駅", "time": "20:20" }, { "stopName": "敦賀港フェリーターミナル", "time": "20:35" }] }
+          ]
+        },
+        {
+          "direction": "from_ferry_terminal",
+          "sourceUrl": "https://fukutetsu.jp/cms/uploads/2025-11-1.pdf",
+          "trips": [
+            { "tripId": "tsuruga_ferry_to_sta_001", "stopTimes": [{ "stopName": "敦賀港フェリーターミナル", "time": "9:10" }, { "stopName": "敦賀駅", "time": "9:25" }] },
+            { "tripId": "tsuruga_ferry_to_sta_002", "stopTimes": [{ "stopName": "敦賀港フェリーターミナル", "time": "20:40" }, { "stopName": "敦賀駅", "time": "20:55" }] }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_port_access_html_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "道南バス",
+      "routeCode": "tomakomai_east_port_minami_chitose",
+      "routeName": "苫小牧東港連絡バス 南千歳駅 ⇔ 苫小牧東港フェリーターミナル",
+      "sourceUrl": "https://travel.willer.co.jp/ferry/terminal/74/t80/",
+      "adultFareYen": 1200,
+      "serviceStart": "2025-04-01",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "WILLER official Shin Nihonkai Ferry terminal page lists the JR Minami-Chitose to Tomakomai East Port shuttle bus times, fare, platform, and ferry-operation-only notes.",
+        "Return trips are taken from published bus timetable references for the same route and marked as operation-day connector service."
+      ],
+      "busStops": [
+        { "name": "南千歳駅北口交通広場", "lat": 42.808205, "lon": 141.67521 },
+        { "name": "苫小牧東港フェリーターミナル", "lat": 42.613, "lon": 141.802 }
+      ],
+      "directions": [
+        {
+          "direction": "to_ferry_terminal",
+          "sourceUrl": "https://travel.willer.co.jp/ferry/terminal/74/t80/",
+          "trips": [
+            { "tripId": "minami_chitose_to_tomakomai_east_001", "stopTimes": [{ "stopName": "南千歳駅北口交通広場", "time": "15:15" }, { "stopName": "苫小牧東港フェリーターミナル", "time": "16:00" }] },
+            { "tripId": "minami_chitose_to_tomakomai_east_002", "stopTimes": [{ "stopName": "南千歳駅北口交通広場", "time": "17:50" }, { "stopName": "苫小牧東港フェリーターミナル", "time": "18:35" }] },
+            { "tripId": "minami_chitose_to_tomakomai_east_003", "stopTimes": [{ "stopName": "南千歳駅北口交通広場", "time": "21:50" }, { "stopName": "苫小牧東港フェリーターミナル", "time": "22:35" }] }
+          ]
+        },
+        {
+          "direction": "from_ferry_terminal",
+          "sourceUrl": "https://www.jorudan.co.jp/time/to/%E8%8B%AB%E5%B0%8F%E7%89%A7%E6%9D%B1%E6%B8%AF%E3%83%95%E3%82%A7%E3%83%AA%E3%83%BC%E3%82%BF%E3%83%BC%E3%83%9F%E3%83%8A%E3%83%AB_%E5%8D%97%E5%8D%83%E6%AD%B3%EF%BC%BB%E8%88%AA%E8%B7%AF%EF%BC%BD/?r=%E8%8B%AB%E5%B0%8F%E7%89%A7%E6%9D%B1%E6%B8%AF%E7%B7%9A%EF%BC%BB%E5%8D%97%E5%8D%83%E6%AD%B3%EF%BC%BD",
+          "trips": [
+            { "tripId": "tomakomai_east_to_minami_chitose_001", "stopTimes": [{ "stopName": "苫小牧東港フェリーターミナル", "time": "17:15" }, { "stopName": "南千歳駅北口交通広場", "time": "18:00" }] },
+            { "tripId": "tomakomai_east_to_minami_chitose_002", "stopTimes": [{ "stopName": "苫小牧東港フェリーターミナル", "time": "21:00" }, { "stopName": "南千歳駅北口交通広場", "time": "21:45" }] }
+          ]
+        }
+      ]
+    }
+  ]
+}
