@@ -157,8 +157,8 @@ Current status:
   - `docs/data/v5_port_connector_audit.json`
   - `data/v5_ship_port_access_priority_audit.json`
   - `docs/data/v5_ship_port_access_priority_audit.json`
-  - Current coverage: 374 ports scanned; 212 have rail/bus/airport access
-    within 2 km; 162 remain connector gaps pending real local bus or access
+  - Current coverage: 374 ports scanned; 230 have rail/bus/airport access
+    within 2 km; 144 remain connector gaps pending real local bus or access
     data.
   - Added official local-bus connector source `data/v5_port_connector_official_bus_source.json`
     for 小豆島オリーブバス 坂手線（土庄港 ⇔ 坂手港ターミナル前）,
@@ -185,6 +185,14 @@ Current status:
     青森フェリーターミナル, 苫小牧西港, 新潟港, 敦賀港, and
     苫小牧東港 reachable through real timed bus trips instead of audit-only
     classification.
+  - Added second high-priority port-connector source
+    `data/v5_port_connector_batch2_official_bus_source.json` for real
+    ferry/port access bus slices serving 三崎港, 口之津港, 呼子, 両津港,
+    蔵之元港, 平戸港, 鞆港, 七類港, 土肥港, 串木野新港, 岩船港,
+    宮崎港, 境港, 東予港, and 常石港. This also clears nearby playable
+    nodes such as 小川島 via the 呼子 bus stop. The routes are intentionally
+    recorded as source-backed connector slices, not full local-bus GTFS
+    replacements.
   - The priority audit separates ports that need real mainland/large-island
     connector collection from remote or small-island cases that can be recorded
     as local-island connector gaps. Port names are not enough for collection:
@@ -197,13 +205,13 @@ Current status:
     present or intentionally collected. Bridge-connected / urban-service cases
     such as 伊王島 stay in the real connector collection queue.
   - Current no-2 km access triage after identity review:
-    - 162 total no-access ports.
+    - 144 total no-access ports.
     - 0 must resolve port identity first; the previous ambiguous port-name
       red lights have been split by operator/route context.
-    - 45 are high-priority real connector collection candidates.
+    - 30 are high-priority real connector collection candidates.
     - 1 is a lower-priority real connector candidate.
-    - 116 are remote/small-island local access records.
-    - 154 playable-affected ports still need connector decisions.
+    - 113 are remote/small-island local access records.
+    - 136 playable-affected ports still need connector decisions.
   - Reservation-sensitive rule: reservation-demand access such as 江田島北部線
     / おれんじ号 must not be promoted as an ordinary bus until the bus model
     can expose reservation requirements. These can be collected, but gameplay

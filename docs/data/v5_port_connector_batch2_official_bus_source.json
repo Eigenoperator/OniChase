@@ -1,0 +1,1481 @@
+{
+  "schemaVersion": "v5_port_connector_official_bus_source_v1",
+  "generatedAt": "2026-05-26T12:11:31-07:00",
+  "sourcePolicy": {
+    "scope": "Second playable port-connector batch for high-priority ferry ports with no 2 km access.",
+    "rule": "Only promote real published fixed-route bus or ferry-connection bus departures. These are connector slices, not guaranteed complete GTFS replacements."
+  },
+  "routes": [
+    {
+      "sourceKind": "official_pdf_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "伊予鉄南予バス",
+      "routeCode": "misaki_yawatahama_limited",
+      "routeName": "八幡浜・三崎特急線（三崎港口 ⇔ 八幡浜駅前）",
+      "sourceUrl": "https://www.iyotetsu.co.jp/sp/rosen/bus/time/all.pdf?1101=",
+      "serviceStart": "2025-11-01",
+      "serviceEnd": "2026-10-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Iyo Railway official all-route PDF lists the 2025-11-01 timetable for 八幡浜・三崎特急線.",
+        "Imported only the 三崎港口 ⇔ 八幡浜駅前 section needed to connect 三崎港 to the rail network."
+      ],
+      "busStops": [
+        {
+          "name": "八幡浜駅前",
+          "lat": 33.45803,
+          "lon": 132.43618
+        },
+        {
+          "name": "三崎港口",
+          "lat": 33.386,
+          "lon": 132.12
+        }
+      ],
+      "directions": [
+        {
+          "direction": "yawatahama_to_misaki",
+          "trips": [
+            {
+              "tripId": "misaki_yawatahama_limited_1347",
+              "stopTimes": [
+                {
+                  "stopName": "八幡浜駅前",
+                  "time": "13:47"
+                },
+                {
+                  "stopName": "三崎港口",
+                  "time": "14:54"
+                }
+              ]
+            },
+            {
+              "tripId": "misaki_yawatahama_limited_1842",
+              "stopTimes": [
+                {
+                  "stopName": "八幡浜駅前",
+                  "time": "18:42"
+                },
+                {
+                  "stopName": "三崎港口",
+                  "time": "19:49"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "misaki_to_yawatahama",
+          "trips": [
+            {
+              "tripId": "misaki_yawatahama_limited_0642",
+              "stopTimes": [
+                {
+                  "stopName": "三崎港口",
+                  "time": "6:42"
+                },
+                {
+                  "stopName": "八幡浜駅前",
+                  "time": "7:49"
+                }
+              ]
+            },
+            {
+              "tripId": "misaki_yawatahama_limited_1530",
+              "stopTimes": [
+                {
+                  "stopName": "三崎港口",
+                  "time": "15:30"
+                },
+                {
+                  "stopName": "八幡浜駅前",
+                  "time": "16:37"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_pdf_stop_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "島原鉄道",
+      "routeCode": "kuchinotsu_shimabara",
+      "routeName": "加津佐・島原線（口之津港 ⇔ 島原駅前）",
+      "sourceUrl": "https://www.shimatetsu.co.jp/assets/docs/pdf/rosen/0604.pdf",
+      "serviceStart": "2026-04-06",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Shimabara Railway official stop timetable for 口之津港 lists 2026-04-06 departures.",
+        "Destination-side times use the same corridor scheduled running time in the public timetable slice; this route should be replaced by a full official stop-time table when collected."
+      ],
+      "busStops": [
+        {
+          "name": "島原駅前",
+          "lat": 32.790595,
+          "lon": 130.370605
+        },
+        {
+          "name": "口之津港",
+          "lat": 32.611,
+          "lon": 130.188
+        }
+      ],
+      "directions": [
+        {
+          "direction": "kuchinotsu_to_shimabara",
+          "trips": [
+            {
+              "tripId": "kuchinotsu_shimabara_0752",
+              "stopTimes": [
+                {
+                  "stopName": "口之津港",
+                  "time": "7:52"
+                },
+                {
+                  "stopName": "島原駅前",
+                  "time": "9:22"
+                }
+              ]
+            },
+            {
+              "tripId": "kuchinotsu_shimabara_1032",
+              "stopTimes": [
+                {
+                  "stopName": "口之津港",
+                  "time": "10:32"
+                },
+                {
+                  "stopName": "島原駅前",
+                  "time": "12:02"
+                }
+              ]
+            },
+            {
+              "tripId": "kuchinotsu_shimabara_1432",
+              "stopTimes": [
+                {
+                  "stopName": "口之津港",
+                  "time": "14:32"
+                },
+                {
+                  "stopName": "島原駅前",
+                  "time": "16:02"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "shimabara_to_kuchinotsu",
+          "trips": [
+            {
+              "tripId": "shimabara_kuchinotsu_0910",
+              "stopTimes": [
+                {
+                  "stopName": "島原駅前",
+                  "time": "9:10"
+                },
+                {
+                  "stopName": "口之津港",
+                  "time": "10:40"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabara_kuchinotsu_1215",
+              "stopTimes": [
+                {
+                  "stopName": "島原駅前",
+                  "time": "12:15"
+                },
+                {
+                  "stopName": "口之津港",
+                  "time": "13:45"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabara_kuchinotsu_1640",
+              "stopTimes": [
+                {
+                  "stopName": "島原駅前",
+                  "time": "16:40"
+                },
+                {
+                  "stopName": "口之津港",
+                  "time": "18:10"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_public_pdf_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "昭和自動車",
+      "routeCode": "yobuko_karatsu",
+      "routeName": "呼子線（呼子 ⇔ 唐津駅）",
+      "sourceUrl": "https://transfer.navitime.biz/showa-bus/pc/diagram/PdfDiagram?linkId=00053919&nodeId=00291102&updown=1",
+      "serviceStart": "2026-05-17",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Showa Bus public timetable PDF lists 呼子 departures toward 唐津駅 / まいづる999前 as of 2026-05-17.",
+        "Imported a daily connector slice between 呼子 and 唐津駅 for port playability."
+      ],
+      "busStops": [
+        {
+          "name": "唐津駅",
+          "lat": 33.4459225,
+          "lon": 129.9686975
+        },
+        {
+          "name": "呼子",
+          "lat": 33.5397012,
+          "lon": 129.8939239
+        }
+      ],
+      "directions": [
+        {
+          "direction": "yobuko_to_karatsu",
+          "trips": [
+            {
+              "tripId": "yobuko_karatsu_0835",
+              "stopTimes": [
+                {
+                  "stopName": "呼子",
+                  "time": "8:35"
+                },
+                {
+                  "stopName": "唐津駅",
+                  "time": "9:05"
+                }
+              ]
+            },
+            {
+              "tripId": "yobuko_karatsu_1235",
+              "stopTimes": [
+                {
+                  "stopName": "呼子",
+                  "time": "12:35"
+                },
+                {
+                  "stopName": "唐津駅",
+                  "time": "13:05"
+                }
+              ]
+            },
+            {
+              "tripId": "yobuko_karatsu_1825",
+              "stopTimes": [
+                {
+                  "stopName": "呼子",
+                  "time": "18:25"
+                },
+                {
+                  "stopName": "唐津駅",
+                  "time": "18:55"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "karatsu_to_yobuko",
+          "trips": [
+            {
+              "tripId": "karatsu_yobuko_0735",
+              "stopTimes": [
+                {
+                  "stopName": "唐津駅",
+                  "time": "7:35"
+                },
+                {
+                  "stopName": "呼子",
+                  "time": "8:05"
+                }
+              ]
+            },
+            {
+              "tripId": "karatsu_yobuko_1135",
+              "stopTimes": [
+                {
+                  "stopName": "唐津駅",
+                  "time": "11:35"
+                },
+                {
+                  "stopName": "呼子",
+                  "time": "12:05"
+                }
+              ]
+            },
+            {
+              "tripId": "karatsu_yobuko_1735",
+              "stopTimes": [
+                {
+                  "stopName": "唐津駅",
+                  "time": "17:35"
+                },
+                {
+                  "stopName": "呼子",
+                  "time": "18:05"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_route_bus_page",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "新潟交通佐渡",
+      "routeCode": "ryotsu_sawata",
+      "routeName": "本線（両津港佐渡汽船 ⇔ 佐和田バスステーション）",
+      "sourceUrl": "https://www.sado-bus.com/route/",
+      "serviceStart": "2025-10-01",
+      "serviceEnd": "2026-09-30",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Niigata Kotsu Sado official route-bus page lists island route timetables and the fare table from 2025-10.",
+        "Imported a conservative connector slice from 両津港佐渡汽船 toward the island bus hub so 両津港 is not stranded."
+      ],
+      "busStops": [
+        {
+          "name": "両津港佐渡汽船",
+          "lat": 38.081653,
+          "lon": 138.438069
+        },
+        {
+          "name": "佐和田バスステーション",
+          "lat": 38.0209,
+          "lon": 138.2588
+        }
+      ],
+      "directions": [
+        {
+          "direction": "ryotsu_to_sawata",
+          "trips": [
+            {
+              "tripId": "ryotsu_sawata_0820",
+              "stopTimes": [
+                {
+                  "stopName": "両津港佐渡汽船",
+                  "time": "8:20"
+                },
+                {
+                  "stopName": "佐和田バスステーション",
+                  "time": "8:55"
+                }
+              ]
+            },
+            {
+              "tripId": "ryotsu_sawata_1220",
+              "stopTimes": [
+                {
+                  "stopName": "両津港佐渡汽船",
+                  "time": "12:20"
+                },
+                {
+                  "stopName": "佐和田バスステーション",
+                  "time": "12:55"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "sawata_to_ryotsu",
+          "trips": [
+            {
+              "tripId": "sawata_ryotsu_0940",
+              "stopTimes": [
+                {
+                  "stopName": "佐和田バスステーション",
+                  "time": "9:40"
+                },
+                {
+                  "stopName": "両津港佐渡汽船",
+                  "time": "10:15"
+                }
+              ]
+            },
+            {
+              "tripId": "sawata_ryotsu_1540",
+              "stopTimes": [
+                {
+                  "stopName": "佐和田バスステーション",
+                  "time": "15:40"
+                },
+                {
+                  "stopName": "両津港佐渡汽船",
+                  "time": "16:15"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_and_public_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "南国交通",
+      "routeCode": "izumi_kuranomoto",
+      "routeName": "出水・天草ロマンシャトルバス（出水駅 ⇔ 蔵之元港）",
+      "sourceUrl": "https://nangoku-kotsu.com/kcity/izumi/",
+      "adultFareYen": 1050,
+      "serviceStart": "2026-04-01",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Nangoku Kotsu official Izumi page links the 出水・天草ロマンシャトルバス timetable/fare table.",
+        "Public timetable pages list 出水駅→蔵之元 as 65 minutes and 蔵之元→出水駅 departures at 7:40, 10:15, 13:15, 16:00, 17:15."
+      ],
+      "busStops": [
+        {
+          "name": "出水駅",
+          "lat": 32.0893738,
+          "lon": 130.3582138
+        },
+        {
+          "name": "蔵之元港",
+          "lat": 32.09,
+          "lon": 130.154
+        }
+      ],
+      "directions": [
+        {
+          "direction": "izumi_to_kuranomoto",
+          "trips": [
+            {
+              "tripId": "izumi_kuranomoto_0900",
+              "stopTimes": [
+                {
+                  "stopName": "出水駅",
+                  "time": "9:00"
+                },
+                {
+                  "stopName": "蔵之元港",
+                  "time": "10:05"
+                }
+              ]
+            },
+            {
+              "tripId": "izumi_kuranomoto_1205",
+              "stopTimes": [
+                {
+                  "stopName": "出水駅",
+                  "time": "12:05"
+                },
+                {
+                  "stopName": "蔵之元港",
+                  "time": "13:10"
+                }
+              ]
+            },
+            {
+              "tripId": "izumi_kuranomoto_1445",
+              "stopTimes": [
+                {
+                  "stopName": "出水駅",
+                  "time": "14:45"
+                },
+                {
+                  "stopName": "蔵之元港",
+                  "time": "15:50"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "kuranomoto_to_izumi",
+          "trips": [
+            {
+              "tripId": "kuranomoto_izumi_0740",
+              "stopTimes": [
+                {
+                  "stopName": "蔵之元港",
+                  "time": "7:40"
+                },
+                {
+                  "stopName": "出水駅",
+                  "time": "8:45"
+                }
+              ]
+            },
+            {
+              "tripId": "kuranomoto_izumi_1315",
+              "stopTimes": [
+                {
+                  "stopName": "蔵之元港",
+                  "time": "13:15"
+                },
+                {
+                  "stopName": "出水駅",
+                  "time": "14:20"
+                }
+              ]
+            },
+            {
+              "tripId": "kuranomoto_izumi_1715",
+              "stopTimes": [
+                {
+                  "stopName": "蔵之元港",
+                  "time": "17:15"
+                },
+                {
+                  "stopName": "出水駅",
+                  "time": "18:20"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_pdf_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "西肥自動車",
+      "routeCode": "hirado_tabira",
+      "routeName": "平戸口駅～平戸桟橋・平戸高校線",
+      "sourceUrl": "https://www.bus.saihigroup.co.jp/scheduled-bus/43753.html",
+      "serviceStart": "2026-04-01",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Saihi Bus official route-timetable index lists the 平戸口駅～平戸桟橋・平戸高校線 under 平戸.",
+        "Imported a connector slice between たびら平戸口 and 平戸桟橋 for ferry-port playability."
+      ],
+      "busStops": [
+        {
+          "name": "たびら平戸口駅",
+          "lat": 33.362505,
+          "lon": 129.58255
+        },
+        {
+          "name": "平戸桟橋",
+          "lat": 33.3683,
+          "lon": 129.5533
+        }
+      ],
+      "directions": [
+        {
+          "direction": "tabira_to_hirado",
+          "trips": [
+            {
+              "tripId": "tabira_hirado_0640",
+              "stopTimes": [
+                {
+                  "stopName": "たびら平戸口駅",
+                  "time": "6:40"
+                },
+                {
+                  "stopName": "平戸桟橋",
+                  "time": "6:55"
+                }
+              ]
+            },
+            {
+              "tripId": "tabira_hirado_1040",
+              "stopTimes": [
+                {
+                  "stopName": "たびら平戸口駅",
+                  "time": "10:40"
+                },
+                {
+                  "stopName": "平戸桟橋",
+                  "time": "10:55"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "hirado_to_tabira",
+          "trips": [
+            {
+              "tripId": "hirado_tabira_0730",
+              "stopTimes": [
+                {
+                  "stopName": "平戸桟橋",
+                  "time": "7:30"
+                },
+                {
+                  "stopName": "たびら平戸口駅",
+                  "time": "7:45"
+                }
+              ]
+            },
+            {
+              "tripId": "hirado_tabira_1630",
+              "stopTimes": [
+                {
+                  "stopName": "平戸桟橋",
+                  "time": "16:30"
+                },
+                {
+                  "stopName": "たびら平戸口駅",
+                  "time": "16:45"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_public_pdf_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "鞆鉄道",
+      "routeCode": "fukuyama_tomo",
+      "routeName": "鞆線（福山駅前 ⇔ 鞆港）",
+      "sourceUrl": "https://www.tomotetsu.co.jp/?page_id=1288",
+      "serviceStart": "2026-04-01",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Tomotetsu official timetable page lists 鞆線 under 福山駅前 routes.",
+        "Published timetable snippets show frequent 福山駅前 ⇔ 鞆港 service; this imports a representative playable slice."
+      ],
+      "busStops": [
+        {
+          "name": "福山駅前",
+          "lat": 34.4892608,
+          "lon": 133.36133
+        },
+        {
+          "name": "鞆港",
+          "lat": 34.384,
+          "lon": 133.382
+        }
+      ],
+      "directions": [
+        {
+          "direction": "fukuyama_to_tomo",
+          "trips": [
+            {
+              "tripId": "fukuyama_tomo_1020",
+              "stopTimes": [
+                {
+                  "stopName": "福山駅前",
+                  "time": "10:20"
+                },
+                {
+                  "stopName": "鞆港",
+                  "time": "10:52"
+                }
+              ]
+            },
+            {
+              "tripId": "fukuyama_tomo_1120",
+              "stopTimes": [
+                {
+                  "stopName": "福山駅前",
+                  "time": "11:20"
+                },
+                {
+                  "stopName": "鞆港",
+                  "time": "11:52"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "tomo_to_fukuyama",
+          "trips": [
+            {
+              "tripId": "tomo_fukuyama_0813",
+              "stopTimes": [
+                {
+                  "stopName": "鞆港",
+                  "time": "8:13"
+                },
+                {
+                  "stopName": "福山駅前",
+                  "time": "8:45"
+                }
+              ]
+            },
+            {
+              "tripId": "tomo_fukuyama_1248",
+              "stopTimes": [
+                {
+                  "stopName": "鞆港",
+                  "time": "12:48"
+                },
+                {
+                  "stopName": "福山駅前",
+                  "time": "13:20"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_pdf_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "一畑バス・はつみ交通",
+      "routeCode": "oki_kisen_shichirui_sakaiminato",
+      "routeName": "隠岐汽船接続バス（松江駅・境港駅 ⇔ 七類港）",
+      "sourceUrl": "https://bus.ichibata.co.jp/media/oki_2026_dia.pdf",
+      "adultFareYen": 1200,
+      "serviceStart": "2026-04-01",
+      "serviceEnd": "2027-02-28",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Ichibata Bus official 2026 Oki Kisen connection-bus PDF gives 松江駅⇔七類港 and 松江駅⇔境港 times and fares.",
+        "The same Oki Kisen source also lists Hatsumi Kotsu 境港駅⇔七類港 connector times."
+      ],
+      "busStops": [
+        {
+          "name": "松江駅前",
+          "lat": 35.46409,
+          "lon": 133.063965
+        },
+        {
+          "name": "境港駅前",
+          "lat": 35.54469,
+          "lon": 133.22301
+        },
+        {
+          "name": "七類港",
+          "lat": 35.564,
+          "lon": 133.177
+        },
+        {
+          "name": "境港フェリーターミナル",
+          "lat": 35.548,
+          "lon": 133.248
+        }
+      ],
+      "directions": [
+        {
+          "direction": "matsue_to_shichirui",
+          "trips": [
+            {
+              "tripId": "matsue_shichirui_0750",
+              "stopTimes": [
+                {
+                  "stopName": "松江駅前",
+                  "time": "7:50"
+                },
+                {
+                  "stopName": "七類港",
+                  "time": "8:30"
+                }
+              ]
+            },
+            {
+              "tripId": "matsue_shichirui_1540",
+              "stopTimes": [
+                {
+                  "stopName": "松江駅前",
+                  "time": "15:40"
+                },
+                {
+                  "stopName": "七類港",
+                  "time": "16:20"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "shichirui_to_matsue",
+          "trips": [
+            {
+              "tripId": "shichirui_matsue_1003",
+              "stopTimes": [
+                {
+                  "stopName": "七類港",
+                  "time": "10:03"
+                },
+                {
+                  "stopName": "松江駅前",
+                  "time": "10:43"
+                }
+              ]
+            },
+            {
+              "tripId": "shichirui_matsue_1745",
+              "stopTimes": [
+                {
+                  "stopName": "七類港",
+                  "time": "17:45"
+                },
+                {
+                  "stopName": "松江駅前",
+                  "time": "18:25"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "sakaiminato_to_shichirui",
+          "trips": [
+            {
+              "tripId": "sakaiminato_shichirui_0824",
+              "stopTimes": [
+                {
+                  "stopName": "境港駅前",
+                  "time": "8:24"
+                },
+                {
+                  "stopName": "七類港",
+                  "time": "8:39"
+                }
+              ]
+            },
+            {
+              "tripId": "sakaiminato_shichirui_1325",
+              "stopTimes": [
+                {
+                  "stopName": "境港駅前",
+                  "time": "13:25"
+                },
+                {
+                  "stopName": "七類港",
+                  "time": "13:40"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "shichirui_to_sakaiminato",
+          "trips": [
+            {
+              "tripId": "shichirui_sakaiminato_1800",
+              "stopTimes": [
+                {
+                  "stopName": "七類港",
+                  "time": "18:00"
+                },
+                {
+                  "stopName": "境港駅前",
+                  "time": "18:15"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "matsue_to_sakaiminato",
+          "trips": [
+            {
+              "tripId": "matsue_sakaiminato_1315",
+              "stopTimes": [
+                {
+                  "stopName": "松江駅前",
+                  "time": "13:15"
+                },
+                {
+                  "stopName": "境港フェリーターミナル",
+                  "time": "13:55"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "sakaiminato_to_matsue",
+          "trips": [
+            {
+              "tripId": "sakaiminato_matsue_1325",
+              "stopTimes": [
+                {
+                  "stopName": "境港フェリーターミナル",
+                  "time": "13:25"
+                },
+                {
+                  "stopName": "松江駅前",
+                  "time": "14:05"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_pdf_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "東海バス",
+      "routeCode": "shuzenji_toi_port",
+      "routeName": "西海岸線 W39（土肥港フェリーターミナル ⇔ 修善寺駅）",
+      "sourceUrl": "https://www.tokaibus.jp/images/5159.pdf",
+      "serviceStart": "2025-04-01",
+      "serviceEnd": "2026-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Tokai Bus official 西海岸線 PDF lists the 2025-04-01 timetable and marks FT as 土肥フェリーターミナル経由.",
+        "Public route timetable snippets list 土肥港→修善寺駅 departures including 9:18 and 15:41, and 修善寺→土肥港 9:30→10:21."
+      ],
+      "busStops": [
+        {
+          "name": "修善寺駅",
+          "lat": 34.97927,
+          "lon": 138.95097
+        },
+        {
+          "name": "土肥港フェリーターミナル",
+          "lat": 34.9060292,
+          "lon": 138.7862481
+        }
+      ],
+      "directions": [
+        {
+          "direction": "shuzenji_to_toi",
+          "trips": [
+            {
+              "tripId": "shuzenji_toi_0930",
+              "stopTimes": [
+                {
+                  "stopName": "修善寺駅",
+                  "time": "9:30"
+                },
+                {
+                  "stopName": "土肥港フェリーターミナル",
+                  "time": "10:21"
+                }
+              ]
+            },
+            {
+              "tripId": "shuzenji_toi_1230",
+              "stopTimes": [
+                {
+                  "stopName": "修善寺駅",
+                  "time": "12:30"
+                },
+                {
+                  "stopName": "土肥港フェリーターミナル",
+                  "time": "13:21"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "toi_to_shuzenji",
+          "trips": [
+            {
+              "tripId": "toi_shuzenji_0918",
+              "stopTimes": [
+                {
+                  "stopName": "土肥港フェリーターミナル",
+                  "time": "9:18"
+                },
+                {
+                  "stopName": "修善寺駅",
+                  "time": "10:10"
+                }
+              ]
+            },
+            {
+              "tripId": "toi_shuzenji_1541",
+              "stopTimes": [
+                {
+                  "stopName": "土肥港フェリーターミナル",
+                  "time": "15:41"
+                },
+                {
+                  "stopName": "修善寺駅",
+                  "time": "16:33"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_pdf_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "南国交通・鹿児島交通",
+      "routeCode": "koshiki_kushikino_connector",
+      "routeName": "フェリーニューこしき連絡バス（串木野駅・川内駅 ⇔ 串木野新港）",
+      "sourceUrl": "https://www.koshikisho.co.jp/application/files/5416/7996/0331/0324_-.pdf",
+      "serviceStart": "2023-04-01",
+      "serviceEnd": "2026-12-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Koshikisho official ferry timetable PDF includes access bus tables for 串木野新港 connections.",
+        "Imported the published 串木野駅/川内駅 connector departures that meet ferry arrivals/departures."
+      ],
+      "busStops": [
+        {
+          "name": "串木野駅",
+          "lat": 31.721836,
+          "lon": 130.274434
+        },
+        {
+          "name": "川内駅",
+          "lat": 31.81365,
+          "lon": 130.31245
+        },
+        {
+          "name": "串木野新港",
+          "lat": 31.7223266,
+          "lon": 130.2530267
+        }
+      ],
+      "directions": [
+        {
+          "direction": "station_to_kushikino_port",
+          "trips": [
+            {
+              "tripId": "kushikino_station_port_1048",
+              "stopTimes": [
+                {
+                  "stopName": "串木野駅",
+                  "time": "10:48"
+                },
+                {
+                  "stopName": "串木野新港",
+                  "time": "11:00"
+                }
+              ]
+            },
+            {
+              "tripId": "sendai_station_kushikino_port_1555",
+              "stopTimes": [
+                {
+                  "stopName": "川内駅",
+                  "time": "15:55"
+                },
+                {
+                  "stopName": "串木野新港",
+                  "time": "16:09"
+                }
+              ]
+            },
+            {
+              "tripId": "kushikino_station_port_1605",
+              "stopTimes": [
+                {
+                  "stopName": "串木野駅",
+                  "time": "16:05"
+                },
+                {
+                  "stopName": "串木野新港",
+                  "time": "16:17"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "kushikino_port_to_station",
+          "trips": [
+            {
+              "tripId": "kushikino_port_station_1035",
+              "stopTimes": [
+                {
+                  "stopName": "串木野新港",
+                  "time": "10:35"
+                },
+                {
+                  "stopName": "串木野駅",
+                  "time": "10:47"
+                }
+              ]
+            },
+            {
+              "tripId": "kushikino_port_sendai_1615",
+              "stopTimes": [
+                {
+                  "stopName": "串木野新港",
+                  "time": "16:15"
+                },
+                {
+                  "stopName": "川内駅",
+                  "time": "16:42"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_pdf_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "新潟交通観光バス",
+      "routeCode": "murakami_iwafune_awashima",
+      "routeName": "岩船巡回（村上駅前 ⇔ 粟島汽船のりば）",
+      "sourceUrl": "https://awashimakisen.co.jp/images/pdf/company/bus_timetable_R6.pdf",
+      "adultFareYen": 200,
+      "serviceStart": "2024-10-01",
+      "serviceEnd": "2026-12-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Awashima Kisen official access PDF lists the R6.10.1 bus timetable between 村上駅前 and 粟島汽船のりば.",
+        "Trips marked weekday-only in the PDF are omitted; only unmarked daily trips are imported."
+      ],
+      "busStops": [
+        {
+          "name": "村上駅前",
+          "lat": 38.21988,
+          "lon": 139.463315
+        },
+        {
+          "name": "粟島汽船のりば",
+          "lat": 38.203,
+          "lon": 139.439
+        }
+      ],
+      "directions": [
+        {
+          "direction": "murakami_to_iwafune",
+          "trips": [
+            {
+              "tripId": "murakami_iwafune_0720",
+              "stopTimes": [
+                {
+                  "stopName": "村上駅前",
+                  "time": "7:20"
+                },
+                {
+                  "stopName": "粟島汽船のりば",
+                  "time": "7:39"
+                }
+              ]
+            },
+            {
+              "tripId": "murakami_iwafune_1129",
+              "stopTimes": [
+                {
+                  "stopName": "村上駅前",
+                  "time": "11:29"
+                },
+                {
+                  "stopName": "粟島汽船のりば",
+                  "time": "11:48"
+                }
+              ]
+            },
+            {
+              "tripId": "murakami_iwafune_1629",
+              "stopTimes": [
+                {
+                  "stopName": "村上駅前",
+                  "time": "16:19"
+                },
+                {
+                  "stopName": "粟島汽船のりば",
+                  "time": "16:38"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "iwafune_to_murakami",
+          "trips": [
+            {
+              "tripId": "iwafune_murakami_0739",
+              "stopTimes": [
+                {
+                  "stopName": "粟島汽船のりば",
+                  "time": "7:39"
+                },
+                {
+                  "stopName": "村上駅前",
+                  "time": "8:08"
+                }
+              ]
+            },
+            {
+              "tripId": "iwafune_murakami_1148",
+              "stopTimes": [
+                {
+                  "stopName": "粟島汽船のりば",
+                  "time": "11:48"
+                },
+                {
+                  "stopName": "村上駅前",
+                  "time": "12:17"
+                }
+              ]
+            },
+            {
+              "tripId": "iwafune_murakami_1638",
+              "stopTimes": [
+                {
+                  "stopName": "粟島汽船のりば",
+                  "time": "16:38"
+                },
+                {
+                  "stopName": "村上駅前",
+                  "time": "17:07"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_bus_timetable_page",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "宮崎交通",
+      "routeCode": "miyazaki_station_port",
+      "routeName": "宮崎港線（宮崎駅 ⇔ 宮崎港フェリーターミナル）",
+      "sourceUrl": "https://www.miyakoh.co.jp/rosen/timetable-rosen.html",
+      "serviceStart": "2026-04-01",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Miyazaki Kotsu official route-timetable page lists 宮崎駅～青葉町経由シーガイア、宮崎港 as route 18/18-1.",
+        "The ferry-terminal access page confirms Miyazaki Kotsu route buses operate 宮交シティ～JR宮崎駅～宮崎港."
+      ],
+      "busStops": [
+        {
+          "name": "宮崎駅",
+          "lat": 31.915815,
+          "lon": 131.432005
+        },
+        {
+          "name": "宮崎港フェリーターミナル",
+          "lat": 31.9189,
+          "lon": 131.4741
+        }
+      ],
+      "directions": [
+        {
+          "direction": "miyazaki_to_port",
+          "trips": [
+            {
+              "tripId": "miyazaki_port_1740",
+              "stopTimes": [
+                {
+                  "stopName": "宮崎駅",
+                  "time": "17:40"
+                },
+                {
+                  "stopName": "宮崎港フェリーターミナル",
+                  "time": "17:55"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "port_to_miyazaki",
+          "trips": [
+            {
+              "tripId": "port_miyazaki_0755",
+              "stopTimes": [
+                {
+                  "stopName": "宮崎港フェリーターミナル",
+                  "time": "7:55"
+                },
+                {
+                  "stopName": "宮崎駅",
+                  "time": "8:10"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_shuttle_bus_page",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "オレンジフェリー・瀬戸内バス",
+      "routeCode": "toyo_port_mibugawa",
+      "routeName": "東予港連絡バス（東予港 ⇔ 壬生川駅前）",
+      "sourceUrl": "https://www.orange-ferry.co.jp/platform-guidance-shuttle-bus/kansai/toyo-osaka/shikoku-shuttle-bus.html",
+      "adultFareYen": 0,
+      "serviceStart": "2026-04-01",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Orange Ferry official shuttle-bus page lists 東予港発 direct bus to 壬生川駅前 and connection buses after ferry arrival.",
+        "Public route timetable also lists the 06:20 東予港→壬生川港 / 今治方面 connector."
+      ],
+      "busStops": [
+        {
+          "name": "壬生川駅前",
+          "lat": 33.92965,
+          "lon": 133.08558
+        },
+        {
+          "name": "東予港",
+          "lat": 33.9298724,
+          "lon": 133.1183542
+        }
+      ],
+      "directions": [
+        {
+          "direction": "toyo_to_mibugawa",
+          "trips": [
+            {
+              "tripId": "toyo_mibugawa_0700",
+              "stopTimes": [
+                {
+                  "stopName": "東予港",
+                  "time": "7:00"
+                },
+                {
+                  "stopName": "壬生川駅前",
+                  "time": "7:10"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "mibugawa_to_toyo",
+          "trips": [
+            {
+              "tripId": "mibugawa_toyo_0829",
+              "stopTimes": [
+                {
+                  "stopName": "壬生川駅前",
+                  "time": "8:29"
+                },
+                {
+                  "stopName": "東予港",
+                  "time": "9:08"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_public_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "鞆鉄道",
+      "routeCode": "matsunaga_tsuneishi",
+      "routeName": "沼南線（松永駅南口 ⇔ 常石港）",
+      "sourceUrl": "https://www.tomotetsu.co.jp/?page_id=1288",
+      "serviceStart": "2026-04-01",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Tomotetsu official timetable page lists 沼南線 under 松永・松永駅発着 routes.",
+        "Public GTFS timetable snippet lists 松永駅南口→常石 as 08:50→09:09; this connector slice links 常石港 to the rail network."
+      ],
+      "busStops": [
+        {
+          "name": "松永駅南口",
+          "lat": 34.450965,
+          "lon": 133.25892
+        },
+        {
+          "name": "常石港",
+          "lat": 34.3840013,
+          "lon": 133.2964758
+        }
+      ],
+      "directions": [
+        {
+          "direction": "matsunaga_to_tsuneishi",
+          "trips": [
+            {
+              "tripId": "matsunaga_tsuneishi_0850",
+              "stopTimes": [
+                {
+                  "stopName": "松永駅南口",
+                  "time": "8:50"
+                },
+                {
+                  "stopName": "常石港",
+                  "time": "9:09"
+                }
+              ]
+            },
+            {
+              "tripId": "matsunaga_tsuneishi_1450",
+              "stopTimes": [
+                {
+                  "stopName": "松永駅南口",
+                  "time": "14:50"
+                },
+                {
+                  "stopName": "常石港",
+                  "time": "15:09"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "tsuneishi_to_matsunaga",
+          "trips": [
+            {
+              "tripId": "tsuneishi_matsunaga_0920",
+              "stopTimes": [
+                {
+                  "stopName": "常石港",
+                  "time": "9:20"
+                },
+                {
+                  "stopName": "松永駅南口",
+                  "time": "9:39"
+                }
+              ]
+            },
+            {
+              "tripId": "tsuneishi_matsunaga_1520",
+              "stopTimes": [
+                {
+                  "stopName": "常石港",
+                  "time": "15:20"
+                },
+                {
+                  "stopName": "松永駅南口",
+                  "time": "15:39"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
