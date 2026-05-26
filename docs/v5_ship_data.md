@@ -157,8 +157,8 @@ Current status:
   - `docs/data/v5_port_connector_audit.json`
   - `data/v5_ship_port_access_priority_audit.json`
   - `docs/data/v5_ship_port_access_priority_audit.json`
-  - Current coverage: 374 ports scanned; 206 have rail/bus/airport access
-    within 2 km; 168 remain connector gaps pending real local bus or access
+  - Current coverage: 374 ports scanned; 207 have rail/bus/airport access
+    within 2 km; 167 remain connector gaps pending real local bus or access
     data.
   - Added official local-bus connector source `data/v5_port_connector_official_bus_source.json`
     for 小豆島オリーブバス 坂手線（土庄港 ⇔ 坂手港ターミナル前）,
@@ -171,19 +171,23 @@ Current status:
     上島町町有バス（上弓削港 ⇔ 立石港務所） and 大崎上島循環線
     （大西港・明石港・白水港周辺）. This clears 2 km access for
     上弓削港, 白水港, 大西港, and 明石 without inventing fake walking edges.
+  - Added official Fukuoka port-connector bus source
+    `data/v5_fukuoka_port_connector_official_bus_source.json` for 西鉄バス
+    志賀島島内線（志賀島 ⇔ 西戸崎駅前）. This clears 志賀島 through a
+    real fixed-route bus link to the rail/bus network.
   - The priority audit separates ports that need real mainland/large-island
     connector collection from remote or small-island cases that can be recorded
     as local-island connector gaps. Port names are not enough for collection:
     ambiguous names such as 大島港 must be checked with route/operator and
     coordinates before adding access data.
   - Current no-2 km access triage after identity review:
-    - 168 total no-access ports.
+    - 167 total no-access ports.
     - 0 must resolve port identity first; the previous ambiguous port-name
       red lights have been split by operator/route context.
-    - 126 are high-priority real connector collection candidates.
+    - 125 are high-priority real connector collection candidates.
     - 6 are lower-priority real connector candidates.
     - 36 are remote/small-island local access records.
-    - 160 playable-affected ports still need connector decisions.
+    - 159 playable-affected ports still need connector decisions.
   - Reservation-sensitive rule: reservation-demand access such as 江田島北部線
     / おれんじ号 must not be promoted as an ordinary bus until the bus model
     can expose reservation requirements. These can be collected, but gameplay
