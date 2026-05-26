@@ -157,8 +157,8 @@ Current status:
   - `docs/data/v5_port_connector_audit.json`
   - `data/v5_ship_port_access_priority_audit.json`
   - `docs/data/v5_ship_port_access_priority_audit.json`
-  - Current coverage: 374 ports scanned; 230 have rail/bus/airport access
-    within 2 km; 144 remain connector gaps pending real local bus or access
+  - Current coverage: 374 ports scanned; 263 have rail/bus/airport access
+    within 2 km; 111 remain connector gaps pending real local bus or access
     data.
   - Added official local-bus connector source `data/v5_port_connector_official_bus_source.json`
     for 小豆島オリーブバス 坂手線（土庄港 ⇔ 坂手港ターミナル前）,
@@ -193,6 +193,15 @@ Current status:
     nodes such as 小川島 via the 呼子 bus stop. The routes are intentionally
     recorded as source-backed connector slices, not full local-bus GTFS
     replacements.
+  - Added final high-priority port-connector source
+    `data/v5_port_connector_batch3_official_bus_source.json` for real
+    connector slices serving the remaining mainland / large-island red lights,
+    including 家老渡, 切串, 伊王島, 小長, 瀬戸, 盛港, 浦城, 西浜港,
+    三田尻, 佐賀, 上関港, 竹田津港, 竹崎, 焼尻港, 菱浦港,
+    隠岐別府港, 坂内, 小用, 高田, 小木港, 里港, 平郡港,
+    羽幌港, 天売港, 香深港, 三高, 中町, 来居港, and 江差港.
+    This batch also corrected the weak same-name geocode for 下関市 `竹崎`
+    from an unrelated Hokkaido hit to the actual 竹崎港 route context.
   - The priority audit separates ports that need real mainland/large-island
     connector collection from remote or small-island cases that can be recorded
     as local-island connector gaps. Port names are not enough for collection:
@@ -204,14 +213,14 @@ Current status:
     as remote/local-island access gaps unless a real 2 km connector is already
     present or intentionally collected. Bridge-connected / urban-service cases
     such as 伊王島 stay in the real connector collection queue.
-  - Current no-2 km access triage after identity review:
-    - 144 total no-access ports.
+  - Current no-2 km access triage after high-priority connector collection:
+    - 111 total no-access ports.
     - 0 must resolve port identity first; the previous ambiguous port-name
       red lights have been split by operator/route context.
-    - 30 are high-priority real connector collection candidates.
-    - 1 is a lower-priority real connector candidate.
-    - 113 are remote/small-island local access records.
-    - 136 playable-affected ports still need connector decisions.
+    - 0 are high-priority real connector collection candidates.
+    - 0 are lower-priority real connector candidates.
+    - 111 are remote/small-island local access records.
+    - 104 playable-affected ports still need connector decisions.
   - Reservation-sensitive rule: reservation-demand access such as 江田島北部線
     / おれんじ号 must not be promoted as an ordinary bus until the bus model
     can expose reservation requirements. These can be collected, but gameplay
