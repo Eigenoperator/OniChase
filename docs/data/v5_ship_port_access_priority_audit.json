@@ -1,14 +1,16 @@
 {
   "schemaVersion": "v5_ship_port_access_priority_audit_v1",
-  "generatedAt": "2026-05-27T00:30:07.172833+00:00",
+  "generatedAt": "2026-05-27T02:00:45.220410+00:00",
   "inputConnectorModel": "v5_port_rail_bus_airport_haversine_connectors_v1",
   "inputConnectorMaxMeters": 2000,
   "summary": {
     "portsWithout2kmAccess": 103,
     "resolvePortIdentityFirst": 0,
-    "collectRealConnectorHighPriority": 2,
+    "collectRealConnectorHighPriority": 0,
     "collectRealConnector": 0,
-    "recordRemoteOrSmallIsland": 101,
+    "recordRemoteOrSmallIsland": 85,
+    "noCollectionRecorded": 18,
+    "remainingActionablePorts": 85,
     "playableAffectedPortCount": 96
   },
   "rules": {
@@ -16,159 +18,10 @@
     "highPriority": "No 2km connector, used by playable ship sailings, and likely on major land or near rail/bus source coverage.",
     "resolvePortIdentityFirst": "No connector, but current port coordinate is suspicious or the port name is ambiguous. Fix the port identity before collecting access connectors.",
     "collectRealConnector": "No 2km connector but likely mainland/major-island or has rail/bus source coverage nearby; collect official port bus/access data.",
-    "recordRemoteOrSmallIsland": "No nearby rail/bus source coverage and remote-island hints; record as island access gap until local island bus data is intentionally collected."
+    "recordRemoteOrSmallIsland": "No nearby rail/bus source coverage and remote-island hints; record as island access gap until local island bus data is intentionally collected.",
+    "noCollectionRecorded": "Reviewed remote/small-island port where ordinary scheduled public bus is not available; do not fake tourist-only, hotel-shuttle, rental, taxi-only, or demand/on-call transport as playable bus."
   },
   "ports": [
-    {
-      "portName": "小浜港",
-      "coordinate": {
-        "lat": 24.3481468,
-        "lon": 123.9984943
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "bus stop within 7262m",
-        "used by 6 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "安栄観光"
-      ],
-      "playableSailingCount": 6,
-      "originSailingCount": 3,
-      "destinationSailingCount": 3,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_010138",
-        "name": "那覇空港",
-        "distanceMeters": 421484
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_port_connector_bus_v5_remote_small_island_bus_source_json_iri_7e175698d5:2b6e61475f54",
-        "name": "由布水牛車乗場",
-        "distanceMeters": 7262
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "anei_ishigaki_yaeyama_088_out_daily_1",
-          "operator": "安栄観光",
-          "originPort": "石垣港",
-          "destinationPort": "小浜港",
-          "departureHhmm": "09:15",
-          "arrivalHhmm": "09:45"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_089_back_daily_1",
-          "operator": "安栄観光",
-          "originPort": "小浜港",
-          "destinationPort": "石垣港",
-          "departureHhmm": "09:55",
-          "arrivalHhmm": "10:25"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_088_out_daily_2",
-          "operator": "安栄観光",
-          "originPort": "石垣港",
-          "destinationPort": "小浜港",
-          "departureHhmm": "14:50",
-          "arrivalHhmm": "15:20"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_089_back_daily_2",
-          "operator": "安栄観光",
-          "originPort": "小浜港",
-          "destinationPort": "石垣港",
-          "departureHhmm": "15:30",
-          "arrivalHhmm": "16:00"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_088_out_daily_3",
-          "operator": "安栄観光",
-          "originPort": "石垣港",
-          "destinationPort": "小浜港",
-          "departureHhmm": "16:20",
-          "arrivalHhmm": "16:50"
-        }
-      ],
-      "searchQueries": [
-        "小浜港 港 アクセス バス 時刻表",
-        "小浜港 フェリーターミナル 最寄り バス停",
-        "小浜港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "鳩間港",
-      "coordinate": {
-        "lat": 24.4664744,
-        "lon": 123.8205414
-      },
-      "category": "collect_real_connector_high_priority",
-      "reasons": [
-        "bus stop within 5167m",
-        "used by 4 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "安栄観光"
-      ],
-      "playableSailingCount": 4,
-      "originSailingCount": 2,
-      "destinationSailingCount": 2,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_010138",
-        "name": "那覇空港",
-        "distanceMeters": 430935
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_port_connector_bus_v5_remote_small_island_bus_source_json_iri_10fece2b92:9c308d5e85e8",
-        "name": "中野",
-        "distanceMeters": 5167
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "anei_ishigaki_yaeyama_098_out_daily_1",
-          "operator": "安栄観光",
-          "originPort": "石垣港",
-          "destinationPort": "鳩間港",
-          "departureHhmm": "08:30",
-          "arrivalHhmm": "09:15"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_099_back_daily_1",
-          "operator": "安栄観光",
-          "originPort": "鳩間港",
-          "destinationPort": "石垣港",
-          "departureHhmm": "09:45",
-          "arrivalHhmm": "10:30"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_098_out_daily_2",
-          "operator": "安栄観光",
-          "originPort": "石垣港",
-          "destinationPort": "鳩間港",
-          "departureHhmm": "16:30",
-          "arrivalHhmm": "17:15"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_099_back_daily_2",
-          "operator": "安栄観光",
-          "originPort": "鳩間港",
-          "destinationPort": "石垣港",
-          "departureHhmm": "17:25",
-          "arrivalHhmm": "18:10"
-        }
-      ],
-      "searchQueries": [
-        "鳩間港 港 アクセス バス 時刻表",
-        "鳩間港 フェリーターミナル 最寄り バス停",
-        "鳩間港 連絡バス 公式"
-      ]
-    },
     {
       "portName": "黒島",
       "coordinate": {
@@ -191,6 +44,7 @@
       "playableSailingCount": 32,
       "originSailingCount": 16,
       "destinationSailingCount": 16,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010142",
         "name": "赤嶺",
@@ -250,499 +104,6 @@
       ]
     },
     {
-      "portName": "佐久島西港",
-      "coordinate": {
-        "lat": 34.729,
-        "lon": 137.049
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "small/remote island record hint",
-        "rail within 7538m",
-        "bus stop within 7417m",
-        "used by 28 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "西尾市"
-      ],
-      "playableSailingCount": 28,
-      "originSailingCount": 14,
-      "destinationSailingCount": 14,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_006659",
-        "name": "吉良吉田",
-        "distanceMeters": 7538
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:minamichitatown_communitybus_https_api_gtfs-data_jp_v2_organizations_m_638fda373e:1-290-2",
-        "name": "師崎東口",
-        "distanceMeters": 7417
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "nishio_sakushima_022_out_001",
-          "operator": "西尾市",
-          "originPort": "一色港",
-          "destinationPort": "佐久島西港",
-          "departureHhmm": "06:30",
-          "arrivalHhmm": "06:50"
-        },
-        {
-          "sailingId": "nishio_sakushima_024_out_001",
-          "operator": "西尾市",
-          "originPort": "佐久島西港",
-          "destinationPort": "佐久島東港",
-          "departureHhmm": "06:50",
-          "arrivalHhmm": "06:55"
-        },
-        {
-          "sailingId": "nishio_sakushima_025_back_001",
-          "operator": "西尾市",
-          "originPort": "佐久島東港",
-          "destinationPort": "佐久島西港",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:07"
-        },
-        {
-          "sailingId": "nishio_sakushima_023_back_001",
-          "operator": "西尾市",
-          "originPort": "佐久島西港",
-          "destinationPort": "一色港",
-          "departureHhmm": "07:07",
-          "arrivalHhmm": "07:37"
-        },
-        {
-          "sailingId": "nishio_sakushima_022_out_002",
-          "operator": "西尾市",
-          "originPort": "一色港",
-          "destinationPort": "佐久島西港",
-          "departureHhmm": "07:40",
-          "arrivalHhmm": "08:00"
-        }
-      ],
-      "searchQueries": [
-        "佐久島西港 港 アクセス バス 時刻表",
-        "佐久島西港 フェリーターミナル 最寄り バス停",
-        "佐久島西港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "似島港",
-      "coordinate": {
-        "lat": 34.309,
-        "lon": 132.43
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "remote island name hint",
-        "small/remote island record hint",
-        "rail within 5404m",
-        "bus stop within 4108m",
-        "used by 26 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "似島汽船"
-      ],
-      "playableSailingCount": 26,
-      "originSailingCount": 13,
-      "destinationSailingCount": 13,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008159",
-        "name": "広島港（宇品）",
-        "distanceMeters": 5404
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_port_connector_bus_v5_port_connector_batch3_official_bus_sour_09ed15fd83:0ce3ab723c35",
-        "name": "切串港",
-        "distanceMeters": 4108
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "ninoshima_kisen_041_back_001",
-          "operator": "似島汽船",
-          "originPort": "似島港",
-          "destinationPort": "広島港宇品",
-          "departureHhmm": "06:00",
-          "arrivalHhmm": "06:20"
-        },
-        {
-          "sailingId": "ninoshima_kisen_040_out_001",
-          "operator": "似島汽船",
-          "originPort": "広島港宇品",
-          "destinationPort": "似島港",
-          "departureHhmm": "06:30",
-          "arrivalHhmm": "06:50"
-        },
-        {
-          "sailingId": "ninoshima_kisen_041_back_002",
-          "operator": "似島汽船",
-          "originPort": "似島港",
-          "destinationPort": "広島港宇品",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:20"
-        },
-        {
-          "sailingId": "ninoshima_kisen_040_out_002",
-          "operator": "似島汽船",
-          "originPort": "広島港宇品",
-          "destinationPort": "似島港",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "07:50"
-        },
-        {
-          "sailingId": "ninoshima_kisen_041_back_003",
-          "operator": "似島汽船",
-          "originPort": "似島港",
-          "destinationPort": "広島港宇品",
-          "departureHhmm": "08:00",
-          "arrivalHhmm": "08:20"
-        }
-      ],
-      "searchQueries": [
-        "似島港 港 アクセス バス 時刻表",
-        "似島港 フェリーターミナル 最寄り バス停",
-        "似島港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "桂島港",
-      "coordinate": {
-        "lat": 38.3312,
-        "lon": 141.1244
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "small/remote island record hint",
-        "rail within 5189m",
-        "bus stop within 4622m",
-        "used by 26 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "塩竈市"
-      ],
-      "playableSailingCount": 26,
-      "originSailingCount": 13,
-      "destinationSailingCount": 13,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_001110",
-        "name": "東名",
-        "distanceMeters": 5189
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:shichigahamatown_gururinko_https_api_gtfs-data_jp_v2_organizations_shi_6704efa7f1:19_02",
-        "name": "吉田浜",
-        "distanceMeters": 4622
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "shiogama_urato_000_out_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "塩竈港",
-          "destinationPort": "桂島港",
-          "departureHhmm": "05:30",
-          "arrivalHhmm": "05:48"
-        },
-        {
-          "sailingId": "shiogama_urato_002_out_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "桂島港",
-          "destinationPort": "野々島港",
-          "departureHhmm": "05:48",
-          "arrivalHhmm": "05:54"
-        },
-        {
-          "sailingId": "shiogama_urato_003_back_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "野々島港",
-          "destinationPort": "桂島港",
-          "departureHhmm": "06:34",
-          "arrivalHhmm": "06:40"
-        },
-        {
-          "sailingId": "shiogama_urato_001_back_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "桂島港",
-          "destinationPort": "塩竈港",
-          "departureHhmm": "06:40",
-          "arrivalHhmm": "06:58"
-        },
-        {
-          "sailingId": "shiogama_urato_000_out_daily_002",
-          "operator": "塩竈市",
-          "originPort": "塩竈港",
-          "destinationPort": "桂島港",
-          "departureHhmm": "07:20",
-          "arrivalHhmm": "07:38"
-        }
-      ],
-      "searchQueries": [
-        "桂島港 港 アクセス バス 時刻表",
-        "桂島港 フェリーターミナル 最寄り バス停",
-        "桂島港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "野々島港",
-      "coordinate": {
-        "lat": 38.333,
-        "lon": 141.139
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "small/remote island record hint",
-        "rail within 4721m",
-        "bus stop within 5813m",
-        "used by 26 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "塩竈市"
-      ],
-      "playableSailingCount": 26,
-      "originSailingCount": 13,
-      "destinationSailingCount": 13,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_001110",
-        "name": "東名",
-        "distanceMeters": 4721
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:shichigahamatown_gururinko_https_api_gtfs-data_jp_v2_organizations_shi_6704efa7f1:19_01",
-        "name": "吉田浜",
-        "distanceMeters": 5813
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "shiogama_urato_002_out_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "桂島港",
-          "destinationPort": "野々島港",
-          "departureHhmm": "05:48",
-          "arrivalHhmm": "05:54"
-        },
-        {
-          "sailingId": "shiogama_urato_004_out_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "野々島港",
-          "destinationPort": "石浜港",
-          "departureHhmm": "05:54",
-          "arrivalHhmm": "05:57"
-        },
-        {
-          "sailingId": "shiogama_urato_005_back_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "石浜港",
-          "destinationPort": "野々島港",
-          "departureHhmm": "06:31",
-          "arrivalHhmm": "06:34"
-        },
-        {
-          "sailingId": "shiogama_urato_003_back_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "野々島港",
-          "destinationPort": "桂島港",
-          "departureHhmm": "06:34",
-          "arrivalHhmm": "06:40"
-        },
-        {
-          "sailingId": "shiogama_urato_002_out_daily_002",
-          "operator": "塩竈市",
-          "originPort": "桂島港",
-          "destinationPort": "野々島港",
-          "departureHhmm": "07:38",
-          "arrivalHhmm": "07:45"
-        }
-      ],
-      "searchQueries": [
-        "野々島港 港 アクセス バス 時刻表",
-        "野々島港 フェリーターミナル 最寄り バス停",
-        "野々島港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "石浜港",
-      "coordinate": {
-        "lat": 38.3384,
-        "lon": 141.1498
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "small/remote island record hint",
-        "rail within 4133m",
-        "bus stop within 6928m",
-        "used by 26 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "塩竈市"
-      ],
-      "playableSailingCount": 26,
-      "originSailingCount": 13,
-      "destinationSailingCount": 13,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_001110",
-        "name": "東名",
-        "distanceMeters": 4133
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:shichigahamatown_gururinko_https_api_gtfs-data_jp_v2_organizations_shi_6704efa7f1:19_01",
-        "name": "吉田浜",
-        "distanceMeters": 6928
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "shiogama_urato_004_out_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "野々島港",
-          "destinationPort": "石浜港",
-          "departureHhmm": "05:54",
-          "arrivalHhmm": "05:57"
-        },
-        {
-          "sailingId": "shiogama_urato_006_out_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "石浜港",
-          "destinationPort": "寒風沢港",
-          "departureHhmm": "05:57",
-          "arrivalHhmm": "06:05"
-        },
-        {
-          "sailingId": "shiogama_urato_007_back_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "寒風沢港",
-          "destinationPort": "石浜港",
-          "departureHhmm": "06:23",
-          "arrivalHhmm": "06:31"
-        },
-        {
-          "sailingId": "shiogama_urato_005_back_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "石浜港",
-          "destinationPort": "野々島港",
-          "departureHhmm": "06:31",
-          "arrivalHhmm": "06:34"
-        },
-        {
-          "sailingId": "shiogama_urato_004_out_daily_002",
-          "operator": "塩竈市",
-          "originPort": "野々島港",
-          "destinationPort": "石浜港",
-          "departureHhmm": "07:45",
-          "arrivalHhmm": "07:49"
-        }
-      ],
-      "searchQueries": [
-        "石浜港 港 アクセス バス 時刻表",
-        "石浜港 フェリーターミナル 最寄り バス停",
-        "石浜港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "寒風沢港",
-      "coordinate": {
-        "lat": 38.3275,
-        "lon": 141.1578
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "small/remote island record hint",
-        "rail within 5449m",
-        "bus stop within 7047m",
-        "used by 26 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "塩竈市"
-      ],
-      "playableSailingCount": 26,
-      "originSailingCount": 13,
-      "destinationSailingCount": 13,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_001110",
-        "name": "東名",
-        "distanceMeters": 5449
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:shichigahamatown_gururinko_https_api_gtfs-data_jp_v2_organizations_shi_6704efa7f1:18_01",
-        "name": "花渕",
-        "distanceMeters": 7047
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "shiogama_urato_006_out_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "石浜港",
-          "destinationPort": "寒風沢港",
-          "departureHhmm": "05:57",
-          "arrivalHhmm": "06:05"
-        },
-        {
-          "sailingId": "shiogama_urato_008_out_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "寒風沢港",
-          "destinationPort": "朴島港",
-          "departureHhmm": "06:05",
-          "arrivalHhmm": "06:13"
-        },
-        {
-          "sailingId": "shiogama_urato_009_back_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "朴島港",
-          "destinationPort": "寒風沢港",
-          "departureHhmm": "06:15",
-          "arrivalHhmm": "06:23"
-        },
-        {
-          "sailingId": "shiogama_urato_007_back_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "寒風沢港",
-          "destinationPort": "石浜港",
-          "departureHhmm": "06:23",
-          "arrivalHhmm": "06:31"
-        },
-        {
-          "sailingId": "shiogama_urato_006_out_daily_002",
-          "operator": "塩竈市",
-          "originPort": "石浜港",
-          "destinationPort": "寒風沢港",
-          "departureHhmm": "07:49",
-          "arrivalHhmm": "07:57"
-        }
-      ],
-      "searchQueries": [
-        "寒風沢港 港 アクセス バス 時刻表",
-        "寒風沢港 フェリーターミナル 最寄り バス停",
-        "寒風沢港 連絡バス 公式"
-      ]
-    },
-    {
       "portName": "宗方港",
       "coordinate": {
         "lat": 34.2031092,
@@ -766,6 +127,7 @@
       "playableSailingCount": 22,
       "originSailingCount": 11,
       "destinationSailingCount": 11,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008473",
         "name": "波止浜",
@@ -844,6 +206,7 @@
       "playableSailingCount": 21,
       "originSailingCount": 10,
       "destinationSailingCount": 11,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010125",
         "name": "てだこ浦西",
@@ -903,89 +266,6 @@
       ]
     },
     {
-      "portName": "佐合島",
-      "coordinate": {
-        "lat": 33.8751429,
-        "lon": 132.0667164
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "remote island name hint",
-        "small/remote island record hint",
-        "rail within 9533m",
-        "bus stop within 2271m",
-        "used by 20 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:OSM/Nominatim query=佐合島 ferry terminal Japan; score=31; needs_precise_port_review",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "熊南総合事務組合"
-      ],
-      "playableSailingCount": 20,
-      "originSailingCount": 10,
-      "destinationSailingCount": 10,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008619",
-        "name": "田布施",
-        "distanceMeters": 9533
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_port_connector_bus_v5_port_connector_batch3_official_bus_sour_ba9d91d5a2:9dd937d7a2a0",
-        "name": "佐賀港",
-        "distanceMeters": 2271
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_013_熊南総合事務組合_馬島_麻里府_佐合島_佐賀_001_out_001",
-          "operator": "熊南総合事務組合",
-          "originPort": "麻里府",
-          "destinationPort": "佐合島",
-          "departureHhmm": "07:05",
-          "arrivalHhmm": "07:31"
-        },
-        {
-          "sailingId": "mlit_map_193_013_熊南総合事務組合_馬島_麻里府_佐合島_佐賀_002_out_001",
-          "operator": "熊南総合事務組合",
-          "originPort": "佐合島",
-          "destinationPort": "佐賀",
-          "departureHhmm": "07:35",
-          "arrivalHhmm": "07:43"
-        },
-        {
-          "sailingId": "mlit_map_193_013_熊南総合事務組合_馬島_麻里府_佐合島_佐賀_002_back_001",
-          "operator": "熊南総合事務組合",
-          "originPort": "佐賀",
-          "destinationPort": "佐合島",
-          "departureHhmm": "07:50",
-          "arrivalHhmm": "07:58"
-        },
-        {
-          "sailingId": "mlit_map_193_013_熊南総合事務組合_馬島_麻里府_佐合島_佐賀_001_back_001",
-          "operator": "熊南総合事務組合",
-          "originPort": "佐合島",
-          "destinationPort": "麻里府",
-          "departureHhmm": "08:10",
-          "arrivalHhmm": "08:33"
-        },
-        {
-          "sailingId": "mlit_map_193_013_熊南総合事務組合_馬島_麻里府_佐合島_佐賀_001_out_002",
-          "operator": "熊南総合事務組合",
-          "originPort": "麻里府",
-          "destinationPort": "佐合島",
-          "departureHhmm": "10:20",
-          "arrivalHhmm": "10:41"
-        }
-      ],
-      "searchQueries": [
-        "佐合島 港 アクセス バス 時刻表",
-        "佐合島 フェリーターミナル 最寄り バス停",
-        "佐合島 連絡バス 公式"
-      ]
-    },
-    {
       "portName": "沼島港",
       "coordinate": {
         "lat": 34.171,
@@ -1009,6 +289,7 @@
       "playableSailingCount": 20,
       "originSailingCount": 10,
       "destinationSailingCount": 10,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008414",
         "name": "鳴門",
@@ -1091,6 +372,7 @@
       "playableSailingCount": 20,
       "originSailingCount": 11,
       "destinationSailingCount": 9,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009892",
         "name": "海浦",
@@ -1150,87 +432,6 @@
       ]
     },
     {
-      "portName": "初島港",
-      "coordinate": {
-        "lat": 35.039,
-        "lon": 139.171
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "small/remote island record hint",
-        "rail within 8203m",
-        "used by 20 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "富士急マリンリゾート"
-      ],
-      "playableSailingCount": 20,
-      "originSailingCount": 10,
-      "destinationSailingCount": 10,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_005850",
-        "name": "網代",
-        "distanceMeters": 8203
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_port_connector_bus_v5_port_connector_batch2_official_bus_sour_d625c4649f:c2c5e562603f",
-        "name": "修善寺駅",
-        "distanceMeters": 21111
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "hatsushima_atami_026_out_daily_001",
-          "operator": "富士急マリンリゾート",
-          "originPort": "熱海港",
-          "destinationPort": "初島港",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "08:00"
-        },
-        {
-          "sailingId": "hatsushima_atami_027_back_daily_001",
-          "operator": "富士急マリンリゾート",
-          "originPort": "初島港",
-          "destinationPort": "熱海港",
-          "departureHhmm": "08:00",
-          "arrivalHhmm": "08:30"
-        },
-        {
-          "sailingId": "hatsushima_atami_026_out_daily_002",
-          "operator": "富士急マリンリゾート",
-          "originPort": "熱海港",
-          "destinationPort": "初島港",
-          "departureHhmm": "08:40",
-          "arrivalHhmm": "09:10"
-        },
-        {
-          "sailingId": "hatsushima_atami_027_back_daily_002",
-          "operator": "富士急マリンリゾート",
-          "originPort": "初島港",
-          "destinationPort": "熱海港",
-          "departureHhmm": "09:20",
-          "arrivalHhmm": "09:50"
-        },
-        {
-          "sailingId": "hatsushima_atami_026_out_daily_003",
-          "operator": "富士急マリンリゾート",
-          "originPort": "熱海港",
-          "destinationPort": "初島港",
-          "departureHhmm": "10:00",
-          "arrivalHhmm": "10:30"
-        }
-      ],
-      "searchQueries": [
-        "初島港 港 アクセス バス 時刻表",
-        "初島港 フェリーターミナル 最寄り バス停",
-        "初島港 連絡バス 公式"
-      ]
-    },
-    {
       "portName": "神浦",
       "coordinate": {
         "lat": 33.2548582,
@@ -1251,6 +452,7 @@
       "playableSailingCount": 19,
       "originSailingCount": 10,
       "destinationSailingCount": 9,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009340",
         "name": "たびら平戸口",
@@ -1333,6 +535,7 @@
       "playableSailingCount": 16,
       "originSailingCount": 8,
       "destinationSailingCount": 8,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008068",
         "name": "糸崎",
@@ -1414,6 +617,7 @@
       "playableSailingCount": 16,
       "originSailingCount": 8,
       "destinationSailingCount": 8,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008687",
         "name": "高浜",
@@ -1496,6 +700,7 @@
       "playableSailingCount": 14,
       "originSailingCount": 7,
       "destinationSailingCount": 7,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_001092",
         "name": "渡波",
@@ -1578,6 +783,7 @@
       "playableSailingCount": 14,
       "originSailingCount": 7,
       "destinationSailingCount": 7,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008822",
         "name": "東郷",
@@ -1660,6 +866,7 @@
       "playableSailingCount": 14,
       "originSailingCount": 7,
       "destinationSailingCount": 7,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009062",
         "name": "九大学研都市",
@@ -1719,169 +926,6 @@
       ]
     },
     {
-      "portName": "佐久島東港",
-      "coordinate": {
-        "lat": 34.724,
-        "lon": 137.064
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "small/remote island record hint",
-        "rail within 7843m",
-        "bus stop within 8540m",
-        "used by 14 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "西尾市"
-      ],
-      "playableSailingCount": 14,
-      "originSailingCount": 7,
-      "destinationSailingCount": 7,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_006659",
-        "name": "吉良吉田",
-        "distanceMeters": 7843
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:minamichitatown_communitybus_https_api_gtfs-data_jp_v2_organizations_m_638fda373e:1-290-2",
-        "name": "師崎東口",
-        "distanceMeters": 8540
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "nishio_sakushima_024_out_001",
-          "operator": "西尾市",
-          "originPort": "佐久島西港",
-          "destinationPort": "佐久島東港",
-          "departureHhmm": "06:50",
-          "arrivalHhmm": "06:55"
-        },
-        {
-          "sailingId": "nishio_sakushima_025_back_001",
-          "operator": "西尾市",
-          "originPort": "佐久島東港",
-          "destinationPort": "佐久島西港",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:07"
-        },
-        {
-          "sailingId": "nishio_sakushima_024_out_002",
-          "operator": "西尾市",
-          "originPort": "佐久島西港",
-          "destinationPort": "佐久島東港",
-          "departureHhmm": "08:00",
-          "arrivalHhmm": "08:05"
-        },
-        {
-          "sailingId": "nishio_sakushima_025_back_002",
-          "operator": "西尾市",
-          "originPort": "佐久島東港",
-          "destinationPort": "佐久島西港",
-          "departureHhmm": "08:30",
-          "arrivalHhmm": "08:37"
-        },
-        {
-          "sailingId": "nishio_sakushima_024_out_003",
-          "operator": "西尾市",
-          "originPort": "佐久島西港",
-          "destinationPort": "佐久島東港",
-          "departureHhmm": "09:50",
-          "arrivalHhmm": "09:55"
-        }
-      ],
-      "searchQueries": [
-        "佐久島東港 港 アクセス バス 時刻表",
-        "佐久島東港 フェリーターミナル 最寄り バス停",
-        "佐久島東港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "利島港",
-      "coordinate": {
-        "lat": 34.5323982,
-        "lon": 139.2810088
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "small/remote island record hint",
-        "used by 14 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "東海汽船",
-        "神新汽船"
-      ],
-      "playableSailingCount": 14,
-      "originSailingCount": 7,
-      "destinationSailingCount": 7,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_007218",
-        "name": "伊豆急下田",
-        "distanceMeters": 34899
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_port_connector_bus_v5_type1_remote_port_oshima_official_bus_s_0bff6da08c:49d974a58e04",
-        "name": "元町港",
-        "distanceMeters": 25113
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "tokai_oshima_izu_500_011_out_001",
-          "operator": "東海汽船",
-          "originPort": "大島岡田港",
-          "destinationPort": "利島港",
-          "departureHhmm": "06:20",
-          "arrivalHhmm": "07:40"
-        },
-        {
-          "sailingId": "shinshin_shimoda_direct_500_004_out_001",
-          "operator": "神新汽船",
-          "originPort": "下田港",
-          "destinationPort": "利島港",
-          "departureHhmm": "09:30",
-          "arrivalHhmm": "14:40"
-        },
-        {
-          "sailingId": "shinshin_shimoda_izu_010_out_tuesday_friday_sunday_001",
-          "operator": "神新汽船",
-          "originPort": "下田港",
-          "destinationPort": "利島港",
-          "departureHhmm": "09:30",
-          "arrivalHhmm": "11:05"
-        },
-        {
-          "sailingId": "shinshin_shimoda_od_500_012_back_001",
-          "operator": "神新汽船",
-          "originPort": "利島港",
-          "destinationPort": "式根島野伏港",
-          "departureHhmm": "11:10",
-          "arrivalHhmm": "12:45"
-        },
-        {
-          "sailingId": "shinshin_shimoda_izu_012_out_tuesday_friday_sunday_002",
-          "operator": "神新汽船",
-          "originPort": "利島港",
-          "destinationPort": "新島港",
-          "departureHhmm": "11:10",
-          "arrivalHhmm": "12:10"
-        }
-      ],
-      "searchQueries": [
-        "利島港 港 アクセス バス 時刻表",
-        "利島港 フェリーターミナル 最寄り バス停",
-        "利島港 連絡バス 公式"
-      ]
-    },
-    {
       "portName": "大多府港",
       "coordinate": {
         "lat": 34.662,
@@ -1905,6 +949,7 @@
       "playableSailingCount": 13,
       "originSailingCount": 6,
       "destinationSailingCount": 7,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_006901",
         "name": "日生",
@@ -1964,88 +1009,6 @@
       ]
     },
     {
-      "portName": "朴島港",
-      "coordinate": {
-        "lat": 38.3286,
-        "lon": 141.1725
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "small/remote island record hint",
-        "rail within 5758m",
-        "bus stop within 8290m",
-        "used by 13 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "塩竈市"
-      ],
-      "playableSailingCount": 13,
-      "originSailingCount": 6,
-      "destinationSailingCount": 7,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_001110",
-        "name": "東名",
-        "distanceMeters": 5758
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:shichigahamatown_gururinko_https_api_gtfs-data_jp_v2_organizations_shi_6704efa7f1:18_01",
-        "name": "花渕",
-        "distanceMeters": 8290
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "shiogama_urato_008_out_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "寒風沢港",
-          "destinationPort": "朴島港",
-          "departureHhmm": "06:05",
-          "arrivalHhmm": "06:13"
-        },
-        {
-          "sailingId": "shiogama_urato_009_back_monday_to_saturday_001",
-          "operator": "塩竈市",
-          "originPort": "朴島港",
-          "destinationPort": "寒風沢港",
-          "departureHhmm": "06:15",
-          "arrivalHhmm": "06:23"
-        },
-        {
-          "sailingId": "shiogama_urato_008_out_daily_002",
-          "operator": "塩竈市",
-          "originPort": "寒風沢港",
-          "destinationPort": "朴島港",
-          "departureHhmm": "07:57",
-          "arrivalHhmm": "08:05"
-        },
-        {
-          "sailingId": "shiogama_urato_009_back_daily_002",
-          "operator": "塩竈市",
-          "originPort": "朴島港",
-          "destinationPort": "寒風沢港",
-          "departureHhmm": "08:10",
-          "arrivalHhmm": "08:18"
-        },
-        {
-          "sailingId": "shiogama_urato_008_out_daily_003",
-          "operator": "塩竈市",
-          "originPort": "寒風沢港",
-          "destinationPort": "朴島港",
-          "departureHhmm": "10:07",
-          "arrivalHhmm": "10:15"
-        }
-      ],
-      "searchQueries": [
-        "朴島港 港 アクセス バス 時刻表",
-        "朴島港 フェリーターミナル 最寄り バス停",
-        "朴島港 連絡バス 公式"
-      ]
-    },
-    {
       "portName": "出羽島",
       "coordinate": {
         "lat": 33.6363945,
@@ -2069,6 +1032,7 @@
       "playableSailingCount": 12,
       "originSailingCount": 6,
       "destinationSailingCount": 6,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008953",
         "name": "鯖瀬",
@@ -2128,170 +1092,6 @@
       ]
     },
     {
-      "portName": "走島港",
-      "coordinate": {
-        "lat": 34.348,
-        "lon": 133.403
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "small/remote island record hint",
-        "rail within 16166m",
-        "bus stop within 4443m",
-        "used by 12 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "走島汽船"
-      ],
-      "playableSailingCount": 12,
-      "originSailingCount": 6,
-      "destinationSailingCount": 6,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_007862",
-        "name": "福山",
-        "distanceMeters": 16166
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_port_connector_bus_v5_port_connector_batch2_official_bus_sour_54533a15e6:4084d5be0bf4",
-        "name": "鞆港",
-        "distanceMeters": 4443
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "hashirijima_tomo_056_out_001",
-          "operator": "走島汽船",
-          "originPort": "走島港",
-          "destinationPort": "鞆港",
-          "departureHhmm": "06:45",
-          "arrivalHhmm": "07:10"
-        },
-        {
-          "sailingId": "hashirijima_tomo_057_back_001",
-          "operator": "走島汽船",
-          "originPort": "鞆港",
-          "destinationPort": "走島港",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "07:55"
-        },
-        {
-          "sailingId": "hashirijima_tomo_056_out_002",
-          "operator": "走島汽船",
-          "originPort": "走島港",
-          "destinationPort": "鞆港",
-          "departureHhmm": "08:20",
-          "arrivalHhmm": "08:45"
-        },
-        {
-          "sailingId": "hashirijima_tomo_057_back_002",
-          "operator": "走島汽船",
-          "originPort": "鞆港",
-          "destinationPort": "走島港",
-          "departureHhmm": "09:10",
-          "arrivalHhmm": "09:35"
-        },
-        {
-          "sailingId": "hashirijima_tomo_056_out_003",
-          "operator": "走島汽船",
-          "originPort": "走島港",
-          "destinationPort": "鞆港",
-          "departureHhmm": "10:20",
-          "arrivalHhmm": "10:45"
-        }
-      ],
-      "searchQueries": [
-        "走島港 港 アクセス バス 時刻表",
-        "走島港 フェリーターミナル 最寄り バス停",
-        "走島港 連絡バス 公式"
-      ]
-    },
-    {
-      "portName": "男木",
-      "coordinate": {
-        "lat": 34.4210422,
-        "lon": 134.0541555
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "inside honshu_mainland_band",
-        "small/remote island record hint",
-        "rail within 7831m",
-        "bus stop within 5920m",
-        "used by 12 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "manual_verified:source coordinate is on 男木島; route context 雌雄島海運 高松-男木",
-      "coordinateDisplayName": "男木港",
-      "operatorContexts": [
-        "雌雄島海運"
-      ],
-      "playableSailingCount": 12,
-      "originSailingCount": 6,
-      "destinationSailingCount": 6,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_008162",
-        "name": "高松築港",
-        "distanceMeters": 7831
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_port_connector_bus_v5_port_connector_official_bus_source_json_4209e5dd44:af745deac37f",
-        "name": "つつじ荘",
-        "distanceMeters": 5920
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out_001",
-          "operator": "雌雄島海運",
-          "originPort": "男木",
-          "destinationPort": "高松",
-          "departureHhmm": "07:00",
-          "arrivalHhmm": "07:40"
-        },
-        {
-          "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back_001",
-          "operator": "雌雄島海運",
-          "originPort": "高松",
-          "destinationPort": "男木",
-          "departureHhmm": "08:00",
-          "arrivalHhmm": "08:40"
-        },
-        {
-          "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out_002",
-          "operator": "雌雄島海運",
-          "originPort": "男木",
-          "destinationPort": "高松",
-          "departureHhmm": "09:00",
-          "arrivalHhmm": "09:40"
-        },
-        {
-          "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back_002",
-          "operator": "雌雄島海運",
-          "originPort": "高松",
-          "destinationPort": "男木",
-          "departureHhmm": "10:00",
-          "arrivalHhmm": "10:40"
-        },
-        {
-          "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out_003",
-          "operator": "雌雄島海運",
-          "originPort": "男木",
-          "destinationPort": "高松",
-          "departureHhmm": "11:00",
-          "arrivalHhmm": "11:40"
-        }
-      ],
-      "searchQueries": [
-        "男木 港 アクセス バス 時刻表",
-        "男木 フェリーターミナル 最寄り バス停",
-        "男木 連絡バス 公式"
-      ]
-    },
-    {
       "portName": "馬島",
       "coordinate": {
         "lat": 33.9651826,
@@ -2315,6 +1115,7 @@
       "playableSailingCount": 12,
       "originSailingCount": 6,
       "destinationSailingCount": 6,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008630",
         "name": "下関",
@@ -2398,6 +1199,7 @@
       "playableSailingCount": 12,
       "originSailingCount": 6,
       "destinationSailingCount": 6,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008586",
         "name": "神代",
@@ -2479,6 +1281,7 @@
       "playableSailingCount": 12,
       "originSailingCount": 6,
       "destinationSailingCount": 6,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_007830",
         "name": "笠岡",
@@ -2561,6 +1364,7 @@
       "playableSailingCount": 12,
       "originSailingCount": 6,
       "destinationSailingCount": 6,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_007218",
         "name": "伊豆急下田",
@@ -2643,6 +1447,7 @@
       "playableSailingCount": 12,
       "originSailingCount": 6,
       "destinationSailingCount": 6,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_007218",
         "name": "伊豆急下田",
@@ -2723,6 +1528,7 @@
       "playableSailingCount": 12,
       "originSailingCount": 6,
       "destinationSailingCount": 6,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008586",
         "name": "神代",
@@ -2804,6 +1610,7 @@
       "playableSailingCount": 12,
       "originSailingCount": 6,
       "destinationSailingCount": 6,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008032",
         "name": "三見",
@@ -2886,6 +1693,7 @@
       "playableSailingCount": 10,
       "originSailingCount": 5,
       "destinationSailingCount": 5,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008475",
         "name": "波方",
@@ -2967,6 +1775,7 @@
       "playableSailingCount": 10,
       "originSailingCount": 5,
       "destinationSailingCount": 5,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009270",
         "name": "西唐津",
@@ -3049,6 +1858,7 @@
       "playableSailingCount": 10,
       "originSailingCount": 5,
       "destinationSailingCount": 5,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008419",
         "name": "岩国",
@@ -3131,6 +1941,7 @@
       "playableSailingCount": 10,
       "originSailingCount": 5,
       "destinationSailingCount": 5,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_007852",
         "name": "宇野",
@@ -3213,6 +2024,7 @@
       "playableSailingCount": 10,
       "originSailingCount": 5,
       "destinationSailingCount": 5,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008619",
         "name": "田布施",
@@ -3294,6 +2106,7 @@
       "playableSailingCount": 10,
       "originSailingCount": 5,
       "destinationSailingCount": 5,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009340",
         "name": "たびら平戸口",
@@ -3375,6 +2188,7 @@
       "playableSailingCount": 10,
       "originSailingCount": 5,
       "destinationSailingCount": 5,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009594",
         "name": "日代",
@@ -3454,6 +2268,7 @@
       "playableSailingCount": 10,
       "originSailingCount": 5,
       "destinationSailingCount": 5,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009340",
         "name": "たびら平戸口",
@@ -3536,6 +2351,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_001081",
         "name": "浦宿",
@@ -3618,6 +2434,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008592",
         "name": "幡生",
@@ -3699,6 +2516,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009337",
         "name": "御厨",
@@ -3781,6 +2599,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008354",
         "name": "津島ノ宮",
@@ -3862,6 +2681,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009529",
         "name": "相浦",
@@ -3943,6 +2763,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009247",
         "name": "福吉",
@@ -4024,6 +2845,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008529",
         "name": "徳山",
@@ -4104,6 +2926,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008586",
         "name": "神代",
@@ -4184,6 +3007,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008687",
         "name": "高浜",
@@ -4262,6 +3086,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009340",
         "name": "たびら平戸口",
@@ -4342,6 +3167,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009340",
         "name": "たびら平戸口",
@@ -4420,6 +3246,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010125",
         "name": "てだこ浦西",
@@ -4499,6 +3326,7 @@
       "playableSailingCount": 8,
       "originSailingCount": 4,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010118",
         "name": "入野",
@@ -4580,6 +3408,7 @@
       "playableSailingCount": 7,
       "originSailingCount": 4,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_007872",
         "name": "鳥羽",
@@ -4659,6 +3488,7 @@
       "playableSailingCount": 7,
       "originSailingCount": 4,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010125",
         "name": "てだこ浦西",
@@ -4741,6 +3571,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 3,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008379",
         "name": "詫間",
@@ -4823,6 +3654,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 3,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009272",
         "name": "八幡浜",
@@ -4905,6 +3737,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 3,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008523",
         "name": "伊予亀岡",
@@ -4986,6 +3819,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 3,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008665",
         "name": "若松",
@@ -5067,6 +3901,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 3,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009145",
         "name": "筑前前原",
@@ -5126,85 +3961,6 @@
       ]
     },
     {
-      "portName": "黒島港",
-      "coordinate": {
-        "lat": 24.2568787,
-        "lon": 124.0033922
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "small/remote island record hint",
-        "used by 6 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "安栄観光"
-      ],
-      "playableSailingCount": 6,
-      "originSailingCount": 3,
-      "destinationSailingCount": 3,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_010142",
-        "name": "赤嶺",
-        "distanceMeters": 426234
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_port_connector_bus_v5_remote_small_island_bus_source_json_tak_a3e069b54d:d2572e52a451",
-        "name": "集落",
-        "distanceMeters": 11573
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "anei_ishigaki_yaeyama_090_out_daily_1",
-          "operator": "安栄観光",
-          "originPort": "石垣港",
-          "destinationPort": "黒島港",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "08:05"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_091_back_daily_1",
-          "operator": "安栄観光",
-          "originPort": "黒島港",
-          "destinationPort": "石垣港",
-          "departureHhmm": "08:25",
-          "arrivalHhmm": "09:00"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_090_out_daily_2",
-          "operator": "安栄観光",
-          "originPort": "石垣港",
-          "destinationPort": "黒島港",
-          "departureHhmm": "13:30",
-          "arrivalHhmm": "14:05"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_091_back_daily_2",
-          "operator": "安栄観光",
-          "originPort": "黒島港",
-          "destinationPort": "石垣港",
-          "departureHhmm": "14:10",
-          "arrivalHhmm": "14:45"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_090_out_daily_3",
-          "operator": "安栄観光",
-          "originPort": "石垣港",
-          "destinationPort": "黒島港",
-          "departureHhmm": "15:30",
-          "arrivalHhmm": "16:05"
-        }
-      ],
-      "searchQueries": [
-        "黒島港 港 アクセス バス 時刻表",
-        "黒島港 フェリーターミナル 最寄り バス停",
-        "黒島港 連絡バス 公式"
-      ]
-    },
-    {
       "portName": "椛島",
       "coordinate": {
         "lat": 32.762312,
@@ -5225,6 +3981,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 3,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009529",
         "name": "相浦",
@@ -5306,6 +4063,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 3,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008538",
         "name": "由宇",
@@ -5384,6 +4142,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 4,
       "destinationSailingCount": 2,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009529",
         "name": "相浦",
@@ -5465,6 +4224,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 3,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_001077",
         "name": "女川",
@@ -5544,6 +4304,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 2,
       "destinationSailingCount": 4,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009529",
         "name": "相浦",
@@ -5603,84 +4364,6 @@
       ]
     },
     {
-      "portName": "波照間港",
-      "coordinate": {
-        "lat": 24.058,
-        "lon": 123.774
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "used by 6 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "安栄観光"
-      ],
-      "playableSailingCount": 6,
-      "originSailingCount": 3,
-      "destinationSailingCount": 3,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_010142",
-        "name": "赤嶺",
-        "distanceMeters": 457643
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:official:official_port_connector_bus_v5_remote_small_island_bus_source_json_iri_7e175698d5:af5f554e5a56",
-        "name": "豊原",
-        "distanceMeters": 24168
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "anei_ishigaki_yaeyama_096_out_daily_1",
-          "operator": "安栄観光",
-          "originPort": "石垣港",
-          "destinationPort": "波照間港",
-          "departureHhmm": "08:00",
-          "arrivalHhmm": "09:15"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_097_back_daily_1",
-          "operator": "安栄観光",
-          "originPort": "波照間港",
-          "destinationPort": "石垣港",
-          "departureHhmm": "09:50",
-          "arrivalHhmm": "11:05"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_096_out_daily_2",
-          "operator": "安栄観光",
-          "originPort": "石垣港",
-          "destinationPort": "波照間港",
-          "departureHhmm": "11:45",
-          "arrivalHhmm": "13:00"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_097_back_daily_2",
-          "operator": "安栄観光",
-          "originPort": "波照間港",
-          "destinationPort": "石垣港",
-          "departureHhmm": "13:00",
-          "arrivalHhmm": "14:15"
-        },
-        {
-          "sailingId": "anei_ishigaki_yaeyama_096_out_daily_3",
-          "operator": "安栄観光",
-          "originPort": "石垣港",
-          "destinationPort": "波照間港",
-          "departureHhmm": "15:00",
-          "arrivalHhmm": "16:15"
-        }
-      ],
-      "searchQueries": [
-        "波照間港 港 アクセス バス 時刻表",
-        "波照間港 フェリーターミナル 最寄り バス停",
-        "波照間港 連絡バス 公式"
-      ]
-    },
-    {
       "portName": "上五島",
       "coordinate": {
         "lat": 33.015063,
@@ -5702,6 +4385,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 3,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009516",
         "name": "棚方",
@@ -5780,6 +4464,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 3,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010125",
         "name": "てだこ浦西",
@@ -5839,86 +4524,6 @@
       ]
     },
     {
-      "portName": "母島沖港",
-      "coordinate": {
-        "lat": 26.63883,
-        "lon": 142.15968
-      },
-      "category": "record_remote_or_small_island",
-      "reasons": [
-        "remote island name hint",
-        "small/remote island record hint",
-        "used by 6 playable sailings"
-      ],
-      "coordinateIdentityStatus": "ok",
-      "coordinateIdentityReasons": [],
-      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
-      "coordinateDisplayName": null,
-      "operatorContexts": [
-        "伊豆諸島開発"
-      ],
-      "playableSailingCount": 6,
-      "originSailingCount": 3,
-      "destinationSailingCount": 3,
-      "nearestRail": {
-        "stationGroupId": "SG_N02G_007218",
-        "name": "伊豆急下田",
-        "distanceMeters": 945351
-      },
-      "nearestBusStop": {
-        "busStopId": "bus:stop:ogasawaravillage_o_https_api_gtfs-data_jp_v2_organizations_ogasawaravi_7fa6f19eb5:20_01",
-        "name": "小港海岸",
-        "distanceMeters": 47006
-      },
-      "sampleSailings": [
-        {
-          "sailingId": "izu_shoto_chichijima_hahajima_021_back_001",
-          "operator": "伊豆諸島開発",
-          "originPort": "母島沖港",
-          "destinationPort": "父島二見港",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "09:30"
-        },
-        {
-          "sailingId": "izu_shoto_chichijima_hahajima_020_out_001",
-          "operator": "伊豆諸島開発",
-          "originPort": "父島二見港",
-          "destinationPort": "母島沖港",
-          "departureHhmm": "07:30",
-          "arrivalHhmm": "09:30"
-        },
-        {
-          "sailingId": "izu_shoto_chichijima_hahajima_021_back_002",
-          "operator": "伊豆諸島開発",
-          "originPort": "母島沖港",
-          "destinationPort": "父島二見港",
-          "departureHhmm": "12:00",
-          "arrivalHhmm": "14:00"
-        },
-        {
-          "sailingId": "izu_shoto_chichijima_hahajima_020_out_002",
-          "operator": "伊豆諸島開発",
-          "originPort": "父島二見港",
-          "destinationPort": "母島沖港",
-          "departureHhmm": "12:00",
-          "arrivalHhmm": "14:00"
-        },
-        {
-          "sailingId": "izu_shoto_chichijima_hahajima_021_back_003",
-          "operator": "伊豆諸島開発",
-          "originPort": "母島沖港",
-          "destinationPort": "父島二見港",
-          "departureHhmm": "14:00",
-          "arrivalHhmm": "16:00"
-        }
-      ],
-      "searchQueries": [
-        "母島沖港 港 アクセス バス 時刻表",
-        "母島沖港 フェリーターミナル 最寄り バス停",
-        "母島沖港 連絡バス 公式"
-      ]
-    },
-    {
       "portName": "見島本村港",
       "coordinate": {
         "lat": 34.765,
@@ -5940,6 +4545,7 @@
       "playableSailingCount": 6,
       "originSailingCount": 3,
       "destinationSailingCount": 3,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_007768",
         "name": "木与",
@@ -6023,6 +4629,7 @@
       "playableSailingCount": 5,
       "originSailingCount": 3,
       "destinationSailingCount": 2,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008619",
         "name": "田布施",
@@ -6105,6 +4712,7 @@
       "playableSailingCount": 4,
       "originSailingCount": 2,
       "destinationSailingCount": 2,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008244",
         "name": "広電宮島口",
@@ -6176,6 +4784,7 @@
       "playableSailingCount": 4,
       "originSailingCount": 2,
       "destinationSailingCount": 2,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009813",
         "name": "浦上",
@@ -6247,6 +4856,7 @@
       "playableSailingCount": 4,
       "originSailingCount": 2,
       "destinationSailingCount": 2,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010121",
         "name": "大山",
@@ -6317,6 +4927,7 @@
       "playableSailingCount": 4,
       "originSailingCount": 2,
       "destinationSailingCount": 2,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009529",
         "name": "相浦",
@@ -6390,6 +5001,7 @@
       "playableSailingCount": 4,
       "originSailingCount": 2,
       "destinationSailingCount": 2,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008687",
         "name": "高浜",
@@ -6464,6 +5076,7 @@
       "playableSailingCount": 4,
       "originSailingCount": 2,
       "destinationSailingCount": 2,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_001094",
         "name": "今川",
@@ -6536,6 +5149,7 @@
       "playableSailingCount": 4,
       "originSailingCount": 2,
       "destinationSailingCount": 2,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010138",
         "name": "那覇空港",
@@ -6608,6 +5222,7 @@
       "playableSailingCount": 4,
       "originSailingCount": 2,
       "destinationSailingCount": 2,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010138",
         "name": "那覇空港",
@@ -6680,6 +5295,7 @@
       "playableSailingCount": 4,
       "originSailingCount": 2,
       "destinationSailingCount": 2,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010104",
         "name": "枕崎",
@@ -6750,6 +5366,7 @@
       "playableSailingCount": 3,
       "originSailingCount": 2,
       "destinationSailingCount": 1,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009340",
         "name": "たびら平戸口",
@@ -6813,6 +5430,7 @@
       "playableSailingCount": 3,
       "originSailingCount": 2,
       "destinationSailingCount": 1,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_007218",
         "name": "伊豆急下田",
@@ -6878,6 +5496,7 @@
       "playableSailingCount": 2,
       "originSailingCount": 1,
       "destinationSailingCount": 1,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_001577",
         "name": "穴水",
@@ -6934,6 +5553,7 @@
       "playableSailingCount": 2,
       "originSailingCount": 1,
       "destinationSailingCount": 1,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009145",
         "name": "筑前前原",
@@ -6988,6 +5608,7 @@
       "playableSailingCount": 2,
       "originSailingCount": 1,
       "destinationSailingCount": 1,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009529",
         "name": "相浦",
@@ -7044,6 +5665,7 @@
       "playableSailingCount": 2,
       "originSailingCount": 1,
       "destinationSailingCount": 1,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010138",
         "name": "那覇空港",
@@ -7100,6 +5722,7 @@
       "playableSailingCount": 2,
       "originSailingCount": 1,
       "destinationSailingCount": 1,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_000944",
         "name": "小砂川",
@@ -7156,6 +5779,7 @@
       "playableSailingCount": 2,
       "originSailingCount": 1,
       "destinationSailingCount": 1,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010138",
         "name": "那覇空港",
@@ -7211,6 +5835,7 @@
       "playableSailingCount": 2,
       "originSailingCount": 1,
       "destinationSailingCount": 1,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010118",
         "name": "入野",
@@ -7267,6 +5892,7 @@
       "playableSailingCount": 2,
       "originSailingCount": 1,
       "destinationSailingCount": 1,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010138",
         "name": "那覇空港",
@@ -7323,6 +5949,7 @@
       "playableSailingCount": 2,
       "originSailingCount": 1,
       "destinationSailingCount": 1,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_001577",
         "name": "穴水",
@@ -7377,6 +6004,7 @@
       "playableSailingCount": 2,
       "originSailingCount": 1,
       "destinationSailingCount": 1,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010138",
         "name": "那覇空港",
@@ -7434,6 +6062,7 @@
       "playableSailingCount": 0,
       "originSailingCount": 0,
       "destinationSailingCount": 0,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009055",
         "name": "今宿",
@@ -7472,6 +6101,7 @@
       "playableSailingCount": 0,
       "originSailingCount": 0,
       "destinationSailingCount": 0,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_010031",
         "name": "鹿児島",
@@ -7512,6 +6142,7 @@
       "playableSailingCount": 0,
       "originSailingCount": 0,
       "destinationSailingCount": 0,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_007915",
         "name": "飛鳥",
@@ -7550,6 +6181,7 @@
       "playableSailingCount": 0,
       "originSailingCount": 0,
       "destinationSailingCount": 0,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_008687",
         "name": "高浜",
@@ -7585,6 +6217,7 @@
       "playableSailingCount": 0,
       "originSailingCount": 0,
       "destinationSailingCount": 0,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009362",
         "name": "西田平",
@@ -7622,6 +6255,7 @@
       "playableSailingCount": 0,
       "originSailingCount": 0,
       "destinationSailingCount": 0,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009434",
         "name": "伊予吉田",
@@ -7655,6 +6289,7 @@
       "playableSailingCount": 0,
       "originSailingCount": 0,
       "destinationSailingCount": 0,
+      "remoteAccessRecord": null,
       "nearestRail": {
         "stationGroupId": "SG_N02G_009516",
         "name": "棚方",
@@ -7670,6 +6305,1730 @@
         "有川 港 アクセス バス 時刻表",
         "有川 フェリーターミナル 最寄り バス停",
         "有川 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "佐久島西港",
+      "coordinate": {
+        "lat": 34.729,
+        "lon": 137.049
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "small/remote island record hint",
+        "rail within 7538m",
+        "bus stop within 7417m",
+        "used by 28 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "西尾市"
+      ],
+      "playableSailingCount": 28,
+      "originSailingCount": 14,
+      "destinationSailingCount": 14,
+      "remoteAccessRecord": {
+        "recordId": "nishio_sakushima_no_scheduled_public_bus_20260526",
+        "islandName": "佐久島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T17:48:00-07:00",
+        "sourceUrls": [
+          "https://www.mlit.go.jp/kokudoseisaku/chirit/content/001476558.pdf"
+        ],
+        "notes": [
+          "MLIT smart-island survey material for Sakushima says the island currently has no bus or taxi; it discusses alternative personal-mobility experiments."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_006659",
+        "name": "吉良吉田",
+        "distanceMeters": 7538
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:minamichitatown_communitybus_https_api_gtfs-data_jp_v2_organizations_m_638fda373e:1-290-2",
+        "name": "師崎東口",
+        "distanceMeters": 7417
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "nishio_sakushima_022_out_001",
+          "operator": "西尾市",
+          "originPort": "一色港",
+          "destinationPort": "佐久島西港",
+          "departureHhmm": "06:30",
+          "arrivalHhmm": "06:50"
+        },
+        {
+          "sailingId": "nishio_sakushima_024_out_001",
+          "operator": "西尾市",
+          "originPort": "佐久島西港",
+          "destinationPort": "佐久島東港",
+          "departureHhmm": "06:50",
+          "arrivalHhmm": "06:55"
+        },
+        {
+          "sailingId": "nishio_sakushima_025_back_001",
+          "operator": "西尾市",
+          "originPort": "佐久島東港",
+          "destinationPort": "佐久島西港",
+          "departureHhmm": "07:00",
+          "arrivalHhmm": "07:07"
+        },
+        {
+          "sailingId": "nishio_sakushima_023_back_001",
+          "operator": "西尾市",
+          "originPort": "佐久島西港",
+          "destinationPort": "一色港",
+          "departureHhmm": "07:07",
+          "arrivalHhmm": "07:37"
+        },
+        {
+          "sailingId": "nishio_sakushima_022_out_002",
+          "operator": "西尾市",
+          "originPort": "一色港",
+          "destinationPort": "佐久島西港",
+          "departureHhmm": "07:40",
+          "arrivalHhmm": "08:00"
+        }
+      ],
+      "searchQueries": [
+        "佐久島西港 港 アクセス バス 時刻表",
+        "佐久島西港 フェリーターミナル 最寄り バス停",
+        "佐久島西港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "似島港",
+      "coordinate": {
+        "lat": 34.309,
+        "lon": 132.43
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "remote island name hint",
+        "small/remote island record hint",
+        "rail within 5404m",
+        "bus stop within 4108m",
+        "used by 26 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "似島汽船"
+      ],
+      "playableSailingCount": 26,
+      "originSailingCount": 13,
+      "destinationSailingCount": 13,
+      "remoteAccessRecord": {
+        "recordId": "hiroshima_ninoshima_no_scheduled_public_bus_20260526",
+        "islandName": "似島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:05:00-07:00",
+        "sourceUrls": [
+          "https://www.city.hiroshima.lg.jp/_res/projects/default_project/_page_/001/040/332/genjou.pdf",
+          "https://ninoshimakisen.jp/map"
+        ],
+        "notes": [
+          "Hiroshima city route-improvement material states Ninoshima has no route bus or taxi public transport on the island.",
+          "The operator's island map is a walking/spot guide and does not publish a scheduled island bus route."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_008159",
+        "name": "広島港（宇品）",
+        "distanceMeters": 5404
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_port_connector_batch3_official_bus_sour_09ed15fd83:0ce3ab723c35",
+        "name": "切串港",
+        "distanceMeters": 4108
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "ninoshima_kisen_041_back_001",
+          "operator": "似島汽船",
+          "originPort": "似島港",
+          "destinationPort": "広島港宇品",
+          "departureHhmm": "06:00",
+          "arrivalHhmm": "06:20"
+        },
+        {
+          "sailingId": "ninoshima_kisen_040_out_001",
+          "operator": "似島汽船",
+          "originPort": "広島港宇品",
+          "destinationPort": "似島港",
+          "departureHhmm": "06:30",
+          "arrivalHhmm": "06:50"
+        },
+        {
+          "sailingId": "ninoshima_kisen_041_back_002",
+          "operator": "似島汽船",
+          "originPort": "似島港",
+          "destinationPort": "広島港宇品",
+          "departureHhmm": "07:00",
+          "arrivalHhmm": "07:20"
+        },
+        {
+          "sailingId": "ninoshima_kisen_040_out_002",
+          "operator": "似島汽船",
+          "originPort": "広島港宇品",
+          "destinationPort": "似島港",
+          "departureHhmm": "07:30",
+          "arrivalHhmm": "07:50"
+        },
+        {
+          "sailingId": "ninoshima_kisen_041_back_003",
+          "operator": "似島汽船",
+          "originPort": "似島港",
+          "destinationPort": "広島港宇品",
+          "departureHhmm": "08:00",
+          "arrivalHhmm": "08:20"
+        }
+      ],
+      "searchQueries": [
+        "似島港 港 アクセス バス 時刻表",
+        "似島港 フェリーターミナル 最寄り バス停",
+        "似島港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "桂島港",
+      "coordinate": {
+        "lat": 38.3312,
+        "lon": 141.1244
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "small/remote island record hint",
+        "rail within 5189m",
+        "bus stop within 4622m",
+        "used by 26 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "塩竈市"
+      ],
+      "playableSailingCount": 26,
+      "originSailingCount": 13,
+      "destinationSailingCount": 13,
+      "remoteAccessRecord": {
+        "recordId": "shiogama_urato_islands_no_scheduled_public_bus_20260526",
+        "islandName": "浦戸諸島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:05:00-07:00",
+        "sourceUrls": [
+          "https://urato-island.jp/tosen/",
+          "https://urato-island.jp/howtoenjoy/modelcourse01_2/",
+          "https://urato-island.jp/kisen/"
+        ],
+        "notes": [
+          "Official Urato Islands pages describe municipal ferry access, island-to-island call-up boats, and walking model courses.",
+          "The call-up island boat is not an ordinary scheduled bus and should stay in the ship/walk layer, not be promoted as playable bus."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_001110",
+        "name": "東名",
+        "distanceMeters": 5189
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:shichigahamatown_gururinko_https_api_gtfs-data_jp_v2_organizations_shi_6704efa7f1:19_02",
+        "name": "吉田浜",
+        "distanceMeters": 4622
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "shiogama_urato_000_out_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "塩竈港",
+          "destinationPort": "桂島港",
+          "departureHhmm": "05:30",
+          "arrivalHhmm": "05:48"
+        },
+        {
+          "sailingId": "shiogama_urato_002_out_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "桂島港",
+          "destinationPort": "野々島港",
+          "departureHhmm": "05:48",
+          "arrivalHhmm": "05:54"
+        },
+        {
+          "sailingId": "shiogama_urato_003_back_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "野々島港",
+          "destinationPort": "桂島港",
+          "departureHhmm": "06:34",
+          "arrivalHhmm": "06:40"
+        },
+        {
+          "sailingId": "shiogama_urato_001_back_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "桂島港",
+          "destinationPort": "塩竈港",
+          "departureHhmm": "06:40",
+          "arrivalHhmm": "06:58"
+        },
+        {
+          "sailingId": "shiogama_urato_000_out_daily_002",
+          "operator": "塩竈市",
+          "originPort": "塩竈港",
+          "destinationPort": "桂島港",
+          "departureHhmm": "07:20",
+          "arrivalHhmm": "07:38"
+        }
+      ],
+      "searchQueries": [
+        "桂島港 港 アクセス バス 時刻表",
+        "桂島港 フェリーターミナル 最寄り バス停",
+        "桂島港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "野々島港",
+      "coordinate": {
+        "lat": 38.333,
+        "lon": 141.139
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "small/remote island record hint",
+        "rail within 4721m",
+        "bus stop within 5813m",
+        "used by 26 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "塩竈市"
+      ],
+      "playableSailingCount": 26,
+      "originSailingCount": 13,
+      "destinationSailingCount": 13,
+      "remoteAccessRecord": {
+        "recordId": "shiogama_urato_islands_no_scheduled_public_bus_20260526",
+        "islandName": "浦戸諸島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:05:00-07:00",
+        "sourceUrls": [
+          "https://urato-island.jp/tosen/",
+          "https://urato-island.jp/howtoenjoy/modelcourse01_2/",
+          "https://urato-island.jp/kisen/"
+        ],
+        "notes": [
+          "Official Urato Islands pages describe municipal ferry access, island-to-island call-up boats, and walking model courses.",
+          "The call-up island boat is not an ordinary scheduled bus and should stay in the ship/walk layer, not be promoted as playable bus."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_001110",
+        "name": "東名",
+        "distanceMeters": 4721
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:shichigahamatown_gururinko_https_api_gtfs-data_jp_v2_organizations_shi_6704efa7f1:19_01",
+        "name": "吉田浜",
+        "distanceMeters": 5813
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "shiogama_urato_002_out_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "桂島港",
+          "destinationPort": "野々島港",
+          "departureHhmm": "05:48",
+          "arrivalHhmm": "05:54"
+        },
+        {
+          "sailingId": "shiogama_urato_004_out_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "野々島港",
+          "destinationPort": "石浜港",
+          "departureHhmm": "05:54",
+          "arrivalHhmm": "05:57"
+        },
+        {
+          "sailingId": "shiogama_urato_005_back_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "石浜港",
+          "destinationPort": "野々島港",
+          "departureHhmm": "06:31",
+          "arrivalHhmm": "06:34"
+        },
+        {
+          "sailingId": "shiogama_urato_003_back_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "野々島港",
+          "destinationPort": "桂島港",
+          "departureHhmm": "06:34",
+          "arrivalHhmm": "06:40"
+        },
+        {
+          "sailingId": "shiogama_urato_002_out_daily_002",
+          "operator": "塩竈市",
+          "originPort": "桂島港",
+          "destinationPort": "野々島港",
+          "departureHhmm": "07:38",
+          "arrivalHhmm": "07:45"
+        }
+      ],
+      "searchQueries": [
+        "野々島港 港 アクセス バス 時刻表",
+        "野々島港 フェリーターミナル 最寄り バス停",
+        "野々島港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "石浜港",
+      "coordinate": {
+        "lat": 38.3384,
+        "lon": 141.1498
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "small/remote island record hint",
+        "rail within 4133m",
+        "bus stop within 6928m",
+        "used by 26 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "塩竈市"
+      ],
+      "playableSailingCount": 26,
+      "originSailingCount": 13,
+      "destinationSailingCount": 13,
+      "remoteAccessRecord": {
+        "recordId": "shiogama_urato_islands_no_scheduled_public_bus_20260526",
+        "islandName": "浦戸諸島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:05:00-07:00",
+        "sourceUrls": [
+          "https://urato-island.jp/tosen/",
+          "https://urato-island.jp/howtoenjoy/modelcourse01_2/",
+          "https://urato-island.jp/kisen/"
+        ],
+        "notes": [
+          "Official Urato Islands pages describe municipal ferry access, island-to-island call-up boats, and walking model courses.",
+          "The call-up island boat is not an ordinary scheduled bus and should stay in the ship/walk layer, not be promoted as playable bus."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_001110",
+        "name": "東名",
+        "distanceMeters": 4133
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:shichigahamatown_gururinko_https_api_gtfs-data_jp_v2_organizations_shi_6704efa7f1:19_01",
+        "name": "吉田浜",
+        "distanceMeters": 6928
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "shiogama_urato_004_out_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "野々島港",
+          "destinationPort": "石浜港",
+          "departureHhmm": "05:54",
+          "arrivalHhmm": "05:57"
+        },
+        {
+          "sailingId": "shiogama_urato_006_out_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "石浜港",
+          "destinationPort": "寒風沢港",
+          "departureHhmm": "05:57",
+          "arrivalHhmm": "06:05"
+        },
+        {
+          "sailingId": "shiogama_urato_007_back_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "寒風沢港",
+          "destinationPort": "石浜港",
+          "departureHhmm": "06:23",
+          "arrivalHhmm": "06:31"
+        },
+        {
+          "sailingId": "shiogama_urato_005_back_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "石浜港",
+          "destinationPort": "野々島港",
+          "departureHhmm": "06:31",
+          "arrivalHhmm": "06:34"
+        },
+        {
+          "sailingId": "shiogama_urato_004_out_daily_002",
+          "operator": "塩竈市",
+          "originPort": "野々島港",
+          "destinationPort": "石浜港",
+          "departureHhmm": "07:45",
+          "arrivalHhmm": "07:49"
+        }
+      ],
+      "searchQueries": [
+        "石浜港 港 アクセス バス 時刻表",
+        "石浜港 フェリーターミナル 最寄り バス停",
+        "石浜港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "寒風沢港",
+      "coordinate": {
+        "lat": 38.3275,
+        "lon": 141.1578
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "small/remote island record hint",
+        "rail within 5449m",
+        "bus stop within 7047m",
+        "used by 26 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "塩竈市"
+      ],
+      "playableSailingCount": 26,
+      "originSailingCount": 13,
+      "destinationSailingCount": 13,
+      "remoteAccessRecord": {
+        "recordId": "shiogama_urato_islands_no_scheduled_public_bus_20260526",
+        "islandName": "浦戸諸島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:05:00-07:00",
+        "sourceUrls": [
+          "https://urato-island.jp/tosen/",
+          "https://urato-island.jp/howtoenjoy/modelcourse01_2/",
+          "https://urato-island.jp/kisen/"
+        ],
+        "notes": [
+          "Official Urato Islands pages describe municipal ferry access, island-to-island call-up boats, and walking model courses.",
+          "The call-up island boat is not an ordinary scheduled bus and should stay in the ship/walk layer, not be promoted as playable bus."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_001110",
+        "name": "東名",
+        "distanceMeters": 5449
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:shichigahamatown_gururinko_https_api_gtfs-data_jp_v2_organizations_shi_6704efa7f1:18_01",
+        "name": "花渕",
+        "distanceMeters": 7047
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "shiogama_urato_006_out_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "石浜港",
+          "destinationPort": "寒風沢港",
+          "departureHhmm": "05:57",
+          "arrivalHhmm": "06:05"
+        },
+        {
+          "sailingId": "shiogama_urato_008_out_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "寒風沢港",
+          "destinationPort": "朴島港",
+          "departureHhmm": "06:05",
+          "arrivalHhmm": "06:13"
+        },
+        {
+          "sailingId": "shiogama_urato_009_back_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "朴島港",
+          "destinationPort": "寒風沢港",
+          "departureHhmm": "06:15",
+          "arrivalHhmm": "06:23"
+        },
+        {
+          "sailingId": "shiogama_urato_007_back_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "寒風沢港",
+          "destinationPort": "石浜港",
+          "departureHhmm": "06:23",
+          "arrivalHhmm": "06:31"
+        },
+        {
+          "sailingId": "shiogama_urato_006_out_daily_002",
+          "operator": "塩竈市",
+          "originPort": "石浜港",
+          "destinationPort": "寒風沢港",
+          "departureHhmm": "07:49",
+          "arrivalHhmm": "07:57"
+        }
+      ],
+      "searchQueries": [
+        "寒風沢港 港 アクセス バス 時刻表",
+        "寒風沢港 フェリーターミナル 最寄り バス停",
+        "寒風沢港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "佐合島",
+      "coordinate": {
+        "lat": 33.8751429,
+        "lon": 132.0667164
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "remote island name hint",
+        "small/remote island record hint",
+        "rail within 9533m",
+        "bus stop within 2271m",
+        "used by 20 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:OSM/Nominatim query=佐合島 ferry terminal Japan; score=31; needs_precise_port_review",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "熊南総合事務組合"
+      ],
+      "playableSailingCount": 20,
+      "originSailingCount": 10,
+      "destinationSailingCount": 10,
+      "remoteAccessRecord": {
+        "recordId": "kumage_sagoshi_sagoshima_no_scheduled_public_bus_20260526",
+        "islandName": "佐合島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:05:00-07:00",
+        "sourceUrls": [
+          "https://wwwtb.mlit.go.jp/chugoku/content/000159201.pdf"
+        ],
+        "notes": [
+          "Chugoku transport bureau material lists Sagoshima's island transport as none.",
+          "No scheduled public bus is available to ingest for gameplay."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_008619",
+        "name": "田布施",
+        "distanceMeters": 9533
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_port_connector_batch3_official_bus_sour_ba9d91d5a2:9dd937d7a2a0",
+        "name": "佐賀港",
+        "distanceMeters": 2271
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "mlit_map_193_013_熊南総合事務組合_馬島_麻里府_佐合島_佐賀_001_out_001",
+          "operator": "熊南総合事務組合",
+          "originPort": "麻里府",
+          "destinationPort": "佐合島",
+          "departureHhmm": "07:05",
+          "arrivalHhmm": "07:31"
+        },
+        {
+          "sailingId": "mlit_map_193_013_熊南総合事務組合_馬島_麻里府_佐合島_佐賀_002_out_001",
+          "operator": "熊南総合事務組合",
+          "originPort": "佐合島",
+          "destinationPort": "佐賀",
+          "departureHhmm": "07:35",
+          "arrivalHhmm": "07:43"
+        },
+        {
+          "sailingId": "mlit_map_193_013_熊南総合事務組合_馬島_麻里府_佐合島_佐賀_002_back_001",
+          "operator": "熊南総合事務組合",
+          "originPort": "佐賀",
+          "destinationPort": "佐合島",
+          "departureHhmm": "07:50",
+          "arrivalHhmm": "07:58"
+        },
+        {
+          "sailingId": "mlit_map_193_013_熊南総合事務組合_馬島_麻里府_佐合島_佐賀_001_back_001",
+          "operator": "熊南総合事務組合",
+          "originPort": "佐合島",
+          "destinationPort": "麻里府",
+          "departureHhmm": "08:10",
+          "arrivalHhmm": "08:33"
+        },
+        {
+          "sailingId": "mlit_map_193_013_熊南総合事務組合_馬島_麻里府_佐合島_佐賀_001_out_002",
+          "operator": "熊南総合事務組合",
+          "originPort": "麻里府",
+          "destinationPort": "佐合島",
+          "departureHhmm": "10:20",
+          "arrivalHhmm": "10:41"
+        }
+      ],
+      "searchQueries": [
+        "佐合島 港 アクセス バス 時刻表",
+        "佐合島 フェリーターミナル 最寄り バス停",
+        "佐合島 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "初島港",
+      "coordinate": {
+        "lat": 35.039,
+        "lon": 139.171
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "small/remote island record hint",
+        "rail within 8203m",
+        "used by 20 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "富士急マリンリゾート"
+      ],
+      "playableSailingCount": 20,
+      "originSailingCount": 10,
+      "destinationSailingCount": 10,
+      "remoteAccessRecord": {
+        "recordId": "atami_hatsushima_no_scheduled_public_bus_20260526",
+        "islandName": "初島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:18:00-07:00",
+        "sourceUrls": [
+          "https://www.pica-resort.jp/hatsushima/about/access.html?wovn=en",
+          "https://hatsushima.or.jp/play/walk.html",
+          "https://www.atami-sagamiya.com/sightseeing/hatsushima/"
+        ],
+        "notes": [
+          "PICA Hatsushima and Hatsushima cooperative pages describe local movement as walking around the compact island.",
+          "Atami sightseeing material states Hatsushima has no taxi or route bus."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_005850",
+        "name": "網代",
+        "distanceMeters": 8203
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_port_connector_batch2_official_bus_sour_d625c4649f:c2c5e562603f",
+        "name": "修善寺駅",
+        "distanceMeters": 21111
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "hatsushima_atami_026_out_daily_001",
+          "operator": "富士急マリンリゾート",
+          "originPort": "熱海港",
+          "destinationPort": "初島港",
+          "departureHhmm": "07:30",
+          "arrivalHhmm": "08:00"
+        },
+        {
+          "sailingId": "hatsushima_atami_027_back_daily_001",
+          "operator": "富士急マリンリゾート",
+          "originPort": "初島港",
+          "destinationPort": "熱海港",
+          "departureHhmm": "08:00",
+          "arrivalHhmm": "08:30"
+        },
+        {
+          "sailingId": "hatsushima_atami_026_out_daily_002",
+          "operator": "富士急マリンリゾート",
+          "originPort": "熱海港",
+          "destinationPort": "初島港",
+          "departureHhmm": "08:40",
+          "arrivalHhmm": "09:10"
+        },
+        {
+          "sailingId": "hatsushima_atami_027_back_daily_002",
+          "operator": "富士急マリンリゾート",
+          "originPort": "初島港",
+          "destinationPort": "熱海港",
+          "departureHhmm": "09:20",
+          "arrivalHhmm": "09:50"
+        },
+        {
+          "sailingId": "hatsushima_atami_026_out_daily_003",
+          "operator": "富士急マリンリゾート",
+          "originPort": "熱海港",
+          "destinationPort": "初島港",
+          "departureHhmm": "10:00",
+          "arrivalHhmm": "10:30"
+        }
+      ],
+      "searchQueries": [
+        "初島港 港 アクセス バス 時刻表",
+        "初島港 フェリーターミナル 最寄り バス停",
+        "初島港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "佐久島東港",
+      "coordinate": {
+        "lat": 34.724,
+        "lon": 137.064
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "small/remote island record hint",
+        "rail within 7843m",
+        "bus stop within 8540m",
+        "used by 14 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "西尾市"
+      ],
+      "playableSailingCount": 14,
+      "originSailingCount": 7,
+      "destinationSailingCount": 7,
+      "remoteAccessRecord": {
+        "recordId": "nishio_sakushima_no_scheduled_public_bus_20260526",
+        "islandName": "佐久島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T17:48:00-07:00",
+        "sourceUrls": [
+          "https://www.mlit.go.jp/kokudoseisaku/chirit/content/001476558.pdf"
+        ],
+        "notes": [
+          "MLIT smart-island survey material for Sakushima says the island currently has no bus or taxi; it discusses alternative personal-mobility experiments."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_006659",
+        "name": "吉良吉田",
+        "distanceMeters": 7843
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:minamichitatown_communitybus_https_api_gtfs-data_jp_v2_organizations_m_638fda373e:1-290-2",
+        "name": "師崎東口",
+        "distanceMeters": 8540
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "nishio_sakushima_024_out_001",
+          "operator": "西尾市",
+          "originPort": "佐久島西港",
+          "destinationPort": "佐久島東港",
+          "departureHhmm": "06:50",
+          "arrivalHhmm": "06:55"
+        },
+        {
+          "sailingId": "nishio_sakushima_025_back_001",
+          "operator": "西尾市",
+          "originPort": "佐久島東港",
+          "destinationPort": "佐久島西港",
+          "departureHhmm": "07:00",
+          "arrivalHhmm": "07:07"
+        },
+        {
+          "sailingId": "nishio_sakushima_024_out_002",
+          "operator": "西尾市",
+          "originPort": "佐久島西港",
+          "destinationPort": "佐久島東港",
+          "departureHhmm": "08:00",
+          "arrivalHhmm": "08:05"
+        },
+        {
+          "sailingId": "nishio_sakushima_025_back_002",
+          "operator": "西尾市",
+          "originPort": "佐久島東港",
+          "destinationPort": "佐久島西港",
+          "departureHhmm": "08:30",
+          "arrivalHhmm": "08:37"
+        },
+        {
+          "sailingId": "nishio_sakushima_024_out_003",
+          "operator": "西尾市",
+          "originPort": "佐久島西港",
+          "destinationPort": "佐久島東港",
+          "departureHhmm": "09:50",
+          "arrivalHhmm": "09:55"
+        }
+      ],
+      "searchQueries": [
+        "佐久島東港 港 アクセス バス 時刻表",
+        "佐久島東港 フェリーターミナル 最寄り バス停",
+        "佐久島東港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "利島港",
+      "coordinate": {
+        "lat": 34.5323982,
+        "lon": 139.2810088
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "small/remote island record hint",
+        "used by 14 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "東海汽船",
+        "神新汽船"
+      ],
+      "playableSailingCount": 14,
+      "originSailingCount": 7,
+      "destinationSailingCount": 7,
+      "remoteAccessRecord": {
+        "recordId": "tokyo_toshima_no_scheduled_public_bus_20260526",
+        "islandName": "利島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:18:00-07:00",
+        "sourceUrls": [
+          "https://travelroad.co.jp/izu-tour/faq/7204-toshima-about/",
+          "https://niijimakogyo.com/sp/toshima/"
+        ],
+        "notes": [
+          "Travelroad and Niijima Kogyosho local guide pages state Toshima has no route bus or taxi; movement is essentially walking.",
+          "Rental car/bicycle is also not available, so there is no scheduled public bus dataset to collect."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_007218",
+        "name": "伊豆急下田",
+        "distanceMeters": 34899
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_type1_remote_port_oshima_official_bus_s_0bff6da08c:49d974a58e04",
+        "name": "元町港",
+        "distanceMeters": 25113
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "tokai_oshima_izu_500_011_out_001",
+          "operator": "東海汽船",
+          "originPort": "大島岡田港",
+          "destinationPort": "利島港",
+          "departureHhmm": "06:20",
+          "arrivalHhmm": "07:40"
+        },
+        {
+          "sailingId": "shinshin_shimoda_direct_500_004_out_001",
+          "operator": "神新汽船",
+          "originPort": "下田港",
+          "destinationPort": "利島港",
+          "departureHhmm": "09:30",
+          "arrivalHhmm": "14:40"
+        },
+        {
+          "sailingId": "shinshin_shimoda_izu_010_out_tuesday_friday_sunday_001",
+          "operator": "神新汽船",
+          "originPort": "下田港",
+          "destinationPort": "利島港",
+          "departureHhmm": "09:30",
+          "arrivalHhmm": "11:05"
+        },
+        {
+          "sailingId": "shinshin_shimoda_od_500_012_back_001",
+          "operator": "神新汽船",
+          "originPort": "利島港",
+          "destinationPort": "式根島野伏港",
+          "departureHhmm": "11:10",
+          "arrivalHhmm": "12:45"
+        },
+        {
+          "sailingId": "shinshin_shimoda_izu_012_out_tuesday_friday_sunday_002",
+          "operator": "神新汽船",
+          "originPort": "利島港",
+          "destinationPort": "新島港",
+          "departureHhmm": "11:10",
+          "arrivalHhmm": "12:10"
+        }
+      ],
+      "searchQueries": [
+        "利島港 港 アクセス バス 時刻表",
+        "利島港 フェリーターミナル 最寄り バス停",
+        "利島港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "朴島港",
+      "coordinate": {
+        "lat": 38.3286,
+        "lon": 141.1725
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "small/remote island record hint",
+        "rail within 5758m",
+        "bus stop within 8290m",
+        "used by 13 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "塩竈市"
+      ],
+      "playableSailingCount": 13,
+      "originSailingCount": 6,
+      "destinationSailingCount": 7,
+      "remoteAccessRecord": {
+        "recordId": "shiogama_urato_islands_no_scheduled_public_bus_20260526",
+        "islandName": "浦戸諸島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:05:00-07:00",
+        "sourceUrls": [
+          "https://urato-island.jp/tosen/",
+          "https://urato-island.jp/howtoenjoy/modelcourse01_2/",
+          "https://urato-island.jp/kisen/"
+        ],
+        "notes": [
+          "Official Urato Islands pages describe municipal ferry access, island-to-island call-up boats, and walking model courses.",
+          "The call-up island boat is not an ordinary scheduled bus and should stay in the ship/walk layer, not be promoted as playable bus."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_001110",
+        "name": "東名",
+        "distanceMeters": 5758
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:shichigahamatown_gururinko_https_api_gtfs-data_jp_v2_organizations_shi_6704efa7f1:18_01",
+        "name": "花渕",
+        "distanceMeters": 8290
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "shiogama_urato_008_out_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "寒風沢港",
+          "destinationPort": "朴島港",
+          "departureHhmm": "06:05",
+          "arrivalHhmm": "06:13"
+        },
+        {
+          "sailingId": "shiogama_urato_009_back_monday_to_saturday_001",
+          "operator": "塩竈市",
+          "originPort": "朴島港",
+          "destinationPort": "寒風沢港",
+          "departureHhmm": "06:15",
+          "arrivalHhmm": "06:23"
+        },
+        {
+          "sailingId": "shiogama_urato_008_out_daily_002",
+          "operator": "塩竈市",
+          "originPort": "寒風沢港",
+          "destinationPort": "朴島港",
+          "departureHhmm": "07:57",
+          "arrivalHhmm": "08:05"
+        },
+        {
+          "sailingId": "shiogama_urato_009_back_daily_002",
+          "operator": "塩竈市",
+          "originPort": "朴島港",
+          "destinationPort": "寒風沢港",
+          "departureHhmm": "08:10",
+          "arrivalHhmm": "08:18"
+        },
+        {
+          "sailingId": "shiogama_urato_008_out_daily_003",
+          "operator": "塩竈市",
+          "originPort": "寒風沢港",
+          "destinationPort": "朴島港",
+          "departureHhmm": "10:07",
+          "arrivalHhmm": "10:15"
+        }
+      ],
+      "searchQueries": [
+        "朴島港 港 アクセス バス 時刻表",
+        "朴島港 フェリーターミナル 最寄り バス停",
+        "朴島港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "走島港",
+      "coordinate": {
+        "lat": 34.348,
+        "lon": 133.403
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "small/remote island record hint",
+        "rail within 16166m",
+        "bus stop within 4443m",
+        "used by 12 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "走島汽船"
+      ],
+      "playableSailingCount": 12,
+      "originSailingCount": 6,
+      "destinationSailingCount": 6,
+      "remoteAccessRecord": {
+        "recordId": "fukuyama_hashirijima_no_scheduled_public_bus_20260526",
+        "islandName": "走島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:18:00-07:00",
+        "sourceUrls": [
+          "https://wwwtb.mlit.go.jp/chugoku/content/000320173.pdf"
+        ],
+        "notes": [
+          "Chugoku transport bureau material for the Tomo-Hashirijima route lists Hashirijima island transport as none.",
+          "No scheduled island bus is available to ingest for gameplay."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_007862",
+        "name": "福山",
+        "distanceMeters": 16166
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_port_connector_batch2_official_bus_sour_54533a15e6:4084d5be0bf4",
+        "name": "鞆港",
+        "distanceMeters": 4443
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "hashirijima_tomo_056_out_001",
+          "operator": "走島汽船",
+          "originPort": "走島港",
+          "destinationPort": "鞆港",
+          "departureHhmm": "06:45",
+          "arrivalHhmm": "07:10"
+        },
+        {
+          "sailingId": "hashirijima_tomo_057_back_001",
+          "operator": "走島汽船",
+          "originPort": "鞆港",
+          "destinationPort": "走島港",
+          "departureHhmm": "07:30",
+          "arrivalHhmm": "07:55"
+        },
+        {
+          "sailingId": "hashirijima_tomo_056_out_002",
+          "operator": "走島汽船",
+          "originPort": "走島港",
+          "destinationPort": "鞆港",
+          "departureHhmm": "08:20",
+          "arrivalHhmm": "08:45"
+        },
+        {
+          "sailingId": "hashirijima_tomo_057_back_002",
+          "operator": "走島汽船",
+          "originPort": "鞆港",
+          "destinationPort": "走島港",
+          "departureHhmm": "09:10",
+          "arrivalHhmm": "09:35"
+        },
+        {
+          "sailingId": "hashirijima_tomo_056_out_003",
+          "operator": "走島汽船",
+          "originPort": "走島港",
+          "destinationPort": "鞆港",
+          "departureHhmm": "10:20",
+          "arrivalHhmm": "10:45"
+        }
+      ],
+      "searchQueries": [
+        "走島港 港 アクセス バス 時刻表",
+        "走島港 フェリーターミナル 最寄り バス停",
+        "走島港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "男木",
+      "coordinate": {
+        "lat": 34.4210422,
+        "lon": 134.0541555
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "inside honshu_mainland_band",
+        "small/remote island record hint",
+        "rail within 7831m",
+        "bus stop within 5920m",
+        "used by 12 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "manual_verified:source coordinate is on 男木島; route context 雌雄島海運 高松-男木",
+      "coordinateDisplayName": "男木港",
+      "operatorContexts": [
+        "雌雄島海運"
+      ],
+      "playableSailingCount": 12,
+      "originSailingCount": 6,
+      "destinationSailingCount": 6,
+      "remoteAccessRecord": {
+        "recordId": "takamatsu_ogijima_no_scheduled_public_bus_20260526",
+        "islandName": "男木島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:05:00-07:00",
+        "sourceUrls": [
+          "https://meon.co.jp/ogijima",
+          "https://www.city.takamatsu.kagawa.jp/kurashi/shinotorikumi/machidukuri/sogotoshikoutu/kakuho_iji/rito/r5ritoukouro.files/R8betten.pdf"
+        ],
+        "notes": [
+          "Meon ferry tourism page states Ogijima has no bus and walking is the main way to move around.",
+          "Takamatsu route-improvement material says no public transport operates on Ogijima."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_008162",
+        "name": "高松築港",
+        "distanceMeters": 7831
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_port_connector_official_bus_source_json_4209e5dd44:af745deac37f",
+        "name": "つつじ荘",
+        "distanceMeters": 5920
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out_001",
+          "operator": "雌雄島海運",
+          "originPort": "男木",
+          "destinationPort": "高松",
+          "departureHhmm": "07:00",
+          "arrivalHhmm": "07:40"
+        },
+        {
+          "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back_001",
+          "operator": "雌雄島海運",
+          "originPort": "高松",
+          "destinationPort": "男木",
+          "departureHhmm": "08:00",
+          "arrivalHhmm": "08:40"
+        },
+        {
+          "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out_002",
+          "operator": "雌雄島海運",
+          "originPort": "男木",
+          "destinationPort": "高松",
+          "departureHhmm": "09:00",
+          "arrivalHhmm": "09:40"
+        },
+        {
+          "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back_002",
+          "operator": "雌雄島海運",
+          "originPort": "高松",
+          "destinationPort": "男木",
+          "departureHhmm": "10:00",
+          "arrivalHhmm": "10:40"
+        },
+        {
+          "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out_003",
+          "operator": "雌雄島海運",
+          "originPort": "男木",
+          "destinationPort": "高松",
+          "departureHhmm": "11:00",
+          "arrivalHhmm": "11:40"
+        }
+      ],
+      "searchQueries": [
+        "男木 港 アクセス バス 時刻表",
+        "男木 フェリーターミナル 最寄り バス停",
+        "男木 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "小浜港",
+      "coordinate": {
+        "lat": 24.3481468,
+        "lon": 123.9984943
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "bus stop within 7262m",
+        "used by 6 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "安栄観光"
+      ],
+      "playableSailingCount": 6,
+      "originSailingCount": 3,
+      "destinationSailingCount": 3,
+      "remoteAccessRecord": {
+        "recordId": "taketomi_town_kohama_no_scheduled_public_bus_20260526",
+        "islandName": "小浜島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:22:00-07:00",
+        "sourceUrls": [
+          "https://www.isigakizima.net/ritou/kohama/",
+          "https://oki-raku.net/blog/kohamajima-accses/",
+          "https://www.mapple.net/spot/47011926/"
+        ],
+        "notes": [
+          "Local travel guides state Kohamajima has no route bus or taxi; movement is by rental vehicle, bicycle, hotel shuttle, or reserved sightseeing bus.",
+          "The available Kohama Kotsu bus is a reserved sightseeing bus tour, not an ordinary scheduled public bus suitable for gameplay ingestion."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_010138",
+        "name": "那覇空港",
+        "distanceMeters": 421484
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_remote_small_island_bus_source_json_iri_7e175698d5:2b6e61475f54",
+        "name": "由布水牛車乗場",
+        "distanceMeters": 7262
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "anei_ishigaki_yaeyama_088_out_daily_1",
+          "operator": "安栄観光",
+          "originPort": "石垣港",
+          "destinationPort": "小浜港",
+          "departureHhmm": "09:15",
+          "arrivalHhmm": "09:45"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_089_back_daily_1",
+          "operator": "安栄観光",
+          "originPort": "小浜港",
+          "destinationPort": "石垣港",
+          "departureHhmm": "09:55",
+          "arrivalHhmm": "10:25"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_088_out_daily_2",
+          "operator": "安栄観光",
+          "originPort": "石垣港",
+          "destinationPort": "小浜港",
+          "departureHhmm": "14:50",
+          "arrivalHhmm": "15:20"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_089_back_daily_2",
+          "operator": "安栄観光",
+          "originPort": "小浜港",
+          "destinationPort": "石垣港",
+          "departureHhmm": "15:30",
+          "arrivalHhmm": "16:00"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_088_out_daily_3",
+          "operator": "安栄観光",
+          "originPort": "石垣港",
+          "destinationPort": "小浜港",
+          "departureHhmm": "16:20",
+          "arrivalHhmm": "16:50"
+        }
+      ],
+      "searchQueries": [
+        "小浜港 港 アクセス バス 時刻表",
+        "小浜港 フェリーターミナル 最寄り バス停",
+        "小浜港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "黒島港",
+      "coordinate": {
+        "lat": 24.2568787,
+        "lon": 124.0033922
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "small/remote island record hint",
+        "used by 6 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "安栄観光"
+      ],
+      "playableSailingCount": 6,
+      "originSailingCount": 3,
+      "destinationSailingCount": 3,
+      "remoteAccessRecord": {
+        "recordId": "taketomi_town_kuroshima_yaeyama_no_scheduled_public_bus_20260526",
+        "islandName": "黒島（八重山）",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T17:48:00-07:00",
+        "sourceUrls": [
+          "https://painusima.com/access/",
+          "https://skyticket.jp/ferry/yaeyama_kanko_ferry/kuroshima/"
+        ],
+        "notes": [
+          "竹富町観光協会 lists rental bicycle, rental motorcycle, and rental car for Kuroshima local movement, not route bus.",
+          "Skyticket's Kuroshima terminal guide says Kuroshima has no fixed-timetable route bus."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_010142",
+        "name": "赤嶺",
+        "distanceMeters": 426234
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_remote_small_island_bus_source_json_tak_a3e069b54d:d2572e52a451",
+        "name": "集落",
+        "distanceMeters": 11573
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "anei_ishigaki_yaeyama_090_out_daily_1",
+          "operator": "安栄観光",
+          "originPort": "石垣港",
+          "destinationPort": "黒島港",
+          "departureHhmm": "07:30",
+          "arrivalHhmm": "08:05"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_091_back_daily_1",
+          "operator": "安栄観光",
+          "originPort": "黒島港",
+          "destinationPort": "石垣港",
+          "departureHhmm": "08:25",
+          "arrivalHhmm": "09:00"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_090_out_daily_2",
+          "operator": "安栄観光",
+          "originPort": "石垣港",
+          "destinationPort": "黒島港",
+          "departureHhmm": "13:30",
+          "arrivalHhmm": "14:05"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_091_back_daily_2",
+          "operator": "安栄観光",
+          "originPort": "黒島港",
+          "destinationPort": "石垣港",
+          "departureHhmm": "14:10",
+          "arrivalHhmm": "14:45"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_090_out_daily_3",
+          "operator": "安栄観光",
+          "originPort": "石垣港",
+          "destinationPort": "黒島港",
+          "departureHhmm": "15:30",
+          "arrivalHhmm": "16:05"
+        }
+      ],
+      "searchQueries": [
+        "黒島港 港 アクセス バス 時刻表",
+        "黒島港 フェリーターミナル 最寄り バス停",
+        "黒島港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "波照間港",
+      "coordinate": {
+        "lat": 24.058,
+        "lon": 123.774
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "used by 6 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "安栄観光"
+      ],
+      "playableSailingCount": 6,
+      "originSailingCount": 3,
+      "destinationSailingCount": 3,
+      "remoteAccessRecord": {
+        "recordId": "taketomi_town_hateruma_no_scheduled_public_bus_20260526",
+        "islandName": "波照間島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T17:48:00-07:00",
+        "sourceUrls": [
+          "https://painusima.com/access/",
+          "https://oki-raku.net/blog/hateruma-access/",
+          "https://skyticket.jp/guide/480686/"
+        ],
+        "notes": [
+          "竹富町観光協会 lists rental bicycle, rental car, and rental motorcycle for Hateruma local movement, not route bus.",
+          "Oki-raku and Skyticket travel guides both state Hateruma has no route bus/taxi and visitors use rental vehicles or walking."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_010142",
+        "name": "赤嶺",
+        "distanceMeters": 457643
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_remote_small_island_bus_source_json_iri_7e175698d5:af5f554e5a56",
+        "name": "豊原",
+        "distanceMeters": 24168
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "anei_ishigaki_yaeyama_096_out_daily_1",
+          "operator": "安栄観光",
+          "originPort": "石垣港",
+          "destinationPort": "波照間港",
+          "departureHhmm": "08:00",
+          "arrivalHhmm": "09:15"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_097_back_daily_1",
+          "operator": "安栄観光",
+          "originPort": "波照間港",
+          "destinationPort": "石垣港",
+          "departureHhmm": "09:50",
+          "arrivalHhmm": "11:05"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_096_out_daily_2",
+          "operator": "安栄観光",
+          "originPort": "石垣港",
+          "destinationPort": "波照間港",
+          "departureHhmm": "11:45",
+          "arrivalHhmm": "13:00"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_097_back_daily_2",
+          "operator": "安栄観光",
+          "originPort": "波照間港",
+          "destinationPort": "石垣港",
+          "departureHhmm": "13:00",
+          "arrivalHhmm": "14:15"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_096_out_daily_3",
+          "operator": "安栄観光",
+          "originPort": "石垣港",
+          "destinationPort": "波照間港",
+          "departureHhmm": "15:00",
+          "arrivalHhmm": "16:15"
+        }
+      ],
+      "searchQueries": [
+        "波照間港 港 アクセス バス 時刻表",
+        "波照間港 フェリーターミナル 最寄り バス停",
+        "波照間港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "母島沖港",
+      "coordinate": {
+        "lat": 26.63883,
+        "lon": 142.15968
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "remote island name hint",
+        "small/remote island record hint",
+        "used by 6 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "伊豆諸島開発"
+      ],
+      "playableSailingCount": 6,
+      "originSailingCount": 3,
+      "destinationSailingCount": 3,
+      "remoteAccessRecord": {
+        "recordId": "ogasawara_hahajima_no_scheduled_public_bus_20260526",
+        "islandName": "母島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T18:18:00-07:00",
+        "sourceUrls": [
+          "https://www.visitogasawara.com/wp/wp-content/uploads/2021/05/86f6f9bd45d4f0ec4c456fb98c3d82a3.pdf"
+        ],
+        "notes": [
+          "Ogasawara Hahajima tourism material states Hahajima has no bus or taxi.",
+          "Paid local transport is not an ordinary scheduled bus and is not promoted as playable bus."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_007218",
+        "name": "伊豆急下田",
+        "distanceMeters": 945351
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:ogasawaravillage_o_https_api_gtfs-data_jp_v2_organizations_ogasawaravi_7fa6f19eb5:20_01",
+        "name": "小港海岸",
+        "distanceMeters": 47006
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "izu_shoto_chichijima_hahajima_021_back_001",
+          "operator": "伊豆諸島開発",
+          "originPort": "母島沖港",
+          "destinationPort": "父島二見港",
+          "departureHhmm": "07:30",
+          "arrivalHhmm": "09:30"
+        },
+        {
+          "sailingId": "izu_shoto_chichijima_hahajima_020_out_001",
+          "operator": "伊豆諸島開発",
+          "originPort": "父島二見港",
+          "destinationPort": "母島沖港",
+          "departureHhmm": "07:30",
+          "arrivalHhmm": "09:30"
+        },
+        {
+          "sailingId": "izu_shoto_chichijima_hahajima_021_back_002",
+          "operator": "伊豆諸島開発",
+          "originPort": "母島沖港",
+          "destinationPort": "父島二見港",
+          "departureHhmm": "12:00",
+          "arrivalHhmm": "14:00"
+        },
+        {
+          "sailingId": "izu_shoto_chichijima_hahajima_020_out_002",
+          "operator": "伊豆諸島開発",
+          "originPort": "父島二見港",
+          "destinationPort": "母島沖港",
+          "departureHhmm": "12:00",
+          "arrivalHhmm": "14:00"
+        },
+        {
+          "sailingId": "izu_shoto_chichijima_hahajima_021_back_003",
+          "operator": "伊豆諸島開発",
+          "originPort": "母島沖港",
+          "destinationPort": "父島二見港",
+          "departureHhmm": "14:00",
+          "arrivalHhmm": "16:00"
+        }
+      ],
+      "searchQueries": [
+        "母島沖港 港 アクセス バス 時刻表",
+        "母島沖港 フェリーターミナル 最寄り バス停",
+        "母島沖港 連絡バス 公式"
+      ]
+    },
+    {
+      "portName": "鳩間港",
+      "coordinate": {
+        "lat": 24.4664744,
+        "lon": 123.8205414
+      },
+      "category": "no_collection_recorded",
+      "reasons": [
+        "remote/small-island local access reviewed: no ordinary scheduled public bus",
+        "bus stop within 5167m",
+        "used by 4 playable sailings"
+      ],
+      "coordinateIdentityStatus": "ok",
+      "coordinateIdentityReasons": [],
+      "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI",
+      "coordinateDisplayName": null,
+      "operatorContexts": [
+        "安栄観光"
+      ],
+      "playableSailingCount": 4,
+      "originSailingCount": 2,
+      "destinationSailingCount": 2,
+      "remoteAccessRecord": {
+        "recordId": "taketomi_town_hatoma_no_scheduled_public_bus_20260526",
+        "islandName": "鳩間島",
+        "status": "no_scheduled_public_bus",
+        "reviewedAt": "2026-05-26T17:48:00-07:00",
+        "sourceUrls": [
+          "https://painusima.com/access/",
+          "https://iriomote-tour.com/column/hatoma-bicyclerental"
+        ],
+        "notes": [
+          "竹富町観光協会 describes Hatoma island local movement as walking or rental bicycle and does not list route-bus service.",
+          "Iriomote Tour states Hatoma has no bus or taxi; it recommends walking or rental bicycle."
+        ]
+      },
+      "nearestRail": {
+        "stationGroupId": "SG_N02G_010138",
+        "name": "那覇空港",
+        "distanceMeters": 430935
+      },
+      "nearestBusStop": {
+        "busStopId": "bus:stop:official:official_port_connector_bus_v5_remote_small_island_bus_source_json_iri_10fece2b92:9c308d5e85e8",
+        "name": "中野",
+        "distanceMeters": 5167
+      },
+      "sampleSailings": [
+        {
+          "sailingId": "anei_ishigaki_yaeyama_098_out_daily_1",
+          "operator": "安栄観光",
+          "originPort": "石垣港",
+          "destinationPort": "鳩間港",
+          "departureHhmm": "08:30",
+          "arrivalHhmm": "09:15"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_099_back_daily_1",
+          "operator": "安栄観光",
+          "originPort": "鳩間港",
+          "destinationPort": "石垣港",
+          "departureHhmm": "09:45",
+          "arrivalHhmm": "10:30"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_098_out_daily_2",
+          "operator": "安栄観光",
+          "originPort": "石垣港",
+          "destinationPort": "鳩間港",
+          "departureHhmm": "16:30",
+          "arrivalHhmm": "17:15"
+        },
+        {
+          "sailingId": "anei_ishigaki_yaeyama_099_back_daily_2",
+          "operator": "安栄観光",
+          "originPort": "鳩間港",
+          "destinationPort": "石垣港",
+          "departureHhmm": "17:25",
+          "arrivalHhmm": "18:10"
+        }
+      ],
+      "searchQueries": [
+        "鳩間港 港 アクセス バス 時刻表",
+        "鳩間港 フェリーターミナル 最寄り バス停",
+        "鳩間港 連絡バス 公式"
       ]
     }
   ]
