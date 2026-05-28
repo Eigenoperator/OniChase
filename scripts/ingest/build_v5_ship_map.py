@@ -17,6 +17,12 @@ SOURCE_FILES = [
 ]
 OUT = Path("docs/data/v5_ship_map.geojson")
 PORT_COORDINATE_OVERRIDES = Path("data/v5_ship_port_coordinates.json")
+PORT_ALIASES = {
+    # MLIT/source inventories sometimes use bare city/port names.  Keep the
+    # gameplay node at the real ferry terminal name instead of creating a third
+    # Takamatsu node beside 高松港 and 高松東港.
+    "高松": "高松港",
+}
 
 
 def line_for(origin: dict, destination: dict) -> list[list[float]]:
@@ -58,6 +64,20 @@ def port_with_override(name: str, port: dict, overrides: dict[str, dict]) -> dic
     return merged
 
 
+def canonical_port_name(name: str) -> str:
+    return PORT_ALIASES.get(name, name)
+
+
+def canonical_ports(source_ports: dict[str, dict], overrides: dict[str, dict]) -> dict[str, dict]:
+    ports: dict[str, dict] = {}
+    for raw_name, raw_port in source_ports.items():
+        name = canonical_port_name(raw_name)
+        port = port_with_override(name, raw_port, overrides)
+        if name not in ports:
+            ports[name] = port
+    return ports
+
+
 def main() -> None:
     features = []
     port_seen = set()
@@ -72,10 +92,7 @@ def main() -> None:
         source = json.loads(path.read_text(encoding="utf-8"))
         sources.append(str(path))
         route_group_count += int(source.get("summary", {}).get("routeGroupCount") or 1)
-        ports = {
-            name: port_with_override(name, port, port_overrides)
-            for name, port in (source.get("ports", {}) or {}).items()
-        }
+        ports = canonical_ports(source.get("ports", {}) or {}, port_overrides)
         for name, port in ports.items():
             if name in port_seen:
                 continue
@@ -100,8 +117,10 @@ def main() -> None:
         for trip in source.get("trips", []):
             trips_by_route.setdefault(trip["routeId"], []).append(trip)
         for route in source.get("routes", []):
-            origin = ports[route["origin"]]
-            destination = ports[route["destination"]]
+            origin_name = canonical_port_name(route["origin"])
+            destination_name = canonical_port_name(route["destination"])
+            origin = ports[origin_name]
+            destination = ports[destination_name]
             route_trips = trips_by_route.get(route["routeId"], [])
             service_patterns = route.get("servicePatterns") or []
             fare = route.get("fare") or {}
@@ -118,8 +137,8 @@ def main() -> None:
                         "routeName": route["routeName"],
                         "operator": route["operator"],
                         "routeGroupId": route.get("routeGroupId"),
-                        "origin": route["origin"],
-                        "destination": route["destination"],
+                        "origin": origin_name,
+                        "destination": destination_name,
                         "distanceKm": route.get("distanceKm"),
                         "tripCount": len(route_trips),
                         "servicePatternCount": len(service_patterns),
