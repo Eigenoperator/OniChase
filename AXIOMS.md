@@ -37,6 +37,7 @@
 - Any stable project-wide workflow, naming, documentation, backup, or coordination rule from Scorp must be promoted into `AXIOMS.md`.
 - Do not leave system-level rules only in chat context.
 - Talk with Scorp in Chinese by default. Use English only where code, commands, file names, commit messages, technical identifiers, or source text make English clearer.
+- At the end of every work turn, tell Scorp the concrete next step. If the work is fully complete, still state the best next optional direction or the next maintenance check.
 
 ## 6. Environment Isolation
 
