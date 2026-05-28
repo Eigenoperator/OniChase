@@ -92,7 +92,7 @@ Use `python scripts/ingest/audit_v5_ship_port_access_priority.py --light-refresh
 
 ## Blockers
 - Raw MLIT N02-2024 source files are local-only and ignored by git; regenerated v4 artifacts require those local files or a documented download step.
-- Large collection caches remain local-only and should not be committed.
+- Large collection caches remain local-only and should not be committed. Existing tracked V5 bus bundle gzip files are about 75.7 MiB and already above GitHub's recommended 50 MiB threshold; future generated artifacts above 50 MiB need an explicit Git LFS / release artifact / local rebuild decision before ordinary Git commit.
 
 ## Decisions
 - [2026-04-07] GIS-first Shinkansen became the main `v2`; old prototypes stay archived.
@@ -124,3 +124,4 @@ Use `python scripts/ingest/audit_v5_ship_port_access_priority.py --light-refresh
 - Final light global ship-port consistency pass is green. Removed the empty legacy `remote_access_review_pending` batch record (`portNames: []`); remote access records now have 88 records, 0 pending-like records, 21 `official_island_bus_source_found`, and 67 `no_scheduled_public_bus`. Ship access light refresh reports `remainingActionablePorts: 0`; readiness/runtime/quality remain green.
 - V5 airport access coverage is currently complete at the source/runtime access-audit layer: `airportClassCoveredCount: 75`, `documentedNoPublicBusCount: 1`, `undocumentedNoNearbyStopCount: 0`. KTD / 北大東空港 remains intentionally no-bus with cross-checked public access sources.
 - V5 flight-bus interaction audit passes locally: `scripts/tests/v5_airport_bus_flight_link_audit.js --page-url http://127.0.0.1:8765/docs/v5.html` returned `failureCount: 0` for sample airports HND, NRT, KIX, FUK, CTS, TAK, NKM, and KMQ, with targeted KMQ bus-access planning and 0 console messages.
+- Added `docs/GIT_LARGE_FILE_POLICY.md` and expanded `.gitignore` for local source caches/release artifacts after GitHub warned that tracked V5 bus bundle gzip files are about 75.7 MiB. Current policy is forward-looking only: do not rewrite history without explicit instruction; do not add new >50 MiB generated artifacts to ordinary Git without a storage decision.

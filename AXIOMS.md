@@ -67,6 +67,8 @@
 - When writing or backfilling a diary, also check whether the current project state should be committed and synced.
 - If diary-time sync does not happen, record the reason immediately in `STATUS.md` or the daily `memory` file as an explicit blocker.
 - Prefer syncing stable control files, scripts, docs, and selected experiment artifacts, not caches or third-party dependencies.
+- Do not add new generated runtime artifacts larger than 50 MiB to ordinary Git without an explicit storage decision. Use Git LFS, release artifacts, or a documented local rebuild path instead. Existing large tracked files must not be history-rewritten unless Scorp explicitly asks for that migration.
+- Before committing generated artifacts larger than 25 MiB, run a tracked-file size check and record the storage decision if the artifact remains in ordinary Git. See `docs/GIT_LARGE_FILE_POLICY.md`.
 
 ## 10. Rule Violations Must Be Fixed Systemically
 
