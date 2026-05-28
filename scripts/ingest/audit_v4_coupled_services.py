@@ -208,10 +208,14 @@ def decode_compact_timetable(payload: dict[str, Any]) -> list[dict[str, Any]]:
     service_names = payload.get("serviceNames", [])
     display_names = payload.get("displayNames", [])
     headsigns = payload.get("headsigns", [])
+    route_names = payload.get("routeNames", [])
+    coupled_route_names = payload.get("coupledRouteNames", [])
+    stop_encoding = payload.get("stopEncoding") or "station-arrival-departure-routes-v1"
     trips: list[dict[str, Any]] = []
     for row in payload.get("trips", []):
         display_name_index = row[6] if len(row) > 6 else 0
         headsign_index = row[7] if len(row) > 7 else 0
+        route_name_index = row[8] if len(row) > 8 else 0
         trips.append(
             {
                 "id": row[0],
@@ -220,6 +224,12 @@ def decode_compact_timetable(payload: dict[str, Any]) -> list[dict[str, Any]]:
                 "serviceNumber": row[3] or "",
                 "displayName": display_names[display_name_index] if display_name_index < len(display_names) else "",
                 "headsign": headsigns[headsign_index] if headsign_index < len(headsigns) else "",
+                "routeName": route_names[route_name_index] if route_name_index < len(route_names) else "",
+                "coupledRouteNames": [
+                    coupled_route_names[index]
+                    for index in (row[9] if len(row) > 9 else []) or []
+                    if isinstance(index, int) and index < len(coupled_route_names)
+                ],
                 "lineTrace": [
                     {
                         "fromSequence": trace[0],
@@ -228,20 +238,52 @@ def decode_compact_timetable(payload: dict[str, Any]) -> list[dict[str, Any]]:
                     }
                     for trace in (row[5] if len(row) > 5 else []) or []
                 ],
-                "stopTimes": [
-                    {
-                        "sequence": index + 1,
-                        "stationGroupId": station_group_ids[stop[0]] if stop[0] < len(station_group_ids) else "",
-                        "arrivalTimeSec": stop[1],
-                        "departureTimeSec": stop[2],
-                        "displayRouteId": route_ids[stop[3]] if len(stop) > 3 and stop[3] is not None and stop[3] < len(route_ids) else "",
-                        "incomingRouteId": route_ids[stop[5]] if len(stop) > 5 and stop[5] is not None and stop[5] < len(route_ids) else "",
-                    }
-                    for index, stop in enumerate(row[4] or [])
-                ],
+                "stopTimes": decode_compact_stops(row, station_group_ids, route_ids, stop_encoding),
             }
         )
     return trips
+
+
+def decode_compact_stops(row: list[Any], station_group_ids: list[str], route_ids: list[str], stop_encoding: str) -> list[dict[str, Any]]:
+    stops = row[4] or []
+    trip_route_index = row[1]
+
+    def route_id(index: Any) -> str:
+        return route_ids[index] if isinstance(index, int) and index < len(route_ids) else ""
+
+    decoded: list[dict[str, Any]] = []
+    for index, stop in enumerate(stops):
+        if stop_encoding == "station-arrival-departure-route-overrides-v2":
+            arrival = stop[1]
+            departure = arrival if len(stop) <= 2 or stop[2] is None else stop[2]
+            decoded.append(
+                {
+                    "sequence": index + 1,
+                    "stationGroupId": station_group_ids[stop[0]] if stop[0] < len(station_group_ids) else "",
+                    "arrivalTimeSec": arrival,
+                    "departureTimeSec": departure,
+                    "displayRouteId": route_id(stop[3] if len(stop) > 3 and stop[3] is not None else trip_route_index),
+                    "outgoingRouteId": route_id(stop[4] if len(stop) > 4 and stop[4] is not None else trip_route_index)
+                    if index + 1 < len(stops)
+                    else "",
+                    "incomingRouteId": route_id(stop[5] if len(stop) > 5 and stop[5] is not None else trip_route_index)
+                    if index > 0
+                    else "",
+                }
+            )
+            continue
+        decoded.append(
+            {
+                "sequence": index + 1,
+                "stationGroupId": station_group_ids[stop[0]] if stop[0] < len(station_group_ids) else "",
+                "arrivalTimeSec": stop[1],
+                "departureTimeSec": stop[2],
+                "displayRouteId": route_id(stop[3]) if len(stop) > 3 else "",
+                "outgoingRouteId": route_id(stop[4]) if len(stop) > 4 else "",
+                "incomingRouteId": route_id(stop[5]) if len(stop) > 5 else "",
+            }
+        )
+    return decoded
 
 
 def service_label(trip: dict[str, Any]) -> str:

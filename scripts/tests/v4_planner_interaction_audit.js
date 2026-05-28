@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const fs = require('fs');
 const { chromium } = require('playwright');
 
 const MAPLIBRE_STUB = `
@@ -312,7 +313,9 @@ async function main() {
   try {
     const result = await auditPlannerInteractions(page);
     result.consoleMessages = consoleMessages;
-    console.log(JSON.stringify(result, null, 2));
+    const json = JSON.stringify(result, null, 2);
+    if (args.output && args.output !== true) fs.writeFileSync(args.output, `${json}\n`);
+    console.log(json);
     if (!result.ok || consoleMessages.some((message) => message.startsWith('pageerror:'))) process.exitCode = 1;
   } finally {
     await browser.close();

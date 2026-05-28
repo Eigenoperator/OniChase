@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const fs = require('fs');
 const { chromium } = require('playwright');
 
 const MAPLIBRE_STUB = `
@@ -367,7 +368,9 @@ async function auditSparseRouteChoices(page, auditOptions) {
   try {
     const result = await auditSparseRouteChoices(page, auditOptions);
     result.loadTimings = loadTimings;
-    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    const json = JSON.stringify(result, null, 2);
+    process.stdout.write(`${json}\n`);
+    if (args.output && args.output !== true) fs.writeFileSync(args.output, `${json}\n`);
     if (result.anomalyCount) process.exitCode = 1;
   } finally {
     await browser.close();

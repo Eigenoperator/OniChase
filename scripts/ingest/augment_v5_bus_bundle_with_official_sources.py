@@ -682,14 +682,24 @@ def route_stop_coordinate_index(route: dict[str, Any]) -> dict[str, dict[str, An
         lat = stop.get("lat")
         lon = stop.get("lon")
         if name and isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
-            index[normalize_stop_name(name)] = {"name": name, "lat": float(lat), "lon": float(lon), "source": "official_route_stop_coordinate"}
+            index[normalize_stop_name(name)] = {
+                "name": name,
+                "lat": float(lat),
+                "lon": float(lon),
+                "source": stop.get("coordinateSource") or "official_route_stop_coordinate",
+            }
     for timetable in route.get("timetables") or []:
         for stop in timetable.get("stops") or []:
             name = str(stop.get("name") or "").strip()
             lat = stop.get("lat")
             lon = stop.get("lon")
             if name and isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
-                index[normalize_stop_name(name)] = {"name": name, "lat": float(lat), "lon": float(lon), "source": "official_timetable_stop_coordinate"}
+                index[normalize_stop_name(name)] = {
+                    "name": name,
+                    "lat": float(lat),
+                    "lon": float(lon),
+                    "source": stop.get("coordinateSource") or "official_timetable_stop_coordinate",
+                }
     return index
 
 
@@ -708,11 +718,21 @@ def normalize_service_days(value: Any) -> tuple[str, ...]:
             return days
     if isinstance(value, str):
         lowered = value.strip().lower()
+        if lowered in {"monday_to_saturday", "mon_to_sat", "weekday_plus_saturday"}:
+            return ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday")
         if lowered in {"weekday", "weekdays"}:
+            return ("monday", "tuesday", "wednesday", "thursday", "friday")
+        if lowered.startswith("weekday_") or "_weekday_" in lowered or "weekday" in lowered:
             return ("monday", "tuesday", "wednesday", "thursday", "friday")
         if lowered in {"weekend", "weekends", "holiday", "holidays"}:
             return ("saturday", "sunday")
+        if "weekend" in lowered:
+            return ("saturday", "sunday")
         if lowered in {"daily", "all"}:
+            return tuple(DAYS)
+        if lowered.startswith("daily_") or "daily" in lowered:
+            return tuple(DAYS)
+        if lowered in {"seasonal", "seasonal_variants"}:
             return tuple(DAYS)
     return tuple(DAYS)
 
@@ -720,6 +740,73 @@ def normalize_service_days(value: Any) -> tuple[str, ...]:
 def make_service_calendar_id(feed_key: str, service_start: str, service_end: str, service_days: tuple[str, ...]) -> str:
     day_key = "".join(day[:2] for day in service_days)
     return f"bus:calendar:official:{feed_key}:{service_start}:{service_end}:{day_key}"
+
+
+def existing_route_stop_indexes(bundle: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], dict[str, set[str]]]:
+    stop_by_id = {str(stop.get("busStopId")): stop for stop in bundle.get("stops") or [] if stop.get("busStopId")}
+    trip_route_by_id: dict[str, str] = {}
+    for trip in bundle.get("trips") or []:
+        route_id = trip.get("busRouteId")
+        trip_id = trip.get("busTripId")
+        if route_id and trip_id:
+            trip_route_by_id[str(trip_id)] = str(route_id)
+
+    stop_ids_by_route: dict[str, set[str]] = defaultdict(set)
+    for stop_time in bundle.get("stopTimes") or []:
+        trip_id = str(stop_time.get("busTripId") or "")
+        stop_id = stop_time.get("busStopId")
+        if not trip_id or not stop_id:
+            continue
+        route_id = trip_route_by_id.get(trip_id)
+        if route_id:
+            stop_ids_by_route[route_id].add(str(stop_id))
+    return stop_by_id, stop_ids_by_route
+
+
+def update_existing_official_route_coordinates(
+    *,
+    bundle: dict[str, Any],
+    route_id: str,
+    route: dict[str, Any],
+    path: Path,
+    stop_by_id: dict[str, dict[str, Any]],
+    stop_ids_by_route: dict[str, set[str]],
+) -> dict[str, Any]:
+    source_coords = route_stop_coordinate_index(route)
+    if not source_coords:
+        return {"updatedStopIds": [], "staleCoordinateStopCount": 0}
+
+    ref = source_ref(path, route)
+    updated_stop_ids = []
+    stale_coordinate_stops = []
+    candidate_stop_ids = stop_ids_by_route.get(route_id) or set()
+    for stop_id in candidate_stop_ids:
+        stop = stop_by_id.get(stop_id)
+        if not stop:
+            continue
+        node = source_coords.get(normalize_stop_name(stop.get("name")))
+        if not node:
+            continue
+        old_lat = stop.get("lat")
+        old_lon = stop.get("lon")
+        new_lat = node["lat"]
+        new_lon = node["lon"]
+        if not isinstance(old_lat, (int, float)) or not isinstance(old_lon, (int, float)):
+            stale_coordinate_stops.append(stop.get("name") or stop_id)
+        elif abs(float(old_lat) - new_lat) > 1e-7 or abs(float(old_lon) - new_lon) > 1e-7:
+            stale_coordinate_stops.append(stop.get("name") or stop_id)
+        else:
+            continue
+        stop["lat"] = new_lat
+        stop["lon"] = new_lon
+        stop["sourceRefs"] = [ref | {"coordinateSource": node.get("source") or ""}]
+        updated_stop_ids.append(stop_id)
+
+    return {
+        "updatedStopIds": sorted(set(updated_stop_ids)),
+        "staleCoordinateStopCount": len(stale_coordinate_stops),
+        "updatedStopNames": sorted(set(str(name) for name in stale_coordinate_stops)),
+    }
 
 
 def append_official_route(
@@ -730,6 +817,8 @@ def append_official_route(
     resolver: StopResolver,
     service_date: str,
     max_unresolved_stops: int,
+    stop_by_id: dict[str, dict[str, Any]],
+    stop_ids_by_route: dict[str, set[str]],
 ) -> dict[str, Any]:
     trips = flatten_route_trips(route)
     if not trips:
@@ -742,13 +831,24 @@ def append_official_route(
     feed_key = stable_slug(feed_kind, path.name, route_code or route.get("routeName"))
     route_id = f"bus:route:official:{feed_key}"
     if any(existing.get("busRouteId") == route_id for existing in bundle.get("routes") or []):
+        update = update_existing_official_route_coordinates(
+            bundle=bundle,
+            route_id=route_id,
+            route=route,
+            path=path,
+            stop_by_id=stop_by_id,
+            stop_ids_by_route=stop_ids_by_route,
+        )
         return {
-            "status": "skipped_existing_official_route",
+            "status": "updated_existing_official_route_coordinates" if update["updatedStopIds"] else "skipped_existing_official_route",
             "operatorName": route.get("operatorName") or "",
             "airportIata": route.get("airportIata") or "",
             "routeCode": route_code,
             "routeName": route.get("routeName") or "",
             "tripCount": len(trips),
+            "updatedStopCount": len(update["updatedStopIds"]),
+            "updatedStopIds": update["updatedStopIds"],
+            "updatedStopNames": update.get("updatedStopNames", []),
         }
 
     source_coords = route_stop_coordinate_index(route)
@@ -1006,6 +1106,7 @@ def main() -> int:
         geocode_sleep_seconds=args.geocode_sleep_seconds,
         max_anchor_meters=args.max_anchor_meters,
     )
+    stop_by_id, stop_ids_by_route = existing_route_stop_indexes(bundle)
 
     source_paths = args.source or sorted(ROOT.glob("data/v5_*official*_bus_source.json")) + sorted(ROOT.glob("data/v5_kagoshima_airport_official_bus_tables.json"))
     route_audits = []
@@ -1039,12 +1140,18 @@ def main() -> int:
                     resolver=resolver,
                     service_date=args.service_date,
                     max_unresolved_stops=args.max_unresolved_stops,
+                    stop_by_id=stop_by_id,
+                    stop_ids_by_route=stop_ids_by_route,
                 )
             )
 
     new_stops = (bundle.get("stops") or [])[before_summary["stops"] :]
+    updated_stop_ids = sorted({stop_id for row in route_audits for stop_id in row.get("updatedStopIds", [])})
+    updated_stops = [stop_by_id[stop_id] for stop_id in updated_stop_ids if stop_id in stop_by_id]
+    if updated_stop_ids:
+        existing_connectors = [connector for connector in existing_connectors if connector.get("fromNodeId") not in set(updated_stop_ids)]
     new_connectors, connector_summary = build_connectors(
-        new_stops,
+        new_stops + updated_stops,
         rail_nodes=rail_nodes,
         airport_nodes=list(airports.values()),
         max_distance_meters=args.max_connector_meters,
@@ -1053,6 +1160,7 @@ def main() -> int:
     )
     connector_summary["existingConnectorCountPreserved"] = len(existing_connectors)
     connector_summary["newOfficialConnectorCount"] = len(new_connectors)
+    connector_summary["updatedExistingStopCount"] = len(updated_stops)
     bundle["walkingConnectors"] = existing_connectors + new_connectors
     bundle["generatedAt"] = datetime.now(UTC).isoformat(timespec="seconds")
     bundle.setdefault("rules", {})["officialSourceAugmentationPolicy"] = (

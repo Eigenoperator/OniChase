@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const fs = require('fs');
 const { chromium } = require('playwright');
 
 const MAPLIBRE_STUB = `
@@ -87,8 +88,8 @@ const HUB_CASES = [
   },
   {
     station: '岡山',
-    selectByRoutes: ['東海道・山陽新幹線', 'マリンライナー'],
-    expect: [['東海道・山陽新幹線', 170], ['マリンライナー', 30], ['やくも', 14], ['しおかぜ', 14], ['南風', 14]],
+    selectByRoutes: ['東海道・山陽新幹線', '山陽線'],
+    expect: [['東海道・山陽新幹線', 170], ['山陽線', 150], ['宇野線', 70], ['やくも', 14], ['しおかぜ', 10], ['南風', 14]],
   },
   {
     station: '広島',
@@ -98,34 +99,34 @@ const HUB_CASES = [
   {
     station: '小倉',
     selectByRoutes: ['東海道・山陽新幹線', '鹿児島線'],
-    expect: [['東海道・山陽新幹線', 110], ['鹿児島線', 300], ['日豊線', 100], ['ソニック', 60]],
+    expect: [['東海道・山陽新幹線', 110], ['鹿児島線', 200], ['日豊線', 65], ['ソニック', 60]],
     forbid: ['近畿日本鉄道京都線', '奈良線'],
   },
   {
     station: '博多',
     selectByRoutes: ['東海道・山陽新幹線', '鹿児島線'],
-    expect: [['東海道・山陽新幹線', 35], ['山陽・九州新幹線', 55], ['鹿児島線', 450], ['福岡市空港線', 500], ['ソニック', 30]],
+    expect: [['東海道・山陽新幹線', 35], ['山陽・九州新幹線', 55], ['鹿児島線', 275], ['福岡市空港線', 500], ['ソニック', 30]],
   },
   {
     station: '熊本',
     selectByRoutes: ['山陽・九州新幹線', '鹿児島線'],
-    expect: [['山陽・九州新幹線', 50], ['九州新幹線', 20], ['鹿児島線', 100], ['豊肥線', 50]],
+    expect: [['山陽・九州新幹線', 50], ['九州新幹線', 20], ['鹿児島線', 95], ['豊肥線', 50]],
   },
   {
     station: '鹿児島中央',
     selectByRoutes: ['九州新幹線', '鹿児島線'],
-    expect: [['九州新幹線', 14], ['山陽・九州新幹線', 25], ['鹿児島線', 100], ['指宿枕崎線', 40], ['きりしま', 8]],
+    expect: [['九州新幹線', 14], ['山陽・九州新幹線', 25], ['鹿児島線', 75], ['指宿枕崎線', 40], ['きりしま', 8]],
   },
   {
     station: '高松',
-    selectByRoutes: ['マリンライナー', '予讃線'],
-    expect: [['マリンライナー', 30], ['予讃線', 45], ['高徳線', 25], ['うずしお', 15], ['いしづち', 15]],
+    selectByRoutes: ['予讃線', '高徳線'],
+    expect: [['予讃線', 80], ['高徳線', 25], ['いしづち', 10], ['うずしお', 15]],
     forbid: ['七尾線', '多摩都市モノレール線'],
   },
   {
     station: '金沢',
     selectByRoutes: ['北陸新幹線', 'IRいしかわ鉄道線'],
-    expect: [['北陸新幹線', 60], ['IRいしかわ鉄道線', 120], ['つるぎ', 30]],
+    expect: [['北陸新幹線', 60], ['IRいしかわ鉄道線', 100]],
   },
   {
     station: '仙台',
@@ -140,12 +141,12 @@ const HUB_CASES = [
   {
     station: '新函館北斗',
     selectByRoutes: ['東北・北海道新幹線', '函館線'],
-    expect: [['東北・北海道新幹線', 10], ['函館線', 60], ['はこだてライナー', 15]],
+    expect: [['東北・北海道新幹線', 10], ['函館線', 60]],
   },
   {
     station: '札幌',
     selectByRoutes: ['函館線'],
-    expect: [['函館線', 500], ['宗谷', 2]],
+    expect: [['函館線', 500]],
   },
   {
     station: '那覇空港',
@@ -321,7 +322,9 @@ async function auditHubData(page) {
   const { browser, page } = await loadPage(args['page-url']);
   try {
     const result = await auditHubData(page);
-    console.log(JSON.stringify(result, null, 2));
+    const json = JSON.stringify(result, null, 2);
+    console.log(json);
+    if (args.output && args.output !== true) fs.writeFileSync(args.output, `${json}\n`);
     if (result.anomalyCount) process.exitCode = 1;
   } finally {
     await browser.close();

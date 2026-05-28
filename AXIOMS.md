@@ -74,7 +74,21 @@
 - Use `AXIOMS.md`, `STATUS.md`, `HISTORY.md`, and git history together as the memory system for tomorrow's session.
 - When Scorp points out one concrete data/display/gameplay defect at a station, line, train, or operator, treat it as evidence of a possible nationwide class of defects. Do not only patch the named example: extract the underlying pattern, run or add a nationwide audit/search for the same pattern, fix all confirmed same-class cases, and record any intentional exceptions or unresolved candidates.
 
-## 11. Rule File Protection
+## 11. Heavy Data Job Safety
+
+- Do not run repository-wide or nationwide data rebuilds by default when working through Codex UI.
+- A command is a heavy data job if it reads, decompresses, rewrites, or retiles large runtime artifacts such as `data/v5_bus_gtfs_current_bundle.json.gz`, `docs/data/v5_bus_gtfs_current_bundle.json.gz`, `data/v5_bus_planner_tiles/`, `docs/data/v5_bus_planner_tiles/`, `data/v5_bus_map_tiles/`, large official caches, or full nationwide V4/V5 gameplay bundles.
+- Before running a heavy data job, first explain why it is needed, which files it will read/write, whether VS Code/Codex file watching may freeze, and provide the exact command for Scorp to approve or run outside the UI.
+- When handing Scorp a heavy data job command to run in a normal terminal, also state the expected stdout/stderr shape before the command is run. Prefer quiet commands that print only a success signal or a small summary such as missing-counts, warning-counts, or output paths.
+- If an existing script is too verbose, wrap or adjust the command so noisy output is redirected to a log file and the terminal prints only the final status plus the few summary values Scorp needs to report back.
+- Codex UI output safety is stricter than heavy-job safety: any command that may print more than about 30 lines, or any PDF/OCR/HTML extraction command whose output shape is unknown, must redirect stdout/stderr to `/tmp/*.log` or `/tmp/*.txt` and then print only a one-line OK/FAIL signal plus at most a tiny summary. Inspect large extracted text by writing small purpose-built parsers or counts, not by dumping `sed`, `head`, `rg`, or raw `pdftotext` matches into the Codex panel.
+- Before asking Scorp to run a command, state the exact expected print shape. During Codex-side work, apply the same rule internally: quiet by default, logs in `/tmp`, summaries only.
+- Prefer lightweight alternatives first: inspect existing audit JSON, patch source/control files, add or update a small audit script, or run a bounded smoke command against `/tmp` output.
+- If a heavy rebuild is necessary, write outputs to `/tmp` or a clearly named scratch path first whenever possible, then copy/promote only the confirmed small or canonical outputs.
+- Never rewrite large `.gz` bundles, planner tiles, map tiles, or cache directories merely to answer a status question.
+- For V5 port/ship/bus work, separate three phases: small source fixes, lightweight audit/triage, and heavy runtime promotion. Only the third phase requires explicit approval; when practical, give Scorp the command to run directly in a normal terminal.
+
+## 12. Rule File Protection
 
 - If a game rule should be changed, ask Scorp first before making any rule change proposal active.
 - Never edit an existing rule document in place.
@@ -84,7 +98,7 @@
 - When a new rule version is created, keep older rule versions unchanged and preserved side by side.
 - Every new rule version file must state the main change at the top, immediately below the title, before the detailed sections.
 
-## 12. Local And Online Playtest Parity
+## 13. Local And Online Playtest Parity
 
 - The local playtest client and the online browser playtest must stay aligned to the same primary gameplay flow.
 - Do not let the online version drift into a separate product or legacy prototype.

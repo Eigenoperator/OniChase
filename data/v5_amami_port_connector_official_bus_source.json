@@ -1,0 +1,812 @@
+{
+  "schemaVersion": "v5_port_connector_official_bus_source_v1",
+  "generatedAt": "2026-05-27T17:37:22.330053+00:00",
+  "sourcePolicy": {
+    "sourceType": "official_operator_timetable",
+    "normalization": "manual_table_normalization_from_cached_official_sources",
+    "coordinatePolicy": "port endpoints reuse reviewed ship-map coordinates; non-port endpoints use manual spot-check coordinates pending full stop inventory"
+  },
+  "routes": [
+    {
+      "sourceKind": "official_port_connector_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "しまバス",
+      "routeCode": "shimabus_koniya_naze_seatouchi_uminomichi",
+      "routeName": "古仁屋線（せとうち海の駅 ⇔ しまバス本社前）",
+      "sourceUrl": "https://shimabus.co.jp/wp-content/uploads/2024/09/r61001_koniya_sumiyo.pdf",
+      "serviceStart": "2026-05-27",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Shimabus official Koniya/Sumiyo timetable PDF, revised 2024-10-01, states the Koniya line runs daily.",
+        "This imports the complete せとうち海の駅 ⇔ しまバス本社前 stop-time pairs needed to connect 古仁屋 port to the Amami bus/airport network.",
+        "The official PDF lists a longer stop sequence; intermediate stops remain source-visible in the PDF but are omitted here until stop coordinates are reviewed."
+      ],
+      "busStops": [
+        {
+          "name": "せとうち海の駅",
+          "lat": 28.1456875,
+          "lon": 129.3086902,
+          "coordinateSource": "docs/data/v5_ship_map.geojson:古仁屋"
+        },
+        {
+          "name": "しまバス本社前",
+          "lat": 28.3821,
+          "lon": 129.4943,
+          "coordinateSource": "manual_from_official_shimabus_naze_terminal_spot_check"
+        }
+      ],
+      "directions": [
+        {
+          "direction": "to_koniya",
+          "trips": [
+            {
+              "tripId": "shimabus_koniya_to_koniya_001",
+              "stopTimes": [
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "6:31"
+                },
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "7:44"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_koniya_002",
+              "stopTimes": [
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "7:59"
+                },
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "9:14"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_koniya_003",
+              "stopTimes": [
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "10:49"
+                },
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "12:04"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_koniya_004",
+              "stopTimes": [
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "12:19"
+                },
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "13:34"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_koniya_005",
+              "stopTimes": [
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "13:49"
+                },
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "15:04"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_koniya_006",
+              "stopTimes": [
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "15:19"
+                },
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "16:34"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_koniya_007",
+              "stopTimes": [
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "16:49"
+                },
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "18:04"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_koniya_008",
+              "stopTimes": [
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "18:54"
+                },
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "20:09"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "to_naze",
+          "trips": [
+            {
+              "tripId": "shimabus_koniya_to_naze_001",
+              "stopTimes": [
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "6:40"
+                },
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "8:04"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_naze_002",
+              "stopTimes": [
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "8:22"
+                },
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "9:41"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_naze_003",
+              "stopTimes": [
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "9:52"
+                },
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "11:11"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_naze_004",
+              "stopTimes": [
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "12:42"
+                },
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "14:01"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_naze_005",
+              "stopTimes": [
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "14:12"
+                },
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "15:31"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_naze_006",
+              "stopTimes": [
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "15:42"
+                },
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "17:01"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_naze_007",
+              "stopTimes": [
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "17:12"
+                },
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "18:31"
+                }
+              ]
+            },
+            {
+              "tripId": "shimabus_koniya_to_naze_008",
+              "stopTimes": [
+                {
+                  "stopName": "せとうち海の駅",
+                  "time": "18:42"
+                },
+                {
+                  "stopName": "しまバス本社前",
+                  "time": "20:01"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_port_connector_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "加計呂麻バス",
+      "routeCode": "kakeroma_bus_sesou_mikkyo",
+      "routeName": "瀬相～実久",
+      "sourceUrl": "https://kakeroma-bus.com/jikokuhyou.html",
+      "serviceStart": "2026-05-27",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Kakeroma Bus official timetable page lists the current 瀬相～実久 daily rows.",
+        "This route connects 瀬相港 to western Kakeroma settlements using official stop-time rows."
+      ],
+      "busStops": [
+        {
+          "name": "瀬相",
+          "lat": 28.1375,
+          "lon": 129.2617,
+          "coordinateSource": "docs/data/v5_ship_map.geojson:瀬相"
+        },
+        {
+          "name": "実久",
+          "lat": 28.1271,
+          "lon": 129.2118,
+          "coordinateSource": "manual_from_official_kakeroma_bus_route_spot_check"
+        }
+      ],
+      "directions": [
+        {
+          "direction": "to_sesou",
+          "trips": [
+            {
+              "tripId": "kakeroma_mikkyo_to_sesou_001",
+              "stopTimes": [
+                {
+                  "stopName": "実久",
+                  "time": "6:22"
+                },
+                {
+                  "stopName": "瀬相",
+                  "time": "7:10"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_mikkyo_to_sesou_002",
+              "stopTimes": [
+                {
+                  "stopName": "実久",
+                  "time": "9:35"
+                },
+                {
+                  "stopName": "瀬相",
+                  "time": "10:25"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_mikkyo_to_sesou_003",
+              "stopTimes": [
+                {
+                  "stopName": "実久",
+                  "time": "13:20"
+                },
+                {
+                  "stopName": "瀬相",
+                  "time": "14:05"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_mikkyo_to_sesou_004",
+              "stopTimes": [
+                {
+                  "stopName": "実久",
+                  "time": "16:45"
+                },
+                {
+                  "stopName": "瀬相",
+                  "time": "17:33"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "to_mikkyo",
+          "trips": [
+            {
+              "tripId": "kakeroma_sesou_to_mikkyo_001",
+              "stopTimes": [
+                {
+                  "stopName": "瀬相",
+                  "time": "7:25"
+                },
+                {
+                  "stopName": "実久",
+                  "time": "8:15"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_sesou_to_mikkyo_002",
+              "stopTimes": [
+                {
+                  "stopName": "瀬相",
+                  "time": "10:45"
+                },
+                {
+                  "stopName": "実久",
+                  "time": "11:35"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_sesou_to_mikkyo_003",
+              "stopTimes": [
+                {
+                  "stopName": "瀬相",
+                  "time": "14:25"
+                },
+                {
+                  "stopName": "実久",
+                  "time": "15:15"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_sesou_to_mikkyo_004",
+              "stopTimes": [
+                {
+                  "stopName": "瀬相",
+                  "time": "18:00"
+                },
+                {
+                  "stopName": "実久",
+                  "time": "18:50"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_port_connector_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "加計呂麻バス",
+      "routeCode": "kakeroma_bus_sesou_ikenma_oshikaku",
+      "routeName": "瀬相～押角～生間",
+      "sourceUrl": "https://kakeroma-bus.com/jikokuhyou.html",
+      "serviceStart": "2026-05-27",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Kakeroma Bus official timetable page lists 瀬相～押角～生間 rows and marks part of the route as demand-operation.",
+        "For gameplay this keeps only complete public timetable rows between the two ferry-port bus stops."
+      ],
+      "busStops": [
+        {
+          "name": "瀬相",
+          "lat": 28.1375,
+          "lon": 129.2617,
+          "coordinateSource": "docs/data/v5_ship_map.geojson:瀬相"
+        },
+        {
+          "name": "生間",
+          "lat": 28.1016,
+          "lon": 129.3322,
+          "coordinateSource": "docs/data/v5_ship_map.geojson:生間"
+        }
+      ],
+      "directions": [
+        {
+          "direction": "to_sesou",
+          "trips": [
+            {
+              "tripId": "kakeroma_oshikaku_to_sesou_001",
+              "stopTimes": [
+                {
+                  "stopName": "生間",
+                  "time": "8:30"
+                },
+                {
+                  "stopName": "瀬相",
+                  "time": "10:25"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_oshikaku_to_sesou_002",
+              "stopTimes": [
+                {
+                  "stopName": "生間",
+                  "time": "12:00"
+                },
+                {
+                  "stopName": "瀬相",
+                  "time": "14:05"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_oshikaku_to_sesou_003",
+              "stopTimes": [
+                {
+                  "stopName": "生間",
+                  "time": "16:25"
+                },
+                {
+                  "stopName": "瀬相",
+                  "time": "17:35"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "to_ikenma",
+          "trips": [
+            {
+              "tripId": "kakeroma_oshikaku_to_ikenma_001",
+              "stopTimes": [
+                {
+                  "stopName": "瀬相",
+                  "time": "7:25"
+                },
+                {
+                  "stopName": "生間",
+                  "time": "8:10"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_oshikaku_to_ikenma_002",
+              "stopTimes": [
+                {
+                  "stopName": "瀬相",
+                  "time": "10:45"
+                },
+                {
+                  "stopName": "生間",
+                  "time": "11:40"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_oshikaku_to_ikenma_003",
+              "stopTimes": [
+                {
+                  "stopName": "瀬相",
+                  "time": "14:25"
+                },
+                {
+                  "stopName": "生間",
+                  "time": "15:55"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_oshikaku_to_ikenma_004",
+              "stopTimes": [
+                {
+                  "stopName": "瀬相",
+                  "time": "17:55"
+                },
+                {
+                  "stopName": "生間",
+                  "time": "18:31"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_port_connector_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "加計呂麻バス",
+      "routeCode": "kakeroma_bus_sesou_nishiamuro",
+      "routeName": "瀬相～西阿室",
+      "sourceUrl": "https://kakeroma-bus.com/jikokuhyou.html",
+      "serviceStart": "2026-05-27",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Kakeroma Bus official timetable page lists the current 瀬相～西阿室 daily rows.",
+        "This route connects 瀬相港 to nearby west-side settlements using official stop-time rows."
+      ],
+      "busStops": [
+        {
+          "name": "瀬相",
+          "lat": 28.1375,
+          "lon": 129.2617,
+          "coordinateSource": "docs/data/v5_ship_map.geojson:瀬相"
+        },
+        {
+          "name": "西阿室",
+          "lat": 28.1378,
+          "lon": 129.2455,
+          "coordinateSource": "manual_from_official_kakeroma_bus_route_spot_check"
+        }
+      ],
+      "directions": [
+        {
+          "direction": "to_sesou",
+          "trips": [
+            {
+              "tripId": "kakeroma_nishiamuro_to_sesou_001",
+              "stopTimes": [
+                {
+                  "stopName": "西阿室",
+                  "time": "6:55"
+                },
+                {
+                  "stopName": "瀬相",
+                  "time": "7:10"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_nishiamuro_to_sesou_002",
+              "stopTimes": [
+                {
+                  "stopName": "西阿室",
+                  "time": "10:15"
+                },
+                {
+                  "stopName": "瀬相",
+                  "time": "10:30"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_nishiamuro_to_sesou_003",
+              "stopTimes": [
+                {
+                  "stopName": "西阿室",
+                  "time": "13:55"
+                },
+                {
+                  "stopName": "瀬相",
+                  "time": "14:10"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_nishiamuro_to_sesou_004",
+              "stopTimes": [
+                {
+                  "stopName": "西阿室",
+                  "time": "17:20"
+                },
+                {
+                  "stopName": "瀬相",
+                  "time": "17:35"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "to_nishiamuro",
+          "trips": [
+            {
+              "tripId": "kakeroma_sesou_to_nishiamuro_001",
+              "stopTimes": [
+                {
+                  "stopName": "瀬相",
+                  "time": "7:25"
+                },
+                {
+                  "stopName": "西阿室",
+                  "time": "7:40"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_sesou_to_nishiamuro_002",
+              "stopTimes": [
+                {
+                  "stopName": "瀬相",
+                  "time": "10:45"
+                },
+                {
+                  "stopName": "西阿室",
+                  "time": "11:00"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_sesou_to_nishiamuro_003",
+              "stopTimes": [
+                {
+                  "stopName": "瀬相",
+                  "time": "14:25"
+                },
+                {
+                  "stopName": "西阿室",
+                  "time": "14:40"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_sesou_to_nishiamuro_004",
+              "stopTimes": [
+                {
+                  "stopName": "瀬相",
+                  "time": "18:00"
+                },
+                {
+                  "stopName": "西阿室",
+                  "time": "18:15"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sourceKind": "official_port_connector_timetable",
+      "feedKind": "official_port_connector_bus",
+      "serviceClass": "bus_local",
+      "routeColor": "0f766e",
+      "operatorName": "加計呂麻バス",
+      "routeCode": "kakeroma_bus_ikenma_tokuhama",
+      "routeName": "生間～徳浜",
+      "sourceUrl": "https://kakeroma-bus.com/jikokuhyou.html",
+      "serviceStart": "2026-05-27",
+      "serviceEnd": "2027-03-31",
+      "serviceDays": "daily",
+      "sourceNotes": [
+        "Kakeroma Bus official timetable page lists the current 生間～徳浜 daily rows.",
+        "This route connects 生間港 to east-side Kakeroma settlements using official stop-time rows."
+      ],
+      "busStops": [
+        {
+          "name": "生間",
+          "lat": 28.1016,
+          "lon": 129.3322,
+          "coordinateSource": "docs/data/v5_ship_map.geojson:生間"
+        },
+        {
+          "name": "徳浜",
+          "lat": 28.1031,
+          "lon": 129.3503,
+          "coordinateSource": "manual_from_official_kakeroma_bus_route_spot_check"
+        }
+      ],
+      "directions": [
+        {
+          "direction": "to_ikenma",
+          "trips": [
+            {
+              "tripId": "kakeroma_tokuhama_to_ikenma_001",
+              "stopTimes": [
+                {
+                  "stopName": "徳浜",
+                  "time": "7:35"
+                },
+                {
+                  "stopName": "生間",
+                  "time": "8:10"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_tokuhama_to_ikenma_002",
+              "stopTimes": [
+                {
+                  "stopName": "徳浜",
+                  "time": "11:15"
+                },
+                {
+                  "stopName": "生間",
+                  "time": "11:47"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_tokuhama_to_ikenma_003",
+              "stopTimes": [
+                {
+                  "stopName": "徳浜",
+                  "time": "15:30"
+                },
+                {
+                  "stopName": "生間",
+                  "time": "16:00"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "direction": "to_tokuhama",
+          "trips": [
+            {
+              "tripId": "kakeroma_ikenma_to_tokuhama_001",
+              "stopTimes": [
+                {
+                  "stopName": "生間",
+                  "time": "8:35"
+                },
+                {
+                  "stopName": "徳浜",
+                  "time": "9:08"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_ikenma_to_tokuhama_002",
+              "stopTimes": [
+                {
+                  "stopName": "生間",
+                  "time": "12:05"
+                },
+                {
+                  "stopName": "徳浜",
+                  "time": "12:37"
+                }
+              ]
+            },
+            {
+              "tripId": "kakeroma_ikenma_to_tokuhama_003",
+              "stopTimes": [
+                {
+                  "stopName": "生間",
+                  "time": "16:25"
+                },
+                {
+                  "stopName": "徳浜",
+                  "time": "16:55"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

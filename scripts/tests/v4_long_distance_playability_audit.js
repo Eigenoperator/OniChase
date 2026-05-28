@@ -805,7 +805,9 @@ async function auditLongDistancePlayability(page, options) {
       seed: args.seed,
       strictExpectedRoutes: !args['case-file'],
     });
-    console.log(JSON.stringify(result, null, 2));
+    const json = JSON.stringify(result, null, 2);
+    console.log(json);
+    if (args.output && args.output !== true) fs.writeFileSync(args.output, `${json}\n`);
     if (result.anomalyCount) process.exitCode = 1;
   } finally {
     await browser.close();

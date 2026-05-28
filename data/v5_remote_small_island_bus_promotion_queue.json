@@ -1,0 +1,184 @@
+{
+  "schemaVersion": "v5_remote_small_island_bus_promotion_queue_v1",
+  "generatedAt": "2026-05-27T12:41:50-07:00",
+  "purpose": "Lightweight collection queue for remote/small-island ports where official or quasi-official island-bus sources have been found. These records are not runtime connectors yet; each still needs real bus source extraction, stop coordinate review, and promotion/audit.",
+  "sourcePolicy": {
+    "acceptedSourceTiers": [
+      "official_municipality",
+      "official_operator",
+      "official_tourism_association",
+      "municipality_public_transport_plan"
+    ],
+    "promotionRequirements": [
+      "Extract scheduled public bus rows from official or quasi-official source.",
+      "Review port and bus-stop coordinates before creating playable connectors.",
+      "Exclude tourist-only, hotel shuttle, taxi-only, rental, bicycle-only, demand-only, and on-call services unless explicitly modeled as non-ordinary service."
+    ]
+  },
+  "summary": {
+    "targetPortCount": 11,
+    "sourceGroupCount": 7,
+    "alreadyModeledSourceGroupCount": 2,
+    "needsRouteSourceExtractionGroupCount": 0,
+    "targetPorts": [
+      "古仁屋",
+      "瀬相",
+      "生間",
+      "上五島",
+      "友住",
+      "新島港",
+      "西ノ島",
+      "周防大島久賀港",
+      "伊保田",
+      "伊保田港",
+      "岡村港"
+    ],
+    "sourceCollectedOrModeledGroupCount": 7,
+    "sourceBackedTripGroupCount": 6,
+    "sourceCandidateNeedingEndpointExtractionGroupCount": 1
+  },
+  "groups": [
+    {
+      "queueId": "remote_island_bus_promotion_amami_koniya_20260527",
+      "remoteAccessRecordId": "amami_koniya_shimabus_official_source_found_20260527",
+      "islandName": "奄美大島（古仁屋）",
+      "portNames": [
+        "古仁屋"
+      ],
+      "sourceTier": "official_operator_or_tourism_published_operator_timetable",
+      "promotionStatus": "source_file_exists_needs_runtime_promotion_check",
+      "existingSourceFiles": [
+        "data/v5_amami_port_connector_official_bus_source.json",
+        "docs/data/v5_amami_port_connector_official_bus_source.json"
+      ],
+      "sourceUrls": [
+        "https://shimabus.co.jp/wp-content/uploads/2024/09/r61001_koniya_sumiyo.pdf",
+        "https://www.exploreamami.com/wp-content/uploads/2023/07/ece8c7afcac72ba664b086de1798ace9.pdf",
+        "https://www.exploreamami.com/wp-content/uploads/2023/07/e044a87dffdf594eb3c61abc6eefd6a2.pdf"
+      ],
+      "nextAction": "Confirm current Shimabus Koniya-line rows in the existing source file, then promote/rebuild bus connectors outside Codex UI.",
+      "notes": [
+        "The existing Amami source file already models 古仁屋線 with せとうち海の駅 as the port-side stop."
+      ]
+    },
+    {
+      "queueId": "remote_island_bus_promotion_kakeroma_sesou_ikenma_20260527",
+      "remoteAccessRecordId": "kakeroma_sesou_ikenma_official_bus_source_found_20260527",
+      "islandName": "加計呂麻島",
+      "portNames": [
+        "瀬相",
+        "生間"
+      ],
+      "sourceTier": "official_tourism_association_and_municipality_public_transport_plan",
+      "promotionStatus": "source_file_exists_needs_runtime_promotion_check",
+      "existingSourceFiles": [
+        "data/v5_amami_port_connector_official_bus_source.json",
+        "docs/data/v5_amami_port_connector_official_bus_source.json"
+      ],
+      "sourceUrls": [
+        "https://www.setouchi-welcome.com/spotinfo/%E5%8A%A0%E8%A8%88%E5%91%82%E9%BA%BB%E3%83%90%E3%82%B9%EF%BC%88%E6%9C%89%EF%BC%89",
+        "https://www.town.setouchi.lg.jp/shokoukoutu/documents/setouchicho-chiikikokyokotsukeikaku.pdf"
+      ],
+      "nextAction": "Confirm existing 加計呂麻バス rows and demand-service flags, then promote only ordinary scheduled public-bus rows.",
+      "notes": [
+        "The existing Amami source file already models 瀬相 and 生間 route-bus slices."
+      ]
+    },
+    {
+      "queueId": "remote_island_bus_promotion_shinkamigoto_20260527",
+      "remoteAccessRecordId": "shinkamigoto_saihi_official_bus_source_found_20260527",
+      "islandName": "新上五島町",
+      "portNames": [
+        "上五島",
+        "友住"
+      ],
+      "sourceTier": "official_municipality_and_official_operator",
+      "promotionStatus": "official_source_found_needs_port_endpoint_extraction",
+      "targetSourceFile": "data/v5_remote_small_island_bus_source.json",
+      "sourceUrls": [
+        "https://official.shinkamigoto.net/goto_kurashi_full.php?eid=00683&r=1",
+        "https://www.bus.saihigroup.co.jp/information/15918.html"
+      ],
+      "nextAction": "Collect exact Saihi Bus port-side stop timetable rows for 上五島/友住 before runtime promotion.",
+      "notes": [
+        "Treat this as real island route-bus collection, not as a no-scheduled-public-bus terminal record."
+      ]
+    },
+    {
+      "queueId": "remote_island_bus_promotion_niijima_fureai_20260527",
+      "remoteAccessRecordId": "niijima_fureai_bus_official_source_found_20260527",
+      "islandName": "新島",
+      "portNames": [
+        "新島港"
+      ],
+      "sourceTier": "official_municipality",
+      "promotionStatus": "source_collected_needs_stop_coordinate_review",
+      "targetSourceFile": "data/v5_remote_small_island_bus_source.json",
+      "sourceUrls": [
+        "https://niijima.com/shoukai/access/tounai.html",
+        "https://niijima.com/shoukai/access/files/bustimetabale202511.pdf"
+      ],
+      "nextAction": "Review exact B堤駐車場/nearby stop coordinates and service-calendar handling before runtime promotion.",
+      "notes": [
+        "Keep jetfoil-diversion temporary bus service separate unless explicitly modeled with its limited condition."
+      ]
+    },
+    {
+      "queueId": "remote_island_bus_promotion_nishinoshima_town_bus_20260527",
+      "remoteAccessRecordId": "nishinoshima_town_bus_official_source_found_20260527",
+      "islandName": "西ノ島",
+      "portNames": [
+        "西ノ島"
+      ],
+      "sourceTier": "official_municipality",
+      "promotionStatus": "source_collected_needs_calendar_refinement",
+      "targetSourceFile": "data/v5_remote_small_island_bus_source.json",
+      "sourceUrls": [
+        "https://www.town.nishinoshima.shimane.jp/bunya/b_kurashi/b_kotsu/47",
+        "https://www.town.nishinoshima.shimane.jp/files/original/202512171025044737b7ff2e5.pdf"
+      ],
+      "nextAction": "Refine source-marked seasonal/holiday exceptions before runtime promotion.",
+      "notes": [
+        "Official town page publishes fare, timetable PDFs, and stop map PDFs."
+      ]
+    },
+    {
+      "queueId": "remote_island_bus_promotion_suo_oshima_20260527",
+      "remoteAccessRecordId": "suo_oshima_kuka_ihota_official_bus_source_found_20260527",
+      "islandName": "周防大島",
+      "portNames": [
+        "周防大島久賀港",
+        "伊保田",
+        "伊保田港"
+      ],
+      "sourceTier": "official_municipality",
+      "promotionStatus": "source_collected_needs_port_stop_coordinate_review",
+      "targetSourceFile": "data/v5_remote_small_island_bus_source.json",
+      "sourceUrls": [
+        "https://www.town.suo-oshima.lg.jp/soshiki/38/11883.html"
+      ],
+      "nextAction": "Review pier-to-bus-stop coordinates for 周防久賀 and 伊保田 before runtime promotion.",
+      "notes": [
+        "The town page publishes 防長バス, general-use school bus timetables, municipal ferry timetables, and route maps."
+      ]
+    },
+    {
+      "queueId": "remote_island_bus_promotion_okamura_tobishima_20260527",
+      "remoteAccessRecordId": "okamura_yutaka_access_official_bus_source_found_20260527",
+      "islandName": "岡村島・とびしま海道",
+      "portNames": [
+        "岡村港"
+      ],
+      "sourceTier": "official_or_quasi_official_local_facility_access_page",
+      "promotionStatus": "source_collected_not_direct_port_connector",
+      "targetSourceFile": "data/v5_remote_small_island_bus_source.json",
+      "sourceUrls": [
+        "https://new-tobisimakan.com/access/"
+      ],
+      "nextAction": "Do not promote until 岡村港 to 小長港/御手洗 onward-access relationship is explicitly modeled.",
+      "notes": [
+        "Do not promote from the access page alone unless the linked bus timetable is explicit enough for stop-time rows."
+      ]
+    }
+  ]
+}

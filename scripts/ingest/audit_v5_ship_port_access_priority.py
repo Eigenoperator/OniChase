@@ -317,13 +317,101 @@ def remote_access_record_index(path: Path) -> dict[str, dict[str, Any]]:
         return {}
     payload = read_json(path)
     rows = {}
+    accepted_statuses = {
+        "no_scheduled_public_bus",
+        "remote_access_review_pending",
+        "official_island_bus_source_found",
+    }
     for record in payload.get("records") or []:
-        if record.get("status") != "no_scheduled_public_bus":
+        if record.get("status") not in accepted_statuses:
             continue
         for port_name in record.get("portNames") or []:
             if port_name:
                 rows[str(port_name)] = record
     return rows
+
+
+def light_refresh_existing_audit(
+    *,
+    existing_audit_path: Path,
+    ship_map_path: Path,
+    remote_access_records_path: Path,
+    output_path: Path,
+    docs_output_path: Path,
+) -> dict[str, Any]:
+    """Refresh record/identity fields without loading the large bus bundle."""
+    payload = read_json(existing_audit_path)
+    ship_map = read_json(ship_map_path)
+    props_by_name = ship_map_port_props(ship_map)
+    remote_access_records = remote_access_record_index(remote_access_records_path)
+    rows = payload.get("ports") or []
+    for row in rows:
+        port_name = str(row.get("portName") or "")
+        props = props_by_name.get(port_name, {})
+        operators = row.get("operatorContexts") or []
+        identity_status, identity_reasons = coordinate_identity_review(port_name, props, operators)
+        row["coordinateIdentityStatus"] = identity_status
+        row["coordinateIdentityReasons"] = identity_reasons
+        row["coordinateSource"] = props.get("coordinateSource")
+        row["coordinateDisplayName"] = props.get("coordinateDisplayName")
+        record = remote_access_records.get(port_name)
+        if record:
+            row["category"] = "no_collection_recorded"
+            if record.get("status") == "official_island_bus_source_found":
+                prefix = "remote/small-island official onward bus source found; promote through source-backed bus ingestion, no fake connector invented"
+            elif record.get("status") == "remote_access_review_pending":
+                prefix = "remote/small-island local access recorded for explicit onward-transport review; no connector invented"
+            else:
+                prefix = "remote/small-island local access reviewed: no ordinary scheduled public bus"
+            previous = [
+                reason
+                for reason in row.get("reasons") or []
+                if not str(reason).startswith("remote/small-island local access")
+                and not str(reason).startswith("remote/small-island official onward bus source")
+            ]
+            row["reasons"] = [prefix, *previous]
+            row["remoteAccessRecord"] = {
+                "recordId": record.get("recordId"),
+                "islandName": record.get("islandName"),
+                "status": record.get("status"),
+                "reviewedAt": record.get("reviewedAt"),
+                "sourceUrls": record.get("sourceUrls") or [],
+                "notes": record.get("notes") or [],
+            }
+        elif identity_status == "needs_port_identity_fix" and int(row.get("playableSailingCount") or 0) > 0:
+            row["category"] = "resolve_port_identity_first"
+            row["reasons"] = [*identity_reasons, *(row.get("reasons") or [])]
+
+    priority_order = {
+        "resolve_port_identity_first": 0,
+        "collect_real_connector_high_priority": 1,
+        "collect_real_connector": 2,
+        "record_remote_or_small_island": 3,
+        "no_collection_recorded": 4,
+    }
+    rows.sort(key=lambda row: (
+        priority_order.get(row.get("category"), 9),
+        -int(row.get("playableSailingCount") or 0),
+        (row.get("nearestBusStop") or {}).get("distanceMeters", 10**9),
+        (row.get("nearestRail") or {}).get("distanceMeters", 10**9),
+        row.get("portName") or "",
+    ))
+    counts = Counter(row.get("category") for row in rows)
+    payload["generatedAt"] = datetime.now(UTC).isoformat()
+    payload["summary"] = {
+        "portsWithout2kmAccess": len(rows),
+        "resolvePortIdentityFirst": counts.get("resolve_port_identity_first", 0),
+        "collectRealConnectorHighPriority": counts.get("collect_real_connector_high_priority", 0),
+        "collectRealConnector": counts.get("collect_real_connector", 0),
+        "recordRemoteOrSmallIsland": counts.get("record_remote_or_small_island", 0),
+        "noCollectionRecorded": counts.get("no_collection_recorded", 0),
+        "remainingActionablePorts": len(rows) - counts.get("no_collection_recorded", 0),
+        "playableAffectedPortCount": sum(1 for row in rows if int(row.get("playableSailingCount") or 0) > 0),
+    }
+    payload["ports"] = rows
+    write_json(output_path, payload)
+    write_json(docs_output_path, payload)
+    return payload["summary"]
 
 
 def coordinate_identity_review(port_name: str, port_props: dict[str, Any], operators: list[str]) -> tuple[str, list[str]]:
@@ -409,7 +497,23 @@ def main() -> None:
     parser.add_argument("--remote-access-records", type=Path, default=DEFAULT_REMOTE_ACCESS_RECORDS)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--docs-output", type=Path, default=DEFAULT_DOCS_OUTPUT)
+    parser.add_argument(
+        "--light-refresh-existing",
+        action="store_true",
+        help="Refresh an existing priority audit from ship-map and remote-access records without loading large bus/map bundles.",
+    )
     args = parser.parse_args()
+
+    if args.light_refresh_existing:
+        summary = light_refresh_existing_audit(
+            existing_audit_path=args.output,
+            ship_map_path=args.ship_map,
+            remote_access_records_path=args.remote_access_records,
+            output_path=args.output,
+            docs_output_path=args.docs_output,
+        )
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return
 
     port_connectors = read_json(args.port_connectors)
     connector_audit = read_json(args.port_connector_audit)
@@ -439,10 +543,21 @@ def main() -> None:
         access_record = remote_access_records.get(port_name)
         if access_record:
             category = "no_collection_recorded"
-            reasons = [
-                "remote/small-island local access reviewed: no ordinary scheduled public bus",
-                *reasons,
-            ]
+            if access_record.get("status") == "official_island_bus_source_found":
+                reasons = [
+                    "remote/small-island official onward bus source found; promote through source-backed bus ingestion, no fake connector invented",
+                    *reasons,
+                ]
+            elif access_record.get("status") == "remote_access_review_pending":
+                reasons = [
+                    "remote/small-island local access recorded for explicit onward-transport review; no connector invented",
+                    *reasons,
+                ]
+            else:
+                reasons = [
+                    "remote/small-island local access reviewed: no ordinary scheduled public bus",
+                    *reasons,
+                ]
         elif identity_status == "needs_port_identity_fix" and sailing_count:
             category = "resolve_port_identity_first"
             reasons = identity_reasons + reasons
@@ -522,7 +637,7 @@ def main() -> None:
             "resolvePortIdentityFirst": "No connector, but current port coordinate is suspicious or the port name is ambiguous. Fix the port identity before collecting access connectors.",
             "collectRealConnector": "No 2km connector but likely mainland/major-island or has rail/bus source coverage nearby; collect official port bus/access data.",
             "recordRemoteOrSmallIsland": "No nearby rail/bus source coverage and remote-island hints; record as island access gap until local island bus data is intentionally collected.",
-            "noCollectionRecorded": "Reviewed remote/small-island port where ordinary scheduled public bus is not available; do not fake tourist-only, hotel-shuttle, rental, taxi-only, or demand/on-call transport as playable bus.",
+            "noCollectionRecorded": "Remote/small-island port has an explicit onward-access record. Confirmed no-bus records stay terminal-only; pending records remain queued for source-backed review. Do not fake tourist-only, hotel-shuttle, rental, taxi-only, or demand/on-call transport as playable bus.",
         },
         "ports": rows,
     }
