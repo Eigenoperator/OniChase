@@ -13617,6 +13617,13 @@
       return previewPlayer(playerId, null);
     }
 
+    function defaultPlanningModeAfterShip(preview) {
+      const kind = preview?.currentState?.kind;
+      if (kind === 'BUS_STOP') return 'bus';
+      if (kind === 'AIRPORT_WAIT') return 'flight';
+      return 'rail';
+    }
+
     function currentReplayEvent() {
       if (!state.latestResult?.match_event_log?.length) return null;
       const index = Math.max(0, Math.min(state.selectedResultEventIndex, state.latestResult.match_event_log.length - 1));
@@ -14433,6 +14440,8 @@
       });
       state.planningRouteIds[state.activeMode] = null;
       state.shipPlanning[state.activeMode] = { origin: null, destination: null };
+      state.planningModes[state.activeMode] = defaultPlanningModeAfterShip(planTailPreview(state.activeMode));
+      setShipMapActive(false);
       clearPendingTrip();
       invalidateSimulation();
       renderGame();
@@ -16728,7 +16737,7 @@
             : planningMode === 'flight'
               ? `buy ${V5_FLIGHT_PURCHASE_ADVANCE_MINUTES}m ahead · airport ${V5_FLIGHT_AIRPORT_ARRIVAL_ADVANCE_MINUTES}m ahead · boarding ${V5_FLIGHT_BOARDING_ADVANCE_MINUTES}m ahead`
               : planningMode === 'ship'
-                ? 'No ticket · no port arrival buffer · long-distance/night ferry reveals boarding'
+                ? 'No advance ticket · no port arrival buffer · continue from the arrival side'
               : planningMode === 'bus'
                 ? state.busPlannerLoadStatus === 'ready'
                   ? `Departures after ${minutesToHhmm(effectiveDepartureMinute(state.activeMode, preview.currentMinute))} · walk <= ${(V5_ACTIVE_WALKING_THRESHOLD_METERS / 1000).toFixed(0)}km${busTargetAirport ? ` · target ${busTargetAirport}` : ''}`
