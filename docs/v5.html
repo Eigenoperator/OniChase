@@ -5756,6 +5756,7 @@
       shipSailingsByOriginPort: new Map(),
       portConnectors: null,
       portAccessByName: new Map(),
+      portConnectorBusStopById: new Map(),
       nearestPortStationCache: new Map(),
       busMapManifest: null,
       busMapTileCache: new Map(),
@@ -8311,8 +8312,12 @@
     function indexPortConnectors(payload) {
       state.portConnectors = payload || null;
       state.portAccessByName = new Map();
+      state.portConnectorBusStopById = new Map();
       Object.entries(payload?.ports || {}).forEach(([name, access]) => {
         state.portAccessByName.set(name, access);
+        (access?.busStops || []).forEach((stop) => {
+          if (stop?.nodeId) state.portConnectorBusStopById.set(stop.nodeId, stop);
+        });
       });
     }
 
@@ -15901,12 +15906,17 @@
     }
 
     function busStopName(stopId) {
-      return state.busPlannerStopsById.get(stopId)?.name || stopId || 'Bus stop';
+      return state.busPlannerStopsById.get(stopId)?.name || state.portConnectorBusStopById.get(stopId)?.name || stopId || 'Bus stop';
     }
 
     function busStopCoordinate(stopId) {
-      const stop = state.busPlannerStopsById.get(stopId);
-      return stop && Number.isFinite(stop.lon) && Number.isFinite(stop.lat) ? [stop.lon, stop.lat] : null;
+      const stop = state.busPlannerStopsById.get(stopId) || state.portConnectorBusStopById.get(stopId);
+      if (stop && Number.isFinite(stop.lon) && Number.isFinite(stop.lat)) return [stop.lon, stop.lat];
+      const coordinate = stop?.coordinate;
+      if (coordinate && Number.isFinite(Number(coordinate.lon)) && Number.isFinite(Number(coordinate.lat))) {
+        return [Number(coordinate.lon), Number(coordinate.lat)];
+      }
+      return null;
     }
 
     function busRouteName(routeId) {
@@ -17820,7 +17830,12 @@
       else if (event.type === 'EXIT_AIRPORT') carrierState[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
       else if (event.type === 'WALK_TO_PORT' || event.type === 'ARRIVE_SHIP') carrierState[event.player_id] = { kind: 'PORT_WAIT', portName: event.port_name, sailingId: event.sailing_id };
       else if (event.type === 'BOARD_SHIP') carrierState[event.player_id] = { kind: 'SHIP', sailingId: event.sailing_id, originPort: event.origin_port, destinationPort: event.destination_port };
-      else if (event.type === 'WALK_FROM_PORT_TO_STATION') carrierState[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
+      else if (event.type === 'WALK_FROM_PORT_TO_STATION') {
+        if (event.station_group_id) carrierState[event.player_id] = { kind: 'NODE', stationGroupId: event.station_group_id };
+        else if (event.bus_stop_id) carrierState[event.player_id] = { kind: 'BUS_STOP', busStopId: event.bus_stop_id };
+        else if (event.airport_iata) carrierState[event.player_id] = { kind: 'AIRPORT_WAIT', airportIata: event.airport_iata, flightId: null, sailingId: event.sailing_id };
+        else carrierState[event.player_id] = { kind: 'PORT_WAIT', portName: event.port_name, sailingId: event.sailing_id };
+      }
     }
 
     function allowsSameNodeCapture(event, minuteEvents) {
