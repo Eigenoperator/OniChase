@@ -164,6 +164,7 @@ Public multiplayer note:
 - browser regression tests: [scripts/tests](/home/xincheng/toy/Chase/scripts/tests)
 - v4 real MapLibre pan performance gate: [scripts/tests/v4_map_pan_performance_gate.js](/home/xincheng/toy/Chase/scripts/tests/v4_map_pan_performance_gate.js)
 - v4 coupled-train display gate: [scripts/tests/v4_coupled_train_display_audit.js](/home/xincheng/toy/Chase/scripts/tests/v4_coupled_train_display_audit.js)
+- v5 real ship interaction gate: [scripts/tests/v5_ship_interaction_audit.js](/home/xincheng/toy/Chase/scripts/tests/v5_ship_interaction_audit.js)
 
 Useful commands:
 
@@ -173,4 +174,6 @@ python3 scripts/ingest/run_v3_data_quality_audits.py --list
 python3 scripts/ingest/run_v3_data_quality_audits.py --checks planner-departures
 python3 scripts/ingest/run_v3_data_quality_audits.py --checks all --strict
 python3 -m unittest scripts.tests.test_v3_planner_departure_audit
+python3 -m http.server 8765 --directory . >/tmp/chase_http.log 2>&1 &
+node scripts/tests/v5_ship_interaction_audit.js --page-url http://127.0.0.1:8765/docs/v5.html
 ```
