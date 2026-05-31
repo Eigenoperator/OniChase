@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v5.ship_timetable.1",
-  "generatedAt": "2026-05-26T20:28:18+00:00",
+  "generatedAt": "2026-05-31T01:05:16+00:00",
   "source": "official_ship_sources_promoted_for_gameplay",
   "promotionPolicy": "explicit_official_trip_times_and_known_adult_fare_only",
   "ports": {
@@ -932,6 +932,14 @@
       "coordinateStatus": "online_verified_source_seed",
       "coordinateSource": "online_verified:official operator or municipality route page plus OSM/terminal map spot check"
     },
+    "女木港": {
+      "name": "女木港",
+      "city": "高松市",
+      "lon": 134.051989,
+      "lat": 34.39041,
+      "coordinateStatus": "public_verified",
+      "coordinateSource": "public_coordinate:女木港 latitude/longitude cross-check; official Meon ferry landing page address 香川県高松市女木町15-22"
+    },
     "姪浜": {
       "name": "姪浜",
       "city": "姪浜",
@@ -1220,14 +1228,6 @@
       "coordinateStatus": "manual_verified",
       "coordinateSource": "manual_verified:OSM/Nominatim precise 尾道駅前桟橋 result"
     },
-    "岐志": {
-      "name": "岐志",
-      "city": "岐志",
-      "lon": 136.8463295,
-      "lat": 34.4771523,
-      "coordinateStatus": "online_verified_source_seed",
-      "coordinateSource": "online_verified:OSM/Nominatim query=岐志 ferry terminal Japan; score=24; needs_precise_port_review"
-    },
     "岡山": {
       "name": "岡山",
       "city": "岡山",
@@ -1467,14 +1467,6 @@
       "lat": 33.7250784,
       "coordinateStatus": "online_verified_source_seed",
       "coordinateSource": "online_verified:OSM/Nominatim query=新宮 港 日本; score=7; needs_precise_port_review"
-    },
-    "新居浜大島港": {
-      "name": "新居浜大島港",
-      "city": "新居浜大島港",
-      "lon": 133.319,
-      "lat": 33.9705,
-      "coordinateStatus": "manual_verified",
-      "coordinateSource": "manual_verified:Niihama municipal route 大島-黒島-新居浜; separated from other 大島港 names"
     },
     "新居浜東港": {
       "name": "新居浜東港",
@@ -2188,14 +2180,6 @@
       "coordinateStatus": "online_verified_source_seed",
       "coordinateSource": "online_verified:MLIT discovery, official terminal pages, or OSM/Nominatim port POI"
     },
-    "糸島姫島港": {
-      "name": "糸島姫島港",
-      "city": "糸島姫島港",
-      "lon": 130.048864,
-      "lat": 33.5701004,
-      "coordinateStatus": "manual_verified",
-      "coordinateSource": "manual_verified:Itoshima official/tourism route 岐志-姫島; separated from Oita 姫島"
-    },
     "納島": {
       "name": "納島",
       "city": "納島",
@@ -2651,14 +2635,6 @@
       "lat": 34.6647485,
       "coordinateStatus": "online_verified_source_seed",
       "coordinateSource": "online_verified:OSM/Nominatim query=高島港 港 日本; score=0; needs_precise_port_review"
-    },
-    "高松": {
-      "name": "高松",
-      "city": "高松",
-      "lon": 134.0739875,
-      "lat": 34.3541797,
-      "coordinateStatus": "online_verified_source_seed",
-      "coordinateSource": "online_verified:OSM/Nominatim query=高松 ferry terminal Japan; score=31; needs_precise_port_review"
     },
     "高松東港": {
       "name": "高松東港",
@@ -4727,6 +4703,78 @@
       "sourceFile": "data/v5_ship_playable_to_400_batch3_official.json"
     },
     {
+      "routeId": "meon_megijima_ogijima_000_out",
+      "routeGroupId": "meon_megijima_ogijima_000_out",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・男木",
+      "originPort": "女木港",
+      "destinationPort": "男木",
+      "distanceKm": null,
+      "routeClass": "public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 240,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "meon_megijima_takamatsu_000_back",
+      "routeGroupId": "meon_megijima_takamatsu_000_back",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・高松港",
+      "originPort": "女木港",
+      "destinationPort": "高松港",
+      "distanceKm": null,
+      "routeClass": "public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 370,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "meon_ogijima_megijima_000_back",
+      "routeGroupId": "meon_ogijima_megijima_000_back",
+      "operator": "雌雄島海運",
+      "routeName": "男木・女木港",
+      "originPort": "男木",
+      "destinationPort": "女木港",
+      "distanceKm": null,
+      "routeClass": "public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 240,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "meon_takamatsu_megijima_000_out",
+      "routeGroupId": "meon_takamatsu_megijima_000_out",
+      "operator": "雌雄島海運",
+      "routeName": "高松港・女木港",
+      "originPort": "高松港",
+      "destinationPort": "女木港",
+      "distanceKm": null,
+      "routeClass": "public_ferry",
+      "revealPolicy": "no_reveal",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 370,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
       "routeId": "miyajima_matsudai_048_out",
       "routeGroupId": "miyajima_matsudai_048_out",
       "operator": "宮島松大汽船",
@@ -5807,42 +5855,6 @@
       "sourceFile": "data/v5_ship_playable_to_400_batch1_official.json"
     },
     {
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
-      "operator": "雌雄島海運",
-      "routeName": "高松・男木",
-      "originPort": "高松",
-      "destinationPort": "男木",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 510,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
-      "operator": "雌雄島海運",
-      "routeName": "男木・高松",
-      "originPort": "男木",
-      "destinationPort": "高松",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 510,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
       "routeId": "mlit_map_193_025_備讃フェリー_丸亀_広島_000_back",
       "routeGroupId": "mlit_map_193_025_備讃フェリー_丸亀_広島_000_back",
       "operator": "備讃フェリー",
@@ -6165,42 +6177,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceFile": "data/v5_ship_playable_aoshima_batch_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
     },
     {
       "routeId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_000_back",
@@ -7533,42 +7509,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceFile": "data/v5_ship_playable_to_400_batch4_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_072_糸島市_姫島_岐志_000_back",
-      "routeGroupId": "mlit_map_193_072_糸島市_姫島_岐志_000_back",
-      "operator": "糸島市",
-      "routeName": "岐志・糸島姫島港",
-      "originPort": "岐志",
-      "destinationPort": "糸島姫島港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 470,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "mlit_map_193_072_糸島市_姫島_岐志_000_out",
-      "routeGroupId": "mlit_map_193_072_糸島市_姫島_岐志_000_out",
-      "operator": "糸島市",
-      "routeName": "糸島姫島港・岐志",
-      "originPort": "糸島姫島港",
-      "destinationPort": "岐志",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 470,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
     },
     {
       "routeId": "mlit_map_193_073_郵正丸_馬渡島_呼子_000_back",
@@ -11441,42 +11381,6 @@
       "sourceFile": "data/v5_ship_playable_snf_batch_official.json"
     },
     {
-      "routeId": "suo_oshima_kuka_maejima_500_001_out",
-      "routeGroupId": "suo_oshima_kuka_maejima_500_001_out",
-      "operator": "周防大島町",
-      "routeName": "周防大島久賀港・前島港",
-      "originPort": "周防大島久賀港",
-      "destinationPort": "前島港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 380,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "suo_oshima_kuka_maejima_500_002_back",
-      "routeGroupId": "suo_oshima_kuka_maejima_500_002_back",
-      "operator": "周防大島町",
-      "routeName": "前島港・周防大島久賀港",
-      "originPort": "前島港",
-      "destinationPort": "周防大島久賀港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 380,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
       "routeId": "suonada_tokuyama_taketatsu_038_out",
       "routeGroupId": "suonada_tokuyama_taketatsu_038_out",
       "operator": "周防灘フェリー",
@@ -11801,150 +11705,6 @@
       "sourceFile": "data/v5_ship_playable_public_batch2_official.json"
     },
     {
-      "routeId": "tokai_oshima_izu_500_011_out",
-      "routeGroupId": "tokai_oshima_izu_500_011_out",
-      "operator": "東海汽船",
-      "routeName": "大島岡田港・利島港",
-      "originPort": "大島岡田港",
-      "destinationPort": "利島港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1080,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "tokai_oshima_izu_500_012_out",
-      "routeGroupId": "tokai_oshima_izu_500_012_out",
-      "operator": "東海汽船",
-      "routeName": "大島岡田港・新島港",
-      "originPort": "大島岡田港",
-      "destinationPort": "新島港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1560,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "tokai_oshima_izu_500_013_out",
-      "routeGroupId": "tokai_oshima_izu_500_013_out",
-      "operator": "東海汽船",
-      "routeName": "大島岡田港・式根島野伏港",
-      "originPort": "大島岡田港",
-      "destinationPort": "式根島野伏港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1690,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "tokai_oshima_izu_500_014_out",
-      "routeGroupId": "tokai_oshima_izu_500_014_out",
-      "operator": "東海汽船",
-      "routeName": "大島岡田港・神津島港",
-      "originPort": "大島岡田港",
-      "destinationPort": "神津島港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1830,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "tokai_oshima_izu_500_015_back",
-      "routeGroupId": "tokai_oshima_izu_500_015_back",
-      "operator": "東海汽船",
-      "routeName": "神津島港・大島岡田港",
-      "originPort": "神津島港",
-      "destinationPort": "大島岡田港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1830,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "tokai_oshima_izu_500_016_back",
-      "routeGroupId": "tokai_oshima_izu_500_016_back",
-      "operator": "東海汽船",
-      "routeName": "式根島野伏港・大島岡田港",
-      "originPort": "式根島野伏港",
-      "destinationPort": "大島岡田港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1690,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "tokai_oshima_izu_500_017_back",
-      "routeGroupId": "tokai_oshima_izu_500_017_back",
-      "operator": "東海汽船",
-      "routeName": "新島港・大島岡田港",
-      "originPort": "新島港",
-      "destinationPort": "大島岡田港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1560,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "tokai_oshima_izu_500_018_back",
-      "routeGroupId": "tokai_oshima_izu_500_018_back",
-      "operator": "東海汽船",
-      "routeName": "利島港・大島岡田港",
-      "originPort": "利島港",
-      "destinationPort": "大島岡田港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1080,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
       "routeId": "tokai_takeshiba_hachijo_500_019_out",
       "routeGroupId": "tokai_takeshiba_hachijo_500_019_out",
       "operator": "東海汽船",
@@ -11975,24 +11735,6 @@
       "fare": {
         "currency": "JPY",
         "total_yen": 10840,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "tokai_takeshiba_izu_500_001_out",
-      "routeGroupId": "tokai_takeshiba_izu_500_001_out",
-      "operator": "東海汽船",
-      "routeName": "竹芝・大島岡田港",
-      "originPort": "竹芝",
-      "destinationPort": "大島岡田港",
-      "distanceKm": null,
-      "routeClass": "long_distance_public_ferry",
-      "revealPolicy": "long_distance_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 5750,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -12137,60 +11879,6 @@
       "fare": {
         "currency": "JPY",
         "total_yen": 6400,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "tokai_takeshiba_izu_500_010_back",
-      "routeGroupId": "tokai_takeshiba_izu_500_010_back",
-      "operator": "東海汽船",
-      "routeName": "大島岡田港・竹芝",
-      "originPort": "大島岡田港",
-      "destinationPort": "竹芝",
-      "distanceKm": null,
-      "routeClass": "long_distance_public_ferry",
-      "revealPolicy": "long_distance_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 5750,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "tokai_takeshiba_oshima_jet_500_021_out",
-      "routeGroupId": "tokai_takeshiba_oshima_jet_500_021_out",
-      "operator": "東海汽船",
-      "routeName": "竹芝・大島岡田港",
-      "originPort": "竹芝",
-      "destinationPort": "大島岡田港",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 9310,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
-    },
-    {
-      "routeId": "tokai_takeshiba_oshima_jet_500_022_back",
-      "routeGroupId": "tokai_takeshiba_oshima_jet_500_022_back",
-      "operator": "東海汽船",
-      "routeName": "大島岡田港・竹芝",
-      "originPort": "大島岡田港",
-      "destinationPort": "竹芝",
-      "distanceKm": null,
-      "routeClass": "public_ferry",
-      "revealPolicy": "no_reveal",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 9310,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -15007,102 +14695,6 @@
       "sourceUrl": "https://www.himeshima.jp/access/"
     },
     {
-      "sailingId": "tokai_oshima_izu_500_011_out_001",
-      "routeId": "tokai_oshima_izu_500_011_out",
-      "routeGroupId": "tokai_oshima_izu_500_011_out",
-      "operator": "東海汽船",
-      "routeName": "大島岡田港・利島港",
-      "serviceNo": "1",
-      "vessel": "大型客船",
-      "originPort": "大島岡田港",
-      "destinationPort": "利島港",
-      "departureMinute": 380,
-      "arrivalMinute": 460,
-      "departureHhmm": "06:20",
-      "arrivalHhmm": "07:40",
-      "durationMinutes": 80,
-      "calendar": "official_2026_0406_0630_excluding_special_days",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1080,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.tokaikisen.co.jp/boarding/timetable/"
-    },
-    {
-      "sailingId": "tokai_oshima_izu_500_013_out_001",
-      "routeId": "tokai_oshima_izu_500_013_out",
-      "routeGroupId": "tokai_oshima_izu_500_013_out",
-      "operator": "東海汽船",
-      "routeName": "大島岡田港・式根島野伏港",
-      "serviceNo": "1",
-      "vessel": "大型客船",
-      "originPort": "大島岡田港",
-      "destinationPort": "式根島野伏港",
-      "departureMinute": 380,
-      "arrivalMinute": 545,
-      "departureHhmm": "06:20",
-      "arrivalHhmm": "09:05",
-      "durationMinutes": 165,
-      "calendar": "official_2026_0406_0630_excluding_special_days",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1690,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.tokaikisen.co.jp/boarding/timetable/"
-    },
-    {
-      "sailingId": "tokai_oshima_izu_500_012_out_001",
-      "routeId": "tokai_oshima_izu_500_012_out",
-      "routeGroupId": "tokai_oshima_izu_500_012_out",
-      "operator": "東海汽船",
-      "routeName": "大島岡田港・新島港",
-      "serviceNo": "1",
-      "vessel": "大型客船",
-      "originPort": "大島岡田港",
-      "destinationPort": "新島港",
-      "departureMinute": 380,
-      "arrivalMinute": 515,
-      "departureHhmm": "06:20",
-      "arrivalHhmm": "08:35",
-      "durationMinutes": 135,
-      "calendar": "official_2026_0406_0630_excluding_special_days",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1560,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.tokaikisen.co.jp/boarding/timetable/"
-    },
-    {
-      "sailingId": "tokai_oshima_izu_500_014_out_001",
-      "routeId": "tokai_oshima_izu_500_014_out",
-      "routeGroupId": "tokai_oshima_izu_500_014_out",
-      "operator": "東海汽船",
-      "routeName": "大島岡田港・神津島港",
-      "serviceNo": "1",
-      "vessel": "大型客船",
-      "originPort": "大島岡田港",
-      "destinationPort": "神津島港",
-      "departureMinute": 380,
-      "arrivalMinute": 600,
-      "departureHhmm": "06:20",
-      "arrivalHhmm": "10:00",
-      "durationMinutes": 220,
-      "calendar": "official_2026_0406_0630_excluding_special_days",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1830,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.tokaikisen.co.jp/boarding/timetable/"
-    },
-    {
       "sailingId": "mlit_map_193_010_さくら海運_呉ポートピアパーク_切串_000_out_002",
       "routeId": "mlit_map_193_010_さくら海運_呉ポートピアパーク_切串_000_out",
       "routeGroupId": "mlit_map_193_010_さくら海運_呉ポートピアパーク_切串_000_out",
@@ -15221,30 +14813,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "http://bingoshosen.co.jp/"
-    },
-    {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_001",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "1",
-      "vessel": "くろしま",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 380,
-      "arrivalMinute": 395,
-      "departureHhmm": "06:20",
-      "arrivalHhmm": "06:35",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
     },
     {
       "sailingId": "awaji_jenova_akashi_iwaya_026_out_weekday_002",
@@ -17167,30 +16735,6 @@
       "sourceUrl": "https://www.tomotetsu.co.jp/?page_id=156"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_001",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "1",
-      "vessel": "くろしま",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 405,
-      "arrivalMinute": 420,
-      "departureHhmm": "06:45",
-      "arrivalHhmm": "07:00",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "mlit_map_193_016_瀬戸内シーライン_広島_宮島_宇品_小用_小用_呉中央_宇品_高田_中町_三高_宇品_001_out_daily_003",
       "routeId": "mlit_map_193_016_瀬戸内シーライン_広島_宮島_宇品_小用_小用_呉中央_宇品_高田_中町_三高_宇品_001_out",
       "routeGroupId": "mlit_map_193_016_瀬戸内シーライン_広島_宮島_宇品_小用_小用_呉中央_宇品_高田_中町_三高_宇品",
@@ -18967,24 +18511,24 @@
       "sourceUrl": "https://www.town.tokushima-mugi.lg.jp/doc/2024020100029/"
     },
     {
-      "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out_001",
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
+      "sailingId": "meon_ogijima_megijima_000_back_001",
+      "routeId": "meon_ogijima_megijima_000_back",
+      "routeGroupId": "meon_ogijima_megijima_000_back",
       "operator": "雌雄島海運",
-      "routeName": "男木・高松",
+      "routeName": "男木・女木港",
       "serviceNo": "1",
       "vessel": "めおん",
       "originPort": "男木",
-      "destinationPort": "高松",
+      "destinationPort": "女木港",
       "departureMinute": 420,
-      "arrivalMinute": 460,
+      "arrivalMinute": 440,
       "departureHhmm": "07:00",
-      "arrivalHhmm": "07:40",
-      "durationMinutes": 40,
+      "arrivalHhmm": "07:20",
+      "durationMinutes": 20,
       "calendar": "daily",
       "fare": {
         "currency": "JPY",
-        "total_yen": 510,
+        "total_yen": 240,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -19061,30 +18605,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://prod.aneikankou.co.jp/condition/index"
-    },
-    {
-      "sailingId": "mlit_map_193_072_糸島市_姫島_岐志_000_out_001",
-      "routeId": "mlit_map_193_072_糸島市_姫島_岐志_000_out",
-      "routeGroupId": "mlit_map_193_072_糸島市_姫島_岐志_000_out",
-      "operator": "糸島市",
-      "routeName": "糸島姫島港・岐志",
-      "serviceNo": "1",
-      "vessel": "ひめしま",
-      "originPort": "糸島姫島港",
-      "destinationPort": "岐志",
-      "departureMinute": 420,
-      "arrivalMinute": 436,
-      "departureHhmm": "07:00",
-      "arrivalHhmm": "07:16",
-      "durationMinutes": 16,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 470,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.itoshima.lg.jp/s006/010/020/020/090/tosen.html"
     },
     {
       "sailingId": "mlit_map_193_086_福岡市_博多_志賀島_玄界島_博多_能古_姪浜_小呂島_姪浜_002_out_004",
@@ -19711,30 +19231,6 @@
       "sourceUrl": "https://www.town.suo-oshima.lg.jp/uploaded/attachment/21306.pdf"
     },
     {
-      "sailingId": "suo_oshima_kuka_maejima_500_001_out_001",
-      "routeId": "suo_oshima_kuka_maejima_500_001_out",
-      "routeGroupId": "suo_oshima_kuka_maejima_500_001_out",
-      "operator": "周防大島町",
-      "routeName": "周防大島久賀港・前島港",
-      "serviceNo": "1",
-      "vessel": "町営渡船",
-      "originPort": "周防大島久賀港",
-      "destinationPort": "前島港",
-      "departureMinute": 430,
-      "arrivalMinute": 450,
-      "departureHhmm": "07:10",
-      "arrivalHhmm": "07:30",
-      "durationMinutes": 20,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 380,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.town.suo-oshima.lg.jp/uploaded/attachment/21306.pdf"
-    },
-    {
       "sailingId": "habu_shosen_mihara_050_out_002",
       "routeId": "habu_shosen_mihara_050_out",
       "routeGroupId": "habu_shosen_mihara_050_out",
@@ -19925,30 +19421,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://kamimurakisen.com/jikokuhyou.html"
-    },
-    {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_002",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "2",
-      "vessel": "くろしま",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 430,
-      "arrivalMinute": 445,
-      "departureHhmm": "07:10",
-      "arrivalHhmm": "07:25",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
     },
     {
       "sailingId": "mlit_map_193_070_共同フェリー_御所浦_棚底_大道_000_back_daily_002",
@@ -20717,6 +20189,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "http://sanyo-shosen.jp/akitsu/"
+    },
+    {
+      "sailingId": "meon_megijima_takamatsu_000_back_001",
+      "routeId": "meon_megijima_takamatsu_000_back",
+      "routeGroupId": "meon_megijima_takamatsu_000_back",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・高松港",
+      "serviceNo": "1",
+      "vessel": "めおん",
+      "originPort": "女木港",
+      "destinationPort": "高松港",
+      "departureMinute": 440,
+      "arrivalMinute": 460,
+      "departureHhmm": "07:20",
+      "arrivalHhmm": "07:40",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 370,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
     },
     {
       "sailingId": "bouze_hikari_034_out_002",
@@ -22351,30 +21847,6 @@
       "sourceUrl": "https://www.town.suo-oshima.lg.jp/uploaded/attachment/21306.pdf"
     },
     {
-      "sailingId": "suo_oshima_kuka_maejima_500_002_back_001",
-      "routeId": "suo_oshima_kuka_maejima_500_002_back",
-      "routeGroupId": "suo_oshima_kuka_maejima_500_002_back",
-      "operator": "周防大島町",
-      "routeName": "前島港・周防大島久賀港",
-      "serviceNo": "1",
-      "vessel": "町営渡船",
-      "originPort": "前島港",
-      "destinationPort": "周防大島久賀港",
-      "departureMinute": 455,
-      "arrivalMinute": 475,
-      "departureHhmm": "07:35",
-      "arrivalHhmm": "07:55",
-      "durationMinutes": 20,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 380,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.town.suo-oshima.lg.jp/uploaded/attachment/21306.pdf"
-    },
-    {
       "sailingId": "shima_wagu_kashikojima_028_out_daily_002",
       "routeId": "shima_wagu_kashikojima_028_out",
       "routeGroupId": "shima_wagu_kashikojima",
@@ -23335,30 +22807,6 @@
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_002",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "2",
-      "vessel": "くろしま",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 460,
-      "arrivalMinute": 475,
-      "departureHhmm": "07:40",
-      "arrivalHhmm": "07:55",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_out_004",
       "routeId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_out",
       "routeGroupId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_out",
@@ -24029,30 +23477,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://karouto-ferry.com/time/"
-    },
-    {
-      "sailingId": "mlit_map_193_072_糸島市_姫島_岐志_000_back_001",
-      "routeId": "mlit_map_193_072_糸島市_姫島_岐志_000_back",
-      "routeGroupId": "mlit_map_193_072_糸島市_姫島_岐志_000_back",
-      "operator": "糸島市",
-      "routeName": "岐志・糸島姫島港",
-      "serviceNo": "1",
-      "vessel": "ひめしま",
-      "originPort": "岐志",
-      "destinationPort": "糸島姫島港",
-      "departureMinute": 470,
-      "arrivalMinute": 486,
-      "departureHhmm": "07:50",
-      "arrivalHhmm": "08:06",
-      "durationMinutes": 16,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 470,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.itoshima.lg.jp/s006/010/020/020/090/tosen.html"
     },
     {
       "sailingId": "mlit_map_193_046_新宮町_相島_新宮_000_back_001",
@@ -25447,24 +24871,24 @@
       "sourceUrl": "https://www.nomo.co.jp/nomo/takasu-shunkan/"
     },
     {
-      "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back_001",
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
+      "sailingId": "meon_takamatsu_megijima_000_out_001",
+      "routeId": "meon_takamatsu_megijima_000_out",
+      "routeGroupId": "meon_takamatsu_megijima_000_out",
       "operator": "雌雄島海運",
-      "routeName": "高松・男木",
+      "routeName": "高松港・女木港",
       "serviceNo": "1",
       "vessel": "めおん",
-      "originPort": "高松",
-      "destinationPort": "男木",
+      "originPort": "高松港",
+      "destinationPort": "女木港",
       "departureMinute": 480,
-      "arrivalMinute": 520,
+      "arrivalMinute": 500,
       "departureHhmm": "08:00",
-      "arrivalHhmm": "08:40",
-      "durationMinutes": 40,
+      "arrivalHhmm": "08:20",
+      "durationMinutes": 20,
       "calendar": "daily",
       "fare": {
         "currency": "JPY",
-        "total_yen": 510,
+        "total_yen": 370,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -26887,30 +26311,6 @@
       "sourceUrl": "https://kyodoferry.com/schedule.html"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_003",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "3",
-      "vessel": "おおしま7",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 495,
-      "arrivalMinute": 510,
-      "departureHhmm": "08:15",
-      "arrivalHhmm": "08:30",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "sanyo_shosen_takehara_shiromizu_045_back_005",
       "routeId": "sanyo_shosen_takehara_shiromizu_045_back",
       "routeGroupId": "sanyo_shosen_takehara_shiromizu_045_back",
@@ -27173,6 +26573,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://habushosen.jp/timetable/timetable02"
+    },
+    {
+      "sailingId": "meon_megijima_ogijima_000_out_001",
+      "routeId": "meon_megijima_ogijima_000_out",
+      "routeGroupId": "meon_megijima_ogijima_000_out",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・男木",
+      "serviceNo": "1",
+      "vessel": "めおん",
+      "originPort": "女木港",
+      "destinationPort": "男木",
+      "departureMinute": 500,
+      "arrivalMinute": 520,
+      "departureHhmm": "08:20",
+      "arrivalHhmm": "08:40",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 240,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
     },
     {
       "sailingId": "mlit_map_193_026_豊島フェリー_家浦_高松_000_out_wednesday_thursday_friday_002",
@@ -28903,30 +28327,6 @@
       "sourceUrl": "https://www.snf.jp/guide/list/"
     },
     {
-      "sailingId": "tokai_takeshiba_oshima_jet_500_021_out_001",
-      "routeId": "tokai_takeshiba_oshima_jet_500_021_out",
-      "routeGroupId": "tokai_takeshiba_oshima_jet_500_021_out",
-      "operator": "東海汽船",
-      "routeName": "竹芝・大島岡田港",
-      "serviceNo": "1",
-      "vessel": "高速ジェット船",
-      "originPort": "竹芝",
-      "destinationPort": "大島岡田港",
-      "departureMinute": 515,
-      "arrivalMinute": 620,
-      "departureHhmm": "08:35",
-      "arrivalHhmm": "10:20",
-      "durationMinutes": 105,
-      "calendar": "official_2026_0406_0630_excluding_special_days",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 9310,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.tokaikisen.co.jp/boarding/timetable/"
-    },
-    {
       "sailingId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島_000_out_002",
       "routeId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島_000_out",
       "routeGroupId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島_000_out",
@@ -29645,30 +29045,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://cosmoline.jp/guide"
-    },
-    {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_003",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "3",
-      "vessel": "おおしま7",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 520,
-      "arrivalMinute": 535,
-      "departureHhmm": "08:40",
-      "arrivalHhmm": "08:55",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
     },
     {
       "sailingId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_out_008",
@@ -30991,24 +30367,24 @@
       "sourceUrl": "http://www.kvision.ne.jp/~ushima-kaiun/"
     },
     {
-      "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out_002",
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
+      "sailingId": "meon_ogijima_megijima_000_back_002",
+      "routeId": "meon_ogijima_megijima_000_back",
+      "routeGroupId": "meon_ogijima_megijima_000_back",
       "operator": "雌雄島海運",
-      "routeName": "男木・高松",
+      "routeName": "男木・女木港",
       "serviceNo": "2",
       "vessel": "めおん",
       "originPort": "男木",
-      "destinationPort": "高松",
+      "destinationPort": "女木港",
       "departureMinute": 540,
-      "arrivalMinute": 580,
+      "arrivalMinute": 560,
       "departureHhmm": "09:00",
-      "arrivalHhmm": "09:40",
-      "durationMinutes": 40,
+      "arrivalHhmm": "09:20",
+      "durationMinutes": 20,
       "calendar": "daily",
       "fare": {
         "currency": "JPY",
-        "total_yen": 510,
+        "total_yen": 240,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -32599,30 +31975,6 @@
       "sourceUrl": "https://setonaikaikisen.co.jp/kouro/cruise/"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_004",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "4",
-      "vessel": "おおしま7",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 555,
-      "arrivalMinute": 570,
-      "departureHhmm": "09:15",
-      "arrivalHhmm": "09:30",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "taisei_hinase_otabu_062_out_003",
       "routeId": "taisei_hinase_otabu_062_out",
       "routeGroupId": "taisei_hinase_otabu_062_out",
@@ -32885,6 +32237,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.iwasaki-corp.com/kagoshima_kotsu/tarumizuferry/t-timetable/"
+    },
+    {
+      "sailingId": "meon_megijima_takamatsu_000_back_002",
+      "routeId": "meon_megijima_takamatsu_000_back",
+      "routeGroupId": "meon_megijima_takamatsu_000_back",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・高松港",
+      "serviceNo": "2",
+      "vessel": "めおん",
+      "originPort": "女木港",
+      "destinationPort": "高松港",
+      "departureMinute": 560,
+      "arrivalMinute": 580,
+      "departureHhmm": "09:20",
+      "arrivalHhmm": "09:40",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 370,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
     },
     {
       "sailingId": "akitsu_ferry_052_out_005",
@@ -35071,30 +34447,6 @@
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_004",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "4",
-      "vessel": "おおしま7",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 580,
-      "arrivalMinute": 595,
-      "departureHhmm": "09:40",
-      "arrivalHhmm": "09:55",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑_001_back_012",
       "routeId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑_001_back",
       "routeGroupId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑_001_back",
@@ -35621,30 +34973,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.kyusho-ferry.co.jp/diagram/"
-    },
-    {
-      "sailingId": "mlit_map_193_072_糸島市_姫島_岐志_000_out_002",
-      "routeId": "mlit_map_193_072_糸島市_姫島_岐志_000_out",
-      "routeGroupId": "mlit_map_193_072_糸島市_姫島_岐志_000_out",
-      "operator": "糸島市",
-      "routeName": "糸島姫島港・岐志",
-      "serviceNo": "2",
-      "vessel": "ひめしま",
-      "originPort": "糸島姫島港",
-      "destinationPort": "岐志",
-      "departureMinute": 590,
-      "arrivalMinute": 606,
-      "departureHhmm": "09:50",
-      "arrivalHhmm": "10:06",
-      "durationMinutes": 16,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 470,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.itoshima.lg.jp/s006/010/020/020/090/tosen.html"
     },
     {
       "sailingId": "bouze_tosen_037_back_004",
@@ -36919,30 +36247,6 @@
       "sourceUrl": "https://www.kobe-access.jp/time"
     },
     {
-      "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back_002",
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
-      "operator": "雌雄島海運",
-      "routeName": "高松・男木",
-      "serviceNo": "2",
-      "vessel": "めおん",
-      "originPort": "高松",
-      "destinationPort": "男木",
-      "departureMinute": 600,
-      "arrivalMinute": 640,
-      "departureHhmm": "10:00",
-      "arrivalHhmm": "10:40",
-      "durationMinutes": 40,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 510,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://meon.co.jp/access"
-    },
-    {
       "sailingId": "shodoshima_takamatsu_tonosho_064_out_005",
       "routeId": "shodoshima_takamatsu_tonosho_064_out",
       "routeGroupId": "shodoshima_takamatsu_tonosho_064_out",
@@ -36965,6 +36269,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.shikokuferry.com/route2"
+    },
+    {
+      "sailingId": "meon_takamatsu_megijima_000_out_002",
+      "routeId": "meon_takamatsu_megijima_000_out",
+      "routeGroupId": "meon_takamatsu_megijima_000_out",
+      "operator": "雌雄島海運",
+      "routeName": "高松港・女木港",
+      "serviceNo": "2",
+      "vessel": "めおん",
+      "originPort": "高松港",
+      "destinationPort": "女木港",
+      "departureMinute": 600,
+      "arrivalMinute": 620,
+      "departureHhmm": "10:00",
+      "arrivalHhmm": "10:20",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 370,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
     },
     {
       "sailingId": "sakurajima_ferry_kagoshima_sakurajima_014",
@@ -37469,30 +36797,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.iwasaki-corp.com/kagoshima_kotsu/tarumizuferry/t-timetable/"
-    },
-    {
-      "sailingId": "tokai_takeshiba_oshima_jet_500_022_back_001",
-      "routeId": "tokai_takeshiba_oshima_jet_500_022_back",
-      "routeGroupId": "tokai_takeshiba_oshima_jet_500_022_back",
-      "operator": "東海汽船",
-      "routeName": "大島岡田港・竹芝",
-      "serviceNo": "1",
-      "vessel": "高速ジェット船",
-      "originPort": "大島岡田港",
-      "destinationPort": "竹芝",
-      "departureMinute": 610,
-      "arrivalMinute": 715,
-      "departureHhmm": "10:10",
-      "arrivalHhmm": "11:55",
-      "durationMinutes": 105,
-      "calendar": "official_2026_0406_0630_excluding_special_days",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 9310,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.tokaikisen.co.jp/boarding/timetable/"
     },
     {
       "sailingId": "akitsu_ferry_052_out_006",
@@ -38167,30 +37471,6 @@
       "sourceUrl": "https://kyodoferry.com/schedule.html"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_005",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "5",
-      "vessel": "おおしま7",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 615,
-      "arrivalMinute": 630,
-      "departureHhmm": "10:15",
-      "arrivalHhmm": "10:30",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "tokyo_bay_kurihama_kanaya_051_back_003",
       "routeId": "tokyo_bay_kurihama_kanaya_051_back",
       "routeGroupId": "tokyo_bay_kurihama_kanaya_051_back",
@@ -38501,6 +37781,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.shikokuferry.com/route2"
+    },
+    {
+      "sailingId": "meon_megijima_ogijima_000_out_002",
+      "routeId": "meon_megijima_ogijima_000_out",
+      "routeGroupId": "meon_megijima_ogijima_000_out",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・男木",
+      "serviceNo": "2",
+      "vessel": "めおん",
+      "originPort": "女木港",
+      "destinationPort": "男木",
+      "departureMinute": 620,
+      "arrivalMinute": 640,
+      "departureHhmm": "10:20",
+      "arrivalHhmm": "10:40",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 240,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
     },
     {
       "sailingId": "miyajima_matsudai_049_back_013",
@@ -39317,30 +38621,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "http://sanyo-shosen.jp/"
-    },
-    {
-      "sailingId": "tokai_oshima_izu_500_015_back_001",
-      "routeId": "tokai_oshima_izu_500_015_back",
-      "routeGroupId": "tokai_oshima_izu_500_015_back",
-      "operator": "東海汽船",
-      "routeName": "神津島港・大島岡田港",
-      "serviceNo": "1",
-      "vessel": "大型客船",
-      "originPort": "神津島港",
-      "destinationPort": "大島岡田港",
-      "departureMinute": 630,
-      "arrivalMinute": 850,
-      "departureHhmm": "10:30",
-      "arrivalHhmm": "14:10",
-      "durationMinutes": 220,
-      "calendar": "official_2026_0406_0630_excluding_special_days",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1830,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.tokaikisen.co.jp/boarding/timetable/"
     },
     {
       "sailingId": "tokai_takeshiba_izu_500_006_back_001",
@@ -40181,30 +39461,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
-    },
-    {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_005",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "5",
-      "vessel": "おおしま7",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 640,
-      "arrivalMinute": 655,
-      "departureHhmm": "10:40",
-      "arrivalHhmm": "10:55",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
     },
     {
       "sailingId": "shiogama_urato_005_back_daily_003",
@@ -41527,24 +40783,24 @@
       "sourceUrl": "https://ezax.co.jp/time/"
     },
     {
-      "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out_003",
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
+      "sailingId": "meon_ogijima_megijima_000_back_003",
+      "routeId": "meon_ogijima_megijima_000_back",
+      "routeGroupId": "meon_ogijima_megijima_000_back",
       "operator": "雌雄島海運",
-      "routeName": "男木・高松",
+      "routeName": "男木・女木港",
       "serviceNo": "3",
       "vessel": "めおん",
       "originPort": "男木",
-      "destinationPort": "高松",
+      "destinationPort": "女木港",
       "departureMinute": 660,
-      "arrivalMinute": 700,
+      "arrivalMinute": 680,
       "departureHhmm": "11:00",
-      "arrivalHhmm": "11:40",
-      "durationMinutes": 40,
+      "arrivalHhmm": "11:20",
+      "durationMinutes": 20,
       "calendar": "daily",
       "fare": {
         "currency": "JPY",
-        "total_yen": 510,
+        "total_yen": 240,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -42631,30 +41887,6 @@
       "sourceUrl": "https://www.city.fukuoka.lg.jp/kowan/kyakusen/hakata-port/documents/time_schedule_J.pdf"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_006",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "6",
-      "vessel": "おおしま7",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 675,
-      "arrivalMinute": 690,
-      "departureHhmm": "11:15",
-      "arrivalHhmm": "11:30",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "mlit_map_193_088_宗像市_大島_神湊_地島_地島_白浜_神湊_000_back_003",
       "routeId": "mlit_map_193_088_宗像市_大島_神湊_地島_地島_白浜_神湊_000_back",
       "routeGroupId": "mlit_map_193_088_宗像市_大島_神湊_地島_地島_白浜_神湊_000_back",
@@ -42871,15 +42103,15 @@
       "sourceUrl": "https://www.town.suo-oshima.lg.jp/uploaded/attachment/21306.pdf"
     },
     {
-      "sailingId": "suo_oshima_kuka_maejima_500_001_out_002",
-      "routeId": "suo_oshima_kuka_maejima_500_001_out",
-      "routeGroupId": "suo_oshima_kuka_maejima_500_001_out",
-      "operator": "周防大島町",
-      "routeName": "周防大島久賀港・前島港",
-      "serviceNo": "2",
-      "vessel": "町営渡船",
-      "originPort": "周防大島久賀港",
-      "destinationPort": "前島港",
+      "sailingId": "meon_megijima_takamatsu_000_back_003",
+      "routeId": "meon_megijima_takamatsu_000_back",
+      "routeGroupId": "meon_megijima_takamatsu_000_back",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・高松港",
+      "serviceNo": "3",
+      "vessel": "めおん",
+      "originPort": "女木港",
+      "destinationPort": "高松港",
       "departureMinute": 680,
       "arrivalMinute": 700,
       "departureHhmm": "11:20",
@@ -42888,11 +42120,11 @@
       "calendar": "daily",
       "fare": {
         "currency": "JPY",
-        "total_yen": 380,
+        "total_yen": 370,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
-      "sourceUrl": "https://www.town.suo-oshima.lg.jp/uploaded/attachment/21306.pdf"
+      "sourceUrl": "https://meon.co.jp/access"
     },
     {
       "sailingId": "akitsu_ferry_052_out_007",
@@ -43109,30 +42341,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://kamimurakisen.com/jikokuhyou.html"
-    },
-    {
-      "sailingId": "tokai_oshima_izu_500_016_back_001",
-      "routeId": "tokai_oshima_izu_500_016_back",
-      "routeGroupId": "tokai_oshima_izu_500_016_back",
-      "operator": "東海汽船",
-      "routeName": "式根島野伏港・大島岡田港",
-      "serviceNo": "1",
-      "vessel": "大型客船",
-      "originPort": "式根島野伏港",
-      "destinationPort": "大島岡田港",
-      "departureMinute": 680,
-      "arrivalMinute": 850,
-      "departureHhmm": "11:20",
-      "arrivalHhmm": "14:10",
-      "durationMinutes": 170,
-      "calendar": "official_2026_0406_0630_excluding_special_days",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1690,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.tokaikisen.co.jp/boarding/timetable/"
     },
     {
       "sailingId": "tokai_takeshiba_izu_500_007_back_001",
@@ -44671,30 +43879,6 @@
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_006",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "6",
-      "vessel": "おおしま7",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 700,
-      "arrivalMinute": 715,
-      "departureHhmm": "11:40",
-      "arrivalHhmm": "11:55",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_001_back_005",
       "routeId": "mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_001_back",
       "routeGroupId": "mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_001_back",
@@ -44743,30 +43927,6 @@
       "sourceUrl": "https://www.town.suo-oshima.lg.jp/uploaded/attachment/21306.pdf"
     },
     {
-      "sailingId": "suo_oshima_kuka_maejima_500_002_back_002",
-      "routeId": "suo_oshima_kuka_maejima_500_002_back",
-      "routeGroupId": "suo_oshima_kuka_maejima_500_002_back",
-      "operator": "周防大島町",
-      "routeName": "前島港・周防大島久賀港",
-      "serviceNo": "2",
-      "vessel": "町営渡船",
-      "originPort": "前島港",
-      "destinationPort": "周防大島久賀港",
-      "departureMinute": 705,
-      "arrivalMinute": 725,
-      "departureHhmm": "11:45",
-      "arrivalHhmm": "12:05",
-      "durationMinutes": 20,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 380,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.town.suo-oshima.lg.jp/uploaded/attachment/21306.pdf"
-    },
-    {
       "sailingId": "mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_000_back_004",
       "routeId": "mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_000_back",
       "routeGroupId": "mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_000_back",
@@ -44789,30 +43949,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.tankai.jp/lp/parkcruise/"
-    },
-    {
-      "sailingId": "tokai_oshima_izu_500_017_back_001",
-      "routeId": "tokai_oshima_izu_500_017_back",
-      "routeGroupId": "tokai_oshima_izu_500_017_back",
-      "operator": "東海汽船",
-      "routeName": "新島港・大島岡田港",
-      "serviceNo": "1",
-      "vessel": "大型客船",
-      "originPort": "新島港",
-      "destinationPort": "大島岡田港",
-      "departureMinute": 705,
-      "arrivalMinute": 850,
-      "departureHhmm": "11:45",
-      "arrivalHhmm": "14:10",
-      "durationMinutes": 145,
-      "calendar": "official_2026_0406_0630_excluding_special_days",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1560,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.tokaikisen.co.jp/boarding/timetable/"
     },
     {
       "sailingId": "tokai_takeshiba_izu_500_008_back_001",
@@ -45149,30 +44285,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
-    },
-    {
-      "sailingId": "mlit_map_193_072_糸島市_姫島_岐志_000_back_002",
-      "routeId": "mlit_map_193_072_糸島市_姫島_岐志_000_back",
-      "routeGroupId": "mlit_map_193_072_糸島市_姫島_岐志_000_back",
-      "operator": "糸島市",
-      "routeName": "岐志・糸島姫島港",
-      "serviceNo": "2",
-      "vessel": "ひめしま",
-      "originPort": "岐志",
-      "destinationPort": "糸島姫島港",
-      "departureMinute": 710,
-      "arrivalMinute": 726,
-      "departureHhmm": "11:50",
-      "arrivalHhmm": "12:06",
-      "durationMinutes": 16,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 470,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.itoshima.lg.jp/s006/010/020/020/090/tosen.html"
     },
     {
       "sailingId": "mlit_map_193_093_小値賀町_笛吹_大島_野崎_柳_納島_000_out_003",
@@ -46111,24 +45223,24 @@
       "sourceUrl": "https://www.kobe-access.jp/time"
     },
     {
-      "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back_003",
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
+      "sailingId": "meon_takamatsu_megijima_000_out_003",
+      "routeId": "meon_takamatsu_megijima_000_out",
+      "routeGroupId": "meon_takamatsu_megijima_000_out",
       "operator": "雌雄島海運",
-      "routeName": "高松・男木",
+      "routeName": "高松港・女木港",
       "serviceNo": "3",
       "vessel": "めおん",
-      "originPort": "高松",
-      "destinationPort": "男木",
+      "originPort": "高松港",
+      "destinationPort": "女木港",
       "departureMinute": 720,
-      "arrivalMinute": 760,
+      "arrivalMinute": 740,
       "departureHhmm": "12:00",
-      "arrivalHhmm": "12:40",
-      "durationMinutes": 40,
+      "arrivalHhmm": "12:20",
+      "durationMinutes": 20,
       "calendar": "daily",
       "fare": {
         "currency": "JPY",
-        "total_yen": 510,
+        "total_yen": 370,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -47285,6 +46397,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://geiyokisen.com/"
+    },
+    {
+      "sailingId": "meon_megijima_ogijima_000_out_003",
+      "routeId": "meon_megijima_ogijima_000_out",
+      "routeGroupId": "meon_megijima_ogijima_000_out",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・男木",
+      "serviceNo": "3",
+      "vessel": "めおん",
+      "originPort": "女木港",
+      "destinationPort": "男木",
+      "departureMinute": 740,
+      "arrivalMinute": 760,
+      "departureHhmm": "12:20",
+      "arrivalHhmm": "12:40",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 240,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
     },
     {
       "sailingId": "miyajima_matsudai_049_back_021",
@@ -49255,30 +48391,6 @@
       "sourceUrl": "https://www.orange-ferry.co.jp/time-table/kyuushi/yawatahama-usuki/index.html"
     },
     {
-      "sailingId": "tokai_oshima_izu_500_018_back_001",
-      "routeId": "tokai_oshima_izu_500_018_back",
-      "routeGroupId": "tokai_oshima_izu_500_018_back",
-      "operator": "東海汽船",
-      "routeName": "利島港・大島岡田港",
-      "serviceNo": "1",
-      "vessel": "大型客船",
-      "originPort": "利島港",
-      "destinationPort": "大島岡田港",
-      "departureMinute": 765,
-      "arrivalMinute": 850,
-      "departureHhmm": "12:45",
-      "arrivalHhmm": "14:10",
-      "durationMinutes": 85,
-      "calendar": "official_2026_0406_0630_excluding_special_days",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 1080,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.tokaikisen.co.jp/boarding/timetable/"
-    },
-    {
       "sailingId": "tokai_takeshiba_izu_500_009_back_001",
       "routeId": "tokai_takeshiba_izu_500_009_back",
       "routeGroupId": "tokai_takeshiba_izu_500_009_back",
@@ -50671,24 +49783,24 @@
       "sourceUrl": "https://www.hatsushima.jp/access/"
     },
     {
-      "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out_004",
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
+      "sailingId": "meon_ogijima_megijima_000_back_004",
+      "routeId": "meon_ogijima_megijima_000_back",
+      "routeGroupId": "meon_ogijima_megijima_000_back",
       "operator": "雌雄島海運",
-      "routeName": "男木・高松",
+      "routeName": "男木・女木港",
       "serviceNo": "4",
       "vessel": "めおん",
       "originPort": "男木",
-      "destinationPort": "高松",
+      "destinationPort": "女木港",
       "departureMinute": 780,
-      "arrivalMinute": 820,
+      "arrivalMinute": 800,
       "departureHhmm": "13:00",
-      "arrivalHhmm": "13:40",
-      "durationMinutes": 40,
+      "arrivalHhmm": "13:20",
+      "durationMinutes": 20,
       "calendar": "daily",
       "fare": {
         "currency": "JPY",
-        "total_yen": 510,
+        "total_yen": 240,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -51125,30 +50237,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://h-ieshima.jp/liner.html"
-    },
-    {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_007",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "7",
-      "vessel": "おおしま7",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 785,
-      "arrivalMinute": 800,
-      "departureHhmm": "13:05",
-      "arrivalHhmm": "13:20",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
     },
     {
       "sailingId": "sakurajima_ferry_sakurajima_kagoshima_024",
@@ -51965,6 +51053,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.city.iki.nagasaki.jp/soshiki/somuka/soumuhan/mishima/985.html"
+    },
+    {
+      "sailingId": "meon_megijima_takamatsu_000_back_004",
+      "routeId": "meon_megijima_takamatsu_000_back",
+      "routeGroupId": "meon_megijima_takamatsu_000_back",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・高松港",
+      "serviceNo": "4",
+      "vessel": "めおん",
+      "originPort": "女木港",
+      "destinationPort": "高松港",
+      "departureMinute": 800,
+      "arrivalMinute": 820,
+      "departureHhmm": "13:20",
+      "arrivalHhmm": "13:40",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 370,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
     },
     {
       "sailingId": "mlit_map_193_007_備後商船_常石_尾道_000_back_005",
@@ -53021,30 +52133,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.iwasaki-corp.com/kagoshima_kotsu/tarumizuferry/t-timetable/"
-    },
-    {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_007",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "7",
-      "vessel": "おおしま7",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 810,
-      "arrivalMinute": 825,
-      "departureHhmm": "13:30",
-      "arrivalHhmm": "13:45",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
     },
     {
       "sailingId": "ajishima_line_014_out_003",
@@ -55591,30 +54679,6 @@
       "sourceUrl": "https://www.pref.kochi.lg.jp/doc/tosen1/"
     },
     {
-      "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back_004",
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
-      "operator": "雌雄島海運",
-      "routeName": "高松・男木",
-      "serviceNo": "4",
-      "vessel": "めおん",
-      "originPort": "高松",
-      "destinationPort": "男木",
-      "departureMinute": 840,
-      "arrivalMinute": 880,
-      "departureHhmm": "14:00",
-      "arrivalHhmm": "14:40",
-      "durationMinutes": 40,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 510,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://meon.co.jp/access"
-    },
-    {
       "sailingId": "jumbo_kobe_shodoshima_takamatsu_063_back_weekday_002",
       "routeId": "jumbo_kobe_shodoshima_takamatsu_063_back",
       "routeGroupId": "jumbo_takamatsu_shodoshima",
@@ -55637,6 +54701,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://ferry.co.jp/home/takamatsu-shodoshima/"
+    },
+    {
+      "sailingId": "meon_takamatsu_megijima_000_out_004",
+      "routeId": "meon_takamatsu_megijima_000_out",
+      "routeGroupId": "meon_takamatsu_megijima_000_out",
+      "operator": "雌雄島海運",
+      "routeName": "高松港・女木港",
+      "serviceNo": "4",
+      "vessel": "めおん",
+      "originPort": "高松港",
+      "destinationPort": "女木港",
+      "departureMinute": 840,
+      "arrivalMinute": 860,
+      "departureHhmm": "14:00",
+      "arrivalHhmm": "14:20",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 370,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
     },
     {
       "sailingId": "tarumi_kamoike_tarumi_058_out_weekend_holiday_114",
@@ -55709,30 +54797,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://kyodoferry.com/schedule.html"
-    },
-    {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_008",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "8",
-      "vessel": "おおしま7",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 845,
-      "arrivalMinute": 860,
-      "departureHhmm": "14:05",
-      "arrivalHhmm": "14:20",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
     },
     {
       "sailingId": "sakurajima_ferry_sakurajima_kagoshima_027",
@@ -56743,6 +55807,30 @@
       "sourceUrl": "https://www.iwasaki-corp.com/kagoshima_kotsu/tarumizuferry/t-timetable/"
     },
     {
+      "sailingId": "meon_megijima_ogijima_000_out_004",
+      "routeId": "meon_megijima_ogijima_000_out",
+      "routeGroupId": "meon_megijima_ogijima_000_out",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・男木",
+      "serviceNo": "4",
+      "vessel": "めおん",
+      "originPort": "女木港",
+      "destinationPort": "男木",
+      "departureMinute": 860,
+      "arrivalMinute": 880,
+      "departureHhmm": "14:20",
+      "arrivalHhmm": "14:40",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 240,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
+    },
+    {
       "sailingId": "shikoku_kisen_naoshima_053_back_004",
       "routeId": "shikoku_kisen_naoshima_053_back",
       "routeGroupId": "shikoku_kisen_naoshima_053_back",
@@ -56885,30 +55973,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.suonada.co.jp/c_timetable.html"
-    },
-    {
-      "sailingId": "mlit_map_193_072_糸島市_姫島_岐志_000_out_003",
-      "routeId": "mlit_map_193_072_糸島市_姫島_岐志_000_out",
-      "routeGroupId": "mlit_map_193_072_糸島市_姫島_岐志_000_out",
-      "operator": "糸島市",
-      "routeName": "糸島姫島港・岐志",
-      "serviceNo": "3",
-      "vessel": "ひめしま",
-      "originPort": "糸島姫島港",
-      "destinationPort": "岐志",
-      "departureMinute": 860,
-      "arrivalMinute": 876,
-      "departureHhmm": "14:20",
-      "arrivalHhmm": "14:36",
-      "durationMinutes": 16,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 470,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.itoshima.lg.jp/s006/010/020/020/090/tosen.html"
     },
     {
       "sailingId": "mlit_map_193_085_野母商船_福江_青方_博多_長崎_伊王島_高島_002_out_005",
@@ -57461,30 +56525,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.town.setouchi.lg.jp/senpaku/jikokuhyou.html"
-    },
-    {
-      "sailingId": "tokai_takeshiba_izu_500_010_back_001",
-      "routeId": "tokai_takeshiba_izu_500_010_back",
-      "routeGroupId": "tokai_takeshiba_izu_500_010_back",
-      "operator": "東海汽船",
-      "routeName": "大島岡田港・竹芝",
-      "serviceNo": "1",
-      "vessel": "大型客船",
-      "originPort": "大島岡田港",
-      "destinationPort": "竹芝",
-      "departureMinute": 870,
-      "arrivalMinute": 1140,
-      "departureHhmm": "14:30",
-      "arrivalHhmm": "19:00",
-      "durationMinutes": 270,
-      "calendar": "official_2026_0406_0630_excluding_special_days",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 5750,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.tokaikisen.co.jp/boarding/timetable/"
     },
     {
       "sailingId": "tokai_tokyo_izu_islands_053_back_001",
@@ -58085,30 +57125,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.city.toba.mie.jp/material/files/group/45/teikisendaiya.pdf"
-    },
-    {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_008",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "8",
-      "vessel": "おおしま7",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 870,
-      "arrivalMinute": 885,
-      "departureHhmm": "14:30",
-      "arrivalHhmm": "14:45",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
     },
     {
       "sailingId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_out_015",
@@ -60463,24 +59479,24 @@
       "sourceUrl": "http://www.kvision.ne.jp/~ushima-kaiun/"
     },
     {
-      "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out_005",
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
+      "sailingId": "meon_ogijima_megijima_000_back_005",
+      "routeId": "meon_ogijima_megijima_000_back",
+      "routeGroupId": "meon_ogijima_megijima_000_back",
       "operator": "雌雄島海運",
-      "routeName": "男木・高松",
+      "routeName": "男木・女木港",
       "serviceNo": "5",
       "vessel": "めおん",
       "originPort": "男木",
-      "destinationPort": "高松",
+      "destinationPort": "女木港",
       "departureMinute": 900,
-      "arrivalMinute": 940,
+      "arrivalMinute": 920,
       "departureHhmm": "15:00",
-      "arrivalHhmm": "15:40",
-      "durationMinutes": 40,
+      "arrivalHhmm": "15:20",
+      "durationMinutes": 20,
       "calendar": "daily",
       "fare": {
         "currency": "JPY",
-        "total_yen": 510,
+        "total_yen": 240,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -61543,30 +60559,6 @@
       "sourceUrl": "https://setonaikaikisen.co.jp/kouro/superjet/"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_009",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "9",
-      "vessel": "おおしま7",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 915,
-      "arrivalMinute": 930,
-      "departureHhmm": "15:15",
-      "arrivalHhmm": "15:30",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "setonaikai_hiroshima_kure_matsuyama_superjet_matsuyama_hiroshima_daily_005",
       "routeId": "setonaikai_hiroshima_kure_matsuyama_superjet_matsuyama_hiroshima",
       "routeGroupId": "setonaikai_hiroshima_kure_matsuyama",
@@ -61829,6 +60821,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.himeshima.jp/access/"
+    },
+    {
+      "sailingId": "meon_megijima_takamatsu_000_back_005",
+      "routeId": "meon_megijima_takamatsu_000_back",
+      "routeGroupId": "meon_megijima_takamatsu_000_back",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・高松港",
+      "serviceNo": "5",
+      "vessel": "めおん",
+      "originPort": "女木港",
+      "destinationPort": "高松港",
+      "departureMinute": 920,
+      "arrivalMinute": 940,
+      "departureHhmm": "15:20",
+      "arrivalHhmm": "15:40",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 370,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
     },
     {
       "sailingId": "mlit_map_193_074_川口汽船_小川島_呼子_000_out_004",
@@ -63655,30 +62671,6 @@
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_009",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "9",
-      "vessel": "おおしま7",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 940,
-      "arrivalMinute": 955,
-      "departureHhmm": "15:40",
-      "arrivalHhmm": "15:55",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_001_back_013",
       "routeId": "mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_001_back",
       "routeGroupId": "mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_001_back",
@@ -64879,30 +63871,6 @@
       "sourceUrl": "https://www.town.suo-oshima.lg.jp/uploaded/attachment/21306.pdf"
     },
     {
-      "sailingId": "suo_oshima_kuka_maejima_500_001_out_003",
-      "routeId": "suo_oshima_kuka_maejima_500_001_out",
-      "routeGroupId": "suo_oshima_kuka_maejima_500_001_out",
-      "operator": "周防大島町",
-      "routeName": "周防大島久賀港・前島港",
-      "serviceNo": "3",
-      "vessel": "町営渡船",
-      "originPort": "周防大島久賀港",
-      "destinationPort": "前島港",
-      "departureMinute": 960,
-      "arrivalMinute": 980,
-      "departureHhmm": "16:00",
-      "arrivalHhmm": "16:20",
-      "durationMinutes": 20,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 380,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.town.suo-oshima.lg.jp/uploaded/attachment/21306.pdf"
-    },
-    {
       "sailingId": "mlit_map_193_050_佐賀玄海漁業共同組合_高島_唐津_000_back_005",
       "routeId": "mlit_map_193_050_佐賀玄海漁業共同組合_高島_唐津_000_back",
       "routeGroupId": "mlit_map_193_050_佐賀玄海漁業共同組合_高島_唐津_000_back",
@@ -65213,30 +64181,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://habushosen.jp/timetable/timetable04/"
-    },
-    {
-      "sailingId": "mlit_map_193_072_糸島市_姫島_岐志_000_back_003",
-      "routeId": "mlit_map_193_072_糸島市_姫島_岐志_000_back",
-      "routeGroupId": "mlit_map_193_072_糸島市_姫島_岐志_000_back",
-      "operator": "糸島市",
-      "routeName": "岐志・糸島姫島港",
-      "serviceNo": "3",
-      "vessel": "ひめしま",
-      "originPort": "岐志",
-      "destinationPort": "糸島姫島港",
-      "departureMinute": 960,
-      "arrivalMinute": 976,
-      "departureHhmm": "16:00",
-      "arrivalHhmm": "16:16",
-      "durationMinutes": 16,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 470,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.itoshima.lg.jp/s006/010/020/020/090/tosen.html"
     },
     {
       "sailingId": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_001_out_016",
@@ -65671,24 +64615,24 @@
       "sourceUrl": "https://www.saryokyo.com/member/member-03.html"
     },
     {
-      "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back_005",
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
+      "sailingId": "meon_takamatsu_megijima_000_out_005",
+      "routeId": "meon_takamatsu_megijima_000_out",
+      "routeGroupId": "meon_takamatsu_megijima_000_out",
       "operator": "雌雄島海運",
-      "routeName": "高松・男木",
+      "routeName": "高松港・女木港",
       "serviceNo": "5",
       "vessel": "めおん",
-      "originPort": "高松",
-      "destinationPort": "男木",
+      "originPort": "高松港",
+      "destinationPort": "女木港",
       "departureMinute": 960,
-      "arrivalMinute": 1000,
+      "arrivalMinute": 980,
       "departureHhmm": "16:00",
-      "arrivalHhmm": "16:40",
-      "durationMinutes": 40,
+      "arrivalHhmm": "16:20",
+      "durationMinutes": 20,
       "calendar": "daily",
       "fare": {
         "currency": "JPY",
-        "total_yen": 510,
+        "total_yen": 370,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -66943,30 +65887,6 @@
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_010",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "10",
-      "vessel": "おおしま7",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 975,
-      "arrivalMinute": 990,
-      "departureHhmm": "16:15",
-      "arrivalHhmm": "16:30",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "iwakuni_hashirajima_065_back_003",
       "routeId": "iwakuni_hashirajima_065_back",
       "routeGroupId": "iwakuni_hashirajima_065_back",
@@ -67423,6 +66343,30 @@
       "sourceUrl": "https://tadotsu-kisen.jp/%E6%99%82%E5%88%BB%E8%A1%A8"
     },
     {
+      "sailingId": "meon_megijima_ogijima_000_out_005",
+      "routeId": "meon_megijima_ogijima_000_out",
+      "routeGroupId": "meon_megijima_ogijima_000_out",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・男木",
+      "serviceNo": "5",
+      "vessel": "めおん",
+      "originPort": "女木港",
+      "destinationPort": "男木",
+      "departureMinute": 980,
+      "arrivalMinute": 1000,
+      "departureHhmm": "16:20",
+      "arrivalHhmm": "16:40",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 240,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
+    },
+    {
       "sailingId": "mlit_map_193_088_宗像市_大島_神湊_地島_地島_白浜_神湊_000_out_006",
       "routeId": "mlit_map_193_088_宗像市_大島_神湊_地島_地島_白浜_神湊_000_out",
       "routeGroupId": "mlit_map_193_088_宗像市_大島_神湊_地島_地島_白浜_神湊_000_out",
@@ -67719,30 +66663,6 @@
       "serviceNo": "3",
       "vessel": "町営渡船",
       "originPort": "前島",
-      "destinationPort": "周防大島久賀港",
-      "departureMinute": 985,
-      "arrivalMinute": 1005,
-      "departureHhmm": "16:25",
-      "arrivalHhmm": "16:45",
-      "durationMinutes": 20,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 380,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.town.suo-oshima.lg.jp/uploaded/attachment/21306.pdf"
-    },
-    {
-      "sailingId": "suo_oshima_kuka_maejima_500_002_back_003",
-      "routeId": "suo_oshima_kuka_maejima_500_002_back",
-      "routeGroupId": "suo_oshima_kuka_maejima_500_002_back",
-      "operator": "周防大島町",
-      "routeName": "前島港・周防大島久賀港",
-      "serviceNo": "3",
-      "vessel": "町営渡船",
-      "originPort": "前島港",
       "destinationPort": "周防大島久賀港",
       "departureMinute": 985,
       "arrivalMinute": 1005,
@@ -69727,30 +68647,6 @@
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_010",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "10",
-      "vessel": "おおしま7",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 1000,
-      "arrivalMinute": 1015,
-      "departureHhmm": "16:40",
-      "arrivalHhmm": "16:55",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑_001_back_017",
       "routeId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑_001_back",
       "routeGroupId": "mlit_map_193_087_北九州市_藍島_小倉_若松_戸畑_001_back",
@@ -71431,24 +70327,24 @@
       "sourceUrl": "http://www.kvision.ne.jp/~ushima-kaiun/"
     },
     {
-      "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out_006",
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
+      "sailingId": "meon_ogijima_megijima_000_back_006",
+      "routeId": "meon_ogijima_megijima_000_back",
+      "routeGroupId": "meon_ogijima_megijima_000_back",
       "operator": "雌雄島海運",
-      "routeName": "男木・高松",
+      "routeName": "男木・女木港",
       "serviceNo": "6",
       "vessel": "めおん",
       "originPort": "男木",
-      "destinationPort": "高松",
+      "destinationPort": "女木港",
       "departureMinute": 1020,
-      "arrivalMinute": 1060,
+      "arrivalMinute": 1040,
       "departureHhmm": "17:00",
-      "arrivalHhmm": "17:40",
-      "durationMinutes": 40,
+      "arrivalHhmm": "17:20",
+      "durationMinutes": 20,
       "calendar": "daily",
       "fare": {
         "currency": "JPY",
-        "total_yen": 510,
+        "total_yen": 240,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -72367,30 +71263,6 @@
       "sourceUrl": "https://www.city.munakata.lg.jp/kiji0034192/index.html"
     },
     {
-      "sailingId": "mlit_map_193_072_糸島市_姫島_岐志_000_out_004",
-      "routeId": "mlit_map_193_072_糸島市_姫島_岐志_000_out",
-      "routeGroupId": "mlit_map_193_072_糸島市_姫島_岐志_000_out",
-      "operator": "糸島市",
-      "routeName": "糸島姫島港・岐志",
-      "serviceNo": "4",
-      "vessel": "ひめしま",
-      "originPort": "糸島姫島港",
-      "destinationPort": "岐志",
-      "departureMinute": 1030,
-      "arrivalMinute": 1046,
-      "departureHhmm": "17:10",
-      "arrivalHhmm": "17:26",
-      "durationMinutes": 16,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 470,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.itoshima.lg.jp/s006/010/020/020/090/tosen.html"
-    },
-    {
       "sailingId": "mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_001_back_016",
       "routeId": "mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_001_back",
       "routeGroupId": "mlit_map_193_003_丹後海陸交通_湾内_宮津_天橋立_一宮_001_back",
@@ -72703,30 +71575,6 @@
       "sourceUrl": "https://setonaikaikisen.co.jp/kouro/cruise/"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_011",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "11",
-      "vessel": "くろしま",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 1035,
-      "arrivalMinute": 1050,
-      "departureHhmm": "17:15",
-      "arrivalHhmm": "17:30",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "mlit_map_193_070_共同フェリー_御所浦_棚底_大道_000_back_daily_008",
       "routeId": "mlit_map_193_070_共同フェリー_御所浦_棚底_大道_000_back",
       "routeGroupId": "mlit_map_193_070_共同フェリー_御所浦_棚底_大道",
@@ -72989,6 +71837,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://maejima-island.info/schedules.html"
+    },
+    {
+      "sailingId": "meon_megijima_takamatsu_000_back_006",
+      "routeId": "meon_megijima_takamatsu_000_back",
+      "routeGroupId": "meon_megijima_takamatsu_000_back",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・高松港",
+      "serviceNo": "6",
+      "vessel": "めおん",
+      "originPort": "女木港",
+      "destinationPort": "高松港",
+      "departureMinute": 1040,
+      "arrivalMinute": 1060,
+      "departureHhmm": "17:20",
+      "arrivalHhmm": "17:40",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 370,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
     },
     {
       "sailingId": "mlit_map_193_026_豊島フェリー_家浦_高松_000_out_wednesday_thursday_friday_005",
@@ -75413,30 +74285,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.city.kagoshima.lg.jp/sakurajima-ferry/koro-jikoku/timetable.html"
-    },
-    {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_011",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "11",
-      "vessel": "くろしま",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 1060,
-      "arrivalMinute": 1075,
-      "departureHhmm": "17:40",
-      "arrivalHhmm": "17:55",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
     },
     {
       "sailingId": "mlit_map_193_085_野母商船_福江_青方_博多_長崎_伊王島_高島_003_out_006",
@@ -77983,30 +76831,6 @@
       "sourceUrl": "https://karouto-ferry.com/time/"
     },
     {
-      "sailingId": "mlit_map_193_072_糸島市_姫島_岐志_000_back_004",
-      "routeId": "mlit_map_193_072_糸島市_姫島_岐志_000_back",
-      "routeGroupId": "mlit_map_193_072_糸島市_姫島_岐志_000_back",
-      "operator": "糸島市",
-      "routeName": "岐志・糸島姫島港",
-      "serviceNo": "4",
-      "vessel": "ひめしま",
-      "originPort": "岐志",
-      "destinationPort": "糸島姫島港",
-      "departureMinute": 1090,
-      "arrivalMinute": 1106,
-      "departureHhmm": "18:10",
-      "arrivalHhmm": "18:26",
-      "durationMinutes": 16,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 470,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.itoshima.lg.jp/s006/010/020/020/090/tosen.html"
-    },
-    {
       "sailingId": "mlit_map_193_025_備讃フェリー_丸亀_広島_000_back_009",
       "routeId": "mlit_map_193_025_備讃フェリー_丸亀_広島_000_back",
       "routeGroupId": "mlit_map_193_025_備讃フェリー_丸亀_広島_000_back",
@@ -78199,24 +77023,24 @@
       "sourceUrl": "https://www.ariake-ferry.com/wp-content/uploads/2024/01/568672bf1610b8eb56ff45068b4a375f.pdf"
     },
     {
-      "sailingId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back_006",
-      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
-      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
+      "sailingId": "meon_takamatsu_megijima_000_out_006",
+      "routeId": "meon_takamatsu_megijima_000_out",
+      "routeGroupId": "meon_takamatsu_megijima_000_out",
       "operator": "雌雄島海運",
-      "routeName": "高松・男木",
+      "routeName": "高松港・女木港",
       "serviceNo": "6",
       "vessel": "めおん",
-      "originPort": "高松",
-      "destinationPort": "男木",
+      "originPort": "高松港",
+      "destinationPort": "女木港",
       "departureMinute": 1090,
-      "arrivalMinute": 1130,
+      "arrivalMinute": 1110,
       "departureHhmm": "18:10",
-      "arrivalHhmm": "18:50",
-      "durationMinutes": 40,
+      "arrivalHhmm": "18:30",
+      "durationMinutes": 20,
       "calendar": "daily",
       "fare": {
         "currency": "JPY",
-        "total_yen": 510,
+        "total_yen": 370,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -79109,6 +77933,30 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://sakurakaiun.jimdofree.com/"
+    },
+    {
+      "sailingId": "meon_megijima_ogijima_000_out_006",
+      "routeId": "meon_megijima_ogijima_000_out",
+      "routeGroupId": "meon_megijima_ogijima_000_out",
+      "operator": "雌雄島海運",
+      "routeName": "女木港・男木",
+      "serviceNo": "6",
+      "vessel": "めおん",
+      "originPort": "女木港",
+      "destinationPort": "男木",
+      "departureMinute": 1110,
+      "arrivalMinute": 1130,
+      "departureHhmm": "18:30",
+      "arrivalHhmm": "18:50",
+      "durationMinutes": 20,
+      "calendar": "daily",
+      "fare": {
+        "currency": "JPY",
+        "total_yen": 240,
+        "fare_known": true,
+        "source": "official_adult_passenger_fare"
+      },
+      "sourceUrl": "https://meon.co.jp/access"
     },
     {
       "sailingId": "mlit_map_193_038_大三島ブルーライン_今治_大崎上島_木江_大三島_宗方_岡村_001_back_006",
@@ -81991,30 +80839,6 @@
       "sourceUrl": "https://miyajima-matsudai.co.jp/schedule.html"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_012",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "12",
-      "vessel": "くろしま",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 1155,
-      "arrivalMinute": 1170,
-      "departureHhmm": "19:15",
-      "arrivalHhmm": "19:30",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "jumbo_kobe_shodoshima_takamatsu_063_back_weekday_003",
       "routeId": "jumbo_kobe_shodoshima_takamatsu_063_back",
       "routeGroupId": "jumbo_takamatsu_shodoshima",
@@ -82973,30 +81797,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://www.jenova-line.co.jp/jikoku.php"
-    },
-    {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_012",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "12",
-      "vessel": "くろしま",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 1180,
-      "arrivalMinute": 1195,
-      "departureHhmm": "19:40",
-      "arrivalHhmm": "19:55",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
     },
     {
       "sailingId": "mlit_map_193_085_野母商船_福江_青方_博多_長崎_伊王島_高島_003_out_007",
@@ -85375,30 +84175,6 @@
       "sourceUrl": "https://www.jenova-line.co.jp/jikoku.php"
     },
     {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out_013",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
-      "operator": "新居浜市",
-      "routeName": "新居浜大島港・黒島",
-      "serviceNo": "13",
-      "vessel": "くろしま",
-      "originPort": "新居浜大島港",
-      "destinationPort": "黒島",
-      "departureMinute": 1260,
-      "arrivalMinute": 1275,
-      "departureHhmm": "21:00",
-      "arrivalHhmm": "21:15",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
-    },
-    {
       "sailingId": "sakurajima_ferry_sakurajima_kagoshima_045",
       "routeId": "sakurajima_ferry_sakurajima_kagoshima",
       "routeGroupId": "sakurajima_ferry_sakurajima_kagoshima",
@@ -85805,30 +84581,6 @@
         "source": "official_adult_passenger_fare"
       },
       "sourceUrl": "https://jr-miyajimaferry.co.jp/timetable/"
-    },
-    {
-      "sailingId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back_013",
-      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
-      "operator": "新居浜市",
-      "routeName": "黒島・新居浜大島港",
-      "serviceNo": "13",
-      "vessel": "くろしま",
-      "originPort": "黒島",
-      "destinationPort": "新居浜大島港",
-      "departureMinute": 1285,
-      "arrivalMinute": 1300,
-      "departureHhmm": "21:25",
-      "arrivalHhmm": "21:40",
-      "durationMinutes": 15,
-      "calendar": "daily",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 60,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.city.niihama.lg.jp/uploaded/life/120215_573132_misc.pdf"
     },
     {
       "sailingId": "mlit_map_193_085_野母商船_福江_青方_博多_長崎_伊王島_高島_003_out_008",
@@ -86401,30 +85153,6 @@
       "fare": {
         "currency": "JPY",
         "total_yen": 6400,
-        "fare_known": true,
-        "source": "official_adult_passenger_fare"
-      },
-      "sourceUrl": "https://www.tokaikisen.co.jp/boarding/timetable/"
-    },
-    {
-      "sailingId": "tokai_takeshiba_izu_500_001_out_001",
-      "routeId": "tokai_takeshiba_izu_500_001_out",
-      "routeGroupId": "tokai_takeshiba_izu_500_001_out",
-      "operator": "東海汽船",
-      "routeName": "竹芝・大島岡田港",
-      "serviceNo": "1",
-      "vessel": "大型客船",
-      "originPort": "竹芝",
-      "destinationPort": "大島岡田港",
-      "departureMinute": 1320,
-      "arrivalMinute": 1800,
-      "departureHhmm": "22:00",
-      "arrivalHhmm": "30:00",
-      "durationMinutes": 480,
-      "calendar": "official_2026_0406_0630_excluding_special_days",
-      "fare": {
-        "currency": "JPY",
-        "total_yen": 5750,
         "fare_known": true,
         "source": "official_adult_passenger_fare"
       },
@@ -87656,9 +86384,9 @@
     }
   ],
   "metadata": {
-    "routeGroupCount": 462,
-    "routeCount": 547,
-    "sailingCount": 3126,
-    "mapRouteGroupCount": 193
+    "routeGroupCount": 446,
+    "routeCount": 531,
+    "sailingCount": 3086,
+    "mapRouteGroupCount": 194
   }
 }

@@ -171,11 +171,29 @@ def main() -> None:
     meon_url = "https://meon.co.jp/access"
     meon_note = (
         "Meon official access page lists the ordinary timetable and passenger fare table. "
-        "V5 models the ordinary non-8/1-to-8/20 Takamatsu-Ogijima segment and adult one-way fare of JPY 510; "
-        "Megijima-only summer extras, child fares, vehicles, and discount tickets are excluded."
+        "V5 models the ordinary non-8/1-to-8/20 Takamatsu-Megijima-Ogijima timetable as explicit port-to-port legs. "
+        "Summer-only Megijima extras, child fares, vehicles, and discount tickets are excluded."
     )
-    add_route(routes, trips, route_id="mlit_map_193_024_雌雄島海運_男木_高松_000_out", operator="雌雄島海運", origin="男木", destination="高松", fare=510, urls=[meon_url], note=meon_note, rows=[("07:00", "07:40", "めおん"), ("09:00", "09:40", "めおん"), ("11:00", "11:40", "めおん"), ("13:00", "13:40", "めおん"), ("15:00", "15:40", "めおん"), ("17:00", "17:40", "めおん")])
-    add_route(routes, trips, route_id="mlit_map_193_024_雌雄島海運_男木_高松_000_back", operator="雌雄島海運", origin="高松", destination="男木", fare=510, urls=[meon_url], note=meon_note, rows=[("08:00", "08:40", "めおん"), ("10:00", "10:40", "めおん"), ("12:00", "12:40", "めおん"), ("14:00", "14:40", "めおん"), ("16:00", "16:40", "めおん"), ("18:10", "18:50", "めおん")])
+    meon_to_islands = [
+        ("08:00", "08:20", "08:40", "めおん"),
+        ("10:00", "10:20", "10:40", "めおん"),
+        ("12:00", "12:20", "12:40", "めおん"),
+        ("14:00", "14:20", "14:40", "めおん"),
+        ("16:00", "16:20", "16:40", "めおん"),
+        ("18:10", "18:30", "18:50", "めおん"),
+    ]
+    meon_to_takamatsu = [
+        ("07:00", "07:20", "07:40", "めおん"),
+        ("09:00", "09:20", "09:40", "めおん"),
+        ("11:00", "11:20", "11:40", "めおん"),
+        ("13:00", "13:20", "13:40", "めおん"),
+        ("15:00", "15:20", "15:40", "めおん"),
+        ("17:00", "17:20", "17:40", "めおん"),
+    ]
+    add_route(routes, trips, route_id="meon_takamatsu_megijima_000_out", operator="雌雄島海運", origin="高松港", destination="女木港", fare=370, urls=[meon_url], note=meon_note, rows=[(dep, megi, vessel) for dep, megi, _ogi, vessel in meon_to_islands])
+    add_route(routes, trips, route_id="meon_megijima_ogijima_000_out", operator="雌雄島海運", origin="女木港", destination="男木", fare=240, urls=[meon_url], note=meon_note, rows=[(megi, ogi, vessel) for _dep, megi, ogi, vessel in meon_to_islands])
+    add_route(routes, trips, route_id="meon_ogijima_megijima_000_back", operator="雌雄島海運", origin="男木", destination="女木港", fare=240, urls=[meon_url], note=meon_note, rows=[(ogi, megi, vessel) for ogi, megi, _takamatsu, vessel in meon_to_takamatsu])
+    add_route(routes, trips, route_id="meon_megijima_takamatsu_000_back", operator="雌雄島海運", origin="女木港", destination="高松港", fare=370, urls=[meon_url], note=meon_note, rows=[(megi, takamatsu, vessel) for _ogi, megi, takamatsu, vessel in meon_to_takamatsu])
 
     bouze_tosen_url = "https://www.heart-y.ne.jp/tosen/adekouro.htm"
     bouze_tosen_note = (

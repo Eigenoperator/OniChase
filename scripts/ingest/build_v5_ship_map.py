@@ -24,6 +24,39 @@ PORT_ALIASES = {
     "高松": "高松港",
 }
 
+SUPPLEMENTAL_PORTS = {
+    "女木港": {
+        "name": "女木港",
+        "city": "高松市",
+        "lat": 34.39041,
+        "lon": 134.051989,
+        "coordinateSource": "public_coordinate:女木港 latitude/longitude cross-check; official Meon ferry landing page address 香川県高松市女木町15-22",
+        "coordinateStatus": "public_verified",
+        "coordinateDisplayName": "女木港",
+    },
+}
+
+SUPPLEMENTAL_ROUTES = [
+    {
+        "routeId": "meon_map_takamatsu_megijima",
+        "routeGroupId": "meon_takamatsu_megijima_ogijima",
+        "operator": "雌雄島海運",
+        "routeName": "高松港～女木港",
+        "origin": "高松港",
+        "destination": "女木港",
+        "sourceUrl": "https://meon.co.jp/access",
+    },
+    {
+        "routeId": "meon_map_megijima_ogijima",
+        "routeGroupId": "meon_takamatsu_megijima_ogijima",
+        "operator": "雌雄島海運",
+        "routeName": "女木港～男木",
+        "origin": "女木港",
+        "destination": "男木",
+        "sourceUrl": "https://meon.co.jp/access",
+    },
+]
+
 
 def line_for(origin: dict, destination: dict) -> list[list[float]]:
     return [
@@ -152,6 +185,71 @@ def main() -> None:
                     "geometry": {"type": "LineString", "coordinates": line_for(origin, destination)},
                 }
             )
+    supplemental_ports = canonical_ports(SUPPLEMENTAL_PORTS, port_overrides)
+    for name, port in supplemental_ports.items():
+        if name in port_seen:
+            continue
+        port_seen.add(name)
+        features.append(
+            {
+                "type": "Feature",
+                "id": f"port:{name}",
+                "properties": {
+                    "kind": "port",
+                    "name": name,
+                    "city": port.get("city"),
+                    "coordinateSource": port.get("coordinateSource"),
+                    "coordinateStatus": port.get("coordinateStatus"),
+                    "coordinateQuery": port.get("coordinateQuery"),
+                    "coordinateDisplayName": port.get("coordinateDisplayName"),
+                },
+                "geometry": {"type": "Point", "coordinates": [port["lon"], port["lat"]]},
+            }
+        )
+    port_lookup = {
+        feature["properties"]["name"]: {
+            "lon": feature["geometry"]["coordinates"][0],
+            "lat": feature["geometry"]["coordinates"][1],
+        }
+        for feature in features
+        if feature.get("properties", {}).get("kind") == "port"
+    }
+    for route in SUPPLEMENTAL_ROUTES:
+        origin_name = canonical_port_name(route["origin"])
+        destination_name = canonical_port_name(route["destination"])
+        origin = port_lookup.get(origin_name)
+        destination = port_lookup.get(destination_name)
+        if not origin or not destination:
+            continue
+        route_count += 1
+        features.append(
+            {
+                "type": "Feature",
+                "id": f"ship-route:{route['routeId']}",
+                "properties": {
+                    "kind": "ship-route",
+                    "routeId": route["routeId"],
+                    "routeName": route["routeName"],
+                    "operator": route["operator"],
+                    "routeGroupId": route.get("routeGroupId"),
+                    "origin": origin_name,
+                    "destination": destination_name,
+                    "distanceKm": None,
+                    "tripCount": 0,
+                    "servicePatternCount": 0,
+                    "dailyDirectionalTripCount": None,
+                    "firstDepartureMinute": None,
+                    "fareAdultJpy": None,
+                    "fareNormalAdultJpy": None,
+                    "farePeakAdultJpy": None,
+                    "playableStatus": "supplemental_official_route_shape",
+                    "sourceUrl": route.get("sourceUrl"),
+                },
+                "geometry": {"type": "LineString", "coordinates": line_for(origin, destination)},
+            }
+        )
+    if SUPPLEMENTAL_ROUTES:
+        route_group_count += 1
     payload = {
         "type": "FeatureCollection",
         "metadata": {

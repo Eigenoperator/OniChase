@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v5.ship_playable_promotion_audit.1",
-  "generatedAt": "2026-05-26T20:28:18+00:00",
+  "generatedAt": "2026-05-31T01:05:16+00:00",
   "sourceFiles": [
     "data/v5_ship_seikan_ferry_official.json",
     "data/v5_ship_priority_batch_official.json",
@@ -64,12 +64,12 @@
     "data/v5_ship_playable_to_500_real_batch1_official.json",
     "data/v5_ship_playable_remaining_79_batch1_official.json"
   ],
-  "mapRouteGroupCount": 193,
-  "sourceRouteGroupCount": 613,
-  "sourceRouteCount": 632,
-  "promotedRouteGroupCount": 462,
-  "promotedRouteCount": 547,
-  "promotedSailingCount": 3126,
+  "mapRouteGroupCount": 194,
+  "sourceRouteGroupCount": 615,
+  "sourceRouteCount": 636,
+  "promotedRouteGroupCount": 446,
+  "promotedRouteCount": 531,
+  "promotedSailingCount": 3086,
   "coveredDuplicateRouteCount": 57,
   "coveredDuplicateRoutes": [
     {
@@ -350,7 +350,8 @@
       "destination": "高松",
       "missing": [
         "missing_explicit_trip_times",
-        "missing_adult_fare"
+        "missing_adult_fare",
+        "missing_destination_port_coordinate"
       ],
       "sourceFile": "data/v5_ship_map_to_193_official.json",
       "coveredByRouteId": "shodoshima_takamatsu_tonosho_065_back",
@@ -365,7 +366,8 @@
       "destination": "土庄港",
       "missing": [
         "missing_explicit_trip_times",
-        "missing_adult_fare"
+        "missing_adult_fare",
+        "missing_origin_port_coordinate"
       ],
       "sourceFile": "data/v5_ship_map_to_193_official.json",
       "coveredByRouteId": "shodoshima_takamatsu_tonosho_064_out",
@@ -1273,7 +1275,237 @@
       "sourceFile": "data/v5_ship_map_to_193_official.json"
     }
   ],
-  "skippedRouteCount": 0,
-  "skippedReasonCounts": {},
-  "skippedRoutes": []
+  "skippedRouteCount": 20,
+  "skippedReasonCounts": {
+    "missing_explicit_trip_times": 2,
+    "missing_adult_fare": 2,
+    "missing_origin_port_coordinate": 10,
+    "missing_destination_port_coordinate": 10
+  },
+  "skippedRoutes": [
+    {
+      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_back",
+      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松",
+      "operator": "雌雄島海運",
+      "origin": "高松",
+      "destination": "男木",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare",
+        "missing_origin_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_map_to_193_official.json"
+    },
+    {
+      "routeId": "mlit_map_193_024_雌雄島海運_男木_高松_000_out",
+      "routeGroupId": "mlit_map_193_024_雌雄島海運_男木_高松",
+      "operator": "雌雄島海運",
+      "origin": "男木",
+      "destination": "高松",
+      "missing": [
+        "missing_explicit_trip_times",
+        "missing_adult_fare",
+        "missing_destination_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_map_to_193_official.json"
+    },
+    {
+      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
+      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_back",
+      "operator": "新居浜市",
+      "origin": "黒島",
+      "destination": "大島港",
+      "missing": [
+        "missing_destination_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
+      "routeGroupId": "mlit_map_193_037_新居浜市_大島_黒島_新居浜_000_out",
+      "operator": "新居浜市",
+      "origin": "大島港",
+      "destination": "黒島",
+      "missing": [
+        "missing_origin_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "mlit_map_193_072_糸島市_姫島_岐志_000_back",
+      "routeGroupId": "mlit_map_193_072_糸島市_姫島_岐志_000_back",
+      "operator": "糸島市",
+      "origin": "岐志",
+      "destination": "姫島",
+      "missing": [
+        "missing_destination_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "mlit_map_193_072_糸島市_姫島_岐志_000_out",
+      "routeGroupId": "mlit_map_193_072_糸島市_姫島_岐志_000_out",
+      "operator": "糸島市",
+      "origin": "姫島",
+      "destination": "岐志",
+      "missing": [
+        "missing_origin_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "suo_oshima_kuka_maejima_500_001_out",
+      "routeGroupId": "suo_oshima_kuka_maejima_500_001_out",
+      "operator": "周防大島町",
+      "origin": "久賀",
+      "destination": "前島港",
+      "missing": [
+        "missing_origin_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "suo_oshima_kuka_maejima_500_002_back",
+      "routeGroupId": "suo_oshima_kuka_maejima_500_002_back",
+      "operator": "周防大島町",
+      "origin": "前島港",
+      "destination": "久賀",
+      "missing": [
+        "missing_destination_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "tokai_oshima_izu_500_011_out",
+      "routeGroupId": "tokai_oshima_izu_500_011_out",
+      "operator": "東海汽船",
+      "origin": "大島港",
+      "destination": "利島港",
+      "missing": [
+        "missing_origin_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "tokai_oshima_izu_500_012_out",
+      "routeGroupId": "tokai_oshima_izu_500_012_out",
+      "operator": "東海汽船",
+      "origin": "大島港",
+      "destination": "新島港",
+      "missing": [
+        "missing_origin_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "tokai_oshima_izu_500_013_out",
+      "routeGroupId": "tokai_oshima_izu_500_013_out",
+      "operator": "東海汽船",
+      "origin": "大島港",
+      "destination": "式根島野伏港",
+      "missing": [
+        "missing_origin_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "tokai_oshima_izu_500_014_out",
+      "routeGroupId": "tokai_oshima_izu_500_014_out",
+      "operator": "東海汽船",
+      "origin": "大島港",
+      "destination": "神津島港",
+      "missing": [
+        "missing_origin_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "tokai_oshima_izu_500_015_back",
+      "routeGroupId": "tokai_oshima_izu_500_015_back",
+      "operator": "東海汽船",
+      "origin": "神津島港",
+      "destination": "大島港",
+      "missing": [
+        "missing_destination_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "tokai_oshima_izu_500_016_back",
+      "routeGroupId": "tokai_oshima_izu_500_016_back",
+      "operator": "東海汽船",
+      "origin": "式根島野伏港",
+      "destination": "大島港",
+      "missing": [
+        "missing_destination_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "tokai_oshima_izu_500_017_back",
+      "routeGroupId": "tokai_oshima_izu_500_017_back",
+      "operator": "東海汽船",
+      "origin": "新島港",
+      "destination": "大島港",
+      "missing": [
+        "missing_destination_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "tokai_oshima_izu_500_018_back",
+      "routeGroupId": "tokai_oshima_izu_500_018_back",
+      "operator": "東海汽船",
+      "origin": "利島港",
+      "destination": "大島港",
+      "missing": [
+        "missing_destination_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "tokai_takeshiba_izu_500_001_out",
+      "routeGroupId": "tokai_takeshiba_izu_500_001_out",
+      "operator": "東海汽船",
+      "origin": "竹芝",
+      "destination": "大島港",
+      "missing": [
+        "missing_destination_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "tokai_takeshiba_izu_500_010_back",
+      "routeGroupId": "tokai_takeshiba_izu_500_010_back",
+      "operator": "東海汽船",
+      "origin": "大島港",
+      "destination": "竹芝",
+      "missing": [
+        "missing_origin_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "tokai_takeshiba_oshima_jet_500_021_out",
+      "routeGroupId": "tokai_takeshiba_oshima_jet_500_021_out",
+      "operator": "東海汽船",
+      "origin": "竹芝",
+      "destination": "大島港",
+      "missing": [
+        "missing_destination_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    },
+    {
+      "routeId": "tokai_takeshiba_oshima_jet_500_022_back",
+      "routeGroupId": "tokai_takeshiba_oshima_jet_500_022_back",
+      "operator": "東海汽船",
+      "origin": "大島港",
+      "destination": "竹芝",
+      "missing": [
+        "missing_origin_port_coordinate"
+      ],
+      "sourceFile": "data/v5_ship_playable_to_500_real_batch1_official.json"
+    }
+  ]
 }
