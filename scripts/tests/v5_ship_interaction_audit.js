@@ -2,6 +2,11 @@
 
 const { chromium } = require('playwright');
 
+function hhmmToMinutesLocal(text) {
+  const [hour, minute] = String(text || '00:00').split(':').map((value) => Number(value));
+  return (Number.isFinite(hour) ? hour : 0) * 60 + (Number.isFinite(minute) ? minute : 0);
+}
+
 function parseArgs(argv) {
   const args = {};
   for (let index = 2; index < argv.length; index += 1) {
@@ -36,7 +41,7 @@ async function main() {
     { timeout: 120000 },
   );
 
-  const result = await page.evaluate(() => {
+  const result = await page.evaluate(async () => {
     state.phase = 'PLANNING';
     state.latestResult = null;
     state.activeMode = 'runner';
@@ -133,6 +138,36 @@ async function main() {
     const ieuraDestinations = shipDestinationRowsFromPreview(teshimaTail)
       .map((html) => (html.match(/data-port-name="([^"]+)/) || [])[1])
       .filter(Boolean);
+    const teshimaReturn = [...state.shipSailingById.values()]
+      .filter((item) => item.originPort === '家浦' && item.destinationPort === '高松港')
+      .filter((item) => Number(item.departureMinute) >= Number(teshimaTail.currentMinute || 0))
+      .sort((a, b) => Number(a.departureMinute) - Number(b.departureMinute))[0] || null;
+    state.shipPlanning.runner = { origin: '家浦', destination: '高松港' };
+    if (teshimaReturn) addShipStep(teshimaReturn.sailingId);
+    const teshimaRoundTripTail = previewPlayer('runner', null);
+    const takFlight = [...state.flightById.values()]
+      .find((item) => item.originAirport === 'TAK' && item.destinationAirport === 'HND' && item.departureTimeLocal === '09:45')
+      || [...state.flightById.values()].find((item) => item.originAirport === 'TAK' && item.destinationAirport === 'HND')
+      || null;
+    if (takFlight) {
+      player.flight_ticket = {
+        flight_id: takFlight.physicalFlightId,
+        flight_number: flightOperatingNumber(takFlight),
+        origin_airport: takFlight.originAirport,
+        destination_airport: takFlight.destinationAirport,
+        purchase_hhmm: state.startTime,
+        departure_hhmm: takFlight.departureTimeLocal,
+        arrival_hhmm: takFlight.arrivalTimeLocal,
+        fare: resolveFlightFare(takFlight),
+      };
+      planFlightBusAccess(takFlight.physicalFlightId);
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      if (state.busPlannerLoadStatus === 'ready') await refreshBusPlannerVisibleData();
+    }
+    const teshimaBusAccessPreview = planCursorPreview('runner');
+    const teshimaBusAccessRows = takFlight
+      ? busStopRowsHtml(teshimaBusAccessPreview, busPlanningState('runner').targetAirportIata)
+      : [];
 
     return {
       ok: true,
@@ -155,6 +190,16 @@ async function main() {
       teshimaTailKind: teshimaTail.currentState?.kind || null,
       teshimaTailLabel: playerMarkerLabel(teshimaTail),
       ieuraDestinations,
+      teshimaReturnSailingId: teshimaReturn?.sailingId || null,
+      teshimaRoundTripTailKind: teshimaRoundTripTail.currentState?.kind || null,
+      teshimaRoundTripTailPort: teshimaRoundTripTail.currentState?.portName || null,
+      teshimaRoundTripTailStation: teshimaRoundTripTail.currentState?.stationGroupId ? displayNameForGroup(teshimaRoundTripTail.currentState.stationGroupId) : null,
+      teshimaRoundTripTailTime: teshimaRoundTripTail.currentTime,
+      teshimaBusAccessTarget: busPlanningState('runner').targetAirportIata || null,
+      teshimaBusAccessTime: teshimaBusAccessPreview.currentTime,
+      teshimaBusAccessKind: teshimaBusAccessPreview.currentState?.kind || null,
+      teshimaBusAccessPort: teshimaBusAccessPreview.currentState?.portName || null,
+      teshimaBusAccessRowCount: teshimaBusAccessRows.length,
       shipMapActive: state.shipMapActive,
     };
   });
@@ -181,6 +226,13 @@ async function main() {
   if (!result.teshimaCatchable) failures.push(`uncatchable_takamatsu_ieura_${(result.teshimaReasons || []).join('_')}`);
   if (result.teshimaTailKind !== 'PORT_WAIT') failures.push(`bad_teshima_tail_${result.teshimaTailKind}`);
   if (!result.ieuraDestinations?.includes('高松港')) failures.push('missing_ieura_to_takamatsu');
+  if (!result.teshimaReturnSailingId) failures.push('missing_ieura_return_sailing');
+  if (result.teshimaRoundTripTailPort === '家浦') failures.push('teshima_round_trip_stuck_at_ieura');
+  if (hhmmToMinutesLocal(result.teshimaRoundTripTailTime) < hhmmToMinutesLocal('08:55')) failures.push(`bad_teshima_round_trip_time_${result.teshimaRoundTripTailTime}`);
+  if (result.teshimaBusAccessTarget !== 'TAK') failures.push(`bad_teshima_bus_target_${result.teshimaBusAccessTarget || 'missing'}`);
+  if (result.teshimaBusAccessPort === '家浦') failures.push('teshima_bus_access_stuck_at_ieura');
+  if (hhmmToMinutesLocal(result.teshimaBusAccessTime) < hhmmToMinutesLocal('08:55')) failures.push(`bad_teshima_bus_access_time_${result.teshimaBusAccessTime}`);
+  if (!result.teshimaBusAccessRowCount) failures.push('missing_teshima_takamatsu_tak_bus_access_rows');
   if (consoleMessages.length) failures.push(`console_messages_${consoleMessages.length}`);
 
   if (failures.length) {

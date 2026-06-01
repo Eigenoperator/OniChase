@@ -10676,6 +10676,7 @@
       const preview = planCursorPreview(state.activeMode);
       if (validCoordinate(preview?.mapPosition)) return preview.mapPosition;
       if (preview?.currentState?.kind === 'NODE') return stationLonLat(preview.currentState.stationGroupId);
+      if (preview?.currentState?.kind === 'BUS_STOP') return busStopCoordinate(preview.currentState.busStopId);
       if (preview?.currentState?.stationGroupId) return stationLonLat(preview.currentState.stationGroupId);
       if (preview?.mapStationGroupId) return stationLonLat(preview.mapStationGroupId);
       return null;
@@ -10901,6 +10902,8 @@
         const reachableCount = busReachableStopChoices(planCursorPreview(state.activeMode)).length;
         if (reachableCount > 0 || radiusMeters === BUS_PLANNER_AROUND_FALLBACK_RADII_METERS[BUS_PLANNER_AROUND_FALLBACK_RADII_METERS.length - 1]) {
           state.lastBusPlannerAnchorKey = `${anchorKey}:${radiusMeters}:${entries.length}`;
+          updateBusMapLayers();
+          renderTrainOutlook();
           return;
         }
       }
@@ -11104,7 +11107,7 @@
     function focusBusMap() {
       if (!state.map) return;
       const preview = planCursorPreview(state.activeMode);
-      const coordinate = stationLonLat(preview?.currentState?.stationGroupId) || preview?.mapPosition;
+      const coordinate = busMapAnchorCoordinate() || stationLonLat(preview?.currentState?.stationGroupId) || preview?.mapPosition;
       if (validCoordinate(coordinate)) {
         state.map.easeTo({ center: coordinate, zoom: Math.max(state.map.getZoom(), 11.2), duration: 650 });
         return;
@@ -13363,7 +13366,7 @@
           continue;
         }
         if (step.type === 'TAKE_SHIP') {
-          if (currentState.kind !== 'NODE' && currentState.kind !== 'BUS_STOP') break;
+          if (currentState.kind !== 'NODE' && currentState.kind !== 'BUS_STOP' && currentState.kind !== 'PORT_WAIT') break;
           const sailing = state.shipSailingById.get(step.sailing_id);
           if (!sailing) break;
           const catchability = shipCatchability(sailing, { currentState, currentMinute }, playerId);
@@ -13372,7 +13375,9 @@
           const destinationCoordinate = portCoordinate(sailing.destinationPort);
           const originStartCoordinate = currentState.kind === 'NODE'
             ? stationLonLat(currentState.stationGroupId)
-            : busStopCoordinate(currentState.busStopId);
+            : currentState.kind === 'BUS_STOP'
+              ? busStopCoordinate(currentState.busStopId)
+              : portCoordinate(currentState.portName);
           const originWalkMinutes = catchability.originAccess.walkMinutes;
           const originArrivalMinute = currentMinute + originWalkMinutes;
           if (timeCapMinute !== null && timeCapMinute < originArrivalMinute) {
