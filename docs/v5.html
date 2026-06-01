@@ -1407,6 +1407,7 @@
     const BUS_PLANNER_MANIFEST_URL = './data/v5_bus_planner_tiles/manifest.json';
     const BUS_MAP_AROUND_FALLBACK_RADII_METERS = [25000, 60000, 120000];
     const BUS_PLANNER_AROUND_FALLBACK_RADII_METERS = [4000, 12000, 30000, 60000];
+    const PLAYABLE_BUS_SERVICE_CLASSES = new Set(['bus_airport']);
     const V5_ACTIVE_WALKING_THRESHOLD_METERS = 2000;
     const V5_DEFAULT_WALKING_SPEED_METERS_PER_SECOND = 5 / 3.6;
     const V5_MIN_WALKING_SPEED_MULTIPLIER = 0.35;
@@ -5757,6 +5758,8 @@
       portConnectors: null,
       portAccessByName: new Map(),
       portConnectorBusStopById: new Map(),
+      portConnectorBusStopIds: new Set(),
+      portConnectorBusFamilyIds: new Set(),
       nearestPortStationCache: new Map(),
       busMapManifest: null,
       busMapTileCache: new Map(),
@@ -8313,10 +8316,17 @@
       state.portConnectors = payload || null;
       state.portAccessByName = new Map();
       state.portConnectorBusStopById = new Map();
+      state.portConnectorBusStopIds = new Set();
+      state.portConnectorBusFamilyIds = new Set();
       Object.entries(payload?.ports || {}).forEach(([name, access]) => {
         state.portAccessByName.set(name, access);
         (access?.busStops || []).forEach((stop) => {
-          if (stop?.nodeId) state.portConnectorBusStopById.set(stop.nodeId, stop);
+          if (stop?.nodeId) {
+            state.portConnectorBusStopById.set(stop.nodeId, stop);
+            state.portConnectorBusStopIds.add(stop.nodeId);
+            const family = compactBusEntityFamilyId(stop.nodeId);
+            if (family) state.portConnectorBusFamilyIds.add(family);
+          }
         });
       });
     }
@@ -10762,7 +10772,7 @@
         const entries = busMapTileEntriesNear(anchor, radiusMeters);
         const tileFeatureLists = await Promise.all(entries.map(loadBusMapTile));
         const byId = new Map();
-        tileFeatureLists.flat().forEach((feature) => {
+        tileFeatureLists.flat().filter(isPlayableBusMapFeature).forEach((feature) => {
           const id = feature?.id || JSON.stringify(feature?.geometry || {});
           if (!byId.has(id)) byId.set(id, feature);
         });
@@ -10791,6 +10801,62 @@
     function activeBusMapFeatureCollection() {
       if (!state.busMapActive) return { type: 'FeatureCollection', features: [] };
       return state.busMapVisibleFeatures || { type: 'FeatureCollection', features: [] };
+    }
+
+    function compactBusEntityFamilyId(id) {
+      const text = String(id || '');
+      if (!text) return '';
+      const normalized = text.replace(/_\d{8}$/, '');
+      if (normalized.startsWith('bus:route:')) return normalized.replace(/^bus:route:/, 'bus:');
+      return normalized
+        .replace(/^bus:(stop|trip|shape):/, 'bus:')
+        .replace(/:[^:]+$/, '');
+    }
+
+    function portConnectorBusStopIds() {
+      return state.portConnectorBusStopIds || new Set();
+    }
+
+    function portConnectorBusFamilyIds() {
+      return state.portConnectorBusFamilyIds || new Set();
+    }
+
+    function busRouteFamilyMatchesPortConnector(routeId) {
+      const routeFamily = compactBusEntityFamilyId(routeId);
+      if (!routeFamily) return false;
+      return [...portConnectorBusFamilyIds()].some((portFamily) =>
+        routeFamily === portFamily ||
+        routeFamily.startsWith(`${portFamily}:`) ||
+        portFamily.startsWith(`${routeFamily}:`)
+      );
+    }
+
+    function busTripTouchesPortConnector(trip) {
+      const portStopIds = portConnectorBusStopIds();
+      return (trip?.stops || []).some((stop) => portStopIds.has(stop.stopId));
+    }
+
+    function playableBusRouteIdsFromPlannerTile(tile) {
+      const routesById = new Map((tile?.routes || []).map((route) => [route.id, route]));
+      const routeIds = new Set();
+      (tile?.routes || []).forEach((route) => {
+        if (PLAYABLE_BUS_SERVICE_CLASSES.has(route?.serviceClass)) routeIds.add(route.id);
+        else if (busRouteFamilyMatchesPortConnector(route?.id)) routeIds.add(route.id);
+      });
+      (tile?.trips || []).forEach((trip) => {
+        const route = routesById.get(trip?.routeId);
+        if (PLAYABLE_BUS_SERVICE_CLASSES.has(trip?.serviceClass || route?.serviceClass)) routeIds.add(trip.routeId);
+        else if (busTripTouchesPortConnector(trip)) routeIds.add(trip.routeId);
+      });
+      return routeIds;
+    }
+
+    function isPlayableBusMapFeature(feature) {
+      const props = feature?.properties || {};
+      if (PLAYABLE_BUS_SERVICE_CLASSES.has(props.serviceClass)) return true;
+      if (props.kind === 'bus-stop') return portConnectorBusStopIds().has(props.busStopId || feature.id);
+      if (props.kind === 'bus-route') return busRouteFamilyMatchesPortConnector(props.busRouteId);
+      return false;
     }
 
     function busPlannerTileEntriesNear(anchor, radiusMeters) {
@@ -10842,22 +10908,41 @@
       const departuresByStopId = new Map();
       const connectorByKey = new Map();
       (tiles || []).forEach((tile) => {
+        const allowedRouteIds = playableBusRouteIdsFromPlannerTile(tile);
+        const allowedTripIds = new Set((tile?.trips || [])
+          .filter((trip) => allowedRouteIds.has(trip?.routeId))
+          .map((trip) => trip.id)
+          .filter(Boolean));
+        const allowedStopIds = new Set();
+        (tile?.trips || []).forEach((trip) => {
+          if (!allowedTripIds.has(trip?.id)) return;
+          (trip.stops || []).forEach((stop) => {
+            if (stop?.stopId) allowedStopIds.add(stop.stopId);
+          });
+        });
         (tile?.stops || []).forEach((stop) => {
+          if (!allowedStopIds.has(stop?.id)) return;
           if (stop?.id && !stopsById.has(stop.id)) stopsById.set(stop.id, stop);
         });
         (tile?.routes || []).forEach((route) => {
+          if (!allowedRouteIds.has(route?.id)) return;
           if (route?.id && !routesById.has(route.id)) routesById.set(route.id, route);
         });
         (tile?.trips || []).forEach((trip) => {
+          if (!allowedTripIds.has(trip?.id)) return;
           if (trip?.id && !tripsById.has(trip.id)) tripsById.set(trip.id, trip);
         });
         Object.entries(tile?.departuresByStop || {}).forEach(([stopId, rows]) => {
+          if (!allowedStopIds.has(stopId)) return;
+          const filteredRows = (rows || []).filter((row) => allowedTripIds.has(row?.tripId));
+          if (!filteredRows.length) return;
           const existing = departuresByStopId.get(stopId) || [];
-          existing.push(...(rows || []));
+          existing.push(...filteredRows);
           departuresByStopId.set(stopId, existing);
         });
         (tile?.connectors || []).forEach((connector) => {
           if (!connector?.fromStopId || !connector?.toNodeId) return;
+          if (!allowedStopIds.has(connector.fromStopId)) return;
           const key = `${connector.fromStopId}:${connector.toMode}:${connector.toNodeId}`;
           const previous = connectorByKey.get(key);
           if (!previous || Number(connector.distanceMeters || Infinity) < Number(previous.distanceMeters || Infinity)) {
