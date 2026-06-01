@@ -118,6 +118,22 @@ async function main() {
     state.shipPlanning.runner = { origin: '女木港', destination: '男木' };
     const megijimaToOgijimaRows = shipRowsFromPreview(meonTail);
 
+    const teshimaFirst = [...state.shipSailingById.values()]
+      .find((item) => item.originPort === '高松港' && item.destinationPort === '家浦');
+    state.currentGameMinute = hhmmToMinutes(state.startTime);
+    player.steps = [];
+    player.flight_ticket = null;
+    player.start_station_id = nearestStationGroupForPort('高松港')?.stationGroupId || player.start_station_id;
+    state.shipPlanning.runner = { origin: '高松港', destination: '家浦' };
+    state.planningModes.runner = 'ship';
+    const teshimaCatchability = teshimaFirst ? shipCatchability(teshimaFirst, previewPlayer('runner', null)) : null;
+    if (teshimaFirst && teshimaCatchability?.ok) addShipStep(teshimaFirst.sailingId);
+    const teshimaTail = previewPlayer('runner', null);
+    state.shipPlanning.runner = { origin: '家浦', destination: null };
+    const ieuraDestinations = shipDestinationRowsFromPreview(teshimaTail)
+      .map((html) => (html.match(/data-port-name="([^"]+)/) || [])[1])
+      .filter(Boolean);
+
     return {
       ok: true,
       sailingId: sailing.sailingId,
@@ -133,6 +149,12 @@ async function main() {
       meonTailKind: meonTail.currentState?.kind || null,
       meonTailLabel: playerMarkerLabel(meonTail),
       megijimaToOgijimaRowCount: megijimaToOgijimaRows.length,
+      teshimaFirstSailingId: teshimaFirst?.sailingId || null,
+      teshimaCatchable: Boolean(teshimaCatchability?.ok),
+      teshimaReasons: teshimaCatchability?.reasons || [],
+      teshimaTailKind: teshimaTail.currentState?.kind || null,
+      teshimaTailLabel: playerMarkerLabel(teshimaTail),
+      ieuraDestinations,
       shipMapActive: state.shipMapActive,
     };
   });
@@ -155,13 +177,17 @@ async function main() {
   if (!result.meonFirstSailingId) failures.push('missing_meon_first_sailing');
   if (result.meonTailKind !== 'PORT_WAIT') failures.push(`bad_meon_tail_${result.meonTailKind}`);
   if (!result.megijimaToOgijimaRowCount) failures.push('missing_enabled_megijima_to_ogijima_rows');
+  if (!result.teshimaFirstSailingId) failures.push('missing_takamatsu_ieura_sailing');
+  if (!result.teshimaCatchable) failures.push(`uncatchable_takamatsu_ieura_${(result.teshimaReasons || []).join('_')}`);
+  if (result.teshimaTailKind !== 'PORT_WAIT') failures.push(`bad_teshima_tail_${result.teshimaTailKind}`);
+  if (!result.ieuraDestinations?.includes('高松港')) failures.push('missing_ieura_to_takamatsu');
   if (consoleMessages.length) failures.push(`console_messages_${consoleMessages.length}`);
 
   if (failures.length) {
     console.error(JSON.stringify({ ok: false, failures, result, consoleMessages }, null, 2));
     process.exit(1);
   }
-  console.log(`OK v5 ship interaction: markers=${result.markerSamples.length}, firstPort=${result.firstPorts[0]}, onward=${result.onwardDestinations.length}, meon=${Object.keys(result.meonCounts).length}`);
+  console.log(`OK v5 ship interaction: markers=${result.markerSamples.length}, firstPort=${result.firstPorts[0]}, onward=${result.onwardDestinations.length}, meon=${Object.keys(result.meonCounts).length}, teshima=${result.ieuraDestinations.length}`);
 }
 
 main().catch((error) => {
