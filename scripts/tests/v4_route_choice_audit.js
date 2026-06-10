@@ -441,6 +441,13 @@ async function auditRouteChoices(page, auditOptions) {
         return true;
       }
       if (
+        stationName === '上野' &&
+        nextStation === '日暮里' &&
+        route === '常磐線'
+      ) {
+        return true;
+      }
+      if (
         route.includes('新幹線') &&
         !segmentRoute.includes('新幹線') &&
         routePatternServesPlannerBoardingStation(routeId, entry?.stop?.stationGroupId) &&

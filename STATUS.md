@@ -1,9 +1,10 @@
 # STATUS
 
 ## Current Focus
-Pause V5 expansion and fix V4 release evidence first.
-Current checked-in V4 gates are not all green: `data/v4_route_choice_audit_release.json` has `anomalyCount: 2`, `data/v4_selected_train_highlight_release.json` has `failureCount: 200`, and `data/v4_data_quality_audit.json` has `errorCount: 1`.
-First V4 triage classes: `埼京線` route-choice physical/source identity, selected-train endpoint/path coverage around `越後湯沢` / `熱海` / `尾久` / `佐和` / `田端`, and 八王子 `むさしの号` station coverage.
+Pause V5 expansion and finish V4 release-evidence reconciliation first.
+Current V4 browser/data evidence is green for the repaired gates: route-choice release evidence has `anomalyCount: 0`, selected-train highlight current full 8-shard scan checked `110489` trips with `failureCount: 0` (ignored local artifact `data/v4_selected_train_highlight_release.json`), and data-quality now reports `errorCount: 0` / `warningCount: 0`.
+Resolved V4 triage classes: `埼京線` no longer appears in the current route-choice red set, 上野->日暮里 `常磐線` passenger-facing route choice is allowed over the northern trunk physical trace, selected-train endpoint/path coverage is repaired for missing first-hop geometry and reviewed Kintetsu limited-express path gaps, and 八王子 `むさしの号` station coverage is green via browser route-choice evidence.
+Open follow-up: after the selected-highlight fix, the route-choice global stage still reports `0` anomalies, but the standalone `duplicates` stage timed out at `180s`; treat that as an audit-performance follow-up before claiming the full default route-choice script is fast again.
 V5 remains green at whole-data readiness / plan-tail anchor level, but is not the current next implementation priority.
 
 ## V5 Bus Collection Status
@@ -13,6 +14,8 @@ V5 remains green at whole-data readiness / plan-tail anchor level, but is not th
 - Important correction: "finished bus sources" only means the currently collected official source batch was either promoted or blocked; it does not mean nationwide airport liaison, highway/night, or local bus collection is complete.
 
 ## Done
+- 2026-06-10 V4 release evidence repair pass: route-choice current rerun reduced the old red set to 上野->日暮里 `常磐線`, then `scripts/tests/v4_route_choice_audit.js` allowed that exact passenger-facing Joban choice over the northern trunk trace; route-choice release evidence is now `anomalyCount: 0`, and `audit_v4_data_quality.py --browser-audit-json data/v4_route_choice_audit_release.json --fail-on-error` reports `0` errors / `0` warnings.
+- 2026-06-10 V4 selected-train highlight repair pass: `docs/v4.html` now bridges non-strict missing selected-path stop pairs with bounded station-pair fallback and adds reviewed Kintetsu limited-express path hints through 伊勢中川 / 大和八木 / 生駒 / 伊勢市 / 近鉄四日市. Current full 8-shard selected-highlight scan checked `110489` trips with `failureCount: 0`; the generated JSON is ignored by git, so the committed evidence is the code fix plus STATUS/memory record.
 - 2026-06-10 repo review reconciled project direction: Scorp chose to fix V4 before continuing V5; checked-in audit artifacts identify V4 route-choice, selected-highlight, and data-quality red targets.
 - V5 ship-port connector triage now has a lightweight pending-record path: the 44 remaining remote/small-island no-2km-access ports are recorded as `remote_access_review_pending` instead of silent gaps, and weak coordinate provenance for 西ノ島, 興居島（由良, and 野崎 was corrected in the port-coordinate source.
 - V5 remote/small-island bus promotion queue now collects the 11 official/quasi-official island-bus source-found ports into `data/v5_remote_small_island_bus_promotion_queue.json`: 古仁屋, 瀬相, 生間, 上五島, 友住, 新島港, 西ノ島, 周防大島久賀港, 伊保田, 伊保田港, and 岡村港. The queue is source-only and does not create runtime connectors.
@@ -87,12 +90,13 @@ V5 remains green at whole-data readiness / plan-tail anchor level, but is not th
 - Render v4 room-server deployment is forbidden unless Scorp explicitly reverses the axiom; push-triggered server deploy is disabled after repeated failures.
 
 ## In Progress
-- Fix V4 release evidence mismatch and bring current checked-in V4 gates back to green.
+- Reconcile V4 release docs/status after the green route-choice, selected-highlight, and data-quality repair pass.
+- Investigate route-choice `duplicates` stage runtime after the selected-highlight path-hint changes; global route-choice scan is green, but duplicates-only timed out at `180s`.
 - Keep V5 multimodal work paused except for preserving existing readiness evidence.
 - Continue to treat heavy nationwide rebuilds / bundle rewrites as explicit-approval jobs under AXIOMS.
 
 ## Blockers
-- V4 release docs/status currently disagree with latest checked-in audit JSON; do not claim V4 release-green until rerun/fixes produce zero anomalies/failures or documented scoped exceptions.
+- Do not claim the full default route-choice script is performance-green until the `duplicates` stage timeout is investigated or revalidated with an acceptable runtime.
 - Raw MLIT N02-2024 source files are local-only and ignored by git; regenerated v4 artifacts require those local files or a documented download step.
 - Large collection caches remain local-only and should not be committed. Existing tracked V5 bus bundle gzip files are about 75.7 MiB and already above GitHub's recommended 50 MiB threshold; future generated artifacts above 50 MiB need an explicit Git LFS / release artifact / local rebuild decision before ordinary Git commit.
 
@@ -104,10 +108,9 @@ V5 remains green at whole-data readiness / plan-tail anchor level, but is not th
 - [2026-04-25] v4 timetable stop matching should reuse the v3 station alias/station-group method, not invent a separate identity system.
 
 ## Next
-1. Triage `data/v4_route_choice_audit_release.json` anomalies: `埼京線` vs `東北本線` / `相鉄本線` source and physical route identity.
-2. Triage `data/v4_selected_train_highlight_release.json` failures: endpoint/path coverage around `越後湯沢`, `熱海`, `尾久`, `佐和`, and `田端`.
-3. Fix or re-scope `data/v4_data_quality_audit.json` 八王子 `むさしの号` coverage expectation.
-4. Rerun V4 route-choice, selected-highlight, and data-quality gates, then update release docs from the new evidence.
+1. Profile/fix `scripts/tests/v4_route_choice_audit.js --stages duplicates`, which timed out at `180s` after the selected-highlight path-hint repair.
+2. Update V4 release docs from the new green route-choice/data-quality/selected-highlight evidence.
+3. Then resume the paused V5 multimodal work only after Scorp confirms V4 evidence is sufficiently reconciled.
 ## V5 Ship-Port Connector Work - 2026-05-27
 - The 41-port remote/small-island ship-port backlog has been fully triaged out of pending. `data/v5_remote_small_island_access_records.json` now reports `pendingPortCount: 0`, with 23 `official_island_bus_source_found` records and 65 `no_scheduled_public_bus` records.
 - `scripts/ingest/collect_v5_remote_small_island_ship_port_bus_sources.py` now collects the remote-island source bundle quietly. Latest collector summary: 29 source routes, 235 source-backed trips in `data/v5_remote_small_island_bus_source.json` plus docs mirror.

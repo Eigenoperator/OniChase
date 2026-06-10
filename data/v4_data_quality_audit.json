@@ -1,6 +1,6 @@
 {
   "schema": "onichase.v4.data_quality_audit.v1",
-  "generatedAt": "2026-05-12T23:31:41+00:00",
+  "generatedAt": "2026-06-10T21:47:58+00:00",
   "inputs": {
     "mapBundle": "docs/data/v4_gameplay_map_bundle.json.gz",
     "timetable": "docs/data/v4_gameplay_timetable_compact.json.gz",
@@ -11,10 +11,10 @@
     "droppedDirectAudit": "data/v4_dropped_direct_service_audit.json",
     "droppedDirectReview": "data/v4_dropped_direct_service_review.json",
     "transferCandidateAudit": "data/v4_transfer_equivalence_candidate_audit.json",
-    "browserAuditJson": null
+    "browserAuditJson": "data/v4_route_choice_audit_release.json"
   },
   "summary": {
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 0,
     "sections": {
       "collectionCoverage": {
@@ -30,7 +30,7 @@
         "warningCount": 0
       },
       "knownStationCoverage": {
-        "issueCount": 1,
+        "issueCount": 0,
         "warningCount": 0
       },
       "transferEquivalence": {
@@ -66,7 +66,7 @@
   },
   "tripIntegrity": {
     "summary": {
-      "checkedTripCount": 112301,
+      "checkedTripCount": 111261,
       "issueCount": 0,
       "warningCount": 0,
       "countsByKind": {}
@@ -76,7 +76,7 @@
   },
   "trainDisplay": {
     "summary": {
-      "checkedTripCount": 112301,
+      "checkedTripCount": 111261,
       "issueCount": 0,
       "issueSampleCount": 0,
       "warningCount": 0,
@@ -88,28 +88,10 @@
   "knownStationCoverage": {
     "summary": {
       "checkedExpectationCount": 16,
-      "issueCount": 1,
+      "issueCount": 0,
       "warningCount": 0
     },
-    "issues": [
-      {
-        "kind": "known_station_service_underfilled",
-        "station": "八王子",
-        "service": "むさしの号",
-        "minimum": 2,
-        "actual": 0,
-        "departureActual": 0,
-        "transferEquivalent": false,
-        "stationGroupIds": [
-          "SG_N02G_003947"
-        ],
-        "searchedStationGroupIds": [
-          "SG_N02G_003947"
-        ],
-        "samples": [],
-        "departureSamples": []
-      }
-    ],
+    "issues": [],
     "warnings": [],
     "checks": [
       {
@@ -441,6 +423,22 @@
         ],
         "samples": [
           {
+            "tripId": "jr_east_official:成田:train_030_031211:2240m:nex_coupled_full",
+            "route": "成田線",
+            "serviceName": "成田エクスプレス",
+            "displayName": "成田エクスプレス 40号",
+            "serviceNumber": "40号",
+            "headsign": ""
+          },
+          {
+            "tripId": "jr_east_official:成田:train_030_031241:2254m:nex_coupled_full",
+            "route": "成田線",
+            "serviceName": "成田エクスプレス",
+            "displayName": "成田エクスプレス 54号",
+            "serviceNumber": "54号",
+            "headsign": ""
+          },
+          {
             "tripId": "jr_east_official:成田:train_025_029011:2002m",
             "route": "成田線",
             "serviceName": "成田エクスプレス",
@@ -487,25 +485,27 @@
             "displayName": "成田エクスプレス 5号",
             "serviceNumber": "5号",
             "headsign": ""
-          },
-          {
-            "tripId": "jr_east_official:成田:train_030_031101:2007m",
-            "route": "成田線",
-            "serviceName": "成田エクスプレス",
-            "displayName": "成田エクスプレス 7号",
-            "serviceNumber": "7号",
-            "headsign": ""
-          },
-          {
-            "tripId": "jr_east_official:成田:train_030_031111:2023m",
-            "route": "成田線",
-            "serviceName": "成田エクスプレス",
-            "displayName": "成田エクスプレス 23号",
-            "serviceNumber": "23号",
-            "headsign": ""
           }
         ],
         "departureSamples": [
+          {
+            "tripId": "jr_east_official:成田:train_030_031211:2240m:nex_coupled_full",
+            "time": "18:20",
+            "route": "成田線",
+            "serviceName": "成田エクスプレス",
+            "displayName": "成田エクスプレス 40号",
+            "serviceNumber": "40号",
+            "headsign": ""
+          },
+          {
+            "tripId": "jr_east_official:成田:train_030_031241:2254m:nex_coupled_full",
+            "time": "22:39",
+            "route": "成田線",
+            "serviceName": "成田エクスプレス",
+            "displayName": "成田エクスプレス 54号",
+            "serviceNumber": "54号",
+            "headsign": ""
+          },
           {
             "tripId": "jr_east_official:成田:train_025_029011:2002m",
             "time": "08:54",
@@ -558,24 +558,6 @@
             "serviceName": "成田エクスプレス",
             "displayName": "成田エクスプレス 5号",
             "serviceNumber": "5号",
-            "headsign": ""
-          },
-          {
-            "tripId": "jr_east_official:成田:train_030_031101:2007m",
-            "time": "07:56",
-            "route": "成田線",
-            "serviceName": "成田エクスプレス",
-            "displayName": "成田エクスプレス 7号",
-            "serviceNumber": "7号",
-            "headsign": ""
-          },
-          {
-            "tripId": "jr_east_official:成田:train_030_031111:2023m",
-            "time": "12:03",
-            "route": "成田線",
-            "serviceName": "成田エクスプレス",
-            "displayName": "成田エクスプレス 23号",
-            "serviceNumber": "23号",
             "headsign": ""
           }
         ]
@@ -1917,7 +1899,9 @@
           "SG_N02G_003947"
         ],
         "samples": [],
-        "departureSamples": []
+        "departureSamples": [],
+        "browserRouteChoiceActual": 2,
+        "browserRouteChoiceFirstDeparture": "16:55"
       },
       {
         "station": "蒲田",
@@ -2411,11 +2395,1582 @@
   },
   "browserRouteChoices": {
     "summary": {
-      "available": false,
+      "available": true,
+      "stationCount": 9052,
+      "tripCount": 110489,
+      "anomalyCount": 0,
       "issueCount": 0,
       "warningCount": 0
     },
     "issues": [],
-    "warnings": []
+    "warnings": [],
+    "globalChoiceScan": {
+      "checkedRows": 1599736,
+      "checkedChoices": 1599736,
+      "segmentMismatchCount": 0,
+      "virtualOutsideAllowedStationCount": 0,
+      "genericRouteLabelCount": 0,
+      "yokohamaThroughRemoteRouteCount": 0,
+      "routeLikeNamedChoiceCount": 0,
+      "nonKeikyuAirportLineKkSymbolCount": 0,
+      "choiceTraceMismatchCount": 0,
+      "currentPhysicalMismatchCount": 0,
+      "highlightTraceMismatchCount": 0,
+      "samples": [],
+      "tripStart": 0,
+      "tripLimit": null,
+      "tripCount": 110489,
+      "selectedTripCount": 110489,
+      "skipped": false
+    },
+    "globalTrainLabelScan": {
+      "checkedLabels": 1599736,
+      "rawNumberedLineLabelCount": 0,
+      "limitedOrShinkansenMissingNumberCount": 0,
+      "throughDirectionLabelMismatchCount": 0,
+      "meitetsuLabelFormatMismatchCount": 0,
+      "namedLimitedExpressNotSeparatedCount": 0,
+      "limitedExpressGoSuffixCount": 0,
+      "asakusaKeikyuAirportLabelMismatchCount": 0,
+      "checkedThroughPreviewTexts": 579,
+      "throughDisplayTextCount": 0,
+      "samples": [],
+      "tripStart": 0,
+      "tripLimit": null,
+      "tripCount": 110489,
+      "selectedTripCount": 110489,
+      "skipped": false
+    },
+    "knownStationChoices": {
+      "東京": [
+        {
+          "route": "山形新幹線",
+          "firstDeparture": "06:12",
+          "trainCount": 16
+        },
+        {
+          "route": "秋田新幹線",
+          "firstDeparture": "06:32",
+          "trainCount": 20
+        },
+        {
+          "route": "上越新幹線",
+          "firstDeparture": "06:08",
+          "trainCount": 46
+        },
+        {
+          "route": "東海道・山陽新幹線",
+          "firstDeparture": "06:00",
+          "trainCount": 288
+        },
+        {
+          "route": "東北・北海道新幹線",
+          "firstDeparture": "06:00",
+          "trainCount": 107
+        },
+        {
+          "route": "北陸新幹線",
+          "firstDeparture": "06:16",
+          "trainCount": 57
+        },
+        {
+          "route": "横須賀線・総武快速線",
+          "firstDeparture": "06:01",
+          "trainCount": 439
+        },
+        {
+          "route": "京浜東北線・根岸線",
+          "firstDeparture": "06:01",
+          "trainCount": 978
+        },
+        {
+          "route": "京葉線",
+          "firstDeparture": "06:02",
+          "trainCount": 187
+        },
+        {
+          "route": "山手線",
+          "firstDeparture": "06:06",
+          "trainCount": 1058
+        },
+        {
+          "route": "上野東京ライン",
+          "firstDeparture": "06:20",
+          "trainCount": 235
+        },
+        {
+          "route": "中央線快速",
+          "firstDeparture": "06:05",
+          "trainCount": 566
+        },
+        {
+          "route": "東海道線",
+          "firstDeparture": "06:05",
+          "trainCount": 375
+        },
+        {
+          "route": "東京メトロ丸ノ内線",
+          "firstDeparture": "06:00",
+          "trainCount": 528
+        },
+        {
+          "route": "あずさ",
+          "firstDeparture": "16:45",
+          "trainCount": 5
+        },
+        {
+          "route": "かいじ",
+          "firstDeparture": "15:15",
+          "trainCount": 8
+        },
+        {
+          "route": "さざなみ",
+          "firstDeparture": "17:30",
+          "trainCount": 4
+        },
+        {
+          "route": "サンライズ瀬戸・出雲",
+          "firstDeparture": "21:26",
+          "trainCount": 1
+        },
+        {
+          "route": "しおさい",
+          "firstDeparture": "07:37",
+          "trainCount": 7
+        },
+        {
+          "route": "ときわ",
+          "firstDeparture": "07:13",
+          "trainCount": 38
+        },
+        {
+          "route": "ひたち",
+          "firstDeparture": "06:53",
+          "trainCount": 30
+        },
+        {
+          "route": "わかしお",
+          "firstDeparture": "07:15",
+          "trainCount": 10
+        },
+        {
+          "route": "湘南",
+          "firstDeparture": "17:30",
+          "trainCount": 10
+        },
+        {
+          "route": "成田エクスプレス",
+          "firstDeparture": "06:18",
+          "trainCount": 84
+        },
+        {
+          "route": "踊り子",
+          "firstDeparture": "09:00",
+          "trainCount": 9
+        }
+      ],
+      "上野": [
+        {
+          "route": "山形新幹線",
+          "firstDeparture": "06:18",
+          "trainCount": 28
+        },
+        {
+          "route": "秋田新幹線",
+          "firstDeparture": "06:38",
+          "trainCount": 20
+        },
+        {
+          "route": "上越新幹線",
+          "firstDeparture": "06:14",
+          "trainCount": 71
+        },
+        {
+          "route": "東北・北海道新幹線",
+          "firstDeparture": "06:06",
+          "trainCount": 183
+        },
+        {
+          "route": "北陸新幹線",
+          "firstDeparture": "06:22",
+          "trainCount": 108
+        },
+        {
+          "route": "京浜東北線・根岸線",
+          "firstDeparture": "06:03",
+          "trainCount": 976
+        },
+        {
+          "route": "山手線",
+          "firstDeparture": "06:00",
+          "trainCount": 1059
+        },
+        {
+          "route": "上野東京ライン",
+          "firstDeparture": "06:17",
+          "trainCount": 351
+        },
+        {
+          "route": "常磐線",
+          "firstDeparture": "06:04",
+          "trainCount": 129
+        },
+        {
+          "route": "東北本線",
+          "firstDeparture": "06:00",
+          "trainCount": 219
+        },
+        {
+          "route": "京成本線",
+          "firstDeparture": "06:00",
+          "trainCount": 411
+        },
+        {
+          "route": "東京メトロ銀座線",
+          "firstDeparture": "06:04",
+          "trainCount": 625
+        },
+        {
+          "route": "東京メトロ日比谷線",
+          "firstDeparture": "06:01",
+          "trainCount": 548
+        },
+        {
+          "route": "あかぎ",
+          "firstDeparture": "18:00",
+          "trainCount": 6
+        },
+        {
+          "route": "ときわ",
+          "firstDeparture": "07:07",
+          "trainCount": 39
+        },
+        {
+          "route": "ひたち",
+          "firstDeparture": "07:00",
+          "trainCount": 30
+        },
+        {
+          "route": "草津・四万",
+          "firstDeparture": "10:00",
+          "trainCount": 2
+        }
+      ],
+      "品川": [
+        {
+          "route": "東海道・山陽新幹線",
+          "firstDeparture": "06:00",
+          "trainCount": 446
+        },
+        {
+          "route": "京浜東北線・根岸線",
+          "firstDeparture": "06:02",
+          "trainCount": 979
+        },
+        {
+          "route": "山手線",
+          "firstDeparture": "06:03",
+          "trainCount": 1051
+        },
+        {
+          "route": "東海道線",
+          "firstDeparture": "06:01",
+          "trainCount": 874
+        },
+        {
+          "route": "京急本線",
+          "firstDeparture": "06:01",
+          "trainCount": 617
+        },
+        {
+          "route": "ときわ",
+          "firstDeparture": "07:15",
+          "trainCount": 19
+        },
+        {
+          "route": "ひたち",
+          "firstDeparture": "06:45",
+          "trainCount": 15
+        },
+        {
+          "route": "湘南",
+          "firstDeparture": "07:11",
+          "trainCount": 17
+        },
+        {
+          "route": "成田エクスプレス",
+          "firstDeparture": "06:05",
+          "trainCount": 54
+        },
+        {
+          "route": "踊り子",
+          "firstDeparture": "09:08",
+          "trainCount": 18
+        }
+      ],
+      "新橋": [
+        {
+          "route": "京浜東北線・根岸線",
+          "firstDeparture": "06:01",
+          "trainCount": 768
+        },
+        {
+          "route": "山手線",
+          "firstDeparture": "06:02",
+          "trainCount": 1058
+        },
+        {
+          "route": "東海道線",
+          "firstDeparture": "06:04",
+          "trainCount": 1013
+        },
+        {
+          "route": "都営浅草線",
+          "firstDeparture": "06:01",
+          "trainCount": 667
+        },
+        {
+          "route": "東京メトロ銀座線",
+          "firstDeparture": "06:00",
+          "trainCount": 640
+        },
+        {
+          "route": "ゆりかもめ東京臨海新交通臨海線",
+          "firstDeparture": "06:05",
+          "trainCount": 224
+        },
+        {
+          "route": "湘南",
+          "firstDeparture": "08:10",
+          "trainCount": 2
+        }
+      ],
+      "大宮": [
+        {
+          "route": "山形新幹線",
+          "firstDeparture": "06:37",
+          "trainCount": 28
+        },
+        {
+          "route": "秋田新幹線",
+          "firstDeparture": "06:57",
+          "trainCount": 21
+        },
+        {
+          "route": "上越新幹線",
+          "firstDeparture": "06:33",
+          "trainCount": 73
+        },
+        {
+          "route": "東北・北海道新幹線",
+          "firstDeparture": "06:25",
+          "trainCount": 192
+        },
+        {
+          "route": "北陸新幹線",
+          "firstDeparture": "06:41",
+          "trainCount": 110
+        },
+        {
+          "route": "京浜東北線・根岸線",
+          "firstDeparture": "06:05",
+          "trainCount": 315
+        },
+        {
+          "route": "高崎線",
+          "firstDeparture": "06:10",
+          "trainCount": 164
+        },
+        {
+          "route": "埼京線",
+          "firstDeparture": "06:03",
+          "trainCount": 303
+        },
+        {
+          "route": "湘南新宿ライン",
+          "firstDeparture": "06:07",
+          "trainCount": 67
+        },
+        {
+          "route": "東北本線",
+          "firstDeparture": "06:10",
+          "trainCount": 476
+        },
+        {
+          "route": "東武野田線",
+          "firstDeparture": "06:00",
+          "trainCount": 259
+        },
+        {
+          "route": "埼玉新都市交通伊奈線",
+          "firstDeparture": "06:00",
+          "trainCount": 116
+        },
+        {
+          "route": "あかぎ",
+          "firstDeparture": "06:41",
+          "trainCount": 10
+        },
+        {
+          "route": "あしかが大藤新宿号",
+          "firstDeparture": "16:54",
+          "trainCount": 1
+        },
+        {
+          "route": "きぬ",
+          "firstDeparture": "11:02",
+          "trainCount": 2
+        },
+        {
+          "route": "きぬがわ",
+          "firstDeparture": "11:02",
+          "trainCount": 1
+        },
+        {
+          "route": "スペーシア",
+          "firstDeparture": "10:04",
+          "trainCount": 2
+        },
+        {
+          "route": "スペーシア日光",
+          "firstDeparture": "10:04",
+          "trainCount": 1
+        },
+        {
+          "route": "むさしの号",
+          "firstDeparture": "08:49",
+          "trainCount": 3
+        },
+        {
+          "route": "草津・四万",
+          "firstDeparture": "10:26",
+          "trainCount": 4
+        }
+      ],
+      "福島": [
+        {
+          "route": "山形新幹線",
+          "firstDeparture": "07:48",
+          "trainCount": 42
+        },
+        {
+          "route": "東北・北海道新幹線",
+          "firstDeparture": "06:33",
+          "trainCount": 91
+        },
+        {
+          "route": "奥羽線",
+          "firstDeparture": "07:14",
+          "trainCount": 11
+        },
+        {
+          "route": "東北本線",
+          "firstDeparture": "06:01",
+          "trainCount": 57
+        },
+        {
+          "route": "阿武隈急行線",
+          "firstDeparture": "06:00",
+          "trainCount": 25
+        },
+        {
+          "route": "福島交通飯坂線",
+          "firstDeparture": "06:12",
+          "trainCount": 48
+        }
+      ],
+      "米沢": [
+        {
+          "route": "山形新幹線",
+          "firstDeparture": "07:02",
+          "trainCount": 55
+        },
+        {
+          "route": "奥羽線",
+          "firstDeparture": "06:04",
+          "trainCount": 24
+        },
+        {
+          "route": "米坂線",
+          "firstDeparture": "06:38",
+          "trainCount": 9
+        }
+      ],
+      "山形": [
+        {
+          "route": "山形新幹線",
+          "firstDeparture": "06:25",
+          "trainCount": 37
+        },
+        {
+          "route": "奥羽線",
+          "firstDeparture": "06:28",
+          "trainCount": 67
+        }
+      ],
+      "新庄": [
+        {
+          "route": "山形新幹線",
+          "firstDeparture": "07:15",
+          "trainCount": 15
+        },
+        {
+          "route": "奥羽線",
+          "firstDeparture": "06:24",
+          "trainCount": 21
+        },
+        {
+          "route": "陸羽西線",
+          "firstDeparture": "06:27",
+          "trainCount": 9
+        }
+      ],
+      "盛岡": [
+        {
+          "route": "秋田新幹線",
+          "firstDeparture": "07:37",
+          "trainCount": 41
+        },
+        {
+          "route": "東北・北海道新幹線",
+          "firstDeparture": "06:10",
+          "trainCount": 90
+        },
+        {
+          "route": "山田線",
+          "firstDeparture": "06:32",
+          "trainCount": 19
+        },
+        {
+          "route": "田沢湖線",
+          "firstDeparture": "07:42",
+          "trainCount": 12
+        },
+        {
+          "route": "東北本線",
+          "firstDeparture": "06:39",
+          "trainCount": 45
+        },
+        {
+          "route": "アイジーアールいわて銀河鉄道いわて銀河鉄道線",
+          "firstDeparture": "06:25",
+          "trainCount": 45
+        }
+      ],
+      "田沢湖": [
+        {
+          "route": "秋田新幹線",
+          "firstDeparture": "08:12",
+          "trainCount": 58
+        },
+        {
+          "route": "田沢湖線",
+          "firstDeparture": "06:10",
+          "trainCount": 11
+        }
+      ],
+      "大曲": [
+        {
+          "route": "秋田新幹線",
+          "firstDeparture": "06:41",
+          "trainCount": 62
+        },
+        {
+          "route": "奥羽線",
+          "firstDeparture": "06:44",
+          "trainCount": 36
+        },
+        {
+          "route": "田沢湖線",
+          "firstDeparture": "06:22",
+          "trainCount": 8
+        }
+      ],
+      "秋田": [
+        {
+          "route": "秋田新幹線",
+          "firstDeparture": "06:09",
+          "trainCount": 22
+        },
+        {
+          "route": "羽越線",
+          "firstDeparture": "06:42",
+          "trainCount": 18
+        },
+        {
+          "route": "奥羽線",
+          "firstDeparture": "06:13",
+          "trainCount": 55
+        },
+        {
+          "route": "いなほ",
+          "firstDeparture": "10:44",
+          "trainCount": 2
+        },
+        {
+          "route": "スーパーつがる",
+          "firstDeparture": "12:49",
+          "trainCount": 1
+        },
+        {
+          "route": "つがる",
+          "firstDeparture": "08:39",
+          "trainCount": 2
+        },
+        {
+          "route": "弘前さくらまつり",
+          "firstDeparture": "09:40",
+          "trainCount": 1
+        }
+      ],
+      "青梅": [
+        {
+          "route": "青梅線",
+          "firstDeparture": "06:02",
+          "trainCount": 122
+        }
+      ],
+      "八王子": [
+        {
+          "route": "横浜線",
+          "firstDeparture": "06:08",
+          "trainCount": 110
+        },
+        {
+          "route": "中央線快速",
+          "firstDeparture": "06:04",
+          "trainCount": 476
+        },
+        {
+          "route": "八高線",
+          "firstDeparture": "06:09",
+          "trainCount": 44
+        },
+        {
+          "route": "京王線",
+          "firstDeparture": "06:03",
+          "trainCount": 116
+        },
+        {
+          "route": "あずさ",
+          "firstDeparture": "07:30",
+          "trainCount": 35
+        },
+        {
+          "route": "アルプス",
+          "firstDeparture": "24:46",
+          "trainCount": 1
+        },
+        {
+          "route": "かいじ",
+          "firstDeparture": "06:49",
+          "trainCount": 30
+        },
+        {
+          "route": "むさしの号",
+          "firstDeparture": "16:55",
+          "trainCount": 2
+        },
+        {
+          "route": "富士回遊",
+          "firstDeparture": "08:03",
+          "trainCount": 10
+        }
+      ],
+      "米原": [
+        {
+          "route": "東海道・山陽新幹線",
+          "firstDeparture": "06:47",
+          "trainCount": 68
+        },
+        {
+          "route": "東海道線",
+          "firstDeparture": "06:00",
+          "trainCount": 153
+        },
+        {
+          "route": "北陸線",
+          "firstDeparture": "06:11",
+          "trainCount": 35
+        },
+        {
+          "route": "近江鉄道本線",
+          "firstDeparture": "07:01",
+          "trainCount": 17
+        },
+        {
+          "route": "しらさぎ",
+          "firstDeparture": "07:48",
+          "trainCount": 23
+        },
+        {
+          "route": "ひだ",
+          "firstDeparture": "09:22",
+          "trainCount": 5
+        },
+        {
+          "route": "らくラクびわこ",
+          "firstDeparture": "06:04",
+          "trainCount": 1
+        }
+      ],
+      "敦賀": [
+        {
+          "route": "北陸新幹線",
+          "firstDeparture": "06:12",
+          "trainCount": 41
+        },
+        {
+          "route": "小浜線",
+          "firstDeparture": "06:17",
+          "trainCount": 12
+        },
+        {
+          "route": "北陸線",
+          "firstDeparture": "06:55",
+          "trainCount": 27
+        },
+        {
+          "route": "ハピラインふくい線",
+          "firstDeparture": "06:05",
+          "trainCount": 31
+        },
+        {
+          "route": "サンダーバード",
+          "firstDeparture": "07:05",
+          "trainCount": 25
+        },
+        {
+          "route": "しらさぎ",
+          "firstDeparture": "07:11",
+          "trainCount": 15
+        }
+      ],
+      "京都": [
+        {
+          "route": "東海道・山陽新幹線",
+          "firstDeparture": "06:03",
+          "trainCount": 430
+        },
+        {
+          "route": "山陰線",
+          "firstDeparture": "06:04",
+          "trainCount": 82
+        },
+        {
+          "route": "東海道線",
+          "firstDeparture": "06:03",
+          "trainCount": 422
+        },
+        {
+          "route": "奈良線",
+          "firstDeparture": "06:11",
+          "trainCount": 99
+        },
+        {
+          "route": "京都市烏丸線",
+          "firstDeparture": "06:09",
+          "trainCount": 327
+        },
+        {
+          "route": "近鉄京都線",
+          "firstDeparture": "06:00",
+          "trainCount": 186
+        },
+        {
+          "route": "あをによし",
+          "firstDeparture": "10:55",
+          "trainCount": 4
+        },
+        {
+          "route": "きのさき",
+          "firstDeparture": "07:32",
+          "trainCount": 10
+        },
+        {
+          "route": "くろしお",
+          "firstDeparture": "17:47",
+          "trainCount": 1
+        },
+        {
+          "route": "サンダーバード",
+          "firstDeparture": "06:59",
+          "trainCount": 50
+        },
+        {
+          "route": "しまかぜ",
+          "firstDeparture": "10:00",
+          "trainCount": 1
+        },
+        {
+          "route": "スーパーはくと",
+          "firstDeparture": "07:06",
+          "trainCount": 2
+        },
+        {
+          "route": "はしだて",
+          "firstDeparture": "08:38",
+          "trainCount": 6
+        },
+        {
+          "route": "はるか",
+          "firstDeparture": "06:21",
+          "trainCount": 31
+        },
+        {
+          "route": "ビスタカー",
+          "firstDeparture": "07:50",
+          "trainCount": 12
+        },
+        {
+          "route": "ひだ",
+          "firstDeparture": "08:31",
+          "trainCount": 4
+        },
+        {
+          "route": "まいづる",
+          "firstDeparture": "08:38",
+          "trainCount": 8
+        },
+        {
+          "route": "らくラクはりま",
+          "firstDeparture": "19:35",
+          "trainCount": 1
+        },
+        {
+          "route": "らくラクびわこ",
+          "firstDeparture": "07:03",
+          "trainCount": 3
+        },
+        {
+          "route": "伊勢志摩ライナー",
+          "firstDeparture": "09:10",
+          "trainCount": 4
+        }
+      ],
+      "新大阪": [
+        {
+          "route": "山陽・九州新幹線",
+          "firstDeparture": "06:00",
+          "trainCount": 28
+        },
+        {
+          "route": "東海道・山陽新幹線",
+          "firstDeparture": "06:00",
+          "trainCount": 287
+        },
+        {
+          "route": "おおさか東線",
+          "firstDeparture": "06:17",
+          "trainCount": 70
+        },
+        {
+          "route": "東海道線",
+          "firstDeparture": "06:00",
+          "trainCount": 666
+        },
+        {
+          "route": "大阪市高速電気軌道御堂筋線",
+          "firstDeparture": "06:04",
+          "trainCount": 440
+        },
+        {
+          "route": "くろしお",
+          "firstDeparture": "07:34",
+          "trainCount": 19
+        },
+        {
+          "route": "こうのとり",
+          "firstDeparture": "08:09",
+          "trainCount": 14
+        },
+        {
+          "route": "サンダーバード",
+          "firstDeparture": "06:34",
+          "trainCount": 50
+        },
+        {
+          "route": "スーパーはくと",
+          "firstDeparture": "07:31",
+          "trainCount": 4
+        },
+        {
+          "route": "はるか",
+          "firstDeparture": "06:16",
+          "trainCount": 60
+        },
+        {
+          "route": "ひだ",
+          "firstDeparture": "08:04",
+          "trainCount": 4
+        },
+        {
+          "route": "らくラクはりま",
+          "firstDeparture": "07:28",
+          "trainCount": 3
+        },
+        {
+          "route": "らくラクびわこ",
+          "firstDeparture": "07:27",
+          "trainCount": 3
+        },
+        {
+          "route": "らくラクやまと",
+          "firstDeparture": "19:42",
+          "trainCount": 1
+        }
+      ],
+      "白浜": [
+        {
+          "route": "紀勢線",
+          "firstDeparture": "06:41",
+          "trainCount": 19
+        },
+        {
+          "route": "くろしお",
+          "firstDeparture": "06:39",
+          "trainCount": 21
+        }
+      ],
+      "新宿": [
+        {
+          "route": "埼京線",
+          "firstDeparture": "06:03",
+          "trainCount": 383
+        },
+        {
+          "route": "山手線",
+          "firstDeparture": "06:02",
+          "trainCount": 1107
+        },
+        {
+          "route": "湘南新宿ライン",
+          "firstDeparture": "06:40",
+          "trainCount": 138
+        },
+        {
+          "route": "中央・総武線各駅停車",
+          "firstDeparture": "06:07",
+          "trainCount": 783
+        },
+        {
+          "route": "中央線快速",
+          "firstDeparture": "06:02",
+          "trainCount": 863
+        },
+        {
+          "route": "京王線",
+          "firstDeparture": "06:01",
+          "trainCount": 305
+        },
+        {
+          "route": "小田急小田原線",
+          "firstDeparture": "06:00",
+          "trainCount": 558
+        },
+        {
+          "route": "都営新宿線",
+          "firstDeparture": "06:04",
+          "trainCount": 191
+        },
+        {
+          "route": "都営大江戸線",
+          "firstDeparture": "06:01",
+          "trainCount": 415
+        },
+        {
+          "route": "東京メトロ丸ノ内線",
+          "firstDeparture": "06:01",
+          "trainCount": 527
+        },
+        {
+          "route": "あずさ",
+          "firstDeparture": "07:00",
+          "trainCount": 24
+        },
+        {
+          "route": "アルプス",
+          "firstDeparture": "23:58",
+          "trainCount": 1
+        },
+        {
+          "route": "えのしま",
+          "firstDeparture": "07:10",
+          "trainCount": 2
+        },
+        {
+          "route": "かいじ",
+          "firstDeparture": "07:32",
+          "trainCount": 20
+        },
+        {
+          "route": "きぬがわ",
+          "firstDeparture": "10:31",
+          "trainCount": 1
+        },
+        {
+          "route": "さがみ",
+          "firstDeparture": "07:00",
+          "trainCount": 7
+        },
+        {
+          "route": "スペーシア日光",
+          "firstDeparture": "09:34",
+          "trainCount": 1
+        },
+        {
+          "route": "はこね",
+          "firstDeparture": "07:37",
+          "trainCount": 14
+        },
+        {
+          "route": "ふじさん",
+          "firstDeparture": "06:40",
+          "trainCount": 6
+        },
+        {
+          "route": "ホームウェイ",
+          "firstDeparture": "17:00",
+          "trainCount": 19
+        },
+        {
+          "route": "湘南",
+          "firstDeparture": "18:25",
+          "trainCount": 2
+        },
+        {
+          "route": "成田エクスプレス",
+          "firstDeparture": "06:34",
+          "trainCount": 25
+        },
+        {
+          "route": "富士回遊",
+          "firstDeparture": "07:30",
+          "trainCount": 5
+        }
+      ],
+      "池袋": [
+        {
+          "route": "埼京線",
+          "firstDeparture": "06:01",
+          "trainCount": 451
+        },
+        {
+          "route": "山手線",
+          "firstDeparture": "06:00",
+          "trainCount": 1055
+        },
+        {
+          "route": "湘南新宿ライン",
+          "firstDeparture": "06:34",
+          "trainCount": 138
+        },
+        {
+          "route": "西武池袋線",
+          "firstDeparture": "06:01",
+          "trainCount": 550
+        },
+        {
+          "route": "東武東上本線",
+          "firstDeparture": "06:00",
+          "trainCount": 894
+        },
+        {
+          "route": "東京メトロ丸ノ内線",
+          "firstDeparture": "06:05",
+          "trainCount": 329
+        },
+        {
+          "route": "東京メトロ副都心線",
+          "firstDeparture": "06:02",
+          "trainCount": 340
+        },
+        {
+          "route": "東京メトロ有楽町線",
+          "firstDeparture": "06:00",
+          "trainCount": 726
+        },
+        {
+          "route": "あかぎ",
+          "firstDeparture": "09:03",
+          "trainCount": 1
+        },
+        {
+          "route": "あしかが大藤新宿号",
+          "firstDeparture": "17:18",
+          "trainCount": 1
+        },
+        {
+          "route": "きぬ",
+          "firstDeparture": "10:37",
+          "trainCount": 1
+        },
+        {
+          "route": "きぬがわ",
+          "firstDeparture": "10:37",
+          "trainCount": 1
+        },
+        {
+          "route": "スペーシア",
+          "firstDeparture": "09:40",
+          "trainCount": 1
+        },
+        {
+          "route": "スペーシア日光",
+          "firstDeparture": "09:40",
+          "trainCount": 1
+        }
+      ],
+      "横浜": [
+        {
+          "route": "京浜東北線・根岸線",
+          "firstDeparture": "06:02",
+          "trainCount": 1009
+        },
+        {
+          "route": "湘南新宿ライン",
+          "firstDeparture": "06:26",
+          "trainCount": 138
+        },
+        {
+          "route": "東海道線",
+          "firstDeparture": "06:03",
+          "trainCount": 821
+        },
+        {
+          "route": "京急本線",
+          "firstDeparture": "06:05",
+          "trainCount": 633
+        },
+        {
+          "route": "相鉄本線",
+          "firstDeparture": "06:06",
+          "trainCount": 187
+        },
+        {
+          "route": "東急東横線",
+          "firstDeparture": "06:04",
+          "trainCount": 586
+        },
+        {
+          "route": "みなとみらい線",
+          "firstDeparture": "06:03",
+          "trainCount": 309
+        },
+        {
+          "route": "横浜市営地下鉄ブルーライン",
+          "firstDeparture": "06:04",
+          "trainCount": 346
+        },
+        {
+          "route": "サンライズ瀬戸・出雲",
+          "firstDeparture": "21:52",
+          "trainCount": 2
+        },
+        {
+          "route": "鎌倉 平日おさんぽ号",
+          "firstDeparture": "10:09",
+          "trainCount": 1
+        },
+        {
+          "route": "成田エクスプレス",
+          "firstDeparture": "06:22",
+          "trainCount": 31
+        },
+        {
+          "route": "踊り子",
+          "firstDeparture": "09:24",
+          "trainCount": 18
+        }
+      ],
+      "大船": [
+        {
+          "route": "横須賀線・総武快速線",
+          "firstDeparture": "06:00",
+          "trainCount": 299
+        },
+        {
+          "route": "京浜東北線・根岸線",
+          "firstDeparture": "06:10",
+          "trainCount": 272
+        },
+        {
+          "route": "湘南新宿ライン",
+          "firstDeparture": "06:10",
+          "trainCount": 71
+        },
+        {
+          "route": "東海道線",
+          "firstDeparture": "06:00",
+          "trainCount": 562
+        },
+        {
+          "route": "湘南モノレール江の島線",
+          "firstDeparture": "06:07",
+          "trainCount": 137
+        },
+        {
+          "route": "湘南",
+          "firstDeparture": "06:42",
+          "trainCount": 14
+        },
+        {
+          "route": "成田エクスプレス",
+          "firstDeparture": "06:06",
+          "trainCount": 15
+        },
+        {
+          "route": "踊り子",
+          "firstDeparture": "09:37",
+          "trainCount": 12
+        }
+      ],
+      "小田原": [
+        {
+          "route": "東海道・山陽新幹線",
+          "firstDeparture": "06:17",
+          "trainCount": 91
+        },
+        {
+          "route": "東海道線",
+          "firstDeparture": "06:05",
+          "trainCount": 238
+        },
+        {
+          "route": "小田急小田原線",
+          "firstDeparture": "06:01",
+          "trainCount": 130
+        },
+        {
+          "route": "伊豆箱根鉄道大雄山線",
+          "firstDeparture": "06:12",
+          "trainCount": 70
+        },
+        {
+          "route": "小田急箱根鉄道線",
+          "firstDeparture": "06:16",
+          "trainCount": 50
+        },
+        {
+          "route": "さがみ",
+          "firstDeparture": "08:26",
+          "trainCount": 7
+        },
+        {
+          "route": "はこね",
+          "firstDeparture": "09:05",
+          "trainCount": 30
+        },
+        {
+          "route": "ホームウェイ",
+          "firstDeparture": "18:15",
+          "trainCount": 2
+        },
+        {
+          "route": "メトロはこね",
+          "firstDeparture": "11:33",
+          "trainCount": 3
+        },
+        {
+          "route": "モーニングウェイ",
+          "firstDeparture": "06:33",
+          "trainCount": 2
+        },
+        {
+          "route": "湘南",
+          "firstDeparture": "06:20",
+          "trainCount": 8
+        },
+        {
+          "route": "踊り子",
+          "firstDeparture": "10:01",
+          "trainCount": 14
+        }
+      ],
+      "逗子": [
+        {
+          "route": "横須賀線・総武快速線",
+          "firstDeparture": "06:01",
+          "trainCount": 289
+        }
+      ],
+      "宇都宮": [
+        {
+          "route": "山形新幹線",
+          "firstDeparture": "07:01",
+          "trainCount": 26
+        },
+        {
+          "route": "東北・北海道新幹線",
+          "firstDeparture": "06:53",
+          "trainCount": 102
+        },
+        {
+          "route": "東北本線",
+          "firstDeparture": "06:11",
+          "trainCount": 125
+        },
+        {
+          "route": "日光線",
+          "firstDeparture": "06:30",
+          "trainCount": 24
+        }
+      ],
+      "高崎": [
+        {
+          "route": "上越新幹線",
+          "firstDeparture": "06:58",
+          "trainCount": 63
+        },
+        {
+          "route": "北陸新幹線",
+          "firstDeparture": "06:50",
+          "trainCount": 66
+        },
+        {
+          "route": "高崎線",
+          "firstDeparture": "06:00",
+          "trainCount": 114
+        },
+        {
+          "route": "上越線",
+          "firstDeparture": "06:10",
+          "trainCount": 78
+        },
+        {
+          "route": "信越線",
+          "firstDeparture": "06:58",
+          "trainCount": 22
+        },
+        {
+          "route": "上信電鉄上信線",
+          "firstDeparture": "06:31",
+          "trainCount": 31
+        },
+        {
+          "route": "あかぎ",
+          "firstDeparture": "07:40",
+          "trainCount": 1
+        },
+        {
+          "route": "草津・四万",
+          "firstDeparture": "11:19",
+          "trainCount": 4
+        }
+      ],
+      "成田空港": [
+        {
+          "route": "成田線",
+          "firstDeparture": "06:52",
+          "trainCount": 49
+        },
+        {
+          "route": "京成成田空港線",
+          "firstDeparture": "08:28",
+          "trainCount": 14
+        },
+        {
+          "route": "京成本線",
+          "firstDeparture": "06:00",
+          "trainCount": 187
+        },
+        {
+          "route": "成田エクスプレス",
+          "firstDeparture": "07:37",
+          "trainCount": 42
+        }
+      ],
+      "松本": [
+        {
+          "route": "篠ノ井線",
+          "firstDeparture": "06:17",
+          "trainCount": 83
+        },
+        {
+          "route": "大糸線",
+          "firstDeparture": "06:28",
+          "trainCount": 24
+        },
+        {
+          "route": "アルピコ交通上高地線",
+          "firstDeparture": "06:31",
+          "trainCount": 25
+        },
+        {
+          "route": "あずさ",
+          "firstDeparture": "06:30",
+          "trainCount": 17
+        },
+        {
+          "route": "アルプス",
+          "firstDeparture": "28:49",
+          "trainCount": 1
+        },
+        {
+          "route": "しなの",
+          "firstDeparture": "07:04",
+          "trainCount": 26
+        },
+        {
+          "route": "信州",
+          "firstDeparture": "07:10",
+          "trainCount": 3
+        }
+      ],
+      "大月": [
+        {
+          "route": "中央線",
+          "firstDeparture": "06:00",
+          "trainCount": 90
+        },
+        {
+          "route": "富士山麓電気鉄道大月線",
+          "firstDeparture": "06:32",
+          "trainCount": 33
+        },
+        {
+          "route": "あずさ",
+          "firstDeparture": "07:57",
+          "trainCount": 9
+        },
+        {
+          "route": "かいじ",
+          "firstDeparture": "06:16",
+          "trainCount": 30
+        },
+        {
+          "route": "フジサン特急",
+          "firstDeparture": "09:48",
+          "trainCount": 2
+        },
+        {
+          "route": "富士回遊",
+          "firstDeparture": "08:40",
+          "trainCount": 14
+        },
+        {
+          "route": "富士山ビュー特急",
+          "firstDeparture": "10:49",
+          "trainCount": 2
+        }
+      ],
+      "蘇我": [
+        {
+          "route": "外房線",
+          "firstDeparture": "06:03",
+          "trainCount": 211
+        },
+        {
+          "route": "京葉線",
+          "firstDeparture": "06:04",
+          "trainCount": 104
+        },
+        {
+          "route": "内房線",
+          "firstDeparture": "06:10",
+          "trainCount": 71
+        },
+        {
+          "route": "さざなみ",
+          "firstDeparture": "06:24",
+          "trainCount": 7
+        },
+        {
+          "route": "わかしお",
+          "firstDeparture": "06:32",
+          "trainCount": 20
+        }
+      ],
+      "五井": [
+        {
+          "route": "内房線",
+          "firstDeparture": "06:03",
+          "trainCount": 137
+        },
+        {
+          "route": "小湊鐵道線",
+          "firstDeparture": "06:15",
+          "trainCount": 26
+        },
+        {
+          "route": "さざなみ",
+          "firstDeparture": "06:15",
+          "trainCount": 7
+        }
+      ],
+      "木更津": [
+        {
+          "route": "久留里線",
+          "firstDeparture": "06:25",
+          "trainCount": 17
+        },
+        {
+          "route": "内房線",
+          "firstDeparture": "06:10",
+          "trainCount": 135
+        },
+        {
+          "route": "さざなみ",
+          "firstDeparture": "07:03",
+          "trainCount": 6
+        }
+      ],
+      "上総一ノ宮": [
+        {
+          "route": "外房線",
+          "firstDeparture": "06:04",
+          "trainCount": 65
+        },
+        {
+          "route": "わかしお",
+          "firstDeparture": "07:09",
+          "trainCount": 16
+        }
+      ],
+      "成田": [
+        {
+          "route": "成田線",
+          "firstDeparture": "06:02",
+          "trainCount": 215
+        },
+        {
+          "route": "京成東成田線",
+          "firstDeparture": "06:18",
+          "trainCount": 53
+        },
+        {
+          "route": "京成本線",
+          "firstDeparture": "06:04",
+          "trainCount": 287
+        },
+        {
+          "route": "成田エクスプレス",
+          "firstDeparture": "07:48",
+          "trainCount": 12
+        }
+      ],
+      "佐倉": [
+        {
+          "route": "成田線",
+          "firstDeparture": "06:00",
+          "trainCount": 93
+        },
+        {
+          "route": "総武線",
+          "firstDeparture": "06:12",
+          "trainCount": 154
+        },
+        {
+          "route": "しおさい",
+          "firstDeparture": "06:30",
+          "trainCount": 13
+        },
+        {
+          "route": "成田エクスプレス",
+          "firstDeparture": "08:00",
+          "trainCount": 12
+        }
+      ]
+    }
   }
 }
