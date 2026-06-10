@@ -1199,7 +1199,7 @@
       <div id="advanced-setup-panel" class="entry-grid advanced-setup hidden">
         <section class="entry-panel">
           <h3>Single Player</h3>
-          <p>Start a local planning session in this browser.</p>
+          <p>Play locally against a computer-controlled opponent.</p>
           <div class="setup-field">
             <label for="planning-gap-select">Planning Gap</label>
             <select id="planning-gap-select" class="room-input">
@@ -1221,8 +1221,8 @@
             </select>
           </div>
           <div class="button-row">
-            <button id="single-runner-button" class="primary runner" type="button">Play Runner</button>
-            <button id="single-hunter-button" class="hunter" type="button">Play Hunter</button>
+            <button id="single-runner-button" class="primary runner" type="button">Play Runner vs AI</button>
+            <button id="single-hunter-button" class="hunter" type="button">Play Hunter vs AI</button>
           </div>
         </section>
         <section class="entry-panel">
@@ -5703,6 +5703,7 @@
       clockRunning: false,
       tickHandle: null,
       tutorialMode: false,
+      localAi: { enabled: false, humanSeat: null, aiSeat: null, status: '' },
       latestResult: null,
       selectedResultEventIndex: 0,
       replayShareStatus: '',
@@ -5911,6 +5912,12 @@
       document.getElementById('hunter-button').className = state.activeMode === 'hunter' ? 'active hunter' : 'hunter';
       document.getElementById('lobby-runner-button').className = state.activeMode === 'runner' ? 'active runner' : 'runner';
       document.getElementById('lobby-hunter-button').className = state.activeMode === 'hunter' ? 'active hunter' : 'hunter';
+      const lockedSeat = state.localAi.enabled ? state.localAi.aiSeat : null;
+      ['runner', 'hunter'].forEach((seat) => {
+        const disabled = lockedSeat === seat;
+        const gameButton = document.getElementById(`${seat}-button`);
+        if (gameButton) gameButton.disabled = disabled;
+      });
     }
 
     function updateRoomCodePill(roomId) {
@@ -6080,6 +6087,31 @@
       renderGame();
     }
 
+    function opponentSeat(seat) {
+      return seat === 'runner' ? 'hunter' : 'runner';
+    }
+
+    function localAiStartCandidates() {
+      return [
+        state.bundle?.metadata?.defaultRunnerStartStationId,
+        state.bundle?.metadata?.defaultHunterStartStationId,
+        'SG_N02G_003766',
+        'SG_N02G_003700',
+        'SG_N02G_007068',
+        'SG_N02G_006079',
+        'SG_N02G_009033',
+      ].filter(Boolean);
+    }
+
+    function ensureDistinctLocalAiStarts() {
+      if (!state.localAi.enabled) return;
+      const human = state.players[state.localAi.humanSeat];
+      const ai = state.players[state.localAi.aiSeat];
+      if (!human || !ai || human.start_station_id !== ai.start_station_id) return;
+      const fallback = localAiStartCandidates().find((stationGroupId) => stationGroupId !== human.start_station_id);
+      if (fallback) ai.start_station_id = fallback;
+    }
+
     function prepareLocalSession(seat, options = {}) {
       stopOnlinePolling();
       state.online = {
@@ -6092,6 +6124,12 @@
         planSubmitSeq: 0,
         localPlanDirty: false,
       };
+      state.localAi = {
+        enabled: Boolean(options.localAi),
+        humanSeat: options.localAi ? seat : null,
+        aiSeat: options.localAi ? opponentSeat(seat) : null,
+        status: '',
+      };
       state.startTime = options.startTime || '06:00';
       state.endTime = options.endTime || '18:00';
       const gapConfig = options.gapConfig || selectedPlanningGapConfig();
@@ -6102,6 +6140,7 @@
         state.players[seat].start_station_id = options.startStationId;
         state.players[seat].steps = [];
       }
+      ensureDistinctLocalAiStarts();
       state.tutorialMode = Boolean(options.tutorialMode);
       state.planningSecondsRemaining = options.planningSeconds ?? state.planningSecondsRemaining;
       state.activeMode = seat;
@@ -6114,6 +6153,7 @@
       prepareLocalSession(seat, {
         startStationId: selectedSinglePlayerStartStationId(),
         gapConfig: selectedPlanningGapConfig(),
+        localAi: true,
       });
       closeEntry();
       beginTimetableLoadSoon();
@@ -14352,6 +14392,11 @@
 
     function setActiveMode(mode) {
       if (onlineActive() && state.online.seat && mode !== state.online.seat) return;
+      if (!onlineActive() && state.localAi.enabled && state.localAi.humanSeat && mode !== state.localAi.humanSeat) {
+        state.localAi.status = `${seatLabel(mode)} is controlled by local AI.`;
+        renderGame();
+        return;
+      }
       state.activeMode = mode;
       updateRoleButtons();
       state.selectedStationGroupId = null;
@@ -14692,6 +14737,70 @@
       syncPlanIfOnline();
     }
 
+    function localAiHasUsableFuturePlan(aiSeat) {
+      const player = state.players[aiSeat];
+      if (!player?.steps?.length) return false;
+      const tail = planTailPreview(aiSeat);
+      const livePreview = previewPlayer(aiSeat, state.currentGameMinute);
+      if (tail?.currentMinute > state.currentGameMinute) return true;
+      return livePreview?.currentState?.kind && livePreview.currentState.kind !== 'NODE';
+    }
+
+    function localAiAlightStopForDeparture(row, aiSeat) {
+      const boardSequence = Number(row?.stop?.sequence);
+      if (!row?.trip || !Number.isFinite(boardSequence)) return null;
+      const uniqueStops = [];
+      const seen = new Set();
+      (row.trip.stopTimes || []).forEach((stop) => {
+        const sequence = Number(stop.sequence);
+        if (!Number.isFinite(sequence) || sequence <= boardSequence || !stop.stationGroupId) return;
+        if (!state.stationGroupById.has(stop.stationGroupId) || seen.has(stop.stationGroupId)) return;
+        seen.add(stop.stationGroupId);
+        uniqueStops.push(stop);
+      });
+      if (!uniqueStops.length) return null;
+      const preferredOffset = aiSeat === 'hunter' ? 4 : 6;
+      return uniqueStops[Math.min(uniqueStops.length - 1, preferredOffset)];
+    }
+
+    function generateLocalAiRailPlan(aiSeat) {
+      if (state.timetableStatus !== 'ready') return false;
+      const player = state.players[aiSeat];
+      const tail = planTailPreview(aiSeat);
+      if (!player || !tail || tail.currentState?.kind !== 'NODE') return false;
+      const stationGroupId = tail.currentState.stationGroupId;
+      const earliestMinute = effectiveDepartureMinute(aiSeat, tail.currentMinute);
+      const departures = departuresForStationGroup(stationGroupId, earliestMinute, {
+        includeTransferEquivalents: true,
+        playerId: aiSeat,
+        walkingContext: { fromPhysicalStationId: tail.currentState.physicalStationId || null },
+        limit: 80,
+      });
+      for (const row of departures) {
+        const alightStop = localAiAlightStopForDeparture(row, aiSeat);
+        if (!alightStop) continue;
+        player.steps.push({ type: 'BOARD_TRAIN', trip_id: row.trip.id });
+        player.steps.push({ type: 'RIDE_TO_STATION', station_id: alightStop.stationGroupId });
+        state.planningModes[aiSeat] = 'rail';
+        state.planningRouteIds[aiSeat] = null;
+        state.pendingTripIds[aiSeat] = null;
+        state.localAi.status = `AI ${seatLabel(aiSeat)} planned ${formatTripLabel(row.trip)}: ${displayNameForGroup(stationGroupId)} -> ${displayNameForGroup(alightStop.stationGroupId)}.`;
+        invalidateSimulation();
+        return true;
+      }
+      return false;
+    }
+
+    function ensureLocalAiPlan() {
+      if (!state.localAi.enabled) return true;
+      const aiSeat = state.localAi.aiSeat;
+      if (!aiSeat || !state.players[aiSeat]) return true;
+      if (localAiHasUsableFuturePlan(aiSeat)) return true;
+      if (generateLocalAiRailPlan(aiSeat)) return true;
+      state.localAi.status = `AI ${seatLabel(aiSeat)} could not find a catchable rail departure from ${displayNameForGroup(state.players[aiSeat]?.start_station_id)}. Choose another start station or wait for timetable loading.`;
+      return false;
+    }
+
     function detectLiveCapture() {
       if (state.phase !== 'LIVE') return null;
       const runnerPreview = previewPlayer('runner', state.currentGameMinute);
@@ -14774,6 +14883,12 @@
       if (state.phase === 'PLANNING') {
         state.planningSecondsRemaining = Math.max(0, state.planningSecondsRemaining - 1);
         if (state.planningSecondsRemaining === 0) {
+          if (!ensureLocalAiPlan()) {
+            state.planningSecondsRemaining = 1;
+            state.clockRunning = false;
+            renderGame();
+            return;
+          }
           state.phase = 'LIVE';
           checkLiveCapture();
         }
@@ -14811,6 +14926,10 @@
         return;
       }
       if (state.phase !== 'PLANNING') return;
+      if (!ensureLocalAiPlan()) {
+        renderGame();
+        return;
+      }
       if (state.tickHandle) {
         window.clearTimeout(state.tickHandle);
         state.tickHandle = null;
@@ -14854,6 +14973,10 @@
       state.flightPlanning = { runner: { origin: null, destination: null }, hunter: { origin: null, destination: null } };
       state.shipPlanning = { runner: { origin: null, destination: null }, hunter: { origin: null, destination: null } };
       state.pendingCoupledChoices = { runner: null, hunter: null };
+      if (state.localAi.enabled) {
+        ensureDistinctLocalAiStarts();
+        state.localAi.status = '';
+      }
       state.selectedTripId = null;
       state.selectedTripStopIds = [];
       invalidateSimulation();
@@ -14866,6 +14989,10 @@
       if (onlineActive()) return;
       if (state.phase !== 'PLANNING' || state.clockRunning || state.latestResult) return;
       if (state.timetableStatus !== 'ready') return;
+      if (!ensureLocalAiPlan()) {
+        renderGame();
+        return;
+      }
       state.clockRunning = true;
       scheduleTick();
     }
@@ -17211,9 +17338,15 @@
     function renderRoomPanel() {
       const room = state.online.lastRoom;
       if (!onlineActive()) {
-        roomCardEl.textContent = state.online.serverAvailable
-          ? 'Single-player local mode.\nUse Lobby when you want to connect this same v5 gameplay shell to a v5-from-v4 nationwide room server.'
-          : 'Single-player local mode.\nOnline rooms are currently disabled for this static build.';
+        if (state.localAi.enabled) {
+          const human = seatLabel(state.localAi.humanSeat);
+          const ai = seatLabel(state.localAi.aiSeat);
+          roomCardEl.textContent = `Local AI match.\nYou are ${human}; computer controls ${ai}.\n${state.localAi.status || 'AI will plan automatically before LIVE.'}`;
+        } else {
+          roomCardEl.textContent = state.online.serverAvailable
+            ? 'Single-player local mode.\nUse Lobby when you want to connect this same v5 gameplay shell to a v5-from-v4 nationwide room server.'
+            : 'Single-player local mode.\nOnline rooms are currently disabled for this static build.';
+        }
       } else if (room) {
         roomCardEl.textContent = roomStatusSummary(room);
       } else {
@@ -18535,6 +18668,11 @@
       try {
         state.latestResult = null;
         state.replayShareStatus = '';
+        if (!ensureLocalAiPlan()) {
+          resultCardEl.innerHTML = `<pre>SIMULATION\n\nAI plan is not ready yet.</pre>`;
+          renderGame();
+          return;
+        }
         const result = ensureReplayResult();
         const capture = result.capture;
         const lines = [`Scenario: ${result.scenario_id}`, `Events: ${result.match_event_log.length}`];

@@ -2,7 +2,7 @@
 
 ## Current Focus
 V4 release-evidence repair is complete enough to unblock V5 again: route-choice release evidence has `anomalyCount: 0`, selected-train highlight current full 8-shard scan checked `110489` trips with `failureCount: 0` (ignored local artifact `data/v4_selected_train_highlight_release.json`), and data-quality reports `errorCount: 0` / `warningCount: 0`.
-Current focus returns to V5, but in safe release-contract mode: do not run heavy V5 bundle rebuilds, large gzip scans, planner-tile rewrites, or parallel browser/data audits inside Codex. First reconcile the V5 release contract and docs from existing evidence.
+Current focus returns to V5 local gameplay, still in safe mode: do not run heavy V5 bundle rebuilds, large gzip scans, planner-tile rewrites, or parallel browser/data audits inside Codex. Before debugging online two-player rooms, first keep the local human-vs-AI path playable on the existing V5 shell.
 V5 current release scope remains rail + flight + ship + scoped bus gameplay. Bus gameplay is intentionally limited to airport buses and port-connector buses; ordinary local/highway/night buses may remain source/runtime data but should not be treated as exposed gameplay unless explicitly promoted.
 
 ## V5 Bus Collection Status
@@ -12,6 +12,7 @@ V5 current release scope remains rail + flight + ship + scoped bus gameplay. Bus
 - Important correction: "finished bus sources" only means the currently collected official source batch was either promoted or blocked; it does not mean nationwide airport liaison, highway/night, or local bus collection is complete.
 
 ## Done
+- 2026-06-10 V5 local human-vs-AI first pass: `docs/v5.html` Single Player now means human Runner/Hunter versus a local computer opponent. The AI seat is locked from manual editing, gets a distinct start station if needed, and automatically appends a catchable rail `BOARD_TRAIN` + `RIDE_TO_STATION` plan before LIVE or Replay. Light verification only: `git diff --check` and inline script syntax parsing passed; no V5 heavy data/browser audit was run inside Codex.
 - 2026-06-10 V4 release evidence repair pass: route-choice current rerun reduced the old red set to 上野->日暮里 `常磐線`, then `scripts/tests/v4_route_choice_audit.js` allowed that exact passenger-facing Joban choice over the northern trunk trace; route-choice release evidence is now `anomalyCount: 0`, and `audit_v4_data_quality.py --browser-audit-json data/v4_route_choice_audit_release.json --fail-on-error` reports `0` errors / `0` warnings.
 - 2026-06-10 V4 selected-train highlight repair pass: `docs/v4.html` now bridges non-strict missing selected-path stop pairs with bounded station-pair fallback and adds reviewed Kintetsu limited-express path hints through 伊勢中川 / 大和八木 / 生駒 / 伊勢市 / 近鉄四日市. Current full 8-shard selected-highlight scan checked `110489` trips with `failureCount: 0`; the generated JSON is ignored by git, so the committed evidence is the code fix plus STATUS/memory record.
 - 2026-06-10 V4 route-choice audit performance follow-up: `scripts/tests/v4_route_choice_audit.js` now chunks the `duplicates` stage by station group on one loaded page, controlled by `--station-chunk-size` defaulting to `1000`. Full default route-choice gate checked `9052` stations and `110489` trips, including global/duplicates/known/mini-shinkansen/focused stages, and finished with `anomalyCount: 0`.
