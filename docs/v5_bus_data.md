@@ -8,6 +8,10 @@ The target scope is:
 - Local route buses.
 - Walking connectors from bus stops to rail stations, airports, and later ports.
 
+This page describes the long-term bus data target. The current V5 release
+exposes only airport buses and port-connector buses; see
+`v5_release_contract.md` for the active release scope.
+
 ## Source Policy
 
 The first source layer is GTFS/GTFS-JP because it carries the exact fields the

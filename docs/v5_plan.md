@@ -2,6 +2,9 @@
 
 V5 expands OniChase from nationwide rail gameplay into a real Japanese public-transportation chase simulator. The target is not a minimal transport add-on. The target is a coherent multimodal game where trains, walking, aircraft, ferries, and buses are all first-class systems with explicit data contracts and gameplay rules.
 
+Current release scope is intentionally narrower than this long-term plan. See
+`v5_release_contract.md` for the active release contract and scoped bus policy.
+
 ## Product Direction
 
 - Core direction: realistic Japanese transportation simulation first.

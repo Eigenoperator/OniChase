@@ -1,11 +1,9 @@
 # STATUS
 
 ## Current Focus
-Pause V5 expansion and finish V4 release-evidence reconciliation first.
-Current V4 browser/data evidence is green for the repaired gates: route-choice release evidence has `anomalyCount: 0`, selected-train highlight current full 8-shard scan checked `110489` trips with `failureCount: 0` (ignored local artifact `data/v4_selected_train_highlight_release.json`), and data-quality now reports `errorCount: 0` / `warningCount: 0`.
-Resolved V4 triage classes: `埼京線` no longer appears in the current route-choice red set, 上野->日暮里 `常磐線` passenger-facing route choice is allowed over the northern trunk physical trace, selected-train endpoint/path coverage is repaired for missing first-hop geometry and reviewed Kintetsu limited-express path gaps, and 八王子 `むさしの号` station coverage is green via browser route-choice evidence.
-The route-choice `duplicates` stage timeout is fixed by chunking station scans in the audit runner; the full default route-choice script now completes in about `255s` with `0` anomalies.
-V5 remains green at whole-data readiness / plan-tail anchor level, but is not the current next implementation priority.
+V4 release-evidence repair is complete enough to unblock V5 again: route-choice release evidence has `anomalyCount: 0`, selected-train highlight current full 8-shard scan checked `110489` trips with `failureCount: 0` (ignored local artifact `data/v4_selected_train_highlight_release.json`), and data-quality reports `errorCount: 0` / `warningCount: 0`.
+Current focus returns to V5, but in safe release-contract mode: do not run heavy V5 bundle rebuilds, large gzip scans, planner-tile rewrites, or parallel browser/data audits inside Codex. First reconcile the V5 release contract and docs from existing evidence.
+V5 current release scope remains rail + flight + ship + scoped bus gameplay. Bus gameplay is intentionally limited to airport buses and port-connector buses; ordinary local/highway/night buses may remain source/runtime data but should not be treated as exposed gameplay unless explicitly promoted.
 
 ## V5 Bus Collection Status
 - As of 2026-05-27 19:40 PDT, the V5 bus runtime bundle has 5,369 routes, 80,419 trips, 89,609 stops, 2,274,074 stopTimes, and 113,151 walking connectors after the remote ship-bus coordinate promotion.
@@ -91,8 +89,8 @@ V5 remains green at whole-data readiness / plan-tail anchor level, but is not th
 - Render v4 room-server deployment is forbidden unless Scorp explicitly reverses the axiom; push-triggered server deploy is disabled after repeated failures.
 
 ## In Progress
-- Reconcile V4 release docs/status after the green route-choice, selected-highlight, data-quality, and route-choice default-gate repair pass.
-- Keep V5 multimodal work paused except for preserving existing readiness evidence.
+- Reconcile V5 release contract/docs from existing evidence without running heavy V5 jobs inside Codex.
+- Preserve V4 as the current green baseline unless Scorp explicitly reopens V4.
 - Continue to treat heavy nationwide rebuilds / bundle rewrites as explicit-approval jobs under AXIOMS.
 
 ## Blockers
@@ -107,8 +105,9 @@ V5 remains green at whole-data readiness / plan-tail anchor level, but is not th
 - [2026-04-25] v4 timetable stop matching should reuse the v3 station alias/station-group method, not invent a separate identity system.
 
 ## Next
-1. Update V4 release docs from the new green route-choice/data-quality/selected-highlight evidence.
-2. Then resume the paused V5 multimodal work only after Scorp confirms V4 evidence is sufficiently reconciled.
+1. Write/update a compact V5 release contract: exposed modes, scoped bus policy, source-only data policy, and required gates.
+2. Build a lightweight V5 smoke matrix from existing audit records without rerunning heavy jobs.
+3. Only after the matrix is reviewed, run any V5 browser/data audit one at a time and only with explicit go-ahead.
 ## V5 Ship-Port Connector Work - 2026-05-27
 - The 41-port remote/small-island ship-port backlog has been fully triaged out of pending. `data/v5_remote_small_island_access_records.json` now reports `pendingPortCount: 0`, with 23 `official_island_bus_source_found` records and 65 `no_scheduled_public_bus` records.
 - `scripts/ingest/collect_v5_remote_small_island_ship_port_bus_sources.py` now collects the remote-island source bundle quietly. Latest collector summary: 29 source routes, 235 source-backed trips in `data/v5_remote_small_island_bus_source.json` plus docs mirror.
