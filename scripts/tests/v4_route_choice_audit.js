@@ -1698,6 +1698,33 @@ async function runGlobalStageChunkedOnSinglePage(pageUrl, auditOptions) {
   return mergeGlobalStageChunkResults(chunkResults, auditOptions);
 }
 
+async function runDuplicateStageChunkedOnSinglePage(pageUrl, auditOptions) {
+  const chunkSize = Math.max(1, Number(auditOptions.stationChunkSize || 1000));
+  const { browser, page, loadTimings } = await loadPage(pageUrl);
+  const chunkResults = [];
+  try {
+    let stationStart = Math.max(0, Number(auditOptions.stationStart || 0));
+    while (true) {
+      process.stderr.write(`[v4_route_choice_audit] duplicates chunk stationStart=${stationStart} stationLimit=${chunkSize}\n`);
+      const chunkResult = await auditRouteChoices(page, {
+        ...auditOptions,
+        stages: ['duplicates'],
+        stationStart,
+        stationLimit: chunkSize,
+      });
+      chunkResult.loadTimings = chunkResults.length === 0 ? loadTimings : { reusedPage: true };
+      chunkResults.push(chunkResult);
+      const selectedStationCount = chunkResult.duplicateRouteTitleScan?.selectedStationCount || 0;
+      const stationCount = chunkResult.duplicateRouteTitleScan?.stationCount || 0;
+      if (selectedStationCount < chunkSize || stationStart + selectedStationCount >= stationCount) break;
+      stationStart += chunkSize;
+    }
+  } finally {
+    await browser.close();
+  }
+  return mergeDuplicateStageChunkResults(chunkResults, auditOptions);
+}
+
 function mergeGlobalStageChunkResults(chunkResults, auditOptions) {
   const first = chunkResults[0] || {};
   const sum = (selector) => chunkResults.reduce((total, result) => total + (selector(result) || 0), 0);
@@ -1774,8 +1801,67 @@ function mergeGlobalStageChunkResults(chunkResults, auditOptions) {
   };
 }
 
+function mergeDuplicateStageChunkResults(chunkResults, auditOptions) {
+  const first = chunkResults[0] || {};
+  const sum = (selector) => chunkResults.reduce((total, result) => total + (selector(result) || 0), 0);
+  const duplicateRouteTitleScan = {
+    ...(first.duplicateRouteTitleScan || {}),
+    stationStart: auditOptions.stationStart || 0,
+    stationLimit: auditOptions.stationLimit,
+    stationCount: Math.max(...chunkResults.map((result) => result.duplicateRouteTitleScan?.stationCount || 0), 0),
+    selectedStationCount: sum((result) => result.duplicateRouteTitleScan?.selectedStationCount),
+    checkedStations: sum((result) => result.duplicateRouteTitleScan?.checkedStations),
+    duplicateStationTitleCount: sum((result) => result.duplicateRouteTitleScan?.duplicateStationTitleCount),
+    samples: chunkResults.flatMap((result) => result.duplicateRouteTitleScan?.samples || []).slice(0, 80),
+    skipped: false,
+  };
+  const anomalies = [];
+  if (duplicateRouteTitleScan.duplicateStationTitleCount) {
+    anomalies.push({
+      kind: 'duplicate_route_choice_title_scan',
+      reason: 'Each station route-choice list should show only one row for a player-facing route name; duplicate source route IDs must be merged behind that choice.',
+      ...duplicateRouteTitleScan,
+    });
+  }
+  return {
+    checkedAt: new Date().toISOString(),
+    auditOptions: { ...auditOptions, stages: ['duplicates'] },
+    enabledStages: ['duplicates'],
+    loadTimings: {
+      chunks: chunkResults.map((result) => ({
+        stationStart: result.duplicateRouteTitleScan?.stationStart,
+        stationLimit: result.duplicateRouteTitleScan?.stationLimit,
+        ...(result.loadTimings || {}),
+      })),
+    },
+    timings: {
+      globalChoiceAndLabelScanMs: 0,
+      duplicateRouteTitleScanMs: sum((result) => result.timings?.duplicateRouteTitleScanMs),
+      knownStationScanMs: 0,
+      miniShinkansenBranchScanMs: 0,
+      focusedRuleScanMs: 0,
+      totalAuditMs: chunkResults.reduce((total, result) => total + (result.timings?.totalAuditMs || 0), 0),
+    },
+    stationCount: duplicateRouteTitleScan.stationCount,
+    tripCount: Math.max(...chunkResults.map((result) => result.tripCount || 0), 0),
+    knownStationChoices: {},
+    globalChoiceScan: {},
+    globalTrainLabelScan: {},
+    duplicateRouteTitleScan,
+    miniShinkansenBranchScan: {},
+    coupledScan: {},
+    anomalyCount: anomalies.length,
+    anomalies: anomalies.slice(0, 80),
+  };
+}
+
 async function runStageAudit(pageUrl, auditOptions, stage) {
   process.stderr.write(`[v4_route_choice_audit] stage=${stage} start\n`);
+  if (stage === 'duplicates' && auditOptions.stationLimit === null) {
+    const result = await runDuplicateStageChunkedOnSinglePage(pageUrl, auditOptions);
+    process.stderr.write(`[v4_route_choice_audit] stage=${stage} done anomalies=${result.anomalyCount || 0}\n`);
+    return result;
+  }
   if (stage !== 'global' || auditOptions.tripLimit !== null) {
     const result = await runAuditOnFreshPage(pageUrl, { ...auditOptions, stages: [stage] });
     process.stderr.write(`[v4_route_choice_audit] stage=${stage} done anomalies=${result.anomalyCount || 0}\n`);
@@ -1794,6 +1880,7 @@ async function runStageAudit(pageUrl, auditOptions, stage) {
     tripChunkSize: parseIntegerOption(args['trip-chunk-size'], 20000),
     stationStart: parseIntegerOption(args['station-start'], 0),
     stationLimit: parseIntegerOption(args['station-limit'], null),
+    stationChunkSize: parseIntegerOption(args['station-chunk-size'], 1000),
     stages: parseStagesOption(args.stages),
   };
   const stageResults = [];
