@@ -1,9 +1,10 @@
 # STATUS
 
 ## Current Focus
-Continue V5 public-transport expansion on top of the stable V4 rail base, with the current active work on nationwide real bus collection and playable promotion.
-Current V5 ship-port cleanup is source-light only under the new Heavy Data Job Safety axiom: fix small source/audit records in Codex, and hand full bus-bundle/connector rebuild commands to Scorp for terminal execution.
-Use `python scripts/ingest/audit_v5_ship_port_access_priority.py --light-refresh-existing` for no-bundle priority refreshes.
+Pause V5 expansion and fix V4 release evidence first.
+Current checked-in V4 gates are not all green: `data/v4_route_choice_audit_release.json` has `anomalyCount: 2`, `data/v4_selected_train_highlight_release.json` has `failureCount: 200`, and `data/v4_data_quality_audit.json` has `errorCount: 1`.
+First V4 triage classes: `埼京線` route-choice physical/source identity, selected-train endpoint/path coverage around `越後湯沢` / `熱海` / `尾久` / `佐和` / `田端`, and 八王子 `むさしの号` station coverage.
+V5 remains green at whole-data readiness / plan-tail anchor level, but is not the current next implementation priority.
 
 ## V5 Bus Collection Status
 - As of 2026-05-27 19:40 PDT, the V5 bus runtime bundle has 5,369 routes, 80,419 trips, 89,609 stops, 2,274,074 stopTimes, and 113,151 walking connectors after the remote ship-bus coordinate promotion.
@@ -12,6 +13,7 @@ Use `python scripts/ingest/audit_v5_ship_port_access_priority.py --light-refresh
 - Important correction: "finished bus sources" only means the currently collected official source batch was either promoted or blocked; it does not mean nationwide airport liaison, highway/night, or local bus collection is complete.
 
 ## Done
+- 2026-06-10 repo review reconciled project direction: Scorp chose to fix V4 before continuing V5; checked-in audit artifacts identify V4 route-choice, selected-highlight, and data-quality red targets.
 - V5 ship-port connector triage now has a lightweight pending-record path: the 44 remaining remote/small-island no-2km-access ports are recorded as `remote_access_review_pending` instead of silent gaps, and weak coordinate provenance for 西ノ島, 興居島（由良, and 野崎 was corrected in the port-coordinate source.
 - V5 remote/small-island bus promotion queue now collects the 11 official/quasi-official island-bus source-found ports into `data/v5_remote_small_island_bus_promotion_queue.json`: 古仁屋, 瀬相, 生間, 上五島, 友住, 新島港, 西ノ島, 周防大島久賀港, 伊保田, 伊保田港, and 岡村港. The queue is source-only and does not create runtime connectors.
 - V5 remote/small-island ship-port bus source collection added `scripts/ingest/collect_v5_remote_small_island_ship_port_bus_sources.py`, which updates `data/v5_remote_small_island_bus_source.json` without touching heavy GTFS/runtime bundles. The new collected source layer adds 6 ship-port bus source routes/candidates: 新島ふれあいバス, 西ノ島町営バス, 周防大島久賀 防長バス, 周防大島伊保田町営バス, 岡村/とびしま瀬戸内産交 source candidate, and 新上五島西肥 source candidate. It contributes 59 source-backed trips plus 1 official-source candidate needing endpoint/table extraction.
@@ -85,12 +87,12 @@ Use `python scripts/ingest/audit_v5_ship_port_access_priority.py --light-refresh
 - Render v4 room-server deployment is forbidden unless Scorp explicitly reverses the axiom; push-triggered server deploy is disabled after repeated failures.
 
 ## In Progress
-- Promote the v4 nationwide gameplay bundle into a public playtest pass.
-- Drive v4 toward release using `V4_FINISH_CHECKLIST.md` as the capped 10-gate finish list. Gates 1-8 are release-green locally as of 2026-05-06: planner interaction `0` failures; route-choice `0` anomalies across `1590564` rows; selected-train highlight `0` failures across `111215` trips / `829737` future-stop coverage cases; coupled-service audit `knownSeedsMissingServicePortions: 0`; long-distance playability `1000/1000`; same-name station audit `15/15`; sparse/hub ordinary coverage `0` anomalies; performance/flicker `ok: true`.
-- Continue hardening the remaining Odakyu coupled-service gaps by adding a weekend/holiday timetable source or explicitly scoping those registry entries away from weekday gameplay.
-- Review whether the meter-scale 肥薩線 N02 fragment should remain visible or be hidden in rendered geometry.
+- Fix V4 release evidence mismatch and bring current checked-in V4 gates back to green.
+- Keep V5 multimodal work paused except for preserving existing readiness evidence.
+- Continue to treat heavy nationwide rebuilds / bundle rewrites as explicit-approval jobs under AXIOMS.
 
 ## Blockers
+- V4 release docs/status currently disagree with latest checked-in audit JSON; do not claim V4 release-green until rerun/fixes produce zero anomalies/failures or documented scoped exceptions.
 - Raw MLIT N02-2024 source files are local-only and ignored by git; regenerated v4 artifacts require those local files or a documented download step.
 - Large collection caches remain local-only and should not be committed. Existing tracked V5 bus bundle gzip files are about 75.7 MiB and already above GitHub's recommended 50 MiB threshold; future generated artifacts above 50 MiB need an explicit Git LFS / release artifact / local rebuild decision before ordinary Git commit.
 
@@ -102,10 +104,10 @@ Use `python scripts/ingest/audit_v5_ship_port_access_priority.py --light-refresh
 - [2026-04-25] v4 timetable stop matching should reuse the v3 station alias/station-group method, not invent a separate identity system.
 
 ## Next
-1. Write Gate 9 release notes and known limitations, using `V4_DATA_REBUILD.md`, `V4_SERVICE_MODEL.md`, `V4_TRACE_QUALITY.md`, and the latest Gate 1-8 JSON outputs as canonical local evidence.
-2. Keep `data/v4_limited_express_trace_suspect_audit.json` at `0` unreviewed suspects; future trace work should focus only on newly introduced conventional suspects or source-limit classifications.
-3. Decide whether v4 gameplay should ingest weekend/holiday Odakyu Romancecar sources so `はこね・えのしま` and `メトロはこね・メトロえのしま` can be represented when they do not exist in the current weekday source.
-4. Add a small dedicated `つばさ` B/M pairing audit so future source rebuilds fail if Tokyo-Fukushima and Fukushima-Yamagata/Shinjo same-number pairs disappear again.
+1. Triage `data/v4_route_choice_audit_release.json` anomalies: `埼京線` vs `東北本線` / `相鉄本線` source and physical route identity.
+2. Triage `data/v4_selected_train_highlight_release.json` failures: endpoint/path coverage around `越後湯沢`, `熱海`, `尾久`, `佐和`, and `田端`.
+3. Fix or re-scope `data/v4_data_quality_audit.json` 八王子 `むさしの号` coverage expectation.
+4. Rerun V4 route-choice, selected-highlight, and data-quality gates, then update release docs from the new evidence.
 ## V5 Ship-Port Connector Work - 2026-05-27
 - The 41-port remote/small-island ship-port backlog has been fully triaged out of pending. `data/v5_remote_small_island_access_records.json` now reports `pendingPortCount: 0`, with 23 `official_island_bus_source_found` records and 65 `no_scheduled_public_bus` records.
 - `scripts/ingest/collect_v5_remote_small_island_ship_port_bus_sources.py` now collects the remote-island source bundle quietly. Latest collector summary: 29 source routes, 235 source-backed trips in `data/v5_remote_small_island_bus_source.json` plus docs mirror.
