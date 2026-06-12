@@ -14897,6 +14897,470 @@
       return null;
     }
 
+    function localAiPreviewForSteps(playerId, steps) {
+      const player = state.players[playerId];
+      if (!player) return null;
+      const originalSteps = player.steps;
+      player.steps = steps;
+      try {
+        return previewPlayer(playerId, null);
+      } finally {
+        player.steps = originalSteps;
+      }
+    }
+
+    function localAiStepsResolve(playerId, steps, preview = null) {
+      const resolvedPreview = preview || localAiPreviewForSteps(playerId, steps);
+      return Boolean(resolvedPreview && (resolvedPreview.resolvedSteps?.length || 0) === steps.length);
+    }
+
+    function localAiCloneStep(step) {
+      return { ...step };
+    }
+
+    function localAiAppendAction(node, action, playerId = 'runner') {
+      const steps = [...node.steps, ...action.steps.map(localAiCloneStep)];
+      const preview = localAiPreviewForSteps(playerId, steps);
+      if (!localAiStepsResolve(playerId, steps, preview)) return null;
+      if (!preview || preview.currentMinute < node.preview.currentMinute) return null;
+      const modes = new Set(node.modes || []);
+      if (action.mode) modes.add(action.mode);
+      return {
+        steps,
+        preview,
+        modes,
+        labels: [...(node.labels || []), action.label].filter(Boolean).slice(-6),
+        lastAction: action,
+      };
+    }
+
+    function localAiRunnerSamePlacePenalty(runnerPreview, hunterPreview) {
+      const runnerState = runnerPreview?.currentState || {};
+      const hunterState = hunterPreview?.currentState || {};
+      if (runnerState.kind === 'NODE' && hunterState.kind === 'NODE' && runnerState.stationGroupId === hunterState.stationGroupId) return 120000;
+      if (runnerState.kind === 'TRAIN' && hunterState.kind === 'TRAIN' && (runnerState.tripId === hunterState.tripId || sameCoupledPhysicalTrain(runnerState.tripId, hunterState.tripId, runnerPreview.currentMinute))) return 120000;
+      if (runnerState.kind === 'BUS_STOP' && hunterState.kind === 'BUS_STOP' && runnerState.busStopId === hunterState.busStopId) return 90000;
+      if (runnerState.kind === 'BUS' && hunterState.kind === 'BUS' && runnerState.tripId === hunterState.tripId) return 100000;
+      if (runnerState.airportIata && hunterState.airportIata && runnerState.airportIata === hunterState.airportIata && runnerState.kind !== 'FLIGHT' && hunterState.kind !== 'FLIGHT') return 80000;
+      if (runnerState.kind === 'PORT_WAIT' && hunterState.kind === 'PORT_WAIT' && runnerState.portName === hunterState.portName) return 85000;
+      if (runnerState.kind === 'SHIP' && hunterState.kind === 'SHIP' && runnerState.sailingId === hunterState.sailingId) return 100000;
+      return 0;
+    }
+
+    function localAiBusBoardReadyMinute(stopId, preview, playerId = 'runner') {
+      if (!stopId || !preview?.currentState) return Number.POSITIVE_INFINITY;
+      const baseMinute = effectiveDepartureMinute(playerId, preview.currentMinute);
+      if (preview.currentState.kind === 'BUS_STOP') {
+        return preview.currentState.busStopId === stopId ? baseMinute : Number.POSITIVE_INFINITY;
+      }
+      if (preview.currentState.kind !== 'NODE') return Number.POSITIVE_INFINITY;
+      const stationGroupId = preview.currentState.stationGroupId;
+      let bestDistance = Number.POSITIVE_INFINITY;
+      state.busPlannerConnectors.forEach((connector) => {
+        if (connector.toMode !== 'rail_station_group' || connector.toNodeId !== stationGroupId || connector.fromStopId !== stopId) return;
+        const distance = Number(connector.distanceMeters);
+        if (!Number.isFinite(distance) || distance > V5_ACTIVE_WALKING_THRESHOLD_METERS) return;
+        bestDistance = Math.min(bestDistance, distance);
+      });
+      if (!Number.isFinite(bestDistance)) return Number.POSITIVE_INFINITY;
+      return baseMinute + Math.max(0, Math.ceil(walkingTimeSecForDistance(bestDistance, walkingSpeedMetersPerSecondFor(playerId)) / 60));
+    }
+
+    function localAiReachableBusStopChoices(preview, playerId = 'runner') {
+      if (state.busPlannerLoadStatus !== 'ready' || !preview?.currentState) return [];
+      if (preview.currentState.kind === 'BUS_STOP') {
+        const stopId = preview.currentState.busStopId;
+        const stop = state.busPlannerStopsById.get(stopId);
+        if (!stop) return [];
+        const readyMinute = localAiBusBoardReadyMinute(stopId, preview, playerId);
+        return busRideableDeparturesFromStop(stopId, readyMinute).length
+          ? [{ stopId, stop, distanceMeters: 0, walkTimeSec: 0, from: 'current' }]
+          : [];
+      }
+      if (preview.currentState.kind !== 'NODE') return [];
+      const stationGroupId = preview.currentState.stationGroupId;
+      const byStop = new Map();
+      state.busPlannerConnectors.forEach((connector) => {
+        if (connector.toMode !== 'rail_station_group' || connector.toNodeId !== stationGroupId) return;
+        const distance = Number(connector.distanceMeters);
+        if (!Number.isFinite(distance) || distance > V5_ACTIVE_WALKING_THRESHOLD_METERS) return;
+        const stop = state.busPlannerStopsById.get(connector.fromStopId);
+        if (!stop) return;
+        const previous = byStop.get(connector.fromStopId);
+        if (!previous || distance < previous.distanceMeters) {
+          byStop.set(connector.fromStopId, {
+            stopId: connector.fromStopId,
+            stop,
+            connector,
+            distanceMeters: distance,
+            walkTimeSec: walkingTimeSecForDistance(distance, walkingSpeedMetersPerSecondFor(playerId)),
+            from: 'station',
+          });
+        }
+      });
+      return [...byStop.values()]
+        .filter((choice) => busRideableDeparturesFromStop(choice.stopId, localAiBusBoardReadyMinute(choice.stopId, preview, playerId)).length > 0)
+        .sort((a, b) =>
+          a.distanceMeters - b.distanceMeters ||
+          String(a.stop.name || '').localeCompare(String(b.stop.name || ''), 'ja')
+        )
+        .slice(0, 12);
+    }
+
+    function localAiReachableShipOriginPorts(preview, playerId = 'runner', limit = 10) {
+      if (!state.portByName?.size || !state.shipSailingsByOriginPort?.size) return [];
+      if (preview?.currentState?.kind === 'PORT_WAIT' && state.shipSailingsByOriginPort.has(preview.currentState.portName)) {
+        return [{ name: preview.currentState.portName, distanceMeters: 0 }];
+      }
+      const rows = [];
+      state.portByName.forEach((feature, name) => {
+        if (!state.shipSailingsByOriginPort.has(name)) return;
+        const access = shipAccessFromPreview(preview, name, playerId);
+        if (!access || !Number.isFinite(access.distanceMeters) || access.distanceMeters > V5_SHIP_PORT_ACCESS_RADIUS_METERS) return;
+        rows.push({ name, distanceMeters: access.distanceMeters });
+      });
+      return rows
+        .sort((a, b) => a.distanceMeters - b.distanceMeters || a.name.localeCompare(b.name, 'ja'))
+        .slice(0, limit);
+    }
+
+    function localAiRunnerOnwardScore(preview) {
+      const currentState = preview?.currentState || {};
+      let score = 0;
+      if (currentState.kind === 'NODE') {
+        const departureCount = departuresForStationGroup(currentState.stationGroupId, effectiveDepartureMinute('runner', preview.currentMinute), {
+          includeTransferEquivalents: true,
+          playerId: 'runner',
+          limit: 36,
+        }).length;
+        score += Math.min(80, departureCount * 4);
+        score += Math.min(45, (state.walkingEdgesByFromGroupId.get(currentState.stationGroupId)?.length || 0) * 5);
+        if (accessibleAirportFromPreview(preview)) score += 65;
+        score += Math.min(50, localAiReachableShipOriginPorts(preview, 'runner', 6).length * 12);
+        score += Math.min(45, localAiReachableBusStopChoices(preview, 'runner').length * 8);
+      } else if (currentState.kind === 'BUS_STOP') {
+        const readyMinute = localAiBusBoardReadyMinute(currentState.busStopId, preview, 'runner');
+        score += Math.min(60, busRideableDeparturesFromStop(currentState.busStopId, readyMinute).length * 6);
+        score += Math.min(40, busRailAccessChoices(preview).length * 8);
+        if (accessibleAirportFromPreview(preview)) score += 50;
+        score += Math.min(40, localAiReachableShipOriginPorts(preview, 'runner', 4).length * 10);
+      } else if (currentState.kind === 'AIRPORT_WAIT') {
+        score += Math.min(90, availableFlightsFromAirport(currentState.airportIata, preview, 12, { buyableOnly: true }).length * 10);
+      } else if (currentState.kind === 'PORT_WAIT') {
+        const sailings = (state.shipSailingsByOriginPort.get(currentState.portName) || [])
+          .filter(shipOperatesForGameDay)
+          .filter((sailing) => Number(sailing.departureMinute) >= preview.currentMinute);
+        score += Math.min(90, sailings.length * 8);
+      }
+      return score;
+    }
+
+    function localAiRunnerModeBonus(modes) {
+      let bonus = 0;
+      if (modes.has('flight')) bonus += 7600;
+      if (modes.has('ship')) bonus += 3600;
+      if (modes.has('bus')) bonus += 1800;
+      if (modes.has('walk')) bonus += 550;
+      if (modes.has('rail')) bonus += 450;
+      bonus += Math.max(0, modes.size - 1) * 900;
+      return bonus;
+    }
+
+    function localAiRunnerScoreNode(node, startMinute) {
+      const preview = node.preview;
+      const finalCoordinate = localAiPreviewCoordinate(preview);
+      const hunterAtFinal = previewPlayer('hunter', preview.currentMinute);
+      const hunterTail = planTailPreview('hunter');
+      const distanceAtFinal = coordinateDistanceMeters(finalCoordinate, localAiPreviewCoordinate(hunterAtFinal));
+      const distanceToHunterTail = coordinateDistanceMeters(finalCoordinate, localAiPreviewCoordinate(hunterTail));
+      const safeDistanceAtFinal = Number.isFinite(distanceAtFinal) ? distanceAtFinal : 0;
+      const safeDistanceToTail = Number.isFinite(distanceToHunterTail) ? distanceToHunterTail : safeDistanceAtFinal;
+      const elapsed = Math.max(0, preview.currentMinute - startMinute);
+      const onward = localAiRunnerOnwardScore(preview);
+      const capturePenalty = localAiRunnerSamePlacePenalty(preview, hunterAtFinal);
+      const deadEndPenalty = onward < 18 ? 1800 : 0;
+      return safeDistanceAtFinal / 42 +
+        safeDistanceToTail / 72 +
+        Math.min(240, elapsed) * 8 +
+        onward * 38 +
+        localAiRunnerModeBonus(node.modes || new Set()) -
+        capturePenalty -
+        deadEndPenalty;
+    }
+
+    function localAiRankActions(actions, limit) {
+      const byKey = new Map();
+      actions.forEach((action) => {
+        const key = action.key || JSON.stringify(action.steps);
+        if (!byKey.has(key)) byKey.set(key, action);
+      });
+      return [...byKey.values()]
+        .sort((a, b) => (b.hintScore || 0) - (a.hintScore || 0))
+        .slice(0, limit);
+    }
+
+    function localAiRunnerRailActions(node) {
+      const preview = node.preview;
+      if (state.timetableStatus !== 'ready' || preview.currentState?.kind !== 'NODE') return [];
+      const stationGroupId = preview.currentState.stationGroupId;
+      const earliestMinute = effectiveDepartureMinute('runner', preview.currentMinute);
+      const departures = departuresForStationGroup(stationGroupId, earliestMinute, {
+        includeTransferEquivalents: true,
+        playerId: 'runner',
+        walkingContext: { fromPhysicalStationId: preview.currentState.physicalStationId || null },
+        limit: 42,
+      });
+      const actions = [];
+      departures.forEach((row) => {
+        localAiCandidateAlightStops(row, 'runner', 'hunter').slice(0, 6).forEach((alightStop) => {
+          const departureMinute = Number(row.departureMinute);
+          const arrivalMinute = stopArrivalMinutes(alightStop);
+          if (!Number.isFinite(departureMinute) || !Number.isFinite(arrivalMinute) || arrivalMinute <= departureMinute) return;
+          const hintScore = localAiScoreRailCandidate({ row, alightStop, departureMinute, arrivalMinute }, 'runner', 'hunter', preview);
+          actions.push({
+            mode: 'rail',
+            hintScore,
+            key: `rail:${row.trip.id}:${alightStop.stationGroupId}`,
+            label: `rail ${displayNameForGroup(stationGroupId)} -> ${displayNameForGroup(alightStop.stationGroupId)}`,
+            steps: [
+              { type: 'BOARD_TRAIN', trip_id: row.trip.id },
+              { type: 'RIDE_TO_STATION', station_id: alightStop.stationGroupId },
+            ],
+          });
+        });
+      });
+      return localAiRankActions(actions, 34);
+    }
+
+    function localAiRunnerWalkActions(node) {
+      const preview = node.preview;
+      const currentState = preview.currentState || {};
+      const actions = [];
+      if (currentState.kind === 'NODE') {
+        const edges = state.walkingEdgesByFromGroupId.get(currentState.stationGroupId) || [];
+        const picks = new Map();
+        edges.slice(0, 8).forEach((edge) => picks.set(edge.toNodeId, edge));
+        edges.slice(-5).forEach((edge) => picks.set(edge.toNodeId, edge));
+        [...picks.values()].forEach((edge) => {
+          if (!edge?.toNodeId || edge.toNodeId === currentState.stationGroupId) return;
+          actions.push({
+            mode: 'walk',
+            hintScore: Number(edge.distanceMeters) || 0,
+            key: `walk:${currentState.stationGroupId}:${edge.toNodeId}`,
+            label: `walk ${displayNameForGroup(currentState.stationGroupId)} -> ${displayNameForGroup(edge.toNodeId)}`,
+            steps: [{
+              type: 'WALK_TO_STATION',
+              station_id: edge.toNodeId,
+              distance_meters: edge.distanceMeters,
+              walk_time_sec: walkingTimeSecForEdgeForPlayer(edge, 'runner'),
+              walking_speed_mps: walkingSpeedMetersPerSecondFor('runner'),
+            }],
+          });
+        });
+      } else if (currentState.kind === 'BUS_STOP') {
+        busRailAccessChoices(preview).slice(0, 8).forEach((connector) => {
+          actions.push({
+            mode: 'walk',
+            hintScore: 1200 - Number(connector.distanceMeters || 0) / 8,
+            key: `bus-walk:${currentState.busStopId}:${connector.toNodeId}`,
+            label: `walk bus stop -> ${displayNameForGroup(connector.toNodeId)}`,
+            steps: [{
+              type: 'WALK_FROM_BUS_TO_STATION',
+              bus_stop_id: currentState.busStopId,
+              station_id: connector.toNodeId,
+              distance_meters: Number(connector.distanceMeters) || 0,
+              walk_time_sec: walkingTimeSecForDistance(Number(connector.distanceMeters) || 0, walkingSpeedMetersPerSecondFor('runner')),
+              walking_speed_mps: walkingSpeedMetersPerSecondFor('runner'),
+            }],
+          });
+        });
+      }
+      return localAiRankActions(actions, 12);
+    }
+
+    function localAiRunnerFlightActions(node) {
+      const preview = node.preview;
+      const accessibleAirport = accessibleAirportFromPreview(preview);
+      if (!accessibleAirport?.iata) return [];
+      const actions = [];
+      const seenByDestination = new Map();
+      availableFlightsFromAirport(accessibleAirport.iata, preview, 96, { buyableOnly: true })
+        .filter((flight) => flightCatchability(flight, preview).ok)
+        .forEach((flight) => {
+          const kept = seenByDestination.get(flight.destinationAirport) || 0;
+          if (kept >= 2) return;
+          seenByDestination.set(flight.destinationAirport, kept + 1);
+          const times = flightRuleTimes(flight);
+          const fare = resolveFlightFare(flight);
+          const waitMinutes = Math.max(0, times.departureMinute - preview.currentMinute);
+          actions.push({
+            mode: 'flight',
+            hintScore: flightDistanceKm(flight) * 18 - waitMinutes * 7,
+            key: `flight:${flight.physicalFlightId}`,
+            label: `flight ${flight.originAirport} -> ${flight.destinationAirport}`,
+            steps: [{
+              type: 'TAKE_FLIGHT',
+              flight_id: flight.physicalFlightId,
+              flight_number: flightOperatingNumber(flight),
+              origin_airport: flight.originAirport,
+              destination_airport: flight.destinationAirport,
+              purchase_hhmm: minutesToHhmm(preview.currentMinute),
+              departure_hhmm: flight.departureTimeLocal,
+              arrival_hhmm: flight.arrivalTimeLocal,
+              fare,
+            }],
+          });
+        });
+      return localAiRankActions(actions, 12);
+    }
+
+    function localAiRunnerShipActions(node) {
+      const preview = node.preview;
+      const actions = [];
+      localAiReachableShipOriginPorts(preview, 'runner', 12).forEach((origin) => {
+        const seenByDestination = new Map();
+        (state.shipSailingsByOriginPort.get(origin.name) || [])
+          .filter(shipOperatesForGameDay)
+          .filter((sailing) => Number(sailing.departureMinute) >= preview.currentMinute)
+          .sort((a, b) => Number(a.departureMinute) - Number(b.departureMinute))
+          .forEach((sailing) => {
+            const kept = seenByDestination.get(sailing.destinationPort) || 0;
+            if (kept >= 2) return;
+            const catchability = shipCatchability(sailing, preview, 'runner');
+            if (!catchability.ok) return;
+            seenByDestination.set(sailing.destinationPort, kept + 1);
+            const portDistance = coordinateDistanceMeters(portCoordinate(sailing.originPort), portCoordinate(sailing.destinationPort));
+            const waitMinutes = Math.max(0, Number(sailing.departureMinute) - preview.currentMinute);
+            actions.push({
+              mode: 'ship',
+              hintScore: (Number.isFinite(portDistance) ? portDistance / 100 : 0) - waitMinutes * 5,
+              key: `ship:${sailing.sailingId}`,
+              label: `ship ${sailing.originPort} -> ${sailing.destinationPort}`,
+              steps: [{
+                type: 'TAKE_SHIP',
+                sailing_id: sailing.sailingId,
+                route_id: sailing.routeId,
+                operator: sailing.operator,
+                service_no: sailing.serviceNo || null,
+                vessel: sailing.vessel || null,
+                origin_port: sailing.originPort,
+                destination_port: sailing.destinationPort,
+                departure_hhmm: sailing.departureHhmm || minutesToHhmm(catchability.departureMinute),
+                arrival_hhmm: sailing.arrivalHhmm || minutesToHhmm(catchability.arrivalMinute),
+                origin_access_kind: catchability.originAccess.kind,
+                origin_access_station_id: catchability.originAccess.stationGroupId || null,
+                origin_access_bus_stop_id: catchability.originAccess.busStopId || null,
+                origin_access_distance_meters: catchability.originAccess.distanceMeters,
+                origin_access_walk_time_sec: catchability.originAccess.walkTimeSec,
+                destination_access_kind: catchability.destinationAccess.kind,
+                destination_access_station_id: catchability.destinationAccess.stationGroupId || null,
+                destination_access_bus_stop_id: catchability.destinationAccess.busStopId || null,
+                destination_access_airport_iata: catchability.destinationAccess.airportIata || null,
+                destination_access_distance_meters: catchability.destinationAccess.distanceMeters,
+                destination_access_walk_time_sec: catchability.destinationAccess.walkTimeSec,
+                fare: catchability.fare,
+              }],
+            });
+          });
+      });
+      return localAiRankActions(actions, 14);
+    }
+
+    function localAiRunnerBusActions(node) {
+      const preview = node.preview;
+      const actions = [];
+      localAiReachableBusStopChoices(preview, 'runner').slice(0, 8).forEach((choice) => {
+        const readyMinute = localAiBusBoardReadyMinute(choice.stopId, preview, 'runner');
+        busRideableDeparturesFromStop(choice.stopId, readyMinute).slice(0, 10).forEach((row) => {
+          const stops = busDownstreamStops(row.tripId, choice.stopId);
+          if (!stops.length) return;
+          const picks = new Map();
+          const addStop = (stop) => {
+            if (stop?.stopId && !picks.has(stop.stopId)) picks.set(stop.stopId, stop);
+          };
+          [0, 2, 5, Math.floor(stops.length / 2), stops.length - 1].forEach((index) => addStop(stops[Math.max(0, Math.min(stops.length - 1, index))]));
+          stops.filter((stop) => busStopRecordAirportIata(stop)).slice(0, 3).forEach(addStop);
+          [...picks.values()].forEach((destinationStop) => {
+            const trip = state.busPlannerTripsById.get(row.tripId);
+            const baseSteps = [];
+            if (preview.currentState.kind === 'NODE' && Number(choice.distanceMeters || 0) > 0) {
+              baseSteps.push({
+                type: 'WALK_TO_BUS_STOP',
+                station_id: preview.currentState.stationGroupId,
+                bus_stop_id: choice.stopId,
+                distance_meters: choice.distanceMeters,
+                walk_time_sec: choice.walkTimeSec,
+                walking_speed_mps: walkingSpeedMetersPerSecondFor('runner'),
+              });
+            }
+            baseSteps.push({ type: 'BOARD_BUS', trip_id: row.tripId, bus_stop_id: choice.stopId });
+            baseSteps.push({ type: 'RIDE_TO_BUS_STOP', bus_stop_id: destinationStop.stopId });
+            const rideMinutes = Number(destinationStop.arrivalMinute) - Number(row.departureMinute);
+            actions.push({
+              mode: 'bus',
+              hintScore: Math.max(0, rideMinutes) * 18 + (busStopRecordAirportIata(destinationStop) ? 1200 : 0),
+              key: `bus:${row.tripId}:${choice.stopId}:${destinationStop.stopId}`,
+              label: `bus ${busRouteName(row.routeId || trip?.routeId)} -> ${destinationStop.name || destinationStop.stopId}`,
+              steps: baseSteps,
+            });
+          });
+        });
+      });
+      return localAiRankActions(actions, 22);
+    }
+
+    function localAiRunnerActions(node) {
+      return [
+        ...localAiRunnerFlightActions(node),
+        ...localAiRunnerShipActions(node),
+        ...localAiRunnerBusActions(node),
+        ...localAiRunnerRailActions(node),
+        ...localAiRunnerWalkActions(node),
+      ];
+    }
+
+    function localAiSearchRunnerEscapePlan(baseSteps) {
+      const startPreview = localAiPreviewForSteps('runner', baseSteps);
+      if (!startPreview) return null;
+      const startMinute = startPreview.currentMinute;
+      const horizonMinute = Math.min(hhmmToMinutes(state.endTime), startMinute + 240);
+      let beam = [{
+        steps: baseSteps.map(localAiCloneStep),
+        preview: startPreview,
+        modes: new Set(),
+        labels: [],
+        score: localAiRunnerScoreNode({ steps: baseSteps, preview: startPreview, modes: new Set(), labels: [] }, startMinute),
+      }];
+      let best = null;
+      const rememberBest = (node) => {
+        if (node.steps.length <= baseSteps.length) return;
+        if (!best || node.score > best.score) best = node;
+      };
+
+      for (let depth = 0; depth < 4; depth += 1) {
+        const next = [];
+        beam.forEach((node) => {
+          localAiRunnerActions(node).forEach((action) => {
+            const candidate = localAiAppendAction(node, action, 'runner');
+            if (!candidate || candidate.preview.currentMinute > horizonMinute) return;
+            candidate.score = localAiRunnerScoreNode(candidate, startMinute);
+            rememberBest(candidate);
+            next.push(candidate);
+          });
+        });
+        if (!next.length) break;
+        const deduped = new Map();
+        next.sort((a, b) => b.score - a.score);
+        next.forEach((node) => {
+          const stateKey = JSON.stringify(node.preview.currentState || {});
+          const key = `${stateKey}|${Math.floor(node.preview.currentMinute / 5)}|${[...node.modes].sort().join('+')}`;
+          if (!deduped.has(key)) deduped.set(key, node);
+        });
+        beam = [...deduped.values()].slice(0, 10);
+      }
+      return best;
+    }
+
     function localAiInInitialPlanningWindow() {
       const startMinute = hhmmToMinutes(state.startTime);
       return state.phase === 'PLANNING' && !state.latestResult && state.currentGameMinute <= startMinute;
@@ -14928,16 +15392,39 @@
       return true;
     }
 
+    function generateLocalAiRunnerPlan() {
+      if (state.timetableStatus !== 'ready') return false;
+      const player = state.players.runner;
+      if (!player) return false;
+      const baseSteps = (player.steps || []).map(localAiCloneStep);
+      const best = localAiSearchRunnerEscapePlan(baseSteps);
+      if (!best || best.steps.length <= baseSteps.length) return generateLocalAiRailPlan('runner');
+      player.steps = best.steps.map(localAiCloneStep);
+      state.planningModes.runner = defaultPlanningModeAfterShip(best.preview) || 'rail';
+      state.planningRouteIds.runner = null;
+      state.pendingTripIds.runner = null;
+      const modeText = [...best.modes].join(' + ') || 'rail';
+      const destinationText = formatState(best.preview);
+      state.localAi.status = `AI Runner chose long escape plan (${modeText}): ${best.labels.join(' / ')}; ends ${destinationText}.`;
+      invalidateSimulation();
+      return true;
+    }
+
+    function generateLocalAiPlan(aiSeat) {
+      if (aiSeat === 'runner' && generateLocalAiRunnerPlan()) return true;
+      return generateLocalAiRailPlan(aiSeat);
+    }
+
     function ensureLocalAiPlan() {
       if (!state.localAi.enabled) return true;
       const aiSeat = state.localAi.aiSeat;
       if (!aiSeat || !state.players[aiSeat]) return true;
       if (localAiInInitialPlanningWindow() && state.timetableStatus === 'ready') {
         state.players[aiSeat].steps = [];
-        if (generateLocalAiRailPlan(aiSeat)) return true;
+        if (generateLocalAiPlan(aiSeat)) return true;
       }
       if (localAiHasUsableFuturePlan(aiSeat)) return true;
-      if (generateLocalAiRailPlan(aiSeat)) return true;
+      if (generateLocalAiPlan(aiSeat)) return true;
       state.localAi.status = `AI ${seatLabel(aiSeat)} could not find a catchable rail departure from ${displayNameForGroup(state.players[aiSeat]?.start_station_id)}. Choose another start station or wait for timetable loading.`;
       return false;
     }
