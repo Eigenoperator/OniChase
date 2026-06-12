@@ -14746,7 +14746,21 @@
       return livePreview?.currentState?.kind && livePreview.currentState.kind !== 'NODE';
     }
 
-    function localAiAlightStopForDeparture(row, aiSeat) {
+    function localAiPreviewCoordinate(preview) {
+      if (validCoordinate(preview?.mapPosition)) return preview.mapPosition;
+      const currentState = preview?.currentState || {};
+      if (currentState.kind === 'NODE') return stationLonLat(currentState.stationGroupId);
+      if (currentState.kind === 'BUS_STOP') return busStopCoordinate(currentState.busStopId);
+      if (currentState.airportIata) return airportCoordinate(currentState.airportIata);
+      if (currentState.kind === 'PORT_WAIT') return portCoordinate(currentState.portName);
+      if (currentState.kind === 'SHIP') {
+        const sailing = state.shipSailingById.get(currentState.sailingId);
+        return portCoordinate(sailing?.destinationPort) || portCoordinate(sailing?.originPort);
+      }
+      return null;
+    }
+
+    function localAiDownstreamStops(row) {
       const boardSequence = Number(row?.stop?.sequence);
       if (!row?.trip || !Number.isFinite(boardSequence)) return null;
       const uniqueStops = [];
@@ -14758,9 +14772,134 @@
         seen.add(stop.stationGroupId);
         uniqueStops.push(stop);
       });
-      if (!uniqueStops.length) return null;
+      return uniqueStops;
+    }
+
+    function localAiFallbackAlightStop(row, aiSeat) {
+      const uniqueStops = localAiDownstreamStops(row);
+      if (!uniqueStops?.length) return null;
       const preferredOffset = aiSeat === 'hunter' ? 4 : 6;
       return uniqueStops[Math.min(uniqueStops.length - 1, preferredOffset)];
+    }
+
+    function localAiCandidateAlightStops(row, aiSeat, opponentSeat) {
+      const uniqueStops = localAiDownstreamStops(row);
+      if (!uniqueStops?.length) return [];
+      const picks = new Map();
+      const addStop = (stop) => {
+        if (stop?.stationGroupId && !picks.has(stop.stationGroupId)) picks.set(stop.stationGroupId, stop);
+      };
+      const addIndex = (index) => addStop(uniqueStops[Math.max(0, Math.min(uniqueStops.length - 1, index))]);
+      const lastIndex = uniqueStops.length - 1;
+      const offsets = aiSeat === 'hunter'
+        ? [0, 1, 2, 3, 5, 8, Math.floor(lastIndex / 2), lastIndex]
+        : [1, 3, 5, 8, 12, Math.floor(lastIndex / 2), Math.floor(lastIndex * 0.75), lastIndex];
+      offsets.forEach(addIndex);
+
+      const opponentTailCoordinate = localAiPreviewCoordinate(planTailPreview(opponentSeat));
+      const opponentArrivalCoordinate = localAiPreviewCoordinate(previewPlayer(opponentSeat, stopArrivalMinutes(uniqueStops[Math.min(lastIndex, Math.max(0, Math.floor(lastIndex / 2)))])));
+      const targetCoordinates = [opponentTailCoordinate, opponentArrivalCoordinate].filter(validCoordinate);
+      if (targetCoordinates.length) {
+        const ranked = uniqueStops
+          .map((stop) => {
+            const coordinate = stationLonLat(stop.stationGroupId);
+            const distances = targetCoordinates
+              .map((target) => coordinateDistanceMeters(coordinate, target))
+              .filter(Number.isFinite);
+            const distance = distances.length ? Math.min(...distances) : Infinity;
+            return { stop, distance };
+          })
+          .filter((item) => Number.isFinite(item.distance))
+          .sort((left, right) => left.distance - right.distance);
+        if (aiSeat === 'hunter') {
+          ranked.slice(0, 3).forEach((item) => addStop(item.stop));
+        } else {
+          ranked.slice(-3).forEach((item) => addStop(item.stop));
+        }
+      }
+      return [...picks.values()].slice(0, 10);
+    }
+
+    function localAiSamePlaceBonus(candidate, opponentPreview) {
+      const opponentState = opponentPreview?.currentState || {};
+      if (opponentState.kind === 'NODE' && opponentState.stationGroupId === candidate.alightStop.stationGroupId) return 60000;
+      if (opponentPreview?.mapStationGroupId && opponentPreview.mapStationGroupId === candidate.alightStop.stationGroupId) return 24000;
+      if (
+        opponentState.kind === 'TRAIN' &&
+        (opponentState.tripId === candidate.row.trip.id || sameCoupledPhysicalTrain(opponentState.tripId, candidate.row.trip.id, candidate.departureMinute))
+      ) {
+        return 50000;
+      }
+      return 0;
+    }
+
+    function localAiStationHubScore(stationGroupId) {
+      const departureCount = state.stationTripsByGroupId.get(stationGroupId)?.length || 0;
+      return Math.min(60, Math.log2(Math.max(1, departureCount)) * 7);
+    }
+
+    function localAiScoreRailCandidate(candidate, aiSeat, opponentSeat, aiTail) {
+      const arrivalCoordinate = stationLonLat(candidate.alightStop.stationGroupId);
+      const opponentAtArrival = previewPlayer(opponentSeat, candidate.arrivalMinute);
+      const opponentTail = planTailPreview(opponentSeat);
+      const opponentArrivalCoordinate = localAiPreviewCoordinate(opponentAtArrival);
+      const opponentTailCoordinate = localAiPreviewCoordinate(opponentTail);
+      const distanceAtArrival = coordinateDistanceMeters(arrivalCoordinate, opponentArrivalCoordinate);
+      const distanceToTail = coordinateDistanceMeters(arrivalCoordinate, opponentTailCoordinate);
+      const safeDistanceAtArrival = Number.isFinite(distanceAtArrival) ? distanceAtArrival : 120000;
+      const safeDistanceToTail = Number.isFinite(distanceToTail) ? distanceToTail : safeDistanceAtArrival;
+      const waitMinutes = Math.max(0, candidate.departureMinute - (aiTail?.currentMinute || state.currentGameMinute));
+      const rideMinutes = Math.max(1, candidate.arrivalMinute - candidate.departureMinute);
+      const samePlace = localAiSamePlaceBonus(candidate, opponentAtArrival);
+      const hubScore = localAiStationHubScore(candidate.alightStop.stationGroupId);
+
+      if (aiSeat === 'hunter') {
+        const timeGap = Math.abs(candidate.arrivalMinute - (opponentAtArrival?.currentMinute ?? candidate.arrivalMinute));
+        return samePlace +
+          12000 -
+          safeDistanceAtArrival / 18 -
+          safeDistanceToTail / 35 -
+          timeGap * 20 -
+          waitMinutes * 8 -
+          Math.max(0, rideMinutes - 50) * 3 +
+          hubScore;
+      }
+
+      const dangerPenalty = samePlace > 0 ? samePlace * 1.2 : 0;
+      return safeDistanceAtArrival / 55 +
+        safeDistanceToTail / 80 +
+        Math.min(rideMinutes, 90) * 12 -
+        waitMinutes * 6 +
+        hubScore * 1.4 -
+        dangerPenalty;
+    }
+
+    function localAiBestRailCandidate(departures, aiSeat, aiTail) {
+      const opponent = opponentSeat(aiSeat);
+      let best = null;
+      for (const row of departures) {
+        const alightStops = localAiCandidateAlightStops(row, aiSeat, opponent);
+        for (const alightStop of alightStops) {
+          const departureMinute = Number(row.departureMinute);
+          const arrivalMinute = stopArrivalMinutes(alightStop);
+          if (!Number.isFinite(departureMinute) || !Number.isFinite(arrivalMinute) || arrivalMinute <= departureMinute) continue;
+          const candidate = { row, alightStop, departureMinute, arrivalMinute };
+          const score = localAiScoreRailCandidate(candidate, aiSeat, opponent, aiTail);
+          if (!best || score > best.score) best = { ...candidate, score };
+        }
+      }
+      if (best) return best;
+      for (const row of departures) {
+        const alightStop = localAiFallbackAlightStop(row, aiSeat);
+        if (!alightStop) continue;
+        return { row, alightStop, departureMinute: Number(row.departureMinute), arrivalMinute: stopArrivalMinutes(alightStop), score: 0 };
+      }
+      return null;
+    }
+
+    function localAiInInitialPlanningWindow() {
+      const startMinute = hhmmToMinutes(state.startTime);
+      return state.phase === 'PLANNING' && !state.latestResult && state.currentGameMinute <= startMinute;
     }
 
     function generateLocalAiRailPlan(aiSeat) {
@@ -14776,25 +14915,27 @@
         walkingContext: { fromPhysicalStationId: tail.currentState.physicalStationId || null },
         limit: 80,
       });
-      for (const row of departures) {
-        const alightStop = localAiAlightStopForDeparture(row, aiSeat);
-        if (!alightStop) continue;
-        player.steps.push({ type: 'BOARD_TRAIN', trip_id: row.trip.id });
-        player.steps.push({ type: 'RIDE_TO_STATION', station_id: alightStop.stationGroupId });
-        state.planningModes[aiSeat] = 'rail';
-        state.planningRouteIds[aiSeat] = null;
-        state.pendingTripIds[aiSeat] = null;
-        state.localAi.status = `AI ${seatLabel(aiSeat)} planned ${formatTripLabel(row.trip)}: ${displayNameForGroup(stationGroupId)} -> ${displayNameForGroup(alightStop.stationGroupId)}.`;
-        invalidateSimulation();
-        return true;
-      }
-      return false;
+      const best = localAiBestRailCandidate(departures, aiSeat, tail);
+      if (!best) return false;
+      player.steps.push({ type: 'BOARD_TRAIN', trip_id: best.row.trip.id });
+      player.steps.push({ type: 'RIDE_TO_STATION', station_id: best.alightStop.stationGroupId });
+      state.planningModes[aiSeat] = 'rail';
+      state.planningRouteIds[aiSeat] = null;
+      state.pendingTripIds[aiSeat] = null;
+      const intent = aiSeat === 'hunter' ? 'intercept' : 'escape';
+      state.localAi.status = `AI ${seatLabel(aiSeat)} chose ${intent} rail plan ${formatTripLabel(best.row.trip)}: ${displayNameForGroup(stationGroupId)} -> ${displayNameForGroup(best.alightStop.stationGroupId)}.`;
+      invalidateSimulation();
+      return true;
     }
 
     function ensureLocalAiPlan() {
       if (!state.localAi.enabled) return true;
       const aiSeat = state.localAi.aiSeat;
       if (!aiSeat || !state.players[aiSeat]) return true;
+      if (localAiInInitialPlanningWindow() && state.timetableStatus === 'ready') {
+        state.players[aiSeat].steps = [];
+        if (generateLocalAiRailPlan(aiSeat)) return true;
+      }
       if (localAiHasUsableFuturePlan(aiSeat)) return true;
       if (generateLocalAiRailPlan(aiSeat)) return true;
       state.localAi.status = `AI ${seatLabel(aiSeat)} could not find a catchable rail departure from ${displayNameForGroup(state.players[aiSeat]?.start_station_id)}. Choose another start station or wait for timetable loading.`;
