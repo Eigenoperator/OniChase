@@ -40,11 +40,39 @@ Expected public URL:
 https://eigenoperator.github.io/OniChase/
 ```
 
+Configured custom domain target:
+
+```text
+https://onichase.xincheng2004.com/
+```
+
+For GitHub Pages, set the repository custom domain to:
+
+```text
+onichase.xincheng2004.com
+```
+
+Then create this DNS record at the `xincheng2004.com` DNS provider:
+
+```text
+Type: CNAME
+Name: onichase
+Target: eigenoperator.github.io
+```
+
+Verify propagation and the v5 page with:
+
+```bash
+dig onichase.xincheng2004.com
+curl -I https://onichase.xincheng2004.com/v5.html
+```
+
 If this URL does not open yet, check these one-time GitHub conditions:
 
 1. In repository `Settings -> Pages`, make sure the site is configured to deploy from `GitHub Actions`.
-2. In repository `Actions`, make sure the `Deploy Web Client` workflow has run successfully on `main`.
-3. After the first successful Pages deployment, wait a short time for propagation and then try the URL again.
+2. In repository `Settings -> Pages`, make sure the custom domain is `onichase.xincheng2004.com` and enable `Enforce HTTPS` after DNS passes.
+3. In repository `Actions`, make sure the `Deploy Web Client` workflow has run successfully on `main`.
+4. After the first successful Pages deployment and DNS propagation, wait a short time and then try the URL again.
 
 Current repo note:
 

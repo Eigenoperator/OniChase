@@ -15,6 +15,7 @@ Current focus:
 
 The GitHub Pages site currently exposes only the active public playtest pages:
 
+- custom domain target: `https://onichase.xincheng2004.com/`
 - landing page: `https://eigenoperator.github.io/OniChase/`
 - `v1` Yamanote client: `https://eigenoperator.github.io/OniChase/v1.html`
 - `v2` GIS Shinkansen client: `https://eigenoperator.github.io/OniChase/v2.html`
