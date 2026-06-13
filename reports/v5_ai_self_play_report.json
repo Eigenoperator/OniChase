@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-12T22:09:05.306Z",
+  "generatedAt": "2026-06-13T18:39:18.098Z",
   "fairness": {
     "runnerStart": "東京 06:00",
     "hunterStart": "東京 06:30",
@@ -48,6 +48,17 @@
         "notes": "Releases at 06:30 and chains three rail intercept plans."
       },
       {
+        "id": "hunter_multimodal_static",
+        "label": "Hunter multimodal static",
+        "notes": "Releases at 06:30 and runs one multimodal intercept beam search."
+      },
+      {
+        "id": "hunter_multimodal_replan",
+        "label": "Hunter multimodal replan",
+        "notes": "Releases at 06:30, runs multimodal intercept search, then replans at hourly planning windows.",
+        "replan": true
+      },
+      {
         "id": "hunter_hold_tokyo",
         "label": "Hunter hold Tokyo",
         "notes": "Releases at 06:30 but holds Tokyo as a control baseline."
@@ -55,36 +66,36 @@
     ]
   },
   "summary": {
-    "games": 16,
+    "games": 24,
     "runnerWins": 12,
-    "hunterWins": 4,
-    "runnerWinRate": 0.75,
-    "hunterWinRate": 0.25
+    "hunterWins": 12,
+    "runnerWinRate": 0.5,
+    "hunterWinRate": 0.5
   },
   "byRunner": [
     {
       "id": "runner_multimodal_beam",
       "runnerWins": 4,
-      "games": 4,
-      "runnerWinRate": 1
+      "games": 6,
+      "runnerWinRate": 0.6667
     },
     {
       "id": "runner_rail_one_leg",
       "runnerWins": 1,
-      "games": 4,
-      "runnerWinRate": 0.25
+      "games": 6,
+      "runnerWinRate": 0.1667
     },
     {
       "id": "runner_rail_three_leg",
       "runnerWins": 3,
-      "games": 4,
-      "runnerWinRate": 0.75
+      "games": 6,
+      "runnerWinRate": 0.5
     },
     {
       "id": "runner_wait10_multimodal",
       "runnerWins": 4,
-      "games": 4,
-      "runnerWinRate": 1
+      "games": 6,
+      "runnerWinRate": 0.6667
     }
   ],
   "byHunter": [
@@ -107,6 +118,18 @@
       "hunterWinRate": 0.5
     },
     {
+      "id": "hunter_multimodal_static",
+      "hunterWins": 4,
+      "games": 4,
+      "hunterWinRate": 1
+    },
+    {
+      "id": "hunter_multimodal_replan",
+      "hunterWins": 4,
+      "games": 4,
+      "hunterWinRate": 1
+    },
+    {
       "id": "hunter_hold_tokyo",
       "hunterWins": 0,
       "games": 4,
@@ -127,6 +150,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "runner",
       "capture": null,
       "runner": {
@@ -243,6 +267,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "runner",
       "capture": null,
       "runner": {
@@ -359,6 +384,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "runner",
       "capture": null,
       "runner": {
@@ -464,6 +490,355 @@
     },
     {
       "runnerStrategy": "runner_multimodal_beam",
+      "hunterStrategy": "hunter_multimodal_static",
+      "runnerPlanned": true,
+      "hunterPlanned": true,
+      "runnerSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "hunterSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "replans": [],
+      "winner": "hunter",
+      "capture": {
+        "type": "same_node",
+        "time_hhmm": "12:11",
+        "station_group_id": "SG_N02G_008711"
+      },
+      "runner": {
+        "startStation": "東京",
+        "stepCount": 5,
+        "resolvedActionCount": 5,
+        "modes": [
+          "rail",
+          "ship",
+          "walking"
+        ],
+        "finalTime": "09:59",
+        "finalLabel": "萩原",
+        "fareYen": 16260,
+        "planSteps": [
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7111A:756c59182f"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_007310"
+          },
+          {
+            "type": "TAKE_SHIP",
+            "sailing_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back_010",
+            "route_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back",
+            "operator": "鳴門市",
+            "service_no": "10",
+            "vessel": "黒崎渡船",
+            "origin_port": "高島港",
+            "destination_port": "黒崎港",
+            "departure_hhmm": "09:33",
+            "arrival_hhmm": "09:35",
+            "origin_access_kind": "station",
+            "origin_access_station_id": "SG_N02G_007310",
+            "origin_access_bus_stop_id": null,
+            "origin_access_distance_meters": 269.88129086139014,
+            "origin_access_walk_time_sec": 195,
+            "destination_access_kind": "station",
+            "destination_access_station_id": "SG_N02G_008703",
+            "destination_access_bus_stop_id": null,
+            "destination_access_airport_iata": null,
+            "destination_access_distance_meters": 20,
+            "destination_access_walk_time_sec": 15,
+            "fare": {
+              "model_version": "v5_ship_official_adult_passenger_fare_v1",
+              "source": "official_adult_passenger_fare",
+              "currency": "JPY",
+              "total_yen": 0,
+              "fare_known": true,
+              "components": [
+                {
+                  "type": "ship",
+                  "route_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back",
+                  "sailing_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back_010",
+                  "total_yen": 0
+                }
+              ]
+            }
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_008702",
+            "distance_meters": 139,
+            "walk_time_sec": 101,
+            "walking_speed_mps": 1.3888888888888888
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_008711",
+            "distance_meters": 1729,
+            "walk_time_sec": 1245,
+            "walking_speed_mps": 1.3888888888888888
+          }
+        ]
+      },
+      "hunter": {
+        "startStation": "東京",
+        "stepCount": 8,
+        "resolvedActionCount": 8,
+        "modes": [
+          "rail",
+          "walking"
+        ],
+        "finalTime": "12:11",
+        "finalLabel": "萩原",
+        "fareYen": 26460,
+        "planSteps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "06:30"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7115A:5ccec232d1"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008029"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7A:8fe232f286"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008684"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "jr_kyushu_navitime:日豊線:00000010:800a0012:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008702"
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_008711",
+            "distance_meters": 1729,
+            "walk_time_sec": 1245,
+            "walking_speed_mps": 1.3888888888888888
+          }
+        ]
+      }
+    },
+    {
+      "runnerStrategy": "runner_multimodal_beam",
+      "hunterStrategy": "hunter_multimodal_replan",
+      "runnerPlanned": true,
+      "hunterPlanned": true,
+      "runnerSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "hunterSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "replans": [
+        {
+          "time": "07:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "08:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "09:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "10:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "11:30",
+          "planned": true,
+          "beforeStepCount": 8,
+          "afterStepCount": 10,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        }
+      ],
+      "winner": "hunter",
+      "capture": {
+        "type": "same_node",
+        "time_hhmm": "12:03",
+        "station_group_id": "SG_N02G_008711"
+      },
+      "runner": {
+        "startStation": "東京",
+        "stepCount": 5,
+        "resolvedActionCount": 5,
+        "modes": [
+          "rail",
+          "ship",
+          "walking"
+        ],
+        "finalTime": "09:59",
+        "finalLabel": "萩原",
+        "fareYen": 16260,
+        "planSteps": [
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7111A:756c59182f"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_007310"
+          },
+          {
+            "type": "TAKE_SHIP",
+            "sailing_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back_010",
+            "route_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back",
+            "operator": "鳴門市",
+            "service_no": "10",
+            "vessel": "黒崎渡船",
+            "origin_port": "高島港",
+            "destination_port": "黒崎港",
+            "departure_hhmm": "09:33",
+            "arrival_hhmm": "09:35",
+            "origin_access_kind": "station",
+            "origin_access_station_id": "SG_N02G_007310",
+            "origin_access_bus_stop_id": null,
+            "origin_access_distance_meters": 269.88129086139014,
+            "origin_access_walk_time_sec": 195,
+            "destination_access_kind": "station",
+            "destination_access_station_id": "SG_N02G_008703",
+            "destination_access_bus_stop_id": null,
+            "destination_access_airport_iata": null,
+            "destination_access_distance_meters": 20,
+            "destination_access_walk_time_sec": 15,
+            "fare": {
+              "model_version": "v5_ship_official_adult_passenger_fare_v1",
+              "source": "official_adult_passenger_fare",
+              "currency": "JPY",
+              "total_yen": 0,
+              "fare_known": true,
+              "components": [
+                {
+                  "type": "ship",
+                  "route_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back",
+                  "sailing_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back_010",
+                  "total_yen": 0
+                }
+              ]
+            }
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_008702",
+            "distance_meters": 139,
+            "walk_time_sec": 101,
+            "walking_speed_mps": 1.3888888888888888
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_008711",
+            "distance_meters": 1729,
+            "walk_time_sec": 1245,
+            "walking_speed_mps": 1.3888888888888888
+          }
+        ]
+      },
+      "hunter": {
+        "startStation": "東京",
+        "stepCount": 10,
+        "resolvedActionCount": 10,
+        "modes": [
+          "rail",
+          "walking"
+        ],
+        "finalTime": "12:03",
+        "finalLabel": "萩原",
+        "fareYen": 26680,
+        "planSteps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "06:30"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7115A:5ccec232d1"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008029"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7A:8fe232f286"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008684"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "jr_kyushu_navitime:日豊線:00000010:800a0012:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008702"
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_008705",
+            "distance_meters": 795,
+            "walk_time_sec": 573,
+            "walking_speed_mps": 1.3888888888888888
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "navitime_non_jr:551c2e1d3d:00000754:823b0025:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008711"
+          }
+        ]
+      }
+    },
+    {
+      "runnerStrategy": "runner_multimodal_beam",
       "hunterStrategy": "hunter_hold_tokyo",
       "runnerPlanned": true,
       "hunterPlanned": true,
@@ -475,6 +850,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "runner",
       "capture": null,
       "runner": {
@@ -581,6 +957,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "hunter",
       "capture": {
         "type": "same_node",
@@ -647,6 +1024,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "hunter",
       "capture": {
         "type": "same_node",
@@ -713,6 +1091,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "hunter",
       "capture": {
         "type": "same_node",
@@ -768,6 +1147,239 @@
     },
     {
       "runnerStrategy": "runner_rail_one_leg",
+      "hunterStrategy": "hunter_multimodal_static",
+      "runnerPlanned": true,
+      "hunterPlanned": true,
+      "runnerSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "hunterSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "replans": [],
+      "winner": "hunter",
+      "capture": {
+        "type": "same_node",
+        "time_hhmm": "11:45",
+        "station_group_id": "SG_N02G_009033"
+      },
+      "runner": {
+        "startStation": "東京",
+        "stepCount": 2,
+        "resolvedActionCount": 2,
+        "modes": [
+          "rail"
+        ],
+        "finalTime": "11:03",
+        "finalLabel": "博多",
+        "fareYen": 21330,
+        "planSteps": [
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7111A:756c59182f"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_009033"
+          }
+        ]
+      },
+      "hunter": {
+        "startStation": "東京",
+        "stepCount": 8,
+        "resolvedActionCount": 8,
+        "modes": [
+          "rail",
+          "walking"
+        ],
+        "finalTime": "11:45",
+        "finalLabel": "博多",
+        "fareYen": 27010,
+        "planSteps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "06:30"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7115A:5ccec232d1"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008029"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7A:8fe232f286"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_009033"
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_009021",
+            "distance_meters": 747,
+            "walk_time_sec": 538,
+            "walking_speed_mps": 1.3888888888888888
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "navitime_non_jr:f07f870171:00000836:02810027:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_009033"
+          }
+        ]
+      }
+    },
+    {
+      "runnerStrategy": "runner_rail_one_leg",
+      "hunterStrategy": "hunter_multimodal_replan",
+      "runnerPlanned": true,
+      "hunterPlanned": true,
+      "runnerSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "hunterSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "replans": [
+        {
+          "time": "07:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "08:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "09:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "10:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "11:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        }
+      ],
+      "winner": "hunter",
+      "capture": {
+        "type": "same_node",
+        "time_hhmm": "11:45",
+        "station_group_id": "SG_N02G_009033"
+      },
+      "runner": {
+        "startStation": "東京",
+        "stepCount": 2,
+        "resolvedActionCount": 2,
+        "modes": [
+          "rail"
+        ],
+        "finalTime": "11:03",
+        "finalLabel": "博多",
+        "fareYen": 21330,
+        "planSteps": [
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7111A:756c59182f"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_009033"
+          }
+        ]
+      },
+      "hunter": {
+        "startStation": "東京",
+        "stepCount": 8,
+        "resolvedActionCount": 8,
+        "modes": [
+          "rail",
+          "walking"
+        ],
+        "finalTime": "11:45",
+        "finalLabel": "博多",
+        "fareYen": 27010,
+        "planSteps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "06:30"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7115A:5ccec232d1"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008029"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7A:8fe232f286"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_009033"
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_009021",
+            "distance_meters": 747,
+            "walk_time_sec": 538,
+            "walking_speed_mps": 1.3888888888888888
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "navitime_non_jr:f07f870171:00000836:02810027:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_009033"
+          }
+        ]
+      }
+    },
+    {
+      "runnerStrategy": "runner_rail_one_leg",
       "hunterStrategy": "hunter_hold_tokyo",
       "runnerPlanned": true,
       "hunterPlanned": true,
@@ -779,6 +1391,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "runner",
       "capture": null,
       "runner": {
@@ -831,6 +1444,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "runner",
       "capture": null,
       "runner": {
@@ -909,6 +1523,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "runner",
       "capture": null,
       "runner": {
@@ -995,6 +1610,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "hunter",
       "capture": {
         "type": "same_node",
@@ -1082,6 +1698,275 @@
     },
     {
       "runnerStrategy": "runner_rail_three_leg",
+      "hunterStrategy": "hunter_multimodal_static",
+      "runnerPlanned": true,
+      "hunterPlanned": true,
+      "runnerSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "hunterSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "replans": [],
+      "winner": "hunter",
+      "capture": {
+        "type": "same_node",
+        "time_hhmm": "14:06",
+        "station_group_id": "SG_N02G_010029"
+      },
+      "runner": {
+        "startStation": "東京",
+        "stepCount": 6,
+        "resolvedActionCount": 6,
+        "modes": [
+          "rail"
+        ],
+        "finalTime": "13:59",
+        "finalLabel": "薩摩松元",
+        "fareYen": 30090,
+        "planSteps": [
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7111A:756c59182f"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_009033"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:747A:ba17e208a6"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_009984"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "jr_kyushu_navitime:鹿児島線:00000012:800b0046:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_010029"
+          }
+        ]
+      },
+      "hunter": {
+        "startStation": "東京",
+        "stepCount": 7,
+        "resolvedActionCount": 7,
+        "modes": [
+          "rail"
+        ],
+        "finalTime": "14:06",
+        "finalLabel": "薩摩松元",
+        "fareYen": 32550,
+        "planSteps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "06:30"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7115A:5ccec232d1"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008029"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:607A:cb3fbb4574"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_010047"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "jr_kyushu_navitime:鹿児島線:00000012:000b000c:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_010029"
+          }
+        ]
+      }
+    },
+    {
+      "runnerStrategy": "runner_rail_three_leg",
+      "hunterStrategy": "hunter_multimodal_replan",
+      "runnerPlanned": true,
+      "hunterPlanned": true,
+      "runnerSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "hunterSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "replans": [
+        {
+          "time": "07:30",
+          "planned": false,
+          "beforeStepCount": 7,
+          "afterStepCount": 7,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "08:30",
+          "planned": false,
+          "beforeStepCount": 7,
+          "afterStepCount": 7,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "09:30",
+          "planned": false,
+          "beforeStepCount": 7,
+          "afterStepCount": 7,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "10:30",
+          "planned": false,
+          "beforeStepCount": 7,
+          "afterStepCount": 7,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "11:30",
+          "planned": false,
+          "beforeStepCount": 7,
+          "afterStepCount": 7,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "12:30",
+          "planned": false,
+          "beforeStepCount": 7,
+          "afterStepCount": 7,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "13:30",
+          "planned": false,
+          "beforeStepCount": 7,
+          "afterStepCount": 7,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        }
+      ],
+      "winner": "hunter",
+      "capture": {
+        "type": "same_node",
+        "time_hhmm": "14:06",
+        "station_group_id": "SG_N02G_010029"
+      },
+      "runner": {
+        "startStation": "東京",
+        "stepCount": 6,
+        "resolvedActionCount": 6,
+        "modes": [
+          "rail"
+        ],
+        "finalTime": "13:59",
+        "finalLabel": "薩摩松元",
+        "fareYen": 30090,
+        "planSteps": [
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7111A:756c59182f"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_009033"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:747A:ba17e208a6"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_009984"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "jr_kyushu_navitime:鹿児島線:00000012:800b0046:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_010029"
+          }
+        ]
+      },
+      "hunter": {
+        "startStation": "東京",
+        "stepCount": 7,
+        "resolvedActionCount": 7,
+        "modes": [
+          "rail"
+        ],
+        "finalTime": "14:06",
+        "finalLabel": "薩摩松元",
+        "fareYen": 32550,
+        "planSteps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "06:30"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7115A:5ccec232d1"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008029"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:607A:cb3fbb4574"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_010047"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "jr_kyushu_navitime:鹿児島線:00000012:000b000c:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_010029"
+          }
+        ]
+      }
+    },
+    {
+      "runnerStrategy": "runner_rail_three_leg",
       "hunterStrategy": "hunter_hold_tokyo",
       "runnerPlanned": true,
       "hunterPlanned": true,
@@ -1093,6 +1978,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "runner",
       "capture": null,
       "runner": {
@@ -1161,6 +2047,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "runner",
       "capture": null,
       "runner": {
@@ -1282,6 +2169,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "runner",
       "capture": null,
       "runner": {
@@ -1403,6 +2291,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "runner",
       "capture": null,
       "runner": {
@@ -1513,6 +2402,357 @@
     },
     {
       "runnerStrategy": "runner_wait10_multimodal",
+      "hunterStrategy": "hunter_multimodal_static",
+      "runnerPlanned": true,
+      "hunterPlanned": true,
+      "runnerSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "hunterSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "replans": [],
+      "winner": "hunter",
+      "capture": {
+        "type": "same_node",
+        "time_hhmm": "12:02",
+        "station_group_id": "SG_N02G_008702"
+      },
+      "runner": {
+        "startStation": "東京",
+        "stepCount": 7,
+        "resolvedActionCount": 7,
+        "modes": [
+          "rail",
+          "ship",
+          "walking"
+        ],
+        "finalTime": "10:08",
+        "finalLabel": "黒崎",
+        "fareYen": 19320,
+        "planSteps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "06:10"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:3A:f343beb9ad"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_006079"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:735A:dae005b40d"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_007310"
+          },
+          {
+            "type": "TAKE_SHIP",
+            "sailing_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back_011",
+            "route_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back",
+            "operator": "鳴門市",
+            "service_no": "11",
+            "vessel": "黒崎渡船",
+            "origin_port": "高島港",
+            "destination_port": "黒崎港",
+            "departure_hhmm": "10:03",
+            "arrival_hhmm": "10:05",
+            "origin_access_kind": "station",
+            "origin_access_station_id": "SG_N02G_007310",
+            "origin_access_bus_stop_id": null,
+            "origin_access_distance_meters": 269.88129086139014,
+            "origin_access_walk_time_sec": 195,
+            "destination_access_kind": "station",
+            "destination_access_station_id": "SG_N02G_008703",
+            "destination_access_bus_stop_id": null,
+            "destination_access_airport_iata": null,
+            "destination_access_distance_meters": 20,
+            "destination_access_walk_time_sec": 15,
+            "fare": {
+              "model_version": "v5_ship_official_adult_passenger_fare_v1",
+              "source": "official_adult_passenger_fare",
+              "currency": "JPY",
+              "total_yen": 0,
+              "fare_known": true,
+              "components": [
+                {
+                  "type": "ship",
+                  "route_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back",
+                  "sailing_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back_011",
+                  "total_yen": 0
+                }
+              ]
+            }
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_008702",
+            "distance_meters": 139,
+            "walk_time_sec": 101,
+            "walking_speed_mps": 1.3888888888888888
+          }
+        ]
+      },
+      "hunter": {
+        "startStation": "東京",
+        "stepCount": 8,
+        "resolvedActionCount": 8,
+        "modes": [
+          "rail",
+          "walking"
+        ],
+        "finalTime": "12:02",
+        "finalLabel": "黒崎",
+        "fareYen": 25170,
+        "planSteps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "06:30"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7115A:5ccec232d1"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008029"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7A:8fe232f286"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008684"
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_008679",
+            "distance_meters": 833,
+            "walk_time_sec": 600,
+            "walking_speed_mps": 1.3888888888888888
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "jr_kyushu_navitime:日豊線:00000010:800a01a9:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008702"
+          }
+        ]
+      }
+    },
+    {
+      "runnerStrategy": "runner_wait10_multimodal",
+      "hunterStrategy": "hunter_multimodal_replan",
+      "runnerPlanned": true,
+      "hunterPlanned": true,
+      "runnerSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "hunterSanitize": {
+        "ok": true,
+        "removedErrors": []
+      },
+      "replans": [
+        {
+          "time": "07:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "08:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "09:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "10:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        },
+        {
+          "time": "11:30",
+          "planned": false,
+          "beforeStepCount": 8,
+          "afterStepCount": 8,
+          "sanitize": {
+            "ok": true,
+            "removedErrors": []
+          }
+        }
+      ],
+      "winner": "hunter",
+      "capture": {
+        "type": "same_node",
+        "time_hhmm": "12:02",
+        "station_group_id": "SG_N02G_008702"
+      },
+      "runner": {
+        "startStation": "東京",
+        "stepCount": 7,
+        "resolvedActionCount": 7,
+        "modes": [
+          "rail",
+          "ship",
+          "walking"
+        ],
+        "finalTime": "10:08",
+        "finalLabel": "黒崎",
+        "fareYen": 19320,
+        "planSteps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "06:10"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:3A:f343beb9ad"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_006079"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:735A:dae005b40d"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_007310"
+          },
+          {
+            "type": "TAKE_SHIP",
+            "sailing_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back_011",
+            "route_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back",
+            "operator": "鳴門市",
+            "service_no": "11",
+            "vessel": "黒崎渡船",
+            "origin_port": "高島港",
+            "destination_port": "黒崎港",
+            "departure_hhmm": "10:03",
+            "arrival_hhmm": "10:05",
+            "origin_access_kind": "station",
+            "origin_access_station_id": "SG_N02G_007310",
+            "origin_access_bus_stop_id": null,
+            "origin_access_distance_meters": 269.88129086139014,
+            "origin_access_walk_time_sec": 195,
+            "destination_access_kind": "station",
+            "destination_access_station_id": "SG_N02G_008703",
+            "destination_access_bus_stop_id": null,
+            "destination_access_airport_iata": null,
+            "destination_access_distance_meters": 20,
+            "destination_access_walk_time_sec": 15,
+            "fare": {
+              "model_version": "v5_ship_official_adult_passenger_fare_v1",
+              "source": "official_adult_passenger_fare",
+              "currency": "JPY",
+              "total_yen": 0,
+              "fare_known": true,
+              "components": [
+                {
+                  "type": "ship",
+                  "route_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back",
+                  "sailing_id": "mlit_map_193_045_鳴門市_黒崎_高島_岡崎_土佐泊_000_back_011",
+                  "total_yen": 0
+                }
+              ]
+            }
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_008702",
+            "distance_meters": 139,
+            "walk_time_sec": 101,
+            "walking_speed_mps": 1.3888888888888888
+          }
+        ]
+      },
+      "hunter": {
+        "startStation": "東京",
+        "stepCount": 8,
+        "resolvedActionCount": 8,
+        "modes": [
+          "rail",
+          "walking"
+        ],
+        "finalTime": "12:02",
+        "finalLabel": "黒崎",
+        "fareYen": 25170,
+        "planSteps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "06:30"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7115A:5ccec232d1"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008029"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7A:8fe232f286"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008684"
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_008679",
+            "distance_meters": 833,
+            "walk_time_sec": 600,
+            "walking_speed_mps": 1.3888888888888888
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "jr_kyushu_navitime:日豊線:00000010:800a01a9:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_008702"
+          }
+        ]
+      }
+    },
+    {
+      "runnerStrategy": "runner_wait10_multimodal",
       "hunterStrategy": "hunter_hold_tokyo",
       "runnerPlanned": true,
       "hunterPlanned": true,
@@ -1524,6 +2764,7 @@
         "ok": true,
         "removedErrors": []
       },
+      "replans": [],
       "winner": "runner",
       "capture": null,
       "runner": {

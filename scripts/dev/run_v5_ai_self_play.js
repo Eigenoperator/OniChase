@@ -92,6 +92,17 @@ async function main() {
           notes: 'Releases at 06:30 and chains three rail intercept plans.',
         },
         {
+          id: 'hunter_multimodal_static',
+          label: 'Hunter multimodal static',
+          notes: 'Releases at 06:30 and runs one multimodal intercept beam search.',
+        },
+        {
+          id: 'hunter_multimodal_replan',
+          label: 'Hunter multimodal replan',
+          notes: 'Releases at 06:30, runs multimodal intercept search, then replans at hourly planning windows.',
+          replan: true,
+        },
+        {
           id: 'hunter_hold_tokyo',
           label: 'Hunter hold Tokyo',
           notes: 'Releases at 06:30 but holds Tokyo as a control baseline.',
@@ -136,6 +147,8 @@ async function main() {
         state.activeMode = 'runner';
         state.localAi.enabled = false;
         state.localAi.status = '';
+        state.localAi.lastPlanSeat = null;
+        state.localAi.lastPlanMinute = null;
         resetSeat('runner');
         resetSeat('hunter');
         state.players.hunter.steps = [{ type: 'WAIT_UNTIL', until_hhmm: '06:30' }];
@@ -246,7 +259,38 @@ async function main() {
         if (strategyId === 'hunter_rail_one_leg') return withHunterReleaseDeparture(() => generateRailChain('hunter', 1) > 0);
         if (strategyId === 'hunter_rail_two_leg') return withHunterReleaseDeparture(() => generateRailChain('hunter', 2) > 0);
         if (strategyId === 'hunter_rail_three_leg') return withHunterReleaseDeparture(() => generateRailChain('hunter', 3) > 0);
+        if (strategyId === 'hunter_multimodal_static') return withHunterReleaseDeparture(() => generateLocalAiHunterPlan());
+        if (strategyId === 'hunter_multimodal_replan') return withHunterReleaseDeparture(() => generateLocalAiHunterPlan());
         throw new Error(`Unknown hunter strategy ${strategyId}`);
+      }
+
+      function captureMinute(capture) {
+        return capture?.time_hhmm ? hhmmToMinutes(capture.time_hhmm) : Number.POSITIVE_INFINITY;
+      }
+
+      function replanMinutes() {
+        const minutes = [];
+        const endMinute = hhmmToMinutes(state.endTime);
+        for (let minute = hhmmToMinutes('07:30'); minute < endMinute; minute += 60) minutes.push(minute);
+        return minutes;
+      }
+
+      function replanHunterAt(minute) {
+        state.phase = 'PLANNING';
+        state.currentGameMinute = minute;
+        state.activeMode = 'hunter';
+        state.localAi.aiSeat = 'hunter';
+        state.localAi.humanSeat = 'runner';
+        const beforeStepCount = state.players.hunter.steps.length;
+        const planned = withHunterReleaseDeparture(() => localAiTryReplanFromCurrent('hunter'));
+        const sanitize = sanitizeSeatPlan('hunter', 1);
+        return {
+          time: minutesToHhmm(minute),
+          planned,
+          beforeStepCount,
+          afterStepCount: state.players.hunter.steps.length,
+          sanitize,
+        };
       }
 
       function stateLabel(carrier) {
@@ -277,7 +321,15 @@ async function main() {
         const runnerSanitize = sanitizeSeatPlan('runner', runnerStrategy.id === 'runner_wait10_multimodal' ? 1 : 0);
         const hunterPlanned = planHunter(hunterStrategy.id);
         const hunterSanitize = sanitizeSeatPlan('hunter', 1);
-        const result = withCaptureRelease(() => buildResult());
+        const replans = [];
+        let result = withCaptureRelease(() => buildResult());
+        if (hunterStrategy.replan) {
+          for (const minute of replanMinutes()) {
+            if (captureMinute(result.capture) <= minute) break;
+            replans.push(replanHunterAt(minute));
+            result = withCaptureRelease(() => buildResult());
+          }
+        }
         const hunterWon = Boolean(result.capture);
         return {
           runnerStrategy: runnerStrategy.id,
@@ -286,6 +338,7 @@ async function main() {
           hunterPlanned,
           runnerSanitize,
           hunterSanitize,
+          replans,
           winner: hunterWon ? 'hunter' : 'runner',
           capture: result.capture,
           runner: playerSummary(result, 'runner'),
