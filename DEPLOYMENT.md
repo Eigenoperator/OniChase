@@ -52,12 +52,14 @@ For GitHub Pages, set the repository custom domain to:
 onichase.xincheng2004.com
 ```
 
-Then create this DNS record at the `xincheng2004.com` DNS provider:
+The `xincheng2004.com` nameservers are on Cloudflare. Create this DNS record in Cloudflare:
 
 ```text
 Type: CNAME
 Name: onichase
 Target: eigenoperator.github.io
+Proxy status: DNS only
+TTL: Auto
 ```
 
 Verify propagation and the v5 page with:
