@@ -177,6 +177,8 @@ python3 scripts/ingest/run_v3_data_quality_audits.py --checks all --strict
 python3 -m unittest scripts.tests.test_v3_planner_departure_audit
 python3 -m http.server 8765 --directory . >/tmp/chase_http.log 2>&1 &
 node scripts/tests/v5_ship_interaction_audit.js --page-url http://127.0.0.1:8765/docs/v5.html
-node scripts/dev/run_v5_ai_self_play.js --page-url http://127.0.0.1:8765/docs/v5.html --load-bus --games 48 --seed matrix-v5-ai-20260613 --output reports/v5_ai_self_play_report.json --replay-dir reports/v5_ai_self_play_replays --progress-every 12
-node scripts/dev/run_v5_ai_self_play.js --page-url http://127.0.0.1:8765/docs/v5.html --load-bus --games 96 --seed tournament-v5-ai-20260613 --output reports/v5_ai_self_play_tournament_96.json --write-replays false --progress-every 12
+node scripts/dev/run_v5_ai_self_play.js --page-url http://127.0.0.1:8765/docs/v5.html --load-bus --games 48 --seed fair-matrix-v5-ai-20260613 --output reports/v5_ai_self_play_report.json --replay-dir reports/v5_ai_self_play_replays --progress-every 12
+node scripts/dev/run_v5_ai_self_play.js --page-url http://127.0.0.1:8765/docs/v5.html --load-bus --games 96 --seed fair-tournament-v5-ai-20260613 --output reports/v5_ai_self_play_tournament_96.json --write-replays false --progress-every 12
 ```
+
+The V5 self-play harness defaults to fair Hunter information: Hunter starts at Tokyo at 06:30, pre-release captures are ignored, and omniscient Hunter strategies are rejected at runtime.

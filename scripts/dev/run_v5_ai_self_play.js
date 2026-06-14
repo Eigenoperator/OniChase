@@ -45,6 +45,13 @@ function safeFileName(value) {
     .slice(0, 160) || 'game';
 }
 
+function clearReplayJsonFiles(replayDir) {
+  if (!replayDir || !fs.existsSync(replayDir)) return;
+  fs.readdirSync(replayDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+    .forEach((entry) => fs.unlinkSync(path.join(replayDir, entry.name)));
+}
+
 function writeReplayFiles(report, replayDir) {
   if (!replayDir || !Array.isArray(report.games)) return [];
   const replayIndex = [];
@@ -80,6 +87,8 @@ async function main() {
     seed: String(args.seed || 'v5-ai-self-play'),
     includeReplayRecords: includeReplays,
     progressEvery: numberArg(args, 'progress-every', 0),
+    startIndex: numberArg(args, 'start-index', 1),
+    endIndex: numberArg(args, 'end-index', 0),
   };
 
   const browser = await chromium.launch({ headless: true });
@@ -142,32 +151,32 @@ async function main() {
         {
           id: 'hunter_rail_one_leg',
           label: 'Hunter rail one leg',
-          knowledge: 'omniscient',
-          notes: 'Releases at 06:30 and plans one intercept rail leg with full opponent-plan knowledge.',
+          knowledge: 'belief',
+          notes: 'Releases at 06:30 and plans one rail intercept leg against a phantom Runner generated from public information.',
         },
         {
           id: 'hunter_rail_two_leg',
           label: 'Hunter rail two legs',
-          knowledge: 'omniscient',
-          notes: 'Releases at 06:30 and chains two rail intercept plans with full opponent-plan knowledge.',
+          knowledge: 'belief',
+          notes: 'Releases at 06:30 and chains two rail intercept plans against a phantom Runner generated from public information.',
         },
         {
           id: 'hunter_rail_three_leg',
           label: 'Hunter rail three legs',
-          knowledge: 'omniscient',
-          notes: 'Releases at 06:30 and chains three rail intercept plans with full opponent-plan knowledge.',
+          knowledge: 'belief',
+          notes: 'Releases at 06:30 and chains three rail intercept plans against a phantom Runner generated from public information.',
         },
         {
           id: 'hunter_multimodal_static',
           label: 'Hunter multimodal static',
-          knowledge: 'omniscient',
-          notes: 'Releases at 06:30 and runs one multimodal intercept beam search with full opponent-plan knowledge.',
+          knowledge: 'belief',
+          notes: 'Releases at 06:30 and runs one multimodal intercept beam search against a phantom Runner generated from public information.',
         },
         {
           id: 'hunter_multimodal_replan',
           label: 'Hunter multimodal replan',
-          knowledge: 'omniscient',
-          notes: 'Releases at 06:30, runs multimodal intercept search, then replans hourly with full opponent-plan knowledge.',
+          knowledge: 'belief',
+          notes: 'Releases at 06:30, runs multimodal intercept search, then replans hourly from observations without reading Runner future steps.',
           replan: true,
         },
         {
@@ -190,6 +199,10 @@ async function main() {
           notes: 'Releases at 06:30 but holds Tokyo as a control baseline.',
         },
       ];
+      const unfairHunterStrategies = hunterStrategies.filter((strategy) => strategy.knowledge === 'omniscient');
+      if (unfairHunterStrategies.length) {
+        throw new Error(`Fair self-play cannot include omniscient Hunter strategies: ${unfairHunterStrategies.map((strategy) => strategy.id).join(', ')}`);
+      }
       const targetProfiles = [
         { id: 'balanced', label: 'Balanced', vector: [0, 0], projectionWeight: 0, radialWeight: 20 },
         { id: 'north', label: 'North', vector: [0, 1], projectionWeight: 72, radialWeight: 8 },
@@ -875,16 +888,25 @@ async function main() {
           contexts.push(makeContext(index, choice(runnerStrategies), choice(hunterStrategies)));
           index += 1;
         }
-        return contexts.slice(0, totalGames).map((context, offset) => ({
+        const fullSchedule = contexts.slice(0, totalGames).map((context, offset) => ({
           ...context,
           index: offset + 1,
           gameId: `v5-ai-self-play-${String(offset + 1).padStart(4, '0')}`,
         }));
+        const startIndex = Math.max(1, Math.floor(Number(config.startIndex || 1)));
+        const endIndex = Math.floor(Number(config.endIndex || 0));
+        return fullSchedule.filter((context) =>
+          context.index >= startIndex &&
+          (endIndex <= 0 || context.index <= endIndex)
+        );
       }
 
       const schedule = buildSchedule();
       const games = [];
       schedule.forEach((context) => {
+        if (Number(config.progressEvery) === 1) {
+          console.log(`[v5-self-play] starting ${games.length + 1}/${schedule.length} game ${context.index} ${context.runnerStrategy.id} vs ${context.hunterStrategy.id}`);
+        }
         games.push(runGame(context));
         if (Number(config.progressEvery) > 0 && games.length % Number(config.progressEvery) === 0) {
           console.log(`[v5-self-play] completed ${games.length}/${schedule.length}`);
@@ -944,6 +966,7 @@ async function main() {
       const hunterWins = games.filter((game) => game.winner === 'hunter').length;
       const runnerWins = games.length - hunterWins;
       const captures = games.filter((game) => game.capture);
+      const fairHunterOnly = games.every((game) => game.hunterKnowledge !== 'omniscient');
       const sanitizeIssueGames = games.filter((game) =>
         !game.runnerSanitize?.ok ||
         !game.hunterSanitize?.ok ||
@@ -959,14 +982,17 @@ async function main() {
           requestedGames: Math.max(0, Math.floor(Number(config.games || 0))),
           replayRecordsIncluded: Boolean(config.includeReplayRecords),
           progressEvery: Number(config.progressEvery) || 0,
+          startIndex: Math.max(1, Math.floor(Number(config.startIndex || 1))),
+          endIndex: Math.floor(Number(config.endIndex || 0)) || null,
+          fairHunterOnly,
         },
         fairness: {
           runnerStart: '東京 06:00',
           hunterStart: '東京 06:30',
           captureBeforeHunterRelease: 'ignored in self-play harness',
           hunterDepartureClamp: '06:30 in self-play harness',
+          hunterKnowledgePolicy: 'Default self-play rejects omniscient Hunter strategies. Hunter planning uses public priors, scheduled observations, and generated phantom Runner plans.',
           hunterKnowledgeModels: {
-            omniscient: 'Hunter scores against the real Runner future plan. This is the strength ceiling.',
             belief: 'Hunter scores against a generated phantom Runner prior/replan observation and never reads the real future steps during planning.',
             control: 'Hunter does not move.',
           },
@@ -1018,6 +1044,7 @@ async function main() {
 
     report.consoleMessages = consoleMessages;
     if (includeReplays) {
+      clearReplayJsonFiles(replayDir);
       report.replayDir = replayDir;
       report.replays = writeReplayFiles(report, replayDir);
     }

@@ -7,7 +7,7 @@
   "game_rules_version": "v5.rules.from-v4.2026-05-13",
   "source": {
     "kind": "v5_ai_self_play_harness",
-    "page_url": "http://127.0.0.1:8765/v5.html",
+    "page_url": "http://127.0.0.1:8765/docs/v5.html",
     "room_id": null,
     "seat": null
   },
@@ -714,9 +714,9 @@
       "seat": "hunter",
       "start_station_id": "SG_N02G_003766",
       "start_label": "東京",
-      "final_station_id": "SG_N02G_009984",
-      "final_label": "川内",
-      "final_hhmm": "17:49",
+      "final_station_id": "SG_N02G_010043",
+      "final_label": "加治屋町",
+      "final_hhmm": "17:19",
       "steps": [
         {
           "type": "WAIT_UNTIL",
@@ -743,12 +743,11 @@
           "station_id": "SG_N02G_009033"
         },
         {
-          "type": "BOARD_TRAIN",
-          "trip_id": "navitime_non_jr:f07f870171:00000836:828100d2:2026-04-27"
-        },
-        {
-          "type": "RIDE_TO_STATION",
-          "station_id": "SG_N02G_009026"
+          "type": "WALK_TO_STATION",
+          "station_id": "SG_N02G_009019",
+          "distance_meters": 1423,
+          "walk_time_sec": 1025,
+          "walking_speed_mps": 1.3888888888888888
         },
         {
           "type": "BOARD_TRAIN",
@@ -760,19 +759,26 @@
         },
         {
           "type": "BOARD_TRAIN",
-          "trip_id": "shinkansen:329A:7882bdf2a5"
+          "trip_id": "shinkansen:407A:6735465ee2"
         },
         {
           "type": "RIDE_TO_STATION",
-          "station_id": "SG_N02G_009785"
+          "station_id": "SG_N02G_010047"
+        },
+        {
+          "type": "WALK_TO_STATION",
+          "station_id": "SG_N02G_010046",
+          "distance_meters": 388,
+          "walk_time_sec": 280,
+          "walking_speed_mps": 1.3888888888888888
         },
         {
           "type": "BOARD_TRAIN",
-          "trip_id": "shinkansen:7797A:941e47305f"
+          "trip_id": "navitime_non_jr:8a6b1f3656:00000677:01fa0097:2026-04-27"
         },
         {
           "type": "RIDE_TO_STATION",
-          "station_id": "SG_N02G_009984"
+          "station_id": "SG_N02G_010043"
         }
       ],
       "legs": [
@@ -951,92 +957,47 @@
         },
         {
           "leg_index": 3,
-          "board_step_index": 7,
-          "ride_step_index": 8,
-          "trip_id": "navitime_non_jr:f07f870171:00000836:828100d2:2026-04-27",
-          "trip_label": "福岡市空港線",
+          "step_index": 7,
+          "mode": "walking",
           "from_station_id": "SG_N02G_009033",
-          "from_physical_station_id": "PS_58F991AF5B2C50",
           "from_label": "博多",
-          "to_station_id": "SG_N02G_009026",
-          "to_physical_station_id": "PS_CF2288B06FB2DC",
-          "to_label": "天神",
-          "board_hhmm": "12:35",
-          "alight_hhmm": "12:40",
+          "to_station_id": "SG_N02G_009019",
+          "to_label": "中洲川端",
+          "depart_hhmm": "12:09",
+          "arrive_hhmm": "12:27",
+          "distance_meters": 1423,
+          "walk_time_sec": 1025,
+          "walking_speed_mps": 1.3888888888888888,
           "fare": {
-            "model_version": "v4_collected_fare_rules_2026_05",
-            "source": "collected_fare_rules",
-            "currency": "JPY",
-            "distance_km": 2.089,
-            "base_yen": 210,
-            "base_source": "collected_ordinary_fare_table",
-            "base_rule_key": "fukuoka_subway",
-            "premium_type": "none",
-            "premium_yen": 0,
-            "premium_source": "none",
-            "premium_rule_key": null,
-            "total_yen": 210,
+            "total_yen": 0,
             "fare_known": true,
-            "missing_reasons": [],
-            "base_components": [
+            "components": [
               {
-                "yen": 210,
-                "row": {
-                  "fromKm": 1,
-                  "toKm": 3,
-                  "yen": 210
-                },
-                "ruleKey": "fukuoka_subway",
-                "source": "collected_ordinary_fare_table",
-                "modelVersion": "v4_collected_fare_rules_2026_05",
-                "fromSegmentIndex": 0,
-                "toSegmentIndex": 2
-              }
-            ],
-            "segments": [
-              {
-                "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-                "from_station_id": "SG_N02G_009033",
-                "to_station_id": "SG_N02G_009021",
-                "distance_km": 0.654,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-                "from_station_id": "SG_N02G_009021",
-                "to_station_id": "SG_N02G_009019",
-                "distance_km": 0.714,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-                "from_station_id": "SG_N02G_009019",
-                "to_station_id": "SG_N02G_009026",
-                "distance_km": 0.721,
-                "geometry_source": "route_trace"
+                "type": "walking",
+                "total_yen": 0
               }
             ]
           }
         },
         {
           "leg_index": 4,
-          "board_step_index": 9,
-          "ride_step_index": 10,
+          "board_step_index": 8,
+          "ride_step_index": 9,
           "trip_id": "navitime_non_jr:f07f870171:00000836:02810036:2026-04-27",
           "trip_label": "福岡市空港線",
-          "from_station_id": "SG_N02G_009026",
-          "from_physical_station_id": "PS_CF2288B06FB2DC",
-          "from_label": "天神",
+          "from_station_id": "SG_N02G_009019",
+          "from_physical_station_id": "PS_479A281C8F5A16",
+          "from_label": "中洲川端",
           "to_station_id": "SG_N02G_009033",
           "to_physical_station_id": "PS_58F991AF5B2C50",
           "to_label": "博多",
-          "board_hhmm": "14:05",
+          "board_hhmm": "14:07",
           "alight_hhmm": "14:11",
           "fare": {
             "model_version": "v4_collected_fare_rules_2026_05",
             "source": "collected_fare_rules",
             "currency": "JPY",
-            "distance_km": 2.089,
+            "distance_km": 1.368,
             "base_yen": 210,
             "base_source": "collected_ordinary_fare_table",
             "base_rule_key": "fukuoka_subway",
@@ -1059,17 +1020,10 @@
                 "source": "collected_ordinary_fare_table",
                 "modelVersion": "v4_collected_fare_rules_2026_05",
                 "fromSegmentIndex": 0,
-                "toSegmentIndex": 2
+                "toSegmentIndex": 1
               }
             ],
             "segments": [
-              {
-                "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-                "from_station_id": "SG_N02G_009026",
-                "to_station_id": "SG_N02G_009019",
-                "distance_km": 0.721,
-                "geometry_source": "route_trace"
-              },
               {
                 "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
                 "from_station_id": "SG_N02G_009019",
@@ -1089,46 +1043,46 @@
         },
         {
           "leg_index": 5,
-          "board_step_index": 11,
-          "ride_step_index": 12,
-          "trip_id": "shinkansen:329A:7882bdf2a5",
-          "trip_label": "つばめ329",
+          "board_step_index": 10,
+          "ride_step_index": 11,
+          "trip_id": "shinkansen:407A:6735465ee2",
+          "trip_label": "さくら407",
           "from_station_id": "SG_N02G_009033",
           "from_physical_station_id": "PS_24C0BA42F64890",
           "from_label": "博多",
-          "to_station_id": "SG_N02G_009785",
-          "to_physical_station_id": "PS_DA8B8F4C3790D8",
-          "to_label": "熊本",
-          "board_hhmm": "16:12",
-          "alight_hhmm": "17:00",
+          "to_station_id": "SG_N02G_010047",
+          "to_physical_station_id": "PS_A173E4BB05FE53",
+          "to_label": "鹿児島中央",
+          "board_hhmm": "15:36",
+          "alight_hhmm": "17:12",
           "fare": {
             "model_version": "v4_collected_fare_rules_2026_05",
             "source": "collected_fare_rules",
             "currency": "JPY",
-            "distance_km": 97.117,
-            "base_yen": 2130,
+            "distance_km": 255.647,
+            "base_yen": 5390,
             "base_source": "collected_ordinary_fare_table",
             "base_rule_key": "jr_kyushu",
             "premium_type": "shinkansen",
-            "premium_yen": 2290,
+            "premium_yen": 5030,
             "premium_source": "collected_jr_shinkansen_reserved_surcharge_table",
             "premium_rule_key": "shinkansen_kyushu",
-            "total_yen": 4420,
+            "total_yen": 10420,
             "fare_known": true,
             "missing_reasons": [],
             "base_components": [
               {
-                "yen": 2130,
+                "yen": 5390,
                 "row": {
-                  "fromKm": 91,
-                  "toKm": 100,
-                  "yen": 2130
+                  "fromKm": 241,
+                  "toKm": 260,
+                  "yen": 5390
                 },
                 "ruleKey": "jr_kyushu",
                 "source": "collected_ordinary_fare_table",
                 "modelVersion": "v4_collected_fare_rules_2026_05",
                 "fromSegmentIndex": 0,
-                "toSegmentIndex": 5
+                "toSegmentIndex": 7
               }
             ],
             "segments": [
@@ -1137,91 +1091,22 @@
                 "from_station_id": "SG_N02G_009033",
                 "to_station_id": "SG_N02G_009331",
                 "distance_km": 26.167,
-                "geometry_source": "route_trace"
+                "geometry_source": "reviewed_trip_path"
               },
               {
                 "route_id": "V4_ROUTE_10583843614387",
                 "from_station_id": "SG_N02G_009331",
                 "to_station_id": "SG_N02G_009383",
                 "distance_km": 5.506,
-                "geometry_source": "route_trace"
+                "geometry_source": "reviewed_trip_path"
               },
               {
                 "route_id": "V4_ROUTE_10583843614387",
                 "from_station_id": "SG_N02G_009383",
-                "to_station_id": "SG_N02G_009546",
-                "distance_km": 15.757,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_10583843614387",
-                "from_station_id": "SG_N02G_009546",
-                "to_station_id": "SG_N02G_009591",
-                "distance_km": 11.694,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_10583843614387",
-                "from_station_id": "SG_N02G_009591",
-                "to_station_id": "SG_N02G_009638",
-                "distance_km": 16.332,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_10583843614387",
-                "from_station_id": "SG_N02G_009638",
                 "to_station_id": "SG_N02G_009785",
-                "distance_km": 21.661,
-                "geometry_source": "route_trace"
-              }
-            ]
-          }
-        },
-        {
-          "leg_index": 6,
-          "board_step_index": 13,
-          "ride_step_index": 14,
-          "trip_id": "shinkansen:7797A:941e47305f",
-          "trip_label": "さくら797",
-          "from_station_id": "SG_N02G_009785",
-          "from_physical_station_id": "PS_DA8B8F4C3790D8",
-          "from_label": "熊本",
-          "to_station_id": "SG_N02G_009984",
-          "to_physical_station_id": "PS_47B22D17B16A79",
-          "to_label": "川内",
-          "board_hhmm": "17:05",
-          "alight_hhmm": "17:49",
-          "fare": {
-            "model_version": "v4_collected_fare_rules_2026_05",
-            "source": "collected_fare_rules",
-            "currency": "JPY",
-            "distance_km": 122.861,
-            "base_yen": 2310,
-            "base_source": "collected_ordinary_fare_table",
-            "base_rule_key": "jr_central_west",
-            "premium_type": "shinkansen",
-            "premium_yen": 3060,
-            "premium_source": "collected_jr_shinkansen_reserved_surcharge_table",
-            "premium_rule_key": "shinkansen_tokaido_sanyo",
-            "total_yen": 5370,
-            "fare_known": true,
-            "missing_reasons": [],
-            "base_components": [
-              {
-                "yen": 2310,
-                "row": {
-                  "fromKm": 121,
-                  "toKm": 140,
-                  "yen": 2310
-                },
-                "ruleKey": "jr_central_west",
-                "source": "collected_ordinary_fare_table",
-                "modelVersion": "v4_collected_fare_rules_2026_05",
-                "fromSegmentIndex": 0,
-                "toSegmentIndex": 3
-              }
-            ],
-            "segments": [
+                "distance_km": 66.061,
+                "geometry_source": "reviewed_trip_path"
+              },
               {
                 "route_id": "V4_ROUTE_10583843614387",
                 "from_station_id": "SG_N02G_009785",
@@ -1249,6 +1134,92 @@
                 "to_station_id": "SG_N02G_009984",
                 "distance_km": 32.619,
                 "geometry_source": "reviewed_trip_path"
+              },
+              {
+                "route_id": "V4_ROUTE_10583843614387",
+                "from_station_id": "SG_N02G_009984",
+                "to_station_id": "SG_N02G_010047",
+                "distance_km": 35.052,
+                "geometry_source": "reviewed_trip_path"
+              }
+            ]
+          }
+        },
+        {
+          "leg_index": 6,
+          "step_index": 12,
+          "mode": "walking",
+          "from_station_id": "SG_N02G_010047",
+          "from_label": "鹿児島中央",
+          "to_station_id": "SG_N02G_010046",
+          "to_label": "高見橋",
+          "depart_hhmm": "17:12",
+          "arrive_hhmm": "17:17",
+          "distance_meters": 388,
+          "walk_time_sec": 280,
+          "walking_speed_mps": 1.3888888888888888,
+          "fare": {
+            "total_yen": 0,
+            "fare_known": true,
+            "components": [
+              {
+                "type": "walking",
+                "total_yen": 0
+              }
+            ]
+          }
+        },
+        {
+          "leg_index": 7,
+          "board_step_index": 13,
+          "ride_step_index": 14,
+          "trip_id": "navitime_non_jr:8a6b1f3656:00000677:01fa0097:2026-04-27",
+          "trip_label": "鹿児島市唐湊線",
+          "from_station_id": "SG_N02G_010046",
+          "from_physical_station_id": "PS_9953928C3E41BA",
+          "from_label": "高見橋",
+          "to_station_id": "SG_N02G_010043",
+          "to_physical_station_id": "PS_F42CA86EA485FB",
+          "to_label": "加治屋町",
+          "board_hhmm": "17:17",
+          "alight_hhmm": "17:19",
+          "fare": {
+            "model_version": "v4_collected_fare_rules_2026_05",
+            "source": "collected_fare_rules",
+            "currency": "JPY",
+            "distance_km": 0.211,
+            "base_yen": 170,
+            "base_source": "collected_ordinary_fare_table",
+            "base_rule_key": "kagoshima_city_tram_flat",
+            "premium_type": "none",
+            "premium_yen": 0,
+            "premium_source": "none",
+            "premium_rule_key": null,
+            "total_yen": 170,
+            "fare_known": true,
+            "missing_reasons": [],
+            "base_components": [
+              {
+                "yen": 170,
+                "row": {
+                  "fromKm": 1,
+                  "toKm": null,
+                  "yen": 170
+                },
+                "ruleKey": "kagoshima_city_tram_flat",
+                "source": "collected_ordinary_fare_table",
+                "modelVersion": "v4_collected_fare_rules_2026_05",
+                "fromSegmentIndex": 0,
+                "toSegmentIndex": 0
+              }
+            ],
+            "segments": [
+              {
+                "route_id": "V4_ROUTE_EE7E7EB2CC9E45",
+                "from_station_id": "SG_N02G_010046",
+                "to_station_id": "SG_N02G_010043",
+                "distance_km": 0.211,
+                "geometry_source": "route_trace"
               }
             ]
           }
@@ -1258,13 +1229,13 @@
         "model_version": "v4_collected_fare_rules_2026_05",
         "source": "collected_fare_rules",
         "currency": "JPY",
-        "leg_count": 6,
-        "known_leg_count": 6,
+        "leg_count": 7,
+        "known_leg_count": 7,
         "unknown_leg_count": 0,
-        "distance_km": 1289.792,
-        "base_yen": 22130,
-        "premium_yen": 16330,
-        "total_yen": 38460,
+        "distance_km": 1322.862,
+        "base_yen": 23040,
+        "premium_yen": 16010,
+        "total_yen": 39050,
         "fare_known": true,
         "missing_reasons": []
       },
@@ -1462,103 +1433,42 @@
         },
         {
           "step_index": 7,
-          "type": "BOARD_TRAIN",
-          "trip_id": "navitime_non_jr:f07f870171:00000836:828100d2:2026-04-27",
-          "transfer": {
-            "transferMinutes": 5,
-            "distanceMeters": 68,
-            "reason": "same_station_group_shinkansen_minimum",
-            "fromPhysicalStationId": "PS_24C0BA42F64890",
-            "boardPhysicalStationId": "PS_58F991AF5B2C50",
-            "walkTimeSec": 50,
-            "minimumTransferMinutes": 5
-          },
-          "board_physical_station_id": "PS_58F991AF5B2C50"
+          "type": "WALK_TO_STATION",
+          "station_id": "SG_N02G_009019",
+          "distance_meters": 1423,
+          "walk_time_sec": 1025,
+          "walking_speed_mps": 1.3888888888888888,
+          "fare": {
+            "total_yen": 0,
+            "fare_known": true,
+            "components": [
+              {
+                "type": "walking",
+                "total_yen": 0
+              }
+            ]
+          }
         },
         {
           "step_index": 8,
-          "type": "RIDE_TO_STATION",
-          "station_id": "SG_N02G_009026",
-          "fare": {
-            "model_version": "v4_collected_fare_rules_2026_05",
-            "source": "collected_fare_rules",
-            "currency": "JPY",
-            "distance_km": 2.089,
-            "base_yen": 210,
-            "base_source": "collected_ordinary_fare_table",
-            "base_rule_key": "fukuoka_subway",
-            "premium_type": "none",
-            "premium_yen": 0,
-            "premium_source": "none",
-            "premium_rule_key": null,
-            "total_yen": 210,
-            "fare_known": true,
-            "missing_reasons": [],
-            "base_components": [
-              {
-                "yen": 210,
-                "row": {
-                  "fromKm": 1,
-                  "toKm": 3,
-                  "yen": 210
-                },
-                "ruleKey": "fukuoka_subway",
-                "source": "collected_ordinary_fare_table",
-                "modelVersion": "v4_collected_fare_rules_2026_05",
-                "fromSegmentIndex": 0,
-                "toSegmentIndex": 2
-              }
-            ],
-            "segments": [
-              {
-                "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-                "from_station_id": "SG_N02G_009033",
-                "to_station_id": "SG_N02G_009021",
-                "distance_km": 0.654,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-                "from_station_id": "SG_N02G_009021",
-                "to_station_id": "SG_N02G_009019",
-                "distance_km": 0.714,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-                "from_station_id": "SG_N02G_009019",
-                "to_station_id": "SG_N02G_009026",
-                "distance_km": 0.721,
-                "geometry_source": "route_trace"
-              }
-            ]
-          },
-          "alight_physical_station_id": "PS_CF2288B06FB2DC"
-        },
-        {
-          "step_index": 9,
           "type": "BOARD_TRAIN",
           "trip_id": "navitime_non_jr:f07f870171:00000836:02810036:2026-04-27",
           "transfer": {
-            "transferMinutes": 1,
+            "transferMinutes": 0,
             "distanceMeters": 0,
-            "reason": "same_station_group_minimum",
-            "fromPhysicalStationId": "PS_CF2288B06FB2DC",
-            "boardPhysicalStationId": "PS_CF2288B06FB2DC",
-            "walkTimeSec": 0,
-            "minimumTransferMinutes": 1
+            "reason": "same_station_group"
           },
-          "board_physical_station_id": "PS_CF2288B06FB2DC"
+          "board_physical_station_id": "PS_479A281C8F5A16"
         },
         {
-          "step_index": 10,
+          "step_index": 9,
           "type": "RIDE_TO_STATION",
           "station_id": "SG_N02G_009033",
           "fare": {
             "model_version": "v4_collected_fare_rules_2026_05",
             "source": "collected_fare_rules",
             "currency": "JPY",
-            "distance_km": 2.089,
+            "distance_km": 1.368,
             "base_yen": 210,
             "base_source": "collected_ordinary_fare_table",
             "base_rule_key": "fukuoka_subway",
@@ -1581,17 +1491,10 @@
                 "source": "collected_ordinary_fare_table",
                 "modelVersion": "v4_collected_fare_rules_2026_05",
                 "fromSegmentIndex": 0,
-                "toSegmentIndex": 2
+                "toSegmentIndex": 1
               }
             ],
             "segments": [
-              {
-                "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-                "from_station_id": "SG_N02G_009026",
-                "to_station_id": "SG_N02G_009019",
-                "distance_km": 0.721,
-                "geometry_source": "route_trace"
-              },
               {
                 "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
                 "from_station_id": "SG_N02G_009019",
@@ -1611,9 +1514,9 @@
           "alight_physical_station_id": "PS_58F991AF5B2C50"
         },
         {
-          "step_index": 11,
+          "step_index": 10,
           "type": "BOARD_TRAIN",
-          "trip_id": "shinkansen:329A:7882bdf2a5",
+          "trip_id": "shinkansen:407A:6735465ee2",
           "transfer": {
             "transferMinutes": 5,
             "distanceMeters": 68,
@@ -1626,37 +1529,37 @@
           "board_physical_station_id": "PS_24C0BA42F64890"
         },
         {
-          "step_index": 12,
+          "step_index": 11,
           "type": "RIDE_TO_STATION",
-          "station_id": "SG_N02G_009785",
+          "station_id": "SG_N02G_010047",
           "fare": {
             "model_version": "v4_collected_fare_rules_2026_05",
             "source": "collected_fare_rules",
             "currency": "JPY",
-            "distance_km": 97.117,
-            "base_yen": 2130,
+            "distance_km": 255.647,
+            "base_yen": 5390,
             "base_source": "collected_ordinary_fare_table",
             "base_rule_key": "jr_kyushu",
             "premium_type": "shinkansen",
-            "premium_yen": 2290,
+            "premium_yen": 5030,
             "premium_source": "collected_jr_shinkansen_reserved_surcharge_table",
             "premium_rule_key": "shinkansen_kyushu",
-            "total_yen": 4420,
+            "total_yen": 10420,
             "fare_known": true,
             "missing_reasons": [],
             "base_components": [
               {
-                "yen": 2130,
+                "yen": 5390,
                 "row": {
-                  "fromKm": 91,
-                  "toKm": 100,
-                  "yen": 2130
+                  "fromKm": 241,
+                  "toKm": 260,
+                  "yen": 5390
                 },
                 "ruleKey": "jr_kyushu",
                 "source": "collected_ordinary_fare_table",
                 "modelVersion": "v4_collected_fare_rules_2026_05",
                 "fromSegmentIndex": 0,
-                "toSegmentIndex": 5
+                "toSegmentIndex": 7
               }
             ],
             "segments": [
@@ -1665,97 +1568,22 @@
                 "from_station_id": "SG_N02G_009033",
                 "to_station_id": "SG_N02G_009331",
                 "distance_km": 26.167,
-                "geometry_source": "route_trace"
+                "geometry_source": "reviewed_trip_path"
               },
               {
                 "route_id": "V4_ROUTE_10583843614387",
                 "from_station_id": "SG_N02G_009331",
                 "to_station_id": "SG_N02G_009383",
                 "distance_km": 5.506,
-                "geometry_source": "route_trace"
+                "geometry_source": "reviewed_trip_path"
               },
               {
                 "route_id": "V4_ROUTE_10583843614387",
                 "from_station_id": "SG_N02G_009383",
-                "to_station_id": "SG_N02G_009546",
-                "distance_km": 15.757,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_10583843614387",
-                "from_station_id": "SG_N02G_009546",
-                "to_station_id": "SG_N02G_009591",
-                "distance_km": 11.694,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_10583843614387",
-                "from_station_id": "SG_N02G_009591",
-                "to_station_id": "SG_N02G_009638",
-                "distance_km": 16.332,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_10583843614387",
-                "from_station_id": "SG_N02G_009638",
                 "to_station_id": "SG_N02G_009785",
-                "distance_km": 21.661,
-                "geometry_source": "route_trace"
-              }
-            ]
-          },
-          "alight_physical_station_id": "PS_DA8B8F4C3790D8"
-        },
-        {
-          "step_index": 13,
-          "type": "BOARD_TRAIN",
-          "trip_id": "shinkansen:7797A:941e47305f",
-          "transfer": {
-            "transferMinutes": 1,
-            "distanceMeters": 0,
-            "reason": "same_station_group_minimum",
-            "fromPhysicalStationId": "PS_DA8B8F4C3790D8",
-            "boardPhysicalStationId": "PS_DA8B8F4C3790D8",
-            "walkTimeSec": 0,
-            "minimumTransferMinutes": 1
-          },
-          "board_physical_station_id": "PS_DA8B8F4C3790D8"
-        },
-        {
-          "step_index": 14,
-          "type": "RIDE_TO_STATION",
-          "station_id": "SG_N02G_009984",
-          "fare": {
-            "model_version": "v4_collected_fare_rules_2026_05",
-            "source": "collected_fare_rules",
-            "currency": "JPY",
-            "distance_km": 122.861,
-            "base_yen": 2310,
-            "base_source": "collected_ordinary_fare_table",
-            "base_rule_key": "jr_central_west",
-            "premium_type": "shinkansen",
-            "premium_yen": 3060,
-            "premium_source": "collected_jr_shinkansen_reserved_surcharge_table",
-            "premium_rule_key": "shinkansen_tokaido_sanyo",
-            "total_yen": 5370,
-            "fare_known": true,
-            "missing_reasons": [],
-            "base_components": [
-              {
-                "yen": 2310,
-                "row": {
-                  "fromKm": 121,
-                  "toKm": 140,
-                  "yen": 2310
-                },
-                "ruleKey": "jr_central_west",
-                "source": "collected_ordinary_fare_table",
-                "modelVersion": "v4_collected_fare_rules_2026_05",
-                "fromSegmentIndex": 0,
-                "toSegmentIndex": 3
-              }
-            ],
-            "segments": [
+                "distance_km": 66.061,
+                "geometry_source": "reviewed_trip_path"
+              },
               {
                 "route_id": "V4_ROUTE_10583843614387",
                 "from_station_id": "SG_N02G_009785",
@@ -1783,10 +1611,92 @@
                 "to_station_id": "SG_N02G_009984",
                 "distance_km": 32.619,
                 "geometry_source": "reviewed_trip_path"
+              },
+              {
+                "route_id": "V4_ROUTE_10583843614387",
+                "from_station_id": "SG_N02G_009984",
+                "to_station_id": "SG_N02G_010047",
+                "distance_km": 35.052,
+                "geometry_source": "reviewed_trip_path"
               }
             ]
           },
-          "alight_physical_station_id": "PS_47B22D17B16A79"
+          "alight_physical_station_id": "PS_A173E4BB05FE53"
+        },
+        {
+          "step_index": 12,
+          "type": "WALK_TO_STATION",
+          "station_id": "SG_N02G_010046",
+          "distance_meters": 388,
+          "walk_time_sec": 280,
+          "walking_speed_mps": 1.3888888888888888,
+          "fare": {
+            "total_yen": 0,
+            "fare_known": true,
+            "components": [
+              {
+                "type": "walking",
+                "total_yen": 0
+              }
+            ]
+          }
+        },
+        {
+          "step_index": 13,
+          "type": "BOARD_TRAIN",
+          "trip_id": "navitime_non_jr:8a6b1f3656:00000677:01fa0097:2026-04-27",
+          "transfer": {
+            "transferMinutes": 0,
+            "distanceMeters": 0,
+            "reason": "same_station_group"
+          },
+          "board_physical_station_id": "PS_9953928C3E41BA"
+        },
+        {
+          "step_index": 14,
+          "type": "RIDE_TO_STATION",
+          "station_id": "SG_N02G_010043",
+          "fare": {
+            "model_version": "v4_collected_fare_rules_2026_05",
+            "source": "collected_fare_rules",
+            "currency": "JPY",
+            "distance_km": 0.211,
+            "base_yen": 170,
+            "base_source": "collected_ordinary_fare_table",
+            "base_rule_key": "kagoshima_city_tram_flat",
+            "premium_type": "none",
+            "premium_yen": 0,
+            "premium_source": "none",
+            "premium_rule_key": null,
+            "total_yen": 170,
+            "fare_known": true,
+            "missing_reasons": [],
+            "base_components": [
+              {
+                "yen": 170,
+                "row": {
+                  "fromKm": 1,
+                  "toKm": null,
+                  "yen": 170
+                },
+                "ruleKey": "kagoshima_city_tram_flat",
+                "source": "collected_ordinary_fare_table",
+                "modelVersion": "v4_collected_fare_rules_2026_05",
+                "fromSegmentIndex": 0,
+                "toSegmentIndex": 0
+              }
+            ],
+            "segments": [
+              {
+                "route_id": "V4_ROUTE_EE7E7EB2CC9E45",
+                "from_station_id": "SG_N02G_010046",
+                "to_station_id": "SG_N02G_010043",
+                "distance_km": 0.211,
+                "geometry_source": "route_trace"
+              }
+            ]
+          },
+          "alight_physical_station_id": "PS_F42CA86EA485FB"
         }
       ]
     }
@@ -2191,12 +2101,11 @@
           "station_id": "SG_N02G_009033"
         },
         {
-          "type": "BOARD_TRAIN",
-          "trip_id": "navitime_non_jr:f07f870171:00000836:828100d2:2026-04-27"
-        },
-        {
-          "type": "RIDE_TO_STATION",
-          "station_id": "SG_N02G_009026"
+          "type": "WALK_TO_STATION",
+          "station_id": "SG_N02G_009019",
+          "distance_meters": 1423,
+          "walk_time_sec": 1025,
+          "walking_speed_mps": 1.3888888888888888
         },
         {
           "type": "BOARD_TRAIN",
@@ -2208,19 +2117,26 @@
         },
         {
           "type": "BOARD_TRAIN",
-          "trip_id": "shinkansen:329A:7882bdf2a5"
+          "trip_id": "shinkansen:407A:6735465ee2"
         },
         {
           "type": "RIDE_TO_STATION",
-          "station_id": "SG_N02G_009785"
+          "station_id": "SG_N02G_010047"
+        },
+        {
+          "type": "WALK_TO_STATION",
+          "station_id": "SG_N02G_010046",
+          "distance_meters": 388,
+          "walk_time_sec": 280,
+          "walking_speed_mps": 1.3888888888888888
         },
         {
           "type": "BOARD_TRAIN",
-          "trip_id": "shinkansen:7797A:941e47305f"
+          "trip_id": "navitime_non_jr:8a6b1f3656:00000677:01fa0097:2026-04-27"
         },
         {
           "type": "RIDE_TO_STATION",
-          "station_id": "SG_N02G_009984"
+          "station_id": "SG_N02G_010043"
         }
       ],
       "legs": [
@@ -2399,92 +2315,47 @@
         },
         {
           "leg_index": 3,
-          "board_step_index": 7,
-          "ride_step_index": 8,
-          "trip_id": "navitime_non_jr:f07f870171:00000836:828100d2:2026-04-27",
-          "trip_label": "福岡市空港線",
+          "step_index": 7,
+          "mode": "walking",
           "from_station_id": "SG_N02G_009033",
-          "from_physical_station_id": "PS_58F991AF5B2C50",
           "from_label": "博多",
-          "to_station_id": "SG_N02G_009026",
-          "to_physical_station_id": "PS_CF2288B06FB2DC",
-          "to_label": "天神",
-          "board_hhmm": "12:35",
-          "alight_hhmm": "12:40",
+          "to_station_id": "SG_N02G_009019",
+          "to_label": "中洲川端",
+          "depart_hhmm": "12:09",
+          "arrive_hhmm": "12:27",
+          "distance_meters": 1423,
+          "walk_time_sec": 1025,
+          "walking_speed_mps": 1.3888888888888888,
           "fare": {
-            "model_version": "v4_collected_fare_rules_2026_05",
-            "source": "collected_fare_rules",
-            "currency": "JPY",
-            "distance_km": 2.089,
-            "base_yen": 210,
-            "base_source": "collected_ordinary_fare_table",
-            "base_rule_key": "fukuoka_subway",
-            "premium_type": "none",
-            "premium_yen": 0,
-            "premium_source": "none",
-            "premium_rule_key": null,
-            "total_yen": 210,
+            "total_yen": 0,
             "fare_known": true,
-            "missing_reasons": [],
-            "base_components": [
+            "components": [
               {
-                "yen": 210,
-                "row": {
-                  "fromKm": 1,
-                  "toKm": 3,
-                  "yen": 210
-                },
-                "ruleKey": "fukuoka_subway",
-                "source": "collected_ordinary_fare_table",
-                "modelVersion": "v4_collected_fare_rules_2026_05",
-                "fromSegmentIndex": 0,
-                "toSegmentIndex": 2
-              }
-            ],
-            "segments": [
-              {
-                "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-                "from_station_id": "SG_N02G_009033",
-                "to_station_id": "SG_N02G_009021",
-                "distance_km": 0.654,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-                "from_station_id": "SG_N02G_009021",
-                "to_station_id": "SG_N02G_009019",
-                "distance_km": 0.714,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-                "from_station_id": "SG_N02G_009019",
-                "to_station_id": "SG_N02G_009026",
-                "distance_km": 0.721,
-                "geometry_source": "route_trace"
+                "type": "walking",
+                "total_yen": 0
               }
             ]
           }
         },
         {
           "leg_index": 4,
-          "board_step_index": 9,
-          "ride_step_index": 10,
+          "board_step_index": 8,
+          "ride_step_index": 9,
           "trip_id": "navitime_non_jr:f07f870171:00000836:02810036:2026-04-27",
           "trip_label": "福岡市空港線",
-          "from_station_id": "SG_N02G_009026",
-          "from_physical_station_id": "PS_CF2288B06FB2DC",
-          "from_label": "天神",
+          "from_station_id": "SG_N02G_009019",
+          "from_physical_station_id": "PS_479A281C8F5A16",
+          "from_label": "中洲川端",
           "to_station_id": "SG_N02G_009033",
           "to_physical_station_id": "PS_58F991AF5B2C50",
           "to_label": "博多",
-          "board_hhmm": "14:05",
+          "board_hhmm": "14:07",
           "alight_hhmm": "14:11",
           "fare": {
             "model_version": "v4_collected_fare_rules_2026_05",
             "source": "collected_fare_rules",
             "currency": "JPY",
-            "distance_km": 2.089,
+            "distance_km": 1.368,
             "base_yen": 210,
             "base_source": "collected_ordinary_fare_table",
             "base_rule_key": "fukuoka_subway",
@@ -2507,17 +2378,10 @@
                 "source": "collected_ordinary_fare_table",
                 "modelVersion": "v4_collected_fare_rules_2026_05",
                 "fromSegmentIndex": 0,
-                "toSegmentIndex": 2
+                "toSegmentIndex": 1
               }
             ],
             "segments": [
-              {
-                "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-                "from_station_id": "SG_N02G_009026",
-                "to_station_id": "SG_N02G_009019",
-                "distance_km": 0.721,
-                "geometry_source": "route_trace"
-              },
               {
                 "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
                 "from_station_id": "SG_N02G_009019",
@@ -2537,46 +2401,46 @@
         },
         {
           "leg_index": 5,
-          "board_step_index": 11,
-          "ride_step_index": 12,
-          "trip_id": "shinkansen:329A:7882bdf2a5",
-          "trip_label": "つばめ329",
+          "board_step_index": 10,
+          "ride_step_index": 11,
+          "trip_id": "shinkansen:407A:6735465ee2",
+          "trip_label": "さくら407",
           "from_station_id": "SG_N02G_009033",
           "from_physical_station_id": "PS_24C0BA42F64890",
           "from_label": "博多",
-          "to_station_id": "SG_N02G_009785",
-          "to_physical_station_id": "PS_DA8B8F4C3790D8",
-          "to_label": "熊本",
-          "board_hhmm": "16:12",
-          "alight_hhmm": "17:00",
+          "to_station_id": "SG_N02G_010047",
+          "to_physical_station_id": "PS_A173E4BB05FE53",
+          "to_label": "鹿児島中央",
+          "board_hhmm": "15:36",
+          "alight_hhmm": "17:12",
           "fare": {
             "model_version": "v4_collected_fare_rules_2026_05",
             "source": "collected_fare_rules",
             "currency": "JPY",
-            "distance_km": 97.117,
-            "base_yen": 2130,
+            "distance_km": 255.647,
+            "base_yen": 5390,
             "base_source": "collected_ordinary_fare_table",
             "base_rule_key": "jr_kyushu",
             "premium_type": "shinkansen",
-            "premium_yen": 2290,
+            "premium_yen": 5030,
             "premium_source": "collected_jr_shinkansen_reserved_surcharge_table",
             "premium_rule_key": "shinkansen_kyushu",
-            "total_yen": 4420,
+            "total_yen": 10420,
             "fare_known": true,
             "missing_reasons": [],
             "base_components": [
               {
-                "yen": 2130,
+                "yen": 5390,
                 "row": {
-                  "fromKm": 91,
-                  "toKm": 100,
-                  "yen": 2130
+                  "fromKm": 241,
+                  "toKm": 260,
+                  "yen": 5390
                 },
                 "ruleKey": "jr_kyushu",
                 "source": "collected_ordinary_fare_table",
                 "modelVersion": "v4_collected_fare_rules_2026_05",
                 "fromSegmentIndex": 0,
-                "toSegmentIndex": 5
+                "toSegmentIndex": 7
               }
             ],
             "segments": [
@@ -2585,91 +2449,22 @@
                 "from_station_id": "SG_N02G_009033",
                 "to_station_id": "SG_N02G_009331",
                 "distance_km": 26.167,
-                "geometry_source": "route_trace"
+                "geometry_source": "reviewed_trip_path"
               },
               {
                 "route_id": "V4_ROUTE_10583843614387",
                 "from_station_id": "SG_N02G_009331",
                 "to_station_id": "SG_N02G_009383",
                 "distance_km": 5.506,
-                "geometry_source": "route_trace"
+                "geometry_source": "reviewed_trip_path"
               },
               {
                 "route_id": "V4_ROUTE_10583843614387",
                 "from_station_id": "SG_N02G_009383",
-                "to_station_id": "SG_N02G_009546",
-                "distance_km": 15.757,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_10583843614387",
-                "from_station_id": "SG_N02G_009546",
-                "to_station_id": "SG_N02G_009591",
-                "distance_km": 11.694,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_10583843614387",
-                "from_station_id": "SG_N02G_009591",
-                "to_station_id": "SG_N02G_009638",
-                "distance_km": 16.332,
-                "geometry_source": "route_trace"
-              },
-              {
-                "route_id": "V4_ROUTE_10583843614387",
-                "from_station_id": "SG_N02G_009638",
                 "to_station_id": "SG_N02G_009785",
-                "distance_km": 21.661,
-                "geometry_source": "route_trace"
-              }
-            ]
-          }
-        },
-        {
-          "leg_index": 6,
-          "board_step_index": 13,
-          "ride_step_index": 14,
-          "trip_id": "shinkansen:7797A:941e47305f",
-          "trip_label": "さくら797",
-          "from_station_id": "SG_N02G_009785",
-          "from_physical_station_id": "PS_DA8B8F4C3790D8",
-          "from_label": "熊本",
-          "to_station_id": "SG_N02G_009984",
-          "to_physical_station_id": "PS_47B22D17B16A79",
-          "to_label": "川内",
-          "board_hhmm": "17:05",
-          "alight_hhmm": "17:49",
-          "fare": {
-            "model_version": "v4_collected_fare_rules_2026_05",
-            "source": "collected_fare_rules",
-            "currency": "JPY",
-            "distance_km": 122.861,
-            "base_yen": 2310,
-            "base_source": "collected_ordinary_fare_table",
-            "base_rule_key": "jr_central_west",
-            "premium_type": "shinkansen",
-            "premium_yen": 3060,
-            "premium_source": "collected_jr_shinkansen_reserved_surcharge_table",
-            "premium_rule_key": "shinkansen_tokaido_sanyo",
-            "total_yen": 5370,
-            "fare_known": true,
-            "missing_reasons": [],
-            "base_components": [
-              {
-                "yen": 2310,
-                "row": {
-                  "fromKm": 121,
-                  "toKm": 140,
-                  "yen": 2310
-                },
-                "ruleKey": "jr_central_west",
-                "source": "collected_ordinary_fare_table",
-                "modelVersion": "v4_collected_fare_rules_2026_05",
-                "fromSegmentIndex": 0,
-                "toSegmentIndex": 3
-              }
-            ],
-            "segments": [
+                "distance_km": 66.061,
+                "geometry_source": "reviewed_trip_path"
+              },
               {
                 "route_id": "V4_ROUTE_10583843614387",
                 "from_station_id": "SG_N02G_009785",
@@ -2697,6 +2492,92 @@
                 "to_station_id": "SG_N02G_009984",
                 "distance_km": 32.619,
                 "geometry_source": "reviewed_trip_path"
+              },
+              {
+                "route_id": "V4_ROUTE_10583843614387",
+                "from_station_id": "SG_N02G_009984",
+                "to_station_id": "SG_N02G_010047",
+                "distance_km": 35.052,
+                "geometry_source": "reviewed_trip_path"
+              }
+            ]
+          }
+        },
+        {
+          "leg_index": 6,
+          "step_index": 12,
+          "mode": "walking",
+          "from_station_id": "SG_N02G_010047",
+          "from_label": "鹿児島中央",
+          "to_station_id": "SG_N02G_010046",
+          "to_label": "高見橋",
+          "depart_hhmm": "17:12",
+          "arrive_hhmm": "17:17",
+          "distance_meters": 388,
+          "walk_time_sec": 280,
+          "walking_speed_mps": 1.3888888888888888,
+          "fare": {
+            "total_yen": 0,
+            "fare_known": true,
+            "components": [
+              {
+                "type": "walking",
+                "total_yen": 0
+              }
+            ]
+          }
+        },
+        {
+          "leg_index": 7,
+          "board_step_index": 13,
+          "ride_step_index": 14,
+          "trip_id": "navitime_non_jr:8a6b1f3656:00000677:01fa0097:2026-04-27",
+          "trip_label": "鹿児島市唐湊線",
+          "from_station_id": "SG_N02G_010046",
+          "from_physical_station_id": "PS_9953928C3E41BA",
+          "from_label": "高見橋",
+          "to_station_id": "SG_N02G_010043",
+          "to_physical_station_id": "PS_F42CA86EA485FB",
+          "to_label": "加治屋町",
+          "board_hhmm": "17:17",
+          "alight_hhmm": "17:19",
+          "fare": {
+            "model_version": "v4_collected_fare_rules_2026_05",
+            "source": "collected_fare_rules",
+            "currency": "JPY",
+            "distance_km": 0.211,
+            "base_yen": 170,
+            "base_source": "collected_ordinary_fare_table",
+            "base_rule_key": "kagoshima_city_tram_flat",
+            "premium_type": "none",
+            "premium_yen": 0,
+            "premium_source": "none",
+            "premium_rule_key": null,
+            "total_yen": 170,
+            "fare_known": true,
+            "missing_reasons": [],
+            "base_components": [
+              {
+                "yen": 170,
+                "row": {
+                  "fromKm": 1,
+                  "toKm": null,
+                  "yen": 170
+                },
+                "ruleKey": "kagoshima_city_tram_flat",
+                "source": "collected_ordinary_fare_table",
+                "modelVersion": "v4_collected_fare_rules_2026_05",
+                "fromSegmentIndex": 0,
+                "toSegmentIndex": 0
+              }
+            ],
+            "segments": [
+              {
+                "route_id": "V4_ROUTE_EE7E7EB2CC9E45",
+                "from_station_id": "SG_N02G_010046",
+                "to_station_id": "SG_N02G_010043",
+                "distance_km": 0.211,
+                "geometry_source": "route_trace"
               }
             ]
           }
@@ -2706,13 +2587,13 @@
         "model_version": "v4_collected_fare_rules_2026_05",
         "source": "collected_fare_rules",
         "currency": "JPY",
-        "leg_count": 6,
-        "known_leg_count": 6,
+        "leg_count": 7,
+        "known_leg_count": 7,
         "unknown_leg_count": 0,
-        "distance_km": 1289.792,
-        "base_yen": 22130,
-        "premium_yen": 16330,
-        "total_yen": 38460,
+        "distance_km": 1322.862,
+        "base_yen": 23040,
+        "premium_yen": 16010,
+        "total_yen": 39050,
         "fare_known": true,
         "missing_reasons": []
       }
@@ -2773,7 +2654,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009984"
+          "stationGroupId": "SG_N02G_010043"
         }
       },
       "state_after": {
@@ -2783,7 +2664,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009984"
+          "stationGroupId": "SG_N02G_010043"
         }
       },
       "state_snapshot": {
@@ -2793,7 +2674,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009984"
+          "stationGroupId": "SG_N02G_010043"
         }
       }
     }
@@ -3614,25 +3495,33 @@
       }
     },
     {
-      "time_hhmm": "12:35",
-      "time_minute": 755,
-      "type": "BOARD_TRAIN",
+      "time_hhmm": "12:27",
+      "time_minute": 747,
+      "type": "WALK_TO_STATION",
       "event_scope": "PLAYER_LOCAL",
       "timeline_lane": "hunter",
       "event_family": "MOVEMENT",
       "player_id": "hunter",
-      "station_group_id": "SG_N02G_009033",
-      "transfer_from_station_group_id": null,
-      "transfer_minutes": 5,
-      "transfer_distance_meters": 68,
-      "transfer_reason": "same_station_group_shinkansen_minimum",
-      "transfer_from_physical_station_id": "PS_24C0BA42F64890",
-      "board_physical_station_id": "PS_58F991AF5B2C50",
-      "trip_id": "navitime_non_jr:f07f870171:00000836:828100d2:2026-04-27",
+      "station_group_id": "SG_N02G_009019",
+      "from_station_group_id": "SG_N02G_009033",
+      "distance_meters": 1423,
+      "walk_time_sec": 1025,
+      "walking_speed_mps": 1.3888888888888888,
+      "fare": {
+        "total_yen": 0,
+        "fare_known": true,
+        "components": [
+          {
+            "type": "walking",
+            "total_yen": 0
+          }
+        ]
+      },
+      "fare_total_yen": 0,
       "carrier_after": {
-        "kind": "TRAIN",
-        "tripId": "navitime_non_jr:f07f870171:00000836:828100d2:2026-04-27",
-        "boardPhysicalStationId": "PS_58F991AF5B2C50"
+        "kind": "NODE",
+        "stationGroupId": "SG_N02G_009019",
+        "physicalStationId": null
       },
       "state_before": {
         "runner": {
@@ -3650,110 +3539,8 @@
           "tripId": "shinkansen:747A:ba17e208a6"
         },
         "hunter": {
-          "kind": "TRAIN",
-          "tripId": "navitime_non_jr:f07f870171:00000836:828100d2:2026-04-27"
-        }
-      },
-      "state_snapshot": {
-        "runner": {
-          "kind": "TRAIN",
-          "tripId": "shinkansen:747A:ba17e208a6"
-        },
-        "hunter": {
-          "kind": "TRAIN",
-          "tripId": "navitime_non_jr:f07f870171:00000836:828100d2:2026-04-27"
-        }
-      }
-    },
-    {
-      "time_hhmm": "12:40",
-      "time_minute": 760,
-      "type": "ALIGHT_TRAIN",
-      "event_scope": "PLAYER_LOCAL",
-      "timeline_lane": "hunter",
-      "event_family": "MOVEMENT",
-      "player_id": "hunter",
-      "station_group_id": "SG_N02G_009026",
-      "physical_station_id": "PS_CF2288B06FB2DC",
-      "trip_id": "navitime_non_jr:f07f870171:00000836:828100d2:2026-04-27",
-      "fare": {
-        "model_version": "v4_collected_fare_rules_2026_05",
-        "source": "collected_fare_rules",
-        "currency": "JPY",
-        "distance_km": 2.089,
-        "base_yen": 210,
-        "base_source": "collected_ordinary_fare_table",
-        "base_rule_key": "fukuoka_subway",
-        "premium_type": "none",
-        "premium_yen": 0,
-        "premium_source": "none",
-        "premium_rule_key": null,
-        "total_yen": 210,
-        "fare_known": true,
-        "missing_reasons": [],
-        "base_components": [
-          {
-            "yen": 210,
-            "row": {
-              "fromKm": 1,
-              "toKm": 3,
-              "yen": 210
-            },
-            "ruleKey": "fukuoka_subway",
-            "source": "collected_ordinary_fare_table",
-            "modelVersion": "v4_collected_fare_rules_2026_05",
-            "fromSegmentIndex": 0,
-            "toSegmentIndex": 2
-          }
-        ],
-        "segments": [
-          {
-            "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-            "from_station_id": "SG_N02G_009033",
-            "to_station_id": "SG_N02G_009021",
-            "distance_km": 0.654,
-            "geometry_source": "route_trace"
-          },
-          {
-            "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-            "from_station_id": "SG_N02G_009021",
-            "to_station_id": "SG_N02G_009019",
-            "distance_km": 0.714,
-            "geometry_source": "route_trace"
-          },
-          {
-            "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-            "from_station_id": "SG_N02G_009019",
-            "to_station_id": "SG_N02G_009026",
-            "distance_km": 0.721,
-            "geometry_source": "route_trace"
-          }
-        ]
-      },
-      "fare_total_yen": 210,
-      "carrier_after": {
-        "kind": "NODE",
-        "stationGroupId": "SG_N02G_009026",
-        "physicalStationId": "PS_CF2288B06FB2DC"
-      },
-      "state_before": {
-        "runner": {
-          "kind": "TRAIN",
-          "tripId": "shinkansen:747A:ba17e208a6"
-        },
-        "hunter": {
-          "kind": "TRAIN",
-          "tripId": "navitime_non_jr:f07f870171:00000836:828100d2:2026-04-27"
-        }
-      },
-      "state_after": {
-        "runner": {
-          "kind": "TRAIN",
-          "tripId": "shinkansen:747A:ba17e208a6"
-        },
-        "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009026"
+          "stationGroupId": "SG_N02G_009019"
         }
       },
       "state_snapshot": {
@@ -3763,7 +3550,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009026"
+          "stationGroupId": "SG_N02G_009019"
         }
       }
     },
@@ -3852,7 +3639,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009026"
+          "stationGroupId": "SG_N02G_009019"
         }
       },
       "state_after": {
@@ -3862,7 +3649,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009026"
+          "stationGroupId": "SG_N02G_009019"
         }
       },
       "state_snapshot": {
@@ -3872,7 +3659,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009026"
+          "stationGroupId": "SG_N02G_009019"
         }
       }
     },
@@ -3904,7 +3691,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009026"
+          "stationGroupId": "SG_N02G_009019"
         }
       },
       "state_after": {
@@ -3914,7 +3701,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009026"
+          "stationGroupId": "SG_N02G_009019"
         }
       },
       "state_snapshot": {
@@ -3924,7 +3711,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009026"
+          "stationGroupId": "SG_N02G_009019"
         }
       }
     },
@@ -4048,7 +3835,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009026"
+          "stationGroupId": "SG_N02G_009019"
         }
       },
       "state_after": {
@@ -4058,7 +3845,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009026"
+          "stationGroupId": "SG_N02G_009019"
         }
       },
       "state_snapshot": {
@@ -4068,30 +3855,30 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009026"
+          "stationGroupId": "SG_N02G_009019"
         }
       }
     },
     {
-      "time_hhmm": "14:05",
-      "time_minute": 845,
+      "time_hhmm": "14:07",
+      "time_minute": 847,
       "type": "BOARD_TRAIN",
       "event_scope": "PLAYER_LOCAL",
       "timeline_lane": "hunter",
       "event_family": "MOVEMENT",
       "player_id": "hunter",
-      "station_group_id": "SG_N02G_009026",
+      "station_group_id": "SG_N02G_009019",
       "transfer_from_station_group_id": null,
-      "transfer_minutes": 1,
+      "transfer_minutes": 0,
       "transfer_distance_meters": 0,
-      "transfer_reason": "same_station_group_minimum",
-      "transfer_from_physical_station_id": "PS_CF2288B06FB2DC",
-      "board_physical_station_id": "PS_CF2288B06FB2DC",
+      "transfer_reason": "same_station_group",
+      "transfer_from_physical_station_id": null,
+      "board_physical_station_id": "PS_479A281C8F5A16",
       "trip_id": "navitime_non_jr:f07f870171:00000836:02810036:2026-04-27",
       "carrier_after": {
         "kind": "TRAIN",
         "tripId": "navitime_non_jr:f07f870171:00000836:02810036:2026-04-27",
-        "boardPhysicalStationId": "PS_CF2288B06FB2DC"
+        "boardPhysicalStationId": "PS_479A281C8F5A16"
       },
       "state_before": {
         "runner": {
@@ -4100,7 +3887,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009026"
+          "stationGroupId": "SG_N02G_009019"
         }
       },
       "state_after": {
@@ -4139,7 +3926,7 @@
         "model_version": "v4_collected_fare_rules_2026_05",
         "source": "collected_fare_rules",
         "currency": "JPY",
-        "distance_km": 2.089,
+        "distance_km": 1.368,
         "base_yen": 210,
         "base_source": "collected_ordinary_fare_table",
         "base_rule_key": "fukuoka_subway",
@@ -4162,17 +3949,10 @@
             "source": "collected_ordinary_fare_table",
             "modelVersion": "v4_collected_fare_rules_2026_05",
             "fromSegmentIndex": 0,
-            "toSegmentIndex": 2
+            "toSegmentIndex": 1
           }
         ],
         "segments": [
-          {
-            "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
-            "from_station_id": "SG_N02G_009026",
-            "to_station_id": "SG_N02G_009019",
-            "distance_km": 0.721,
-            "geometry_source": "route_trace"
-          },
           {
             "route_id": "V4_ROUTE_6FF36BFBC5E2E4",
             "from_station_id": "SG_N02G_009019",
@@ -4227,8 +4007,8 @@
       }
     },
     {
-      "time_hhmm": "16:12",
-      "time_minute": 972,
+      "time_hhmm": "15:36",
+      "time_minute": 936,
       "type": "BOARD_TRAIN",
       "event_scope": "PLAYER_LOCAL",
       "timeline_lane": "hunter",
@@ -4241,10 +4021,10 @@
       "transfer_reason": "same_station_group_shinkansen_minimum",
       "transfer_from_physical_station_id": "PS_58F991AF5B2C50",
       "board_physical_station_id": "PS_24C0BA42F64890",
-      "trip_id": "shinkansen:329A:7882bdf2a5",
+      "trip_id": "shinkansen:407A:6735465ee2",
       "carrier_after": {
         "kind": "TRAIN",
-        "tripId": "shinkansen:329A:7882bdf2a5",
+        "tripId": "shinkansen:407A:6735465ee2",
         "boardPhysicalStationId": "PS_24C0BA42F64890"
       },
       "state_before": {
@@ -4264,7 +4044,7 @@
         },
         "hunter": {
           "kind": "TRAIN",
-          "tripId": "shinkansen:329A:7882bdf2a5"
+          "tripId": "shinkansen:407A:6735465ee2"
         }
       },
       "state_snapshot": {
@@ -4274,49 +4054,49 @@
         },
         "hunter": {
           "kind": "TRAIN",
-          "tripId": "shinkansen:329A:7882bdf2a5"
+          "tripId": "shinkansen:407A:6735465ee2"
         }
       }
     },
     {
-      "time_hhmm": "17:00",
-      "time_minute": 1020,
+      "time_hhmm": "17:12",
+      "time_minute": 1032,
       "type": "ALIGHT_TRAIN",
       "event_scope": "PLAYER_LOCAL",
       "timeline_lane": "hunter",
       "event_family": "MOVEMENT",
       "player_id": "hunter",
-      "station_group_id": "SG_N02G_009785",
-      "physical_station_id": "PS_DA8B8F4C3790D8",
-      "trip_id": "shinkansen:329A:7882bdf2a5",
+      "station_group_id": "SG_N02G_010047",
+      "physical_station_id": "PS_A173E4BB05FE53",
+      "trip_id": "shinkansen:407A:6735465ee2",
       "fare": {
         "model_version": "v4_collected_fare_rules_2026_05",
         "source": "collected_fare_rules",
         "currency": "JPY",
-        "distance_km": 97.117,
-        "base_yen": 2130,
+        "distance_km": 255.647,
+        "base_yen": 5390,
         "base_source": "collected_ordinary_fare_table",
         "base_rule_key": "jr_kyushu",
         "premium_type": "shinkansen",
-        "premium_yen": 2290,
+        "premium_yen": 5030,
         "premium_source": "collected_jr_shinkansen_reserved_surcharge_table",
         "premium_rule_key": "shinkansen_kyushu",
-        "total_yen": 4420,
+        "total_yen": 10420,
         "fare_known": true,
         "missing_reasons": [],
         "base_components": [
           {
-            "yen": 2130,
+            "yen": 5390,
             "row": {
-              "fromKm": 91,
-              "toKm": 100,
-              "yen": 2130
+              "fromKm": 241,
+              "toKm": 260,
+              "yen": 5390
             },
             "ruleKey": "jr_kyushu",
             "source": "collected_ordinary_fare_table",
             "modelVersion": "v4_collected_fare_rules_2026_05",
             "fromSegmentIndex": 0,
-            "toSegmentIndex": 5
+            "toSegmentIndex": 7
           }
         ],
         "segments": [
@@ -4325,176 +4105,22 @@
             "from_station_id": "SG_N02G_009033",
             "to_station_id": "SG_N02G_009331",
             "distance_km": 26.167,
-            "geometry_source": "route_trace"
+            "geometry_source": "reviewed_trip_path"
           },
           {
             "route_id": "V4_ROUTE_10583843614387",
             "from_station_id": "SG_N02G_009331",
             "to_station_id": "SG_N02G_009383",
             "distance_km": 5.506,
-            "geometry_source": "route_trace"
+            "geometry_source": "reviewed_trip_path"
           },
           {
             "route_id": "V4_ROUTE_10583843614387",
             "from_station_id": "SG_N02G_009383",
-            "to_station_id": "SG_N02G_009546",
-            "distance_km": 15.757,
-            "geometry_source": "route_trace"
-          },
-          {
-            "route_id": "V4_ROUTE_10583843614387",
-            "from_station_id": "SG_N02G_009546",
-            "to_station_id": "SG_N02G_009591",
-            "distance_km": 11.694,
-            "geometry_source": "route_trace"
-          },
-          {
-            "route_id": "V4_ROUTE_10583843614387",
-            "from_station_id": "SG_N02G_009591",
-            "to_station_id": "SG_N02G_009638",
-            "distance_km": 16.332,
-            "geometry_source": "route_trace"
-          },
-          {
-            "route_id": "V4_ROUTE_10583843614387",
-            "from_station_id": "SG_N02G_009638",
             "to_station_id": "SG_N02G_009785",
-            "distance_km": 21.661,
-            "geometry_source": "route_trace"
-          }
-        ]
-      },
-      "fare_total_yen": 4420,
-      "carrier_after": {
-        "kind": "NODE",
-        "stationGroupId": "SG_N02G_009785",
-        "physicalStationId": "PS_DA8B8F4C3790D8"
-      },
-      "state_before": {
-        "runner": {
-          "kind": "NODE",
-          "stationGroupId": "SG_N02G_010029"
-        },
-        "hunter": {
-          "kind": "TRAIN",
-          "tripId": "shinkansen:329A:7882bdf2a5"
-        }
-      },
-      "state_after": {
-        "runner": {
-          "kind": "NODE",
-          "stationGroupId": "SG_N02G_010029"
-        },
-        "hunter": {
-          "kind": "NODE",
-          "stationGroupId": "SG_N02G_009785"
-        }
-      },
-      "state_snapshot": {
-        "runner": {
-          "kind": "NODE",
-          "stationGroupId": "SG_N02G_010029"
-        },
-        "hunter": {
-          "kind": "NODE",
-          "stationGroupId": "SG_N02G_009785"
-        }
-      }
-    },
-    {
-      "time_hhmm": "17:05",
-      "time_minute": 1025,
-      "type": "BOARD_TRAIN",
-      "event_scope": "PLAYER_LOCAL",
-      "timeline_lane": "hunter",
-      "event_family": "MOVEMENT",
-      "player_id": "hunter",
-      "station_group_id": "SG_N02G_009785",
-      "transfer_from_station_group_id": null,
-      "transfer_minutes": 1,
-      "transfer_distance_meters": 0,
-      "transfer_reason": "same_station_group_minimum",
-      "transfer_from_physical_station_id": "PS_DA8B8F4C3790D8",
-      "board_physical_station_id": "PS_DA8B8F4C3790D8",
-      "trip_id": "shinkansen:7797A:941e47305f",
-      "carrier_after": {
-        "kind": "TRAIN",
-        "tripId": "shinkansen:7797A:941e47305f",
-        "boardPhysicalStationId": "PS_DA8B8F4C3790D8"
-      },
-      "state_before": {
-        "runner": {
-          "kind": "NODE",
-          "stationGroupId": "SG_N02G_010029"
-        },
-        "hunter": {
-          "kind": "NODE",
-          "stationGroupId": "SG_N02G_009785"
-        }
-      },
-      "state_after": {
-        "runner": {
-          "kind": "NODE",
-          "stationGroupId": "SG_N02G_010029"
-        },
-        "hunter": {
-          "kind": "TRAIN",
-          "tripId": "shinkansen:7797A:941e47305f"
-        }
-      },
-      "state_snapshot": {
-        "runner": {
-          "kind": "NODE",
-          "stationGroupId": "SG_N02G_010029"
-        },
-        "hunter": {
-          "kind": "TRAIN",
-          "tripId": "shinkansen:7797A:941e47305f"
-        }
-      }
-    },
-    {
-      "time_hhmm": "17:49",
-      "time_minute": 1069,
-      "type": "ALIGHT_TRAIN",
-      "event_scope": "PLAYER_LOCAL",
-      "timeline_lane": "hunter",
-      "event_family": "MOVEMENT",
-      "player_id": "hunter",
-      "station_group_id": "SG_N02G_009984",
-      "physical_station_id": "PS_47B22D17B16A79",
-      "trip_id": "shinkansen:7797A:941e47305f",
-      "fare": {
-        "model_version": "v4_collected_fare_rules_2026_05",
-        "source": "collected_fare_rules",
-        "currency": "JPY",
-        "distance_km": 122.861,
-        "base_yen": 2310,
-        "base_source": "collected_ordinary_fare_table",
-        "base_rule_key": "jr_central_west",
-        "premium_type": "shinkansen",
-        "premium_yen": 3060,
-        "premium_source": "collected_jr_shinkansen_reserved_surcharge_table",
-        "premium_rule_key": "shinkansen_tokaido_sanyo",
-        "total_yen": 5370,
-        "fare_known": true,
-        "missing_reasons": [],
-        "base_components": [
-          {
-            "yen": 2310,
-            "row": {
-              "fromKm": 121,
-              "toKm": 140,
-              "yen": 2310
-            },
-            "ruleKey": "jr_central_west",
-            "source": "collected_ordinary_fare_table",
-            "modelVersion": "v4_collected_fare_rules_2026_05",
-            "fromSegmentIndex": 0,
-            "toSegmentIndex": 3
-          }
-        ],
-        "segments": [
+            "distance_km": 66.061,
+            "geometry_source": "reviewed_trip_path"
+          },
           {
             "route_id": "V4_ROUTE_10583843614387",
             "from_station_id": "SG_N02G_009785",
@@ -4522,14 +4148,21 @@
             "to_station_id": "SG_N02G_009984",
             "distance_km": 32.619,
             "geometry_source": "reviewed_trip_path"
+          },
+          {
+            "route_id": "V4_ROUTE_10583843614387",
+            "from_station_id": "SG_N02G_009984",
+            "to_station_id": "SG_N02G_010047",
+            "distance_km": 35.052,
+            "geometry_source": "reviewed_trip_path"
           }
         ]
       },
-      "fare_total_yen": 5370,
+      "fare_total_yen": 10420,
       "carrier_after": {
         "kind": "NODE",
-        "stationGroupId": "SG_N02G_009984",
-        "physicalStationId": "PS_47B22D17B16A79"
+        "stationGroupId": "SG_N02G_010047",
+        "physicalStationId": "PS_A173E4BB05FE53"
       },
       "state_before": {
         "runner": {
@@ -4538,7 +4171,7 @@
         },
         "hunter": {
           "kind": "TRAIN",
-          "tripId": "shinkansen:7797A:941e47305f"
+          "tripId": "shinkansen:407A:6735465ee2"
         }
       },
       "state_after": {
@@ -4548,7 +4181,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009984"
+          "stationGroupId": "SG_N02G_010047"
         }
       },
       "state_snapshot": {
@@ -4558,7 +4191,207 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009984"
+          "stationGroupId": "SG_N02G_010047"
+        }
+      }
+    },
+    {
+      "time_hhmm": "17:17",
+      "time_minute": 1037,
+      "type": "WALK_TO_STATION",
+      "event_scope": "PLAYER_LOCAL",
+      "timeline_lane": "hunter",
+      "event_family": "MOVEMENT",
+      "player_id": "hunter",
+      "station_group_id": "SG_N02G_010046",
+      "from_station_group_id": "SG_N02G_010047",
+      "distance_meters": 388,
+      "walk_time_sec": 280,
+      "walking_speed_mps": 1.3888888888888888,
+      "fare": {
+        "total_yen": 0,
+        "fare_known": true,
+        "components": [
+          {
+            "type": "walking",
+            "total_yen": 0
+          }
+        ]
+      },
+      "fare_total_yen": 0,
+      "carrier_after": {
+        "kind": "NODE",
+        "stationGroupId": "SG_N02G_010046",
+        "physicalStationId": null
+      },
+      "state_before": {
+        "runner": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010029"
+        },
+        "hunter": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010047"
+        }
+      },
+      "state_after": {
+        "runner": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010029"
+        },
+        "hunter": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010046"
+        }
+      },
+      "state_snapshot": {
+        "runner": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010029"
+        },
+        "hunter": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010046"
+        }
+      }
+    },
+    {
+      "time_hhmm": "17:17",
+      "time_minute": 1037,
+      "type": "BOARD_TRAIN",
+      "event_scope": "PLAYER_LOCAL",
+      "timeline_lane": "hunter",
+      "event_family": "MOVEMENT",
+      "player_id": "hunter",
+      "station_group_id": "SG_N02G_010046",
+      "transfer_from_station_group_id": null,
+      "transfer_minutes": 0,
+      "transfer_distance_meters": 0,
+      "transfer_reason": "same_station_group",
+      "transfer_from_physical_station_id": null,
+      "board_physical_station_id": "PS_9953928C3E41BA",
+      "trip_id": "navitime_non_jr:8a6b1f3656:00000677:01fa0097:2026-04-27",
+      "carrier_after": {
+        "kind": "TRAIN",
+        "tripId": "navitime_non_jr:8a6b1f3656:00000677:01fa0097:2026-04-27",
+        "boardPhysicalStationId": "PS_9953928C3E41BA"
+      },
+      "state_before": {
+        "runner": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010029"
+        },
+        "hunter": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010046"
+        }
+      },
+      "state_after": {
+        "runner": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010029"
+        },
+        "hunter": {
+          "kind": "TRAIN",
+          "tripId": "navitime_non_jr:8a6b1f3656:00000677:01fa0097:2026-04-27"
+        }
+      },
+      "state_snapshot": {
+        "runner": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010029"
+        },
+        "hunter": {
+          "kind": "TRAIN",
+          "tripId": "navitime_non_jr:8a6b1f3656:00000677:01fa0097:2026-04-27"
+        }
+      }
+    },
+    {
+      "time_hhmm": "17:19",
+      "time_minute": 1039,
+      "type": "ALIGHT_TRAIN",
+      "event_scope": "PLAYER_LOCAL",
+      "timeline_lane": "hunter",
+      "event_family": "MOVEMENT",
+      "player_id": "hunter",
+      "station_group_id": "SG_N02G_010043",
+      "physical_station_id": "PS_F42CA86EA485FB",
+      "trip_id": "navitime_non_jr:8a6b1f3656:00000677:01fa0097:2026-04-27",
+      "fare": {
+        "model_version": "v4_collected_fare_rules_2026_05",
+        "source": "collected_fare_rules",
+        "currency": "JPY",
+        "distance_km": 0.211,
+        "base_yen": 170,
+        "base_source": "collected_ordinary_fare_table",
+        "base_rule_key": "kagoshima_city_tram_flat",
+        "premium_type": "none",
+        "premium_yen": 0,
+        "premium_source": "none",
+        "premium_rule_key": null,
+        "total_yen": 170,
+        "fare_known": true,
+        "missing_reasons": [],
+        "base_components": [
+          {
+            "yen": 170,
+            "row": {
+              "fromKm": 1,
+              "toKm": null,
+              "yen": 170
+            },
+            "ruleKey": "kagoshima_city_tram_flat",
+            "source": "collected_ordinary_fare_table",
+            "modelVersion": "v4_collected_fare_rules_2026_05",
+            "fromSegmentIndex": 0,
+            "toSegmentIndex": 0
+          }
+        ],
+        "segments": [
+          {
+            "route_id": "V4_ROUTE_EE7E7EB2CC9E45",
+            "from_station_id": "SG_N02G_010046",
+            "to_station_id": "SG_N02G_010043",
+            "distance_km": 0.211,
+            "geometry_source": "route_trace"
+          }
+        ]
+      },
+      "fare_total_yen": 170,
+      "carrier_after": {
+        "kind": "NODE",
+        "stationGroupId": "SG_N02G_010043",
+        "physicalStationId": "PS_F42CA86EA485FB"
+      },
+      "state_before": {
+        "runner": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010029"
+        },
+        "hunter": {
+          "kind": "TRAIN",
+          "tripId": "navitime_non_jr:8a6b1f3656:00000677:01fa0097:2026-04-27"
+        }
+      },
+      "state_after": {
+        "runner": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010029"
+        },
+        "hunter": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010043"
+        }
+      },
+      "state_snapshot": {
+        "runner": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010029"
+        },
+        "hunter": {
+          "kind": "NODE",
+          "stationGroupId": "SG_N02G_010043"
         }
       }
     },
@@ -4577,7 +4410,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009984"
+          "stationGroupId": "SG_N02G_010043"
         }
       },
       "state_after": {
@@ -4587,7 +4420,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009984"
+          "stationGroupId": "SG_N02G_010043"
         }
       },
       "state_snapshot": {
@@ -4597,7 +4430,7 @@
         },
         "hunter": {
           "kind": "NODE",
-          "stationGroupId": "SG_N02G_009984"
+          "stationGroupId": "SG_N02G_010043"
         }
       }
     }
@@ -4611,8 +4444,8 @@
       "source": "collected_fare_rules",
       "currency": "JPY",
       "runner_total_yen": 30090,
-      "hunter_total_yen": 38460,
-      "combined_total_yen": 68550,
+      "hunter_total_yen": 39050,
+      "combined_total_yen": 69140,
       "fare_known": true,
       "missing_reasons": []
     },
@@ -4624,9 +4457,9 @@
     "runnerStrategy": "runner_rail_three_leg",
     "hunterStrategy": "hunter_belief_replan",
     "runnerTarget": "balanced",
-    "hunterBeliefTarget": "balanced",
+    "hunterBeliefTarget": "southwest",
     "runnerModeProfile": "surface",
-    "hunterModeProfile": "rail_walk",
+    "hunterModeProfile": "rail_air",
     "hunterKnowledge": "belief",
     "phantomPlans": [
       {
@@ -4654,8 +4487,8 @@
           "label": "belief replan waits at 東京 for first 07:00 observation",
           "resolvedStepCount": 0
         },
-        "targetProfileId": "balanced",
-        "modeProfileId": "rail_walk"
+        "targetProfileId": "southwest",
+        "modeProfileId": "rail_air"
       },
       {
         "phase": "replan",
@@ -4664,14 +4497,6 @@
           {
             "type": "BOARD_TRAIN",
             "trip_id": "shinkansen:7111A:756c59182f"
-          },
-          {
-            "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_007054"
-          },
-          {
-            "type": "BOARD_TRAIN",
-            "trip_id": "shinkansen:7A:8fe232f286"
           },
           {
             "type": "RIDE_TO_STATION",
@@ -4685,18 +4510,33 @@
             "walking_speed_mps": 1.3888888888888888
           },
           {
-            "type": "WALK_TO_STATION",
-            "station_id": "SG_N02G_009011",
-            "distance_meters": 1121,
-            "walk_time_sec": 808,
-            "walking_speed_mps": 1.3888888888888888
+            "type": "TAKE_FLIGHT",
+            "flight_id": "flight.jp.dom.31078bd09afcd540",
+            "flight_number": "SKY563",
+            "origin_airport": "FUK",
+            "destination_airport": "SHI",
+            "purchase_hhmm": "11:21",
+            "departure_hhmm": "12:45",
+            "arrival_hhmm": "14:40",
+            "fare": {
+              "model_version": "v5_flight_distance_time_formula_v1",
+              "source": "flight_distance_departure_time_formula",
+              "currency": "JPY",
+              "distance_km": 1101.3,
+              "base_yen": 6500,
+              "distance_yen": 19900,
+              "peak_surcharge_yen": 0,
+              "total_yen": 26400,
+              "fare_known": true
+            }
           },
           {
-            "type": "WALK_TO_STATION",
-            "station_id": "SG_N02G_009026",
-            "distance_meters": 1892,
-            "walk_time_sec": 1363,
-            "walking_speed_mps": 1.3888888888888888
+            "type": "BOARD_TRAIN",
+            "trip_id": "yuirail:2026-04-27:weekday:downLine:1403"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_010137"
           }
         ],
         "planned": true,
@@ -4711,115 +4551,12 @@
           "label": "on のぞみ111 07:00",
           "resolvedStepCount": 1,
           "tripId": "shinkansen:7111A:756c59182f",
-          "predictedAlightStationId": "SG_N02G_007054",
-          "predictedAlightLabel": "新神戸",
-          "predictedAlightTime": "08:44"
+          "predictedAlightStationId": "SG_N02G_009033",
+          "predictedAlightLabel": "博多",
+          "predictedAlightTime": "11:03"
         },
-        "targetProfileId": "balanced",
-        "modeProfileId": "rail_walk"
-      },
-      {
-        "phase": "replan",
-        "startStationId": "SG_N02G_003766",
-        "steps": [
-          {
-            "type": "BOARD_TRAIN",
-            "trip_id": "shinkansen:7111A:756c59182f"
-          },
-          {
-            "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_008029"
-          },
-          {
-            "type": "BOARD_TRAIN",
-            "trip_id": "shinkansen:7128A:ded4a56920"
-          },
-          {
-            "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_004095"
-          }
-        ],
-        "planned": true,
-        "sanitize": {
-          "ok": true,
-          "removedErrors": []
-        },
-        "observation": {
-          "minute": 480,
-          "time": "08:00",
-          "stateKind": "TRAIN",
-          "label": "on のぞみ111 08:00",
-          "resolvedStepCount": 1,
-          "tripId": "shinkansen:7111A:756c59182f",
-          "predictedAlightStationId": "SG_N02G_008029",
-          "predictedAlightLabel": "広島",
-          "predictedAlightTime": "09:58"
-        },
-        "targetProfileId": "balanced",
-        "modeProfileId": "rail_walk"
-      },
-      {
-        "phase": "replan",
-        "startStationId": "SG_N02G_003766",
-        "steps": [
-          {
-            "type": "BOARD_TRAIN",
-            "trip_id": "shinkansen:7111A:756c59182f"
-          },
-          {
-            "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_008684"
-          },
-          {
-            "type": "BOARD_TRAIN",
-            "trip_id": "shinkansen:22A:7ce70b9374"
-          },
-          {
-            "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_006911"
-          },
-          {
-            "type": "BOARD_TRAIN",
-            "trip_id": "shinkansen:9400A:732e1f0209"
-          },
-          {
-            "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_005451"
-          },
-          {
-            "type": "BOARD_TRAIN",
-            "trip_id": "jr_central_navitime:中央線:00000109:805f0118:2026-04-27"
-          },
-          {
-            "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_005280"
-          },
-          {
-            "type": "WALK_TO_STATION",
-            "station_id": "SG_N02G_005284",
-            "distance_meters": 352,
-            "walk_time_sec": 254,
-            "walking_speed_mps": 1.3888888888888888
-          }
-        ],
-        "planned": true,
-        "sanitize": {
-          "ok": true,
-          "removedErrors": []
-        },
-        "observation": {
-          "minute": 540,
-          "time": "09:00",
-          "stateKind": "TRAIN",
-          "label": "on のぞみ111 09:00",
-          "resolvedStepCount": 1,
-          "tripId": "shinkansen:7111A:756c59182f",
-          "predictedAlightStationId": "SG_N02G_008684",
-          "predictedAlightLabel": "小倉",
-          "predictedAlightTime": "10:46"
-        },
-        "targetProfileId": "balanced",
-        "modeProfileId": "rail_walk"
+        "targetProfileId": "southwest",
+        "modeProfileId": "rail_air"
       },
       {
         "phase": "replan",
@@ -4834,27 +4571,152 @@
             "station_id": "SG_N02G_009033"
           },
           {
-            "type": "BOARD_TRAIN",
-            "trip_id": "shinkansen:24A:d95e6ebeb1"
-          },
-          {
-            "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_005451"
-          },
-          {
             "type": "WALK_TO_STATION",
-            "station_id": "SG_N02G_005441",
-            "distance_meters": 651,
-            "walk_time_sec": 469,
+            "station_id": "SG_N02G_009021",
+            "distance_meters": 747,
+            "walk_time_sec": 538,
             "walking_speed_mps": 1.3888888888888888
           },
           {
+            "type": "TAKE_FLIGHT",
+            "flight_id": "flight.jp.dom.022f16e44cb44c02",
+            "flight_number": "MM293",
+            "origin_airport": "FUK",
+            "destination_airport": "OKA",
+            "purchase_hhmm": "11:12",
+            "departure_hhmm": "12:20",
+            "arrival_hhmm": "14:35",
+            "fare": {
+              "model_version": "v5_flight_distance_time_formula_v1",
+              "source": "flight_distance_departure_time_formula",
+              "currency": "JPY",
+              "distance_km": 865.5,
+              "base_yen": 6500,
+              "distance_yen": 15600,
+              "peak_surcharge_yen": 0,
+              "total_yen": 22100,
+              "fare_known": true
+            }
+          }
+        ],
+        "planned": true,
+        "sanitize": {
+          "ok": true,
+          "removedErrors": []
+        },
+        "observation": {
+          "minute": 480,
+          "time": "08:00",
+          "stateKind": "TRAIN",
+          "label": "on のぞみ111 08:00",
+          "resolvedStepCount": 1,
+          "tripId": "shinkansen:7111A:756c59182f",
+          "predictedAlightStationId": "SG_N02G_009033",
+          "predictedAlightLabel": "博多",
+          "predictedAlightTime": "11:03"
+        },
+        "targetProfileId": "southwest",
+        "modeProfileId": "rail_air"
+      },
+      {
+        "phase": "replan",
+        "startStationId": "SG_N02G_003766",
+        "steps": [
+          {
             "type": "BOARD_TRAIN",
-            "trip_id": "nagoyasubway:S:0:1452:0080"
+            "trip_id": "shinkansen:7111A:756c59182f"
           },
           {
             "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_005438"
+            "station_id": "SG_N02G_009033"
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_009021",
+            "distance_meters": 747,
+            "walk_time_sec": 538,
+            "walking_speed_mps": 1.3888888888888888
+          },
+          {
+            "type": "TAKE_FLIGHT",
+            "flight_id": "flight.jp.dom.022f16e44cb44c02",
+            "flight_number": "MM293",
+            "origin_airport": "FUK",
+            "destination_airport": "OKA",
+            "purchase_hhmm": "11:12",
+            "departure_hhmm": "12:20",
+            "arrival_hhmm": "14:35",
+            "fare": {
+              "model_version": "v5_flight_distance_time_formula_v1",
+              "source": "flight_distance_departure_time_formula",
+              "currency": "JPY",
+              "distance_km": 865.5,
+              "base_yen": 6500,
+              "distance_yen": 15600,
+              "peak_surcharge_yen": 0,
+              "total_yen": 22100,
+              "fare_known": true
+            }
+          }
+        ],
+        "planned": true,
+        "sanitize": {
+          "ok": true,
+          "removedErrors": []
+        },
+        "observation": {
+          "minute": 540,
+          "time": "09:00",
+          "stateKind": "TRAIN",
+          "label": "on のぞみ111 09:00",
+          "resolvedStepCount": 1,
+          "tripId": "shinkansen:7111A:756c59182f",
+          "predictedAlightStationId": "SG_N02G_009033",
+          "predictedAlightLabel": "博多",
+          "predictedAlightTime": "11:03"
+        },
+        "targetProfileId": "southwest",
+        "modeProfileId": "rail_air"
+      },
+      {
+        "phase": "replan",
+        "startStationId": "SG_N02G_003766",
+        "steps": [
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7111A:756c59182f"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_009033"
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_009021",
+            "distance_meters": 747,
+            "walk_time_sec": 538,
+            "walking_speed_mps": 1.3888888888888888
+          },
+          {
+            "type": "TAKE_FLIGHT",
+            "flight_id": "flight.jp.dom.022f16e44cb44c02",
+            "flight_number": "MM293",
+            "origin_airport": "FUK",
+            "destination_airport": "OKA",
+            "purchase_hhmm": "11:12",
+            "departure_hhmm": "12:20",
+            "arrival_hhmm": "14:35",
+            "fare": {
+              "model_version": "v5_flight_distance_time_formula_v1",
+              "source": "flight_distance_departure_time_formula",
+              "currency": "JPY",
+              "distance_km": 865.5,
+              "base_yen": 6500,
+              "distance_yen": 15600,
+              "peak_surcharge_yen": 0,
+              "total_yen": 22100,
+              "fare_known": true
+            }
           }
         ],
         "planned": true,
@@ -4873,8 +4735,8 @@
           "predictedAlightLabel": "博多",
           "predictedAlightTime": "11:03"
         },
-        "targetProfileId": "balanced",
-        "modeProfileId": "rail_walk"
+        "targetProfileId": "southwest",
+        "modeProfileId": "rail_air"
       },
       {
         "phase": "replan",
@@ -4898,8 +4760,8 @@
           "resolvedStepCount": 1,
           "tripId": "shinkansen:7111A:756c59182f"
         },
-        "targetProfileId": "balanced",
-        "modeProfileId": "rail_walk"
+        "targetProfileId": "southwest",
+        "modeProfileId": "rail_air"
       },
       {
         "phase": "replan",
@@ -4923,24 +4785,25 @@
           },
           {
             "type": "BOARD_TRAIN",
-            "trip_id": "shinkansen:7794A:7469ffa05c"
+            "trip_id": "jr_kyushu_navitime:指宿枕崎線:00000009:8009000a:2026-04-27"
           },
           {
             "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_007310"
+            "station_id": "SG_N02G_010096"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "jr_kyushu_navitime:指宿枕崎線:00000009:00090008:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_010078"
           },
           {
             "type": "WALK_TO_STATION",
-            "station_id": "SG_N02G_007369",
-            "distance_meters": 1008,
-            "walk_time_sec": 726,
-            "walking_speed_mps": 1.3888888888888888
-          },
-          {
-            "type": "WALK_TO_STATION",
-            "station_id": "SG_N02G_007334",
-            "distance_meters": 599,
-            "walk_time_sec": 432,
+            "station_id": "SG_N02G_010075",
+            "distance_meters": 835,
+            "walk_time_sec": 602,
             "walking_speed_mps": 1.3888888888888888
           }
         ],
@@ -4960,8 +4823,8 @@
           "predictedAlightLabel": "鹿児島中央",
           "predictedAlightTime": "12:53"
         },
-        "targetProfileId": "balanced",
-        "modeProfileId": "rail_walk"
+        "targetProfileId": "southwest",
+        "modeProfileId": "rail_air"
       },
       {
         "phase": "replan",
@@ -4973,11 +4836,32 @@
           },
           {
             "type": "BOARD_TRAIN",
-            "trip_id": "shinkansen:756A:651201a84f"
+            "trip_id": "shinkansen:760A:a0c472b28b"
           },
           {
             "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_006911"
+            "station_id": "SG_N02G_009033"
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_009036",
+            "distance_meters": 1962,
+            "walk_time_sec": 1413,
+            "walking_speed_mps": 1.3888888888888888
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_009011",
+            "distance_meters": 1974,
+            "walk_time_sec": 1422,
+            "walking_speed_mps": 1.3888888888888888
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_009026",
+            "distance_meters": 1892,
+            "walk_time_sec": 1363,
+            "walking_speed_mps": 1.3888888888888888
           }
         ],
         "planned": true,
@@ -4993,8 +4877,8 @@
           "resolvedStepCount": 4,
           "stationGroupId": "SG_N02G_009984"
         },
-        "targetProfileId": "balanced",
-        "modeProfileId": "rail_walk"
+        "targetProfileId": "southwest",
+        "modeProfileId": "rail_air"
       },
       {
         "phase": "replan",
@@ -5006,7 +4890,102 @@
           },
           {
             "type": "BOARD_TRAIN",
-            "trip_id": "jr_kyushu_navitime:鹿児島線:00000012:800b0049:2026-04-27"
+            "trip_id": "jr_kyushu_navitime:鹿児島線:00000012:800b002f:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_010047"
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_010037",
+            "distance_meters": 1889,
+            "walk_time_sec": 1361,
+            "walking_speed_mps": 1.3888888888888888
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "navitime_non_jr:8a6b1f3656:00000677:81fa0218:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_010065"
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_010075",
+            "distance_meters": 1758,
+            "walk_time_sec": 1266,
+            "walking_speed_mps": 1.3888888888888888
+          }
+        ],
+        "planned": true,
+        "sanitize": {
+          "ok": true,
+          "removedErrors": []
+        },
+        "observation": {
+          "minute": 840,
+          "time": "14:00",
+          "stateKind": "NODE",
+          "label": "at 薩摩松元 13:59",
+          "resolvedStepCount": 6,
+          "stationGroupId": "SG_N02G_010029"
+        },
+        "targetProfileId": "southwest",
+        "modeProfileId": "rail_air"
+      },
+      {
+        "phase": "replan",
+        "startStationId": "SG_N02G_010029",
+        "steps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "15:00"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "jr_kyushu_navitime:鹿児島線:00000012:800b000d:2026-04-27"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_010047"
+          },
+          {
+            "type": "WALK_TO_STATION",
+            "station_id": "SG_N02G_010043",
+            "distance_meters": 648,
+            "walk_time_sec": 467,
+            "walking_speed_mps": 1.3888888888888888
+          }
+        ],
+        "planned": true,
+        "sanitize": {
+          "ok": true,
+          "removedErrors": []
+        },
+        "observation": {
+          "minute": 900,
+          "time": "15:00",
+          "stateKind": "NODE",
+          "label": "at 薩摩松元 13:59",
+          "resolvedStepCount": 6,
+          "stationGroupId": "SG_N02G_010029"
+        },
+        "targetProfileId": "southwest",
+        "modeProfileId": "rail_air"
+      },
+      {
+        "phase": "replan",
+        "startStationId": "SG_N02G_010029",
+        "steps": [
+          {
+            "type": "WAIT_UNTIL",
+            "until_hhmm": "16:00"
+          },
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "jr_kyushu_navitime:鹿児島線:00000012:800b0048:2026-04-27"
           },
           {
             "type": "RIDE_TO_STATION",
@@ -5034,102 +5013,6 @@
           "removedErrors": []
         },
         "observation": {
-          "minute": 840,
-          "time": "14:00",
-          "stateKind": "NODE",
-          "label": "at 薩摩松元 13:59",
-          "resolvedStepCount": 6,
-          "stationGroupId": "SG_N02G_010029"
-        },
-        "targetProfileId": "balanced",
-        "modeProfileId": "rail_walk"
-      },
-      {
-        "phase": "replan",
-        "startStationId": "SG_N02G_010029",
-        "steps": [
-          {
-            "type": "WAIT_UNTIL",
-            "until_hhmm": "15:00"
-          },
-          {
-            "type": "BOARD_TRAIN",
-            "trip_id": "jr_kyushu_navitime:鹿児島線:00000012:800b000d:2026-04-27"
-          },
-          {
-            "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_010047"
-          },
-          {
-            "type": "BOARD_TRAIN",
-            "trip_id": "shinkansen:768A:3ced98eaa2"
-          },
-          {
-            "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_009331"
-          },
-          {
-            "type": "WALK_TO_STATION",
-            "station_id": "SG_N02G_009338",
-            "distance_meters": 1339,
-            "walk_time_sec": 965,
-            "walking_speed_mps": 1.3888888888888888
-          }
-        ],
-        "planned": true,
-        "sanitize": {
-          "ok": true,
-          "removedErrors": []
-        },
-        "observation": {
-          "minute": 900,
-          "time": "15:00",
-          "stateKind": "NODE",
-          "label": "at 薩摩松元 13:59",
-          "resolvedStepCount": 6,
-          "stationGroupId": "SG_N02G_010029"
-        },
-        "targetProfileId": "balanced",
-        "modeProfileId": "rail_walk"
-      },
-      {
-        "phase": "replan",
-        "startStationId": "SG_N02G_010029",
-        "steps": [
-          {
-            "type": "WAIT_UNTIL",
-            "until_hhmm": "16:00"
-          },
-          {
-            "type": "BOARD_TRAIN",
-            "trip_id": "jr_kyushu_navitime:日豊線:00000012:800b004a:2026-04-27"
-          },
-          {
-            "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_010047"
-          },
-          {
-            "type": "WALK_TO_STATION",
-            "station_id": "SG_N02G_010059",
-            "distance_meters": 959,
-            "walk_time_sec": 691,
-            "walking_speed_mps": 1.3888888888888888
-          },
-          {
-            "type": "BOARD_TRAIN",
-            "trip_id": "navitime_non_jr:8a6b1f3656:00000677:81fa021c:2026-04-27"
-          },
-          {
-            "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_010065"
-          }
-        ],
-        "planned": true,
-        "sanitize": {
-          "ok": true,
-          "removedErrors": []
-        },
-        "observation": {
           "minute": 960,
           "time": "16:00",
           "stateKind": "NODE",
@@ -5137,8 +5020,8 @@
           "resolvedStepCount": 6,
           "stationGroupId": "SG_N02G_010029"
         },
-        "targetProfileId": "balanced",
-        "modeProfileId": "rail_walk"
+        "targetProfileId": "southwest",
+        "modeProfileId": "rail_air"
       },
       {
         "phase": "replan",
@@ -5150,26 +5033,19 @@
           },
           {
             "type": "BOARD_TRAIN",
-            "trip_id": "jr_kyushu_navitime:日豊線:00000012:800b004a:2026-04-27"
+            "trip_id": "jr_kyushu_navitime:日豊線:00000012:000b0047:2026-04-27"
           },
           {
             "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_010047"
-          },
-          {
-            "type": "WALK_TO_STATION",
-            "station_id": "SG_N02G_010053",
-            "distance_meters": 382,
-            "walk_time_sec": 276,
-            "walking_speed_mps": 1.3888888888888888
+            "station_id": "SG_N02G_009997"
           },
           {
             "type": "BOARD_TRAIN",
-            "trip_id": "navitime_non_jr:8a6b1f3656:00000677:81fa021c:2026-04-27"
+            "trip_id": "jr_kyushu_navitime:日豊線:00000012:800b004b:2026-04-27"
           },
           {
             "type": "RIDE_TO_STATION",
-            "station_id": "SG_N02G_010065"
+            "station_id": "SG_N02G_010019"
           }
         ],
         "planned": true,
@@ -5185,8 +5061,8 @@
           "resolvedStepCount": 6,
           "stationGroupId": "SG_N02G_010029"
         },
-        "targetProfileId": "balanced",
-        "modeProfileId": "rail_walk"
+        "targetProfileId": "southwest",
+        "modeProfileId": "rail_air"
       }
     ]
   }

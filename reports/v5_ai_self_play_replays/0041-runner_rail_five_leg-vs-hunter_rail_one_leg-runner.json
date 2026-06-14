@@ -7,7 +7,7 @@
   "game_rules_version": "v5.rules.from-v4.2026-05-13",
   "source": {
     "kind": "v5_ai_self_play_harness",
-    "page_url": "http://127.0.0.1:8765/v5.html",
+    "page_url": "http://127.0.0.1:8765/docs/v5.html",
     "room_id": null,
     "seat": null
   },
@@ -3505,11 +3505,78 @@
   "self_play": {
     "runnerStrategy": "runner_rail_five_leg",
     "hunterStrategy": "hunter_rail_one_leg",
-    "runnerTarget": "south",
-    "hunterBeliefTarget": "north",
-    "runnerModeProfile": "all_modes",
-    "hunterModeProfile": "surface",
-    "hunterKnowledge": "omniscient",
-    "phantomPlans": []
+    "runnerTarget": "east",
+    "hunterBeliefTarget": "southwest",
+    "runnerModeProfile": "rail_air",
+    "hunterModeProfile": "rail_air",
+    "hunterKnowledge": "belief",
+    "phantomPlans": [
+      {
+        "phase": "initial",
+        "startStationId": "SG_N02G_003766",
+        "steps": [
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7111A:756c59182f"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_007310"
+          },
+          {
+            "type": "TAKE_SHIP",
+            "sailing_id": "mlit_map_193_085_野母商船_福江_青方_博多_長崎_伊王島_高島_003_back_003",
+            "route_id": "mlit_map_193_085_野母商船_福江_青方_博多_長崎_伊王島_高島_003_back",
+            "operator": "野母商船",
+            "service_no": "3",
+            "vessel": "鷹巢/俊寛",
+            "origin_port": "高島港",
+            "destination_port": "伊王島",
+            "departure_hhmm": "09:30",
+            "arrival_hhmm": "09:47",
+            "origin_access_kind": "station",
+            "origin_access_station_id": "SG_N02G_007310",
+            "origin_access_bus_stop_id": null,
+            "origin_access_distance_meters": 269.88129086139014,
+            "origin_access_walk_time_sec": 195,
+            "destination_access_kind": "bus_stop",
+            "destination_access_station_id": null,
+            "destination_access_bus_stop_id": "bus:stop:official:official_port_connector_bus_v5_port_connector_batch3_official_bus_sour_fdcd0cd986:1b41d12f6246",
+            "destination_access_airport_iata": null,
+            "destination_access_distance_meters": 0,
+            "destination_access_walk_time_sec": 0,
+            "fare": {
+              "model_version": "v5_ship_official_adult_passenger_fare_v1",
+              "source": "official_adult_passenger_fare",
+              "currency": "JPY",
+              "total_yen": 430,
+              "fare_known": true,
+              "components": [
+                {
+                  "type": "ship",
+                  "route_id": "mlit_map_193_085_野母商船_福江_青方_博多_長崎_伊王島_高島_003_back",
+                  "sailing_id": "mlit_map_193_085_野母商船_福江_青方_博多_長崎_伊王島_高島_003_back_003",
+                  "total_yen": 430
+                }
+              ]
+            }
+          }
+        ],
+        "planned": true,
+        "sanitize": {
+          "ok": true,
+          "removedErrors": []
+        },
+        "observation": {
+          "minute": 390,
+          "time": "06:30",
+          "stateKind": "prior",
+          "label": "public prior from 東京 at 06:30",
+          "resolvedStepCount": 0
+        },
+        "targetProfileId": "southwest",
+        "modeProfileId": "all_modes"
+      }
+    ]
   }
 }

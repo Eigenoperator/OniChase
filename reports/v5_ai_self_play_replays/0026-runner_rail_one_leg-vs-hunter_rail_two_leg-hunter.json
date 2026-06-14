@@ -7,7 +7,7 @@
   "game_rules_version": "v5.rules.from-v4.2026-05-13",
   "source": {
     "kind": "v5_ai_self_play_harness",
-    "page_url": "http://127.0.0.1:8765/v5.html",
+    "page_url": "http://127.0.0.1:8765/docs/v5.html",
     "room_id": null,
     "seat": null
   },
@@ -312,8 +312,8 @@
       "seat": "hunter",
       "start_station_id": "SG_N02G_003766",
       "start_label": "東京",
-      "final_station_id": "SG_N02G_009033",
-      "final_label": "博多",
+      "final_station_id": "SG_N02G_009518",
+      "final_label": "武雄温泉",
       "final_hhmm": "11:39",
       "steps": [
         {
@@ -327,6 +327,14 @@
         {
           "type": "RIDE_TO_STATION",
           "station_id": "SG_N02G_009033"
+        },
+        {
+          "type": "BOARD_TRAIN",
+          "trip_id": "jr_kyushu_navitime:長崎線:00000020:80120052:2026-04-27"
+        },
+        {
+          "type": "RIDE_TO_STATION",
+          "station_id": "SG_N02G_009518"
         }
       ],
       "legs": [
@@ -454,19 +462,102 @@
               }
             ]
           }
+        },
+        {
+          "leg_index": 2,
+          "board_step_index": 4,
+          "ride_step_index": 5,
+          "trip_id": "jr_kyushu_navitime:長崎線:00000020:80120052:2026-04-27",
+          "trip_label": "リレーかもめ25",
+          "from_station_id": "SG_N02G_009033",
+          "from_physical_station_id": "PS_267BB9738AE951",
+          "from_label": "博多",
+          "to_station_id": "SG_N02G_009518",
+          "to_physical_station_id": "PS_3E45B9377D02CF",
+          "to_label": "武雄温泉",
+          "board_hhmm": "11:53",
+          "alight_hhmm": "12:53",
+          "fare": {
+            "model_version": "v4_collected_fare_rules_2026_05",
+            "source": "collected_fare_rules",
+            "currency": "JPY",
+            "distance_km": 80.745,
+            "base_yen": 1930,
+            "base_source": "collected_ordinary_fare_table",
+            "base_rule_key": "jr_kyushu",
+            "premium_type": "limited_express",
+            "premium_yen": 1730,
+            "premium_source": "collected_jr_limited_express_reserved_surcharge_table",
+            "premium_rule_key": "b_kyushu",
+            "total_yen": 3660,
+            "fare_known": true,
+            "missing_reasons": [],
+            "base_components": [
+              {
+                "yen": 1930,
+                "row": {
+                  "fromKm": 81,
+                  "toKm": 90,
+                  "yen": 1930
+                },
+                "ruleKey": "jr_kyushu",
+                "source": "collected_ordinary_fare_table",
+                "modelVersion": "v4_collected_fare_rules_2026_05",
+                "fromSegmentIndex": 0,
+                "toSegmentIndex": 4
+              }
+            ],
+            "segments": [
+              {
+                "route_id": "V4_ROUTE_42CFB70DA4371C",
+                "from_station_id": "SG_N02G_009033",
+                "to_station_id": "SG_N02G_009327",
+                "distance_km": 28.329,
+                "geometry_source": "route_trace"
+              },
+              {
+                "route_id": "V4_ROUTE_AE2784F6180E29",
+                "from_station_id": "SG_N02G_009327",
+                "to_station_id": "SG_N02G_009331",
+                "distance_km": 2.895,
+                "geometry_source": "route_trace"
+              },
+              {
+                "route_id": "V4_ROUTE_AE2784F6180E29",
+                "from_station_id": "SG_N02G_009331",
+                "to_station_id": "SG_N02G_009446",
+                "distance_km": 21.786,
+                "geometry_source": "route_trace"
+              },
+              {
+                "route_id": "V4_ROUTE_AE2784F6180E29",
+                "from_station_id": "SG_N02G_009446",
+                "to_station_id": "SG_N02G_009518",
+                "distance_km": 14.367,
+                "geometry_source": "reviewed_trip_path"
+              },
+              {
+                "route_id": "V4_ROUTE_C82C0E534E7DA8",
+                "from_station_id": "SG_N02G_009446",
+                "to_station_id": "SG_N02G_009518",
+                "distance_km": 13.368,
+                "geometry_source": "reviewed_trip_path"
+              }
+            ]
+          }
         }
       ],
       "fare_summary": {
         "model_version": "v4_collected_fare_rules_2026_05",
         "source": "collected_fare_rules",
         "currency": "JPY",
-        "leg_count": 1,
-        "known_leg_count": 1,
+        "leg_count": 2,
+        "known_leg_count": 2,
         "unknown_leg_count": 0,
-        "distance_km": 1078.737,
-        "base_yen": 13200,
-        "premium_yen": 8130,
-        "total_yen": 21330,
+        "distance_km": 1159.482,
+        "base_yen": 15130,
+        "premium_yen": 9860,
+        "total_yen": 24990,
         "fare_known": true,
         "missing_reasons": []
       },
@@ -602,6 +693,95 @@
             ]
           },
           "alight_physical_station_id": "PS_24C0BA42F64890"
+        },
+        {
+          "step_index": 4,
+          "type": "BOARD_TRAIN",
+          "trip_id": "jr_kyushu_navitime:長崎線:00000020:80120052:2026-04-27",
+          "transfer": {
+            "transferMinutes": 5,
+            "distanceMeters": 74,
+            "reason": "same_station_group_shinkansen_minimum",
+            "fromPhysicalStationId": "PS_24C0BA42F64890",
+            "boardPhysicalStationId": "PS_267BB9738AE951",
+            "walkTimeSec": 54,
+            "minimumTransferMinutes": 5
+          },
+          "board_physical_station_id": "PS_267BB9738AE951"
+        },
+        {
+          "step_index": 5,
+          "type": "RIDE_TO_STATION",
+          "station_id": "SG_N02G_009518",
+          "fare": {
+            "model_version": "v4_collected_fare_rules_2026_05",
+            "source": "collected_fare_rules",
+            "currency": "JPY",
+            "distance_km": 80.745,
+            "base_yen": 1930,
+            "base_source": "collected_ordinary_fare_table",
+            "base_rule_key": "jr_kyushu",
+            "premium_type": "limited_express",
+            "premium_yen": 1730,
+            "premium_source": "collected_jr_limited_express_reserved_surcharge_table",
+            "premium_rule_key": "b_kyushu",
+            "total_yen": 3660,
+            "fare_known": true,
+            "missing_reasons": [],
+            "base_components": [
+              {
+                "yen": 1930,
+                "row": {
+                  "fromKm": 81,
+                  "toKm": 90,
+                  "yen": 1930
+                },
+                "ruleKey": "jr_kyushu",
+                "source": "collected_ordinary_fare_table",
+                "modelVersion": "v4_collected_fare_rules_2026_05",
+                "fromSegmentIndex": 0,
+                "toSegmentIndex": 4
+              }
+            ],
+            "segments": [
+              {
+                "route_id": "V4_ROUTE_42CFB70DA4371C",
+                "from_station_id": "SG_N02G_009033",
+                "to_station_id": "SG_N02G_009327",
+                "distance_km": 28.329,
+                "geometry_source": "route_trace"
+              },
+              {
+                "route_id": "V4_ROUTE_AE2784F6180E29",
+                "from_station_id": "SG_N02G_009327",
+                "to_station_id": "SG_N02G_009331",
+                "distance_km": 2.895,
+                "geometry_source": "route_trace"
+              },
+              {
+                "route_id": "V4_ROUTE_AE2784F6180E29",
+                "from_station_id": "SG_N02G_009331",
+                "to_station_id": "SG_N02G_009446",
+                "distance_km": 21.786,
+                "geometry_source": "route_trace"
+              },
+              {
+                "route_id": "V4_ROUTE_AE2784F6180E29",
+                "from_station_id": "SG_N02G_009446",
+                "to_station_id": "SG_N02G_009518",
+                "distance_km": 14.367,
+                "geometry_source": "reviewed_trip_path"
+              },
+              {
+                "route_id": "V4_ROUTE_C82C0E534E7DA8",
+                "from_station_id": "SG_N02G_009446",
+                "to_station_id": "SG_N02G_009518",
+                "distance_km": 13.368,
+                "geometry_source": "reviewed_trip_path"
+              }
+            ]
+          },
+          "alight_physical_station_id": "PS_3E45B9377D02CF"
         }
       ]
     }
@@ -789,6 +969,14 @@
         {
           "type": "RIDE_TO_STATION",
           "station_id": "SG_N02G_009033"
+        },
+        {
+          "type": "BOARD_TRAIN",
+          "trip_id": "jr_kyushu_navitime:長崎線:00000020:80120052:2026-04-27"
+        },
+        {
+          "type": "RIDE_TO_STATION",
+          "station_id": "SG_N02G_009518"
         }
       ],
       "legs": [
@@ -916,19 +1104,102 @@
               }
             ]
           }
+        },
+        {
+          "leg_index": 2,
+          "board_step_index": 4,
+          "ride_step_index": 5,
+          "trip_id": "jr_kyushu_navitime:長崎線:00000020:80120052:2026-04-27",
+          "trip_label": "リレーかもめ25",
+          "from_station_id": "SG_N02G_009033",
+          "from_physical_station_id": "PS_267BB9738AE951",
+          "from_label": "博多",
+          "to_station_id": "SG_N02G_009518",
+          "to_physical_station_id": "PS_3E45B9377D02CF",
+          "to_label": "武雄温泉",
+          "board_hhmm": "11:53",
+          "alight_hhmm": "12:53",
+          "fare": {
+            "model_version": "v4_collected_fare_rules_2026_05",
+            "source": "collected_fare_rules",
+            "currency": "JPY",
+            "distance_km": 80.745,
+            "base_yen": 1930,
+            "base_source": "collected_ordinary_fare_table",
+            "base_rule_key": "jr_kyushu",
+            "premium_type": "limited_express",
+            "premium_yen": 1730,
+            "premium_source": "collected_jr_limited_express_reserved_surcharge_table",
+            "premium_rule_key": "b_kyushu",
+            "total_yen": 3660,
+            "fare_known": true,
+            "missing_reasons": [],
+            "base_components": [
+              {
+                "yen": 1930,
+                "row": {
+                  "fromKm": 81,
+                  "toKm": 90,
+                  "yen": 1930
+                },
+                "ruleKey": "jr_kyushu",
+                "source": "collected_ordinary_fare_table",
+                "modelVersion": "v4_collected_fare_rules_2026_05",
+                "fromSegmentIndex": 0,
+                "toSegmentIndex": 4
+              }
+            ],
+            "segments": [
+              {
+                "route_id": "V4_ROUTE_42CFB70DA4371C",
+                "from_station_id": "SG_N02G_009033",
+                "to_station_id": "SG_N02G_009327",
+                "distance_km": 28.329,
+                "geometry_source": "route_trace"
+              },
+              {
+                "route_id": "V4_ROUTE_AE2784F6180E29",
+                "from_station_id": "SG_N02G_009327",
+                "to_station_id": "SG_N02G_009331",
+                "distance_km": 2.895,
+                "geometry_source": "route_trace"
+              },
+              {
+                "route_id": "V4_ROUTE_AE2784F6180E29",
+                "from_station_id": "SG_N02G_009331",
+                "to_station_id": "SG_N02G_009446",
+                "distance_km": 21.786,
+                "geometry_source": "route_trace"
+              },
+              {
+                "route_id": "V4_ROUTE_AE2784F6180E29",
+                "from_station_id": "SG_N02G_009446",
+                "to_station_id": "SG_N02G_009518",
+                "distance_km": 14.367,
+                "geometry_source": "reviewed_trip_path"
+              },
+              {
+                "route_id": "V4_ROUTE_C82C0E534E7DA8",
+                "from_station_id": "SG_N02G_009446",
+                "to_station_id": "SG_N02G_009518",
+                "distance_km": 13.368,
+                "geometry_source": "reviewed_trip_path"
+              }
+            ]
+          }
         }
       ],
       "fare_summary": {
         "model_version": "v4_collected_fare_rules_2026_05",
         "source": "collected_fare_rules",
         "currency": "JPY",
-        "leg_count": 1,
-        "known_leg_count": 1,
+        "leg_count": 2,
+        "known_leg_count": 2,
         "unknown_leg_count": 0,
-        "distance_km": 1078.737,
-        "base_yen": 13200,
-        "premium_yen": 8130,
-        "total_yen": 21330,
+        "distance_km": 1159.482,
+        "base_yen": 15130,
+        "premium_yen": 9860,
+        "total_yen": 24990,
         "fare_known": true,
         "missing_reasons": []
       }
@@ -1643,8 +1914,8 @@
       "source": "collected_fare_rules",
       "currency": "JPY",
       "runner_total_yen": 21330,
-      "hunter_total_yen": 21330,
-      "combined_total_yen": 42660,
+      "hunter_total_yen": 24990,
+      "combined_total_yen": 46320,
       "fare_known": true,
       "missing_reasons": []
     },
@@ -1655,11 +1926,78 @@
   "self_play": {
     "runnerStrategy": "runner_rail_one_leg",
     "hunterStrategy": "hunter_rail_two_leg",
-    "runnerTarget": "balanced",
-    "hunterBeliefTarget": "east",
-    "runnerModeProfile": "all_modes",
+    "runnerTarget": "north",
+    "hunterBeliefTarget": "southwest",
+    "runnerModeProfile": "surface",
     "hunterModeProfile": "all_modes",
-    "hunterKnowledge": "omniscient",
-    "phantomPlans": []
+    "hunterKnowledge": "belief",
+    "phantomPlans": [
+      {
+        "phase": "initial",
+        "startStationId": "SG_N02G_003766",
+        "steps": [
+          {
+            "type": "BOARD_TRAIN",
+            "trip_id": "shinkansen:7111A:756c59182f"
+          },
+          {
+            "type": "RIDE_TO_STATION",
+            "station_id": "SG_N02G_007310"
+          },
+          {
+            "type": "TAKE_SHIP",
+            "sailing_id": "mlit_map_193_085_野母商船_福江_青方_博多_長崎_伊王島_高島_003_back_003",
+            "route_id": "mlit_map_193_085_野母商船_福江_青方_博多_長崎_伊王島_高島_003_back",
+            "operator": "野母商船",
+            "service_no": "3",
+            "vessel": "鷹巢/俊寛",
+            "origin_port": "高島港",
+            "destination_port": "伊王島",
+            "departure_hhmm": "09:30",
+            "arrival_hhmm": "09:47",
+            "origin_access_kind": "station",
+            "origin_access_station_id": "SG_N02G_007310",
+            "origin_access_bus_stop_id": null,
+            "origin_access_distance_meters": 269.88129086139014,
+            "origin_access_walk_time_sec": 195,
+            "destination_access_kind": "bus_stop",
+            "destination_access_station_id": null,
+            "destination_access_bus_stop_id": "bus:stop:official:official_port_connector_bus_v5_port_connector_batch3_official_bus_sour_fdcd0cd986:1b41d12f6246",
+            "destination_access_airport_iata": null,
+            "destination_access_distance_meters": 0,
+            "destination_access_walk_time_sec": 0,
+            "fare": {
+              "model_version": "v5_ship_official_adult_passenger_fare_v1",
+              "source": "official_adult_passenger_fare",
+              "currency": "JPY",
+              "total_yen": 430,
+              "fare_known": true,
+              "components": [
+                {
+                  "type": "ship",
+                  "route_id": "mlit_map_193_085_野母商船_福江_青方_博多_長崎_伊王島_高島_003_back",
+                  "sailing_id": "mlit_map_193_085_野母商船_福江_青方_博多_長崎_伊王島_高島_003_back_003",
+                  "total_yen": 430
+                }
+              ]
+            }
+          }
+        ],
+        "planned": true,
+        "sanitize": {
+          "ok": true,
+          "removedErrors": []
+        },
+        "observation": {
+          "minute": 390,
+          "time": "06:30",
+          "stateKind": "prior",
+          "label": "public prior from 東京 at 06:30",
+          "resolvedStepCount": 0
+        },
+        "targetProfileId": "southwest",
+        "modeProfileId": "all_modes"
+      }
+    ]
   }
 }
